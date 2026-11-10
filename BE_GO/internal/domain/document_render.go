@@ -140,6 +140,8 @@ type DocumentRenderStore interface {
 	AppointmentForm(ctx context.Context, id string) (*RenderAppointmentForm, error)
 	// AppointmentFormTutor is Associate.get_main_tutor(): nil, the tutor, or ErrViewTutorWrite.
 	AppointmentFormTutor(ctx context.Context, associate string) (*RenderFormTutor, error)
+	// PromoteAppointmentFormTutor saves the associate's first tutor relation as primary, with its audit entry.
+	PromoteAppointmentFormTutor(ctx context.Context, associate string, audit LoginAuditContext, at time.Time) (*RenderFormTutor, error)
 	CreateDocument(ctx context.Context, document NewRenderDocument, actorAssociation *string, audit LoginAuditContext, at time.Time) error
 	CreateArchive(ctx context.Context, id, association, document string, folder int64, created time.Time, audit LoginAuditContext, at time.Time) error
 	CreateSubscriptionFile(ctx context.Context, id string, subscription RenderSubscription, document string, created time.Time,

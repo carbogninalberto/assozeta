@@ -213,6 +213,16 @@
    "start": "2026-01-01",
    "end": "2026-12-31",
    "created": "2026-02-01T09:00:00Z"
+  },
+  "season": {
+   "id": "a1000000-0000-4000-8000-000000352031",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "foreign_owner",
+   "medical": null,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
   }
  },
  "drafts": {
@@ -258,6 +268,11 @@
    "username": "documents-writes-member",
    "email": "documents-writes-member@example.test"
   }
+ },
+ "season": {
+  "user": "foreign_owner",
+  "day": 30,
+  "month": 2
  },
  "certificate_limit": 4096,
  "cases": [
@@ -2669,6 +2684,88 @@
    }
   },
   {
+   "name": "documents-writes-upload-document-as-file-keeps-document",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "allegato.pdf",
+      "body_b64": null,
+      "content_type": null,
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_inserted": null,
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"filename\"\r\n\r\nallegato.pdf\r\n--documentswritesboundary\r\nContent-Disposition: form-data; name=\"document\"; filename=\"scansione.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-upload-filename-as-file-keeps-document",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "nome file.pdf",
+      "body_b64": null,
+      "content_type": null,
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_inserted": null,
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"document\"\r\n\r\neA==\r\n--documentswritesboundary\r\nContent-Disposition: form-data; name=\"filename\"; filename=\"nome file.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
    "name": "documents-writes-certificate-wrong-method",
    "actor": "owner",
    "method": "GET",
@@ -4213,6 +4310,61 @@
     "archive_deleted": []
    },
    "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"Rossi & Bianchi.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-season-error-keeps-certificate",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352031/medical-certificate/upload",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Invalid date combination: day is out of range for month"
+   },
+   "effect": {
+    "actor": "foreign_owner",
+    "documents": [
+     {
+      "filename": "visita.pdf",
+      "body_b64": "JVBERi0xLjQgdmlzaXRh",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "foreign_owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_inserted": null,
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
    "content_type": "multipart/form-data; boundary=documentswritesboundary"
   },
   {

@@ -128,7 +128,8 @@ DEFAULT_SECTION_FLAGS = (True, True, True)
 ALPHA_HEADER = ('<p class="intestazione">Spett.le <span class="mention" data-type="mention" key="sport_association.denomination">'
                 '@Denominazione</span> &amp; soci - CF <span data-type="mention" class="mention" key="sport_association.tax_code">@cf'
                 '</span><br>Data: @dataodierna, contatto <span class="mention" data-type="mention" key="sport_association.user.email">'
-                '@Email</span>, iscritto @nome</p>')
+                '@Email</span>, iscritto @nome<span class="mention" data-type="mention" key="subscription.tessera_vecchia">@tessera'
+                '</span><span class="mention" data-type="mention" key="sport_association.codice_coni">@coni</span></p>')
 ALPHA_HEADER_OUT = ('<p class="intestazione">Spett.le ASD Alfa &amp; Figli &amp; soci - CF 01234567890<br/>Data: $today, contatto '
                     'alfa@example.test, iscritto </p>')
 ALPHA_FOOTER = '<p>Grazie da @Denominazione — @listacorsi</p>\n<p>  </p>'
@@ -294,6 +295,11 @@ COMPENSATIONS = {
               'notes': 'g', 'deleted': False, 'group': 'own_group'},
     'nullperiod': {'id': uid(86), 'association': 'alpha', 'instructor': 'anna', 'amount': '5.00', 'date': None, 'signature': None,
                    'notes': None, 'deleted': False, 'group': None},
+    # Periods written with the decimal digits of other scripts (strptime reads them).
+    'digits': {'id': uid(87), 'association': 'alpha', 'instructor': 'anna', 'amount': '6.00', 'date': None, 'signature': None,
+               'notes': None, 'deleted': False, 'group': None},
+    'digitsmonth': {'id': uid(88), 'association': 'alpha', 'instructor': 'anna', 'amount': '6.00', 'date': None, 'signature': None,
+                    'notes': None, 'deleted': False, 'group': None},
 }
 HOURS = [
     (uid(90), 'anna', 'hours', 'hourly', '2026-04-01', None),
@@ -301,6 +307,8 @@ HOURS = [
     (uid(92), 'anna', 'hours', 'percentage', '2026-01-01', ' 5/2/2026 al 6/02/2026 al 9/9/2030'),
     (uid(93), 'anna', 'badperiod', 'period', '2026-01-01', '31/02/2026 al 01/03/2026'),
     (uid(94), 'anna', 'nullperiod', 'period', '2026-01-01', None),
+    (uid(95), 'anna', 'digits', 'period', '2026-01-01', '1\u0665/03/\u0662\u0660\u0662\u0666 al 2\u06f9/03/202\uff16'),
+    (uid(96), 'anna', 'digitsmonth', 'period', '2026-01-01', '15/0\u0663/2026 al 29/03/2026'),
 ]
 TEMPLATES = {
     'plain': {'id': uid(100), 'association': 'alpha', 'name': 'Modulo', 'header': True, 'footer': True, 'custom': False,
@@ -314,6 +322,13 @@ TEMPLATES = {
              'custom_header': None, 'custom_footer': None, 'template': None},
     'foreign': {'id': uid(103), 'association': 'foreign', 'name': 'Estero', 'header': True, 'footer': True, 'custom': True,
                 'custom_header': None, 'custom_footer': '<p>Piè @email</p>', 'template': '<p>Ciao @nome</p>'},
+    # Keys of earlier versions: names the models no longer have read as the empty text.
+    'oldkeys': {'id': uid(104), 'association': 'alpha', 'name': 'Chiavi', 'header': False, 'footer': False, 'custom': False,
+                'custom_header': None, 'custom_footer': None,
+                'template': '<p>a' + ''.join(f'<span class="mention" data-type="mention" key="{key}">@x</span>|' for key in (
+                    'sport_association.ragione_sociale', 'sport_association.presidente.nome', 'associate.soprannome',
+                    'associate.tessera.numero', 'main_tutor.cellulare', 'other.stagione', 'other.stagione.anno',
+                    'associate.first_name', 'other.today')) + 'z</p>'},
 }
 MEDICAL = {
     'agonistica': {'id': uid(110), 'subscription': 'mario', 'region': 'agonistica', 'date': '2026-05-06', 'sport': 'Calcio & corsa',
@@ -596,6 +611,9 @@ add('compensation-member', 'member', COMP('hours'), 403, SCOPED_HIDDEN)
 add('compensation-admin-impersonating-owner', 'admin', COMP('volunteer'), 200, HTML, language='it', headers=ADMIN_OWNER,
     html=compensation_context('volunteer', None, None))
 add('compensation-scoped-athlete-denied', 'owner', COMP('hours'), 403, SCOPED_DENIED, headers=SCOPED)
+add('compensation-period-other-digits', 'owner', COMP('digits'), 200, HTML, language='it',
+    html=compensation_context('digits', '2026-03-15', '2026-03-29'))
+add('compensation-period-month-other-digits', 'owner', COMP('digitsmonth'), 500, SERVER)
 add('compensation-invalid-period', 'owner', COMP('badperiod'), 500, SERVER)
 add('compensation-null-period', 'owner', COMP('nullperiod'), 500, SERVER)
 add('compensation-deleted', 'owner', COMP('deleted'), 500, SERVER)
@@ -651,6 +669,9 @@ add('template-subscription-group-hidden', 'owner', f"{TPL('plain')}?subscription
 add('template-custom-header', 'owner', TPL('custom'), 200, HTML,
     html=model_context('<p>Corpo  <b>$today</b></p>', '<p><br/></p>', ''))
 add('template-without-header-footer', 'owner', TPL('bare'), 200, HTML, html=model_context('', '', ''))
+add('template-old-mention-keys', 'owner', TPL('oldkeys'), 200, HTML, html=model_context('<p>a||||||||$today|z</p>', '', ''))
+add('template-old-mention-keys-subscription', 'owner', f"{TPL('oldkeys')}?subscription_id={S('mario')}", 200, HTML,
+    html=model_context('<p>a|||||||Mario|$today|z</p>', '', ''))
 add('template-foreign-custom-footer', 'owner', TPL('foreign'), 200, HTML, html=model_context('<p>Ciao </p>', '', '<p>Piè </p>'))
 # The page is served to the association's staff.
 add('template-athlete', 'athlete', TPL('plain'), 403, SCOPED_HIDDEN)

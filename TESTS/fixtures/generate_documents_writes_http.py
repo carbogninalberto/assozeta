@@ -92,6 +92,9 @@ DRAFTS = {
 }
 # A file name with '&' (the browser sends File.name as is): sanitize_file_name html.unescape()s it first.
 SUBSCRIPTIONS['ampersand'] = subscription(OWN)
+# A season starting on a day its month never has (30/02): Subscription.save() raises while the dates are worked out.
+SUBSCRIPTIONS['season'] = subscription(FOREIGN, user='foreign_owner')
+SEASON = {'user': 'foreign_owner', 'day': 30, 'month': 2}
 
 cases = []
 
@@ -402,6 +405,16 @@ add('upload-number-filename-keeps-document', 'owner', UPLOAD('files'), 500, SERV
 add('upload-traversal-filename-keeps-document', 'owner', UPLOAD('files'), 400, BAD_REQUEST, body={'document': B64('x'), 'filename': '../x.pdf'},
     effect=effect('owner', documents=[stored('../x.pdf', '', None, object_stored=False)], audit=[doc_create(0)]))
 
+# Multipart: a file sent as the document (base64 text expected) or as the filename (stored as the file's name).
+UPLOAD_FILE_DOCUMENT = multipart(('filename', None, None, 'allegato.pdf'), ('document', 'scansione.pdf', 'application/pdf', '%PDF-1.4'))
+UPLOAD_FILE_NAME = multipart(('document', None, None, B64('x')), ('filename', 'nome file.pdf', 'application/pdf', '%PDF-1.4'))
+add('upload-document-as-file-keeps-document', 'owner', UPLOAD('files'), 500, SERVER, raw_body=UPLOAD_FILE_DOCUMENT[0],
+    content_type=UPLOAD_FILE_DOCUMENT[1],
+    effect=effect('owner', documents=[stored('allegato.pdf', '', None, object_stored=False)], audit=[doc_create(0)]))
+add('upload-filename-as-file-keeps-document', 'owner', UPLOAD('files'), 500, SERVER, raw_body=UPLOAD_FILE_NAME[0],
+    content_type=UPLOAD_FILE_NAME[1],
+    effect=effect('owner', documents=[stored('nome file.pdf', '', None, object_stored=False)], audit=[doc_create(0)]))
+
 # ---------------------------------------------------------------- document/medical/certificate/
 CERT = '/document/medical/certificate/'
 CERT_LIMIT = 4096
@@ -534,6 +547,10 @@ add('medical-ampersand-filename', 'owner', MED('ampersand'), 200, attached,
                   certificates=[{'document': 0, 'user': 'owner'}], subscriptions={'ampersand': {'medical_id': '$cert0'}},
                   audit=[doc_create(0), cert_create(0), sub_update('ampersand', {'medical': ['None', '$cert0']})]))
 DEFAULT_MC = lambda filename: {'medical_id': '$cert0', 'filename': filename, 'certificate_expring_date': None}
+add('medical-season-error-keeps-certificate', 'foreign_owner', MED('season'), 500,
+    {'error': 'Invalid date combination: day is out of range for month'}, raw_body=MED_BODY[0], content_type=MED_BODY[1],
+    effect=effect('foreign_owner', documents=[stored('visita.pdf', '%PDF-1.4 visita', 'application/pdf')],
+                  certificates=[{'document': 0, 'user': 'foreign_owner'}], audit=[doc_create(0), cert_create(0)]))
 add('medical-draft-adds-entry', 'owner', MED('none'), 200, {'msg': 'updated draft', 'expiring_date': None}, raw_body=MED_BODY[0],
     content_type=MED_BODY[1],
     effect=effect('owner', documents=[stored('visita.pdf', '%PDF-1.4 visita', 'application/pdf')], certificates=[{'document': 0, 'user': 'owner'}],
@@ -556,5 +573,5 @@ assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Document uploads: archive add/update, subscription files and medical certificates',
                               'ids': IDS, 'location': LOCATION, 'folders': FOLDERS, 'documents': DOCUMENTS, 'archives': ARCHIVES,
                               'certificates': CERTIFICATES, 'subscriptions': SUBSCRIPTIONS, 'drafts': DRAFTS, 'unknown': UNKNOWN,
-                              'extra_users': EXTRA_USERS, 'certificate_limit': CERT_LIMIT, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+                              'extra_users': EXTRA_USERS, 'season': SEASON, 'certificate_limit': CERT_LIMIT, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

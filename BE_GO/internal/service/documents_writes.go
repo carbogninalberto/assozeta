@@ -176,9 +176,16 @@ func storedText(value any) (string, bool) {
 	case nil, domain.RequestUpload, domain.RequestFile:
 		return "", false
 	}
+	if name, isName := value.(uploadedFileName); isName {
+		return string(name), dto.AssociateDraftStorable(string(name))
+	}
 	text := dto.PythonStr(value)
 	return text, dto.AssociateDraftStorable(text)
 }
+
+// uploadedFileName marks a filename that came as an uploaded file: stored as
+// its name, while the view's path join fails on the file object.
+type uploadedFileName string
 
 const tooLongText = "value too long for type character varying(255)\n"
 
@@ -576,11 +583,12 @@ func (s *DocumentUploads) UploadDocument(ctx context.Context, identity domain.Re
 	if !hasDocument || !hasFilename {
 		return ErrUploadDocumentMissing
 	}
-	if _, upload := payload.(domain.RequestUpload); upload {
-		return domain.ErrDocumentWritesNotPorted
-	}
 	if value == nil {
 		return domain.ErrDocumentWritesFailed // NOT NULL violation before any row exists
+	}
+	// A file sent as the filename is stored by its name (str() of the upload).
+	if file, isFile := value.(domain.RequestFile); isFile {
+		value = uploadedFileName(file.Name)
 	}
 	text, storable := storedText(value)
 	if !storable {
@@ -618,6 +626,9 @@ func (s *DocumentUploads) UploadDocument(ctx context.Context, identity domain.Re
 	}
 	if _, isText := value.(string); !isText {
 		return keep(domain.ErrDocumentWritesFailed) // os.path.join TypeError
+	}
+	if _, isFile := payload.(domain.RequestFile); isFile {
+		return keep(domain.ErrDocumentWritesFailed) // b64decode of an uploaded file: TypeError
 	}
 	content, err := dto.PythonB64Decode(payload)
 	if err != nil {
@@ -802,7 +813,12 @@ func (s *DocumentUploads) MedicalUpload(ctx context.Context, identity domain.Res
 		if commit := tx.Commit(); commit != nil {
 			return nil, commit
 		}
-		return nil, errors.Join(domain.ErrDocumentWritesNotPorted, err) // Subscription.save() raised: str(e) is not modelled
+		// Subscription.save() raised: the season error's text, after the certificate was stored.
+		var calendar *domain.CalendarDateError
+		if errors.As(err, &calendar) {
+			return nil, fail(calendar.Message)
+		}
+		return nil, errors.Join(domain.ErrDocumentWritesNotPorted, err)
 	}
 	if err = tx.AttachCertificate(ctx, *subscription, certificate, dates, context, s.at()); err != nil {
 		return nil, err

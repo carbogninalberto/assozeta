@@ -247,10 +247,18 @@ func (s *DocumentViews) associateObject(ctx context.Context, associate *domain.V
 
 // --- mentions ----------------------------------------------------------------------------------
 
-func fieldResolver(fields map[string]*string) mentions.Resolver {
+// fieldResolver is get_nested_attr of a model instance. The listed paths
+// are the port's fields; another path whose first name is not an attribute
+// of the model is getattr's None (""); the model's other attributes are
+// outside the port.
+func fieldResolver(attributes map[string]struct{}, fields map[string]*string) mentions.Resolver {
 	return func(path string) (string, error) {
 		value, ok := fields[path]
 		if !ok {
+			first, _, _ := strings.Cut(path, ".")
+			if _, known := attributes[first]; !known {
+				return "", nil
+			}
 			return "", fmt.Errorf("%w: mention %q", mentions.ErrUnsupported, path)
 		}
 		if value == nil {
@@ -270,7 +278,7 @@ func dateText(value *time.Time) *string {
 
 func associationResolver(a *domain.ViewAssociation) mentions.Resolver {
 	denomination, taxCode := a.Denomination, a.TaxCode
-	return fieldResolver(map[string]*string{"denomination": &denomination, "tax_code": &taxCode, "iban": a.Iban, "website": a.Website,
+	return fieldResolver(mentionSportAssociationAttributes, map[string]*string{"denomination": &denomination, "tax_code": &taxCode, "iban": a.Iban, "website": a.Website,
 		"abbreviated": a.Abbreviated, "vat_number": a.VatNumber, "whatsapp": a.Whatsapp, "address": a.Address,
 		"address_city": a.AddressCity, "address_cap": a.AddressCap, "logo": a.Logo, "user.email": a.UserEmail,
 		"federation": a.Federation, "sport": a.Sport, "enroll_number": a.EnrollNumber})
@@ -282,7 +290,7 @@ func associateResolver(a *domain.ViewAssociate) mentions.Resolver {
 		return func(string) (string, error) { return "", nil }
 	}
 	sex := a.Sex
-	return fieldResolver(map[string]*string{"first_name": a.FirstName, "last_name": a.LastName, "tax_code": a.TaxCode,
+	return fieldResolver(mentionAssociateAttributes, map[string]*string{"first_name": a.FirstName, "last_name": a.LastName, "tax_code": a.TaxCode,
 		"born_date": dateText(a.BornDate), "born_city": a.BornCity, "address": a.Address, "address_city": a.AddressCity,
 		"address_cap": a.AddressCap, "nationality": a.Nationality, "nationality_residence": a.NationalityRes, "email": a.Email,
 		"phone": a.Phone, "phone_2": a.Phone2, "phone_3": a.Phone3, "phone_4": a.Phone4, "phone_label": a.PhoneLabel,
@@ -290,21 +298,20 @@ func associateResolver(a *domain.ViewAssociate) mentions.Resolver {
 }
 
 // otherResolver is the 'other' dict: dict.get(key) of its entries; a
-// missing key is None ("").
+// missing key is None ("", for a longer path as well).
 func otherResolver(values map[string]string) mentions.Resolver {
 	return func(path string) (string, error) {
-		if strings.Contains(path, ".") {
+		first, _, nested := strings.Cut(path, ".")
+		if _, present := values[first]; present && nested {
 			return "", fmt.Errorf("%w: mention other.%s", mentions.ErrUnsupported, path)
 		}
-		return values[path], nil
+		return values[first], nil
 	}
 }
 
-// refusingResolver: an object whose attributes the port does not read.
-func refusingResolver(name string) mentions.Resolver {
-	return func(path string) (string, error) {
-		return "", fmt.Errorf("%w: mention %s.%s", mentions.ErrUnsupported, name, path)
-	}
+// modelResolver: a model instance none of whose attributes the port reads.
+func modelResolver(attributes map[string]struct{}) mentions.Resolver {
+	return fieldResolver(attributes, nil)
 }
 
 func (s *DocumentViews) todayText() string { return s.today().Format("02/01/2006") }
@@ -476,17 +483,18 @@ func (s *DocumentViews) associationObject(a *domain.ViewAssociation, sections an
 	})
 }
 
-// datetime.strptime(text, '%d/%m/%Y') for ASCII input.
-var strptimeDMY = regexp.MustCompile(`^(3[01]|[12][0-9]|0[1-9]|[1-9]| [1-9])/(1[0-2]|0[1-9]|[1-9])/([0-9]{4})$`)
+// datetime.strptime(text, '%d/%m/%Y'): the directive patterns' \d matches
+// the decimal digits of every script (a day's second digit, the year).
+var strptimeDMY = regexp.MustCompile(`^(3[01]|[12]\p{Nd}|0[1-9]|[1-9]| [1-9])/(1[0-2]|0[1-9]|[1-9])/(\p{Nd}{4})$`)
 
 func parseDMY(text string) (time.Time, bool) {
 	match := strptimeDMY.FindStringSubmatch(text)
 	if match == nil {
 		return time.Time{}, false
 	}
-	day, _ := strconv.Atoi(strings.TrimSpace(match[1]))
+	day, _ := strconv.Atoi(dto.PythonASCIIDigits(strings.TrimSpace(match[1])))
 	month, _ := strconv.Atoi(match[2])
-	year, _ := strconv.Atoi(match[3])
+	year, _ := strconv.Atoi(dto.PythonASCIIDigits(match[3]))
 	if year < 1 {
 		return time.Time{}, false
 	}
@@ -525,11 +533,6 @@ func (s *DocumentViews) compensation(ctx context.Context, identity domain.Resolv
 		}
 		if hour.Period == nil {
 			return nil, ErrDocumentViewServer
-		}
-		for _, r := range *hour.Period {
-			if r > 0x7f {
-				return nil, fmt.Errorf("%w: non-ASCII period", ErrDocumentViewNotPorted)
-			}
 		}
 		parts := strings.Split(*hour.Period, " al ")
 		if len(parts) < 2 {
@@ -682,7 +685,7 @@ func (s *DocumentViews) subscription(ctx context.Context, identity domain.Resolv
 		section.Set("show_to", show)
 	}
 	today := s.todayText()
-	mentionContext := mentions.Context{"sport_association": associationResolver(association), "subscription": refusingResolver("subscription"),
+	mentionContext := mentions.Context{"sport_association": associationResolver(association), "subscription": modelResolver(mentionSubscriptionAttributes),
 		"other": otherResolver(map[string]string{"today": today})}
 	header, err := mentions.Filter(renderOptionalEmpty(association.DocumentHeader), association.DocumentHeader != nil, mentionContext)
 	if err != nil {
@@ -794,7 +797,7 @@ func (s *DocumentViews) preview(ctx context.Context, identity domain.ResolvedIde
 		return nil, err
 	}
 	today := s.todayText()
-	mentionContext := mentions.Context{"sport_association": associationResolver(association), "subscription": refusingResolver("subscription"),
+	mentionContext := mentions.Context{"sport_association": associationResolver(association), "subscription": modelResolver(mentionSubscriptionAttributes),
 		"other": otherResolver(map[string]string{"today": today})}
 	header, err := mentions.Filter(renderOptionalEmpty(association.DocumentHeader), association.DocumentHeader != nil, mentionContext)
 	if err != nil {

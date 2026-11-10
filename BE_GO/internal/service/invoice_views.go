@@ -223,10 +223,15 @@ func (s *InvoiceViews) invoice(ctx context.Context, identity domain.ResolvedIden
 			return nil, err
 		}
 	}
+	invoiceMentions, err := invoiceViewsInvoiceResolver(invoice)
+	if err != nil {
+		return nil, err
+	}
 	mentionContext := mentions.Context{
-		"sport_association": associationResolver(association), "invoice": refusingResolver("invoice"),
-		"payment": refusingResolver("payment"), "associate": associateResolver(associate), "main_tutor": associateResolver(tutor),
-		"other": otherResolver(map[string]string{"today": s.views.todayText(), "courses_list": coursesList}),
+		"sport_association": associationResolver(association), "invoice": invoiceMentions,
+		"payment": modelResolver(mentionPaymentAttributes), "associate": invoiceViewsAssociateResolver(associate),
+		"main_tutor": associateResolver(tutor),
+		"other":      otherResolver(map[string]string{"today": s.views.todayText(), "courses_list": coursesList}),
 	}
 	headerText, err := mentions.Filter(renderOptionalEmpty(header), header != nil, mentionContext)
 	if err != nil {
@@ -345,6 +350,42 @@ func invoiceViewsDecimalSum(a, b string) (djtemplate.Decimal, error) {
 		return "", invoiceViewsNotPorted("decimal %q + %q", a, b)
 	}
 	return djtemplate.Decimal(new(big.Rat).Add(x, y).FloatString(2)), nil
+}
+
+// invoiceViewsInvoiceResolver: the Invoice fields a mention reads (the legacy
+// aliases' number, dates and amounts) as str() writes them.
+func invoiceViewsInvoiceResolver(invoice *domain.InvoiceViewInvoice) (mentions.Resolver, error) {
+	total, err := invoiceViewsDecimalSum(invoice.ActivityFee, invoice.MembershipFee)
+	if err != nil {
+		return nil, err
+	}
+	totalText := string(total)
+	created, err := djtemplate.PythonStr(djtemplate.DateTime{Time: invoice.CreationDate})
+	if err != nil {
+		return nil, err
+	}
+	var number *string
+	if invoice.Number != nil {
+		text := strconv.FormatInt(*invoice.Number, 10)
+		number = &text
+	}
+	return fieldResolver(mentionInvoiceAttributes, map[string]*string{"number": number, "creation_date": &created,
+		"activity_fee": &invoice.ActivityFee, "membership_fee": &invoice.MembershipFee, "total_amount": &totalText}), nil
+}
+
+// invoiceViewsAssociateResolver: the payment's associate, to which the view
+// adds the tutor and is_minor attributes.
+func invoiceViewsAssociateResolver(associate *domain.ViewAssociate) mentions.Resolver {
+	resolve := associateResolver(associate)
+	if associate == nil {
+		return resolve
+	}
+	return func(path string) (string, error) {
+		if first, _, _ := strings.Cut(path, "."); first == "tutor" || first == "is_minor" {
+			return "", fmt.Errorf("%w: mention associate.%s", mentions.ErrUnsupported, path)
+		}
+		return resolve(path)
+	}
 }
 
 func invoiceViewsTwoPlaces(text string) bool {
