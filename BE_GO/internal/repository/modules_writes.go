@@ -47,6 +47,12 @@ func (t *modulesWriteTransaction) Module(ctx context.Context, id string, associa
 // Taken is a UniqueValidator query on module_id or custom_link (exact),
 // excluding the instance being updated.
 func (t *modulesWriteTransaction) Taken(ctx context.Context, column, value string, exclude *string) (bool, error) {
+	if column == "sport_association_id" {
+		// The nested association's UniqueValidator reads every row, soft-deleted ones included.
+		var found bool
+		err := t.tx.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM application_sportassociation WHERE sport_association_id=$1::uuid)`, value)
+		return found, err
+	}
 	if column != "module_id" && column != "custom_link" {
 		return false, errors.New("unsupported module unique column")
 	}

@@ -44,9 +44,12 @@ const (
 	// ModuleNestedEmpty is a valid empty dict: ModelSerializer.update then
 	// asserts on the writable nested field.
 	ModuleNestedEmpty
-	// ModuleNestedFields is a dict with keys: SportAssociationSerializer
-	// validation of the nested fields is not ported.
+	// ModuleNestedFields is a dict with keys the nested serializer has
+	// fields for: ParseModuleNested validates them.
 	ModuleNestedFields
+	// ModuleNestedForm is 'sport_association.<key>' form input: the nested
+	// HTML parsing is not ported.
+	ModuleNestedForm
 )
 
 // moduleNestedFieldNames are the keys SportAssociationSerializer renders (its
@@ -75,6 +78,8 @@ type ModuleWrite struct {
 	// JSON holds the parsed JSON field values (request order kept).
 	JSON   map[string]any
 	Nested ModuleNested
+	// NestedObject is the nested association dict of ModuleNestedFields.
+	NestedObject domain.RequestObject
 }
 
 // ModuleWriteErrors maps a field to its error codes.
@@ -113,7 +118,7 @@ func ParseModuleWrite(body any, form, nested bool) (ModuleWrite, ModuleWriteErro
 			// Serializer.get_value on HTML input: only 'sport_association.<key>' keys.
 			for _, field := range object {
 				if strings.HasPrefix(field.Name, "sport_association.") {
-					write.Nested = ModuleNestedFields
+					write.Nested = ModuleNestedForm
 				}
 			}
 		} else if value, present := object.Lookup("sport_association"); present {
@@ -126,7 +131,7 @@ func ParseModuleWrite(body any, form, nested bool) (ModuleWrite, ModuleWriteErro
 				write.Nested = ModuleNestedEmpty
 				for _, field := range v {
 					if moduleNestedFieldNames[field.Name] {
-						write.Nested = ModuleNestedFields
+						write.Nested, write.NestedObject = ModuleNestedFields, v
 					}
 				}
 			default:

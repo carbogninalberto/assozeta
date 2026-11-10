@@ -19,6 +19,16 @@
 - **duplicate:** `is_valid_uuid` (400), then `Module.objects.filter(module_id=..., sport_association=request.user.sport_association).first()` (miss, another or a soft-deleted association, or no association: `404 {'error': 'module not found'}`; no association for the user: the 500 page). The clone copies every field except `module_id` (new), `creation_date` (now), `title` (`f'{title} (copia)'`, `None (copia)` for a null title) and `custom_link` (`uuid4().hex[:12]`); responses are not copied. One create entry; `201 {'data': ModulesSerializer(clone).data}`.
 - **delete:** no UUID check: after `request.user.sport_association` (athletes 403 even for a malformed id), the UUIDField lookup of a string it rejects is a Django ValidationError (the 500 page). The same filter (404 `module not found`), then `module.delete()`: the collector deletes the module's responses and their attachment links (documents stay) and the module; post_delete logs each response and the module. A response's entry cannot resolve through the deleted rows and carries no `sport_association`, so it is indexed under the actor's own association (`actor.sport_association`; none for a collaborator); the module's entry under `changes_json.sport_association`. `200 {'msg': 'module deleted'}`.
 
+## Nested sport_association dict
+
+A `sport_association` dict with keys the nested `SportAssociationSerializer` has fields for (rest-prof, ported from the former refusal) is validated in
+`Meta.fields` order before the nested-write assertion: text columns (length, blank, null, number-to-string), `address_cap` (a regular expression
+`^\d{5}$`, Unicode digits included, reported before the length when both fail), the two decimal fees (`9, 2`; a blank nullable fee is `None`), the
+booleans, the non-null JSON columns (`null` is an error, any other JSON value passes) and the primary key (UUID, int and bool read as `UUID(int=n)`, an
+existing association of any state is `sport association with this sport association id already exists.` because the validator has no instance).
+`reviewed`, `groups` and unknown keys are ignored. The errors are nested in the answer: `{'sport_association': {'field': [ErrorDetail(...)]}}`, followed by the
+module's own field errors. A dict with no error ends in the assertion as before; nothing is saved.
+
 ## Update under a new key
 
 An update body with a `module_id` that no module has passes the UniqueValidator and `Model.save()` inserts a copy of the module with the
@@ -28,7 +38,7 @@ module is caught earlier by the validator) answers its text as `500 {'error': ..
 ## Not ported
 
 Refused in Go with the 500 page before any write, and outside the authored sequence:
-- update with a nested `sport_association` dict that has keys (form keys `sport_association.<field>` included): the nested `SportAssociationSerializer` field validation is not ported (a valid dict ends in the nested-write assertion, an invalid one in its field errors; neither writes).
+- update with the nested association as form keys (`sport_association.<field>`): the nested serializer's HTML input parsing is not ported (JSON dicts are, see below).
 - `{'error': str(e)}` texts of database exceptions inside `modules_update` (Go answers the 500 page).
 
 `templates/<pk>/update` (`SportAssociationModuleTemplatesViewSet.update`) is not part of this family: it belongs to the module-templates viewset with its own fixture and Go files (`module-templates.md`), and is left for that family. Module responses (`modules/<id>/response/add`, `modules/response/<id>/approve|delete|add-attachment`), `export` and `modules/<custom_link>/info` remain separate.
@@ -36,3 +46,7 @@ Refused in Go with the 500 page before any write, and outside the authored seque
 ## Evidence (TDD)
 
 `TESTS/fixtures/modules_writes_http.json` (generator alongside) authors 98 cases with exact effects: the complete model state after every case, the created, updated or deleted modules, responses and attachment links, and every audit entry and index row. RED: Django 98/98, Go 404 on the first case. GREEN: 98/98 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Dropping the association filter from the Go module lookup fails `duplicate-foreign-module`. The modules reads family (81 cases) still passes with the new routes.
+
+Rest-prof: 135 cases (37 added: the nested association fields, the primary key states, `address_cap` variants, null characters, outer and nested errors together,
+a collaborator). RED: documented refusal, see the v2-refusals row. Django 135/135 and Go 135/135 natively on the first run. Mutation (the boolean validation of the
+nested fields dropped) fails `modules-writes-update-nested-number-boolean-errors` on Go.
