@@ -19160,25 +19160,15 @@
         "BE_GO/internal/repository/payment_writes.go",
         "BE_GO/internal/service/payment_writes.go",
         "BE_GO/internal/handler/payment_writes.go",
-        "BE_GO/cmd/server/main.go",
-        "BE_GO/internal/service/invoice_sync_print.go"
+        "BE_GO/internal/service/documents_writes.go",
+        "BE_GO/internal/service/invoice_sync_print.go",
+        "BE_GO/cmd/server/documents_writes.go",
+        "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
-        "Existing identity resolution, permission registry, scoped-request guard, tenant scope and audit index",
-        "payment-archive save defaults and payment-state / course-subscriptions payment rendering",
-        "application_payment",
-        "application_paymentcategory",
-        "application_customaccounts",
-        "application_sportassociation",
-        "application_associate",
-        "application_subscription",
-        "application_instructor",
-        "application_supplierandcustomers",
-        "application_group",
-        "bakney_user",
-        "BE/application/printing_tasks.py",
-        "BE/instance/restore/task_base.py",
-        "BE/application/serializers/invoice_serializers.py"
+        "Existing identity resolution, scoped-request checks, permission registry and tenant scope",
+        "documents-writes S3 document storage (documentkey.UploadName, S3Key, pymime.GuessType, documentobjects.S3.Put), invoice-sync-print eager print runner",
+        "application_payment, application_payment_attachments, docmanager_document, application_invoice, application_paymentcategory, application_customaccounts, application_associate, application_subscription, application_instructor, application_supplierandcustomers"
       ],
       "contract": {
         "methods": [
@@ -19192,11 +19182,11 @@
         ],
         "request": "JSON object of PaymentEntrySerializer fields (partial; blank dates dropped), complex_item and subscription_id.",
         "response": "200 {'data': {'payment': PaymentSerializer of the in-memory payment}}.",
-        "errors": "400 malformed uuid list; 400 serializer.errors; 400 {'exception': 'document key not present'} after the save; 401; 403 registry / scoped session / {'detail': 'User not allowed.'} for another association's payment / tenant scope of a related field; 500 athletes, no association, missing/deleted/other-group/unassociated payment, non-dict body, failing party or subscription lookup, save hook errors, failing Payment.save(), database rejections; invoiced payments and form bodies (not ported).",
+        "errors": "400 malformed uuid list; 400 serializer.errors; 400 {'exception': 'document key not present'} after the earlier attachments and the save; 401; 403 registry / scoped session / {'detail': 'User not allowed.'} for another association's payment / tenant scope of a related field; 500 athletes, no association, missing/deleted/other-group/unassociated payment, non-dict body, failing party or subscription lookup, save hook errors, failing Payment.save(), database rejections; invoiced payments and form bodies (not ported). 500 invalid base64 after the save; attachment names outside the ported subset refused (500) before any write.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry bookeeping.payments.update.",
         "resource_scope": "The owner's live association (scoped_queryset(SportAssociation.objects).get(user=request.user)); payments through Payment.objects (live, X-Group-Id aware) and, in association-scoped sessions, the session's association.",
-        "side_effects": "Instructor, supplier and payment_intent_id cleared, the party set, validated fields applied with Payment.save() defaults; audited full-row save (changed fields) indexed directly. An invoiced payment prints its invoice after the save (print_document_invoice.apply: GET CURRENT_HOST/document/invoice/<id>).",
+        "side_effects": "Instructor, supplier and payment_intent_id cleared, the party set, validated fields applied with Payment.save() defaults; audited full-row save (changed fields) indexed directly. An invoiced payment prints its invoice after the save (print_document_invoice.apply: GET CURRENT_HOST/document/invoice/<id>). attachments_data files are stored: Document create (audited, indexed to the actor's association), default_storage.save of the decoded bytes under <timestamp>/<id>/<filename>, attachments.add; the response renders them.",
         "transaction": "Not atomic in Django (a single save before the attachment hook); one transaction in Go.",
         "execution_owner": "django"
       },
@@ -19210,25 +19200,25 @@
         "docs/architecture/go-migration/payment-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 124/124; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-red-r2/results.json",
-          "receipt_sha256": "3bbd44e66b407ec8bd1b0723276cf607fcdf877b7aa5f4453d75e242f6630a1b"
+          "result": "RED: Django 128/128; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay-red-r2/results.json",
+          "receipt_sha256": "75821d95f601a43c31663d22a4db03b9ba46468df28381ce374169bf824d1cfa"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 124/124 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and outbound print requests.",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-versioned-r2/results.json",
-          "receipt_sha256": "985e2aeffae7a33e2167bebf3cd07c3f58a83d892191202e5d29ef27a33687c5"
+          "result": "GREEN: 128/128 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, print requests and stored objects.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay-final-r1/results.json",
+          "receipt_sha256": "fb970462ccf8eb6155f2a3ae9f35e51771ddf416021b1d6eb763189155e60710"
         },
         {
-          "revision": "committing change with the invoice print sent without the Authorization header",
-          "result": "Mutation control: fails Go on payment-writes-update-invoiced-prints-invoice (print headers).",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-mutation-r3/results.json",
-          "receipt_sha256": "7df04015ad3ee72e0e620517806dd53d8a165edcb743bfa7344abe318626c09c"
+          "revision": "Document create indexed through the scope user instead of the actor",
+          "result": "Mutation control: fails Go on payment-writes-update-attachment-then-missing-keys (audit.count).",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay-mutation-r4/results.json",
+          "receipt_sha256": "3855b1702785d376828cfbc5c61fc8c799c80d59f69e0dde6138fee76b59a930"
         }
       ],
       "notes": [
-        "Implementing: add (serializer create, Payment.save() defaults, the view's second audited save with user, association and party; failures after the create keep it), update (partial serializer, parties, save hook, audited full-row save) and bulk add (the view's checks and defaults, atomic bulk_create without audit) on four transports. Refused with a 500 before any write: add for users with auto_paid_payment (invoice and PDF), update of invoiced payments (PDF), attachments with document content (storage), payment_id or user in the body, update form bodies and add multipart bodies with files, non-ASCII digits in strptime dates and non-canonical X-Group-Id spellings on add. API v2: the own payment_id on update and invoiced updates (eager invoice print) are ported."
+        "Implementing: Payment add, update and bulk add with HTTP parity. API v2: the update with the row's own payment_id, the invoiced update (eager invoice print) and attachments_data files on add and update (Document, S3 object, link) are ported. Refused (500) before any write: auto_paid_payment users, nested user writes, payment_id changes, update form bodies, attachment names outside the ported subset, non-ASCII-digit dates and non-canonical X-Group-Id on add."
       ]
     },
     {
@@ -19253,25 +19243,15 @@
         "BE_GO/internal/repository/payment_writes.go",
         "BE_GO/internal/service/payment_writes.go",
         "BE_GO/internal/handler/payment_writes.go",
-        "BE_GO/cmd/server/main.go",
-        "BE_GO/internal/service/invoice_sync_print.go"
+        "BE_GO/internal/service/documents_writes.go",
+        "BE_GO/internal/service/invoice_sync_print.go",
+        "BE_GO/cmd/server/documents_writes.go",
+        "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
-        "Existing identity resolution, permission registry, scoped-request guard, tenant scope and audit index",
-        "payment-archive save defaults and payment-state / course-subscriptions payment rendering",
-        "application_payment",
-        "application_paymentcategory",
-        "application_customaccounts",
-        "application_sportassociation",
-        "application_associate",
-        "application_subscription",
-        "application_instructor",
-        "application_supplierandcustomers",
-        "application_group",
-        "bakney_user",
-        "BE/application/printing_tasks.py",
-        "BE/instance/restore/task_base.py",
-        "BE/application/serializers/invoice_serializers.py"
+        "Existing identity resolution, scoped-request checks, permission registry and tenant scope",
+        "documents-writes S3 document storage (documentkey.UploadName, S3Key, pymime.GuessType, documentobjects.S3.Put), invoice-sync-print eager print runner",
+        "application_payment, application_payment_attachments, docmanager_document, application_invoice, application_paymentcategory, application_customaccounts, application_associate, application_subscription, application_instructor, application_supplierandcustomers"
       ],
       "contract": {
         "methods": [
@@ -19285,11 +19265,11 @@
         ],
         "request": "JSON object with creation_date and payment_date keys (None/blank creation date: now; blank payment date: None; strptime('%Y-%m-%d') tried first) and PaymentEntrySerializer fields; complex_item key read after the create.",
         "response": "201 PaymentSerializer of the in-memory payment (a float amount quantized half-even).",
-        "errors": "400 {'msg': 'validation errors: <repr of serializer.errors>'}; 400 {'exception': 'document key not present'} after the create; 401; 403 registry / scoped session / athletes (no body) / tenant scope of a related field; 500 no association, form or non-dict body, missing date keys, meta amounts that are not floats, failing Payment.save(), rejected or unknown X-Group-Id, database rejections, and after the create a missing complex_item or failing party lookup; auto_paid_payment users (not ported).",
+        "errors": "400 {'msg': 'validation errors: <repr of serializer.errors>'}; 400 {'exception': 'document key not present'} after the earlier attachments and the create; 401; 403 registry / scoped session / athletes (no body) / tenant scope of a related field; 500 no association, form or non-dict body, missing date keys, meta amounts that are not floats, failing Payment.save(), rejected or unknown X-Group-Id, database rejections, and after the create a missing complex_item or failing party lookup; auto_paid_payment users (not ported). 500 invalid base64 after the save; attachment names outside the ported subset refused (500) before any write.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry bookeeping.payments.create.",
         "resource_scope": "The owner's live association (scoped_queryset(SportAssociation.objects).get(user=request.user)); payments through Payment.objects (live, X-Group-Id aware) and, in association-scoped sessions, the session's association. Parties: Instructor.objects, SupplierAndCustomers.objects (live, group aware), scoped Subscription.objects and Associate.objects.",
-        "side_effects": "Payment created (raw X-Group-Id, Payment.save() defaults; create entry indexed through the actor's association unless the body set one), then saved with user, association and party (update entry indexed through the changes' sport_association).",
+        "side_effects": "Payment created (raw X-Group-Id, Payment.save() defaults; create entry indexed through the actor's association unless the body set one), then saved with user, association and party (update entry indexed through the changes' sport_association). attachments_data files are stored: Document create (audited, indexed to the actor's association), default_storage.save of the decoded bytes under <timestamp>/<id>/<filename>, attachments.add; the response renders them.",
         "transaction": "Not atomic in Django (the create is kept when a later step fails); one transaction in Go, committed at the same points.",
         "execution_owner": "django"
       },
@@ -19303,25 +19283,25 @@
         "docs/architecture/go-migration/payment-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 124/124; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-red-r2/results.json",
-          "receipt_sha256": "3bbd44e66b407ec8bd1b0723276cf607fcdf877b7aa5f4453d75e242f6630a1b"
+          "result": "RED: Django 128/128; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay-red-r2/results.json",
+          "receipt_sha256": "75821d95f601a43c31663d22a4db03b9ba46468df28381ce374169bf824d1cfa"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 124/124 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and outbound print requests.",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-versioned-r2/results.json",
-          "receipt_sha256": "985e2aeffae7a33e2167bebf3cd07c3f58a83d892191202e5d29ef27a33687c5"
+          "result": "GREEN: 128/128 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, print requests and stored objects.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay-final-r1/results.json",
+          "receipt_sha256": "fb970462ccf8eb6155f2a3ae9f35e51771ddf416021b1d6eb763189155e60710"
         },
         {
-          "revision": "committing change with the invoice print sent without the Authorization header",
-          "result": "Mutation control: fails Go on payment-writes-update-invoiced-prints-invoice (print headers).",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-mutation-r3/results.json",
-          "receipt_sha256": "7df04015ad3ee72e0e620517806dd53d8a165edcb743bfa7344abe318626c09c"
+          "revision": "Document create indexed through the scope user instead of the actor",
+          "result": "Mutation control: fails Go on payment-writes-update-attachment-then-missing-keys (audit.count).",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay-mutation-r4/results.json",
+          "receipt_sha256": "3855b1702785d376828cfbc5c61fc8c799c80d59f69e0dde6138fee76b59a930"
         }
       ],
       "notes": [
-        "Implementing: add (serializer create, Payment.save() defaults, the view's second audited save with user, association and party; failures after the create keep it), update (partial serializer, parties, save hook, audited full-row save) and bulk add (the view's checks and defaults, atomic bulk_create without audit) on four transports. Refused with a 500 before any write: add for users with auto_paid_payment (invoice and PDF), update of invoiced payments (PDF), attachments with document content (storage), payment_id or user in the body, update form bodies and add multipart bodies with files, non-ASCII digits in strptime dates and non-canonical X-Group-Id spellings on add. API v2: the own payment_id on update and invoiced updates (eager invoice print) are ported."
+        "Implementing: Payment add, update and bulk add with HTTP parity. API v2: the update with the row's own payment_id, the invoiced update (eager invoice print) and attachments_data files on add and update (Document, S3 object, link) are ported. Refused (500) before any write: auto_paid_payment users, nested user writes, payment_id changes, update form bodies, attachment names outside the ported subset, non-ASCII-digit dates and non-canonical X-Group-Id on add."
       ]
     },
     {
@@ -19346,25 +19326,15 @@
         "BE_GO/internal/repository/payment_writes.go",
         "BE_GO/internal/service/payment_writes.go",
         "BE_GO/internal/handler/payment_writes.go",
-        "BE_GO/cmd/server/main.go",
-        "BE_GO/internal/service/invoice_sync_print.go"
+        "BE_GO/internal/service/documents_writes.go",
+        "BE_GO/internal/service/invoice_sync_print.go",
+        "BE_GO/cmd/server/documents_writes.go",
+        "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
-        "Existing identity resolution, permission registry, scoped-request guard, tenant scope and audit index",
-        "payment-archive save defaults and payment-state / course-subscriptions payment rendering",
-        "application_payment",
-        "application_paymentcategory",
-        "application_customaccounts",
-        "application_sportassociation",
-        "application_associate",
-        "application_subscription",
-        "application_instructor",
-        "application_supplierandcustomers",
-        "application_group",
-        "bakney_user",
-        "BE/application/printing_tasks.py",
-        "BE/instance/restore/task_base.py",
-        "BE/application/serializers/invoice_serializers.py"
+        "Existing identity resolution, scoped-request checks, permission registry and tenant scope",
+        "documents-writes S3 document storage (documentkey.UploadName, S3Key, pymime.GuessType, documentobjects.S3.Put), invoice-sync-print eager print runner",
+        "application_payment, application_payment_attachments, docmanager_document, application_invoice, application_paymentcategory, application_customaccounts, application_associate, application_subscription, application_instructor, application_supplierandcustomers"
       ],
       "contract": {
         "methods": [
@@ -19396,25 +19366,25 @@
         "docs/architecture/go-migration/payment-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 124/124; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-red-r2/results.json",
-          "receipt_sha256": "3bbd44e66b407ec8bd1b0723276cf607fcdf877b7aa5f4453d75e242f6630a1b"
+          "result": "RED: Django 128/128; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay-red-r2/results.json",
+          "receipt_sha256": "75821d95f601a43c31663d22a4db03b9ba46468df28381ce374169bf824d1cfa"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 124/124 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and outbound print requests.",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-versioned-r2/results.json",
-          "receipt_sha256": "985e2aeffae7a33e2167bebf3cd07c3f58a83d892191202e5d29ef27a33687c5"
+          "result": "GREEN: 128/128 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, print requests and stored objects.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay-final-r1/results.json",
+          "receipt_sha256": "fb970462ccf8eb6155f2a3ae9f35e51771ddf416021b1d6eb763189155e60710"
         },
         {
-          "revision": "committing change with the invoice print sent without the Authorization header",
-          "result": "Mutation control: fails Go on payment-writes-update-invoiced-prints-invoice (print headers).",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-mutation-r3/results.json",
-          "receipt_sha256": "7df04015ad3ee72e0e620517806dd53d8a165edcb743bfa7344abe318626c09c"
+          "revision": "Document create indexed through the scope user instead of the actor",
+          "result": "Mutation control: fails Go on payment-writes-update-attachment-then-missing-keys (audit.count).",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay-mutation-r4/results.json",
+          "receipt_sha256": "3855b1702785d376828cfbc5c61fc8c799c80d59f69e0dde6138fee76b59a930"
         }
       ],
       "notes": [
-        "Implementing: add (serializer create, Payment.save() defaults, the view's second audited save with user, association and party; failures after the create keep it), update (partial serializer, parties, save hook, audited full-row save) and bulk add (the view's checks and defaults, atomic bulk_create without audit) on four transports. Refused with a 500 before any write: add for users with auto_paid_payment (invoice and PDF), update of invoiced payments (PDF), attachments with document content (storage), payment_id or user in the body, update form bodies and add multipart bodies with files, non-ASCII digits in strptime dates and non-canonical X-Group-Id spellings on add. API v2: the own payment_id on update and invoiced updates (eager invoice print) are ported."
+        "Implementing: Payment add, update and bulk add with HTTP parity. API v2: the update with the row's own payment_id, the invoiced update (eager invoice print) and attachments_data files on add and update (Document, S3 object, link) are ported. Refused (500) before any write: auto_paid_payment users, nested user writes, payment_id changes, update form bodies, attachment names outside the ported subset, non-ASCII-digit dates and non-canonical X-Group-Id on add."
       ]
     },
     {
@@ -20064,7 +20034,7 @@
         "target": "payment_sign",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/payment_misc.go",
         "BE_GO/internal/dto/payment_misc.go",
@@ -20075,23 +20045,14 @@
         "BE_GO/internal/dto/payment_state.go",
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/service/payment_state.go",
+        "BE_GO/internal/service/email_render_routes.go",
+        "BE_GO/internal/service/invoice_sync_print.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
-        "BE/application/views/payment_views.py",
-        "BE/application/utils/payments_utils.py",
-        "BE/application/tasks.py",
-        "BE/application/utils/api_utils.py",
-        "BE/application/serializers/payment_serializers.py",
-        "BE/application/serializers/subscriptions_serializers.py",
-        "BE/application/models/payment_models.py",
-        "BE/application/models/invoices_models.py",
-        "BE/application/models/subscriptions_models.py",
-        "BE/application/models/user_models.py",
-        "BE/application/mixin.py",
-        "BE/application/impersonation_scope.py",
-        "BE/application/audit_resolvers.py",
-        "BE/application/permissions_registry.py"
+        "Existing identity resolution, scoped-request checks and permission registry",
+        "payment-writes Payment.objects.create port, payment-state Payment.save() defaults, invoice-sync-print eager print runner, email-render-routes renderer and send_mail_async producer",
+        "application_payment, application_signature, application_subscription, application_sportassociation, application_associate, application_customaccounts, application_paymentcategory, communications_communicationconfiguration, instance_instanceconfiguration"
       ],
       "contract": {
         "methods": [
@@ -20104,13 +20065,13 @@
           "/api/payment/sign"
         ],
         "request": "Body with exactly payment_id and signature {there_is_signature, data}.",
-        "response": "200 {'status': 'success'} without a signature to store.",
-        "errors": "400 {'msg': 'validation errors.'}; 400 UUID / 'payment not found' lists; 400 serializer errors; 403 scoped body reference; 500 non-dict body; 500 refusal for a signature to store.",
+        "response": "200 {'status': 'success'}.",
+        "errors": "401; 403 registry permission or scoped body reference; 405; 400 {'msg': 'validation errors.'}; 400 UUID / 'payment not found' lists; 400 serializer errors; 500 non-dict body.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "bookeeping.payments.update",
         "resource_scope": "scoped_queryset(Payment.objects) by id, group-aware.",
-        "side_effects": "None on ported paths.",
-        "transaction": "Read only on ported paths.",
+        "side_effects": "With a signature: Signature row (scope user, or the selected person for collaborators) with its audited create, payment signature and Payment.save() defaults with the audited update, then one GET CURRENT_HOST/document/compensation/<payment_id> with the request's Authorization.",
+        "transaction": "Signature and payment save committed together, then the eager print.",
         "execution_owner": "django"
       },
       "tests": [
@@ -20120,21 +20081,28 @@
         "TESTS/adapters/django/payment_misc_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/payment-misc.md",
         {
-          "command": "python tools/go-migration/family.py run payment-misc --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/payment-misc-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "0e8e811aa7bfc312e4192a4971a7731a778dd467062726200f5daecbbffa2398",
-          "scope": "HTTP family payment-misc: 85/85 cases on native Django and native Go, 85/85 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 90/90; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-red-r1/results.json",
+          "receipt_sha256": "78b96dfd95f89dc3d299845cdb33f3be6bbd36e47781b8cef35230aaf38240bd"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 90/90 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, Celery messages and print requests.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-final-r1/results.json",
+          "receipt_sha256": "0e1841db62a836a833bcaf342d0d7286510ff20c274034096c4aa2972f5c4689"
+        },
+        {
+          "revision": "Signature user always the scope user (collaborator's selected person ignored)",
+          "result": "Mutation control: fails Go on payment-misc-sign-collaborator-stores-signature-default-category (state.signature).",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-mutation-r1/results.json",
+          "receipt_sha256": "924711bdfe3014cd74989ddbd1b0132c3894813cbbe0c0096235c7bcda61f96a"
         }
       ],
       "notes": [
-        "Implementing: partial quotes simulation and apply (owner-user quotes; other users' quotes send e-mail: refused with rollback), payment sign without a signature to store (storing one renders a PDF: refused), approve of invoiced payments without the invoice task (payment-state covers the other approve paths). See payment-misc.md.",
-        "Implementing evidence: docs/architecture/go-migration/payment-misc.md",
-        "Implementing evidence: RED: Django 85/85; Go 404 on the first case. (quality-reports/go-migration/payment-misc-http-red-r4/results.json)",
-        "Implementing evidence: GREEN: 85/85 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment and audit effects. (quality-reports/go-migration/payment-misc-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on payment-misc-simulation-march (quotes_to_emit length). (quality-reports/go-migration/payment-misc-http-mutation-r1/results.json)"
+        "Implementing: Partial quotes simulation/apply, payment sign and invoiced approve with HTTP parity. API v2: apply quotes for a member's own account (fee_assigned.html rendered in the request language, send_mail_async published after the commit) and sign with a signature to store (Signature create, Payment.save(), print_document_compensation.apply to CURRENT_HOST) are ported. Refused (500) before any write: apply when the association has a CommunicationConfiguration (Timer-thread SMTP), plan values outside the ported conversions, non-canonical X-Group-Id on apply."
       ]
     },
     {
@@ -20152,7 +20120,7 @@
         "target": "payment_simulation_partial_quotes",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/payment_misc.go",
         "BE_GO/internal/dto/payment_misc.go",
@@ -20163,23 +20131,14 @@
         "BE_GO/internal/dto/payment_state.go",
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/service/payment_state.go",
+        "BE_GO/internal/service/email_render_routes.go",
+        "BE_GO/internal/service/invoice_sync_print.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
-        "BE/application/views/payment_views.py",
-        "BE/application/utils/payments_utils.py",
-        "BE/application/tasks.py",
-        "BE/application/utils/api_utils.py",
-        "BE/application/serializers/payment_serializers.py",
-        "BE/application/serializers/subscriptions_serializers.py",
-        "BE/application/models/payment_models.py",
-        "BE/application/models/invoices_models.py",
-        "BE/application/models/subscriptions_models.py",
-        "BE/application/models/user_models.py",
-        "BE/application/mixin.py",
-        "BE/application/impersonation_scope.py",
-        "BE/application/audit_resolvers.py",
-        "BE/application/permissions_registry.py"
+        "Existing identity resolution, scoped-request checks and permission registry",
+        "payment-writes Payment.objects.create port, payment-state Payment.save() defaults, invoice-sync-print eager print runner, email-render-routes renderer and send_mail_async producer",
+        "application_payment, application_signature, application_subscription, application_sportassociation, application_associate, application_customaccounts, application_paymentcategory, communications_communicationconfiguration, instance_instanceconfiguration"
       ],
       "contract": {
         "methods": [
@@ -20193,7 +20152,7 @@
         ],
         "request": "Query date (last value) parsed with strptime('%Y-%m-%d'); X-Group-Id.",
         "response": "200 {subscription_plans_considered: [...], quotes_to_emit: [...]} (unordered quotes; exceptions inside the try keep what was collected).",
-        "errors": "403 athletes ('User is not a sport association'); 500 owners without a live association.",
+        "errors": "401; 403 administrator without impersonation, registry permission, athletes ('User is not a sport association'); 405; 500 owners without a live association.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "bookeeping.payments.read",
         "resource_scope": "request.user.sport_association; subscriptions and quote checks group-aware.",
@@ -20208,21 +20167,28 @@
         "TESTS/adapters/django/payment_misc_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/payment-misc.md",
         {
-          "command": "python tools/go-migration/family.py run payment-misc --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/payment-misc-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "0e8e811aa7bfc312e4192a4971a7731a778dd467062726200f5daecbbffa2398",
-          "scope": "HTTP family payment-misc: 85/85 cases on native Django and native Go, 85/85 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 90/90; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-red-r1/results.json",
+          "receipt_sha256": "78b96dfd95f89dc3d299845cdb33f3be6bbd36e47781b8cef35230aaf38240bd"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 90/90 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, Celery messages and print requests.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-final-r1/results.json",
+          "receipt_sha256": "0e1841db62a836a833bcaf342d0d7286510ff20c274034096c4aa2972f5c4689"
+        },
+        {
+          "revision": "Signature user always the scope user (collaborator's selected person ignored)",
+          "result": "Mutation control: fails Go on payment-misc-sign-collaborator-stores-signature-default-category (state.signature).",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-mutation-r1/results.json",
+          "receipt_sha256": "924711bdfe3014cd74989ddbd1b0132c3894813cbbe0c0096235c7bcda61f96a"
         }
       ],
       "notes": [
-        "Implementing: partial quotes simulation and apply (owner-user quotes; other users' quotes send e-mail: refused with rollback), payment sign without a signature to store (storing one renders a PDF: refused), approve of invoiced payments without the invoice task (payment-state covers the other approve paths). See payment-misc.md.",
-        "Implementing evidence: docs/architecture/go-migration/payment-misc.md",
-        "Implementing evidence: RED: Django 85/85; Go 404 on the first case. (quality-reports/go-migration/payment-misc-http-red-r4/results.json)",
-        "Implementing evidence: GREEN: 85/85 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment and audit effects. (quality-reports/go-migration/payment-misc-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on payment-misc-simulation-march (quotes_to_emit length). (quality-reports/go-migration/payment-misc-http-mutation-r1/results.json)"
+        "Implementing: Partial quotes simulation/apply, payment sign and invoiced approve with HTTP parity. API v2: apply quotes for a member's own account (fee_assigned.html rendered in the request language, send_mail_async published after the commit) and sign with a signature to store (Signature create, Payment.save(), print_document_compensation.apply to CURRENT_HOST) are ported. Refused (500) before any write: apply when the association has a CommunicationConfiguration (Timer-thread SMTP), plan values outside the ported conversions, non-canonical X-Group-Id on apply."
       ]
     },
     {
@@ -20240,7 +20206,7 @@
         "target": "payment_simulation_partial_quotes_apply",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/payment_misc.go",
         "BE_GO/internal/dto/payment_misc.go",
@@ -20251,23 +20217,14 @@
         "BE_GO/internal/dto/payment_state.go",
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/service/payment_state.go",
+        "BE_GO/internal/service/email_render_routes.go",
+        "BE_GO/internal/service/invoice_sync_print.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
-        "BE/application/views/payment_views.py",
-        "BE/application/utils/payments_utils.py",
-        "BE/application/tasks.py",
-        "BE/application/utils/api_utils.py",
-        "BE/application/serializers/payment_serializers.py",
-        "BE/application/serializers/subscriptions_serializers.py",
-        "BE/application/models/payment_models.py",
-        "BE/application/models/invoices_models.py",
-        "BE/application/models/subscriptions_models.py",
-        "BE/application/models/user_models.py",
-        "BE/application/mixin.py",
-        "BE/application/impersonation_scope.py",
-        "BE/application/audit_resolvers.py",
-        "BE/application/permissions_registry.py"
+        "Existing identity resolution, scoped-request checks and permission registry",
+        "payment-writes Payment.objects.create port, payment-state Payment.save() defaults, invoice-sync-print eager print runner, email-render-routes renderer and send_mail_async producer",
+        "application_payment, application_signature, application_subscription, application_sportassociation, application_associate, application_customaccounts, application_paymentcategory, communications_communicationconfiguration, instance_instanceconfiguration"
       ],
       "contract": {
         "methods": [
@@ -20281,12 +20238,12 @@
         ],
         "request": "Query date; X-Group-Id (stored on created payments).",
         "response": "200 {'msg': 'Partial quotes applied.'}",
-        "errors": "403 athletes; 500 owners without association; 500 refusal for quotes that would send e-mail.",
+        "errors": "401; 403 administrator without impersonation, registry permission, athletes; 405; 500 owners without association; 500 refusal when the association has a CommunicationConfiguration and a quote would e-mail a member.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "bookeeping.payments.update",
         "resource_scope": "request.user.sport_association.",
-        "side_effects": "Creates subject-1 payments (default bank account, save defaults) with audited create entries.",
-        "transaction": "Django autocommits each create; Go commits the creations up to a Python exception and rolls back refusals.",
+        "side_effects": "Creates subject-1 payments (default bank account, save defaults) with audited create entries; for a member's own account renders email/payment/fee_assigned.html and publishes core.tasks.send_mail_async.",
+        "transaction": "Django autocommits each create; Go commits the creations up to a Python exception, then publishes the e-mails in order; refusals roll back.",
         "execution_owner": "django"
       },
       "tests": [
@@ -20296,21 +20253,28 @@
         "TESTS/adapters/django/payment_misc_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/payment-misc.md",
         {
-          "command": "python tools/go-migration/family.py run payment-misc --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/payment-misc-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "0e8e811aa7bfc312e4192a4971a7731a778dd467062726200f5daecbbffa2398",
-          "scope": "HTTP family payment-misc: 85/85 cases on native Django and native Go, 85/85 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 90/90; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-red-r1/results.json",
+          "receipt_sha256": "78b96dfd95f89dc3d299845cdb33f3be6bbd36e47781b8cef35230aaf38240bd"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 90/90 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, Celery messages and print requests.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-final-r1/results.json",
+          "receipt_sha256": "0e1841db62a836a833bcaf342d0d7286510ff20c274034096c4aa2972f5c4689"
+        },
+        {
+          "revision": "Signature user always the scope user (collaborator's selected person ignored)",
+          "result": "Mutation control: fails Go on payment-misc-sign-collaborator-stores-signature-default-category (state.signature).",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-mutation-r1/results.json",
+          "receipt_sha256": "924711bdfe3014cd74989ddbd1b0132c3894813cbbe0c0096235c7bcda61f96a"
         }
       ],
       "notes": [
-        "Implementing: partial quotes simulation and apply (owner-user quotes; other users' quotes send e-mail: refused with rollback), payment sign without a signature to store (storing one renders a PDF: refused), approve of invoiced payments without the invoice task (payment-state covers the other approve paths). See payment-misc.md.",
-        "Implementing evidence: docs/architecture/go-migration/payment-misc.md",
-        "Implementing evidence: RED: Django 85/85; Go 404 on the first case. (quality-reports/go-migration/payment-misc-http-red-r4/results.json)",
-        "Implementing evidence: GREEN: 85/85 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment and audit effects. (quality-reports/go-migration/payment-misc-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on payment-misc-simulation-march (quotes_to_emit length). (quality-reports/go-migration/payment-misc-http-mutation-r1/results.json)"
+        "Implementing: Partial quotes simulation/apply, payment sign and invoiced approve with HTTP parity. API v2: apply quotes for a member's own account (fee_assigned.html rendered in the request language, send_mail_async published after the commit) and sign with a signature to store (Signature create, Payment.save(), print_document_compensation.apply to CURRENT_HOST) are ported. Refused (500) before any write: apply when the association has a CommunicationConfiguration (Timer-thread SMTP), plan values outside the ported conversions, non-canonical X-Group-Id on apply."
       ]
     },
     {
