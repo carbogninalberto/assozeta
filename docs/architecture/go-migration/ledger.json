@@ -6779,7 +6779,7 @@
         "target": "full_events_calendar_export",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/misc_routes.go",
@@ -6788,7 +6788,10 @@
         "BE_GO/internal/service/calendar_export_test.go",
         "BE_GO/internal/service/communications_post.go",
         "BE_GO/internal/service/subscription_card.go",
-        "BE_GO/internal/handler/misc_routes.go"
+        "BE_GO/internal/handler/misc_routes.go",
+        "BE_GO/internal/service/bakney_public_links.go",
+        "BE_GO/internal/repository/bakney_sso.go",
+        "BE_GO/cmd/server/bakney_sso.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and scoped-request checks",
@@ -6802,7 +6805,10 @@
         "application_sportassociationmembershipcardconfiguration",
         "instance_bakneypairing",
         "auditlog_logentry",
-        "application_auditlogindex"
+        "application_auditlogindex",
+        "BE_GO/internal/service/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso_protocol.go",
+        "BE_GO/internal/dto/course_calendar.go"
       ],
       "contract": {
         "methods": [
@@ -6831,21 +6837,28 @@
         "TESTS/adapters/django/misc_routes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/misc-routes.md",
         {
-          "command": "python tools/go-migration/family.py run misc-routes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/misc-routes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "824b9ffe378cc926655e0aebf9a13b0b1693dc4da0f62d1aaa9c3b85b5c042fb",
-          "scope": "HTTP family misc-routes: 106/106 cases on native Django and native Go, 106/106 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 128/128; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/misc-routes-http-v2misc3-red-r1/results.json",
+          "receipt_sha256": "f3443aae3af0e243b7c68773504d5ebe06fad96c1a1a405094d80392886970ca"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 128/128 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and paired-server requests.",
+          "artifact": "quality-reports/go-migration/misc-routes-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "72e53864d80325e755e0a9dc8e9ee248603d7f45413c624b12d15863705fd5be"
+        },
+        {
+          "revision": "accepting a paired-server expiry without an offset",
+          "result": "Mutation control: fails Go on misc-routes-card-paired-server-naive-expiry (response.status).",
+          "artifact": "quality-reports/go-migration/misc-routes-http-v2misc3-mutation-r2/results.json",
+          "receipt_sha256": "478a864bced6f9be0817a8570129c84997f8d2cf8ac385f92381fcb852cb6486"
         }
       ],
       "notes": [
-        "Implementing: calendar/events/export renders the association's registries as icalendar 6.1.1 does (byte parity, request-time DTSTAMP); communications/send/post creates the audited INSIDE_APP Message and its MessageTransaction; subscription/<uid>/card reads the member card by token (expired tokens deleted with audit, default card configuration created with audit) and mints three-day tokens. Refused with 500 before any write: non-zero UTC offsets and fromisoformat forms outside the ported subset, float/list/object event texts, float post messages, and unknown canonical card tokens while a self-hosted pairing is active. See docs/architecture/go-migration/misc-routes.md.",
-        "Implementing evidence: docs/architecture/go-migration/misc-routes.md",
-        "Implementing evidence: RED: Django 106/106; Go 404 on the first case. (quality-reports/go-migration/misc-routes-http-native-r9/results.json)",
-        "Implementing evidence: GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact Message, MessageTransaction, card configuration, SubscriptionToken, auditlog and index effects. (quality-reports/go-migration/misc-routes-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on misc-routes-export-owner (response.body[17]). (quality-reports/go-migration/misc-routes-http-mutation-r1/results.json)"
+        "Implementing: Implementing: calendar/events/export renders the association's registries as icalendar 6.1.1 does (byte parity, request-time DTSTAMP); communications/send/post creates the audited INSIDE_APP Message and its MessageTransaction; subscription/<uid>/card reads the member card by token (expired tokens deleted with audit, default card configuration created with audit) and mints three-day tokens. Refused with 500 before any write: non-zero UTC offsets and fromisoformat forms outside the ported subset, float/list/object event texts, float post messages, and a paired-server expiry outside years 1..9999. API v2 (v2-misc-3): an unknown canonical card token while a self-hosted pairing is pending or paired is asked of the paired server (instance.sso.public_links.source_token: pairing lock, binding check, POST pairing/v1/public-token, answer validated against the binding; the capability is not stored). See docs/architecture/go-migration/misc-routes.md."
       ]
     },
     {
@@ -21136,7 +21149,7 @@
         "target": "AssociateSubscriptionViewSet.as_view({'get': 'list'})",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/personas_writes.go",
         "BE_GO/internal/dto/personas_writes.go",
@@ -21151,10 +21164,15 @@
         "BE_GO/internal/handler/personas_reads.go",
         "BE_GO/internal/repository/personas_reads.go",
         "BE_GO/internal/service/personas_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/personas_picture.go",
+        "BE_GO/cmd/server/documents_writes.go"
       ],
       "dependencies": [
-        "personas-reads"
+        "personas-reads",
+        "BE_GO/internal/dto/python_base64.go",
+        "BE_GO/pkg/storage/documentobjects/acl.go",
+        "BE_GO/pkg/storage/documentkey/stored.go"
       ],
       "contract": {
         "methods": [
@@ -21185,21 +21203,28 @@
         "TESTS/adapters/django/personas_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/personas-writes.md",
         {
-          "command": "python tools/go-migration/family.py run personas-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/personas-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "af73edc458d5e3e8b6d5fc2791ea18354416e263fd9cfef248d7cc16459dea95",
-          "scope": "HTTP family personas-writes: 168/168 cases on native Django and native Go, 168/168 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 188/188; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-red-r4/results.json",
+          "receipt_sha256": "501245ac2a777bf37905214dd0cb16f6de71f7954cbf111fc3faba74a7bd7e0d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 188/188 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit, index and storage effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "22d687222bab569ddfc0a89e0ea5060cd5b343923f5bc02d573a948ffbabc629"
+        },
+        {
+          "revision": "sending the object ACL request for the stored name without AWS_LOCATION",
+          "result": "Mutation control: fails Go on personas-writes-add-picture (storage.requests).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-mutation-r3/results.json",
+          "receipt_sha256": "12bb91f148a547100e82f13f7c84f3434edca0241b70338aed8760697b1edd22"
         }
       ],
       "notes": [
-        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. Refused with a 500 before any write: picture_path values containing base64 (object storage upload), non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it.",
-        "Implementing evidence: docs/architecture/go-migration/personas-writes.md",
-        "Implementing evidence: RED: Django 168/168; Go 404 on the first case. (quality-reports/go-migration/personas-writes-http-native-red/results.json)",
-        "Implementing evidence: GREEN: 168/168 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit and index effects. (quality-reports/go-migration/personas-writes-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on personas-writes-recover-owner (CAUGHT). (quality-reports/go-migration/personas-writes-http-mutation-r1/results.json)"
+        "Implementing: Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2 (v2-misc-3): the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma, default storage save as associates/<body associate_id>/picture_<timestamp>.jpg before the field validation, put_object_acl public-read, the CDN URL stored; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: uploads with a body associate_id outside [A-Za-z0-9_-]{1,64}, a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
       ]
     },
     {
@@ -21217,7 +21242,7 @@
         "target": "AssociateViewSet.as_view({'delete': 'delete'})",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/personas_writes.go",
         "BE_GO/internal/dto/personas_writes.go",
@@ -21232,10 +21257,15 @@
         "BE_GO/internal/handler/personas_reads.go",
         "BE_GO/internal/repository/personas_reads.go",
         "BE_GO/internal/service/personas_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/personas_picture.go",
+        "BE_GO/cmd/server/documents_writes.go"
       ],
       "dependencies": [
-        "personas-reads"
+        "personas-reads",
+        "BE_GO/internal/dto/python_base64.go",
+        "BE_GO/pkg/storage/documentobjects/acl.go",
+        "BE_GO/pkg/storage/documentkey/stored.go"
       ],
       "contract": {
         "methods": [
@@ -21264,21 +21294,28 @@
         "TESTS/adapters/django/personas_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/personas-writes.md",
         {
-          "command": "python tools/go-migration/family.py run personas-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/personas-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "af73edc458d5e3e8b6d5fc2791ea18354416e263fd9cfef248d7cc16459dea95",
-          "scope": "HTTP family personas-writes: 168/168 cases on native Django and native Go, 168/168 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 188/188; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-red-r4/results.json",
+          "receipt_sha256": "501245ac2a777bf37905214dd0cb16f6de71f7954cbf111fc3faba74a7bd7e0d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 188/188 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit, index and storage effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "22d687222bab569ddfc0a89e0ea5060cd5b343923f5bc02d573a948ffbabc629"
+        },
+        {
+          "revision": "sending the object ACL request for the stored name without AWS_LOCATION",
+          "result": "Mutation control: fails Go on personas-writes-add-picture (storage.requests).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-mutation-r3/results.json",
+          "receipt_sha256": "12bb91f148a547100e82f13f7c84f3434edca0241b70338aed8760697b1edd22"
         }
       ],
       "notes": [
-        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. Refused with a 500 before any write: picture_path values containing base64 (object storage upload), non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it.",
-        "Implementing evidence: docs/architecture/go-migration/personas-writes.md",
-        "Implementing evidence: RED: Django 168/168; Go 404 on the first case. (quality-reports/go-migration/personas-writes-http-native-red/results.json)",
-        "Implementing evidence: GREEN: 168/168 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit and index effects. (quality-reports/go-migration/personas-writes-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on personas-writes-recover-owner (CAUGHT). (quality-reports/go-migration/personas-writes-http-mutation-r1/results.json)"
+        "Implementing: Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2 (v2-misc-3): the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma, default storage save as associates/<body associate_id>/picture_<timestamp>.jpg before the field validation, put_object_acl public-read, the CDN URL stored; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: uploads with a body associate_id outside [A-Za-z0-9_-]{1,64}, a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
       ]
     },
     {
@@ -21371,7 +21408,7 @@
         "target": "AssociateViewSet.as_view({'post': 'recover'})",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/personas_writes.go",
         "BE_GO/internal/dto/personas_writes.go",
@@ -21386,10 +21423,15 @@
         "BE_GO/internal/handler/personas_reads.go",
         "BE_GO/internal/repository/personas_reads.go",
         "BE_GO/internal/service/personas_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/personas_picture.go",
+        "BE_GO/cmd/server/documents_writes.go"
       ],
       "dependencies": [
-        "personas-reads"
+        "personas-reads",
+        "BE_GO/internal/dto/python_base64.go",
+        "BE_GO/pkg/storage/documentobjects/acl.go",
+        "BE_GO/pkg/storage/documentkey/stored.go"
       ],
       "contract": {
         "methods": [
@@ -21419,21 +21461,28 @@
         "TESTS/adapters/django/personas_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/personas-writes.md",
         {
-          "command": "python tools/go-migration/family.py run personas-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/personas-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "af73edc458d5e3e8b6d5fc2791ea18354416e263fd9cfef248d7cc16459dea95",
-          "scope": "HTTP family personas-writes: 168/168 cases on native Django and native Go, 168/168 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 188/188; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-red-r4/results.json",
+          "receipt_sha256": "501245ac2a777bf37905214dd0cb16f6de71f7954cbf111fc3faba74a7bd7e0d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 188/188 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit, index and storage effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "22d687222bab569ddfc0a89e0ea5060cd5b343923f5bc02d573a948ffbabc629"
+        },
+        {
+          "revision": "sending the object ACL request for the stored name without AWS_LOCATION",
+          "result": "Mutation control: fails Go on personas-writes-add-picture (storage.requests).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-mutation-r3/results.json",
+          "receipt_sha256": "12bb91f148a547100e82f13f7c84f3434edca0241b70338aed8760697b1edd22"
         }
       ],
       "notes": [
-        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. Refused with a 500 before any write: picture_path values containing base64 (object storage upload), non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it.",
-        "Implementing evidence: docs/architecture/go-migration/personas-writes.md",
-        "Implementing evidence: RED: Django 168/168; Go 404 on the first case. (quality-reports/go-migration/personas-writes-http-native-red/results.json)",
-        "Implementing evidence: GREEN: 168/168 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit and index effects. (quality-reports/go-migration/personas-writes-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on personas-writes-recover-owner (CAUGHT). (quality-reports/go-migration/personas-writes-http-mutation-r1/results.json)"
+        "Implementing: Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2 (v2-misc-3): the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma, default storage save as associates/<body associate_id>/picture_<timestamp>.jpg before the field validation, put_object_acl public-read, the CDN URL stored; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: uploads with a body associate_id outside [A-Za-z0-9_-]{1,64}, a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
       ]
     },
     {
@@ -21451,7 +21500,7 @@
         "target": "AssociateViewSet.as_view({'patch': 'update'})",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/personas_writes.go",
         "BE_GO/internal/dto/personas_writes.go",
@@ -21466,10 +21515,15 @@
         "BE_GO/internal/handler/personas_reads.go",
         "BE_GO/internal/repository/personas_reads.go",
         "BE_GO/internal/service/personas_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/personas_picture.go",
+        "BE_GO/cmd/server/documents_writes.go"
       ],
       "dependencies": [
-        "personas-reads"
+        "personas-reads",
+        "BE_GO/internal/dto/python_base64.go",
+        "BE_GO/pkg/storage/documentobjects/acl.go",
+        "BE_GO/pkg/storage/documentkey/stored.go"
       ],
       "contract": {
         "methods": [
@@ -21484,11 +21538,11 @@
         ],
         "request": "Path pk; JSON or form body with partial AssociateSerializer fields and optional tutors_data (a missing one deletes every relation); X-Group-Id and get_queryset query parameters.",
         "response": "200 AssociateSerializer of the row re-read through get_object(); DELETE 204 (soft delete).",
-        "errors": "404 Not found. / No Associate matches the given query. (before the body; and after the writes when the row left the filters); 400 JSON parse error; 400 serializer.errors; 403 User is not a sport association; 403 generic tenant_scope denial; 500 page for non-dict bodies, a duplicate live tax code (its audit entry stays), malformed tutors_data and a second primary relation after the save.",
+        "errors": "404 Not found. / No Associate matches the given query. (before the body; and after the writes when the row left the filters); 400 JSON parse error; 400 serializer.errors; 400 {'picture_path': 'Error processing image: ...'} for an undecodable picture or a refused object ACL; 403 User is not a sport association; 403 generic tenant_scope denial; 500 page for non-dict bodies, a duplicate live tax code (its audit entry stays), malformed tutors_data and a second primary relation after the save.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.personas.update.",
         "resource_scope": "get_queryset: the association's live, group-aware associates with the query filters.",
-        "side_effects": "Saves every field of the associate (auditlog entry with the changed fields), tutor writes as for add.",
+        "side_effects": "Uploads a base64 picture_path to the default storage (HeadObject, PutObject image/jpeg, PutObjectAcl public-read) before the field validation and stores its CDN URL; saves every field of the associate (update entry with the changed fields), creates or partially updates tutors, creates/updates/deletes tutor relations (a missing tutors_data deletes them all), promotes the first relation without a primary; auditlog entries with AuditLogIndex rows.",
         "transaction": "Django is not atomic; Go commits saved writes before answering a later exception.",
         "execution_owner": "django"
       },
@@ -21499,21 +21553,28 @@
         "TESTS/adapters/django/personas_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/personas-writes.md",
         {
-          "command": "python tools/go-migration/family.py run personas-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/personas-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "af73edc458d5e3e8b6d5fc2791ea18354416e263fd9cfef248d7cc16459dea95",
-          "scope": "HTTP family personas-writes: 168/168 cases on native Django and native Go, 168/168 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 188/188; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-red-r4/results.json",
+          "receipt_sha256": "501245ac2a777bf37905214dd0cb16f6de71f7954cbf111fc3faba74a7bd7e0d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 188/188 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit, index and storage effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "22d687222bab569ddfc0a89e0ea5060cd5b343923f5bc02d573a948ffbabc629"
+        },
+        {
+          "revision": "sending the object ACL request for the stored name without AWS_LOCATION",
+          "result": "Mutation control: fails Go on personas-writes-add-picture (storage.requests).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-mutation-r3/results.json",
+          "receipt_sha256": "12bb91f148a547100e82f13f7c84f3434edca0241b70338aed8760697b1edd22"
         }
       ],
       "notes": [
-        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. Refused with a 500 before any write: picture_path values containing base64 (object storage upload), non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it.",
-        "Implementing evidence: docs/architecture/go-migration/personas-writes.md",
-        "Implementing evidence: RED: Django 168/168; Go 404 on the first case. (quality-reports/go-migration/personas-writes-http-native-red/results.json)",
-        "Implementing evidence: GREEN: 168/168 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit and index effects. (quality-reports/go-migration/personas-writes-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on personas-writes-recover-owner (CAUGHT). (quality-reports/go-migration/personas-writes-http-mutation-r1/results.json)"
+        "Implementing: Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2 (v2-misc-3): the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma, default storage save as associates/<body associate_id>/picture_<timestamp>.jpg before the field validation, put_object_acl public-read, the CDN URL stored; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: uploads with a body associate_id outside [A-Za-z0-9_-]{1,64}, a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
       ]
     },
     {
@@ -21531,7 +21592,7 @@
         "target": "AssociateViewSet.as_view({'post': 'add'})",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/personas_writes.go",
         "BE_GO/internal/dto/personas_writes.go",
@@ -21546,10 +21607,15 @@
         "BE_GO/internal/handler/personas_reads.go",
         "BE_GO/internal/repository/personas_reads.go",
         "BE_GO/internal/service/personas_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/personas_picture.go",
+        "BE_GO/cmd/server/documents_writes.go"
       ],
       "dependencies": [
-        "personas-reads"
+        "personas-reads",
+        "BE_GO/internal/dto/python_base64.go",
+        "BE_GO/pkg/storage/documentobjects/acl.go",
+        "BE_GO/pkg/storage/documentkey/stored.go"
       ],
       "contract": {
         "methods": [
@@ -21562,13 +21628,13 @@
           "/api/v2/personas/add",
           "/api/personas/add"
         ],
-        "request": "JSON object body: AssociateSerializer fields (born_date DD/MM/YYYY, user/sport_association/group/family primary keys) and optional tutors_data list of {tutor: BasicAssociateSerializer fields, is_primary}; X-Group-Id optional.",
+        "request": "JSON object body: AssociateSerializer fields (born_date DD/MM/YYYY, user/sport_association/group/family primary keys; picture_path as a URL or a base64 data URL to upload, the body's associate_id naming its folder) and optional tutors_data list of {tutor: BasicAssociateSerializer fields, is_primary}; X-Group-Id optional.",
         "response": "201 AssociateSerializer of the created associate; OPTIONS with actions.POST metadata.",
-        "errors": "400 JSON parse error (after the association check); 400 serializer.errors (also a tutor's errors after the associate was saved); 403 User is not a sport association; 403 generic tenant_scope denial; 500 page for form or non-dict bodies, a duplicate live tax code, malformed tutors_data after the save, a second primary relation; DELETE: 500 (no pk), athletes 403.",
+        "errors": "400 JSON parse error (after the association check); 400 serializer.errors (also a tutor's errors after the associate was saved); 400 {'picture_path': 'Error processing image: ...'} for an undecodable picture or a refused object ACL; 403 User is not a sport association; 403 generic tenant_scope denial; 500 page for form or non-dict bodies, a duplicate live tax code, malformed tutors_data after the save, a second primary relation; DELETE: 500 (no pk), athletes 403.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.personas.create.",
         "resource_scope": "request.user.sport_association; related fields through tenant_scope; existing tutors by id through Associate.objects (live, group-aware).",
-        "side_effects": "Creates the Associate (user=request.user, the association, raw X-Group-Id), creates or partially updates tutors, creates/updates/deletes tutor relations, promotes the first relation without a primary; auditlog entries with AuditLogIndex rows.",
+        "side_effects": "Uploads a base64 picture_path to the default storage (HeadObject, PutObject image/jpeg, PutObjectAcl public-read) before the field validation and stores its CDN URL; creates the Associate (user=request.user, the association, raw X-Group-Id), creates or partially updates tutors, creates/updates/deletes tutor relations, promotes the first relation without a primary; auditlog entries with AuditLogIndex rows.",
         "transaction": "Django is not atomic (writes before a later exception stay); Go runs one transaction and commits saved writes before answering a later exception.",
         "execution_owner": "django"
       },
@@ -21579,21 +21645,28 @@
         "TESTS/adapters/django/personas_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/personas-writes.md",
         {
-          "command": "python tools/go-migration/family.py run personas-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/personas-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "af73edc458d5e3e8b6d5fc2791ea18354416e263fd9cfef248d7cc16459dea95",
-          "scope": "HTTP family personas-writes: 168/168 cases on native Django and native Go, 168/168 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 188/188; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-red-r4/results.json",
+          "receipt_sha256": "501245ac2a777bf37905214dd0cb16f6de71f7954cbf111fc3faba74a7bd7e0d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 188/188 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit, index and storage effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "22d687222bab569ddfc0a89e0ea5060cd5b343923f5bc02d573a948ffbabc629"
+        },
+        {
+          "revision": "sending the object ACL request for the stored name without AWS_LOCATION",
+          "result": "Mutation control: fails Go on personas-writes-add-picture (storage.requests).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-mutation-r3/results.json",
+          "receipt_sha256": "12bb91f148a547100e82f13f7c84f3434edca0241b70338aed8760697b1edd22"
         }
       ],
       "notes": [
-        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. Refused with a 500 before any write: picture_path values containing base64 (object storage upload), non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it.",
-        "Implementing evidence: docs/architecture/go-migration/personas-writes.md",
-        "Implementing evidence: RED: Django 168/168; Go 404 on the first case. (quality-reports/go-migration/personas-writes-http-native-red/results.json)",
-        "Implementing evidence: GREEN: 168/168 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit and index effects. (quality-reports/go-migration/personas-writes-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on personas-writes-recover-owner (CAUGHT). (quality-reports/go-migration/personas-writes-http-mutation-r1/results.json)"
+        "Implementing: Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2 (v2-misc-3): the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma, default storage save as associates/<body associate_id>/picture_<timestamp>.jpg before the field validation, put_object_acl public-read, the CDN URL stored; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: uploads with a body associate_id outside [A-Za-z0-9_-]{1,64}, a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
       ]
     },
     {
@@ -21836,7 +21909,7 @@
         "target": "AssociateViewSet.as_view({'delete': 'bulk_delete'})",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/personas_writes.go",
         "BE_GO/internal/dto/personas_writes.go",
@@ -21851,10 +21924,15 @@
         "BE_GO/internal/handler/personas_reads.go",
         "BE_GO/internal/repository/personas_reads.go",
         "BE_GO/internal/service/personas_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/personas_picture.go",
+        "BE_GO/cmd/server/documents_writes.go"
       ],
       "dependencies": [
-        "personas-reads"
+        "personas-reads",
+        "BE_GO/internal/dto/python_base64.go",
+        "BE_GO/pkg/storage/documentobjects/acl.go",
+        "BE_GO/pkg/storage/documentkey/stored.go"
       ],
       "contract": {
         "methods": [
@@ -21883,21 +21961,28 @@
         "TESTS/adapters/django/personas_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/personas-writes.md",
         {
-          "command": "python tools/go-migration/family.py run personas-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/personas-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "af73edc458d5e3e8b6d5fc2791ea18354416e263fd9cfef248d7cc16459dea95",
-          "scope": "HTTP family personas-writes: 168/168 cases on native Django and native Go, 168/168 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 188/188; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-red-r4/results.json",
+          "receipt_sha256": "501245ac2a777bf37905214dd0cb16f6de71f7954cbf111fc3faba74a7bd7e0d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 188/188 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit, index and storage effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "22d687222bab569ddfc0a89e0ea5060cd5b343923f5bc02d573a948ffbabc629"
+        },
+        {
+          "revision": "sending the object ACL request for the stored name without AWS_LOCATION",
+          "result": "Mutation control: fails Go on personas-writes-add-picture (storage.requests).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-mutation-r3/results.json",
+          "receipt_sha256": "12bb91f148a547100e82f13f7c84f3434edca0241b70338aed8760697b1edd22"
         }
       ],
       "notes": [
-        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. Refused with a 500 before any write: picture_path values containing base64 (object storage upload), non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it.",
-        "Implementing evidence: docs/architecture/go-migration/personas-writes.md",
-        "Implementing evidence: RED: Django 168/168; Go 404 on the first case. (quality-reports/go-migration/personas-writes-http-native-red/results.json)",
-        "Implementing evidence: GREEN: 168/168 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit and index effects. (quality-reports/go-migration/personas-writes-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on personas-writes-recover-owner (CAUGHT). (quality-reports/go-migration/personas-writes-http-mutation-r1/results.json)"
+        "Implementing: Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2 (v2-misc-3): the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma, default storage save as associates/<body associate_id>/picture_<timestamp>.jpg before the field validation, put_object_acl public-read, the CDN URL stored; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: uploads with a body associate_id outside [A-Za-z0-9_-]{1,64}, a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
       ]
     },
     {
@@ -24873,7 +24958,7 @@
         "target": "subscription_card",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/misc_routes.go",
@@ -24882,7 +24967,10 @@
         "BE_GO/internal/service/calendar_export_test.go",
         "BE_GO/internal/service/communications_post.go",
         "BE_GO/internal/service/subscription_card.go",
-        "BE_GO/internal/handler/misc_routes.go"
+        "BE_GO/internal/handler/misc_routes.go",
+        "BE_GO/internal/service/bakney_public_links.go",
+        "BE_GO/internal/repository/bakney_sso.go",
+        "BE_GO/cmd/server/bakney_sso.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and scoped-request checks",
@@ -24896,7 +24984,10 @@
         "application_sportassociationmembershipcardconfiguration",
         "instance_bakneypairing",
         "auditlog_logentry",
-        "application_auditlogindex"
+        "application_auditlogindex",
+        "BE_GO/internal/service/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso_protocol.go",
+        "BE_GO/internal/dto/course_calendar.go"
       ],
       "contract": {
         "methods": [
@@ -24911,11 +25002,11 @@
         ],
         "request": "GET ?token=<uuid>; POST no body.",
         "response": "GET 200 {member: {subscription_number, subscription_type, subscription_end_date, associate, sport_association{denomination, user.avatar_image, membership_card_configuration}}}; POST 200 {token}.",
-        "errors": "400 is_valid_uuid list, {'msg': 'il token è scaduto'} (missing, unknown or expired token); 403 registry (per method), admin without session, scoped-request resource check, POST {'msg': 'User not allowed.'}; 404 POST {'msg': 'Subscription not found.'}; 405; 500 rejected token value, no visible subscription, subscription without associate, missing association; 500 (Go) unknown canonical token while a self-hosted pairing is active.",
+        "errors": "400 is_valid_uuid list, {'msg': 'il token è scaduto'} (missing, expired or unknown token, also when the paired server does not vouch for it); 403 registry (per method), admin without session, scoped-request resource check, POST {'msg': 'User not allowed.'}; 404 POST {'msg': 'Subscription not found.'}; 405; 500 rejected token value, no visible subscription, subscription without associate, missing association; 500 (Go) a paired-server expiry outside years 1..9999.",
         "authentication": "Optional DRF JWT (AllowAny).",
         "permissions": "AllowAny (anonymous GET/POST reach the view); registry GET association.members.read, POST association.members.update.",
-        "resource_scope": "GET: the token's subscription through scoped, group-aware Subscription.objects; POST: the scoped, group-aware subscription of request.user.sport_association.",
-        "side_effects": "GET: expired token deleted (auditlog delete, actor-association index); missing card configuration created (auditlog create, direct index). POST: SubscriptionToken created (auditlog create indexed through subscription.sport_association).",
+        "resource_scope": "GET: the token's subscription through scoped, group-aware Subscription.objects (a token vouched by the paired server: a subscription of the paired association); POST: the scoped, group-aware subscription of request.user.sport_association.",
+        "side_effects": "GET: expired token deleted (auditlog delete, actor-association index); missing card configuration created (auditlog create, direct index); for an unknown canonical token while a self-hosted pairing is pending or paired, one POST to the paired server's pairing/v1/public-token (nothing stored). POST: SubscriptionToken created (auditlog create indexed through subscription.sport_association).",
         "transaction": "Autocommit writes (Go: one transaction per request, committed before the response is built).",
         "execution_owner": "django"
       },
@@ -24926,21 +25017,28 @@
         "TESTS/adapters/django/misc_routes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/misc-routes.md",
         {
-          "command": "python tools/go-migration/family.py run misc-routes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/misc-routes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "824b9ffe378cc926655e0aebf9a13b0b1693dc4da0f62d1aaa9c3b85b5c042fb",
-          "scope": "HTTP family misc-routes: 106/106 cases on native Django and native Go, 106/106 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 128/128; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/misc-routes-http-v2misc3-red-r1/results.json",
+          "receipt_sha256": "f3443aae3af0e243b7c68773504d5ebe06fad96c1a1a405094d80392886970ca"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 128/128 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and paired-server requests.",
+          "artifact": "quality-reports/go-migration/misc-routes-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "72e53864d80325e755e0a9dc8e9ee248603d7f45413c624b12d15863705fd5be"
+        },
+        {
+          "revision": "accepting a paired-server expiry without an offset",
+          "result": "Mutation control: fails Go on misc-routes-card-paired-server-naive-expiry (response.status).",
+          "artifact": "quality-reports/go-migration/misc-routes-http-v2misc3-mutation-r2/results.json",
+          "receipt_sha256": "478a864bced6f9be0817a8570129c84997f8d2cf8ac385f92381fcb852cb6486"
         }
       ],
       "notes": [
-        "Implementing: calendar/events/export renders the association's registries as icalendar 6.1.1 does (byte parity, request-time DTSTAMP); communications/send/post creates the audited INSIDE_APP Message and its MessageTransaction; subscription/<uid>/card reads the member card by token (expired tokens deleted with audit, default card configuration created with audit) and mints three-day tokens. Refused with 500 before any write: non-zero UTC offsets and fromisoformat forms outside the ported subset, float/list/object event texts, float post messages, and unknown canonical card tokens while a self-hosted pairing is active. See docs/architecture/go-migration/misc-routes.md.",
-        "Implementing evidence: docs/architecture/go-migration/misc-routes.md",
-        "Implementing evidence: RED: Django 106/106; Go 404 on the first case. (quality-reports/go-migration/misc-routes-http-native-r9/results.json)",
-        "Implementing evidence: GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact Message, MessageTransaction, card configuration, SubscriptionToken, auditlog and index effects. (quality-reports/go-migration/misc-routes-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on misc-routes-export-owner (response.body[17]). (quality-reports/go-migration/misc-routes-http-mutation-r1/results.json)"
+        "Implementing: Implementing: calendar/events/export renders the association's registries as icalendar 6.1.1 does (byte parity, request-time DTSTAMP); communications/send/post creates the audited INSIDE_APP Message and its MessageTransaction; subscription/<uid>/card reads the member card by token (expired tokens deleted with audit, default card configuration created with audit) and mints three-day tokens. Refused with 500 before any write: non-zero UTC offsets and fromisoformat forms outside the ported subset, float/list/object event texts, float post messages, and a paired-server expiry outside years 1..9999. API v2 (v2-misc-3): an unknown canonical card token while a self-hosted pairing is pending or paired is asked of the paired server (instance.sso.public_links.source_token: pairing lock, binding check, POST pairing/v1/public-token, answer validated against the binding; the capability is not stored). See docs/architecture/go-migration/misc-routes.md."
       ]
     },
     {
@@ -25050,7 +25148,7 @@
         "target": "subscription_delete_document",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/subscription_misc.go",
         "BE_GO/internal/repository/subscription_misc.go",
@@ -25065,7 +25163,10 @@
         "BE_GO/internal/codicefiscale/data.txt.gz",
         "BE_GO/internal/service/subscription_reads.go",
         "BE_GO/internal/dto/subscription_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/bakney_public_links.go",
+        "BE_GO/internal/repository/bakney_sso.go",
+        "BE_GO/cmd/server/bakney_sso.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, impersonation scope and audit index",
@@ -25077,7 +25178,10 @@
         "application_associateimportdraftstatus",
         "application_sportassociation",
         "docmanager_document",
-        "instance_bakneypairing"
+        "instance_bakneypairing",
+        "BE_GO/internal/service/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso_protocol.go",
+        "BE_GO/internal/dto/course_calendar.go"
       ],
       "contract": {
         "methods": [
@@ -25106,21 +25210,28 @@
         "TESTS/adapters/django/subscription_misc_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/subscription-misc.md",
         {
-          "command": "python tools/go-migration/family.py run subscription-misc --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "6abb81fe7d4b76235ec6be60bb289cbe10dd301fabd9e783ececedc6a90e4cc6",
-          "scope": "HTTP family subscription-misc: 143/143 cases on native Django and native Go, 143/143 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 157/157; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-red-r1/results.json",
+          "receipt_sha256": "3e18e653ebb63c0fb04911a250ccb87c6a9a71d7d3f7e8ba9bd73fb864f5e6d0"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 157/157 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects and paired-server requests.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "058ae4cb55d6d7d1d7e24c20d610abd10ad671f74d449921d2b82fbfde6664b6"
+        },
+        {
+          "revision": "accepting a 256-character gym name from the paired server",
+          "result": "Mutation control: fails Go on subscription-misc-validate-paired-server-gym-name-too-long (response.body).",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-mutation-r1/results.json",
+          "receipt_sha256": "6410c187f7f2adaa6c1da75eca63dd250478fe9b06f39c5a2e00739f43211c4a"
         }
       ],
       "notes": [
-        "Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, unknown canonical tokens while a Bakney pairing is active, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported.",
-        "Implementing evidence: docs/architecture/go-migration/subscription-misc.md",
-        "Implementing evidence: RED: Django 143/143; Go 404 on the first case. (quality-reports/go-migration/subscription-misc-http-native-r6/results.json)",
-        "Implementing evidence: GREEN: 143/143 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects. (quality-reports/go-migration/subscription-misc-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on subscription-misc-validate-anonymous (CAUGHT). (quality-reports/go-migration/subscription-misc-http-mutation-r1/results.json)"
+        "Implementing: Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, a paired-server expiry outside years 1..9999, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported. API v2 (v2-misc-3): validate-token-link asks the paired server about an unknown canonical token while a self-hosted pairing is pending or paired (instance.sso.public_links.source_token) and continues with the paired association and the answered gym name."
       ]
     },
     {
@@ -26878,7 +26989,7 @@
         "target": "subscription_calculate_tax_code",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/subscription_misc.go",
         "BE_GO/internal/repository/subscription_misc.go",
@@ -26893,7 +27004,10 @@
         "BE_GO/internal/codicefiscale/data.txt.gz",
         "BE_GO/internal/service/subscription_reads.go",
         "BE_GO/internal/dto/subscription_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/bakney_public_links.go",
+        "BE_GO/internal/repository/bakney_sso.go",
+        "BE_GO/cmd/server/bakney_sso.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, impersonation scope and audit index",
@@ -26905,7 +27019,10 @@
         "application_associateimportdraftstatus",
         "application_sportassociation",
         "docmanager_document",
-        "instance_bakneypairing"
+        "instance_bakneypairing",
+        "BE_GO/internal/service/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso_protocol.go",
+        "BE_GO/internal/dto/course_calendar.go"
       ],
       "contract": {
         "methods": [
@@ -26934,21 +27051,28 @@
         "TESTS/adapters/django/subscription_misc_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/subscription-misc.md",
         {
-          "command": "python tools/go-migration/family.py run subscription-misc --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "6abb81fe7d4b76235ec6be60bb289cbe10dd301fabd9e783ececedc6a90e4cc6",
-          "scope": "HTTP family subscription-misc: 143/143 cases on native Django and native Go, 143/143 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 157/157; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-red-r1/results.json",
+          "receipt_sha256": "3e18e653ebb63c0fb04911a250ccb87c6a9a71d7d3f7e8ba9bd73fb864f5e6d0"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 157/157 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects and paired-server requests.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "058ae4cb55d6d7d1d7e24c20d610abd10ad671f74d449921d2b82fbfde6664b6"
+        },
+        {
+          "revision": "accepting a 256-character gym name from the paired server",
+          "result": "Mutation control: fails Go on subscription-misc-validate-paired-server-gym-name-too-long (response.body).",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-mutation-r1/results.json",
+          "receipt_sha256": "6410c187f7f2adaa6c1da75eca63dd250478fe9b06f39c5a2e00739f43211c4a"
         }
       ],
       "notes": [
-        "Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, unknown canonical tokens while a Bakney pairing is active, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported.",
-        "Implementing evidence: docs/architecture/go-migration/subscription-misc.md",
-        "Implementing evidence: RED: Django 143/143; Go 404 on the first case. (quality-reports/go-migration/subscription-misc-http-native-r6/results.json)",
-        "Implementing evidence: GREEN: 143/143 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects. (quality-reports/go-migration/subscription-misc-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on subscription-misc-validate-anonymous (CAUGHT). (quality-reports/go-migration/subscription-misc-http-mutation-r1/results.json)"
+        "Implementing: Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, a paired-server expiry outside years 1..9999, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported. API v2 (v2-misc-3): validate-token-link asks the paired server about an unknown canonical token while a self-hosted pairing is pending or paired (instance.sso.public_links.source_token) and continues with the paired association and the answered gym name."
       ]
     },
     {
@@ -26966,7 +27090,7 @@
         "target": "subscription_generate_token_link",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/subscription_misc.go",
         "BE_GO/internal/repository/subscription_misc.go",
@@ -26981,7 +27105,10 @@
         "BE_GO/internal/codicefiscale/data.txt.gz",
         "BE_GO/internal/service/subscription_reads.go",
         "BE_GO/internal/dto/subscription_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/bakney_public_links.go",
+        "BE_GO/internal/repository/bakney_sso.go",
+        "BE_GO/cmd/server/bakney_sso.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, impersonation scope and audit index",
@@ -26993,7 +27120,10 @@
         "application_associateimportdraftstatus",
         "application_sportassociation",
         "docmanager_document",
-        "instance_bakneypairing"
+        "instance_bakneypairing",
+        "BE_GO/internal/service/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso_protocol.go",
+        "BE_GO/internal/dto/course_calendar.go"
       ],
       "contract": {
         "methods": [
@@ -27022,21 +27152,28 @@
         "TESTS/adapters/django/subscription_misc_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/subscription-misc.md",
         {
-          "command": "python tools/go-migration/family.py run subscription-misc --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "6abb81fe7d4b76235ec6be60bb289cbe10dd301fabd9e783ececedc6a90e4cc6",
-          "scope": "HTTP family subscription-misc: 143/143 cases on native Django and native Go, 143/143 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 157/157; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-red-r1/results.json",
+          "receipt_sha256": "3e18e653ebb63c0fb04911a250ccb87c6a9a71d7d3f7e8ba9bd73fb864f5e6d0"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 157/157 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects and paired-server requests.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "058ae4cb55d6d7d1d7e24c20d610abd10ad671f74d449921d2b82fbfde6664b6"
+        },
+        {
+          "revision": "accepting a 256-character gym name from the paired server",
+          "result": "Mutation control: fails Go on subscription-misc-validate-paired-server-gym-name-too-long (response.body).",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-mutation-r1/results.json",
+          "receipt_sha256": "6410c187f7f2adaa6c1da75eca63dd250478fe9b06f39c5a2e00739f43211c4a"
         }
       ],
       "notes": [
-        "Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, unknown canonical tokens while a Bakney pairing is active, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported.",
-        "Implementing evidence: docs/architecture/go-migration/subscription-misc.md",
-        "Implementing evidence: RED: Django 143/143; Go 404 on the first case. (quality-reports/go-migration/subscription-misc-http-native-r6/results.json)",
-        "Implementing evidence: GREEN: 143/143 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects. (quality-reports/go-migration/subscription-misc-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on subscription-misc-validate-anonymous (CAUGHT). (quality-reports/go-migration/subscription-misc-http-mutation-r1/results.json)"
+        "Implementing: Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, a paired-server expiry outside years 1..9999, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported. API v2 (v2-misc-3): validate-token-link asks the paired server about an unknown canonical token while a self-hosted pairing is pending or paired (instance.sso.public_links.source_token) and continues with the paired association and the answered gym name."
       ]
     },
     {
@@ -27054,7 +27191,7 @@
         "target": "get_associations_for_federation",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/subscription_misc.go",
         "BE_GO/internal/repository/subscription_misc.go",
@@ -27069,7 +27206,10 @@
         "BE_GO/internal/codicefiscale/data.txt.gz",
         "BE_GO/internal/service/subscription_reads.go",
         "BE_GO/internal/dto/subscription_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/bakney_public_links.go",
+        "BE_GO/internal/repository/bakney_sso.go",
+        "BE_GO/cmd/server/bakney_sso.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, impersonation scope and audit index",
@@ -27081,7 +27221,10 @@
         "application_associateimportdraftstatus",
         "application_sportassociation",
         "docmanager_document",
-        "instance_bakneypairing"
+        "instance_bakneypairing",
+        "BE_GO/internal/service/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso_protocol.go",
+        "BE_GO/internal/dto/course_calendar.go"
       ],
       "contract": {
         "methods": [
@@ -27110,21 +27253,28 @@
         "TESTS/adapters/django/subscription_misc_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/subscription-misc.md",
         {
-          "command": "python tools/go-migration/family.py run subscription-misc --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "6abb81fe7d4b76235ec6be60bb289cbe10dd301fabd9e783ececedc6a90e4cc6",
-          "scope": "HTTP family subscription-misc: 143/143 cases on native Django and native Go, 143/143 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 157/157; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-red-r1/results.json",
+          "receipt_sha256": "3e18e653ebb63c0fb04911a250ccb87c6a9a71d7d3f7e8ba9bd73fb864f5e6d0"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 157/157 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects and paired-server requests.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "058ae4cb55d6d7d1d7e24c20d610abd10ad671f74d449921d2b82fbfde6664b6"
+        },
+        {
+          "revision": "accepting a 256-character gym name from the paired server",
+          "result": "Mutation control: fails Go on subscription-misc-validate-paired-server-gym-name-too-long (response.body).",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-mutation-r1/results.json",
+          "receipt_sha256": "6410c187f7f2adaa6c1da75eca63dd250478fe9b06f39c5a2e00739f43211c4a"
         }
       ],
       "notes": [
-        "Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, unknown canonical tokens while a Bakney pairing is active, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported.",
-        "Implementing evidence: docs/architecture/go-migration/subscription-misc.md",
-        "Implementing evidence: RED: Django 143/143; Go 404 on the first case. (quality-reports/go-migration/subscription-misc-http-native-r6/results.json)",
-        "Implementing evidence: GREEN: 143/143 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects. (quality-reports/go-migration/subscription-misc-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on subscription-misc-validate-anonymous (CAUGHT). (quality-reports/go-migration/subscription-misc-http-mutation-r1/results.json)"
+        "Implementing: Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, a paired-server expiry outside years 1..9999, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported. API v2 (v2-misc-3): validate-token-link asks the paired server about an unknown canonical token while a self-hosted pairing is pending or paired (instance.sso.public_links.source_token) and continues with the paired association and the answered gym name."
       ]
     },
     {
@@ -27142,7 +27292,7 @@
         "target": "subscription_import_status",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/subscription_misc.go",
         "BE_GO/internal/repository/subscription_misc.go",
@@ -27157,7 +27307,10 @@
         "BE_GO/internal/codicefiscale/data.txt.gz",
         "BE_GO/internal/service/subscription_reads.go",
         "BE_GO/internal/dto/subscription_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/bakney_public_links.go",
+        "BE_GO/internal/repository/bakney_sso.go",
+        "BE_GO/cmd/server/bakney_sso.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, impersonation scope and audit index",
@@ -27169,7 +27322,10 @@
         "application_associateimportdraftstatus",
         "application_sportassociation",
         "docmanager_document",
-        "instance_bakneypairing"
+        "instance_bakneypairing",
+        "BE_GO/internal/service/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso_protocol.go",
+        "BE_GO/internal/dto/course_calendar.go"
       ],
       "contract": {
         "methods": [
@@ -27198,21 +27354,28 @@
         "TESTS/adapters/django/subscription_misc_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/subscription-misc.md",
         {
-          "command": "python tools/go-migration/family.py run subscription-misc --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "6abb81fe7d4b76235ec6be60bb289cbe10dd301fabd9e783ececedc6a90e4cc6",
-          "scope": "HTTP family subscription-misc: 143/143 cases on native Django and native Go, 143/143 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 157/157; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-red-r1/results.json",
+          "receipt_sha256": "3e18e653ebb63c0fb04911a250ccb87c6a9a71d7d3f7e8ba9bd73fb864f5e6d0"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 157/157 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects and paired-server requests.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "058ae4cb55d6d7d1d7e24c20d610abd10ad671f74d449921d2b82fbfde6664b6"
+        },
+        {
+          "revision": "accepting a 256-character gym name from the paired server",
+          "result": "Mutation control: fails Go on subscription-misc-validate-paired-server-gym-name-too-long (response.body).",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-mutation-r1/results.json",
+          "receipt_sha256": "6410c187f7f2adaa6c1da75eca63dd250478fe9b06f39c5a2e00739f43211c4a"
         }
       ],
       "notes": [
-        "Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, unknown canonical tokens while a Bakney pairing is active, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported.",
-        "Implementing evidence: docs/architecture/go-migration/subscription-misc.md",
-        "Implementing evidence: RED: Django 143/143; Go 404 on the first case. (quality-reports/go-migration/subscription-misc-http-native-r6/results.json)",
-        "Implementing evidence: GREEN: 143/143 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects. (quality-reports/go-migration/subscription-misc-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on subscription-misc-validate-anonymous (CAUGHT). (quality-reports/go-migration/subscription-misc-http-mutation-r1/results.json)"
+        "Implementing: Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, a paired-server expiry outside years 1..9999, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported. API v2 (v2-misc-3): validate-token-link asks the paired server about an unknown canonical token while a self-hosted pairing is pending or paired (instance.sso.public_links.source_token) and continues with the paired association and the answered gym name."
       ]
     },
     {
@@ -28572,7 +28735,7 @@
         "target": "validate_token_link_and_get_subscriptions",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/subscription_misc.go",
         "BE_GO/internal/repository/subscription_misc.go",
@@ -28587,7 +28750,10 @@
         "BE_GO/internal/codicefiscale/data.txt.gz",
         "BE_GO/internal/service/subscription_reads.go",
         "BE_GO/internal/dto/subscription_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/bakney_public_links.go",
+        "BE_GO/internal/repository/bakney_sso.go",
+        "BE_GO/cmd/server/bakney_sso.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, impersonation scope and audit index",
@@ -28599,7 +28765,10 @@
         "application_associateimportdraftstatus",
         "application_sportassociation",
         "docmanager_document",
-        "instance_bakneypairing"
+        "instance_bakneypairing",
+        "BE_GO/internal/service/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso_protocol.go",
+        "BE_GO/internal/dto/course_calendar.go"
       ],
       "contract": {
         "methods": [
@@ -28613,11 +28782,11 @@
         ],
         "request": "Query token (last value).",
         "response": "200 {'expired': True} or {'expired': False, 'subscriptions': SubscriptionSerializer list, 'default_custom_data'}.",
-        "errors": "400 is_valid_uuid list; 403 admin session; 500 null gym name, non-dict custom_data or non-string name of a candidate, unknown canonical token with an active Bakney pairing.",
+        "errors": "400 is_valid_uuid list; 403 admin session; 500 null gym name, non-dict custom_data or non-string name of a candidate; 500 (Go) a paired-server expiry outside years 1..9999.",
         "authentication": "permission_classes([]) (anonymous requests answered; JWT/session identities resolved).",
         "permissions": "Excluded from the registry.",
-        "resource_scope": "The link's association; group-aware Subscription.objects, impersonation scope.",
-        "side_effects": "Deletes every expired link (delete entries, changes_json.sport_association).",
+        "resource_scope": "The link's association (the paired association for a token vouched by the paired server); group-aware Subscription.objects, impersonation scope.",
+        "side_effects": "Deletes every expired link (delete entries, changes_json.sport_association); for an unknown canonical token while a self-hosted pairing is pending or paired, one POST to the paired server's pairing/v1/public-token (nothing stored).",
         "transaction": "Not atomic: the deletions stay when the request fails afterwards.",
         "execution_owner": "django"
       },
@@ -28628,21 +28797,28 @@
         "TESTS/adapters/django/subscription_misc_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/subscription-misc.md",
         {
-          "command": "python tools/go-migration/family.py run subscription-misc --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "6abb81fe7d4b76235ec6be60bb289cbe10dd301fabd9e783ececedc6a90e4cc6",
-          "scope": "HTTP family subscription-misc: 143/143 cases on native Django and native Go, 143/143 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 157/157; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-red-r1/results.json",
+          "receipt_sha256": "3e18e653ebb63c0fb04911a250ccb87c6a9a71d7d3f7e8ba9bd73fb864f5e6d0"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 157/157 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects and paired-server requests.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "058ae4cb55d6d7d1d7e24c20d610abd10ad671f74d449921d2b82fbfde6664b6"
+        },
+        {
+          "revision": "accepting a 256-character gym name from the paired server",
+          "result": "Mutation control: fails Go on subscription-misc-validate-paired-server-gym-name-too-long (response.body).",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-v2misc3-mutation-r1/results.json",
+          "receipt_sha256": "6410c187f7f2adaa6c1da75eca63dd250478fe9b06f39c5a2e00739f43211c4a"
         }
       ],
       "notes": [
-        "Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, unknown canonical tokens while a Bakney pairing is active, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported.",
-        "Implementing evidence: docs/architecture/go-migration/subscription-misc.md",
-        "Implementing evidence: RED: Django 143/143; Go 404 on the first case. (quality-reports/go-migration/subscription-misc-http-native-r6/results.json)",
-        "Implementing evidence: GREEN: 143/143 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects. (quality-reports/go-migration/subscription-misc-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on subscription-misc-validate-anonymous (CAUGHT). (quality-reports/go-migration/subscription-misc-http-mutation-r1/results.json)"
+        "Implementing: Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, a paired-server expiry outside years 1..9999, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported. API v2 (v2-misc-3): validate-token-link asks the paired server about an unknown canonical token while a self-hosted pairing is pending or paired (instance.sso.public_links.source_token) and continues with the paired association and the answered gym name."
       ]
     },
     {
@@ -30671,7 +30847,7 @@
         "target": "configuration_send_post",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/misc_routes.go",
@@ -30680,7 +30856,10 @@
         "BE_GO/internal/service/calendar_export_test.go",
         "BE_GO/internal/service/communications_post.go",
         "BE_GO/internal/service/subscription_card.go",
-        "BE_GO/internal/handler/misc_routes.go"
+        "BE_GO/internal/handler/misc_routes.go",
+        "BE_GO/internal/service/bakney_public_links.go",
+        "BE_GO/internal/repository/bakney_sso.go",
+        "BE_GO/cmd/server/bakney_sso.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and scoped-request checks",
@@ -30694,7 +30873,10 @@
         "application_sportassociationmembershipcardconfiguration",
         "instance_bakneypairing",
         "auditlog_logentry",
-        "application_auditlogindex"
+        "application_auditlogindex",
+        "BE_GO/internal/service/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso_protocol.go",
+        "BE_GO/internal/dto/course_calendar.go"
       ],
       "contract": {
         "methods": [
@@ -30723,21 +30905,28 @@
         "TESTS/adapters/django/misc_routes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/misc-routes.md",
         {
-          "command": "python tools/go-migration/family.py run misc-routes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/misc-routes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "824b9ffe378cc926655e0aebf9a13b0b1693dc4da0f62d1aaa9c3b85b5c042fb",
-          "scope": "HTTP family misc-routes: 106/106 cases on native Django and native Go, 106/106 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 128/128; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/misc-routes-http-v2misc3-red-r1/results.json",
+          "receipt_sha256": "f3443aae3af0e243b7c68773504d5ebe06fad96c1a1a405094d80392886970ca"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 128/128 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and paired-server requests.",
+          "artifact": "quality-reports/go-migration/misc-routes-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "72e53864d80325e755e0a9dc8e9ee248603d7f45413c624b12d15863705fd5be"
+        },
+        {
+          "revision": "accepting a paired-server expiry without an offset",
+          "result": "Mutation control: fails Go on misc-routes-card-paired-server-naive-expiry (response.status).",
+          "artifact": "quality-reports/go-migration/misc-routes-http-v2misc3-mutation-r2/results.json",
+          "receipt_sha256": "478a864bced6f9be0817a8570129c84997f8d2cf8ac385f92381fcb852cb6486"
         }
       ],
       "notes": [
-        "Implementing: calendar/events/export renders the association's registries as icalendar 6.1.1 does (byte parity, request-time DTSTAMP); communications/send/post creates the audited INSIDE_APP Message and its MessageTransaction; subscription/<uid>/card reads the member card by token (expired tokens deleted with audit, default card configuration created with audit) and mints three-day tokens. Refused with 500 before any write: non-zero UTC offsets and fromisoformat forms outside the ported subset, float/list/object event texts, float post messages, and unknown canonical card tokens while a self-hosted pairing is active. See docs/architecture/go-migration/misc-routes.md.",
-        "Implementing evidence: docs/architecture/go-migration/misc-routes.md",
-        "Implementing evidence: RED: Django 106/106; Go 404 on the first case. (quality-reports/go-migration/misc-routes-http-native-r9/results.json)",
-        "Implementing evidence: GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact Message, MessageTransaction, card configuration, SubscriptionToken, auditlog and index effects. (quality-reports/go-migration/misc-routes-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on misc-routes-export-owner (response.body[17]). (quality-reports/go-migration/misc-routes-http-mutation-r1/results.json)"
+        "Implementing: Implementing: calendar/events/export renders the association's registries as icalendar 6.1.1 does (byte parity, request-time DTSTAMP); communications/send/post creates the audited INSIDE_APP Message and its MessageTransaction; subscription/<uid>/card reads the member card by token (expired tokens deleted with audit, default card configuration created with audit) and mints three-day tokens. Refused with 500 before any write: non-zero UTC offsets and fromisoformat forms outside the ported subset, float/list/object event texts, float post messages, and a paired-server expiry outside years 1..9999. API v2 (v2-misc-3): an unknown canonical card token while a self-hosted pairing is pending or paired is asked of the paired server (instance.sso.public_links.source_token: pairing lock, binding check, POST pairing/v1/public-token, answer validated against the binding; the capability is not stored). See docs/architecture/go-migration/misc-routes.md."
       ]
     },
     {
@@ -30806,25 +30995,25 @@
         "docs/architecture/go-migration/communications-smtp.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 83/83; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-red-r1/results.json",
-          "receipt_sha256": "b6c3693cce8bad7420ebea8de87455495c2bad432769fb348384499319eb2fd2"
+          "result": "RED: Django 88/88; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-red-r2/results.json",
+          "receipt_sha256": "7082e2c4ca0c422594876938d46eb3e0c90e1e9d1943621e40c42bae8db8c5c9"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-green-r2/results.json",
-          "receipt_sha256": "194a1124d8cd9d561be56288c5fcad9ebea1c7deafaee2b49e5ae957857421d8"
+          "result": "GREEN: 88/88 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and SMTP transcripts.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "daac10dff45bfa85700fc8adc3e4f91935e7820b8a8b42ab72ad91dd95ebdc15"
         },
         {
-          "revision": "committing change addressing the test email to the SMTP user instead of the association user's email",
-          "result": "Mutation control: fails Go on communications-smtp-verify-starttls-sends-test-email (smtp.transcripts).",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-mutation-r1/results.json",
-          "receipt_sha256": "207f8bf4664726108979ccd893f81ddc503c2b8f7cadf65f3726048ead11bcb4"
+          "revision": "answering the handshake call site number of another CPython release",
+          "result": "Mutation control: fails Go on communications-smtp-verify-ssl-on-starttls-port (response.body).",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-mutation-r1/results.json",
+          "receipt_sha256": "bfe7e7ef267c9c1eb98a6933c0ae6c0b4d0a16b05c6d3b9669a9a575327406e4"
         }
       ],
       "notes": [
-        "Implementing: SMTP configuration info, update and verify. API v2 (v2-misc-2): verify against a connectable host is ported (connect, STARTTLS or implicit TLS, login, test email as bytes, quit; smtplib reply and fixed-text failures and a refused connection as verified false). Refused with the 500 page before any effect: TLS handshake errors, name resolution failures, connect timeouts, resets, a falsy port with a plain host, a missing user or password, envelope addresses outside smtpsend.CheckEnvelope and sender names outside letters, digits, spaces and . - _ &."
+        "Implementing: Implementing: SMTP configuration info, update and verify. API v2 (v2-misc-2): verify against a connectable host is ported (connect, STARTTLS or implicit TLS, login, test email as bytes, quit; smtplib reply and fixed-text failures and a refused connection as verified false). API v2 (v2-misc-3): two platform texts are ported as verified false: SSL chosen for a port that speaks plain SMTP first ([SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032), CPython 3.13.16) and a host name the resolver does not know (socket.gaierror's EAI_NONAME text on macOS and glibc). Refused with the 500 page before any effect: connect timeouts (Python reports the last error of every address in the C library's order), an unreachable resolver, names the idna codec rejects, TLS handshake timeouts and other OpenSSL reasons, resets, a falsy port with a plain host, a missing user or password, envelope addresses outside smtpsend.CheckEnvelope and sender names outside letters, digits, spaces and . - _ &."
       ]
     },
     {
@@ -30893,25 +31082,25 @@
         "docs/architecture/go-migration/communications-smtp.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 83/83; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-red-r1/results.json",
-          "receipt_sha256": "b6c3693cce8bad7420ebea8de87455495c2bad432769fb348384499319eb2fd2"
+          "result": "RED: Django 88/88; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-red-r2/results.json",
+          "receipt_sha256": "7082e2c4ca0c422594876938d46eb3e0c90e1e9d1943621e40c42bae8db8c5c9"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-green-r2/results.json",
-          "receipt_sha256": "194a1124d8cd9d561be56288c5fcad9ebea1c7deafaee2b49e5ae957857421d8"
+          "result": "GREEN: 88/88 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and SMTP transcripts.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "daac10dff45bfa85700fc8adc3e4f91935e7820b8a8b42ab72ad91dd95ebdc15"
         },
         {
-          "revision": "committing change addressing the test email to the SMTP user instead of the association user's email",
-          "result": "Mutation control: fails Go on communications-smtp-verify-starttls-sends-test-email (smtp.transcripts).",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-mutation-r1/results.json",
-          "receipt_sha256": "207f8bf4664726108979ccd893f81ddc503c2b8f7cadf65f3726048ead11bcb4"
+          "revision": "answering the handshake call site number of another CPython release",
+          "result": "Mutation control: fails Go on communications-smtp-verify-ssl-on-starttls-port (response.body).",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-mutation-r1/results.json",
+          "receipt_sha256": "bfe7e7ef267c9c1eb98a6933c0ae6c0b4d0a16b05c6d3b9669a9a575327406e4"
         }
       ],
       "notes": [
-        "Implementing: SMTP configuration info, update and verify. API v2 (v2-misc-2): verify against a connectable host is ported (connect, STARTTLS or implicit TLS, login, test email as bytes, quit; smtplib reply and fixed-text failures and a refused connection as verified false). Refused with the 500 page before any effect: TLS handshake errors, name resolution failures, connect timeouts, resets, a falsy port with a plain host, a missing user or password, envelope addresses outside smtpsend.CheckEnvelope and sender names outside letters, digits, spaces and . - _ &."
+        "Implementing: Implementing: SMTP configuration info, update and verify. API v2 (v2-misc-2): verify against a connectable host is ported (connect, STARTTLS or implicit TLS, login, test email as bytes, quit; smtplib reply and fixed-text failures and a refused connection as verified false). API v2 (v2-misc-3): two platform texts are ported as verified false: SSL chosen for a port that speaks plain SMTP first ([SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032), CPython 3.13.16) and a host name the resolver does not know (socket.gaierror's EAI_NONAME text on macOS and glibc). Refused with the 500 page before any effect: connect timeouts (Python reports the last error of every address in the C library's order), an unreachable resolver, names the idna codec rejects, TLS handshake timeouts and other OpenSSL reasons, resets, a falsy port with a plain host, a missing user or password, envelope addresses outside smtpsend.CheckEnvelope and sender names outside letters, digits, spaces and . - _ &."
       ]
     },
     {
@@ -30961,8 +31150,8 @@
           "/api/communications/settings/smtp/verify"
         ],
         "request": "No body.",
-        "response": "200 {'verified': true, 'msg': 'Ok'} after connect, login, test email and quit; 200 {'verified': false, 'msg': str(exception)} for 'please run connect() first', 'nonnumeric port', smtplib reply exceptions, fixed-text smtplib errors and a refused connection.",
-        "errors": "401; 403 as info; 404 {'msg': 'info not found.'}; 405; 500 missing or soft-deleted association; 500 (Go) for connection failures whose Python text depends on the platform libraries and for inputs outside the supported subset.",
+        "response": "200 {'verified': true, 'msg': 'Ok'} after connect, login, test email and quit; 200 {'verified': false, 'msg': str(exception)} for 'please run connect() first', 'nonnumeric port', smtplib reply exceptions, fixed-text smtplib errors, a refused connection, a plain SMTP greeting where the TLS handshake was expected and a host name the resolver does not know.",
+        "errors": "401; 403 as info; 404 {'msg': 'info not found.'}; 405; 500 missing or soft-deleted association; 500 (Go) for connect timeouts, an unreachable resolver, other TLS failures and inputs outside the supported subset.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated; unmapped in permissions_registry (FULL collaborators only).",
         "resource_scope": "request.user.sport_association; first configuration.",
@@ -30980,25 +31169,25 @@
         "docs/architecture/go-migration/communications-smtp.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 83/83; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-red-r1/results.json",
-          "receipt_sha256": "b6c3693cce8bad7420ebea8de87455495c2bad432769fb348384499319eb2fd2"
+          "result": "RED: Django 88/88; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-red-r2/results.json",
+          "receipt_sha256": "7082e2c4ca0c422594876938d46eb3e0c90e1e9d1943621e40c42bae8db8c5c9"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-green-r2/results.json",
-          "receipt_sha256": "194a1124d8cd9d561be56288c5fcad9ebea1c7deafaee2b49e5ae957857421d8"
+          "result": "GREEN: 88/88 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and SMTP transcripts.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-final-r1/results.json",
+          "receipt_sha256": "daac10dff45bfa85700fc8adc3e4f91935e7820b8a8b42ab72ad91dd95ebdc15"
         },
         {
-          "revision": "committing change addressing the test email to the SMTP user instead of the association user's email",
-          "result": "Mutation control: fails Go on communications-smtp-verify-starttls-sends-test-email (smtp.transcripts).",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-mutation-r1/results.json",
-          "receipt_sha256": "207f8bf4664726108979ccd893f81ddc503c2b8f7cadf65f3726048ead11bcb4"
+          "revision": "answering the handshake call site number of another CPython release",
+          "result": "Mutation control: fails Go on communications-smtp-verify-ssl-on-starttls-port (response.body).",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-mutation-r1/results.json",
+          "receipt_sha256": "bfe7e7ef267c9c1eb98a6933c0ae6c0b4d0a16b05c6d3b9669a9a575327406e4"
         }
       ],
       "notes": [
-        "Implementing: SMTP configuration info, update and verify. API v2 (v2-misc-2): verify against a connectable host is ported (connect, STARTTLS or implicit TLS, login, test email as bytes, quit; smtplib reply and fixed-text failures and a refused connection as verified false). Refused with the 500 page before any effect: TLS handshake errors, name resolution failures, connect timeouts, resets, a falsy port with a plain host, a missing user or password, envelope addresses outside smtpsend.CheckEnvelope and sender names outside letters, digits, spaces and . - _ &."
+        "Implementing: Implementing: SMTP configuration info, update and verify. API v2 (v2-misc-2): verify against a connectable host is ported (connect, STARTTLS or implicit TLS, login, test email as bytes, quit; smtplib reply and fixed-text failures and a refused connection as verified false). API v2 (v2-misc-3): two platform texts are ported as verified false: SSL chosen for a port that speaks plain SMTP first ([SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032), CPython 3.13.16) and a host name the resolver does not know (socket.gaierror's EAI_NONAME text on macOS and glibc). Refused with the 500 page before any effect: connect timeouts (Python reports the last error of every address in the C library's order), an unreachable resolver, names the idna codec rejects, TLS handshake timeouts and other OpenSSL reasons, resets, a falsy port with a plain host, a missing user or password, envelope addresses outside smtpsend.CheckEnvelope and sender names outside letters, digits, spaces and . - _ &."
       ]
     },
     {
