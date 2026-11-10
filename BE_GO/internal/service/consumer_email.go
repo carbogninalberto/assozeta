@@ -49,6 +49,40 @@ func (s *SendMailAsync) WithEmailTasks(publisher celery.Publisher, settings Cons
 	return s
 }
 
+// WithDelay replaces send_email_html's random.randint(1, 30) second Timer
+// delay (fixture runs pin it, as the Django oracle patches randint).
+func (s *SendMailAsync) WithDelay(delay func() time.Duration) *SendMailAsync {
+	s.delay = delay
+	return s
+}
+
+// PlanEmailHTMLInProcess is send_email_html(...) called directly by a web
+// view (not as a task) with an association: with a CommunicationConfiguration
+// it returns start, which runs send_email on the configuration loaded now
+// from a timer in this process after the delay; without one start is nil and
+// the caller publishes send_mail_async itself. Values the planner does not
+// take are celeryworker.ErrHandoff.
+func (s *SendMailAsync) PlanEmailHTMLInProcess(ctx context.Context, association uuid.UUID, html, subject string, recipients,
+	replyTo []any) (start func(), err error) {
+	configuration, err := s.store.FirstCommunicationConfiguration(ctx, association)
+	if err != nil || configuration == nil {
+		return nil, err
+	}
+	call, err := s.planConfigSend(ctx, *configuration, subject, nil, &html, recipients, replyTo)
+	if err != nil {
+		return nil, err
+	}
+	return func() {
+		s.timers.Add(1)
+		time.AfterFunc(s.delay(), func() {
+			defer s.timers.Done()
+			timerCtx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+			defer cancel()
+			s.configSend(timerCtx, nil, call)
+		})
+	}, nil
+}
+
 // Wait blocks until the delayed sends send_email_html started have ended, as
 // the worker process waits for the task's non-daemon Timer threads.
 func (s *SendMailAsync) Wait() { s.timers.Wait() }

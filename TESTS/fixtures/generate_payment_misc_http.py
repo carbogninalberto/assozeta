@@ -86,6 +86,7 @@ ASSOCIATES = {
     'paolo': {'id': next(ids), 'first': 'Paolo', 'last': 'Bianchi', 'association': OWN, 'group': 'own_group'},
     'sara': {'id': next(ids), 'first': 'Sara', 'last': 'Blu', 'association': OWN, 'group': None},
     'hans': {'id': next(ids), 'first': 'Hans', 'last': 'Muller', 'association': FOREIGN, 'group': None},
+    'nina': {'id': next(ids), 'first': 'Nina', 'last': 'Rùsso', 'association': PLANS_OWNER['association'], 'group': None},
 }
 
 # Subscription fee plans as stored in SportAssociation.subscription_fee_plans.
@@ -119,7 +120,11 @@ FOREIGN_PLANS = [PLAN_F, {'id': 'plan-bad', 'auto_assign': True, 'advanced_optio
                           'from_day': 'abc', 'from_month': 3}]
 PLAN_Z = {'id': 'plan-z', 'name': 'Quota Z', 'subscription_fee': '5', 'auto_assign': True, 'advanced_options': True,
           'previous_subscription_fee_plan': 'prev-z', 'from_day': 15, 'from_month': 3, 'to_day': 15, 'to_month': 4}
-PLANS = {OWN: OWN_PLANS, FOREIGN: FOREIGN_PLANS, PLANS_OWNER['association']: [PLAN_Z]}
+# The second association has a CommunicationConfiguration during its July apply (SMTP case); its member has her own account.
+PLANS_MEMBER = {'id': next(ids), 'email': 'nina-piani@example.test', 'username': 'nina-piani', 'first': 'Nina', 'last': 'Rùsso'}
+PLAN_Y = {'id': 'plan-y', 'name': 'Quota Y', 'subscription_fee': '11', 'auto_assign': True, 'advanced_options': True,
+          'previous_subscription_fee_plan': 'prev-y', 'from_day': 1, 'from_month': 7, 'to_day': 31, 'to_month': 7}
+PLANS = {OWN: OWN_PLANS, FOREIGN: FOREIGN_PLANS, PLANS_OWNER['association']: [PLAN_Z, PLAN_Y]}
 
 
 def previous(plan_id):
@@ -153,6 +158,7 @@ SUBSCRIPTIONS = {
     's_foreign_plan_a': subscription('hans', 'plan-a', association=FOREIGN, user=IDS['foreign_owner']),
     's_z': subscription(None, 'prev-z', association=PLANS_OWNER['association'], user=PLANS_OWNER['id']),
     's8': subscription('luca', 'prev-g', user=ATHLETE),
+    's_y': subscription('nina', 'prev-y', association=PLANS_OWNER['association'], user=PLANS_MEMBER['id']),
 }
 
 # Payments: the subscriptions' previous-plan payments are seeded by the runner from SUBSCRIPTIONS.
@@ -395,6 +401,31 @@ add('apply-june-member-account-mail', 'full_collaborator', APPLY + '?date=2026-0
             'celery': [fee_mail('luca', PLAN_G, '$email:athlete')]})
 add('apply-june-again-nothing', 'owner', APPLY + '?date=2026-06-01', 200, APPLIED, effect=effect())
 
+# With a CommunicationConfiguration (SMTP, no encryption) of the association, send_email_html loads it and sends from a
+# Timer thread after random.randint(1, 30) seconds (patched to 1 for the run; Go's delay is pinned to 1 s):
+# verify_smtp(send_email=False), then one delivery and daily_email_balance + 1 (Model.save, audited outside the request:
+# no actor or cid). No Celery message. The runner creates the configuration for the request, waits for the
+# delivery and the balance, then removes it (audit disabled).
+SMTP_CONFIG = {'id': next(ids), 'user': 'mailer-piani@example.test', 'sender': 'Piani SMTP', 'limit': 50, 'balance': 0}
+
+
+def smtp_mail(associate, plan, recipient):
+    person = ASSOCIATES[associate]
+    return {'from': f"{SMTP_CONFIG['sender']} <{SMTP_CONFIG['user']}>", 'to': recipient, 'reply_to': PLANS_OWNER['email'],
+            'subject': f"{PLANS_OWNER['denomination']} | Nuova quota associativa '{plan['name']}' assegnata",
+            'html': {'$render': 'email/payment/fee_assigned.html', 'language': 'en',
+                     'context': {'recipient_name': person['first'] + ' ' + person['last'], 'fee_name': plan['name'],
+                                 'amount': plan['subscription_fee'], 'application_name': '$whitelabel',
+                                 'association_name': PLANS_OWNER['denomination']}}}
+
+
+result = created('plans_owner', quote_row('nina', PLAN_Y, '11.00', association=PLANS_OWNER['association'], user=PLANS_MEMBER['id'], account=None), '11',
+                 PLANS_OWNER['association'])
+result['smtp_config_audit'] = {'changes': {'daily_email_balance': ['0', '1']}, 'index': [PLANS_OWNER['association'], DIRECT]}
+add('apply-july-member-account-configured-smtp', 'plans_owner', APPLY + '?date=2026-07-01', 200, APPLIED, effect=result)
+cases[-1]['smtp'] = {'deliveries': [smtp_mail('nina', PLAN_Y, PLANS_MEMBER['email'])], 'balance': 1}
+add('apply-july-again-nothing', 'plans_owner', APPLY + '?date=2026-07-01', 200, APPLIED, effect=effect('plans_owner'))
+
 # --- sign ------------------------------------------------------------------------
 
 VALIDATION = {'msg': 'validation errors.'}
@@ -576,9 +607,9 @@ add('approve-invoice-without-party', 'full_collaborator', APPROVE('ai_plain'), 2
                   audit=[{'key': 'ai_plain', 'action': 1, 'changes': changes, 'index': [OWN, DIRECT]}]))
 
 assert len({c['name'] for c in cases}) == len(cases)
-OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Payment partial quotes simulation and apply, payment sign and invoiced approve '
+OUTPUT.write_text(json.dumps({'smtp_config': SMTP_CONFIG, 'matrix_version': 1, 'scope': 'Payment partial quotes simulation and apply, payment sign and invoiced approve '
                                                             'authored sequence with payment and audit effects',
-                              'ids': IDS, 'plans_owner': PLANS_OWNER, 'category': CATEGORY, 'bank': BANK, 'document': DOCUMENT,
+                              'ids': IDS, 'plans_owner': PLANS_OWNER, 'plans_member': PLANS_MEMBER, 'category': CATEGORY, 'bank': BANK, 'document': DOCUMENT,
                               'attached': ATTACHED, 'supplier': SUPPLIER, 'associates': ASSOCIATES,
                               'plans': {key: value for key, value in PLANS.items()}, 'subscriptions': SUBSCRIPTIONS, 'invoices': INVOICES,
                               'payments': PAYMENTS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')

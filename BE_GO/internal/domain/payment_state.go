@@ -86,7 +86,22 @@ type PaymentStateTransaction interface {
 		at time.Time) error
 	// DeletePayment is payment.delete() with Payment's pre_delete signal connected.
 	DeletePayment(ctx context.Context, id string, audit CourseSubscriptionAudit) error
+	// PaymentStateInvoice locks the payment's invoice (nil when the row is gone).
+	PaymentStateInvoice(ctx context.Context, id string) (*PaymentStateInvoice, error)
+	// CancelPaymentStateInvoice is invoice.cancelled = True, invoice.meta = meta,
+	// invoice.save() with its auditlog update entry (changed fields only).
+	CancelPaymentStateInvoice(ctx context.Context, invoice PaymentStateInvoice, meta string, metaAudit string, audit LoginAuditContext,
+		at time.Time) error
 	// MarkPayments is bulk_update(..., [column]) setting column true on the
 	// matching live rows of the association.
 	MarkPayments(ctx context.Context, column string, ids []string, association string, scope, group *string) error
+}
+
+// PaymentStateInvoice is the stored invoice payment cancel and delete save.
+type PaymentStateInvoice struct {
+	ID            string  `db:"invoice_id"`
+	AssociationID *string `db:"sport_association_id"`
+	Cancelled     bool    `db:"cancelled"`
+	// Meta is the stored JSON text; nil for SQL NULL.
+	Meta *string `db:"meta"`
 }
