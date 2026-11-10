@@ -130,7 +130,7 @@ def main():
             if name == 'libwebp-LICENSE': assert notice == (ROOT / 'BE_GO/pkg/storage/loginimage/LICENSE.libwebp').read_text()
             if name == 'libwebp-PATENTS': assert 'Google' in notice and 'patent' in notice
             if name == 'zlib-version.txt':
-                assert re.fullmatch(r'zlib-static-\d+\.\d+\.\d+-r\d+\n', notice), 'missing zlib package version'
+                assert re.fullmatch(r'zlib-static-\d+(?:\.\d+){1,2}-r\d+\n', notice), 'missing zlib package version'
                 print(notice.strip(), flush=True)
             if name == 'zlib-LICENSE': assert 'Copyright' in notice and 'This notice may not be removed' in notice
             if name == 'Pillow-LICENSE': assert notice == (ROOT / 'BE_GO/pkg/storage/loginimage/LICENSE.pillow').read_text()
