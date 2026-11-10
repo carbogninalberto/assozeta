@@ -39,6 +39,26 @@
   "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
   "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
  },
+ "associates": {
+  "pia": {
+   "id": "a1000000-0000-4000-8000-000000593091",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Pia",
+   "last": "Segnaposto"
+  },
+  "niccolo": {
+   "id": "a1000000-0000-4000-8000-000000593092",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Niccolò",
+   "last": "Però"
+  },
+  "dario": {
+   "id": "a1000000-0000-4000-8000-000000593093",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Dario",
+   "last": "Datato"
+  }
+ },
  "documents": {
   "a1": {
    "id": "a1000000-0000-4000-8000-000000593001",
@@ -293,7 +313,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "empty": {
    "id": "a1000000-0000-4000-8000-000000593046",
@@ -304,7 +325,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "badregion": {
    "id": "a1000000-0000-4000-8000-000000593047",
@@ -315,7 +337,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "abroad": {
    "id": "a1000000-0000-4000-8000-000000593048",
@@ -326,7 +349,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "deleted": {
    "id": "a1000000-0000-4000-8000-000000593049",
@@ -337,7 +361,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "grouped": {
    "id": "a1000000-0000-4000-8000-000000593050",
@@ -348,7 +373,8 @@
    "group": "own_group",
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "other": {
    "id": "a1000000-0000-4000-8000-000000593051",
@@ -359,7 +385,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "del": {
    "id": "a1000000-0000-4000-8000-000000593052",
@@ -370,7 +397,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "shared": {
    "id": "a1000000-0000-4000-8000-000000593053",
@@ -381,7 +409,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "abroad_shared": {
    "id": "a1000000-0000-4000-8000-000000593054",
@@ -392,7 +421,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "drafted": {
    "id": "a1000000-0000-4000-8000-000000593055",
@@ -403,7 +433,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "athlete": {
    "id": "a1000000-0000-4000-8000-000000593056",
@@ -414,7 +445,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "scoped": {
    "id": "a1000000-0000-4000-8000-000000593057",
@@ -425,7 +457,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "abroad_scoped": {
    "id": "a1000000-0000-4000-8000-000000593058",
@@ -436,7 +469,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "expire": {
    "id": "a1000000-0000-4000-8000-000000593059",
@@ -447,7 +481,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "remove": {
    "id": "a1000000-0000-4000-8000-000000593060",
@@ -458,7 +493,8 @@
    "group": null,
    "start": null,
    "end": null,
-   "created": "2026-03-15T10:00:00Z"
+   "created": "2026-03-15T10:00:00Z",
+   "associate": null
   },
   "keepdoc": {
    "id": "a1000000-0000-4000-8000-000000593061",
@@ -469,7 +505,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "twice_a": {
    "id": "a1000000-0000-4000-8000-000000593062",
@@ -480,7 +517,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "twice_b": {
    "id": "a1000000-0000-4000-8000-000000593063",
@@ -491,7 +529,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "null_copy": {
    "id": "a1000000-0000-4000-8000-000000593064",
@@ -502,7 +541,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "abroad_null": {
    "id": "a1000000-0000-4000-8000-000000593065",
@@ -513,7 +553,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "scoped_null": {
    "id": "a1000000-0000-4000-8000-000000593066",
@@ -524,7 +565,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "abroad_drafted": {
    "id": "a1000000-0000-4000-8000-000000593067",
@@ -535,7 +577,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "copy_fail": {
    "id": "a1000000-0000-4000-8000-000000593068",
@@ -546,7 +589,8 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   },
   "abroad_copy_fail": {
    "id": "a1000000-0000-4000-8000-000000593069",
@@ -557,7 +601,44 @@
    "group": null,
    "start": "2026-01-01",
    "end": "2026-12-31",
-   "created": "2026-02-01T09:00:00Z"
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
+  },
+  "bare": {
+   "id": "a1000000-0000-4000-8000-000000593094",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": null,
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z",
+   "associate": "pia"
+  },
+  "bare_collaborator": {
+   "id": "a1000000-0000-4000-8000-000000593095",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": null,
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z",
+   "associate": "niccolo"
+  },
+  "bare_bad_date": {
+   "id": "a1000000-0000-4000-8000-000000593096",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": null,
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z",
+   "associate": "dario"
   }
  },
  "appointments": {
@@ -4213,6 +4294,196 @@
    },
    "body": {
     "certificate_expiring_date": null
+   }
+  },
+  {
+   "name": "subscription-medical-expire-without-certificate-placeholder",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593094/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate update with date 2027-06-30 00:00:00+00:00"
+   },
+   "effect": {
+    "kind": "placeholder",
+    "actor": "owner",
+    "subscription": "bare",
+    "user": "owner",
+    "expiration": "2027-06-30",
+    "filename": "medical_certificate_Pia_Segnaposto.png",
+    "text": "\nPia Segnaposto\n\n\n\nQuesta certificazione è valida fino al 2027-06-30 00:00:00+00:00\n\n\n\n\n\nAttenzione: questo è un placeholder, il certificato medico deve essere caricato in seguito.\n            "
+   },
+   "body": {
+    "certificate_expiring_date": "30/06/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-without-certificate-placeholder-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593095/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate update with date 2031-12-01 00:00:00+00:00"
+   },
+   "effect": {
+    "kind": "placeholder",
+    "actor": "full_collaborator",
+    "subscription": "bare_collaborator",
+    "user": "owner",
+    "expiration": "2031-12-01",
+    "filename": "medical_certificate_Niccolò_Però.png",
+    "text": "\nNiccolò Però\n\n\n\nQuesta certificazione è valida fino al 2031-12-01 00:00:00+00:00\n\n\n\n\n\nAttenzione: questo è un placeholder, il certificato medico deve essere caricato in seguito.\n            "
+   },
+   "body": {
+    "certificate_expiring_date": "1/12/2031"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-without-certificate-bad-date-keeps-certificate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593096/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {},
+    "copy": null,
+    "created": {
+     "user": "owner",
+     "expiration": null
+    },
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": "31/02/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-without-certificate-iso-date-keeps-certificate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593096/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {},
+    "copy": null,
+    "created": {
+     "user": "owner",
+     "expiration": null
+    },
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": "2027-06-30"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-without-certificate-null-date-keeps-certificate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593096/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {},
+    "copy": null,
+    "created": {
+     "user": "owner",
+     "expiration": null
+    },
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": null
+   }
+  },
+  {
+   "name": "subscription-medical-expire-without-certificate-without-member-keeps-certificate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593046/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {},
+    "copy": null,
+    "created": {
+     "user": "owner",
+     "expiration": null
+    },
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": "30/06/2027"
    }
   }
  ]

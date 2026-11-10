@@ -16,7 +16,7 @@ below describe what Go itself does not serve; with the handoff on, an A or B ite
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 69** (about 63 distinct after duplicates; 1 ported and 1 narrowed (the Biella form, to associations with a stored signature) in v2-documents-rest; 5 ported in v2-pdf (the reportlab documents); 2 ported in v2-deletes; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard, 3 in v2-misc-3 (which also narrows the smtp/verify row to connect timeouts) and 1 in the famwiz change (the preregistration that renews a subscription; also the excel half of the course-subscriptions export row), below), **B 218** (54 with
+Counts (table rows, appendix): **A 69** (about 63 distinct after duplicates; 2 ported in v2subs3 (the placeholder certificate image, in `subscription/add` and in set-certificate-expiration); 1 ported and 1 narrowed (the Biella form, to associations with a stored signature) in v2-documents-rest; 5 ported in v2-pdf (the reportlab documents); 2 ported in v2-deletes; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard, 3 in v2-misc-3 (which also narrows the smtp/verify row to connect timeouts) and 1 in the famwiz change (the preregistration that renews a subscription; also the excel half of the course-subscriptions export row), below), **B 218** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -280,7 +280,24 @@ Receipts are `quality-reports/go-migration/<family>-http-v2subs-*`; each family 
 Still refused after this change in these families: the placeholder certificate image (`subscription/add` with a typed
 certificate date and no upload; `set-certificate-expiration` for a member without a certificate), the remaining B rows of
 the appendix tables of subscription-*, course-* and associates-draft, and the reader subsets listed in
-subscription-import-upload.md.
+subscription-import-upload.md. The placeholder and the date forms are ported in v2subs3 (below).
+
+### Ported in the v2subs3 change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2subs3-*`; each family doc has the details. RED for these rows is the
+documented refusal itself (the rows of this page).
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| subscription-create | `POST subscription/add` | owner wizard: a typed certificate date without an upload (A): the placeholder PNG, drawn byte for byte by `internal/pilplaceholder`, its Document, stored object and certificate | 163 cases; GREEN `v2subs3-versioned-r1` 4 transports; mutation `v2subs3-mutation-r1` (placeholder drawn for today's date) CAUGHT |
+| subscription-medical | `POST .../medical-certificate/set-certificate-expiration` | member without a certificate (A): the same placeholder, with the view's order of writes | 133 cases; GREEN `v2subs3-versioned-r1`; mutation `v2subs3-mutation-r1` (image text) CAUGHT |
+| subscription-create, associates-draft | `POST subscription/add`, `POST subscription/associates-draft/<uid>/edit` | birth dates outside `YYYY-MM-DD`, ISO date-times and `A/B/YYYY` (B): the whole dateutil parser (`internal/pydateutil` with `dayfirst`) | associates-draft 141 cases; GREEN `v2subs3-versioned-r1`; mutation `v2subs3-mutation-r1` (month first) CAUGHT |
+| subscription-import-upload | `POST subscription/import/upload` `{document_id, map}` | a number in a date column; date text with dashes, dots, month names or a time (B) | 69 cases; GREEN `v2subs3-versioned-r1`; mutation `v2subs3-mutation-r1` (day first after a leading year) CAUGHT |
+| subscription-renew | `POST subscription/renew` | not a refusal: the requester lookup of a member renewal stays inside an association-scoped session (two cases) | 95 cases; GREEN `v2subs3-versioned-r2`; mutation `v2subs3-mutation-r2` (lookup without the session) CAUGHT |
+
+Still refused after this change: the placeholder in renewals and draft approvals (`subscriptionCreateRefuse`), the
+placeholder's unusual names (see subscription-create.md and subscription-medical.md), years before 1000 in dateutil dates, and
+the other B rows of the appendix tables of subscription-*, course-* and associates-draft.
 
 ## Remaining A items, per family
 
@@ -294,15 +311,12 @@ No A item remains.
 ### subscription-create / subscription-import-upload / subscription-memberships
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST subscription/add | owner wizard: a typed certificate date without an upload (placeholder PNG drawn with PIL: image rendering, refused by the porting rules) | `routes/association/Members/add/AddMember.svelte:104-139` | `service/subscription_create.go` (`subscriptionCreateRefuse`) | expensive (image) |
+| — | none left (the placeholder certificate of a typed date is ported: v2subs3) | | | |
 
 ### subscription-reads / subscription-lifecycle / subscription-renew / subscription-transfer / subscription-medical
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST .../medical-certificate/set-certificate-expiration | member without a certificate | `Members/detail/sections/modals/AddMedicalCertificate.svelte:51` | `service/subscription_medical.go:389` | medium |
-
-Why these stay (v2-subscriptions):
-- set-certificate-expiration without a certificate: Django draws a PNG with PIL/FreeType; not byte-reproducible, refused before any write.
+| — | none left (set-certificate-expiration without a certificate is ported: v2subs3) | | | |
 
 ### course-subscriptions / course-enrolment / course-writes / course-list / course-locations / course-calendar
 | Route | Condition | UI call | Go site | Cost |
@@ -941,7 +955,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | same | the stored document is a CSV file | ported (v2subs: `pandascsv.ReadText`, `subscriptionImportCSVCell`) | **ported** | The dropzone accepts `text/csv` (`sections/Section1.svelte:63`). Files outside `pandascsv`'s subset stay refused (B): a whitespace-led line after a bare carriage return, decimal text whose value depends on how pandas was compiled. |
 | same, multipart `associates_file` | Excel suffix (xls/xlsx/…) | ported (`pandasxlsx.Read`) | ported | `sections/Section1.svelte:33-37` uploads the file. A legacy `.xls` or an `.ods` file answers the 500 page on Django too. |
 | same | workbook with boolean, error, time-of-day or duration cells, the 1904 date system, a non-text header cell, only whole-number columns | `pandasxlsx.ErrUnsupported` | B | Member sheets carry names and text columns; these forms need a hand-made or converted sheet. Cost: medium. |
-| same | a non-zero number in a date column, or date text outside `YYYY-MM-DD`, with a time, `A/B/YYYY` | `service/subscription_import_rows.go` (`subscriptionImportDate`) | B | Date cells and the usual text forms are handled; `dd-mm-yyyy`, `dd.mm.yyyy` and month names are not. Cost: medium (more dateutil forms). |
+| same | a number or date text in a date column that dateutil reads as a year below 1000 | `service/subscription_import_rows.go` (`subscriptionImportDate`) | B | Ported in v2subs3 otherwise (`internal/pydateutil`). |
 | same | CSV invalid UTF-8, NUL, bare CR, columns with İ/Σ | `service/subscription_import_upload.go:219-223` | B | A Latin-1 CSV exported from old Excel gives invalid UTF-8: user-producible but a minority. legacy: n/a. Cost: medium. |
 | same | file given as `document_id` | `service/subscription_import_upload.go:189` | B | The UI sends a string. |
 
@@ -968,7 +982,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### subscription-create.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/add | `medical_certificate.certificate_expring_date` not null | `service/subscription_create.go:164` | **A** | `routes/association/Members/add/AddMember.svelte:106-117` always sends it (it defaults to today in `sections/Section4.svelte:75-76`). The owner "add member" wizard is refused. Cost: medium (expiration update / placeholder image). |
+| POST subscription/add | `medical_certificate.certificate_expring_date` not null | `service/subscription_create.go:164` | ported | Ported in v2subs3 (`internal/pilplaceholder`). |
 | POST subscription/add | anonymous request or body with `sport_association` | `service/subscription_create.go:91,102` | **A** | Public forms `routes/subscribe/Subscribe.svelte:124,167`, `subscribe-multiple/SubscribeMultiple.svelte:183`, `subscribefamily/SubscribeFamily.svelte:136,181`. Also `AddMember.svelte:124-125` in modal mode. Cost: expensive (anonymous path + user creation). |
 | POST subscription/add?m=only_associate with `associate` | quick re-subscription | ported (v2-sub-create) | **ported** | `routes/association/Members/MembersList.svelte:1564`, `MembersBook.svelte:1318`. Cost: medium. |
 | POST subscription/add | `is_family_wizard: true` | ported (v2-wizard) | **ported** | `SubscribeFamily.svelte:146`. `type: grouped_subscriptions` is ported too (famwiz). |
@@ -976,7 +990,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | POST subscription/add | `new_user_account.new_member` true | ported (v2-sub-create) | **ported** | Toggle in the AddMember wizard (`AddMember.svelte:44,338`). Cost: medium (account + welcome e-mail). |
 | POST subscription/add | `signature` with data | ported (v2-sub-create) | **ported** | AddMember signature step (`sections/Section3.svelte:11-26`). Cost: medium (storage upload). |
 | POST subscription/add | truthy `custom_data.type_of_associate` | `service/subscription_create.go:172` | B | No UI writer found in `routes/association/Members/add`. legacy: low. |
-| POST subscription/add | non-empty X-Group-Id, form bodies, born-date formats, non-ASCII sex/tax code, duplicate tax-code ties, tutor edge cases, fee/amount formats | `service/subscription_create.go:322-1014`, `subscription_create_python.go:110-245` | B | Mostly exotic or legacy duplicates. Tutor edge cases (an associate that already has tutors) are reachable once the A gates are lifted. Re-check then. |
+| POST subscription/add | non-empty X-Group-Id, form bodies, born dates that are floats or containers (the dateutil forms are ported: v2subs3), non-ASCII sex/tax code, duplicate tax-code ties, tutor edge cases, fee/amount formats | `service/subscription_create.go:322-1014`, `subscription_create_python.go:110-245` | B | Mostly exotic or legacy duplicates. Tutor edge cases (an associate that already has tutors) are reachable once the A gates are lifted. Re-check then. |
 
 ### subscription-signature-migration.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1057,7 +1071,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | GET subscription/<uid>/medical-appointments/list | an appointment row without document | `service/subscription_medical.go:105`, `ErrSubscriptionMedicalNotPorted` | B | The UI add route prints synchronously (medical-appointment-add.md), so normal rows have a document. Doc-less rows come from a failed render or older versions. legacy: yes. medium (synchronous renderer call). UI list: `Members/detail/sections/Medical.svelte:510` |
-| POST subscription/<uid>/medical-certificate/set-certificate-expiration | subscription without a certificate | `:389` | **A** | `Members/detail/sections/modals/AddMedicalCertificate.svelte:51` sends `{subscription_id, certificate_expiring_date}`. The upload is required only when `mode === 'all'` (`:37`), so "expiration only" on a member with no certificate hits this. Also `MembersList.svelte:1716`, `MembersBook.svelte:1503`, `activities/subscription/SubscriptionList.svelte:75`, `Members/import/EditData.svelte:441` (the draft path is handled separately, `:384`). Django `subscriptions_views.py:2481` |
+| POST subscription/<uid>/medical-certificate/set-certificate-expiration | subscription without a certificate | `:389` | ported | Ported in v2subs3 (`internal/pilplaceholder`). |
 
 ### subscription-tags.md
 | route | refusal condition | Go site | class | notes |

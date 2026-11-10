@@ -502,6 +502,28 @@ imported('typed-cells', 'owner', 'typed', {'map': {
 imported('whole-numbers', 'owner', 'numbers', {'map': {'nome': 'Nome', 'cap': 'CAP'}}, columns=['Nome', 'CAP'],
          drafts=[({'associate': {'first_name': 1, 'address_cap': '100'}, 'associate_tutor': {}}, False),
                  ({'associate': {'first_name': 2, 'address_cap': '20100'}, 'associate_tutor': {}}, False)])
+# Date text in every form dateutil reads, with the day first unless the text starts with the year: dashes, dots, month
+# names, a time after the date, and a whole number (YYYYMMDD read as year, day, month); a word that is no date is no value.
+DATE_FORMS_COLUMNS = ['Nome', 'Nascita', 'Tesseramento']
+upload('xlsx-date-forms', 'owner', 'date.xlsx', workbook([
+    DATE_FORMS_COLUMNS,
+    ['Dina', '03-02-1990', '1.9.2026'],
+    ['Aldo', 'March 4, 1985', '4 Sep 2026'],
+    ['Ines', '1985-04-03 10:30', 'giovedì prossimo'],
+    ['Elio', 19900203, '2026/09/01'],
+    ['Olga', '13-02-1990', '02-13-2026'],
+]), columns=DATE_FORMS_COLUMNS, kind=XLSX, content_type=XLSX, keep='date_forms')
+imported('date-forms', 'owner', 'date_forms', {'map': {'nome': 'Nome', 'data di nascita': 'Nascita', 'data tesseramento': 'Tesseramento'}},
+         columns=DATE_FORMS_COLUMNS,
+         drafts=[({'associate': {'first_name': 'Dina', 'born_date': '03/02/1990', 'membership_start_date': '01/09/2026'},
+                   'associate_tutor': {}}, False),
+                 ({'associate': {'first_name': 'Aldo', 'born_date': '04/03/1985', 'membership_start_date': '04/09/2026'},
+                   'associate_tutor': {}}, False),
+                 ({'associate': {'first_name': 'Ines', 'born_date': '03/04/1985'}, 'associate_tutor': {}}, False),
+                 ({'associate': {'first_name': 'Elio', 'born_date': '02/03/1990', 'membership_start_date': '01/09/2026'},
+                   'associate_tutor': {}}, False),
+                 ({'associate': {'first_name': 'Olga', 'born_date': '13/02/1990', 'membership_start_date': '13/02/2026'},
+                   'associate_tutor': {}}, False)])
 # A stored CSV. The columns of codes are text as written; the others are read_csv's values: whole numbers, decimals and
 # booleans; a missing value is no value; date text has the day first.
 imported('csv-import-members', 'owner', 'csv', {'map': {

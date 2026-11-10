@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handler"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pilplaceholder"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentobjects"
@@ -63,6 +65,17 @@ func composeDocumentStorage(cfg config.Config, db *sqlx.DB, sessions *repository
 // composeMembershipDocumentUploads is the document storage subscription/memberships' documents_data uses.
 func composeMembershipDocumentUploads(cfg config.Config, db *sqlx.DB) *service.DocumentUploads {
 	return composeDocumentStorage(cfg, db, nil)
+}
+
+// composeSubscriptionPlaceholders is the placeholder certificate image of a typed expiration date, stored like an upload.
+// PIL_PLACEHOLDER_ZLIB names the zlib of the Django side's Pillow (classic zlib by default, as in the Django image); a
+// value that is neither "zlib" nor "zlib-ng" leaves the placeholder refused.
+func composeSubscriptionPlaceholders(cfg config.Config, db *sqlx.DB) *service.SubscriptionPlaceholders {
+	zlib, known := pilplaceholder.ParseZlib(os.Getenv(pilplaceholder.ZlibSetting))
+	if !known {
+		return nil
+	}
+	return service.NewSubscriptionPlaceholders(composeDocumentStorage(cfg, db, nil), zlib)
 }
 
 // composePersonaPictures is the default storage of the personas picture_path upload.

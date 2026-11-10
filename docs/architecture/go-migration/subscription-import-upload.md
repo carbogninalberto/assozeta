@@ -129,9 +129,9 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
 - CSV files outside `pandascsv`'s subset (`Read`, `ReadText`): a line that starts with whitespace after a bare carriage
   return, and decimal text whose value depends on how pandas was compiled (1,904 of 97,442 corpus outcomes).
 - A date cell with a year below 1000 in a mapped column (strftime's year width).
-- Import values: a non-zero number in a birth, membership or certificate date column (its reading depends on the current
-  date); date text outside `YYYY-MM-DD`, `YYYY-MM-DD[T ]HH:MM:SS[.f]`, `A/B/YYYY` that contains a digit or a month or
-  weekday name, or a year below 1000; a tax code beyond ASCII in a complete row or outside the transliteration subset; a
+- Import values: date text or a number in a date column that dateutil reads as a year below 1000, or over 64 KiB (date
+  text and numbers are otherwise read by the whole dateutil parser, `internal/pydateutil`, day first unless the text starts
+  with the year); a tax code beyond ASCII in a complete row or outside the transliteration subset; a
   `default` that is not an object when a value is missing.
 - Columns containing `İ` or `Σ` (Python's full lower-casing and final sigma).
 - A file given as `document_id`.
@@ -187,3 +187,7 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
 - Re-run green (`v2imp-rerun-r1`): associates-draft, subscription-memberships, subscription-create.
 - Earlier evidence (CSV uploads, 29 cases): RED `native-r5`, GREEN `versioned-r1`, mutation `mutation-r1` (resetting the map
   per request).
+- v2subs3 (69 cases; `date-forms`: dashes, dots, month names, a time, a whole number, a word): RED: documented refusal
+  (v2-refusals.md, "a non-zero number in a date column, or date text outside ..."). GREEN (`v2subs3-versioned-r1`, after
+  merging the base): 69/69 on four transports. Mutation (`v2subs3-mutation-r1`): reading every date text day first, also
+  after a leading year, fails Go on `subscription-import-upload-date-forms` (CAUGHT).

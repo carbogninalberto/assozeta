@@ -44,7 +44,7 @@
 ## Not ported
 
 - **list** rows without a document: the view prints each one synchronously (`print_document_medical_appointment`, an HTTP call to the document renderer). Go answers 500 before rendering; no write happens either way.
-- **set-certificate-expiration** for a subscription without a certificate: Django renders a placeholder PNG and saves it to storage before creating the certificate. Go answers 500 before any write.
+- **set-certificate-expiration** for a subscription without a certificate is ported: the account's new certificate, the placeholder image (`generate_image_with_text` saved as PNG; Go: `internal/pilplaceholder`, byte for byte, with `PIL_PLACEHOLDER_ZLIB` naming the zlib of the Django side's Pillow), its `Document`, the object `<timestamp>/<document id>/medical_certificate_<first>_<last>.png`, `subscription.save()` with the certificate, then the certificate's save with the document and the date. The request is not atomic: without a member, or with a value that is no `%d/%m/%Y` date, the new certificate stays and the answer is the 500 page. Still refused before any write: a member without a first or last name, a file name that is not storable (over 255 characters, control characters, a path the storage rejects), an unknown `PIL_PLACEHOLDER_ZLIB`.
 - `subscription/<uid>/medical-appointments/add` is ported in [medical-appointment-add](medical-appointment-add.md) (its synchronous print is an HTTP request to `CURRENT_HOST`). `subscription/<uid>/medical-certificate/upload` is in `documents-writes.md`. `subscription/<uid>/medical-certificate/send-email-reminder` is ported in [celery-routes-a](celery-routes-a.md) (it publishes `send_email_template` through the Celery producer).
 
 ## Evidence
@@ -55,3 +55,4 @@
 - GREEN (`versioned-r1`): 127/127 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact appointment, certificate, subscription, draft, document, audit and index effects.
 - Mutation (`mutation-r1`): deleting the certificate during an association-scoped session fails Go on `subscription-medical-expire-null-scoped-session-detaches-only` (CAUGHT).
 - `associates-draft` (128 cases, its repository transaction is embedded unchanged) and `subscription-tags` (79 cases, neighbouring `main.go` routes) re-run green natively.
+- v2subs3 (133 cases, with a private MinIO): RED: documented refusal (v2-refusals.md, "member without a certificate"). GREEN (`v2subs3-versioned-r1`, after merging the base): 133/133 on four transports, the stored PNG equal to Pillow's. Mutation (`v2subs3-mutation-r1`): the image text without its last line of spaces fails Go on `subscription-medical-expire-without-certificate-placeholder` (`storage.placeholder-bytes`, CAUGHT).

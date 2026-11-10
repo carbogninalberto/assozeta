@@ -201,6 +201,10 @@ type SubscriptionCreateTransaction interface {
 	QuickAssociationExists(ctx context.Context, id string) (bool, error)
 	// QuickCertificates are the certificates of Subscription.objects.filter(associate=...), one per subscription.
 	QuickCertificates(ctx context.Context, associate string) ([]SubscriptionQuickCertificate, error)
+	// CreatePlaceholderDocument is Document.objects.create(filename=...) with its create entry.
+	CreatePlaceholderDocument(ctx context.Context, document NewDocument, actorAssociation *string, audit LoginAuditContext, at time.Time) error
+	// InsertPlaceholderCertificate is MedicalCertificate.objects.create(expiration_date=..., user=..., document=...).
+	InsertPlaceholderCertificate(ctx context.Context, id, user, document string, expiration, created time.Time) error
 	// InsertSignature is Signature.objects.create(signature=data, user=user) with its create entry.
 	InsertSignature(ctx context.Context, id, user, data string, audit LoginAuditContext, at time.Time) error
 	// SaveSubscriptionSignature is save(update_fields=['signature_url', 'signature_storage_key']) of the new subscription.

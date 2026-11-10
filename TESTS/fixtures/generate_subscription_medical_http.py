@@ -78,9 +78,9 @@ CERTIFICATES = {
 
 
 def subscription(association, *, user='owner', medical=None, deleted=False, group=None, start='2026-01-01', end='2026-12-31',
-                 created='2026-02-01T09:00:00Z'):
+                 created='2026-02-01T09:00:00Z', associate=None):
     return {'id': next(ids), 'association': association, 'user': user, 'medical': medical, 'deleted': deleted, 'group': group,
-            'start': start, 'end': end, 'created': created}
+            'start': start, 'end': end, 'created': created, 'associate': associate}
 
 
 SUBSCRIPTIONS = {
@@ -152,6 +152,17 @@ DRAFTS = {
     'abroad': draft(FOREIGN, {'medical_certificate': medical(cid('drafted'))}),
 }
 cases = []
+
+
+# Members of the subscriptions without a certificate that set-certificate-expiration gives a placeholder one.
+ASSOCIATES = {
+    'pia': {'id': next(ids), 'association': OWN, 'first': 'Pia', 'last': 'Segnaposto'},
+    'niccolo': {'id': next(ids), 'association': OWN, 'first': 'Niccolò', 'last': 'Però'},
+    'dario': {'id': next(ids), 'association': OWN, 'first': 'Dario', 'last': 'Datato'},
+}
+SUBSCRIPTIONS['bare'] = subscription(OWN, associate='pia')
+SUBSCRIPTIONS['bare_collaborator'] = subscription(OWN, associate='niccolo')
+SUBSCRIPTIONS['bare_bad_date'] = subscription(OWN, associate='dario')
 
 
 def add(name, actor, path, status, response, *, method='POST', body=None, raw_body=None, content_type=None, headers=None, effect=None):
@@ -492,9 +503,48 @@ add('expire-draft-bad-date-keeps-writes', 'owner', EXPIRE('bad_date'), 500, SERV
 add('expire-draft-null-date-server-error', 'owner', EXPIRE('bad_date'), 500, SERVER, body={'certificate_expiring_date': None},
     effect=effect('owner', [cert_create()], created={'user': 'owner', 'expiration': None}))
 
+
+# ---------------------------------------------------------------- a subscription without a certificate
+# The view creates the account's certificate, draws the placeholder image (generate_image_with_text, saved as PNG) with
+# the member's name and the date, creates its Document, stores the PNG as
+# <timestamp>/<document id>/medical_certificate_<first>_<last>.png, saves the subscription with the certificate and then
+# the certificate with the document and the date. 'text' is the view's f-string; the adapter draws it with Pillow and
+# compares the stored bytes. The request is not atomic: without a member, or with a value that is no '%d/%m/%Y' date,
+# the new certificate stays and the answer is the 500 page.
+def placeholder_text(first, last, moment_text):
+    return f'''
+{first} {last}\n
+\n
+Questa certificazione è valida fino al {moment_text}\n
+\n
+\n
+Attenzione: questo è un placeholder, il certificato medico deve essere caricato in seguito.
+            '''
+
+
+def placeholder(actor, label, day_text):
+    member = ASSOCIATES[SUBSCRIPTIONS[label]['associate']]
+    return {'kind': 'placeholder', 'actor': actor, 'subscription': label, 'user': 'owner', 'expiration': day_text,
+            'filename': f"medical_certificate_{member['first']}_{member['last']}.png",
+            'text': placeholder_text(member['first'], member['last'], moment(day_text))}
+
+
+add('expire-without-certificate-placeholder', 'owner', EXPIRE('bare'), 200, updated_with('2027-06-30'),
+    body={'certificate_expiring_date': '30/06/2027'}, effect=placeholder('owner', 'bare', '2027-06-30'))
+add('expire-without-certificate-placeholder-collaborator', 'full_collaborator', EXPIRE('bare_collaborator'), 200, updated_with('2031-12-01'),
+    body={'certificate_expiring_date': '1/12/2031'}, effect=placeholder('full_collaborator', 'bare_collaborator', '2031-12-01'))
+add('expire-without-certificate-bad-date-keeps-certificate', 'owner', EXPIRE('bare_bad_date'), 500, SERVER,
+    body={'certificate_expiring_date': '31/02/2027'}, effect=effect('owner', [cert_create()], created={'user': 'owner', 'expiration': None}))
+add('expire-without-certificate-iso-date-keeps-certificate', 'owner', EXPIRE('bare_bad_date'), 500, SERVER,
+    body={'certificate_expiring_date': '2027-06-30'}, effect=effect('owner', [cert_create()], created={'user': 'owner', 'expiration': None}))
+add('expire-without-certificate-null-date-keeps-certificate', 'owner', EXPIRE('bare_bad_date'), 500, SERVER,
+    body={'certificate_expiring_date': None}, effect=effect('owner', [cert_create()], created={'user': 'owner', 'expiration': None}))
+add('expire-without-certificate-without-member-keeps-certificate', 'owner', EXPIRE('empty'), 500, SERVER,
+    body={'certificate_expiring_date': '30/06/2027'}, effect=effect('owner', [cert_create()], created={'user': 'owner', 'expiration': None}))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Subscription medical appointments and certificates authored sequence with effects',
-                              'ids': IDS, 'documents': DOCUMENTS, 'certificates': CERTIFICATES, 'subscriptions': SUBSCRIPTIONS,
+                              'ids': IDS, 'associates': ASSOCIATES, 'documents': DOCUMENTS, 'certificates': CERTIFICATES, 'subscriptions': SUBSCRIPTIONS,
                               'appointments': APPOINTMENTS, 'drafts': DRAFTS, 'cases': cases},
                              ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')
