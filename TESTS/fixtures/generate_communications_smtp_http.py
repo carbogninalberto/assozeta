@@ -27,9 +27,14 @@ verify (GET): no row is 404; otherwise verify_smtp(): smtplib connects only when
 the host is truthy, so an empty host fails at the first command with
 'please run connect() first'; a host with exactly one ':' and a falsy port splits
 the port and int() failing raises OSError('nonnumeric port'). Every other
-configuration opens a network connection (not part of this sequence).
+configuration opens a connection: SMTP_SSL, or SMTP followed by starttls() for TLS,
+then login(), sendmail("<sender name or WHITELABEL_NAME> <user>", owner email, the
+test message as bytes) and quit(). Success is {'verified': True, 'msg': 'Ok'}; any
+exception is {'verified': False, 'msg': str(exception)}. The run's fake SMTP servers
+record the client bytes; a case's setup writes the listed columns of the own row.
 Run with ``python3 -I`` after the message-mutations fixture.
 """
+import base64
 import json
 from pathlib import Path
 
@@ -187,7 +192,72 @@ add('update-null-host', 'owner', UPDATE, 200, UPDATED, method='PATCH', body={'em
 add('verify-owner-ssl-without-host', 'owner', VERIFY, 200, NO_CONNECTION)
 add('info-owner-final', 'owner', INFO, 200, info(STATE))
 
+# --- verify against the run's SMTP servers ---------------------------------------------------------
+SMTP_USER, SMTP_PASSWORD = 'mailer@example.test', 'placeholder-smtp'
+# The run's environment sets WHITELABEL_NAME.
+WHITELABEL = 'Assozeta'
+MESSAGE = (f'Subject: Email di test da {WHITELABEL}, SMTP configurato correttamente.\n\n'
+           'Se hai ricevuto questa email, significa che hai configurato il server SMTP correttamente.')
+VERIFIED = {'verified': True, 'msg': 'Ok'}
+
+
+def failed(text):
+    return {'verified': False, 'msg': text}
+
+
+def plain_auth(password=SMTP_PASSWORD):
+    return 'AUTH PLAIN ' + base64.b64encode(f'\0{SMTP_USER}\0{password}'.encode()).decode() + '\r\n'
+
+
+def handshake(server):
+    units = ['ehlo <local>\r\n']
+    if server == 'starttls':
+        units += ['STARTTLS\r\n', '<tls>', 'ehlo <local>\r\n']
+    return units
+
+
+MAIL = f'mail from:<{SMTP_USER}> size={len(MESSAGE.encode())}\r\n'
+RCPT = 'rcpt to:<$owner>\r\n'
+DELIVERY = [MAIL, RCPT, 'data\r\n', MESSAGE + '\r\n.\r\n', 'quit\r\n', '<quit>']
+
+
+def verify(name, actor, server, response, connections, *, headers=None, **columns):
+    """One verify case: the setup writes the connection columns; the row is otherwise untouched."""
+    setup = {'email_smtp_host': '127.0.0.1', 'email_smtp_port': f'$port:{server}', 'email_smtp_user': SMTP_USER,
+             'email_smtp_password': SMTP_PASSWORD, **columns}
+    STATE.update(setup)
+    add(name, actor, VERIFY, 200, response, headers=headers, effect={
+        'kind': 'verify', 'row': dict(STATE), 'smtp': {'server': server, 'connections': connections} if connections else None})
+    cases[-1]['setup'] = setup
+
+
+verify('verify-starttls-sends-test-email', 'owner', 'starttls', VERIFIED, [handshake('starttls') + [plain_auth()] + DELIVERY],
+       email_encryption='TLS', email_sender_name='Associazione è')
+verify('verify-ssl-default-sender-name', 'full_collaborator', 'ssl', VERIFIED, [handshake('ssl') + [plain_auth()] + DELIVERY],
+       email_encryption='SSL', email_sender_name=None)
+verify('verify-plain-blank-sender-name', 'admin', 'plain', VERIFIED, [handshake('plain') + [plain_auth()] + DELIVERY],
+       headers=ADMIN_OWNER, email_encryption='NONE', email_sender_name='')
+# login() tries PLAIN, then LOGIN; the last reply is the exception.
+verify('verify-wrong-password', 'owner', 'starttls', failed("(535, b'denied')"),
+       [handshake('starttls') + [plain_auth('placeholder-wrong'),
+                                 'AUTH LOGIN ' + base64.b64encode(SMTP_USER.encode()).decode() + '\r\n', '<closed>']],
+       email_encryption='TLS', email_smtp_password='placeholder-wrong')
+verify('verify-server-without-auth', 'owner', 'noauth', failed('SMTP AUTH extension not supported by server.'),
+       [['ehlo <local>\r\n', '<closed>']], email_encryption='NONE')
+verify('verify-server-without-starttls', 'owner', 'plain', failed('STARTTLS extension not supported by server.'),
+       [['ehlo <local>\r\n', '<closed>']], email_encryption='TLS')
+verify('verify-connection-refused', 'owner', 'closed', failed('$refused'), None, email_encryption='NONE')
+verify('verify-recipient-refused', 'owner', 'norcpt', failed("{'$owner': (550, b'refused')}"),
+       [['ehlo <local>\r\n', plain_auth(), MAIL, RCPT, 'rset\r\n', '<closed>']], email_encryption='NONE')
+verify('verify-sender-refused', 'full_collaborator', 'nomail',
+       failed(f"(550, b'sender refused', 'A.S.D. Sport & Co <{SMTP_USER}>')"),
+       [['ehlo <local>\r\n', plain_auth(), MAIL, 'rset\r\n', '<closed>']], email_encryption='NONE',
+       email_sender_name='A.S.D. Sport & Co')
+# The server accepts and never greets: SMTP_TIMEOUT_SECONDS later the constructor's getreply() gives up.
+verify('verify-server-never-greets', 'owner', 'silent', failed('Connection unexpectedly closed: timed out'), [['<closed>']],
+       email_encryption='NONE')
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'SMTP configuration info, update and verify authored sequence with audit effects',
-                              'ids': IDS, 'configurations': CONFIGURATIONS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+                              'ids': IDS, 'smtp_password': SMTP_PASSWORD, 'configurations': CONFIGURATIONS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

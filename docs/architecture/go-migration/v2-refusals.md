@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create and 5 in v2-misc (one v2-misc row duplicated a v2-documents port), below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 5 in v2-misc (one v2-misc row duplicated a v2-documents port) and 1 in v2-misc-2, below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -119,6 +119,15 @@ Receipts are `quality-reports/go-migration/<family>-http-v2misc-*`; each family 
 | workflow-update | `PATCH communications/workflows/<id>/update` | `enabled: true` with a future cron time (`check_workflows_trigger_cron` with a countdown) | 63 cases; RED `v2misc-red-r3` Django 63/63, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r1` (ambiguous wall time on the summer offset) CAUGHT |
 | subscription-reads | `GET subscription/<uid>/info` | course subscription with a membership payment that has an invoice (or an instructor, B) | 261 cases; RED `v2misc-red-r1` Django 261/261, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r1` (nested invoice not loaded) CAUGHT |
 
+### Ported in the v2-misc-2 change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2misc2-*` (profile-misc: `seconb-*`); each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| communications-smtp | `GET communications/settings/smtp/verify` | a configuration with a connectable host (connect, STARTTLS or implicit TLS, login, test email, quit, and the smtplib failure texts) | 83 cases; RED `v2misc2-red-r1` Django 83/83, Go 500; GREEN `v2misc2-green-r1` 4 transports; mutation `v2misc2-mutation-r1` (test email addressed to the SMTP user) CAUGHT; communications-send-email 55/55 and instance-outbound 106/106 re-run |
+| profile-misc | `PATCH onboarding/update` | `onboarding_data` with a `users_onboarding_id` or `user` other than the row's own (both are read-only serializer fields now) | 107 cases; RED `seconb-red-r1` Django 107/107, Go 500; GREEN `seconb-green-r1` 4 transports; mutation `seconb-mutation-r1` (row id taken from the body) CAUGHT |
+
 ## Remaining A items, per family
 
 UI paths under `UI/src/`, Go under `BE_GO/internal/`. Cost: cheap (hours), medium (a family change with new
@@ -211,13 +220,14 @@ legacy Bakney invoices or tutors that would be reassigned (refused by the valida
 ### communications, camps, profile, personas, modules, oauth, google
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| GET communications/settings/smtp/verify | a real SMTP host | `communication/settings/sections/EmailSMTP.svelte:155` | `service/communications_smtp.go:224` | medium |
+| GET communications/settings/smtp/verify | a failed connection whose Python text comes from the platform libraries: TLS handshake error (for example `SSL` on a STARTTLS port), name resolution failure, connect timeout | `communication/settings/sections/EmailSMTP.svelte:155` | `service/communications_smtp.go` (`Verify`) | medium |
 | PATCH camps-and-retreats/periods/services/<uid>/update | walks a soft-deleted/other-group unpaid payment | `EditServiceModal.svelte:29-35` | `service/camps_periods.go:755` | medium |
 | personas add/update | `picture_path` data URL (photo) | `preview-blocks/image-upload.svelte:35-38` | `service/personas_writes.go:270-288` | medium |
 | oauth2/signup | Google/Apple configured | `routes/login/Login.svelte:425-447` | `service/oauth_accounts.go:448` | medium-expensive |
 
 Why these stay (v2-misc):
-- smtp/verify: needs a fake SMTP server in the communications-smtp adapter (STARTTLS/SSL/login answers); not reached.
+- smtp/verify: the dialogue is ported (v2-misc-2). What stays is the text of OpenSSL, resolver and connect-timeout errors, which
+  depends on the Python build and the platform; Go answers the 500 page instead of a `verified: false` body.
 - camps service update on a soft-deleted or other-group payment: Django saves it and auditlog, reading the old row through the
   soft-delete manager, writes an update entry diffed against None; that entry and its index row need their own characterization.
 - personas photo: the data URL is stored under a timestamped key with a `put_object_acl` and a CDN URL; needs a MinIO in the
@@ -396,7 +406,8 @@ Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples)
 ### communications-smtp.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| GET communications/settings/smtp/verify | configuration with a host that would connect | service/communications_smtp.go:224 (`ErrSMTPVerifyNotPorted`) | A | `association/communication/settings/sections/EmailSMTP.svelte:155` calls verify; any saved SMTP host reaches it. |
+| GET communications/settings/smtp/verify | configuration with a host that would connect | `service/communications_smtp.go` (`Verify`) | ported | Ported in v2-misc-2 (`communications-smtp.md`, `v2misc2-green-r1`). |
+| GET communications/settings/smtp/verify | TLS handshake error, name resolution failure, connect timeout, reset; falsy port with a plain host; missing user or password; sender name outside letters, digits, spaces and `. - _ &` | `service/communications_smtp.go` (`Verify`, `smtpVerifyPlan`) | A (failed connection) / B (the rest) | A wrong encryption or a mistyped host in `EmailSMTP.svelte` reaches the first group. Cost: medium (platform error texts). |
 | GET communications/settings/smtp/verify | host port suffix with non-ASCII/separator characters | service/communications_smtp.go:217 | B | Needs a host typed as `smtp:２５` or similar. Cost: cheap. |
 
 ### course-writes.md
