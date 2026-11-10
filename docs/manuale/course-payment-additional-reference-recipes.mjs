@@ -8,7 +8,7 @@ export const coursePaymentAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/association/course/overview/components/CourseNavigationTab.svelte": "d93d905aada618ee7254ff78c57808f100a32dcdd426ecd64ddc42aba84e1bf3",
     "UI/src/routes/association/course/CourseList.svelte": "d68233a0b121dcbf15b840ea120348b331d017b4dd7ab936da95c46f1c50ad84",
     "UI/src/routes/association/course/overview/OverviewCourse.svelte": "5aed27d46e9ce99c75452e3cd766db412daaaeca7ac2084a20581358195c06ce",
-    "BE/application/views/course_views.py": "79bfbd622601a9d17c811c76cc99e2a4b1ac9d38a05a67b190e0b233c2672baa",
+    "BE/application/views/course_views.py": "5d28af6fecaffb1caa42406df4d5037dcfe4709a79c76a1d6c8070cc3ef0c24f",
     "BE/application/mixin.py": "ff5595da40005a0b91d599cfb5c95833a05069f28507635b67113a6490e1cb82",
     "BE/application/serializers/courses_serializers.py": "45dc937b0da921f8466e4c21d22bedb8e74a52bd62b66f41f60e3c42b0320632",
     "UI/src/routes/association/course/overview/modals/AddEditCourseSubscriptionModal.svelte": "cdb4e69ab6a4b231385aecacdd8c427aa0ca03652c79e50bee154ee3626ea7d7",
@@ -22,13 +22,13 @@ export const coursePaymentAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/association/course/overview/components/modals/EditCalendarEvent.svelte": "9e524c5317b89a1c86c0d5153ba07b9286c9acbb560cef636324d302905819d3",
     "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
     "UI/src/routes/accounting/payment/modals/AddEditModal.svelte": "a10e4ff9329c1ef31e51e1d07bd5aa203d6d5f08bddd2ca96f300ea1eea3f406",
-    "BE/application/views/payment_views.py": "cc31d3e1d74244930b6929fd2bf9b2d2e6a90a7b915e0edf73000f468d58573d",
-    "BE/application/models/payment_models.py": "9dbcab8698adbde447a9c4f6eb52143409cf197fde3ce90d0aa8da56a1f8ebda",
+    "BE/application/views/payment_views.py": "eb2a9bc1bbb5caf2a0fe8261aa898e85e046d96d47417f2c155e7b9c136f277c",
+    "BE/application/models/payment_models.py": "30d4c9c5bf5b21d78a0fdda78edb45edc9266e9c0fc42e2ff83a3c9e3fcf0a4b",
     "BE/application/serializers/payment_serializers.py": "6e6fab314f1e391ada81ed3c983bb146aad5bbc1bc2ec71750078dd10f76f2fa",
     "UI/src/routes/accounting/payment/category/Categories.svelte": "e358b8768d55f757cada0af4dabd2443e2168248057f5442f428a6bed58ad768",
     "UI/src/routes/accounting/payment/category/modals/EditModal.svelte": "270b2663c133c813a352959e9b4177ae4f6361ce879537242a7d9af06bed51a8",
     "UI/src/routes/accounting/receipts/modals/ShareModal.svelte": "0c86445d001a0d9141f26b673471a5b8b1ed1b9f15dc22264e125dc34d61bda3",
-    "BE/application/views/invoice_views.py": "500cf26719455a1a86aacb63e5c99bc9cbcc470a0bb1d275df926fbb884c8260",
+    "BE/application/views/invoice_views.py": "afddd7239fe7e2a23c6e997d27c0f5ad3b0b3501c7601438d112e318a46d8922",
     "UI/src/routes/profile/sections/Stripe.svelte": "75899c0eb6ed827a07b0d2ad47ea102353a25a0c575c941757a828d5c65529be",
     "UI/src/routes/profile/sections/SelfInstance.svelte": "13b31bc8ee3d904cb0d18f4a531bc7b91ee7c5f1f30361c262a40c3448aa6ab7",
     "UI/src/routes/profile/sections/InstanceIntegrations.svelte": "3fb8d12712e3088142b367b144dca0c70151a2c2692ad8dd69eacc88a4720332",
@@ -42,7 +42,7 @@ export const coursePaymentAdditionalReviewedSources = Object.freeze({
     "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa"
 });
 
-const sourceKeys = Object.freeze(["course_types", "course_fee", "course_quotes", "course_membership", "course_model", "course_navigation", "course_list", "course_delete_ui", "course_overview", "course_update", "course_status", "course_delete", "group_mixin", "course_subscription_model", "course_subscription_delete", "course_subscription_scope", "course_subscription_update", "course_explicit_rates", "course_select_rates", "course_select_quote", "course_subscription_submit", "course_bulk_operations", "course_operations_menu", "course_remove_ui", "course_bulk_update", "course_renew", "course_initial_membership", "course_cascade", "installment_delete", "installment_generator", "installment_row", "full_plan", "calendar_series", "calendar_series_start", "calendar_save", "calendar_edit", "calendar_delete_ui", "calendar_delete_warning", "calendar_share", "payment_methods", "payment_fields", "payment_ui_delete", "payment_delete", "payment_bulk_delete", "payment_add", "payment_model", "payment_serializer", "payment_export_ui", "payment_export_current", "payment_export_menu", "payment_export", "payment_columns", "payment_columns_load", "payment_reminder_ui", "payment_reminder", "payment_future_window", "payment_stripe_stats", "category_form", "category_update", "category_model", "receipt_share", "receipt_send", "profile_stripe", "profile_settings_online", "instance_sections", "instance_integrations", "instance_stripe_ui", "instance_stripe_save", "instance_stripe_verify", "instance_stripe_controls", "instance_stripe_backend", "instance_stripe_tests", "instance_permissions", "stripe_availability", "stripe_connect_disabled", "stripe_payment", "stripe_methods", "stripe_webhook", "athlete_pay", "stripe_checkout", "course_permissions", "payment_permissions", "receipt_permissions", "payment_filters_ui", "payment_method_filter_ui", "payment_state_filter_ui", "payment_filters_backend"]);
+const sourceKeys = Object.freeze(["course_types", "course_fee", "course_quotes", "course_membership", "course_model", "course_navigation", "course_list", "course_delete_ui", "course_overview", "course_update", "course_status", "course_delete", "group_mixin", "course_subscription_model", "course_subscription_delete", "course_subscription_scope", "course_subscription_update", "course_explicit_rates", "course_select_rates", "course_select_quote", "course_subscription_submit", "course_bulk_operations", "course_operations_menu", "course_remove_ui", "course_bulk_update", "course_renew", "course_initial_membership", "course_cascade", "installment_delete", "installment_generator", "installment_row", "full_plan", "calendar_series", "calendar_series_start", "calendar_save", "calendar_edit", "calendar_delete_ui", "calendar_delete_warning", "calendar_share", "payment_methods", "payment_fields", "payment_ui_delete", "payment_delete", "payment_bulk_delete", "payment_add", "payment_model", "payment_serializer", "payment_export_ui", "payment_export_current", "payment_export_menu", "payment_export", "payment_columns", "payment_columns_load", "payment_reminder_ui", "payment_reminder", "payment_future_window", "payment_stripe_stats", "category_form", "category_update", "category_model", "receipt_share", "receipt_send", "profile_stripe", "profile_settings_online", "instance_sections", "instance_integrations", "instance_stripe_ui", "instance_stripe_save", "instance_stripe_verify", "instance_stripe_controls", "instance_stripe_backend", "instance_stripe_tests", "instance_permissions", "stripe_availability", "stripe_connect_disabled", "stripe_payment", "stripe_methods", "stripe_webhook", "athlete_pay", "stripe_checkout", "course_permissions", "payment_permissions", "receipt_permissions", "payment_filters_ui", "payment_method_filter_ui", "payment_state_filter_ui", "payment_filters_backend", "payment_athlete_course_subscription"]);
 export const coursePaymentAdditionalSourceContracts = Object.freeze([
     [
         "UI/src/routes/association/course/add/sections/Section1.svelte",
@@ -478,6 +478,11 @@ export const coursePaymentAdditionalSourceContracts = Object.freeze([
         "BE/application/views/payment_views.py",
         "if type is not None:",
         24
+    ],
+    [
+        "BE/application/views/payment_views.py",
+        "# case athlete is asking for his payments",
+        15
     ]
 ].map(contract => Object.freeze(contract)));
 
@@ -823,7 +828,8 @@ const sections = [
             "course_explicit_rates",
             "course_select_rates",
             "course_subscription_update",
-            "payment_future_window"
+            "payment_future_window",
+            "payment_athlete_course_subscription"
         ]
     },
     {

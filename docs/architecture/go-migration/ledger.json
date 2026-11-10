@@ -32386,7 +32386,7 @@
         "target": "SpectacularAPIView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/apischema/apischema.go",
         "BE_GO/internal/apischema/locale.go",
@@ -32429,21 +32429,28 @@
         "TESTS/adapters/django/api_schema_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/api-schema.md",
         {
-          "command": "python tools/go-migration/family.py run api-schema --versioned --label verified-aa6750c6",
-          "revision": "c4a69118b0e6c65df7710fc5672205b831746cf2",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/api-schema-http-verified-aa6750c6/results.json",
-          "receipt_sha256": "f539697dd56a10824b164a6bf77f5af6e2cfb8e9a2d75719d86c2fad9d984252",
-          "scope": "HTTP family api-schema: 76/76 cases on native Django and native Go, 76/76 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 76/76; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/api-schema-http-red/results.json",
+          "receipt_sha256": "1a2def82610a3deb695b8f0b364c0fde23fff0ee87fef9c443fb07889379dbd5"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 76/76 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/api-schema-http-ci3-versioned/results.json",
+          "receipt_sha256": "324c96fb88a9d681c4a2120a2235c1a4e54d843f423dd4babfefe1f3a9fcad81"
+        },
+        {
+          "revision": "one extra space in the JSON renderer indentation (BE_GO/internal/apischema/render.go)",
+          "result": "Mutation control: fails Go on api-schema-delete-not-allowed-json (response.body)",
+          "artifact": "quality-reports/go-migration/api-schema-http-ci3-mutation/results.json",
+          "receipt_sha256": "a04ee8ff0be03f920bd562412f465ffced25c4bb933422b682c24d60b5497b52"
         }
       ],
       "notes": [
-        "Implementing: drf-spectacular schema (YAML/JSON, every catalog language, version, indent), swagger-ui and redoc pages served from documents Django generates (TESTS/adapters/django/api_schema.py; --check drift test in go-quality). lang/version values outside the documented character sets, Accept headers needing email.message parsing and queries over 1000 fields are refused with a 500. See docs/architecture/go-migration/api-schema.md.",
-        "Implementing evidence: docs/architecture/go-migration/api-schema.md",
-        "Implementing evidence: RED: Django 76/76; Go 404 on the first case. (quality-reports/go-migration/api-schema-http-red/results.json)",
-        "Implementing evidence: GREEN: 76/76 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact bytes, CSRF cookie and token checks. (quality-reports/go-migration/api-schema-http-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on api-schema-lang-upper-english (response.body). (quality-reports/go-migration/api-schema-http-fallback-case/results.json)"
+        "Implementing: drf-spectacular schema (YAML/JSON, every catalog language, version, indent), swagger-ui and redoc pages served from documents Django generates (TESTS/adapters/django/api_schema.py; --check drift test in go-quality). lang/version values outside the documented character sets, Accept headers needing email.message parsing and queries over 1000 fields are refused with a 500. See docs/architecture/go-migration/api-schema.md."
       ]
     },
     {
@@ -32461,7 +32468,7 @@
         "target": "SpectacularRedocView.as_view(url_name='schema')",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/apischema/apischema.go",
         "BE_GO/internal/apischema/locale.go",
@@ -32504,21 +32511,28 @@
         "TESTS/adapters/django/api_schema_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/api-schema.md",
         {
-          "command": "python tools/go-migration/family.py run api-schema --versioned --label verified-aa6750c6",
-          "revision": "c4a69118b0e6c65df7710fc5672205b831746cf2",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/api-schema-http-verified-aa6750c6/results.json",
-          "receipt_sha256": "f539697dd56a10824b164a6bf77f5af6e2cfb8e9a2d75719d86c2fad9d984252",
-          "scope": "HTTP family api-schema: 76/76 cases on native Django and native Go, 76/76 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 76/76; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/api-schema-http-red/results.json",
+          "receipt_sha256": "1a2def82610a3deb695b8f0b364c0fde23fff0ee87fef9c443fb07889379dbd5"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 76/76 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/api-schema-http-ci3-versioned/results.json",
+          "receipt_sha256": "324c96fb88a9d681c4a2120a2235c1a4e54d843f423dd4babfefe1f3a9fcad81"
+        },
+        {
+          "revision": "one extra space in the JSON renderer indentation (BE_GO/internal/apischema/render.go)",
+          "result": "Mutation control: fails Go on api-schema-delete-not-allowed-json (response.body)",
+          "artifact": "quality-reports/go-migration/api-schema-http-ci3-mutation/results.json",
+          "receipt_sha256": "a04ee8ff0be03f920bd562412f465ffced25c4bb933422b682c24d60b5497b52"
         }
       ],
       "notes": [
-        "Implementing: drf-spectacular schema (YAML/JSON, every catalog language, version, indent), swagger-ui and redoc pages served from documents Django generates (TESTS/adapters/django/api_schema.py; --check drift test in go-quality). lang/version values outside the documented character sets, Accept headers needing email.message parsing and queries over 1000 fields are refused with a 500. See docs/architecture/go-migration/api-schema.md.",
-        "Implementing evidence: docs/architecture/go-migration/api-schema.md",
-        "Implementing evidence: RED: Django 76/76; Go 404 on the first case. (quality-reports/go-migration/api-schema-http-red/results.json)",
-        "Implementing evidence: GREEN: 76/76 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact bytes, CSRF cookie and token checks. (quality-reports/go-migration/api-schema-http-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on api-schema-lang-upper-english (response.body). (quality-reports/go-migration/api-schema-http-fallback-case/results.json)"
+        "Implementing: drf-spectacular schema (YAML/JSON, every catalog language, version, indent), swagger-ui and redoc pages served from documents Django generates (TESTS/adapters/django/api_schema.py; --check drift test in go-quality). lang/version values outside the documented character sets, Accept headers needing email.message parsing and queries over 1000 fields are refused with a 500. See docs/architecture/go-migration/api-schema.md."
       ]
     },
     {
@@ -32536,7 +32550,7 @@
         "target": "SpectacularSwaggerView.as_view(url_name='schema')",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/apischema/apischema.go",
         "BE_GO/internal/apischema/locale.go",
@@ -32579,21 +32593,28 @@
         "TESTS/adapters/django/api_schema_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/api-schema.md",
         {
-          "command": "python tools/go-migration/family.py run api-schema --versioned --label verified-aa6750c6",
-          "revision": "c4a69118b0e6c65df7710fc5672205b831746cf2",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/api-schema-http-verified-aa6750c6/results.json",
-          "receipt_sha256": "f539697dd56a10824b164a6bf77f5af6e2cfb8e9a2d75719d86c2fad9d984252",
-          "scope": "HTTP family api-schema: 76/76 cases on native Django and native Go, 76/76 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 76/76; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/api-schema-http-red/results.json",
+          "receipt_sha256": "1a2def82610a3deb695b8f0b364c0fde23fff0ee87fef9c443fb07889379dbd5"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 76/76 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/api-schema-http-ci3-versioned/results.json",
+          "receipt_sha256": "324c96fb88a9d681c4a2120a2235c1a4e54d843f423dd4babfefe1f3a9fcad81"
+        },
+        {
+          "revision": "one extra space in the JSON renderer indentation (BE_GO/internal/apischema/render.go)",
+          "result": "Mutation control: fails Go on api-schema-delete-not-allowed-json (response.body)",
+          "artifact": "quality-reports/go-migration/api-schema-http-ci3-mutation/results.json",
+          "receipt_sha256": "a04ee8ff0be03f920bd562412f465ffced25c4bb933422b682c24d60b5497b52"
         }
       ],
       "notes": [
-        "Implementing: drf-spectacular schema (YAML/JSON, every catalog language, version, indent), swagger-ui and redoc pages served from documents Django generates (TESTS/adapters/django/api_schema.py; --check drift test in go-quality). lang/version values outside the documented character sets, Accept headers needing email.message parsing and queries over 1000 fields are refused with a 500. See docs/architecture/go-migration/api-schema.md.",
-        "Implementing evidence: docs/architecture/go-migration/api-schema.md",
-        "Implementing evidence: RED: Django 76/76; Go 404 on the first case. (quality-reports/go-migration/api-schema-http-red/results.json)",
-        "Implementing evidence: GREEN: 76/76 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact bytes, CSRF cookie and token checks. (quality-reports/go-migration/api-schema-http-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on api-schema-lang-upper-english (response.body). (quality-reports/go-migration/api-schema-http-fallback-case/results.json)"
+        "Implementing: drf-spectacular schema (YAML/JSON, every catalog language, version, indent), swagger-ui and redoc pages served from documents Django generates (TESTS/adapters/django/api_schema.py; --check drift test in go-quality). lang/version values outside the documented character sets, Accept headers needing email.message parsing and queries over 1000 fields are refused with a 500. See docs/architecture/go-migration/api-schema.md."
       ]
     },
     {
