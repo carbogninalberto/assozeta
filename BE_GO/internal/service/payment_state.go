@@ -128,6 +128,23 @@ func (s *PaymentStates) render(ctx context.Context, tx domain.PaymentStateTransa
 var paymentStateDatePattern = regexp.MustCompile(`^(\d{4})-(1[0-2]|0[1-9]|[1-9])-(3[01]|[12]\d|0[1-9]|[1-9]| [1-9])$`)
 
 func paymentStateDate(value any) (*time.Time, error) {
+	if text, ok := value.(string); ok {
+		for _, r := range text {
+			if r > unicode.MaxASCII && unicode.IsDigit(r) {
+				// strptime's \d also matches non-ASCII decimal digits: paymentStateDateAny serves them.
+				return nil, domain.ErrPaymentStateNotPorted
+			}
+		}
+	}
+	return paymentStateDateAny(value)
+}
+
+// paymentStateDateAnyPattern is the strptime pattern with Python's \d: the
+// year and the day's second digit accept decimal digits of any script.
+var paymentStateDateAnyPattern = regexp.MustCompile(`^(\p{Nd}{4})-(1[0-2]|0[1-9]|[1-9])-(3[01]|[12]\p{Nd}|0[1-9]|[1-9]| [1-9])$`)
+
+// paymentStateDateAny is paymentStateDate with those digits read by int().
+func paymentStateDateAny(value any) (*time.Time, error) {
 	if value == nil {
 		return nil, nil
 	}
@@ -135,13 +152,10 @@ func paymentStateDate(value any) (*time.Time, error) {
 	if !ok {
 		return nil, domain.ErrPaymentStateServer
 	}
-	for _, r := range text {
-		if r > unicode.MaxASCII && unicode.IsDigit(r) {
-			// strptime's \d also matches non-ASCII decimal digits: not ported.
-			return nil, domain.ErrPaymentStateNotPorted
-		}
+	if !paymentStateDateAnyPattern.MatchString(text) {
+		return nil, domain.ErrPaymentStateServer
 	}
-	parts := paymentStateDatePattern.FindStringSubmatch(text)
+	parts := paymentStateDatePattern.FindStringSubmatch(dto.PythonASCIIDigits(text))
 	if parts == nil {
 		return nil, domain.ErrPaymentStateServer
 	}

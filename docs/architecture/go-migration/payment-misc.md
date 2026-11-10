@@ -99,9 +99,11 @@ their invoice is rendered whatever `generate_invoice` says.
   ([payment-state](payment-state.md)). A paid invoiced payment with a truthy `generate_invoice` is now ported (the
   `print_document_invoice` dispatch, see [invoice-generate](invoice-generate.md)); a `send_receipt_email` other than
   None, a bool, a string or an int64 is refused.
-- Plan values outside the ported conversions: `int()` of non-ASCII digits or beyond int64, fees that are not a JSON
-  number or a plain decimal string (or exceed numeric(9, 2)), previous plan / plan id values that are not strings or
-  numbers, a non-canonical `X-Group-Id` spelling on apply, a `date` with non-ASCII digits.
+- Plan values outside the ported conversions: `int()` beyond int64, fees that are not a JSON number or a plain decimal
+  string (or exceed numeric(9, 2)), previous plan / plan id values that are not strings or numbers. The plan editor
+  writes strings and numbers, so these need hand-edited plan JSON; each type has its own lookup and insert failure in
+  Django and they stay refused. (Digits of other scripts and `X-Group-Id` in another spelling are ported, v2-rest-a
+  below.)
 
 ## Routes left out of this family
 
@@ -156,3 +158,21 @@ by patching `application.tasks.random.randint` to 1; Go gets `SEND_EMAIL_HTML_DE
 entry is part of the case's effect. RED `v2pay3-misc-red-r1`: Django 96/96, Go 500 on that case. GREEN
 `v2pay3-misc-versioned-r1`: 96/96 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation
 `v2pay3-misc-mutation-r1` (message sent to the owner instead of the member) CAUGHT on `smtp.rcpt`.
+
+## Digits of other scripts and the group header spelling (v2-rest-a)
+
+Five more cases (101 in all) and a seeded plan whose days and month are written with digits of other scripts:
+
+- `int()` of the plan's `from_day`, `from_month`, `to_day` and `to_month` reads decimal digits of any script
+  (`dto.PythonASCIIDigits`, `unicodedata.decimal`), with surrounding spaces. The seeded plan (`'１'`, `' ٨ '`, `'٣١'`) is
+  read on every simulation and apply of the association.
+- `date`: `strptime('%Y-%m-%d')` matches `\d` for the year and the day's second digit, so those accept digits of any
+  script while the month does not (`paymentStateDateAny`); a month written with them matches nothing (empty result).
+- Apply with `X-Group-Id` in another spelling the `uuid` module accepts (upper case): the group filter finds the same
+  rows, the payment column stores the uuid and the create entry keeps the text as sent (`createGroupSent`).
+
+RED `v2resta-red-r1`: Django 101/101, Go 500 on `payment-misc-simulation-march` (the plan with digits of other
+scripts). GREEN `v2resta-green-r1` (after merging `codex/go-backend-parity` `b64953a5`): 101/101 on native Django,
+native Go, Caddy `/api/v1` and `/api/v2`. Mutation `v2resta-mutation-r1` (the day's second digit limited to ASCII)
+fails `payment-misc-simulation-other-script-digits` (CAUGHT). `paymentStateDate` keeps its refusal for the approve and
+payment-writes dates; payment-state and payment-writes re-run green natively (`v2resta-rerun-r1`).
