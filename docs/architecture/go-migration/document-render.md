@@ -281,3 +281,4 @@ RED `v2doc3-red-r1`: Django 239/239, Go the 500 page on `subscription-name-with-
 `v2doc3-versioned-r1`: 239/239 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `v2doc3-mutation-r1`
 (the fallback row written with the instructor path) fails `compensation-instructor-owner-without-association`
 (`index.fields:instructorhours`).
+Final run on the merged base (`v2doc3-final-r1`): 239/239 on the four transports.

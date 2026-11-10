@@ -183,3 +183,5 @@ fixture uses a key longer than the storage accepts) answers botocore's text, `An
 HeadObject operation: Bad Request` (`documentobjects.HeadStatusError`). RED `v2doc3-red-r2`: Django 201/201, Go the 500
 page on `retrieve-newline-name-view`. GREEN `v2doc3-versioned-r2`: 201/201 on the four transports. Mutation
 `v2doc3-mutation-r2` (the header check ignoring `\n`) fails `retrieve-newline-name-view`.
+Final run on the merged base (`v2doc3-final-r1`): 201/201 on the four transports; documents-writes re-run green natively
+(`v2doc3-rerun-r1`, 141/141).
