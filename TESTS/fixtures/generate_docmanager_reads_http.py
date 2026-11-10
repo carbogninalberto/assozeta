@@ -551,6 +551,41 @@ ok('retrieve-gif-view', 'owner', 'gif', 'image/gif', query='download=false', vie
 ok('retrieve-webp-view', 'owner', 'webp', 'image/webp', query='download=false', view=True)
 ok('retrieve-webp-default', 'owner', 'webp', 'image/webp')
 
+# Names the header rules treat specially. A quotable name ending in a newline keeps it in the quoted form and Django's
+# response refuses the header after the object was opened: 500 {'exception': ...}. Other line breaks and non-ASCII names
+# use the percent-encoded form. An empty name has no type and its attachment header has no filename.
+document('newline', 'verbale.pdf\n', filepath='named/newline', created='2026-04-01T10:00:00+00:00', body='%PDF-newline',
+         content_type='application/pdf')
+document('newline_accent', 'verbalè.pdf\n', filepath='named/newline-accent', created='2026-04-02T10:00:00+00:00',
+         body='%PDF-newline accent', content_type='application/pdf')
+document('newline_inside', 'ver\nbale.pdf', filepath='named/newline-inside', created='2026-04-03T10:00:00+00:00',
+         body='%PDF-newline inside', content_type='application/pdf')
+document('newline_missing', 'assente.pdf\n', filepath='named/newline-missing', created='2026-04-04T10:00:00+00:00')
+document('blank', '', filepath='named/blank', created='2026-04-05T10:00:00+00:00', body='blank name', content_type='application/pdf')
+bad_header = lambda value: {'exception': "Header values can't contain newlines (got " + repr(value) + ')'}
+add('retrieve-newline-name-view', 'owner', retrieve('newline', 'download=false'), 500,
+    bad_header('attachment; filename="verbale.pdf\n"'))
+add('retrieve-newline-name-default', 'owner', retrieve('newline'), 500, bad_header('attachment; filename="verbale.pdf\n"'))
+add('retrieve-newline-name-document-token', 'anonymous', retrieve('newline', 'download=1&token=' + DOCUMENTS['newline']['token']), 500,
+    bad_header('attachment; filename="verbale.pdf\n"'))
+ok('retrieve-newline-accent-name-view', 'owner', 'newline_accent', None, query='download=false', view=True)
+ok('retrieve-newline-accent-name-default', 'owner', 'newline_accent', None)
+ok('retrieve-newline-inside-name-view', 'owner', 'newline_inside', 'application/pdf', query='download=false', view=True)
+ok('retrieve-newline-inside-name-download', 'owner', 'newline_inside', 'application/pdf', query='download=1', attachment=True)
+add('retrieve-newline-name-missing-object', 'owner', retrieve('newline_missing'), 500, {'exception': 'File not found'})
+ok('retrieve-blank-name-view', 'owner', 'blank', None, query='download=false', view=True)
+ok('retrieve-blank-name-default', 'owner', 'blank', None)
+assert streamed('blank', None, view=True)['disposition'] == 'attachment'
+assert streamed('newline_accent', None)['disposition'] == "attachment; filename*=utf-8''verbal%C3%A8.pdf%0A"
+assert streamed('newline_inside', 'application/pdf')['disposition'] == "inline; filename*=utf-8''ver%0Abale.pdf"
+
+# The storage answers HEAD with a client error other than 404 (here a key longer than it accepts): default_storage.exists
+# raises botocore's ClientError, whose text names the status and its reason phrase.
+document('longkey', 'lungo.pdf', filepath='lungo/' + 'è' * 600, created='2026-04-06T10:00:00+00:00')
+HEAD_REFUSED = {'exception': 'An error occurred (400) when calling the HeadObject operation: Bad Request'}
+add('retrieve-storage-head-refused-view', 'owner', retrieve('longkey', 'download=false'), 500, HEAD_REFUSED)
+add('retrieve-storage-head-refused-download', 'owner', retrieve('longkey', 'download=1'), 500, HEAD_REFUSED)
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'document retrieve streaming and document delete pre-checks',

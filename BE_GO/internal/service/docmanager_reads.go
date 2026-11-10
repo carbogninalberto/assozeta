@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/pymime"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentobjects"
@@ -268,6 +269,11 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 		return nil, domain.ErrDocmanagerNotPorted
 	}
 	exists, err := s.objects.Exists(ctx, key)
+	var head *documentobjects.HeadStatusError
+	if errors.As(err, &head) {
+		// default_storage.exists re-raises a client error other than 404.
+		return exception(head.Error()), nil
+	}
 	if err != nil {
 		return nil, domain.ErrDocmanagerNotPorted
 	}
@@ -307,6 +313,9 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 		}
 		disposition = value
 	}
+	// Django's response refuses a header value with a line break after the
+	// object was opened: a missing object answers first.
+	badHeader := disposition != nil && strings.ContainsAny(*disposition, "\r\n")
 	if reprint != "" {
 		// After the refusals above, so a refused name prints nothing.
 		s.printer.PrintAndStore(ctx, reprint, authorization, *document)
@@ -318,6 +327,10 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 	}
 	if err != nil {
 		return nil, domain.ErrDocmanagerNotPorted
+	}
+	if badHeader {
+		_ = object.Body.Close()
+		return exception("Header values can't contain newlines (got " + dto.PythonStringRepr(*disposition) + ")"), nil
 	}
 	reply := &DocumentStream{Object: object, ContentType: contentType, Disposition: disposition, ContentLength: object.ContentLength}
 	if object.ContentEncoding != nil {
@@ -331,8 +344,7 @@ var docmanagerInlineTypes = map[string]bool{"application/pdf": true, "image/png"
 	"image/webp": true}
 
 // contentDisposition is django.utils.http.content_disposition_header. ok is
-// false for values Django's response headers reject (newlines) and for the
-// None an inline header without a filename would set.
+// false for the None an inline header without a filename would set.
 func contentDisposition(attachment bool, filename string) (*string, bool) {
 	if filename == "" {
 		if !attachment {
@@ -345,12 +357,12 @@ func contentDisposition(attachment bool, filename string) (*string, bool) {
 	if attachment {
 		kind = "attachment"
 	}
+	// re.match('^[\t \x21-\x7e]*$') accepts one trailing newline: the quoted
+	// form then carries it (the caller answers Django's header check).
 	quotable := true
 	for i, r := range filename {
 		if r == '\n' && i == len(filename)-1 {
-			// re.match('^[...]*$') accepts one trailing newline; the header
-			// then fails Django's newline check.
-			return nil, false
+			continue
 		}
 		if !(r == '\t' || r >= 0x20 && r <= 0x7e) {
 			quotable = false

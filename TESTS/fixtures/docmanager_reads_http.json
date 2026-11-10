@@ -404,6 +404,48 @@
    "filename": "foto.bmp",
    "filepath": null,
    "created": "2026-03-31T10:00:00+00:00"
+  },
+  "newline": {
+   "id": "a1000000-0000-4000-8000-000000983053",
+   "token": "a1000000-0000-4000-8000-000000983153",
+   "filename": "verbale.pdf\n",
+   "filepath": "named/newline",
+   "created": "2026-04-01T10:00:00+00:00"
+  },
+  "newline_accent": {
+   "id": "a1000000-0000-4000-8000-000000983054",
+   "token": "a1000000-0000-4000-8000-000000983154",
+   "filename": "verbalè.pdf\n",
+   "filepath": "named/newline-accent",
+   "created": "2026-04-02T10:00:00+00:00"
+  },
+  "newline_inside": {
+   "id": "a1000000-0000-4000-8000-000000983055",
+   "token": "a1000000-0000-4000-8000-000000983155",
+   "filename": "ver\nbale.pdf",
+   "filepath": "named/newline-inside",
+   "created": "2026-04-03T10:00:00+00:00"
+  },
+  "newline_missing": {
+   "id": "a1000000-0000-4000-8000-000000983056",
+   "token": "a1000000-0000-4000-8000-000000983156",
+   "filename": "assente.pdf\n",
+   "filepath": "named/newline-missing",
+   "created": "2026-04-04T10:00:00+00:00"
+  },
+  "blank": {
+   "id": "a1000000-0000-4000-8000-000000983057",
+   "token": "a1000000-0000-4000-8000-000000983157",
+   "filename": "",
+   "filepath": "named/blank",
+   "created": "2026-04-05T10:00:00+00:00"
+  },
+  "longkey": {
+   "id": "a1000000-0000-4000-8000-000000983058",
+   "token": "a1000000-0000-4000-8000-000000983158",
+   "filename": "lungo.pdf",
+   "filepath": "lungo/èèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèè",
+   "created": "2026-04-06T10:00:00+00:00"
   }
  },
  "objects": {
@@ -657,6 +699,30 @@
    "key": "docs-fixture/1774951200.0/a1000000-0000-4000-8000-000000983052/foto.bmp",
    "body_b64": "Qk0tZml4dHVyZQ==",
    "content_type": "image/bmp",
+   "encoding": null
+  },
+  "newline": {
+   "key": "docs-fixture/named/newline",
+   "body_b64": "JVBERi1uZXdsaW5l",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "newline_accent": {
+   "key": "docs-fixture/named/newline-accent",
+   "body_b64": "JVBERi1uZXdsaW5lIGFjY2VudA==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "newline_inside": {
+   "key": "docs-fixture/named/newline-inside",
+   "body_b64": "JVBERi1uZXdsaW5lIGluc2lkZQ==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "blank": {
+   "key": "docs-fixture/named/blank",
+   "body_b64": "YmxhbmsgbmFtZQ==",
+   "content_type": "application/pdf",
    "encoding": null
   }
  },
@@ -4217,6 +4283,198 @@
     "encoding": null,
     "disposition": "inline; filename=\"foto.webp\""
    }
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983053?download=false",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Header values can't contain newlines (got 'attachment; filename=\"verbale.pdf\\n\"')"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-name-default",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983053",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Header values can't contain newlines (got 'attachment; filename=\"verbale.pdf\\n\"')"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-name-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983053?download=1&token=a1000000-0000-4000-8000-000000983153",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Header values can't contain newlines (got 'attachment; filename=\"verbale.pdf\\n\"')"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-accent-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983054?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "newline_accent",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename*=utf-8''verbal%C3%A8.pdf%0A"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-accent-name-default",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983054",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "newline_accent",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename*=utf-8''verbal%C3%A8.pdf%0A"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-inside-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983055?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "newline_inside",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-inside-name-download",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983055?download=1",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "newline_inside",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "attachment; filename*=utf-8''ver%0Abale.pdf"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-name-missing-object",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983056",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "File not found"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-blank-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983057?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "blank",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-blank-name-default",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983057",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "blank",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-storage-head-refused-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983058?download=false",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (400) when calling the HeadObject operation: Bad Request"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-storage-head-refused-download",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983058?download=1",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (400) when calling the HeadObject operation: Bad Request"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
   }
  ]
 }

@@ -74,15 +74,14 @@ active `SportAssociation`, gets `404 {"error": "Document not found."}`. The owne
 
 ## Not ported (refused with the 500 page before any write)
 
-- **Retrieve** provider errors: a HEAD failing with a status other than 404, or a `GetObject` failure other than a
-  missing key. Django answers `500 {"exception": "<botocore text>"}`.
-- **Retrieve** names outside the modelled grammar:
-  - filenames `urllib.parse` reads as a URL whose network location has brackets or non-ASCII text, and `data:` names
-    whose type is not printable ASCII (the other URL-like names are served, see the evidence);
-  - a quotable filename ending in a newline (Django's header check raises);
-  - an inline download of an empty filename (Django sets the header to `None`);
-  - invalid UTF-8 or NUL in names;
-  - creation dates outside Python's range or below microsecond precision.
+- **Retrieve** provider errors other than a client-error HEAD answer: a HEAD failing with 429 or a 5xx status or without
+  an answer, and a `GetObject` failure other than a missing key. Django answers `500 {"exception": "<botocore text>"}`;
+  the text carries botocore's retry count or the storage endpoint.
+- **Retrieve** names outside the modelled grammar: filenames `urllib.parse` reads as a URL whose network location has
+  brackets or non-ASCII text, and `data:` names whose type is not printable ASCII (the other URL-like names are served,
+  see the evidence).
+- Rows Django cannot read either (both sides answer the 500 page): creation dates outside Python's range. Invalid UTF-8
+  and NUL cannot be stored in the database.
 - **Retrieve** download-token payloads using JSON that Go's decoder rejects but Python accepts, such as `NaN` or
   `Infinity`. Only a holder of `SECRET_KEY` can produce them.
 - `SECRET_KEY_FALLBACKS` are not consulted (they are not configured).
@@ -175,3 +174,12 @@ documents (`.html`, `.svg`, `.js`, `.xml`, `.bmp`, `.GIF`, `.webp` and two `data
 `v2doc3-red-r1`: Django 189/189, Go fails `retrieve-export-owner` (`stream.content-type`). GREEN `v2doc3-versioned-r1`:
 189/189 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `v2doc3-mutation-r1` (the type list not
 consulted) fails `retrieve-export-owner`.
+
+Header and storage answers (`v2doc3-*`): 12 more cases (201) over six documents. A quotable name ending in a newline
+answers `500 {"exception": "Header values can't contain newlines (got '<header>')"}` once the object is open (a missing
+object answers first); other line breaks and non-ASCII names use the percent-encoded header; an empty name is an
+`attachment` without a filename. A HEAD answered with a client error other than 404 (400, 401, 403, 405, 409-412; the
+fixture uses a key longer than the storage accepts) answers botocore's text, `An error occurred (400) when calling the
+HeadObject operation: Bad Request` (`documentobjects.HeadStatusError`). RED `v2doc3-red-r2`: Django 201/201, Go the 500
+page on `retrieve-newline-name-view`. GREEN `v2doc3-versioned-r2`: 201/201 on the four transports. Mutation
+`v2doc3-mutation-r2` (the header check ignoring `\n`) fails `retrieve-newline-name-view`.

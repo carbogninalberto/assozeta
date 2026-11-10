@@ -15,6 +15,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -123,8 +124,30 @@ func (s *S3) Exists(ctx context.Context, key string) (bool, error) {
 	if ctx.Err() == nil && errors.As(err, &response) && response.HTTPStatusCode() == 404 {
 		return false, nil
 	}
+	if ctx.Err() == nil && errors.As(err, &response) {
+		if reason, known := headReasons[response.HTTPStatusCode()]; known {
+			return false, &HeadStatusError{Status: response.HTTPStatusCode(), Reason: reason}
+		}
+	}
 	return false, err
 }
+
+// HeadStatusError is a HeadObject answer botocore raises without retrying: a
+// client-error status other than 404 (a HEAD answer has no body, so the code
+// is the status and the message its reason phrase). Error() is the text of
+// botocore's ClientError.
+type HeadStatusError struct {
+	Status int
+	Reason string
+}
+
+func (e *HeadStatusError) Error() string {
+	return "An error occurred (" + strconv.Itoa(e.Status) + ") when calling the HeadObject operation: " + e.Reason
+}
+
+// headReasons holds http.client.responses for the statuses HeadStatusError covers.
+var headReasons = map[int]string{400: "Bad Request", 401: "Unauthorized", 403: "Forbidden", 405: "Method Not Allowed",
+	409: "Conflict", 410: "Gone", 411: "Length Required", 412: "Precondition Failed"}
 
 // Size is S3Storage.size(name): the object's ContentLength (HeadObject).
 func (s *S3) Size(ctx context.Context, key string) (int64, error) {
