@@ -7824,25 +7824,25 @@
         "docs/architecture/go-migration/camps-periods.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 110/110; Go 500 on the first case.",
+          "result": "RED: Django 116/116; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-red-r2/results.json",
           "receipt_sha256": "a9d359b99cdbd61288833ce1a45c847b25e1469ff04d44b0251f7887ae1a8654"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-green-r2/results.json",
-          "receipt_sha256": "de921c3475ca405f1a7bea1746106914ca63413923f914d88f987ddd2e55ed9b"
+          "result": "GREEN: 116/116 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-sweep-restb3-3/results.json",
+          "receipt_sha256": "70bb4ad2f31cc98a3aa4da4425caf0e23acd86cd442ce04f8ec6791cf36dc49c"
         },
         {
-          "revision": "committing change rendering the final entry's amount from the stored decimal instead of the float",
-          "result": "Mutation control: fails Go on camps-periods-services-update-deleted-payment (audit.changes).",
-          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-mutation-r1/results.json",
-          "receipt_sha256": "d7160a96ffac1d6be9be2df91cc86a3be320be94d3afbe368ed9b972a646ef29"
+          "revision": "committing change with the service copy's first audit entry written as a create instead of an update",
+          "result": "Mutation control: fails Go on camps-periods-services-update-new-key-copy (audit.missing).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-restb3-mutation-1/results.json",
+          "receipt_sha256": "9a3cd888152efbff83efd08ee119164d02b6b4816d80b1458c87315723aec924"
         }
       ],
       "notes": [
-        "Implementing: Camp periods and period services writes. API v2 (v2-misc-2): the service update's payment walk over a soft-deleted payment or one outside the request's X-Group-Id is ported: the payment is saved and each save is audited as an update of every field against None, indexed through changes_json.sport_association. Still refused before any write: such a payment without an association, a changed primary key on update, form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject."
+        "Implementing: Camp periods and period services writes. API v2 (v2-rest-b3): an update naming a camps_and_retreats_period_id or camps_and_retreats_period_service_id no row has inserts the copy Model.save() inserts with the validated values (the named row stays; the services of a period attach to the copy; the service walk reads the copy's key). auditlog finds no row under the new key: the whole copy is logged as an update indexed through the actor's own association, then the create indexed through the camp. A key another row has is the unique error; the path's own key is a plain update. Still refused before any write: form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject. 116 cases. RED: documented refusal, see v2-refusals.md camps-periods row (family RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
       ]
     },
     {
@@ -7908,25 +7908,25 @@
         "docs/architecture/go-migration/camps-periods.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 110/110; Go 500 on the first case.",
+          "result": "RED: Django 116/116; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-red-r2/results.json",
           "receipt_sha256": "a9d359b99cdbd61288833ce1a45c847b25e1469ff04d44b0251f7887ae1a8654"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-green-r2/results.json",
-          "receipt_sha256": "de921c3475ca405f1a7bea1746106914ca63413923f914d88f987ddd2e55ed9b"
+          "result": "GREEN: 116/116 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-sweep-restb3-3/results.json",
+          "receipt_sha256": "70bb4ad2f31cc98a3aa4da4425caf0e23acd86cd442ce04f8ec6791cf36dc49c"
         },
         {
-          "revision": "committing change rendering the final entry's amount from the stored decimal instead of the float",
-          "result": "Mutation control: fails Go on camps-periods-services-update-deleted-payment (audit.changes).",
-          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-mutation-r1/results.json",
-          "receipt_sha256": "d7160a96ffac1d6be9be2df91cc86a3be320be94d3afbe368ed9b972a646ef29"
+          "revision": "committing change with the service copy's first audit entry written as a create instead of an update",
+          "result": "Mutation control: fails Go on camps-periods-services-update-new-key-copy (audit.missing).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-restb3-mutation-1/results.json",
+          "receipt_sha256": "9a3cd888152efbff83efd08ee119164d02b6b4816d80b1458c87315723aec924"
         }
       ],
       "notes": [
-        "Implementing: Camp periods and period services writes. API v2 (v2-misc-2): the service update's payment walk over a soft-deleted payment or one outside the request's X-Group-Id is ported: the payment is saved and each save is audited as an update of every field against None, indexed through changes_json.sport_association. Still refused before any write: such a payment without an association, a changed primary key on update, form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject."
+        "Implementing: Camp periods and period services writes. API v2 (v2-rest-b3): an update naming a camps_and_retreats_period_id or camps_and_retreats_period_service_id no row has inserts the copy Model.save() inserts with the validated values (the named row stays; the services of a period attach to the copy; the service walk reads the copy's key). auditlog finds no row under the new key: the whole copy is logged as an update indexed through the actor's own association, then the create indexed through the camp. A key another row has is the unique error; the path's own key is a plain update. Still refused before any write: form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject. 116 cases. RED: documented refusal, see v2-refusals.md camps-periods row (family RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
       ]
     },
     {
@@ -7992,25 +7992,25 @@
         "docs/architecture/go-migration/camps-periods.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 110/110; Go 500 on the first case.",
+          "result": "RED: Django 116/116; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-red-r2/results.json",
           "receipt_sha256": "a9d359b99cdbd61288833ce1a45c847b25e1469ff04d44b0251f7887ae1a8654"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-green-r2/results.json",
-          "receipt_sha256": "de921c3475ca405f1a7bea1746106914ca63413923f914d88f987ddd2e55ed9b"
+          "result": "GREEN: 116/116 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-sweep-restb3-3/results.json",
+          "receipt_sha256": "70bb4ad2f31cc98a3aa4da4425caf0e23acd86cd442ce04f8ec6791cf36dc49c"
         },
         {
-          "revision": "committing change rendering the final entry's amount from the stored decimal instead of the float",
-          "result": "Mutation control: fails Go on camps-periods-services-update-deleted-payment (audit.changes).",
-          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-mutation-r1/results.json",
-          "receipt_sha256": "d7160a96ffac1d6be9be2df91cc86a3be320be94d3afbe368ed9b972a646ef29"
+          "revision": "committing change with the service copy's first audit entry written as a create instead of an update",
+          "result": "Mutation control: fails Go on camps-periods-services-update-new-key-copy (audit.missing).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-restb3-mutation-1/results.json",
+          "receipt_sha256": "9a3cd888152efbff83efd08ee119164d02b6b4816d80b1458c87315723aec924"
         }
       ],
       "notes": [
-        "Implementing: Camp periods and period services writes. API v2 (v2-misc-2): the service update's payment walk over a soft-deleted payment or one outside the request's X-Group-Id is ported: the payment is saved and each save is audited as an update of every field against None, indexed through changes_json.sport_association. Still refused before any write: such a payment without an association, a changed primary key on update, form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject."
+        "Implementing: Camp periods and period services writes. API v2 (v2-rest-b3): an update naming a camps_and_retreats_period_id or camps_and_retreats_period_service_id no row has inserts the copy Model.save() inserts with the validated values (the named row stays; the services of a period attach to the copy; the service walk reads the copy's key). auditlog finds no row under the new key: the whole copy is logged as an update indexed through the actor's own association, then the create indexed through the camp. A key another row has is the unique error; the path's own key is a plain update. Still refused before any write: form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject. 116 cases. RED: documented refusal, see v2-refusals.md camps-periods row (family RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
       ]
     },
     {
@@ -8076,25 +8076,25 @@
         "docs/architecture/go-migration/camps-periods.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 110/110; Go 500 on the first case.",
+          "result": "RED: Django 116/116; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-red-r2/results.json",
           "receipt_sha256": "a9d359b99cdbd61288833ce1a45c847b25e1469ff04d44b0251f7887ae1a8654"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-green-r2/results.json",
-          "receipt_sha256": "de921c3475ca405f1a7bea1746106914ca63413923f914d88f987ddd2e55ed9b"
+          "result": "GREEN: 116/116 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-sweep-restb3-3/results.json",
+          "receipt_sha256": "70bb4ad2f31cc98a3aa4da4425caf0e23acd86cd442ce04f8ec6791cf36dc49c"
         },
         {
-          "revision": "committing change rendering the final entry's amount from the stored decimal instead of the float",
-          "result": "Mutation control: fails Go on camps-periods-services-update-deleted-payment (audit.changes).",
-          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-mutation-r1/results.json",
-          "receipt_sha256": "d7160a96ffac1d6be9be2df91cc86a3be320be94d3afbe368ed9b972a646ef29"
+          "revision": "committing change with the service copy's first audit entry written as a create instead of an update",
+          "result": "Mutation control: fails Go on camps-periods-services-update-new-key-copy (audit.missing).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-restb3-mutation-1/results.json",
+          "receipt_sha256": "9a3cd888152efbff83efd08ee119164d02b6b4816d80b1458c87315723aec924"
         }
       ],
       "notes": [
-        "Implementing: Camp periods and period services writes. API v2 (v2-misc-2): the service update's payment walk over a soft-deleted payment or one outside the request's X-Group-Id is ported: the payment is saved and each save is audited as an update of every field against None, indexed through changes_json.sport_association. Still refused before any write: such a payment without an association, a changed primary key on update, form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject."
+        "Implementing: Camp periods and period services writes. API v2 (v2-rest-b3): an update naming a camps_and_retreats_period_id or camps_and_retreats_period_service_id no row has inserts the copy Model.save() inserts with the validated values (the named row stays; the services of a period attach to the copy; the service walk reads the copy's key). auditlog finds no row under the new key: the whole copy is logged as an update indexed through the actor's own association, then the create indexed through the camp. A key another row has is the unique error; the path's own key is a plain update. Still refused before any write: form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject. 116 cases. RED: documented refusal, see v2-refusals.md camps-periods row (family RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
       ]
     },
     {
@@ -8160,25 +8160,25 @@
         "docs/architecture/go-migration/camps-periods.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 110/110; Go 500 on the first case.",
+          "result": "RED: Django 116/116; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-red-r2/results.json",
           "receipt_sha256": "a9d359b99cdbd61288833ce1a45c847b25e1469ff04d44b0251f7887ae1a8654"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-green-r2/results.json",
-          "receipt_sha256": "de921c3475ca405f1a7bea1746106914ca63413923f914d88f987ddd2e55ed9b"
+          "result": "GREEN: 116/116 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-sweep-restb3-3/results.json",
+          "receipt_sha256": "70bb4ad2f31cc98a3aa4da4425caf0e23acd86cd442ce04f8ec6791cf36dc49c"
         },
         {
-          "revision": "committing change rendering the final entry's amount from the stored decimal instead of the float",
-          "result": "Mutation control: fails Go on camps-periods-services-update-deleted-payment (audit.changes).",
-          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-mutation-r1/results.json",
-          "receipt_sha256": "d7160a96ffac1d6be9be2df91cc86a3be320be94d3afbe368ed9b972a646ef29"
+          "revision": "committing change with the service copy's first audit entry written as a create instead of an update",
+          "result": "Mutation control: fails Go on camps-periods-services-update-new-key-copy (audit.missing).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-restb3-mutation-1/results.json",
+          "receipt_sha256": "9a3cd888152efbff83efd08ee119164d02b6b4816d80b1458c87315723aec924"
         }
       ],
       "notes": [
-        "Implementing: Camp periods and period services writes. API v2 (v2-misc-2): the service update's payment walk over a soft-deleted payment or one outside the request's X-Group-Id is ported: the payment is saved and each save is audited as an update of every field against None, indexed through changes_json.sport_association. Still refused before any write: such a payment without an association, a changed primary key on update, form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject."
+        "Implementing: Camp periods and period services writes. API v2 (v2-rest-b3): an update naming a camps_and_retreats_period_id or camps_and_retreats_period_service_id no row has inserts the copy Model.save() inserts with the validated values (the named row stays; the services of a period attach to the copy; the service walk reads the copy's key). auditlog finds no row under the new key: the whole copy is logged as an update indexed through the actor's own association, then the create indexed through the camp. A key another row has is the unique error; the path's own key is a plain update. Still refused before any write: form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject. 116 cases. RED: documented refusal, see v2-refusals.md camps-periods row (family RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
       ]
     },
     {
@@ -8244,25 +8244,25 @@
         "docs/architecture/go-migration/camps-periods.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 110/110; Go 500 on the first case.",
+          "result": "RED: Django 116/116; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-red-r2/results.json",
           "receipt_sha256": "a9d359b99cdbd61288833ce1a45c847b25e1469ff04d44b0251f7887ae1a8654"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-green-r2/results.json",
-          "receipt_sha256": "de921c3475ca405f1a7bea1746106914ca63413923f914d88f987ddd2e55ed9b"
+          "result": "GREEN: 116/116 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-sweep-restb3-3/results.json",
+          "receipt_sha256": "70bb4ad2f31cc98a3aa4da4425caf0e23acd86cd442ce04f8ec6791cf36dc49c"
         },
         {
-          "revision": "committing change rendering the final entry's amount from the stored decimal instead of the float",
-          "result": "Mutation control: fails Go on camps-periods-services-update-deleted-payment (audit.changes).",
-          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-mutation-r1/results.json",
-          "receipt_sha256": "d7160a96ffac1d6be9be2df91cc86a3be320be94d3afbe368ed9b972a646ef29"
+          "revision": "committing change with the service copy's first audit entry written as a create instead of an update",
+          "result": "Mutation control: fails Go on camps-periods-services-update-new-key-copy (audit.missing).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-restb3-mutation-1/results.json",
+          "receipt_sha256": "9a3cd888152efbff83efd08ee119164d02b6b4816d80b1458c87315723aec924"
         }
       ],
       "notes": [
-        "Implementing: Camp periods and period services writes. API v2 (v2-misc-2): the service update's payment walk over a soft-deleted payment or one outside the request's X-Group-Id is ported: the payment is saved and each save is audited as an update of every field against None, indexed through changes_json.sport_association. Still refused before any write: such a payment without an association, a changed primary key on update, form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject."
+        "Implementing: Camp periods and period services writes. API v2 (v2-rest-b3): an update naming a camps_and_retreats_period_id or camps_and_retreats_period_service_id no row has inserts the copy Model.save() inserts with the validated values (the named row stays; the services of a period attach to the copy; the service walk reads the copy's key). auditlog finds no row under the new key: the whole copy is logged as an update indexed through the actor's own association, then the create indexed through the camp. A key another row has is the unique error; the path's own key is a plain update. Still refused before any write: form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject. 116 cases. RED: documented refusal, see v2-refusals.md camps-periods row (family RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
       ]
     },
     {
@@ -8328,25 +8328,25 @@
         "docs/architecture/go-migration/camps-periods.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 110/110; Go 500 on the first case.",
+          "result": "RED: Django 116/116; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-red-r2/results.json",
           "receipt_sha256": "a9d359b99cdbd61288833ce1a45c847b25e1469ff04d44b0251f7887ae1a8654"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-green-r2/results.json",
-          "receipt_sha256": "de921c3475ca405f1a7bea1746106914ca63413923f914d88f987ddd2e55ed9b"
+          "result": "GREEN: 116/116 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-sweep-restb3-3/results.json",
+          "receipt_sha256": "70bb4ad2f31cc98a3aa4da4425caf0e23acd86cd442ce04f8ec6791cf36dc49c"
         },
         {
-          "revision": "committing change rendering the final entry's amount from the stored decimal instead of the float",
-          "result": "Mutation control: fails Go on camps-periods-services-update-deleted-payment (audit.changes).",
-          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-mutation-r1/results.json",
-          "receipt_sha256": "d7160a96ffac1d6be9be2df91cc86a3be320be94d3afbe368ed9b972a646ef29"
+          "revision": "committing change with the service copy's first audit entry written as a create instead of an update",
+          "result": "Mutation control: fails Go on camps-periods-services-update-new-key-copy (audit.missing).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-restb3-mutation-1/results.json",
+          "receipt_sha256": "9a3cd888152efbff83efd08ee119164d02b6b4816d80b1458c87315723aec924"
         }
       ],
       "notes": [
-        "Implementing: Camp periods and period services writes. API v2 (v2-misc-2): the service update's payment walk over a soft-deleted payment or one outside the request's X-Group-Id is ported: the payment is saved and each save is audited as an update of every field against None, indexed through changes_json.sport_association. Still refused before any write: such a payment without an association, a changed primary key on update, form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject."
+        "Implementing: Camp periods and period services writes. API v2 (v2-rest-b3): an update naming a camps_and_retreats_period_id or camps_and_retreats_period_service_id no row has inserts the copy Model.save() inserts with the validated values (the named row stays; the services of a period attach to the copy; the service walk reads the copy's key). auditlog finds no row under the new key: the whole copy is logged as an update indexed through the actor's own association, then the create indexed through the camp. A key another row has is the unique error; the path's own key is a plain update. Still refused before any write: form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject. 116 cases. RED: documented refusal, see v2-refusals.md camps-periods row (family RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
       ]
     },
     {
@@ -16862,25 +16862,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 149/149; Go 500 on the first case.",
+          "result": "RED: Django 194/194; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
           "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 149/149 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-green-r2/results.json",
-          "receipt_sha256": "38f57a0c9d60e22c335ff7fb17da4c3a33a11a51538a6ec6a584ee1ac9c39b7f"
+          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-sweep-restb3-3/results.json",
+          "receipt_sha256": "f54194bded6e8e2c76c7321e0bbeb9b6eb14c2cb69613c5736a73726e3a70f94"
         },
         {
-          "revision": "the deleted-association check of the public module page dropped (service/modules_responses.go)",
-          "result": "Mutation control: fails Go on modules-responses-info-deleted-association (200): CAUGHT.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-mutation-r2/results.json",
-          "receipt_sha256": "2d55b0839331a86a390f727ba3d59fbe884f30d6d418bc4cfb9ae3161a5ff98f"
+          "revision": "committing change dropping the check that the response of ?response_id belongs to the module",
+          "result": "Mutation control: fails Go on modules-responses-info-response-of-another-module (response.body).",
+          "artifact": "quality-reports/go-migration/modules-responses-http-restb3-mutation-1/results.json",
+          "receipt_sha256": "6569d3efadb8244333de4efe5831dcf72d29ca81430267c3278ea66a2c57d8da"
         }
       ],
       "notes": [
-        "Implementing: v2-rest-b: the public module page returns the fields the form needs (module_id, title, response_message, allow_attachments, only_users, elements, sport_association.denomination; response_data.attachments_docs with document_id and filename), and a module of an association marked deleted answers 404 'module not found' before the response id is read. Django changed first (RED: application.tests.test_modules_views.ModulesCustomLinkInfoPublicFieldsTests, 4 of 5 failing before the view change; the recorded family RED receipt stays). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
+        "Implementing: Module responses. API v2 (v2-rest-b3): response/add and add-attachment accept form and multipart bodies (a file part answers the 500 page as Django does), attachment names with separators or beyond the column size, non-string filename and base64, integer document ids, and the delete of a document other rows reference; the public module page only reads responses of its own module; the export writes list and object labels as their text sized by their item count and answers the 500 page for props that are not an object (mutation restb3-mutation-2: width from the text instead of the item count, CAUGHT on modules-responses-export-label-list). Still refused: a name that is an uploaded file part or invalid UTF-8, a taken storage name with AWS_S3_FILE_OVERWRITE off, export integers beyond int64 and workbook-refused text. 194 cases. RED: documented refusal, see v2-refusals.md modules-responses rows (family RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
       ]
     },
     {
@@ -16898,7 +16898,7 @@
         "target": "modules_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/modules_writes.go",
         "BE_GO/internal/dto/modules_writes.go",
@@ -16941,21 +16941,28 @@
         "TESTS/adapters/django/modules_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/modules-writes.md",
         {
-          "command": "python tools/go-migration/family.py run modules-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/modules-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "8147e65a647fd2d93b183270fa16dfae7d66fb36de007c6b3e45d66cd5fc7f40",
-          "scope": "HTTP family modules-writes: 98/98 cases on native Django and native Go, 98/98 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 102/102; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-native-r2/results.json",
+          "receipt_sha256": "22ea292178bd7594a79e3647d9b6496b28aeccf24d05d7d483428f2fa0bc25f1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-sweep-restb3-3/results.json",
+          "receipt_sha256": "2188156eb34e954d7bd07efdaa8891be7a59b0ce89a7e6041f68666cf6c82d38"
+        },
+        {
+          "revision": "committing change with the new-key branch disabled so the update saves in place",
+          "result": "Mutation control: fails Go on modules-writes-update-new-key-copies (response.status).",
+          "artifact": "quality-reports/go-migration/modules-writes-http-restb3-mutation-1/results.json",
+          "receipt_sha256": "795be56ae19685d574406da3ce84b82ccc4caccaf8e23335ad449e9a92db51c0"
         }
       ],
       "notes": [
-        "Implementing: Not ported (refused with the 500 page before any write): an update changing module_id (Model.save inserts a copy), a nested sport_association dict with keys, and modules_update's {'error': str(e)} texts of database exceptions. templates/<pk>/update belongs to the module-templates family.",
-        "Implementing evidence: docs/architecture/go-migration/modules-writes.md",
-        "Implementing evidence: RED: Django 98/98; Go 404 on the first case. (quality-reports/go-migration/modules-writes-http-native-r2/results.json)",
-        "Implementing evidence: GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/modules-writes-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on duplicate-foreign-module (quality-reports/go-migration/modules-writes-http-mutation-r1/results.json)"
+        "Implementing: Module writes. API v2 (v2-rest-b3): an update with a module_id no module has inserts the copy Model.save() inserts with the validated values and leaves the named module; a database conflict on the copy answers its text as 500 {'error': ...}. Still refused: update with a nested sport_association dict that has keys. 102 cases. RED: documented refusal, see v2-refusals.md modules-writes row (earlier native RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
       ]
     },
     {
@@ -16973,7 +16980,7 @@
         "target": "modules_duplicate",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/modules_writes.go",
         "BE_GO/internal/dto/modules_writes.go",
@@ -17016,21 +17023,28 @@
         "TESTS/adapters/django/modules_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/modules-writes.md",
         {
-          "command": "python tools/go-migration/family.py run modules-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/modules-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "8147e65a647fd2d93b183270fa16dfae7d66fb36de007c6b3e45d66cd5fc7f40",
-          "scope": "HTTP family modules-writes: 98/98 cases on native Django and native Go, 98/98 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 102/102; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-native-r2/results.json",
+          "receipt_sha256": "22ea292178bd7594a79e3647d9b6496b28aeccf24d05d7d483428f2fa0bc25f1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-sweep-restb3-3/results.json",
+          "receipt_sha256": "2188156eb34e954d7bd07efdaa8891be7a59b0ce89a7e6041f68666cf6c82d38"
+        },
+        {
+          "revision": "committing change with the new-key branch disabled so the update saves in place",
+          "result": "Mutation control: fails Go on modules-writes-update-new-key-copies (response.status).",
+          "artifact": "quality-reports/go-migration/modules-writes-http-restb3-mutation-1/results.json",
+          "receipt_sha256": "795be56ae19685d574406da3ce84b82ccc4caccaf8e23335ad449e9a92db51c0"
         }
       ],
       "notes": [
-        "Implementing: Not ported (refused with the 500 page before any write): an update changing module_id (Model.save inserts a copy), a nested sport_association dict with keys, and modules_update's {'error': str(e)} texts of database exceptions. templates/<pk>/update belongs to the module-templates family.",
-        "Implementing evidence: docs/architecture/go-migration/modules-writes.md",
-        "Implementing evidence: RED: Django 98/98; Go 404 on the first case. (quality-reports/go-migration/modules-writes-http-native-r2/results.json)",
-        "Implementing evidence: GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/modules-writes-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on duplicate-foreign-module (quality-reports/go-migration/modules-writes-http-mutation-r1/results.json)"
+        "Implementing: Module writes. API v2 (v2-rest-b3): an update with a module_id no module has inserts the copy Model.save() inserts with the validated values and leaves the named module; a database conflict on the copy answers its text as 500 {'error': ...}. Still refused: update with a nested sport_association dict that has keys. 102 cases. RED: documented refusal, see v2-refusals.md modules-writes row (earlier native RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
       ]
     },
     {
@@ -17110,25 +17124,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 149/149; Go 500 on the first case.",
+          "result": "RED: Django 194/194; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
           "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 149/149 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-green-r2/results.json",
-          "receipt_sha256": "38f57a0c9d60e22c335ff7fb17da4c3a33a11a51538a6ec6a584ee1ac9c39b7f"
+          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-sweep-restb3-3/results.json",
+          "receipt_sha256": "f54194bded6e8e2c76c7321e0bbeb9b6eb14c2cb69613c5736a73726e3a70f94"
         },
         {
-          "revision": "the deleted-association check of the public module page dropped (service/modules_responses.go)",
-          "result": "Mutation control: fails Go on modules-responses-info-deleted-association (200): CAUGHT.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-mutation-r2/results.json",
-          "receipt_sha256": "2d55b0839331a86a390f727ba3d59fbe884f30d6d418bc4cfb9ae3161a5ff98f"
+          "revision": "committing change dropping the check that the response of ?response_id belongs to the module",
+          "result": "Mutation control: fails Go on modules-responses-info-response-of-another-module (response.body).",
+          "artifact": "quality-reports/go-migration/modules-responses-http-restb3-mutation-1/results.json",
+          "receipt_sha256": "6569d3efadb8244333de4efe5831dcf72d29ca81430267c3278ea66a2c57d8da"
         }
       ],
       "notes": [
-        "Implementing: v2-rest-b: the public module page returns the fields the form needs (module_id, title, response_message, allow_attachments, only_users, elements, sport_association.denomination; response_data.attachments_docs with document_id and filename), and a module of an association marked deleted answers 404 'module not found' before the response id is read. Django changed first (RED: application.tests.test_modules_views.ModulesCustomLinkInfoPublicFieldsTests, 4 of 5 failing before the view change; the recorded family RED receipt stays). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
+        "Implementing: Module responses. API v2 (v2-rest-b3): response/add and add-attachment accept form and multipart bodies (a file part answers the 500 page as Django does), attachment names with separators or beyond the column size, non-string filename and base64, integer document ids, and the delete of a document other rows reference; the public module page only reads responses of its own module; the export writes list and object labels as their text sized by their item count and answers the 500 page for props that are not an object (mutation restb3-mutation-2: width from the text instead of the item count, CAUGHT on modules-responses-export-label-list). Still refused: a name that is an uploaded file part or invalid UTF-8, a taken storage name with AWS_S3_FILE_OVERWRITE off, export integers beyond int64 and workbook-refused text. 194 cases. RED: documented refusal, see v2-refusals.md modules-responses rows (family RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
       ]
     },
     {
@@ -17281,25 +17295,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 149/149; Go 500 on the first case.",
+          "result": "RED: Django 194/194; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
           "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 149/149 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-green-r2/results.json",
-          "receipt_sha256": "38f57a0c9d60e22c335ff7fb17da4c3a33a11a51538a6ec6a584ee1ac9c39b7f"
+          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-sweep-restb3-3/results.json",
+          "receipt_sha256": "f54194bded6e8e2c76c7321e0bbeb9b6eb14c2cb69613c5736a73726e3a70f94"
         },
         {
-          "revision": "the deleted-association check of the public module page dropped (service/modules_responses.go)",
-          "result": "Mutation control: fails Go on modules-responses-info-deleted-association (200): CAUGHT.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-mutation-r2/results.json",
-          "receipt_sha256": "2d55b0839331a86a390f727ba3d59fbe884f30d6d418bc4cfb9ae3161a5ff98f"
+          "revision": "committing change dropping the check that the response of ?response_id belongs to the module",
+          "result": "Mutation control: fails Go on modules-responses-info-response-of-another-module (response.body).",
+          "artifact": "quality-reports/go-migration/modules-responses-http-restb3-mutation-1/results.json",
+          "receipt_sha256": "6569d3efadb8244333de4efe5831dcf72d29ca81430267c3278ea66a2c57d8da"
         }
       ],
       "notes": [
-        "Implementing: v2-rest-b: the public module page returns the fields the form needs (module_id, title, response_message, allow_attachments, only_users, elements, sport_association.denomination; response_data.attachments_docs with document_id and filename), and a module of an association marked deleted answers 404 'module not found' before the response id is read. Django changed first (RED: application.tests.test_modules_views.ModulesCustomLinkInfoPublicFieldsTests, 4 of 5 failing before the view change; the recorded family RED receipt stays). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
+        "Implementing: Module responses. API v2 (v2-rest-b3): response/add and add-attachment accept form and multipart bodies (a file part answers the 500 page as Django does), attachment names with separators or beyond the column size, non-string filename and base64, integer document ids, and the delete of a document other rows reference; the public module page only reads responses of its own module; the export writes list and object labels as their text sized by their item count and answers the 500 page for props that are not an object (mutation restb3-mutation-2: width from the text instead of the item count, CAUGHT on modules-responses-export-label-list). Still refused: a name that is an uploaded file part or invalid UTF-8, a taken storage name with AWS_S3_FILE_OVERWRITE off, export integers beyond int64 and workbook-refused text. 194 cases. RED: documented refusal, see v2-refusals.md modules-responses rows (family RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
       ]
     },
     {
@@ -17317,7 +17331,7 @@
         "target": "modules_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/modules_writes.go",
         "BE_GO/internal/dto/modules_writes.go",
@@ -17360,21 +17374,28 @@
         "TESTS/adapters/django/modules_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/modules-writes.md",
         {
-          "command": "python tools/go-migration/family.py run modules-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/modules-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "8147e65a647fd2d93b183270fa16dfae7d66fb36de007c6b3e45d66cd5fc7f40",
-          "scope": "HTTP family modules-writes: 98/98 cases on native Django and native Go, 98/98 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 102/102; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-native-r2/results.json",
+          "receipt_sha256": "22ea292178bd7594a79e3647d9b6496b28aeccf24d05d7d483428f2fa0bc25f1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-sweep-restb3-3/results.json",
+          "receipt_sha256": "2188156eb34e954d7bd07efdaa8891be7a59b0ce89a7e6041f68666cf6c82d38"
+        },
+        {
+          "revision": "committing change with the new-key branch disabled so the update saves in place",
+          "result": "Mutation control: fails Go on modules-writes-update-new-key-copies (response.status).",
+          "artifact": "quality-reports/go-migration/modules-writes-http-restb3-mutation-1/results.json",
+          "receipt_sha256": "795be56ae19685d574406da3ce84b82ccc4caccaf8e23335ad449e9a92db51c0"
         }
       ],
       "notes": [
-        "Implementing: Not ported (refused with the 500 page before any write): an update changing module_id (Model.save inserts a copy), a nested sport_association dict with keys, and modules_update's {'error': str(e)} texts of database exceptions. templates/<pk>/update belongs to the module-templates family.",
-        "Implementing evidence: docs/architecture/go-migration/modules-writes.md",
-        "Implementing evidence: RED: Django 98/98; Go 404 on the first case. (quality-reports/go-migration/modules-writes-http-native-r2/results.json)",
-        "Implementing evidence: GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/modules-writes-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on duplicate-foreign-module (quality-reports/go-migration/modules-writes-http-mutation-r1/results.json)"
+        "Implementing: Module writes. API v2 (v2-rest-b3): an update with a module_id no module has inserts the copy Model.save() inserts with the validated values and leaves the named module; a database conflict on the copy answers its text as 500 {'error': ...}. Still refused: update with a nested sport_association dict that has keys. 102 cases. RED: documented refusal, see v2-refusals.md modules-writes row (earlier native RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
       ]
     },
     {
@@ -17392,7 +17413,7 @@
         "target": "modules_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/modules_writes.go",
         "BE_GO/internal/dto/modules_writes.go",
@@ -17435,21 +17456,28 @@
         "TESTS/adapters/django/modules_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/modules-writes.md",
         {
-          "command": "python tools/go-migration/family.py run modules-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/modules-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "8147e65a647fd2d93b183270fa16dfae7d66fb36de007c6b3e45d66cd5fc7f40",
-          "scope": "HTTP family modules-writes: 98/98 cases on native Django and native Go, 98/98 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 102/102; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-native-r2/results.json",
+          "receipt_sha256": "22ea292178bd7594a79e3647d9b6496b28aeccf24d05d7d483428f2fa0bc25f1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-sweep-restb3-3/results.json",
+          "receipt_sha256": "2188156eb34e954d7bd07efdaa8891be7a59b0ce89a7e6041f68666cf6c82d38"
+        },
+        {
+          "revision": "committing change with the new-key branch disabled so the update saves in place",
+          "result": "Mutation control: fails Go on modules-writes-update-new-key-copies (response.status).",
+          "artifact": "quality-reports/go-migration/modules-writes-http-restb3-mutation-1/results.json",
+          "receipt_sha256": "795be56ae19685d574406da3ce84b82ccc4caccaf8e23335ad449e9a92db51c0"
         }
       ],
       "notes": [
-        "Implementing: Not ported (refused with the 500 page before any write): an update changing module_id (Model.save inserts a copy), a nested sport_association dict with keys, and modules_update's {'error': str(e)} texts of database exceptions. templates/<pk>/update belongs to the module-templates family.",
-        "Implementing evidence: docs/architecture/go-migration/modules-writes.md",
-        "Implementing evidence: RED: Django 98/98; Go 404 on the first case. (quality-reports/go-migration/modules-writes-http-native-r2/results.json)",
-        "Implementing evidence: GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/modules-writes-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on duplicate-foreign-module (quality-reports/go-migration/modules-writes-http-mutation-r1/results.json)"
+        "Implementing: Module writes. API v2 (v2-rest-b3): an update with a module_id no module has inserts the copy Model.save() inserts with the validated values and leaves the named module; a database conflict on the copy answers its text as 500 {'error': ...}. Still refused: update with a nested sport_association dict that has keys. 102 cases. RED: documented refusal, see v2-refusals.md modules-writes row (earlier native RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
       ]
     },
     {
@@ -17676,25 +17704,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 149/149; Go 500 on the first case.",
+          "result": "RED: Django 194/194; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
           "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 149/149 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-green-r2/results.json",
-          "receipt_sha256": "38f57a0c9d60e22c335ff7fb17da4c3a33a11a51538a6ec6a584ee1ac9c39b7f"
+          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-sweep-restb3-3/results.json",
+          "receipt_sha256": "f54194bded6e8e2c76c7321e0bbeb9b6eb14c2cb69613c5736a73726e3a70f94"
         },
         {
-          "revision": "the deleted-association check of the public module page dropped (service/modules_responses.go)",
-          "result": "Mutation control: fails Go on modules-responses-info-deleted-association (200): CAUGHT.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-mutation-r2/results.json",
-          "receipt_sha256": "2d55b0839331a86a390f727ba3d59fbe884f30d6d418bc4cfb9ae3161a5ff98f"
+          "revision": "committing change dropping the check that the response of ?response_id belongs to the module",
+          "result": "Mutation control: fails Go on modules-responses-info-response-of-another-module (response.body).",
+          "artifact": "quality-reports/go-migration/modules-responses-http-restb3-mutation-1/results.json",
+          "receipt_sha256": "6569d3efadb8244333de4efe5831dcf72d29ca81430267c3278ea66a2c57d8da"
         }
       ],
       "notes": [
-        "Implementing: v2-rest-b: the public module page returns the fields the form needs (module_id, title, response_message, allow_attachments, only_users, elements, sport_association.denomination; response_data.attachments_docs with document_id and filename), and a module of an association marked deleted answers 404 'module not found' before the response id is read. Django changed first (RED: application.tests.test_modules_views.ModulesCustomLinkInfoPublicFieldsTests, 4 of 5 failing before the view change; the recorded family RED receipt stays). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
+        "Implementing: Module responses. API v2 (v2-rest-b3): response/add and add-attachment accept form and multipart bodies (a file part answers the 500 page as Django does), attachment names with separators or beyond the column size, non-string filename and base64, integer document ids, and the delete of a document other rows reference; the public module page only reads responses of its own module; the export writes list and object labels as their text sized by their item count and answers the 500 page for props that are not an object (mutation restb3-mutation-2: width from the text instead of the item count, CAUGHT on modules-responses-export-label-list). Still refused: a name that is an uploaded file part or invalid UTF-8, a taken storage name with AWS_S3_FILE_OVERWRITE off, export integers beyond int64 and workbook-refused text. 194 cases. RED: documented refusal, see v2-refusals.md modules-responses rows (family RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
       ]
     },
     {
@@ -17774,25 +17802,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 149/149; Go 500 on the first case.",
+          "result": "RED: Django 194/194; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
           "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 149/149 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-green-r2/results.json",
-          "receipt_sha256": "38f57a0c9d60e22c335ff7fb17da4c3a33a11a51538a6ec6a584ee1ac9c39b7f"
+          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-sweep-restb3-3/results.json",
+          "receipt_sha256": "f54194bded6e8e2c76c7321e0bbeb9b6eb14c2cb69613c5736a73726e3a70f94"
         },
         {
-          "revision": "the deleted-association check of the public module page dropped (service/modules_responses.go)",
-          "result": "Mutation control: fails Go on modules-responses-info-deleted-association (200): CAUGHT.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-mutation-r2/results.json",
-          "receipt_sha256": "2d55b0839331a86a390f727ba3d59fbe884f30d6d418bc4cfb9ae3161a5ff98f"
+          "revision": "committing change dropping the check that the response of ?response_id belongs to the module",
+          "result": "Mutation control: fails Go on modules-responses-info-response-of-another-module (response.body).",
+          "artifact": "quality-reports/go-migration/modules-responses-http-restb3-mutation-1/results.json",
+          "receipt_sha256": "6569d3efadb8244333de4efe5831dcf72d29ca81430267c3278ea66a2c57d8da"
         }
       ],
       "notes": [
-        "Implementing: v2-rest-b: the public module page returns the fields the form needs (module_id, title, response_message, allow_attachments, only_users, elements, sport_association.denomination; response_data.attachments_docs with document_id and filename), and a module of an association marked deleted answers 404 'module not found' before the response id is read. Django changed first (RED: application.tests.test_modules_views.ModulesCustomLinkInfoPublicFieldsTests, 4 of 5 failing before the view change; the recorded family RED receipt stays). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
+        "Implementing: Module responses. API v2 (v2-rest-b3): response/add and add-attachment accept form and multipart bodies (a file part answers the 500 page as Django does), attachment names with separators or beyond the column size, non-string filename and base64, integer document ids, and the delete of a document other rows reference; the public module page only reads responses of its own module; the export writes list and object labels as their text sized by their item count and answers the 500 page for props that are not an object (mutation restb3-mutation-2: width from the text instead of the item count, CAUGHT on modules-responses-export-label-list). Still refused: a name that is an uploaded file part or invalid UTF-8, a taken storage name with AWS_S3_FILE_OVERWRITE off, export integers beyond int64 and workbook-refused text. 194 cases. RED: documented refusal, see v2-refusals.md modules-responses rows (family RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
       ]
     },
     {
@@ -17872,25 +17900,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 149/149; Go 500 on the first case.",
+          "result": "RED: Django 194/194; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
           "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 149/149 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-green-r2/results.json",
-          "receipt_sha256": "38f57a0c9d60e22c335ff7fb17da4c3a33a11a51538a6ec6a584ee1ac9c39b7f"
+          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-sweep-restb3-3/results.json",
+          "receipt_sha256": "f54194bded6e8e2c76c7321e0bbeb9b6eb14c2cb69613c5736a73726e3a70f94"
         },
         {
-          "revision": "the deleted-association check of the public module page dropped (service/modules_responses.go)",
-          "result": "Mutation control: fails Go on modules-responses-info-deleted-association (200): CAUGHT.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-mutation-r2/results.json",
-          "receipt_sha256": "2d55b0839331a86a390f727ba3d59fbe884f30d6d418bc4cfb9ae3161a5ff98f"
+          "revision": "committing change dropping the check that the response of ?response_id belongs to the module",
+          "result": "Mutation control: fails Go on modules-responses-info-response-of-another-module (response.body).",
+          "artifact": "quality-reports/go-migration/modules-responses-http-restb3-mutation-1/results.json",
+          "receipt_sha256": "6569d3efadb8244333de4efe5831dcf72d29ca81430267c3278ea66a2c57d8da"
         }
       ],
       "notes": [
-        "Implementing: v2-rest-b: the public module page returns the fields the form needs (module_id, title, response_message, allow_attachments, only_users, elements, sport_association.denomination; response_data.attachments_docs with document_id and filename), and a module of an association marked deleted answers 404 'module not found' before the response id is read. Django changed first (RED: application.tests.test_modules_views.ModulesCustomLinkInfoPublicFieldsTests, 4 of 5 failing before the view change; the recorded family RED receipt stays). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
+        "Implementing: Module responses. API v2 (v2-rest-b3): response/add and add-attachment accept form and multipart bodies (a file part answers the 500 page as Django does), attachment names with separators or beyond the column size, non-string filename and base64, integer document ids, and the delete of a document other rows reference; the public module page only reads responses of its own module; the export writes list and object labels as their text sized by their item count and answers the 500 page for props that are not an object (mutation restb3-mutation-2: width from the text instead of the item count, CAUGHT on modules-responses-export-label-list). Still refused: a name that is an uploaded file part or invalid UTF-8, a taken storage name with AWS_S3_FILE_OVERWRITE off, export integers beyond int64 and workbook-refused text. 194 cases. RED: documented refusal, see v2-refusals.md modules-responses rows (family RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
       ]
     },
     {
