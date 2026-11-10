@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, below), **B 218** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard, below), **B 218** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -129,6 +129,20 @@ Receipts are `quality-reports/go-migration/<family>-http-v2misc-*`; each family 
 | workflow-update | `PATCH communications/workflows/<id>/update` | `enabled: true` with a future cron time (`check_workflows_trigger_cron` with a countdown) | 63 cases; RED `v2misc-red-r3` Django 63/63, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r1` (ambiguous wall time on the summer offset) CAUGHT |
 | subscription-reads | `GET subscription/<uid>/info` | course subscription with a membership payment that has an invoice (or an instructor, B) | 261 cases; RED `v2misc-red-r1` Django 261/261, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r1` (nested invoice not loaded) CAUGHT |
 
+### Ported in the v2-wizard change
+
+Receipts are `quality-reports/go-migration/subscription-create-http-v2wiz-*` and `…-secsub2-*`; details in
+`subscription-create.md` and `subscription-renew.md`.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| subscription-create | `POST subscription/add` | the family wizard (`is_family_wizard: true`): one `Family`, a subscription per valid entry, `PaymentSerializer` of the reused payments; with a payment created by the request the answer is the 500 page after the commit, as in Django | 113 cases; RED `v2wiz-red-r1` Django 113/113, Go 500; GREEN `v2wiz-versioned-r1` 4 transports; mutation `v2wiz-mutation-r1` (a created payment serialized as stored) CAUGHT; subscription-renew `secsub2-versioned-r1` 74/74, subscription-memberships, subscription-sign, subscription-approve and associates-draft re-run (`secsub2-rerun-r1`) |
+| subscription-create | `POST subscription/add?m=only_associate` (B) | a member account naming an association and an associate (both lookups, then 403) | same run |
+| subscription-create, subscription-renew | `POST subscription/add`, `POST subscription/renew` | not a refusal: the certificate a registration links and the subscriptions a member account renews follow Django's rules | RED `secsub2-red-r2` / `secsub2-red-r3`; mutations `secsub2-mutation-r1` (create), `secsub2-mutation-r1` and `secsub2-mutation-r2` (renew) CAUGHT |
+
+Still refused on `subscription/add`: `type: grouped_subscriptions` in the family wizard (B: `MULTIPLE_REGISTRATION_ENABLED` is off by
+default) and a preregistration that renews a subscription (`subscription_id`, A).
+
 ### Ported in the v2-payments-3 change
 
 Receipts are `quality-reports/go-migration/<family>-http-v2pay3-*`; each family doc has the details.
@@ -176,7 +190,7 @@ No A item remains.
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | POST subscription/add | owner wizard: a typed certificate date without an upload (placeholder PNG drawn with PIL: image rendering, refused by the porting rules) | `routes/association/Members/add/AddMember.svelte:104-139` | `service/subscription_create.go` (`subscriptionCreateRefuse`) | expensive (image) |
-| POST subscription/add | family wizard (`is_family_wizard`, one request with `multiple_entry_form_data`; the response renders `PaymentSerializer` for every payment); a preregistration that renews a subscription (`subscription_id`) | `SubscribeFamily.svelte:136-181`, `Subscribe.svelte:136` (`subscription_id`) | `service/subscription_create.go` (`Add`, `createSubscription`) | expensive |
+| POST subscription/add | a preregistration that renews a subscription (`subscription_id`); the family wizard is ported (v2-wizard) | `Subscribe.svelte:136` (`subscription_id`) | `service/subscription_create.go` (`createSubscription`) | medium |
 | POST subscription/import/upload | final mapping step (every import) | `routes/association/Members/import/ImportMembers.svelte:46-52` | `service/subscription_import_upload.go:200` | expensive |
 | POST subscription/import/upload | Excel file | `import/sections/Section1.svelte:33-37` | `service/subscription_import_upload.go:210` | expensive |
 
@@ -872,7 +886,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | POST subscription/add | `medical_certificate.certificate_expring_date` not null | `service/subscription_create.go:164` | **A** | `routes/association/Members/add/AddMember.svelte:106-117` always sends it (it defaults to today in `sections/Section4.svelte:75-76`). The owner "add member" wizard is refused. Cost: medium (expiration update / placeholder image). |
 | POST subscription/add | anonymous request or body with `sport_association` | `service/subscription_create.go:91,102` | **A** | Public forms `routes/subscribe/Subscribe.svelte:124,167`, `subscribe-multiple/SubscribeMultiple.svelte:183`, `subscribefamily/SubscribeFamily.svelte:136,181`. Also `AddMember.svelte:124-125` in modal mode. Cost: expensive (anonymous path + user creation). |
 | POST subscription/add?m=only_associate with `associate` | quick re-subscription | ported (v2-sub-create) | **ported** | `routes/association/Members/MembersList.svelte:1564`, `MembersBook.svelte:1318`. Cost: medium. |
-| POST subscription/add | `is_family_wizard: true` | `service/subscription_create.go:132` | **A** | `SubscribeFamily.svelte:146`. Cost: expensive. |
+| POST subscription/add | `is_family_wizard: true` | ported (v2-wizard) | **ported** | `SubscribeFamily.svelte:146`. `type: grouped_subscriptions` stays refused (B). |
 | POST subscription/add | `preregistration: true` | `service/subscription_create.go:141` | **A** | `Subscribe.svelte:147-148` (route `/subscribe/:user/:preregistration`). |
 | POST subscription/add | `new_user_account.new_member` true | ported (v2-sub-create) | **ported** | Toggle in the AddMember wizard (`AddMember.svelte:44,338`). Cost: medium (account + welcome e-mail). |
 | POST subscription/add | `signature` with data | ported (v2-sub-create) | **ported** | AddMember signature step (`sections/Section3.svelte:11-26`). Cost: medium (storage upload). |

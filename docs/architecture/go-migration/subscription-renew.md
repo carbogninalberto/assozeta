@@ -87,6 +87,25 @@ before the `try` block: a non-dict body or association, a missing key, a malform
 update entry, since the serializer's `user` is read-only); the audit actor stays the athlete (the notification broadcast rows are
 indexed through the athlete's association: none), and the notification goes to the owner.
 
+A member account renews its own subscriptions and those of its family, in the association they belong to
+(`_member_renewal_association`). After the association lookup, the named association must have a subscription
+
+- of the requester, or
+- of a person with the tax code of one of the requester's subscriptions, or
+- of a person in the family of one of the requester's subscriptions,
+
+for the associate of the request: by `associate_data.associate_id` when it is a non-empty string (through `uuid.UUID`), else, when
+`associate_id` is missing or null, by `associate_data.tax_code` (a non-empty string, case-insensitive). Anything else is 403
+`{"detail": "User not allowed."}` before any write, the shape the quick re-subscription already uses. Go: `renewMemberAllowed`
+and `MemberRenewable`.
+
+`data['user']['email']` sets the renewed subscription's account only for an association account (owners and collaborators
+acting as the owner, whose renewal is always in their own association); a member account's body does not choose it, and the key
+is not read at all for such a requester.
+
+The certificate named by `medical_certificate.medical_id` follows
+[subscription-create](subscription-create.md#the-certificate-a-registration-links) with the member as requester.
+
 ## Not ported
 
 Refused with the 500 page before anything is committed:
@@ -133,3 +152,12 @@ v2-sub-create: renewals by athletes. Cases `subscription-renew-renew-athlete*` (
 - RED (`v2create-red-r2`): Django 62/62; Go 500 on `subscription-renew-renew-athlete`.
 - GREEN (`v2create-versioned-r1`): 62/62 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`v2create-mutation-r1`): keeping the athlete as `request.user` fails `subscription-renew-renew-athlete` with 403 (CAUGHT).
+
+A member account renews its own subscriptions (74 cases). Cases `subscription-renew-renew-athlete-*`.
+
+- RED (`secsub2-red-r3`): Django 74/74; Go 200 on `subscription-renew-renew-athlete-in-another-association`.
+- GREEN (`secsub2-versioned-r1`, after merging `codex/go-backend-parity`): 74/74 on native Django, native Go, Caddy `/api/v1` and
+  `/api/v2`.
+- Mutation (`secsub2-mutation-r1`): skipping the member check fails `subscription-renew-renew-athlete-in-another-association`
+  (CAUGHT); (`secsub2-mutation-r2`): setting the account from the body's e-mail for every requester fails
+  `subscription-renew-renew-athlete-keeps-the-account` (CAUGHT).

@@ -758,6 +758,229 @@ add('preregistration-flag-not-true', 'owner', 200, SUCCESS(25.0), body=request(p
     effect=success('owner', 'Furio Flag', associate=created_associate(plain_flag), payment=new_payment('25.00', audit_amount='25.0'),
                    subscription=dict(PLAIN), membership=dict(MEMBER)))
 
+# --- The certificate a registration links ------------------------------------------------------------------
+# _linkable_medical_certificates: the id is linked when the certificate belongs to the association account or to the
+# requester, is the certificate of a subscription of this association, or has no account and no
+# subscription of another association. Any other id is treated like an unknown one: the registration succeeds
+# without a certificate and the certificate keeps its account and expiration date.
+ASSOCIATES['certified'] = {'id': next(extra_ids), 'association': OWN, 'first': 'Cora', 'last': 'Certificata', 'tax_code': 'CRTCRO80A41H501C',
+                           'born': '1980-01-01', 'user': 'owner', 'email': None}
+ASSOCIATES['certified_abroad'] = {'id': next(extra_ids), 'association': FOREIGN, 'first': 'Carlo', 'last': 'Altrove',
+                                  'tax_code': 'LTRCRL80A01H501D', 'born': '1980-01-01', 'user': 'foreign_owner', 'email': None}
+CERTIFICATES['other_account'] = {'id': next(extra_ids), 'user': 'foreign_owner', 'expiration': '2026-02-02'}
+CERTIFICATES['other_subscription'] = {'id': next(extra_ids), 'user': None}
+CERTIFICATES['own_subscription'] = {'id': next(extra_ids), 'user': 'foreign_owner'}
+CERTIFICATES['athlete_account'] = {'id': next(extra_ids), 'user': 'athlete'}
+CERTIFICATES['public_upload'] = {'id': next(extra_ids), 'user': None}
+SUBSCRIPTIONS['certified_2019'] = {'id': next(extra_ids), 'associate': 'certified', 'start': '2019-01-01', 'end': '2019-12-31', 'archived': True,
+                                   'number': '4', 'medical': 'own_subscription'}
+SUBSCRIPTIONS['abroad_2019'] = {'id': next(extra_ids), 'associate': 'certified_abroad', 'start': '2019-01-01', 'end': '2019-12-31',
+                                'archived': True, 'number': '901', 'association': FOREIGN, 'medical': 'other_subscription'}
+# The family wizard: a member whose unpaid payment of today is reused.
+ASSOCIATES['family_payer'] = {'id': next(extra_ids), 'association': OWN, 'first': 'Rocco', 'last': 'Riuso', 'tax_code': 'RSIRCC75A01H501M',
+                              'born': '1975-01-01', 'user': 'owner', 'email': None}
+PAYMENTS['family_reusable'] = {'id': next(extra_ids), 'associate': 'family_payer', 'amount': '25.00', 'paid': False, 'date': '$today'}
+EXPIRING = '2027-03-31'
+EXPIRATION_AUDIT = lambda before='None': {'expiration_date': [before, EXPIRING + ' 00:00:00']}
+
+
+def certificate_body(label):
+    return {'medical_id': CERTIFICATES[label]['id'], 'filename': 'certificato.pdf', 'certificate_expring_date': EXPIRING}
+
+
+def linked(effect, label, *, columns, audit, index):
+    """The subscription's certificate and its update entry, written before the payment."""
+    effect['subscription'] = {**effect['subscription'], 'medical_id': CERTIFICATES[label]['id']}
+    effect['medical'] = {'label': label, 'columns': columns, 'audit': audit, 'index': index}
+    position = next(i for i, e in enumerate(effect['audit']) if e['model'] in ('payment', 'subscription'))
+    effect['audit'].insert(position, {'model': 'medicalcertificate', 'action': 1, 'ref': label, 'changes': audit, 'index': index})
+    return effect
+
+
+def owner_registration(name, data, label, *, link):
+    effect = success('owner', f"{data['first_name']} {data['last_name']}", associate=created_associate(data),
+                     payment=new_payment('25.00', audit_amount='25.0'), subscription=dict(PLAIN), membership=dict(MEMBER))
+    if link:
+        linked(effect, label, **link)
+    add(name, 'owner', 200, SUCCESS(25.0), body=request(data, medical_certificate=certificate_body(label)), effect=effect)
+
+
+owner_registration('certificate-of-another-account-not-linked', person('Lia', 'Senzalink', 'SNZLIA90C41H501K'), 'other_account', link=None)
+owner_registration('certificate-of-another-association-subscription-not-linked', person('Leo', 'Senzalink', 'SNZLEO90C01H501K'),
+                   'other_subscription', link=None)
+owner_registration('certificate-of-own-subscription-linked', person('Lea', 'Collegata', 'CLLLEA90C41H501K'), 'own_subscription',
+                   link={'columns': {'expiration_date': EXPIRING}, 'audit': EXPIRATION_AUDIT(), 'index': [OWN, 'actor.sport_association']})
+
+public = person('Pia', 'Pubblica', 'PBBPIA90C41H501K')
+add('anonymous-certificate-of-another-account-not-linked', 'anonymous', 200, SUCCESS(25.0),
+    body=request(public, sport_association=OWNER_NAME, **{**FORM, 'medical_certificate': certificate_body('athlete_account')}),
+    effect=success('anonymous', 'Pia Pubblica', associate=created_associate(public), payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription=dict(PLAIN), membership=dict(MEMBER)))
+uploaded = person('Ugo', 'Pubblico', 'PBBUGO90C01H501K')
+add('anonymous-certificate-upload-linked', 'anonymous', 200, SUCCESS(25.0),
+    body=request(uploaded, sport_association=OWNER_NAME, **{**FORM, 'medical_certificate': certificate_body('public_upload')}),
+    effect=linked(success('anonymous', 'Ugo Pubblico', associate=created_associate(uploaded), payment=new_payment('25.00', audit_amount='25.0'),
+                          subscription=dict(PLAIN), membership=dict(MEMBER)),
+                  'public_upload', columns={'user_id': OWNER, 'expiration_date': EXPIRING},
+                  audit={'user': ['None', OWNER], **EXPIRATION_AUDIT()}, index=None))
+
+
+def athlete_registration(name, data, label, *, link):
+    effect = member_effect(f"{data['first_name']} {data['last_name']}", data, member=IDS['athlete'], member_label='athlete', actor='athlete',
+                           broadcast=False)
+    if link:
+        linked(effect, label, **link)
+    add(name, 'athlete', 200, SUCCESS(25.0),
+        body=request(data, sport_association=OWNER_NAME, **{**FORM, 'medical_certificate': certificate_body(label)}), effect=effect)
+
+
+athlete_registration('athlete-certificate-of-another-account-not-linked', person('Aldo', 'Slegato', 'SLGLDA90C01H501K'), 'other_account',
+                     link=None)
+athlete_registration('athlete-certificate-own-linked', person('Ada', 'Legata', 'LGTDAA90C41H501K'), 'athlete_account',
+                     link={'columns': {'expiration_date': EXPIRING}, 'audit': EXPIRATION_AUDIT(), 'index': None})
+# An upload without an account that another association's subscription already uses.
+athlete_registration('athlete-certificate-of-another-association-subscription-not-linked', person('Abe', 'Slegato', 'SLGBAE90C01H501K'),
+                     'other_subscription', link=None)
+
+# --- The quick mode from a member account ----------------------------------------------------------------
+# For an account that is not an association the body keeps its sport_association: _handle_quick_subscription reads
+# SportAssociation.objects.get(sport_association_id=...) and Associate.objects.get(associate_id=...) (a miss or a
+# malformed id is a 500) and answers 403: the quick re-subscription is for the association's own owner. Without both
+# keys the answer is the 400 validation message.
+QUICK_MEMBER = ASSOCIATES['quick_fallback']['id']
+add('athlete-quick-not-allowed', 'athlete', 403, {'detail': 'User not allowed.'}, query='?m=only_associate',
+    body={'sport_association': OWN, 'associate': QUICK_MEMBER, 'plan_id': 'plan-base'})
+add('athlete-quick-unknown-association-server-error', 'athlete', 500, SERVER, query='?m=only_associate',
+    body={'sport_association': UNKNOWN, 'associate': QUICK_MEMBER})
+add('athlete-quick-association-username-server-error', 'athlete', 500, SERVER, query='?m=only_associate',
+    body={'sport_association': OWNER_NAME, 'associate': QUICK_MEMBER})
+add('athlete-quick-association-null-server-error', 'athlete', 500, SERVER, query='?m=only_associate',
+    body={'sport_association': None, 'associate': QUICK_MEMBER})
+add('athlete-quick-unknown-associate-server-error', 'athlete', 500, SERVER, query='?m=only_associate',
+    body={'sport_association': OWN, 'associate': UNKNOWN})
+add('athlete-quick-associate-malformed-server-error', 'athlete', 500, SERVER, query='?m=only_associate',
+    body={'sport_association': OWN, 'associate': 'non-un-id'})
+add('athlete-quick-without-associate', 'athlete', 400, VALIDATION, query='?m=only_associate', body={'sport_association': OWN})
+add('athlete-quick-without-association', 'athlete', 400, VALIDATION, query='?m=only_associate', body={'associate': QUICK_MEMBER})
+
+# --- The family wizard -------------------------------------------------------------------------------------
+# data['is_family_wizard'] is True (with the four required keys present): one transaction creates a Family
+# (data.get('type'), 'family' unless it names a known type) and, for every entry of data['multiple_entry_form_data']
+# whose 'valid' is True, runs create_subscription on the entry with data['sport_association'], the family on its
+# associate_data and its custom_data. The answer is {'status': 'success', 'subs': [], 'payments': [...]}: PaymentSerializer
+# of each created payment, in entry order. An error in any entry rolls everything back, the Family included. These effects
+# list the rows by label ('new', bound in order), as the renewal fixture does.
+def entry(model, action, ref, changes=None, index=(OWN, 'direct'), app='application'):
+    return {'model': model, 'action': action, 'ref': ref, 'changes': changes or {}, 'index': list(index) if index else None, 'app': app}
+
+
+def family_entry(data, *, valid=True, **extra):
+    return {**request(data), 'plan_id': None, 'membership_plan_id': None, 'custom_data': {}, 'additional_fields': None,
+            'medical_certificate': {'medical_id': None, 'certificate_expring_date': None}, 'valid': valid, **extra}
+
+
+def family_body(entries, **extra):
+    return {**request(person('Capo', 'Famiglia', 'FMGCPA80A01H501F')), **FORM, 'is_family_wizard': True, 'multiple_entry_form_data': entries,
+            **extra}
+
+
+def family_effect(actor, people, *, kind='family', through_actor=None, payment='new', respond=True):
+    """One Family and, per person, the associate, payment, subscription and membership with their entries and tasks.
+
+    payment: 'new' (created by the request), None (no fee), or {'associate': seed label, 'payment': seed label} for a
+    seeded associate whose unpaid payment of today is reused. respond: False when the answer is the 500 page.
+    """
+    new = [{'label': 'family', 'bind': '$family', 'match': {'type': kind}, 'columns': {}}]
+    audit = [entry('family', 0, '$family', index=through_actor)]
+    celery, notifications, payments, changed = [], [], [], {}
+    for position, data in enumerate(people):
+        NUMBER[0] += 1
+        number = str(NUMBER[0])
+        associate, subscription = f'$associate_{position}', f'$subscription_{position}'
+        if isinstance(payment, dict):
+            associate, paid = ASSOCIATES[payment['associate']]['id'], PAYMENTS[payment['payment']]['id']
+            changed = {'associate': {payment['associate']: {'sex': data['sex'], 'family_id': '$family'}}}
+            audit.append(entry('associate', 1, payment['associate'], {'sex': ['A', data['sex']], 'family': ['None', '$family']}))
+            payments.append(payment['payment'])
+        else:
+            new.append({'label': 'associate', 'bind': associate, 'match': {'first_name': data['first_name'], 'last_name': data['last_name']},
+                        'columns': {'tax_code': data['tax_code'], 'born_date': '-'.join(reversed(data['born_date'].split('/'))),
+                                    'sex': data['sex'], 'sport_association_id': OWN, 'user_id': '$owner', 'family_id': '$family'}})
+            audit += [entry('associate', 0, associate, {'user': ['None', 'None']}), entry('associate', 1, associate, {'user': ['None', OWNER]})]
+            paid = None
+            if payment == 'new':
+                paid = f'$payment_{position}'
+                new.append({'label': 'payment', 'bind': paid, 'match': {'associate_id': associate},
+                            'columns': {'subject': 1, 'description': 'Iscrizione', 'payment_category_id': '$category', 'user_id': '$owner',
+                                        'sport_association_id': OWN, 'custom_accounts_id': ACCOUNT, 'amount': '25.00',
+                                        'payment_date': '$today_midnight', 'meta_payment_categories': None, 'meta': None}})
+                audit.append(entry('payment', 0, paid, {'amount': ['None', '25.0']}))
+                payments.append(paid)
+        new.append({'label': 'subscription', 'bind': subscription, 'match': {'associate_id': associate},
+                    'columns': {'sport_association_id': OWN, 'user_id': '$owner', 'payment_id': paid, **PLAIN,
+                                'subscription_number': number, 'custom_data': {}, 'additional_fields': None}})
+        # Without fees the membership's price is the number 0: stored as 0.00, and the following save() records the difference.
+        price = None if payment else '0.00'
+        new.append({'label': 'membership', 'bind': subscription + '_membership', 'match': {'subscription_id': subscription},
+                    'columns': {'sport_association_id': OWN, 'associate_id': associate, 'payment_id': paid, **MEMBER, 'price': price,
+                                'membership_number': number}})
+        audit += [entry('subscription', 0, subscription),
+                  entry('subscriptionmembership', 0, subscription + '_membership', {'price': ['None', '0']} if price else {})]
+        if price:
+            audit.append(entry('subscriptionmembership', 1, subscription + '_membership', {'price': ['0.00', '0']}))
+        celery += [{'task': 'check_workflows_trigger', 'args': [],
+                    'kwargs': [['trigger_type', 'new_subscription'], ['sport_association_id', {'uuid': OWN}],
+                               ['subscription_id', {'uuid': subscription}]]},
+                   {'task': 'print_document_subscription', 'args': [subscription, '$authorization'], 'kwargs': []}]
+        notifications.append({'msg': f"Nuova Iscrizione aggiunta per {data['first_name']} {data['last_name']}.", 'association': OWN})
+    return {'actor': actor, 'new': new, 'changed': changed, 'deleted': {}, 'tags': [], 'audit': audit, 'celery': celery,
+            'notifications': notifications, 'payments': payments if respond else None}
+
+
+FAMILY_SUCCESS = {'status': 'success', 'subs': [], 'payments': '$payments'}
+first_child, second_child = person('Febo', 'Famiglia', 'FMGFBE10A01H501G'), person('Fiona', 'Famiglia', 'FMGFNI12A41H501H', sex='F')
+skipped = person('Franco', 'Escluso', 'SCLFNC10A01H501I')
+add('family-wizard-without-entries-server-error', 'anonymous', 500, SERVER,
+    body={k: v for k, v in family_body([], sport_association=OWNER_NAME).items() if k != 'multiple_entry_form_data'})
+add('family-wizard-entries-null-server-error', 'anonymous', 500, SERVER, body=family_body(None, sport_association=OWNER_NAME))
+add('family-wizard-entry-not-an-object-server-error', 'anonymous', 500, SERVER, body=family_body(['x'], sport_association=OWNER_NAME))
+add('family-wizard-entry-without-valid-server-error', 'anonymous', 500, SERVER,
+    body=family_body([{k: v for k, v in family_entry(first_child).items() if k != 'valid'}], sport_association=OWNER_NAME))
+add('family-wizard-entry-without-custom-data-server-error', 'anonymous', 500, SERVER,
+    body=family_body([{k: v for k, v in family_entry(first_child).items() if k != 'custom_data'}], sport_association=OWNER_NAME))
+add('family-wizard-owner-without-association-key-server-error', 'owner', 500, SERVER, body=family_body([family_entry(first_child)]))
+# The second entry's errors are the answer; the first entry and the Family are rolled back.
+add('family-wizard-invalid-entry', 'anonymous', 400, {'sex': ['"X" is not a valid choice.']},
+    body=family_body([family_entry(first_child), family_entry({**second_child, 'sex': 'X'})], sport_association=OWNER_NAME))
+add('family-wizard-duplicate-entry', 'anonymous', 409, {'msg': 'Questa iscrizione esiste già.', 'code': '409', 'ref': 'subscription_duplicate'},
+    body=family_body([family_entry(first_child), family_entry(person('dora', 'DOPPIA', 'dppdro90a41h501x', born='01/01/1990'))],
+                     sport_association=OWNER_NAME))
+# Entries that are not valid are skipped; without a valid one only the Family is created.
+add('family-wizard-no-valid-entry', 'anonymous', 200, FAMILY_SUCCESS,
+    body=family_body([family_entry(skipped, valid=False), family_entry(skipped, valid='true')], sport_association=OWNER_NAME),
+    effect=family_effect('anonymous', []))
+# A payment the association already expects (unpaid, of today, same amount) is reused and serialized as stored.
+payer = person('Rocco', 'Riuso', ASSOCIATES['family_payer']['tax_code'], born='01/01/1975')
+add('family-wizard-reused-payment', 'anonymous', 200, FAMILY_SUCCESS,
+    body=family_body([family_entry(payer)], sport_association=OWNER_NAME),
+    effect=family_effect('anonymous', [payer], payment={'associate': 'family_payer', 'payment': 'family_reusable'}))
+# Without fees there is no payment to serialize.
+free_child = person('Lapo', 'Famiglia', 'FMGLPA13A01H501L')
+add('family-wizard-without-fees', 'anonymous', 200, FAMILY_SUCCESS, setup={'association': {'enable_quotes_management': False}},
+    body=family_body([family_entry(free_child)], sport_association=OWNER_NAME),
+    effect=family_effect('anonymous', [free_child], payment=None))
+# A payment created by the request still holds the plain date assigned to payment_date when PaymentSerializer runs after
+# the commit: the answer is the 500 page, and the Family, both subscriptions, their tasks and notifications stay.
+add('family-wizard', 'anonymous', 500, SERVER, setup={'association': {'enable_quotes_management': True}},
+    body=family_body([family_entry(first_child), family_entry(skipped, valid=False), family_entry(second_child)],
+                     sport_association=OWNER_NAME, type='family'),
+    effect=family_effect('anonymous', [first_child, second_child], respond=False))
+# An association account names its own association; a type that is not a known one is 'family'.
+owner_child = person('Olmo', 'Famiglia', 'FMGLMO11A01H501J')
+add('family-wizard-owner', 'owner', 500, SERVER,
+    body=family_body([family_entry(owner_child)], sport_association=OWNER_NAME, type='altro'),
+    effect=family_effect('owner', [owner_child], through_actor=(OWN, 'actor.sport_association'), respond=False))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/add authored sequence with row, audit, Celery and notification effects',
