@@ -497,17 +497,13 @@ func (s *SubscriptionMisc) DeleteDocument(ctx context.Context, identity domain.R
 		}
 		return tx.Commit()
 	}
-	// Document.delete() collects every row that references the document.
+	// A document other rows still reference stays with them: only this link goes.
 	shared, err := tx.DocumentShared(ctx, row.DocumentID, row.ID)
 	if err != nil {
 		return err
 	}
 	if shared {
-		changes, err := tx.DeleteSharedDocument(ctx, row.DocumentID, row.ID, supplierGroup(groupHeader), auditContext, at)
-		if err != nil {
-			return err
-		}
-		if err = tx.RecordFileDelete(ctx, row.ID, changes, actorAssociation, auditContext, at); err != nil {
+		if _, err = tx.DeleteFile(ctx, row.ID, actorAssociation, auditContext, at); err != nil {
 			return err
 		}
 		return tx.Commit()

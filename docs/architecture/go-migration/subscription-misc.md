@@ -20,7 +20,7 @@
 - **delete-document**:
   - `is_valid_uuid` on both ids (400 list), then `scoped_queryset(SportAssociation.objects).filter(user=request.user).first()`: none (athletes, owners without a live association) is 403 `{'detail': 'User not allowed.'}`. An owner-scoped athlete session gets the scoped-request 403 first.
   - The association's group-aware, scoped subscription and then its file (`filter(pk, subscription)`); either missing is a TypeError, 500.
-  - Outside an association-scoped impersonation `subscription_file.document.delete()` deletes the Document and, through the cascade, the file; `subscription_file.delete()` on the view's stale instance then records one more auditlog delete of the file. Inside one only the file is deleted. Entries are indexed to the actor's own association (`actor.sport_association`), or not indexed when the actor has none.
+  - Outside an association-scoped impersonation, a Document no other row references is deleted with `subscription_file.document.delete()` and, through the cascade, the file; `subscription_file.delete()` on the view's stale instance then records one more auditlog delete of the file. When another row (a file of any subscription, or any other reference to the Document) still points at the Document, only the caller's file is deleted: the Document, its stored file and the other links stay. Inside an association-scoped impersonation only the file is deleted. Entries are indexed to the actor's own association (`actor.sport_association`), or not indexed when the actor has none.
 - Requests are not atomic: the expired-link deletions stay when validate-token-link fails afterwards, and generate-token-link's link stays when rendering the response fails.
 
 ## Not ported
@@ -28,7 +28,6 @@
 - `subscription/associates-draft/list/approve`: every successful draft goes through `create_subscription` (users, associates, subscriptions, payments, documents, emails). It stays on Django (see `associates-draft.md`).
 - calculate-tax-code inputs outside the ported subset are refused with a 500 (no write happens either way): characters whose NFKD form leaves the embedded transliteration ranges (U+0001-U+052F, U+1E00-U+1EFF, U+2000-U+206F, U+20A0-U+20CF; astral characters are dropped as in text-unidecode), lone surrogates, HTML entity or numeric character references, runs of more than 30 combining marks, and date slugs containing letters (month names, ISO `T` times). The port covers every date written with digits and separators. If the `Unidecode` package were installed next to python-slugify, Django would transliterate differently.
 - validate-token-link through the paired server: an `expires_at` whose instant lies outside years 1..9999. Go answers 500 (the expired links are already deleted, as in Django).
-- delete-document when another row references the same Document is ported (v2-rest-c): `Document.delete()` runs the shared deletion collector (`repository/document_delete.go`, document-delete.md): files, certificates and appointments of the document are deleted with their audit entries, many-to-many links removed and `SET_NULL` references cleared; then the view's own `delete()` of the file, already gone, records one more entry.
 - generate-token-link with an uploaded file as `gym_name` (multipart): 500 before any write.
 
 ## Evidence
@@ -62,3 +61,5 @@ that ask nothing (upper-case token, disconnected pairing, an instance that is no
 - GREEN (`v2misc3-final-r1`, after the last base merge; first `v2misc3-versioned-r1`): 157/157 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`v2misc3-mutation-r1`): a gym name limit of 256 fails Go on
   `subscription-misc-validate-paired-server-gym-name-too-long` (CAUGHT).
+
+- Shared document (later change): the cases of one document under two files now expect the caller's link removed with the Document kept, then a repeat (500), then the last link taking the Document with it. Replaces the v2-rest-c cascade cases.

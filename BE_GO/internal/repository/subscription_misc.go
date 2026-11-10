@@ -3,9 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -279,36 +277,6 @@ func (t *subscriptionMiscTransaction) DeleteFile(ctx context.Context, id string,
 func (t *subscriptionMiscTransaction) RecordFileDelete(ctx context.Context, id string, changes map[string][2]string, actorAssociation *string,
 	audit domain.LoginAuditContext, at time.Time) error {
 	return appendModelAudit(ctx, t.tx, subscriptionMiscFileAudit(id, changes, actorAssociation, audit, at))
-}
-
-// DeleteSharedDocument runs the shared deletion collector on the document
-// (document_delete.go) and reads the file's delete diff back from the entry
-// the collector wrote for it.
-func (t *subscriptionMiscTransaction) DeleteSharedDocument(ctx context.Context, document, file string, group *string,
-	audit domain.LoginAuditContext, at time.Time) (map[string][2]string, error) {
-	graph, err := documentDeleteGraph()
-	if err != nil {
-		return nil, err
-	}
-	run := &collaboratorDeleteRun{tx: t.tx, graph: graph, audit: audit, group: group, now: func() time.Time { return at }}
-	rows, err := run.load(ctx, graph.Models[documentDeleteLabel], `t.document_id = $1::uuid FOR UPDATE`, document)
-	if err != nil {
-		return nil, err
-	}
-	if err = run.Delete(ctx, documentDeleteLabel, rows); err != nil {
-		return nil, fmt.Errorf("subscription file document delete: %w", err)
-	}
-	var stored string
-	if err = t.tx.GetContext(ctx, &stored, `SELECT changes::text FROM auditlog_logentry WHERE object_pk=$1 AND action=2
- AND content_type_id=(SELECT id FROM django_content_type WHERE app_label='application' AND model='subscriptionfile')
- ORDER BY id DESC LIMIT 1`, file); err != nil {
-		return nil, err
-	}
-	changes := map[string][2]string{}
-	if err = json.Unmarshal([]byte(stored), &changes); err != nil {
-		return nil, err
-	}
-	return changes, nil
 }
 
 func (t *subscriptionMiscTransaction) DeleteDocument(ctx context.Context, id string, actorAssociation *string, audit domain.LoginAuditContext,
