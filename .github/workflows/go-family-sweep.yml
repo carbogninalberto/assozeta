@@ -132,8 +132,10 @@ jobs:
           from pathlib import Path
           import re
           import subprocess
+          from TESTS.adapters.django.s3_objects import IMAGE
           image = re.search(r'^FROM (caddy:\S+) AS production$', Path('UI/Dockerfile').read_text(), re.M).group(1)
-          subprocess.run(['docker', 'pull', image], check=True)
+          for name in (image, IMAGE):
+              subprocess.run(['docker', 'pull', name], check=True)
           PYIMAGE
           echo "GO_MIGRATION_PYTHON=$(python -c 'import sys; print(sys.executable)')" >> "$GITHUB_ENV"
           echo "GO_MIGRATION_GO_BIN=$(dirname "$(command -v go)")" >> "$GITHUB_ENV"
