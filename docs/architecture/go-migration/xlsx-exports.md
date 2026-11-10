@@ -108,4 +108,4 @@ templates-reports 174/174 on four transports (`v2rep2-versioned-r2`).
 v2-reports-3: labels that compare equal in Python (`1`, `1.0`, `true`) name the same columns and are neither converted nor sized apart
 (widths follow the number of rows); an integer label beyond 64 bits is a number in the header row (`BigInt` value, object
 index; the unsigned range and a `None` before the integers read as pandas does). 21 more golden workbooks. The MCP transport
-now builds the same workbooks (mcp-server.md). Evidence: templates-reports 182/182 on four transports (`v2rep3-b-versioned-r1`).
+now builds the same workbooks (mcp-server.md). Evidence: templates-reports 182/182 on four transports (`v2rep3-b-versioned-r2`).

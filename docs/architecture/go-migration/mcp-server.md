@@ -151,7 +151,7 @@ and the XLSX and PDF results stay refused here. The server has no request, so no
 v2-reports-3: the XLSX and PDF results of `export_data`, `export_multi_sheet` and
 `get_attendance_matrix(export=true)` are built on the MCP transport (and the assistant channel)
 by the code the saved-report run uses, with the whole result dict: `row_count`, `sheet_count` or
-`total_dates` and `save_info`. The harness (`mcp-server-tools-v2rep3-b-mcp-r2`) compares a file by its normalized parts
+`total_dates` and `save_info`. The harness (`v2rep3-b-mcp-r3-mcp-server-tools`) compares a file by its normalized parts
 (workbook parts with the two core.xml times set aside, PDF objects decoded with dates and
 trailer ID set aside; the helpers of `TESTS/contracts`): 147 cases, 146 identical and 1
 refused (`title` that is not a string), 4/4 sessions identical.
