@@ -721,7 +721,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### profile-misc.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH onboarding/update | `onboarding_data` with a `users_onboarding_id` or `user` other than the row's own | `dto/profile_misc.go` (`ParseOnboardingFlags`) | B | Ported in v2-misc for the row's own values, which the checklist always sends (`components/onboarding/onboarding-checklist.svelte:95-100`); other values never come from the UI. |
+| PATCH onboarding/update | `onboarding_data` with a `users_onboarding_id` or `user` other than the row's own | `dto/profile_misc.go` (`ParseOnboardingFlags`) | ported | Both keys are read-only serializer fields in Django; Go reads only the checklist flags (`profile-misc.md`, `seconb-green-r1`). |
 | PATCH onboarding/update | multipart | `service/profile_misc.go:298` | B | The UI sends JSON. |
 | same | soft-deleted owner association | `service/profile_misc.go:350` | B | legacy: low. |
 | same | season/fiscal not int 0..32767; fee repr with exponent; lead containers/too long | `service/profile_misc.go:521,556,588,592` | B | The UI sends ints from selects and `parseFloat` fees (`routes/onboarding/partials/step1.svelte:59-75`). An exponent needs an extreme fee. Lead values are select strings. |
