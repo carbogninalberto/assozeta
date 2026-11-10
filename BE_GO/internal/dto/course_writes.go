@@ -48,28 +48,42 @@ type CourseEvent struct {
 	ID     int
 	Amount string
 	Date   time.Time
+	// InstallmentID is the validated course_subscription_installment_id of
+	// an event that carries the key (nil without it).
+	InstallmentID *string
 }
+
+// CourseEventUnique is the UniqueValidator code of an event's
+// course_subscription_installment_id.
+const CourseEventUnique = "unique:course subscription installment:course subscription installment id"
+
+// CourseEventTaken is the UniqueValidator lookup of an event's
+// course_subscription_installment_id: the default manager's
+// filter(pk=id).exists().
+type CourseEventTaken func(id string) (bool, error)
 
 var (
 	// strptime('%d/%m/%Y'): %d and %m accept one or two digits (%d also a
 	// space and a digit), %Y four digits.
 	courseWritesDMY   = regexp.MustCompile(`^(3[01]|[12]\d|0[1-9]|[1-9]| [1-9])/(1[0-2]|0[1-9]|[1-9])/(\d{4})$`)
 	courseWritesDigit = regexp.MustCompile(`\d`)
+	// courseWritesDMYAny is the same pattern with Python's \d: the day's
+	// second digit and the year accept decimal digits of any script.
+	courseWritesDMYAny = regexp.MustCompile(`^(3[01]|[12]\p{Nd}|0[1-9]|[1-9]| [1-9])/(1[0-2]|0[1-9]|[1-9])/(\p{Nd}{4})$`)
 )
 
 // ParseDMYDate is datetime.strptime(value, '%d/%m/%Y').date(); ok is false
-// on a format or calendar error. Non-ASCII digits are not ported.
+// on a format or calendar error. int() reads the decimal digits of other
+// scripts the pattern accepts.
 func ParseDMYDate(value any) (time.Time, bool, error) {
 	text, ok := value.(string)
 	if !ok {
 		return time.Time{}, false, nil
 	}
-	for _, r := range text {
-		if r > '9' && unicode.IsDigit(r) {
-			return time.Time{}, false, domain.ErrCourseWritesNotPorted
-		}
+	if !courseWritesDMYAny.MatchString(text) {
+		return time.Time{}, false, nil
 	}
-	match := courseWritesDMY.FindStringSubmatch(text)
+	match := courseWritesDMY.FindStringSubmatch(PythonASCIIDigits(text))
 	if match == nil {
 		return time.Time{}, false, nil
 	}
@@ -139,7 +153,7 @@ func DRFBoolean(value any) (bool, bool) {
 // ValidateCourseEvent is CourseEventsSerializer(data=value).is_valid(): the
 // errors are DRF's field codes. An event carrying the writable primary key
 // (UniqueValidator) is not ported.
-func ValidateCourseEvent(value any) (CourseEvent, map[string][]string, error) {
+func ValidateCourseEvent(value any, taken CourseEventTaken) (CourseEvent, map[string][]string, error) {
 	object, ok := value.(domain.RequestObject)
 	if !ok {
 		if value == nil {
@@ -147,11 +161,31 @@ func ValidateCourseEvent(value any) (CourseEvent, map[string][]string, error) {
 		}
 		return CourseEvent{}, map[string][]string{"non_field_errors": {"dictionary:" + pythonTypeName(value)}}, nil
 	}
-	if _, present := object.Lookup("course_subscription_installment_id"); present {
-		return CourseEvent{}, nil, domain.ErrCourseWritesNotPorted
-	}
 	errors := map[string][]string{}
 	var event CourseEvent
+	// The writable primary key: an optional UUIDField with a UniqueValidator.
+	if raw, present := object.Lookup("course_subscription_installment_id"); present {
+		const name = "course_subscription_installment_id"
+		id, valid := DRFUUIDValue(raw)
+		switch {
+		case raw == nil:
+			errors[name] = []string{PaymentCategoryValidationNull}
+		case !valid:
+			errors[name] = []string{PaymentCategoryValidationUUID}
+		case taken == nil:
+			return CourseEvent{}, nil, domain.ErrCourseWritesNotPorted
+		default:
+			exists, err := taken(id)
+			if err != nil {
+				return CourseEvent{}, nil, err
+			}
+			if exists {
+				errors[name] = []string{CourseEventUnique}
+			} else {
+				event.InstallmentID = &id
+			}
+		}
+	}
 	field := func(name string, parse func(any) string) {
 		raw, present := object.Lookup(name)
 		switch {
@@ -268,7 +302,7 @@ func pythonRational(value any) (*big.Rat, error) {
 
 // ValidateCourseAdd is CourseAddSerializer(data=value).is_valid(raise_exception=True)
 // with its overridden events checks.
-func ValidateCourseAdd(value any) (CourseAddInput, error) {
+func ValidateCourseAdd(value any, taken CourseEventTaken) (CourseAddInput, error) {
 	input := CourseAddInput{CourseType: 1, BilledDayOfMonth: 1}
 	one := 1
 	input.BilledFrequency = &one
@@ -361,10 +395,10 @@ func ValidateCourseAdd(value any) (CourseAddInput, error) {
 	if len(errors) > 0 {
 		return input, &CourseAddInvalid{Fields: errors}
 	}
-	return input, validateCourseAddEvents(&input)
+	return input, validateCourseAddEvents(&input, taken)
 }
 
-func validateCourseAddEvents(input *CourseAddInput) error {
+func validateCourseAddEvents(input *CourseAddInput, taken CourseEventTaken) error {
 	present := PythonTruthy(input.Events)
 	switch {
 	case input.Multi && !present:
@@ -391,7 +425,7 @@ func validateCourseAddEvents(input *CourseAddInput) error {
 	}
 	total := new(big.Rat)
 	for _, item := range items {
-		event, invalid, err := ValidateCourseEvent(item)
+		event, invalid, err := ValidateCourseEvent(item, taken)
 		if err != nil {
 			return err
 		}

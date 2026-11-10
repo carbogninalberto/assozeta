@@ -62,6 +62,8 @@ type CourseEnrolmentTransaction interface {
 	OwnerAssociationFirst(ctx context.Context, owner string) (*string, error)
 	ActorAssociation(ctx context.Context, actor string) (*string, error)
 	GroupExists(ctx context.Context, id string) (bool, error)
+	// InstallmentIDTaken reports a live installment of the request's group with this primary key.
+	InstallmentIDTaken(ctx context.Context, id string, group *string) (bool, error)
 	DefaultPaymentCategory(ctx context.Context, association *string) (*string, error)
 	DefaultBankAccount(ctx context.Context, association *string) (*string, error)
 	// AssociationUser is sport_association.user (base manager).

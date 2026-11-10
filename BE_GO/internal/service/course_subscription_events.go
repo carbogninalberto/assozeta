@@ -76,8 +76,9 @@ func (s *CourseSubscriptions) planEvents(ctx context.Context, tx domain.CourseSu
 	case []any:
 		items = v
 	case domain.RequestObject, string:
-		// Iterating a dict's keys or a string's characters is not ported.
-		return plan, ErrCourseSubscriptionNotPorted
+		// A dict yields its keys and a string its characters: each is a
+		// string event (event['id'] raises, the key test is a substring test).
+		items, _ = dto.PythonIterate(v)
 	default:
 		// for ... in <number|bool>: TypeError.
 		return plan, domain.ErrCourseSubscriptionServer
@@ -126,7 +127,7 @@ func (s *CourseSubscriptions) planEvents(ctx context.Context, tx domain.CourseSu
 		if has {
 			continue
 		}
-		parsed, invalid, err := dto.ValidateCourseEvent(event)
+		parsed, invalid, err := dto.ValidateCourseEvent(event, nil)
 		if err != nil {
 			if err == domain.ErrCourseWritesNotPorted {
 				return plan, ErrCourseSubscriptionNotPorted

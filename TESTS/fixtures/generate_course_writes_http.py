@@ -201,6 +201,12 @@ INSTALLMENTS = {
     'u3_a': installment('u3', 0, payment_label='u3_pa'),
     'u3_b': installment('u3', 1),
 }
+# Stored events of earlier versions carry the installment key: an id no installment has is accepted (the day and year
+# may be written with decimal digits of another script), an installment's own id or a null one fails validation.
+OV_EVENTS[1].update({'payment_date': '1\u0660/01/\u0662\u0660\u0669\u0669', 'course_subscription_installment_id': UNKNOWN})
+OV_EVENTS += [{'id': 3, 'amount': '5.00', 'payment_date': '10/03/2099',
+               'course_subscription_installment_id': INSTALLMENTS['u2_b']['course_subscription_installment_id']},
+              {'id': 4, 'amount': '5.00', 'payment_date': '10/04/2099', 'course_subscription_installment_id': None}]
 REGISTRIES = {'d_ar': {'attendance_registry_id': next(ids), 'course_id': COURSES['d_full']['course_id'], 'creation_date': '2026-02-02T08:00:00Z',
                        'events': [{'day': 'mon'}], 'status': 1}}
 DAYS = {'d_ad': {'attendance_day_id': next(ids), 'attendance_registry_id': REGISTRIES['d_ar']['attendance_registry_id'], 'title': 'Lunedì',
@@ -489,6 +495,13 @@ add('update-events', 'owner', f'/course/{cid("u_multi")}/update', 200, UPDATED, 
 add('update-event-errors', 'owner', f'/course/{cid("u_multi")}/update', 400,
     {'id': ['Ensure this value is less than or equal to 30.'], 'amount': ['This field is required.'], 'payment_date': ['This field is required.']},
     method='PATCH', body={'events': [{'id': 31}]})
+KEY = 'course_subscription_installment_id'
+TAKEN = 'course subscription installment with this course subscription installment id already exists.'
+add('update-event-installment-id-malformed', 'owner', f'/course/{cid("u_multi")}/update', 400, {KEY: ['Must be a valid UUID.']},
+    method='PATCH', body={'events': [{'id': 0, 'amount': '1', 'payment_date': '01/01/2099', KEY: 'abc'}]})
+add('update-event-installment-id-taken', 'owner', f'/course/{cid("u_multi")}/update', 400,
+    {KEY: [TAKEN], 'payment_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.']},
+    method='PATCH', body={'events': [{'id': 0, 'amount': '1', 'payment_date': '\u0661\u0660/01/2099', KEY: iid('u2_b').upper()}]})
 add('update-event-not-object', 'owner', f'/course/{cid("u_multi")}/update', 400,
     {'non_field_errors': ['Invalid data. Expected a dictionary, but got int.']}, method='PATCH', body={'events': [3]})
 # Not atomic: the locations are replaced before the event fails.
@@ -700,6 +713,15 @@ add('overview-update-without-all-fails', actor, ou('o_upd', 'group'), 500, SERVE
     actor, rows={CSM: {csid('u4'): change_row(CSM, 'u4', payment_id=None, multi_payments=True)}, PAYMENT: {pid('u4_p'): None}},
     audit=audit))
 
+# A body that is not an object: the views test their keys in it (list membership, substring). Holding a key, or not
+# supporting the test, fails before any write; holding none reads as an empty object.
+for name, body in (('list-with-key', ['multi_payments']), ('text-with-key', 'the one_fee_payment flag'), ('number', 5)):
+    add(f'overview-update-body-{name}-server-error', 'owner', ou('o_upd', 'luisa'), 500, SERVER, body=body)
+add('overview-update-body-list-without-key', 'owner', ou('o_upd', 'luisa'), 200, OV_UPDATED, body=['all', 7], result=effect('owner'))
+add('overview-update-body-text-without-key', 'owner', ou('o_upd', 'luisa'), 200, OV_UPDATED, body='multi', result=effect('owner'))
+for name, body in (('list-with-key', ['installments']), ('text-with-key', 'installments'), ('boolean', True)):
+    add(f'overview-delete-body-{name}-server-error', 'owner', od('o_upd', 'luisa'), 500, SERVER, method='DELETE', body=body)
+
 # --- course/add ------------------------------------------------------------------
 
 ADDED = {'status': 'success'}
@@ -743,6 +765,23 @@ add('add-events-sum', 'owner', '/course/add', 400, NOT_VALID('The sum of the eve
     body={'new_course': course_body(fee='10', multi_payments_split=True, events=[ev(0, 5), ev(1, '4.99')]), 'subscriptions': []})
 add('add-event-invalid', 'owner', '/course/add', 400, {'payment_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.']},
     body={'new_course': course_body(fee='10', multi_payments_split=True, events=[ev(0, '5', '2099-01-10'), ev(1, '5')]), 'subscriptions': []})
+# The events' installment key is validated (a UUID no live installment of the request's group has) and their dates
+# are read as Python reads them; the amounts are compared afterwards.
+SUM = NOT_VALID('The sum of the events amount must be equal to the course fee.')
+keyed = lambda value, date='10/01/2099': {**ev(0, '5', date), 'course_subscription_installment_id': value}
+for name, value, expected in (('null', None, {KEY: ['This field may not be null.']}), ('float', 1.5, {KEY: ['Must be a valid UUID.']}),
+                              ('taken', iid('u2_b'), {KEY: [TAKEN]}), ('unknown', UNKNOWN, SUM), ('integer', 7, SUM)):
+    add(f'add-event-installment-id-{name}', 'owner', '/course/add', 400, expected,
+        body={'new_course': course_body(fee='10', multi_payments_split=True, events=[keyed(value), ev(1, '4')]), 'subscriptions': []})
+add('add-event-installment-id-other-group', 'owner', '/course/add', 400, SUM, headers=GROUP('own_group'),
+    body={'new_course': course_body(fee='10', multi_payments_split=True, events=[keyed(iid('u2_b')), ev(1, '4')]), 'subscriptions': []})
+add('add-event-date-other-digits', 'owner', '/course/add', 400, SUM,
+    body={'new_course': course_body(fee='10', multi_payments_split=True,
+                                    events=[ev(0, '5', '2\u0669/01/\u0662\u0660\u0669\u0669'), ev(1, '4')]), 'subscriptions': []})
+add('add-event-month-other-digits-invalid', 'owner', '/course/add', 400,
+    {'payment_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.']},
+    body={'new_course': course_body(fee='10', multi_payments_split=True, events=[ev(0, '5', '10/\u0660\u0661/2099'), ev(1, '5')]),
+          'subscriptions': []})
 add('add-event-not-object', 'owner', '/course/add', 400, {'non_field_errors': ['Invalid data. Expected a dictionary, but got str.']},
     body={'new_course': course_body(fee='10', multi_payments_split=True, events=['a', 'b']), 'subscriptions': []})
 

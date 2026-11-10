@@ -51,10 +51,8 @@ func courseSubscriptionExportLessons(meta *string, total int64) (string, error) 
 						left = "True"
 					}
 				case json.Number:
-					if strings.ContainsAny(number.String(), ".eE") {
-						return "", ErrCourseSubscriptionExportUnsupported // a float's repr
-					}
-					left = number.String()
+					// An integer as written, a float with its repr.
+					left = dto.PythonStr(number)
 				default:
 					return "", ErrCourseSubscriptionExportUnsupported // a list or dict
 				}

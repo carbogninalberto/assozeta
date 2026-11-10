@@ -1702,6 +1702,18 @@
    "meta": {},
    "created": "2026-09-18T08:00:00Z"
   },
+  "h_half": {
+   "id": "a1000000-0000-4000-8000-000000660113",
+   "carnet": "dieci",
+   "cs": [
+    "cs_invoiced"
+   ],
+   "disabled": false,
+   "meta": {
+    "lessons_left": 2.5
+   },
+   "created": "2026-09-19T08:00:00Z"
+  },
   "h_deleted": {
    "id": "a1000000-0000-4000-8000-000000669904",
    "carnet": "zero",
@@ -3552,7 +3564,18 @@
        }
       ],
       "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-09-01T10:00:00Z}</span>",
-      "carnets": []
+      "carnets": [
+       {
+        "carnet_subscription_id": "a1000000-0000-4000-8000-000000660113",
+        "carnet_id": "a1000000-0000-4000-8000-000000660107",
+        "title": "Dieci ingressi",
+        "lessons_total": 10,
+        "lessons_left": 2.5,
+        "lessons_used": 7.5,
+        "lessons_display": "2.5/10",
+        "creation_date": "19/09/2026"
+       }
+      ]
      }
     ]
    },
@@ -6199,7 +6222,18 @@
        }
       ],
       "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-09-01T10:00:00Z}</span>",
-      "carnets": []
+      "carnets": [
+       {
+        "carnet_subscription_id": "a1000000-0000-4000-8000-000000660113",
+        "carnet_id": "a1000000-0000-4000-8000-000000660107",
+        "title": "Dieci ingressi",
+        "lessons_total": 10,
+        "lessons_left": 2.5,
+        "lessons_used": 7.5,
+        "lessons_display": "2.5/10",
+        "creation_date": "19/09/2026"
+       }
+      ]
      }
     ]
    },
@@ -9687,6 +9721,7 @@
        "Corso",
        "Data creazione",
        "Tags",
+       "Carnet",
        "Agonisti",
        "Master è"
       ],
@@ -9716,6 +9751,9 @@
         ""
        ],
        [
+        "Dieci ingressi (19/09/2026) - 2.5/10"
+       ],
+       [
         ""
        ],
        [
@@ -9724,7 +9762,7 @@
       ]
      }
     },
-    "filename": "[$today] Iscrizioni ai corsi - Message reads own.xlsx"
+    "filename": "[$today] Dieci ingressi - Message reads own.xlsx"
    },
    "effect": null,
    "body": {
@@ -10441,7 +10479,8 @@
        "Telefono",
        "Corso",
        "Data creazione",
-       "Tags"
+       "Tags",
+       "Carnet"
       ],
       "rows": [
        [
@@ -10452,10 +10491,11 @@
         null,
         "Sala pesi",
         "10/09/2026",
-        ""
+        "",
+        "Dieci ingressi (19/09/2026) - 2.5/10"
        ]
       ],
-      "title": "Iscrizioni ai corsi (giorno stampa $today)"
+      "title": "Dieci ingressi (giorno stampa $today)"
      }
     },
     "filename": "[$today] Iscrizioni corsi filtrate - Message reads own.pdf"
@@ -12984,6 +13024,137 @@
    },
    "body": {
     "events": []
+   }
+  },
+  {
+   "name": "course-subscriptions-update-events-object-key-invalid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660081/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got str."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "events": {
+     "rata": 1
+    }
+   }
+  },
+  {
+   "name": "course-subscriptions-update-events-text-invalid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660081/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got str."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "events": "ab"
+   }
+  },
+  {
+   "name": "course-subscriptions-update-events-object-installment-key-left-out",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660081/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000660081",
+    "creation_date": "2026-09-10T08:00:00Z",
+    "paid": false,
+    "subscription": {
+     "subscription_id": "a1000000-0000-4000-8000-000000660017",
+     "associate": {
+      "associate_id": "a1000000-0000-4000-8000-000000660008",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "born_city": null,
+      "born_date": "1970-03-03",
+      "email": null,
+      "sex": "M",
+      "first_name": "Gino",
+      "last_name": "Neri",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "tax_code": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "phone": null,
+      "family": null,
+      "family_role": null
+     },
+     "current_year": "corrente"
+    },
+    "multi_payments": true,
+    "multiple_quote": null,
+    "one_fee_payment": false,
+    "installments": [],
+    "course": "a1000000-0000-4000-8000-000000660027",
+    "type": 1,
+    "billed_frequency": 1,
+    "billed_from": null,
+    "billed_until": null,
+    "billed_from_day_of_month": 1,
+    "membership_active": true,
+    "membership_fee": "0.00",
+    "auto_renewal": false,
+    "membership_payments": [],
+    "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-09-01T10:00:00Z}</span>",
+    "carnets": []
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "cs_changed": {},
+    "cs_deleted": [],
+    "installments_deleted": [],
+    "payments_deleted": [],
+    "payments_changed": {},
+    "audit": []
+   },
+   "body": {
+    "events": {
+     "old_course_subscription_installment_id": 1
+    }
+   }
+  },
+  {
+   "name": "course-subscriptions-update-events-object-with-installments-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660080/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "events": {
+     "rata": 1
+    }
+   }
+  },
+  {
+   "name": "course-subscriptions-update-events-text-with-installments-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660080/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "events": "x"
    }
   },
   {

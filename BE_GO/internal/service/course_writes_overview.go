@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -21,16 +22,36 @@ func courseWritesOverviewIDs(rawCourse, rawSubscription string) (string, string,
 	return course.String(), subscription.String(), nil
 }
 
-func courseWritesBody(body any) (domain.RequestObject, error) {
-	if body == nil {
-		return domain.RequestObject{}, nil
+// courseWritesBody is request.data as the overview views read it, `key in
+// data` then data[key], for the keys they test. An object answers for
+// itself. A list (membership) or a string (substring) that holds none of the
+// keys reads as an empty object; one that holds a key raises on data[key], and
+// a number or boolean raises on the test itself: raises reports both.
+func courseWritesBody(body any, keys ...string) (object domain.RequestObject, raises bool) {
+	switch v := body.(type) {
+	case nil:
+		return domain.RequestObject{}, false
+	case domain.RequestObject:
+		return v, false
+	case []any:
+		for _, item := range v {
+			text, ok := item.(string)
+			for _, key := range keys {
+				if ok && text == key {
+					return domain.RequestObject{}, true
+				}
+			}
+		}
+		return domain.RequestObject{}, false
+	case string:
+		for _, key := range keys {
+			if strings.Contains(v, key) {
+				return domain.RequestObject{}, true
+			}
+		}
+		return domain.RequestObject{}, false
 	}
-	object, ok := body.(domain.RequestObject)
-	if !ok {
-		// `key in data` of a list, text or null body is not ported.
-		return nil, domain.ErrCourseWritesNotPorted
-	}
-	return object, nil
+	return domain.RequestObject{}, true
 }
 
 // deleteListed is the installment loop of course_overview_delete: the
@@ -64,10 +85,7 @@ func (s *CourseWrites) OverviewDelete(ctx context.Context, identity domain.Resol
 	if err != nil {
 		return err
 	}
-	data, err := courseWritesBody(request.Body)
-	if err != nil {
-		return err
-	}
+	data, raises := courseWritesBody(request.Body, "installments")
 	tx, err := s.begin(ctx)
 	if err != nil {
 		return err
@@ -103,6 +121,10 @@ func (s *CourseWrites) OverviewDelete(ctx context.Context, identity domain.Resol
 	audit, err := s.auditContext(ctx, tx, identity, request)
 	if err != nil {
 		return err
+	}
+	if raises {
+		// 'installments' in data, or data['installments'], of a body that is not an object.
+		return domain.ErrCourseWritesServer
 	}
 	if listed, present := data.Lookup("installments"); present {
 		items, ok := dto.PythonIterate(listed)
@@ -206,10 +228,7 @@ func (s *CourseWrites) OverviewUpdate(ctx context.Context, identity domain.Resol
 	if err != nil {
 		return err
 	}
-	data, err := courseWritesBody(request.Body)
-	if err != nil {
-		return err
-	}
+	data, raises := courseWritesBody(request.Body, "multi_payments", "one_fee_payment")
 	if header := request.GroupHeader; header != "" {
 		if group := supplierGroup(header); group != nil && *group != header {
 			// The creates would audit the header as sent.
@@ -273,6 +292,10 @@ func (s *CourseWrites) OverviewUpdate(ctx context.Context, identity domain.Resol
 	audit, err := s.auditContext(ctx, tx, identity, request)
 	if err != nil {
 		return err
+	}
+	if raises {
+		// The key tests, or data[key], of a body that is not an object.
+		return domain.ErrCourseWritesServer
 	}
 	multi, hasMulti := data.Lookup("multi_payments")
 	oneFee, hasOneFee := data.Lookup("one_fee_payment")
@@ -376,7 +399,7 @@ func (s *CourseWrites) toInstallments(ctx context.Context, tx domain.CourseWrite
 	created = time.Date(created.Year(), created.Month(), created.Day(), 0, 0, 0, 0, time.UTC)
 	title := courseWritesText(course.Title)
 	for index, item := range items {
-		event, invalid, err := dto.ValidateCourseEvent(item)
+		event, invalid, err := dto.ValidateCourseEvent(item, courseEventTaken(ctx, tx, header))
 		if err != nil {
 			return err
 		}
