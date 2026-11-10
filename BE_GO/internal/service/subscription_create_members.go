@@ -128,16 +128,40 @@ func (s *SubscriptionCreates) newMember(ctx context.Context, tx domain.Subscript
 		}
 		texts[field.Name] = text
 	}
-	if role, present := info.Lookup("role"); present && role != "2" && dto.PythonStr(role) != "2" {
-		// Other roles (and their choice errors) are not ported.
-		return nil, domain.ErrSubscriptionCreateNotPorted
+	// username = CharField(required=False); role is the model's ChoiceField (str(value) among the role keys).
+	sentUsername, hasUsername := info.Lookup("username")
+	if hasUsername {
+		if _, codes := dto.SubscriptionCreateUserText(dto.SupplierField{Name: "username"}, sentUsername); len(codes) > 0 {
+			fields["username"] = codes
+		}
+	}
+	accountRole := domain.RoleAthlete
+	if role, present := info.Lookup("role"); present {
+		if role == nil {
+			_, codes := dto.SubscriptionCreateUserText(dto.SupplierField{Name: "role"}, nil)
+			fields["role"] = codes
+		} else {
+			text, isText := role.(string)
+			if !isText {
+				text = dto.PythonRepr(role)
+			}
+			switch text {
+			case "1":
+				accountRole = domain.RoleAssociation
+			case "2":
+			case "3":
+				accountRole = domain.RoleCollaborator
+			default:
+				fields["role"] = []string{"choice:" + text}
+			}
+		}
 	}
 	if len(fields) > 0 {
 		return nil, &domain.SubscriptionCreateInvalid{Fields: fields}
 	}
-	if _, present := info.Lookup("username"); present {
-		// create_user(**validated_data, username=...) with a username: TypeError.
-		return nil, domain.ErrSubscriptionCreateServer
+	if hasUsername {
+		// create_user(**validated_data, username=...) with a validated username: TypeError.
+		return nil, pythonFailure("django.contrib.auth.models.UserManager.create_user() got multiple values for keyword argument 'username'")
 	}
 	value := func(name string) string {
 		if text := texts[name]; text != nil {
@@ -166,7 +190,7 @@ func (s *SubscriptionCreates) newMember(ctx context.Context, tx domain.Subscript
 	username := pythonPrefix(first, 3) + pythonPrefix(last, 3) + strings.ToUpper(suffix)
 	user := domain.SubscriptionCreateNewUser{ID: uuid.NewString(), TokenUsername: djangoauth.NormalizeUsername(token), Username: username,
 		Email: djangoauth.NormalizeEmail(value("email")), PasswordHash: hash, FirstName: first, LastName: last, Phone: texts["phone"],
-		Role: domain.RoleAthlete, Joined: s.now().UTC().Truncate(time.Microsecond)}
+		Role: accountRole, Joined: s.now().UTC().Truncate(time.Microsecond)}
 	if err = tx.InsertNewUser(ctx, user, request.Audit); err != nil {
 		return nil, err
 	}
@@ -174,7 +198,7 @@ func (s *SubscriptionCreates) newMember(ctx context.Context, tx domain.Subscript
 	if err != nil {
 		return nil, err
 	}
-	return &subscriptionCreateMember{member: domain.SubscriptionCreateMember{ID: user.ID, Role: domain.RoleAthlete, StartDay: 1, StartMonth: 1,
+	return &subscriptionCreateMember{member: domain.SubscriptionCreateMember{ID: user.ID, Role: accountRole, StartDay: 1, StartMonth: 1,
 		EndDay: 31, EndMonth: 12}, welcome: welcome}, nil
 }
 

@@ -1090,9 +1090,92 @@ add('family-wizard-grouped-text-custom-data-server-error', 'athlete', 500, SERVE
     body=family_body([family_entry(person('Gino', 'Gruppo', 'GRPGNI10A01H501G'))], sport_association=OWNER_NAME,
                      type='grouped_subscriptions'))
 
+# --- A renewing preregistration whose member has a tutor ---------------------------------------------------
+# fill_data_preregisration also sends the renewed member's main tutor (get_main_tutor) as associate_tutor_data, its
+# birth date as DD/MM/YYYY: create_subscription saves the tutor through its associate_id; a tutor the minor already
+# has is not linked again.
+late_ids = iter(f'a1000000-0000-4000-8000-{953001 + n:012d}' for n in range(40))
+ASSOCIATES['renewed_minor'] = {'id': next(late_ids), 'association': OWN, 'first': 'Mino', 'last': 'Minore', 'tax_code': 'MNRMNI15A01H501M',
+                               'born': '2015-01-01', 'user': 'owner', 'email': None, 'is_minor': True}
+ASSOCIATES['renewed_tutor'] = {'id': next(late_ids), 'association': OWN, 'first': 'Tullio', 'last': 'Minore', 'tax_code': 'MNRTLL80A01H501T',
+                               'born': '1980-01-01', 'user': 'owner', 'email': None}
+RELATIONS = {'renewed_minor_tutor': {'associate': 'renewed_minor', 'tutor': 'renewed_tutor', 'primary': True}}
+SUBSCRIPTIONS['renewable_minor'] = {'id': next(late_ids), 'associate': 'renewed_minor', 'start': '$season_start', 'end': '$season_end',
+                                    'archived': False, 'number': '21'}
+effect = success('owner', 'Mino Minore', associate={'match': 'renewed_minor', 'columns': {}}, associate_audit=[],
+                 payment=new_payment('25.00', audit_amount='25.0'),
+                 subscription={'type': 1, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', '$explicit_number': '21', **NEXT})
+NUMBER[0] -= 1
+effect['tutor'] = {'match': 'renewed_tutor', 'columns': {}}
+add('preregistration-renewal-member-with-tutor', 'owner', 200, SUCCESS(25.0), body=renewal('renewable_minor'), effect=next_season(effect))
+
+# A minor that already has a tutor, registered with another tutor: the new tutor is saved and not linked (the main
+# tutor stays the only one).
+ASSOCIATES['tutored_minor'] = {'id': next(late_ids), 'association': OWN, 'first': 'Pino', 'last': 'Pupillo', 'tax_code': 'PPLPNI15A01H501P',
+                               'born': '2015-01-01', 'user': 'owner', 'email': None, 'is_minor': True}
+ASSOCIATES['first_tutor'] = {'id': next(late_ids), 'association': OWN, 'first': 'Primo', 'last': 'Pupillo', 'tax_code': 'PPLPRM80A01H501P',
+                             'born': '1980-01-01', 'user': 'owner', 'email': None}
+RELATIONS['tutored_minor_tutor'] = {'associate': 'tutored_minor', 'tutor': 'first_tutor', 'primary': True}
+second_tutor = person('Seconda', 'Pupillo', 'PPLSND82A41H501S', born='01/01/1982', sex='F')
+effect = success('owner', 'Pino Pupillo', associate={'match': 'tutored_minor', 'columns': {'sex': 'M'}},
+                 associate_audit=[(1, {'sex': ['A', 'M']})], tutor=created_associate(second_tutor),
+                 payment=new_payment('25.00', audit_amount='25.0'), subscription=dict(PLAIN), membership=dict(MEMBER))
+effect['audit'] = [e for e in effect['audit'] if e['model'] != 'associatetutorrelation']
+# The minor's serializer save comes before the tutor's entries; its later save() changes nothing.
+effect['audit'].sort(key=lambda e: 0 if e.get('ref') == 'associate' else 1)
+add('minor-with-a-tutor-and-another-tutor', 'owner', 200, SUCCESS(25.0),
+    body=request(person('Pino', 'Pupillo', 'PPLPNI15A01H501P', born='01/01/2015'), tutor=second_tutor), effect=effect)
+
+# subscription_id and sport_association that are not strings: an integer key is uuid.UUID(int=...), other values are
+# not UUIDs; a number as the association's username is compared as its text. None of them finds the subscription.
+for name, key in (('integer', 5), ('boolean', True), ('float', 1.5), ('list', [SUBSCRIPTIONS['renewable']['id']]),
+                  ('object', {'id': SUBSCRIPTIONS['renewable']['id']}), ('negative', -1), ('huge', 2 ** 130)):
+    add(f'preregistration-renewal-{name}-id-not-found', 'owner', 400, NOT_RENEWABLE, body=request(sent, preregistration=True, subscription_id=key))
+for name, named in (('number', 5), ('boolean', True), ('list', [OWNER_NAME])):
+    add(f'preregistration-renewal-association-{name}-not-found', 'owner', 400, NOT_RENEWABLE, body=renewal('renewable', sport_association=named))
+
+# --- A new member account with a role, or with a username ----------------------------------------------------
+# UserSerializer validates role against the account roles and creates the account with it; only an athlete account gets
+# the approval reminder. A username in new_member_info reaches create_user twice (TypeError: the 500 page).
+def new_member_info(first, last, **extra):
+    return {'new_member': True, 'new_member_info': {'first_name': first, 'last_name': last, 'phone': None,
+                                                    'email': f'{first}.{last}@example.test'.lower(), **extra}}
+
+
+add('new-member-role-not-a-choice', 'owner', 400, {'role': ['"9" is not a valid choice.']},
+    body=request(person('Rocco', 'Ruolo', 'RLURCC90C01H501K'), account=new_member_info('Rocco', 'Ruolo', role=9)))
+add('new-member-role-null', 'owner', 400, {'role': ['This field may not be null.']},
+    body=request(person('Rocco', 'Ruolo', 'RLURCC90C01H501K'), account=new_member_info('Rocco', 'Ruolo', role=None)))
+add('new-member-username-server-error', 'owner', 500, SERVER,
+    body=request(person('Ugo', 'Utente', 'TNTGUO90C01H501K'), account=new_member_info('Ugo', 'Utente', username='ugo')))
+add('new-member-username-blank', 'owner', 400, {'username': ['This field may not be blank.']},
+    body=request(person('Ugo', 'Utente', 'TNTGUO90C01H501K'), account=new_member_info('Ugo', 'Utente', username='')))
+for role, first in ((1, 'Sara'), ('3', 'Lara')):
+    staff = person(first, 'Staff', f'STF{first[:3].upper()}90C41H501K')
+    effect = member_effect(f'{first} Staff', staff, member='$new_user', member_label='$new_user', welcome=True,
+                           new_user={'prefix': first[:3] + 'Sta', 'email': f'{first.lower()}.staff@example.test', 'first_name': first,
+                                     'last_name': 'Staff', 'phone': None, 'role': int(role)})
+    effect['celery'] = effect['celery'][:-1]
+    add(f'new-member-role-{role}', 'owner', 200, SUCCESS(25.0), body=request(staff, account=new_member_info(first, 'Staff', role=role)),
+        effect=effect)
+
+# --- The quick re-subscription in an association-scoped session ----------------------------------------------
+# The session's request names its association; scoped_queryset keeps both lookups inside it. The owner viewing as a
+# collaborator re-subscribes the association's member; viewing as an athlete the lookups succeed and the answer is 403.
+ASSOCIATES['quick_session'] = {'id': next(late_ids), 'association': OWN, 'first': 'Quirino', 'last': 'Sessione', 'tax_code': 'SSSQRN80A01H501Q',
+                               'born': '1980-01-01', 'user': 'owner', 'email': None}
+SCOPED_FULL = {'X-Impersonation-Id': '$session:owner_full', 'User-Id': IDS['full_collaborator']}
+SCOPED_ATHLETE = {'X-Impersonation-Id': '$session:owner_athlete', 'User-Id': IDS['athlete']}
+add('quick-scoped-session-without-association', 'owner', 403, {'detail': 'Seleziona la tua associazione.'}, query='?m=only_associate',
+    headers=SCOPED_FULL, body={'associate': ASSOCIATES['quick_session']['id']})
+add('quick-scoped-session-athlete-not-allowed', 'owner', 403, {'detail': 'User not allowed.'}, query='?m=only_associate',
+    headers=SCOPED_ATHLETE, body={'sport_association': OWN, 'associate': ASSOCIATES['renewed_member']['id']})
+quick('owner', 'quick_session', 'Quirino Sessione', headers=SCOPED_FULL, payment={'amount': '25.00', '$audit': '25.00'}, subscription={})
+cases[-1]['body']['sport_association'] = OWN
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/add authored sequence with row, audit, Celery and notification effects',
-    'ids': IDS, 'associates': ASSOCIATES, 'certificates': CERTIFICATES, 'subscriptions': SUBSCRIPTIONS, 'payments': PAYMENTS,
+    'ids': IDS, 'associates': ASSOCIATES, 'certificates': CERTIFICATES, 'subscriptions': SUBSCRIPTIONS, 'payments': PAYMENTS, 'relations': RELATIONS,
     'account': ACCOUNT, 'settings': BASE_SETTINGS, 'unknown': UNKNOWN, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

@@ -127,6 +127,40 @@ SUBSCRIPTIONS['blank_earlier_2019'] = {'id': next(extra_ids), 'associate': 'blan
                                        'archived': False, 'number': '15', 'payment': None, 'user': 'athlete'}
 SUBSCRIPTIONS['blank_stranger_previous'] = {'id': next(extra_ids), 'associate': 'blank_stranger', 'start': '$last_season_start',
                                             'end': '$last_season_end', 'archived': False, 'number': '16', 'payment': None}
+# Courses of the renewal form (add_course_to_subscription) and the members renewed with them or in a session.
+course_ids = iter(f'a1000000-0000-4000-8000-{951001 + n:012d}' for n in range(60))
+PLAN_EVENTS = [{'id': 0, 'amount': '20.00', 'payment_date': '10/01/2020'}, {'id': 1, 'amount': '30.00', 'payment_date': '10/01/2099'}]
+
+
+def course(title, *, association=OWN, fee='40.00', multi=False, events=None, course_type=1, quotes=None, deleted=False):
+    return {'id': next(course_ids), 'association': association, 'title': title, 'fee': fee, 'multi_payments': multi, 'events': events,
+            'course_type': course_type, 'multiple_quotes': quotes, 'deleted': deleted}
+
+
+COURSES = {
+    'fee': course('Nuoto'),
+    'plan': course('Danza', fee='0.00', multi=True, events=PLAN_EVENTS),
+    'free': course('Libero', fee='0.00'),
+    'quotes': course('Pilates', fee='15.00', course_type=2, quotes=[{'quote_id': 'q1', 'title': 'Mensile', 'amount': '22,50'}]),
+    'abroad': course('Lontano', association=FOREIGN, fee='18.00'),
+    'removed': course('Rimosso', deleted=True),
+    'no_fee': course('Senza quota', fee=None),
+    'broken_plan': course('Rate errate', fee='0.00', multi=True, events=[{'id': 0, 'amount': 'dieci', 'payment_date': '10/01/2099'}]),
+}
+ASSOCIATES['coursed'] = {'id': next(course_ids), 'association': OWN, 'first': 'Carlo', 'last': 'Corsista', 'tax_code': 'CRSCRL85A01H501T',
+                         'born': '1985-01-01', 'user': 'owner', 'email': None, 'deleted': False}
+ASSOCIATES['session_owner'] = {'id': next(course_ids), 'association': OWN, 'first': 'Sergio', 'last': 'Sessione',
+                               'tax_code': 'SSSSRG85A01H501U', 'born': '1985-01-01', 'user': 'owner', 'email': None, 'deleted': False}
+ASSOCIATES['session_member'] = {'id': next(course_ids), 'association': OWN, 'first': 'Silvia', 'last': 'Sessione',
+                                'tax_code': 'SSSSLV85A41H501V', 'born': '1985-01-01', 'user': 'athlete', 'email': None, 'deleted': False}
+ASSOCIATES['session_namesake'] = {'id': next(course_ids), 'association': OWN, 'first': 'Silvia', 'last': 'Sessione',
+                                  'tax_code': 'SSSSLV85A41H501V', 'born': '1985-01-01', 'user': 'owner', 'email': None, 'deleted': True}
+SUBSCRIPTIONS['session_member_previous'] = {'id': next(course_ids), 'associate': 'session_member', 'start': '$last_season_start',
+                                            'end': '$last_season_end', 'archived': False, 'number': '17', 'payment': None, 'user': 'athlete'}
+PAYMENTS['session_stale'] = {'id': next(course_ids), 'associate': 'session_member', 'amount': '30.00', 'paid': False, 'subject': 1,
+                             'date': '$today'}
+PAYMENTS['session_namesake_stale'] = {'id': next(course_ids), 'associate': 'session_namesake', 'amount': '31.00', 'paid': False, 'subject': 1,
+                                      'date': '$today'}
 TARGET_USER = {'id': next(ids), 'username': 'renew-target-user', 'email': 'renew-target@example.test'}
 ACCOUNT = next(ids)
 
@@ -672,11 +706,158 @@ add('renew-athlete-keeps-the-account', 'renew', 'athlete', 200, {'status': 'succ
                   celery=tasks(subscription),
                   notifications=[{'msg': 'Nuova Iscrizione aggiunta per Bruna Seconda.', 'association': OWN}]))
 
+# --- subscription/renew with courses (add_course_to_subscription inside the renewal's transaction) --------
+# data['courses'] is the renewal form's pre-filled list of {label, value}: each is the association's course
+# (scoped_queryset(request, Course.objects).filter(course_id=c['value'], sport_association=...).first()) passed to
+# add_course_to_subscription(course, fresh_sub, request.user.sport_association, data=None, is_athlete=False):
+# a course subscription; with multi_payments the future events' payments and instalments (the last payment
+# is linked); else the fee's payment when it is positive. A quote course gets no quote (data is empty) and
+# falls back to its fee. A course listed twice is enrolled once. Any exception is the view's 400 body and
+# rolls the renewal back; a stored event the serializer rejects is its 400.
+def course_item(label):
+    return {'label': COURSES[label]['title'], 'value': COURSES[label]['id']}
+
+
+def course_subscription_repr(bind, course, subscription, *, payment=None, multi=False):
+    """CourseSubscription.__str__ (str(self.__dict__)) of the instance at that point of the request."""
+    fields = {'course_subscription_id': f"UUID('{bind}')", 'course_id': f"UUID('{COURSES[course]['id']}')", 'paid': 'False',
+              'creation_date': '{created}', 'subscription_id': f"UUID('{subscription}')",
+              'payment_id': f"UUID('{payment}')" if payment else 'None', 'multi_payments': repr(multi), 'one_fee_payment': 'False',
+              'archived': 'False', 'type': '1', 'multiple_quote': 'None', 'billed_frequency': '1', 'billed_from': 'None',
+              'billed_until': 'None', 'billed_from_day_of_month': '1', 'membership_active': 'True', 'membership_fee': '0.0',
+              'auto_renewal': 'False', 'deleted': 'False'}
+    return "{'_state': <django.db.models.base.ModelState object at 0x?>, " + ', '.join(f"'{k}': {v}" for k, v in fields.items()) + '}'
+
+
+def enrolled(prefix, label, associate, subscription, user='$owner'):
+    """Rows and entries of one add_course_to_subscription call of the renewal."""
+    course = COURSES[label]
+    row, payment, installment = f'${prefix}_{label}', f'${prefix}_{label}_payment', f'${prefix}_{label}_installment'
+    multi = course['multi_payments']
+    amount = course['events'][-1]['amount'] if multi else course['fee']
+    paid = multi or float(course['fee']) > 0
+    columns = {'course_id': course['id'], 'subscription_id': subscription, 'payment_id': payment if paid else None, 'multi_payments': multi,
+               'multiple_quote': None, 'membership_fee': '0.00', 'type': 1}
+    rows = [{'label': 'course_subscription', 'bind': row, 'match': {'course_id': course['id']}, 'columns': columns}]
+    index = (OWN, 'course.sport_association')
+    audit = [entry('coursesubscription', 0, row, {'membership_fee': ['None', '0.0'], 'payment': ['None', 'None'],
+                                                  **({'multi_payments': ['None', 'False']} if multi else {})}, index=index,
+                   repr=course_subscription_repr(row, label, subscription))]
+    if multi:
+        audit.append(entry('coursesubscription', 1, row, {'multi_payments': ['False', 'True'], 'membership_fee': ['0.00', '0.0']}, index=index,
+                           repr=course_subscription_repr(row, label, subscription, multi=True)))
+    if paid:
+        moment = {'creation_date': '2099-01-10T00:00:00Z'} if multi else {}
+        # The payment is matched first: the course subscription's columns name it.
+        rows.insert(0, {'label': 'payment', 'bind': payment, 'match': {'associate_id': associate, 'amount': amount},
+                     'columns': {'subject': 2, 'description': course['title'] + ', ', 'payment_category_id': '$category', 'user_id': user,
+                                 'sport_association_id': OWN, 'custom_accounts_id': ACCOUNT, 'amount': amount,
+                                 'course': {'label': course['title'], 'value': course['id']}, **moment}})
+        audit.append(entry('payment', 0, payment))
+        if multi:
+            event = course['events'][-1]
+            rows.append({'label': 'installment', 'bind': installment, 'match': {'course_subscription_id': row},
+                         'columns': {'id': event['id'], 'amount': event['amount'], 'payment_date': '2099-01-10T00:00:00Z',
+                                     'payment_id': payment}})
+            audit.append(entry('coursesubscriptioninstallment', 0, installment, index=(OWN, 'course_subscription.course.sport_association')))
+        audit.append(entry('coursesubscription', 1, row, {'payment': ['None', payment], 'membership_fee': ['0.00', '0.0']}, index=index,
+                           repr=course_subscription_repr(row, label, subscription, payment=payment, multi=multi)))
+    return rows, audit
+
+
+coursed = member_body('coursed', sex='M')
+rows = [new_payment('$coursed_payment', ASSOCIATES['coursed']['id']),
+        *subscription_rows('$coursed_subscription', ASSOCIATES['coursed']['id'], kind=1, payment='$coursed_payment')]
+audit = [entry('associate', 1, 'coursed', {'sex': ['A', 'M']}), entry('payment', 0, '$coursed_payment', {'amount': ['None', '25.0']}),
+         entry('subscription', 0, '$coursed_subscription')]
+for label in ('fee', 'plan', 'free', 'quotes'):
+    extra_rows, extra_audit = enrolled('coursed', label, ASSOCIATES['coursed']['id'], '$coursed_subscription')
+    rows += extra_rows
+    audit += extra_audit
+add('renew-with-courses', 'renew', 'owner', 200, {'status': 'success', 'payment_id': '$new'},
+    body=renewal(coursed, courses=[course_item('fee'), course_item('plan'), course_item('free'), course_item('quotes'), course_item('fee')]),
+    effect=effect('owner', new=rows, changed={'associate': {'coursed': {'sex': 'M'}}},
+                  audit=[*audit, *notification_entries('owner')], celery=tasks('$coursed_subscription'),
+                  notifications=[{'msg': 'Nuova Iscrizione aggiunta per Carlo Corsista.', 'association': OWN}]))
+# Failures in the course loop roll the renewal back.
+add('renew-course-of-another-association', 'renew', 'owner', 400, error("'NoneType' object has no attribute 'course_type'"),
+    body=renewal(basic, courses=[course_item('fee'), course_item('abroad')]))
+add('renew-course-unknown', 'renew', 'owner', 400, error("'NoneType' object has no attribute 'course_type'"),
+    body=renewal(basic, courses=[{'label': 'Nessuno', 'value': NEW_ID}]))
+add('renew-course-removed', 'renew', 'owner', 400, error("'NoneType' object has no attribute 'course_type'"),
+    body=renewal(basic, courses=[course_item('removed')]))
+add('renew-course-value-null', 'renew', 'owner', 400, error("'NoneType' object has no attribute 'course_type'"),
+    body=renewal(basic, courses=[{'label': 'Nessuno', 'value': None}]))
+add('renew-course-malformed-id', 'renew', 'owner', 400, error("['“x” is not a valid UUID.']"),
+    body=renewal(basic, courses=[{'label': 'Nessuno', 'value': 'x'}]))
+add('renew-course-without-value', 'renew', 'owner', 400, error("'value'"), body=renewal(basic, courses=[{'label': 'Nessuno'}]))
+add('renew-course-not-an-object', 'renew', 'owner', 400, error("list indices must be integers or slices, not str"),
+    body=renewal(basic, courses=[[COURSES['fee']['id']]]))
+add('renew-courses-text', 'renew', 'owner', 400, error("string indices must be integers, not 'str'"),
+    body=renewal(basic, courses=COURSES['fee']['id']))
+add('renew-courses-object', 'renew', 'owner', 400, error("string indices must be integers, not 'str'"),
+    body=renewal(basic, courses={'value': COURSES['fee']['id']}))
+add('renew-course-without-fee', 'renew', 'owner', 400, error("'>' not supported between instances of 'NoneType' and 'int'"),
+    body=renewal(basic, courses=[course_item('no_fee')]))
+add('renew-course-stored-event-invalid', 'renew', 'owner', 400, {'amount': ['A valid number is required.']},
+    body=renewal(basic, courses=[course_item('fee'), course_item('broken_plan')]))
+
+# --- subscription/renew in an association-scoped session ---------------------------------------------------
+# The owner viewing as a collaborator: scoped_queryset keeps to the session's association; the course is enrolled.
+OWNER_FULL = {'X-Impersonation-Id': '$session:owner_full', 'User-Id': IDS['full_collaborator']}
+SCOPED_ATHLETE = {'X-Impersonation-Id': '$session:owner_athlete', 'User-Id': IDS['athlete']}
+HIDDEN = {'detail': 'Risorsa non disponibile per questo utente e associazione.'}
+session_owner = member_body('session_owner', sex='M')
+rows = [new_payment('$session_owner_payment', ASSOCIATES['session_owner']['id']),
+        *subscription_rows('$session_owner_subscription', ASSOCIATES['session_owner']['id'], kind=1, payment='$session_owner_payment')]
+extra_rows, extra_audit = enrolled('session_owner', 'fee', ASSOCIATES['session_owner']['id'], '$session_owner_subscription')
+add('renew-owner-scoped-session-with-course', 'renew', 'owner', 200, {'status': 'success', 'payment_id': '$new'}, headers=OWNER_FULL,
+    body=renewal(session_owner, courses=[course_item('fee')]),
+    effect=effect('owner', new=rows + extra_rows, changed={'associate': {'session_owner': {'sex': 'M'}}},
+                  audit=[entry('associate', 1, 'session_owner', {'sex': ['A', 'M']}),
+                         entry('payment', 0, '$session_owner_payment', {'amount': ['None', '25.0']}),
+                         entry('subscription', 0, '$session_owner_subscription'), *extra_audit, *notification_entries('owner')],
+                  celery=tasks('$session_owner_subscription'),
+                  notifications=[{'msg': 'Nuova Iscrizione aggiunta per Sergio Sessione.', 'association': OWN}]))
+add('renew-owner-scoped-session-foreign-course', 'renew', 'owner', 403, HIDDEN, headers=OWNER_FULL,
+    body=renewal(basic, courses=[course_item('abroad')]))
+# The owner viewing as an athlete: the association is looked up inside the session (another one is not available), the
+# athlete's member is renewed for the association's owner, and the clean-up keeps to the payments the athlete sees
+# (its own and its members'): the unpaid payment of a removed member row with the same name and tax code stays.
+# The association opens a session only for an athlete whose memberships are all its own: the athlete's rows in the other
+# association are handed to that association's owner first (setup).
+add('renew-athlete-scoped-session-another-association', 'renew', 'owner', 403, HIDDEN, headers=SCOPED_ATHLETE,
+    setup={'accounts': {'associates': {'coded_earlier': 'foreign_owner', 'blank_earlier': 'foreign_owner'},
+                        'subscriptions': {'coded_earlier_2019': 'foreign_owner', 'blank_earlier_2019': 'foreign_owner'}}},
+    body=renewal(member_body('session_member'), sport_association={'sport_association_id': FOREIGN}))
+add('renew-athlete-scoped-session-another-member', 'renew', 'owner', 403, HIDDEN, headers=SCOPED_ATHLETE,
+    body=renewal(member_body('stranger'), sport_association=HERE))
+payment, subscription = '$session_member_payment', '$session_member_subscription'
+add('renew-athlete-scoped-session', 'renew', 'owner', 200, {'status': 'success', 'payment_id': '$new'}, headers=SCOPED_ATHLETE,
+    body=renewal(member_body('session_member'), sport_association=HERE),
+    effect=effect('owner', new=[new_payment(payment, ASSOCIATES['session_member']['id']),
+                                *subscription_rows(subscription, ASSOCIATES['session_member']['id'], kind=1, payment=payment)],
+                  changed={'associate': {'session_member': {'sex': 'F', 'user_id': OWNER}}},
+                  deleted={'payment': ['session_stale']},
+                  audit=[entry('associate', 1, 'session_member', {'sex': ['A', 'F']}),
+                         entry('associate', 1, 'session_member', {'user': [IDS['athlete'], OWNER]}),
+                         entry('payment', 0, payment, {'amount': ['None', '25.0']}), entry('subscription', 0, subscription),
+                         entry('payment', 2, 'session_stale', index=(OWN, 'changes_json.sport_association'), deleted=True),
+                         *notification_entries('owner')],
+                  celery=tasks(subscription),
+                  notifications=[{'msg': 'Nuova Iscrizione aggiunta per Silvia Sessione.', 'association': OWN}]))
+
+# A username in new_member_info reaches create_user twice: the TypeError's text is the 400 body.
+add('renew-new-member-username', 'renew', 'owner', 400,
+    error("django.contrib.auth.models.UserManager.create_user() got multiple values for keyword argument 'username'"),
+    body=renewal(basic, new_user_account={'new_member': True, 'new_member_info': {
+        'first_name': 'Ugo', 'last_name': 'Utente', 'email': 'ugo.utente@example.test', 'username': 'ugo'}}))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/renew and associates-draft approve authored sequence with row, audit, Celery and '
                                   'notification effects',
     'ids': IDS, 'associates': ASSOCIATES, 'subscriptions': SUBSCRIPTIONS, 'payments': PAYMENTS, 'tags': TAGS,
-    'family': FAMILY, 'certificates': CERTIFICATES, 'invoices': INVOICES, 'target_user': TARGET_USER, 'account': ACCOUNT, 'drafts': DRAFTS, 'statuses': STATUSES,
+    'family': FAMILY, 'courses': COURSES, 'certificates': CERTIFICATES, 'invoices': INVOICES, 'target_user': TARGET_USER, 'account': ACCOUNT, 'drafts': DRAFTS, 'statuses': STATUSES,
     'settings': BASE_SETTINGS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

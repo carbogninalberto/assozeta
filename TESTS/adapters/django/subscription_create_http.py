@@ -184,7 +184,12 @@ def seed_rows(source, created):
     for row in source['associates'].values():
         insert(Associate, Associate(associate_id=row['id'], sport_association_id=row['association'], first_name=row['first'],
                                     last_name=row['last'], tax_code=row['tax_code'], born_date=date.fromisoformat(row['born']),
-                                    user_id=ids[row['user']] if row['user'] else None, email=row['email']))
+                                    user_id=ids[row['user']] if row['user'] else None, email=row['email'],
+                                    is_minor=row.get('is_minor', False)))
+    from application.models.user_models import AssociateTutorRelation
+    for row in source.get('relations', {}).values():
+        insert(AssociateTutorRelation, AssociateTutorRelation(associate_id=source['associates'][row['associate']]['id'],
+                                                              tutor_id=source['associates'][row['tutor']]['id'], is_primary=row['primary']))
     for row in source['certificates'].values():
         insert(MedicalCertificate, MedicalCertificate(medical_id=row['id'], user_id=ids[row['user']] if row['user'] else None,
                                                       expiration_date=date.fromisoformat(row['expiration']) if row.get('expiration') else None))
@@ -579,7 +584,7 @@ def check_new_user(effect, before, after, since, until, binding):
     binding.update({'$new_user': key, '$username': user.username})
     contract.require(uuid4_text(key) and re.fullmatch(re.escape(spec['prefix']) + r'[A-Z0-9]{8}', user.username) is not None
                      and user.email == spec['email'] and user.first_name == spec['first_name'] and user.last_name == spec['last_name']
-                     and user.phone == spec['phone'] and user.role == User.ATHLETE, 'state.user-fields')
+                     and user.phone == spec['phone'] and user.role == spec.get('role', User.ATHLETE), 'state.user-fields')
     contract.require(user.is_active is True and user.is_staff is False and user.is_superuser is False and user.last_login is None
                      and since - 1 <= user.date_joined.timestamp() <= until + 1, 'state.user-flags')
     for field in User._meta.concrete_fields:

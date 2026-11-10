@@ -3,10 +3,13 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"math/big"
 	"strconv"
+	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/google/uuid"
 )
 
 var errSubscriptionRenewalSource = &domain.SubscriptionCreateInvalid{
@@ -42,8 +45,8 @@ func (s *SubscriptionCreates) renewalSource(ctx context.Context, tx domain.Subsc
 	if named, _ := data.Lookup("sport_association"); subscriptionTruthy(named) {
 		username, isText := named.(string)
 		if !isText {
-			// Numbers, booleans and containers as a username are not ported.
-			return nil, domain.ErrSubscriptionCreateNotPorted
+			// user__username=<value>: the CharField compares str(value).
+			username = dto.PythonRepr(named)
 		}
 		associations, err := tx.NamedAssociations(ctx, username)
 		if err != nil {
@@ -71,16 +74,11 @@ func (s *SubscriptionCreates) renewalSource(ctx context.Context, tx domain.Subsc
 		association = settings.AssociationID
 	}
 	value, _ := data.Lookup("subscription_id")
-	text, isText := value.(string)
-	if !isText {
-		// Integer keys (uuid.UUID(int=...)) and other values are not ported.
-		return nil, domain.ErrSubscriptionCreateNotPorted
-	}
-	parsed, err := paymentInfoParseUUID(text)
-	if err != nil {
+	key, found := renewalSourceKey(value)
+	if !found {
 		return nil, nil // ValidationError: no subscription
 	}
-	source, err := tx.RenewalSource(ctx, parsed.String(), association)
+	source, err := tx.RenewalSource(ctx, key, association)
 	if err != nil || source == nil {
 		return nil, err
 	}
@@ -88,6 +86,90 @@ func (s *SubscriptionCreates) renewalSource(ctx context.Context, tx domain.Subsc
 		return source, nil
 	}
 	return nil, nil
+}
+
+// renewalSourceKey is UUIDField.to_python(data['subscription_id']): a string
+// through uuid.UUID(hex), an int (bool included) through uuid.UUID(int=...)
+// when it is in 0..2**128-1; anything else is a ValidationError.
+func renewalSourceKey(value any) (string, bool) {
+	var number *big.Int
+	switch v := value.(type) {
+	case string:
+		parsed, err := paymentInfoParseUUID(v)
+		if err != nil {
+			return "", false
+		}
+		return parsed.String(), true
+	case bool:
+		number = big.NewInt(0)
+		if v {
+			number = big.NewInt(1)
+		}
+	case json.Number:
+		if strings.ContainsAny(string(v), ".eE") {
+			return "", false // a float
+		}
+		parsed, ok := new(big.Int).SetString(string(v), 10)
+		if !ok {
+			return "", false
+		}
+		number = parsed
+	default:
+		return "", false
+	}
+	if number.Sign() < 0 || number.BitLen() > 128 {
+		return "", false
+	}
+	var raw [16]byte
+	number.FillBytes(raw[:])
+	return uuid.UUID(raw).String(), true
+}
+
+// renewalPerson is AssociateSerializer(associate).data in Meta.fields order,
+// born_date as DD/MM/YYYY (None stays None).
+func renewalPerson(associate *domain.SubscriptionEditAssociate, owner string) domain.RequestObject {
+	text := func(value *string) any {
+		if value == nil {
+			return nil
+		}
+		return *value
+	}
+	account := any(nil)
+	if associate.UserID != nil {
+		account = *associate.UserID
+	} else if associate.AssociationID != nil {
+		account = owner
+	}
+	var born any
+	if associate.BornDate != nil {
+		born = associate.BornDate.Format("02/01/2006")
+	}
+	return domain.RequestObject{
+		{Name: "associate_id", Value: associate.ID}, {Name: "address", Value: text(associate.Address)},
+		{Name: "address_cap", Value: text(associate.AddressCap)}, {Name: "address_city", Value: text(associate.AddressCity)},
+		{Name: "born_city", Value: text(associate.BornCity)}, {Name: "born_date", Value: born},
+		{Name: "email", Value: text(associate.Email)}, {Name: "sex", Value: associate.Sex},
+		{Name: "first_name", Value: text(associate.FirstName)}, {Name: "last_name", Value: text(associate.LastName)},
+		{Name: "is_minor", Value: associate.IsMinor}, {Name: "sport_association", Value: text(associate.AssociationID)},
+		{Name: "tax_code", Value: text(associate.TaxCode)}, {Name: "user", Value: account}, {Name: "phone", Value: text(associate.Phone)},
+		{Name: "family", Value: text(associate.FamilyID)}, {Name: "family_role", Value: text(associate.FamilyRole)},
+	}
+}
+
+// mainTutor is Associate.get_main_tutor: the primary relation's tutor; ""
+// without relations.
+func (s *SubscriptionCreates) mainTutor(ctx context.Context, tx domain.SubscriptionCreateTransaction, associate string) (string, error) {
+	relations, err := tx.Relations(ctx, associate)
+	if err != nil || len(relations) == 0 {
+		return "", err
+	}
+	for _, relation := range relations {
+		if relation.IsPrimary {
+			return relation.TutorID, nil
+		}
+	}
+	// Relations without a primary one (get_main_tutor makes the first primary) are not ported.
+	return "", domain.ErrSubscriptionCreateNotPorted
 }
 
 // groupedCustomData is _get_asd_custom_data_for_grouped_subscriptions: the
@@ -127,7 +209,8 @@ func groupedCustomData(ctx context.Context, tx domain.SubscriptionCreateTransact
 // fillPreregistration is fill_data_preregisration: the request's person,
 // certificate, custom data, role and number are replaced by those of the
 // renewed subscription; the registration keeps the subscription type sent
-// with the request. It reads only; user is the renewed subscription's account.
+// with the request; the member's main tutor is sent as associate_tutor_data.
+// It reads only; user is the renewed subscription's account.
 func (s *SubscriptionCreates) fillPreregistration(ctx context.Context, tx domain.SubscriptionCreateTransaction, identity domain.ResolvedIdentity,
 	data domain.RequestObject, request SubscriptionCreateRequest) (domain.RequestObject, *string, error) {
 	source, err := s.renewalSource(ctx, tx, identity, data, request)
@@ -161,13 +244,24 @@ func (s *SubscriptionCreates) fillPreregistration(ctx context.Context, tx domain
 	if associate == nil {
 		return nil, nil, domain.ErrSubscriptionCreateServer
 	}
-	relations, err := tx.Relations(ctx, associate.ID)
+	tutorID, err := s.mainTutor(ctx, tx, associate.ID)
 	if err != nil {
 		return nil, nil, err
 	}
-	if len(relations) > 0 {
-		// The renewed member's tutor (get_main_tutor, its serialized data) is not ported.
-		return nil, nil, domain.ErrSubscriptionCreateNotPorted
+	var tutorData domain.RequestObject
+	if tutorID != "" {
+		tutor, err := tx.AssociateAny(ctx, tutorID)
+		if err != nil {
+			return nil, nil, err
+		}
+		if tutor == nil {
+			return nil, nil, domain.ErrSubscriptionCreateServer
+		}
+		if tutor.UserID == nil && tutor.AssociationID != nil && (associate.AssociationID == nil || *tutor.AssociationID != *associate.AssociationID) {
+			// A tutor without an account stored in another association is not ported.
+			return nil, nil, domain.ErrSubscriptionCreateNotPorted
+		}
+		tutorData = renewalPerson(tutor, source.OwnerID)
 	}
 	if associate.BornDate == nil {
 		// subscription.associate.born_date.strftime on None.
@@ -179,25 +273,10 @@ func (s *SubscriptionCreates) fillPreregistration(ctx context.Context, tx domain
 		}
 		return *value
 	}
-	owner := any(nil)
-	if associate.UserID != nil {
-		owner = *associate.UserID
-	} else if associate.AssociationID != nil {
-		owner = source.OwnerID
-	}
-	// AssociateSerializer(subscription.associate).data in Meta.fields order, then the keys the view sets.
-	filled := domain.RequestObject{
-		{Name: "associate_id", Value: associate.ID}, {Name: "address", Value: text(associate.Address)},
-		{Name: "address_cap", Value: text(associate.AddressCap)}, {Name: "address_city", Value: text(associate.AddressCity)},
-		{Name: "born_city", Value: text(associate.BornCity)}, {Name: "born_date", Value: associate.BornDate.Format("02/01/2006")},
-		{Name: "email", Value: text(associate.Email)}, {Name: "sex", Value: associate.Sex},
-		{Name: "first_name", Value: text(associate.FirstName)}, {Name: "last_name", Value: text(associate.LastName)},
-		{Name: "is_minor", Value: associate.IsMinor}, {Name: "sport_association", Value: text(associate.AssociationID)},
-		{Name: "tax_code", Value: text(associate.TaxCode)}, {Name: "user", Value: owner}, {Name: "phone", Value: text(associate.Phone)},
-		{Name: "family", Value: text(associate.FamilyID)}, {Name: "family_role", Value: text(associate.FamilyRole)},
-		{Name: "type", Value: kind}, {Name: "role", Value: json.Number(strconv.FormatInt(source.Role, 10))},
-		{Name: "subscription_number", Value: text(source.Number)},
-	}
+	// AssociateSerializer(subscription.associate).data, then the keys the view sets.
+	filled := append(renewalPerson(associate, source.OwnerID), domain.RequestField{Name: "type", Value: kind},
+		domain.RequestField{Name: "role", Value: json.Number(strconv.FormatInt(source.Role, 10))},
+		domain.RequestField{Name: "subscription_number", Value: text(source.Number)})
 	medical := domain.RequestObject{{Name: "medical_id", Value: nil}, {Name: "certificate_expring_date", Value: nil}}
 	if source.MedicalID != nil {
 		medical[0].Value = *source.MedicalID
@@ -226,6 +305,9 @@ func (s *SubscriptionCreates) fillPreregistration(ctx context.Context, tx domain
 	// The request object is not shared with the caller's copy.
 	data = append(domain.RequestObject{}, data...)
 	data = objectSet(data, "associate_data", filled)
+	if tutorData != nil {
+		data = objectSet(data, "associate_tutor_data", tutorData)
+	}
 	data = objectSet(data, "medical_certificate", medical)
 	data = objectSet(data, "additional_fields", additional)
 	data = objectSet(data, "custom_data", custom)

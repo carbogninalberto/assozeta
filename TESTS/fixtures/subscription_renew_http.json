@@ -206,6 +206,50 @@
    "user": "owner",
    "email": null,
    "deleted": false
+  },
+  "coursed": {
+   "id": "a1000000-0000-4000-8000-000000951009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Carlo",
+   "last": "Corsista",
+   "tax_code": "CRSCRL85A01H501T",
+   "born": "1985-01-01",
+   "user": "owner",
+   "email": null,
+   "deleted": false
+  },
+  "session_owner": {
+   "id": "a1000000-0000-4000-8000-000000951010",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Sergio",
+   "last": "Sessione",
+   "tax_code": "SSSSRG85A01H501U",
+   "born": "1985-01-01",
+   "user": "owner",
+   "email": null,
+   "deleted": false
+  },
+  "session_member": {
+   "id": "a1000000-0000-4000-8000-000000951011",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Silvia",
+   "last": "Sessione",
+   "tax_code": "SSSSLV85A41H501V",
+   "born": "1985-01-01",
+   "user": "athlete",
+   "email": null,
+   "deleted": false
+  },
+  "session_namesake": {
+   "id": "a1000000-0000-4000-8000-000000951012",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Silvia",
+   "last": "Sessione",
+   "tax_code": "SSSSLV85A41H501V",
+   "born": "1985-01-01",
+   "user": "owner",
+   "email": null,
+   "deleted": true
   }
  },
  "subscriptions": {
@@ -302,6 +346,16 @@
    "archived": false,
    "number": "16",
    "payment": null
+  },
+  "session_member_previous": {
+   "id": "a1000000-0000-4000-8000-000000951013",
+   "associate": "session_member",
+   "start": "$last_season_start",
+   "end": "$last_season_end",
+   "archived": false,
+   "number": "17",
+   "payment": null,
+   "user": "athlete"
   }
  },
  "payments": {
@@ -353,6 +407,22 @@
    "subject": 1,
    "date": "$today",
    "invoice": "stale_invoice"
+  },
+  "session_stale": {
+   "id": "a1000000-0000-4000-8000-000000951014",
+   "associate": "session_member",
+   "amount": "30.00",
+   "paid": false,
+   "subject": 1,
+   "date": "$today"
+  },
+  "session_namesake_stale": {
+   "id": "a1000000-0000-4000-8000-000000951015",
+   "associate": "session_namesake",
+   "amount": "31.00",
+   "paid": false,
+   "subject": 1,
+   "date": "$today"
   }
  },
  "tags": {
@@ -373,6 +443,119 @@
   }
  },
  "family": "a1000000-0000-4000-8000-000000949001",
+ "courses": {
+  "fee": {
+   "id": "a1000000-0000-4000-8000-000000951001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Nuoto",
+   "fee": "40.00",
+   "multi_payments": false,
+   "events": null,
+   "course_type": 1,
+   "multiple_quotes": null,
+   "deleted": false
+  },
+  "plan": {
+   "id": "a1000000-0000-4000-8000-000000951002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Danza",
+   "fee": "0.00",
+   "multi_payments": true,
+   "events": [
+    {
+     "id": 0,
+     "amount": "20.00",
+     "payment_date": "10/01/2020"
+    },
+    {
+     "id": 1,
+     "amount": "30.00",
+     "payment_date": "10/01/2099"
+    }
+   ],
+   "course_type": 1,
+   "multiple_quotes": null,
+   "deleted": false
+  },
+  "free": {
+   "id": "a1000000-0000-4000-8000-000000951003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Libero",
+   "fee": "0.00",
+   "multi_payments": false,
+   "events": null,
+   "course_type": 1,
+   "multiple_quotes": null,
+   "deleted": false
+  },
+  "quotes": {
+   "id": "a1000000-0000-4000-8000-000000951004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Pilates",
+   "fee": "15.00",
+   "multi_payments": false,
+   "events": null,
+   "course_type": 2,
+   "multiple_quotes": [
+    {
+     "quote_id": "q1",
+     "title": "Mensile",
+     "amount": "22,50"
+    }
+   ],
+   "deleted": false
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000951005",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "title": "Lontano",
+   "fee": "18.00",
+   "multi_payments": false,
+   "events": null,
+   "course_type": 1,
+   "multiple_quotes": null,
+   "deleted": false
+  },
+  "removed": {
+   "id": "a1000000-0000-4000-8000-000000951006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Rimosso",
+   "fee": "40.00",
+   "multi_payments": false,
+   "events": null,
+   "course_type": 1,
+   "multiple_quotes": null,
+   "deleted": true
+  },
+  "no_fee": {
+   "id": "a1000000-0000-4000-8000-000000951007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Senza quota",
+   "fee": null,
+   "multi_payments": false,
+   "events": null,
+   "course_type": 1,
+   "multiple_quotes": null,
+   "deleted": false
+  },
+  "broken_plan": {
+   "id": "a1000000-0000-4000-8000-000000951008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Rate errate",
+   "fee": "0.00",
+   "multi_payments": true,
+   "events": [
+    {
+     "id": 0,
+     "amount": "dieci",
+     "payment_date": "10/01/2099"
+    }
+   ],
+   "course_type": 1,
+   "multiple_quotes": null,
+   "deleted": false
+  }
+ },
  "certificates": {
   "draft_cert": {
    "id": "a1000000-0000-4000-8000-000000945022",
@@ -5783,6 +5966,1742 @@
     "user": {
      "email": "renew-target@example.test"
     }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-with-courses",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "new": [
+     {
+      "label": "payment",
+      "bind": "$coursed_payment",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000951009",
+       "amount": "25.00"
+      },
+      "columns": {
+       "subject": 1,
+       "description": "Iscrizione",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
+       "amount": "25.00",
+       "payment_date": "$today_midnight",
+       "meta_payment_categories": null,
+       "meta": null
+      }
+     },
+     {
+      "label": "subscription",
+      "bind": "$coursed_subscription",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000951009"
+      },
+      "columns": {
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner",
+       "payment_id": "$coursed_payment",
+       "type": 1,
+       "role": 1,
+       "status_flag": 1,
+       "meta": {
+        "plan_id": null,
+        "plan_name": null,
+        "membership_plan_id": null,
+        "membership_plan_name": null
+       },
+       "subscription_type": "",
+       "subscription_number": "56",
+       "medical_id": null,
+       "custom_data": {},
+       "additional_fields": {},
+       "start_date": "$season_start",
+       "end_date": "$season_end"
+      }
+     },
+     {
+      "label": "payment",
+      "bind": "$coursed_fee_payment",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000951009",
+       "amount": "40.00"
+      },
+      "columns": {
+       "subject": 2,
+       "description": "Nuoto, ",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
+       "amount": "40.00",
+       "course": {
+        "label": "Nuoto",
+        "value": "a1000000-0000-4000-8000-000000951001"
+       }
+      }
+     },
+     {
+      "label": "course_subscription",
+      "bind": "$coursed_fee",
+      "match": {
+       "course_id": "a1000000-0000-4000-8000-000000951001"
+      },
+      "columns": {
+       "course_id": "a1000000-0000-4000-8000-000000951001",
+       "subscription_id": "$coursed_subscription",
+       "payment_id": "$coursed_fee_payment",
+       "multi_payments": false,
+       "multiple_quote": null,
+       "membership_fee": "0.00",
+       "type": 1
+      }
+     },
+     {
+      "label": "payment",
+      "bind": "$coursed_plan_payment",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000951009",
+       "amount": "30.00"
+      },
+      "columns": {
+       "subject": 2,
+       "description": "Danza, ",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
+       "amount": "30.00",
+       "course": {
+        "label": "Danza",
+        "value": "a1000000-0000-4000-8000-000000951002"
+       },
+       "creation_date": "2099-01-10T00:00:00Z"
+      }
+     },
+     {
+      "label": "course_subscription",
+      "bind": "$coursed_plan",
+      "match": {
+       "course_id": "a1000000-0000-4000-8000-000000951002"
+      },
+      "columns": {
+       "course_id": "a1000000-0000-4000-8000-000000951002",
+       "subscription_id": "$coursed_subscription",
+       "payment_id": "$coursed_plan_payment",
+       "multi_payments": true,
+       "multiple_quote": null,
+       "membership_fee": "0.00",
+       "type": 1
+      }
+     },
+     {
+      "label": "installment",
+      "bind": "$coursed_plan_installment",
+      "match": {
+       "course_subscription_id": "$coursed_plan"
+      },
+      "columns": {
+       "id": 1,
+       "amount": "30.00",
+       "payment_date": "2099-01-10T00:00:00Z",
+       "payment_id": "$coursed_plan_payment"
+      }
+     },
+     {
+      "label": "course_subscription",
+      "bind": "$coursed_free",
+      "match": {
+       "course_id": "a1000000-0000-4000-8000-000000951003"
+      },
+      "columns": {
+       "course_id": "a1000000-0000-4000-8000-000000951003",
+       "subscription_id": "$coursed_subscription",
+       "payment_id": null,
+       "multi_payments": false,
+       "multiple_quote": null,
+       "membership_fee": "0.00",
+       "type": 1
+      }
+     },
+     {
+      "label": "payment",
+      "bind": "$coursed_quotes_payment",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000951009",
+       "amount": "15.00"
+      },
+      "columns": {
+       "subject": 2,
+       "description": "Pilates, ",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
+       "amount": "15.00",
+       "course": {
+        "label": "Pilates",
+        "value": "a1000000-0000-4000-8000-000000951004"
+       }
+      }
+     },
+     {
+      "label": "course_subscription",
+      "bind": "$coursed_quotes",
+      "match": {
+       "course_id": "a1000000-0000-4000-8000-000000951004"
+      },
+      "columns": {
+       "course_id": "a1000000-0000-4000-8000-000000951004",
+       "subscription_id": "$coursed_subscription",
+       "payment_id": "$coursed_quotes_payment",
+       "multi_payments": false,
+       "multiple_quote": null,
+       "membership_fee": "0.00",
+       "type": 1
+      }
+     }
+    ],
+    "changed": {
+     "associate": {
+      "coursed": {
+       "sex": "M"
+      }
+     }
+    },
+    "deleted": {},
+    "tags": [],
+    "audit": [
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "coursed",
+      "changes": {
+       "sex": [
+        "A",
+        "M"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$coursed_payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "$coursed_subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "coursesubscription",
+      "action": 0,
+      "ref": "$coursed_fee",
+      "changes": {
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "app": "application",
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('$coursed_fee'), 'course_id': UUID('a1000000-0000-4000-8000-000000951001'), 'paid': False, 'creation_date': {created}, 'subscription_id': UUID('$coursed_subscription'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$coursed_fee_payment",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "coursesubscription",
+      "action": 1,
+      "ref": "$coursed_fee",
+      "changes": {
+       "payment": [
+        "None",
+        "$coursed_fee_payment"
+       ],
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "app": "application",
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('$coursed_fee'), 'course_id': UUID('a1000000-0000-4000-8000-000000951001'), 'paid': False, 'creation_date': {created}, 'subscription_id': UUID('$coursed_subscription'), 'payment_id': UUID('$coursed_fee_payment'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "coursesubscription",
+      "action": 0,
+      "ref": "$coursed_plan",
+      "changes": {
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ],
+       "multi_payments": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "app": "application",
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('$coursed_plan'), 'course_id': UUID('a1000000-0000-4000-8000-000000951002'), 'paid': False, 'creation_date': {created}, 'subscription_id': UUID('$coursed_subscription'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "coursesubscription",
+      "action": 1,
+      "ref": "$coursed_plan",
+      "changes": {
+       "multi_payments": [
+        "False",
+        "True"
+       ],
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "app": "application",
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('$coursed_plan'), 'course_id': UUID('a1000000-0000-4000-8000-000000951002'), 'paid': False, 'creation_date': {created}, 'subscription_id': UUID('$coursed_subscription'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$coursed_plan_payment",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "action": 0,
+      "ref": "$coursed_plan_installment",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course_subscription.course.sport_association"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "coursesubscription",
+      "action": 1,
+      "ref": "$coursed_plan",
+      "changes": {
+       "payment": [
+        "None",
+        "$coursed_plan_payment"
+       ],
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "app": "application",
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('$coursed_plan'), 'course_id': UUID('a1000000-0000-4000-8000-000000951002'), 'paid': False, 'creation_date': {created}, 'subscription_id': UUID('$coursed_subscription'), 'payment_id': UUID('$coursed_plan_payment'), 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "coursesubscription",
+      "action": 0,
+      "ref": "$coursed_free",
+      "changes": {
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "app": "application",
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('$coursed_free'), 'course_id': UUID('a1000000-0000-4000-8000-000000951003'), 'paid': False, 'creation_date': {created}, 'subscription_id': UUID('$coursed_subscription'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "coursesubscription",
+      "action": 0,
+      "ref": "$coursed_quotes",
+      "changes": {
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "app": "application",
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('$coursed_quotes'), 'course_id': UUID('a1000000-0000-4000-8000-000000951004'), 'paid': False, 'creation_date': {created}, 'subscription_id': UUID('$coursed_subscription'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$coursed_quotes_payment",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "coursesubscription",
+      "action": 1,
+      "ref": "$coursed_quotes",
+      "changes": {
+       "payment": [
+        "None",
+        "$coursed_quotes_payment"
+       ],
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "app": "application",
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('$coursed_quotes'), 'course_id': UUID('a1000000-0000-4000-8000-000000951004'), 'paid': False, 'creation_date': {created}, 'subscription_id': UUID('$coursed_subscription'), 'payment_id': UUID('$coursed_quotes_payment'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "$coursed_subscription"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$coursed_subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notifications": [
+     {
+      "msg": "Nuova Iscrizione aggiunta per Carlo Corsista.",
+      "association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000951009",
+     "first_name": "Carlo",
+     "last_name": "Corsista",
+     "tax_code": "CRSCRL85A01H501T",
+     "born_date": "01/01/1985",
+     "sex": "M",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [
+     {
+      "label": "Nuoto",
+      "value": "a1000000-0000-4000-8000-000000951001"
+     },
+     {
+      "label": "Danza",
+      "value": "a1000000-0000-4000-8000-000000951002"
+     },
+     {
+      "label": "Libero",
+      "value": "a1000000-0000-4000-8000-000000951003"
+     },
+     {
+      "label": "Pilates",
+      "value": "a1000000-0000-4000-8000-000000951004"
+     },
+     {
+      "label": "Nuoto",
+      "value": "a1000000-0000-4000-8000-000000951001"
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-course-of-another-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "'NoneType' object has no attribute 'course_type'"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [
+     {
+      "label": "Nuoto",
+      "value": "a1000000-0000-4000-8000-000000951001"
+     },
+     {
+      "label": "Lontano",
+      "value": "a1000000-0000-4000-8000-000000951005"
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-course-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "'NoneType' object has no attribute 'course_type'"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [
+     {
+      "label": "Nessuno",
+      "value": "a1000000-0000-4000-8000-000000945001"
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-course-removed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "'NoneType' object has no attribute 'course_type'"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [
+     {
+      "label": "Rimosso",
+      "value": "a1000000-0000-4000-8000-000000951006"
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-course-value-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "'NoneType' object has no attribute 'course_type'"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [
+     {
+      "label": "Nessuno",
+      "value": null
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-course-malformed-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "['“x” is not a valid UUID.']"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [
+     {
+      "label": "Nessuno",
+      "value": "x"
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-course-without-value",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "'value'"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [
+     {
+      "label": "Nessuno"
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-course-not-an-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "list indices must be integers or slices, not str"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [
+     [
+      "a1000000-0000-4000-8000-000000951001"
+     ]
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-courses-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "string indices must be integers, not 'str'"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": "a1000000-0000-4000-8000-000000951001"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-courses-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "string indices must be integers, not 'str'"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": {
+     "value": "a1000000-0000-4000-8000-000000951001"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-course-without-fee",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "'>' not supported between instances of 'NoneType' and 'int'"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [
+     {
+      "label": "Senza quota",
+      "value": "a1000000-0000-4000-8000-000000951007"
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-course-stored-event-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "amount": [
+     "A valid number is required."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [
+     {
+      "label": "Nuoto",
+      "value": "a1000000-0000-4000-8000-000000951001"
+     },
+     {
+      "label": "Rate errate",
+      "value": "a1000000-0000-4000-8000-000000951008"
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-owner-scoped-session-with-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "new": [
+     {
+      "label": "payment",
+      "bind": "$session_owner_payment",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000951010",
+       "amount": "25.00"
+      },
+      "columns": {
+       "subject": 1,
+       "description": "Iscrizione",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
+       "amount": "25.00",
+       "payment_date": "$today_midnight",
+       "meta_payment_categories": null,
+       "meta": null
+      }
+     },
+     {
+      "label": "subscription",
+      "bind": "$session_owner_subscription",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000951010"
+      },
+      "columns": {
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner",
+       "payment_id": "$session_owner_payment",
+       "type": 1,
+       "role": 1,
+       "status_flag": 1,
+       "meta": {
+        "plan_id": null,
+        "plan_name": null,
+        "membership_plan_id": null,
+        "membership_plan_name": null
+       },
+       "subscription_type": "",
+       "subscription_number": "57",
+       "medical_id": null,
+       "custom_data": {},
+       "additional_fields": {},
+       "start_date": "$season_start",
+       "end_date": "$season_end"
+      }
+     },
+     {
+      "label": "payment",
+      "bind": "$session_owner_fee_payment",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000951010",
+       "amount": "40.00"
+      },
+      "columns": {
+       "subject": 2,
+       "description": "Nuoto, ",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
+       "amount": "40.00",
+       "course": {
+        "label": "Nuoto",
+        "value": "a1000000-0000-4000-8000-000000951001"
+       }
+      }
+     },
+     {
+      "label": "course_subscription",
+      "bind": "$session_owner_fee",
+      "match": {
+       "course_id": "a1000000-0000-4000-8000-000000951001"
+      },
+      "columns": {
+       "course_id": "a1000000-0000-4000-8000-000000951001",
+       "subscription_id": "$session_owner_subscription",
+       "payment_id": "$session_owner_fee_payment",
+       "multi_payments": false,
+       "multiple_quote": null,
+       "membership_fee": "0.00",
+       "type": 1
+      }
+     }
+    ],
+    "changed": {
+     "associate": {
+      "session_owner": {
+       "sex": "M"
+      }
+     }
+    },
+    "deleted": {},
+    "tags": [],
+    "audit": [
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "session_owner",
+      "changes": {
+       "sex": [
+        "A",
+        "M"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$session_owner_payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "$session_owner_subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "coursesubscription",
+      "action": 0,
+      "ref": "$session_owner_fee",
+      "changes": {
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "app": "application",
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('$session_owner_fee'), 'course_id': UUID('a1000000-0000-4000-8000-000000951001'), 'paid': False, 'creation_date': {created}, 'subscription_id': UUID('$session_owner_subscription'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$session_owner_fee_payment",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "coursesubscription",
+      "action": 1,
+      "ref": "$session_owner_fee",
+      "changes": {
+       "payment": [
+        "None",
+        "$session_owner_fee_payment"
+       ],
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "app": "application",
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('$session_owner_fee'), 'course_id': UUID('a1000000-0000-4000-8000-000000951001'), 'paid': False, 'creation_date': {created}, 'subscription_id': UUID('$session_owner_subscription'), 'payment_id': UUID('$session_owner_fee_payment'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "$session_owner_subscription"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$session_owner_subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notifications": [
+     {
+      "msg": "Nuova Iscrizione aggiunta per Sergio Sessione.",
+      "association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000951010",
+     "first_name": "Sergio",
+     "last_name": "Sessione",
+     "tax_code": "SSSSRG85A01H501U",
+     "born_date": "01/01/1985",
+     "sex": "M",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [
+     {
+      "label": "Nuoto",
+      "value": "a1000000-0000-4000-8000-000000951001"
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-owner-scoped-session-foreign-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [
+     {
+      "label": "Lontano",
+      "value": "a1000000-0000-4000-8000-000000951005"
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-scoped-session-another-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000951011",
+     "first_name": "Silvia",
+     "last_name": "Sessione",
+     "tax_code": "SSSSLV85A41H501V",
+     "born_date": "01/01/1985",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701002"
+    }
+   },
+   "setup": {
+    "accounts": {
+     "associates": {
+      "coded_earlier": "foreign_owner",
+      "blank_earlier": "foreign_owner"
+     },
+     "subscriptions": {
+      "coded_earlier_2019": "foreign_owner",
+      "blank_earlier_2019": "foreign_owner"
+     }
+    }
+   }
+  },
+  {
+   "name": "subscription-renew-renew-athlete-scoped-session-another-member",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000949006",
+     "first_name": "Sandra",
+     "last_name": "Estranea",
+     "tax_code": "STRSDR85A41H501S",
+     "born_date": "01/01/1985",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Associazione"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-scoped-session",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "new": [
+     {
+      "label": "payment",
+      "bind": "$session_member_payment",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000951011",
+       "amount": "25.00"
+      },
+      "columns": {
+       "subject": 1,
+       "description": "Iscrizione",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
+       "amount": "25.00",
+       "payment_date": "$today_midnight",
+       "meta_payment_categories": null,
+       "meta": null
+      }
+     },
+     {
+      "label": "subscription",
+      "bind": "$session_member_subscription",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000951011"
+      },
+      "columns": {
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner",
+       "payment_id": "$session_member_payment",
+       "type": 1,
+       "role": 1,
+       "status_flag": 1,
+       "meta": {
+        "plan_id": null,
+        "plan_name": null,
+        "membership_plan_id": null,
+        "membership_plan_name": null
+       },
+       "subscription_type": "",
+       "subscription_number": "58",
+       "medical_id": null,
+       "custom_data": {},
+       "additional_fields": {},
+       "start_date": "$season_start",
+       "end_date": "$season_end"
+      }
+     }
+    ],
+    "changed": {
+     "associate": {
+      "session_member": {
+       "sex": "F",
+       "user_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    },
+    "deleted": {
+     "payment": [
+      "session_stale"
+     ]
+    },
+    "tags": [],
+    "audit": [
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "session_member",
+      "changes": {
+       "sex": [
+        "A",
+        "F"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "session_member",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700004",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$session_member_payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "$session_member_subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "payment",
+      "action": 2,
+      "ref": "session_stale",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "app": "application",
+      "deleted": true
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "$session_member_subscription"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$session_member_subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notifications": [
+     {
+      "msg": "Nuova Iscrizione aggiunta per Silvia Sessione.",
+      "association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000951011",
+     "first_name": "Silvia",
+     "last_name": "Sessione",
+     "tax_code": "SSSSLV85A41H501V",
+     "born_date": "01/01/1985",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Associazione"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-new-member-username",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "django.contrib.auth.models.UserManager.create_user() got multiple values for keyword argument 'username'"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "new_member_info": {
+      "first_name": "Ugo",
+      "last_name": "Utente",
+      "email": "ugo.utente@example.test",
+      "username": "ugo"
+     }
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
    },
    "setup": null
   }

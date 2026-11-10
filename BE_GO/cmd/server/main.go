@@ -955,7 +955,8 @@ func run() (runErr error) {
 	e.Any("/subscription/add", subscriptionCreateHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	// subscription/renew and associates-draft approve run create_subscription (subscription-renew.md).
 	subscriptionRenewHandler := handler.NewSubscriptionRenewHandler(
-		service.NewSubscriptionRenewals(repository.NewSubscriptionRenewals(db), subscriptionCreates),
+		service.NewSubscriptionRenewals(repository.NewSubscriptionRenewals(db), subscriptionCreates).
+			WithEnrolment(service.NewCourseEnrolment(repository.NewCourseEnrolment(db), time.Now, uuid.NewString)),
 		service.NewSubscriptionDraftApprovals(repository.NewSubscriptionDraftApprovals(db), subscriptionCreates),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/renew", subscriptionRenewHandler.Renew, middleware.DjangoSessionAudit(sessionAuthentication))
