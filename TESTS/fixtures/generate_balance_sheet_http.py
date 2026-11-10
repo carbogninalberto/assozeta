@@ -250,6 +250,66 @@ add('draft-regenerated-full-collaborator', 'full_collaborator', at('2025-12-31')
     effect=effect)
 effect = save('y2025', regenerate_2025(), 'owner')
 add('post-csv-format-regenerates', 'owner', at('2025-01-01'), 200, body('y2025'), method='POST', body={'format': 'csv'}, effect=effect)
+
+
+# --- POST format excel: export_balance_sheet of the regenerated, saved draft -------------------------------------------------------
+def comma(value):
+    return f'{value:.2f}'.replace('.', ',')
+
+
+def export(label, denomination='Message reads own'):
+    """{'file': get_excel_base64(descriptions, institutional, commercial, totals), 'filename': ...} of export_balance_sheet."""
+    data, rows = STATE[label]['data'], []
+    blank = lambda text='': rows.append([text, '', '', ''])
+    sums = {}
+    for heading, section, direction, key, footer in (('A) ENTRATE', 'Entrate Generali', 'incoming', 'generalIncome', 'Totale entrate'),
+                                                      ('B) USCITE', 'Spese generali', 'outgoing', 'generalExpenses', 'Totale uscite')):
+        blank(heading)
+        blank(section)
+        institutional = commercial = 0
+        for item in data[direction][key]:
+            first, second = float(item['institutional']), float(item['commercial'])
+            rows.append([item['description'], comma(first), comma(second), comma(first + second)])
+            institutional += first
+            commercial += second
+        rows.append([footer, comma(institutional), comma(commercial), comma(institutional + commercial)])
+        blank()
+        sums[direction] = (institutional, commercial)
+    (income_i, income_c), (out_i, out_c) = sums['incoming'], sums['outgoing']
+    rows.append(['', 'ENTRATE', 'USCITE', 'BILANCIO FINALE'])
+    rows.append(['C) RENDICONTO DELLA GESTIONE', comma(income_i + income_c), '-' + comma(out_i + out_c),
+                 comma(income_i + income_c - out_i - out_c)])
+    blank()
+    blank('D) LIQUIDITÀ')
+    for title, key in (('Banca', 'bank'), ('Cassa', 'cash'), ('Altro', 'other'), ('Totale', 'total')):
+        rows.append([title, '', '', comma(data[key])])
+    columns = ['Descrizione', 'Istituzionale (€)', 'Commerciale (€)', 'Totale (€)']
+    return {'file': {'$xlsx': {'engine': 'excel_utils', 'columns': columns, 'data': [list(column) for column in zip(*rows)]}},
+            'filename': f"[$today] Bilancio {STATE[label]['year']} - {denomination}.xlsx"}
+
+
+EXCEL = {'format': 'excel'}
+effect = save('y2025', regenerate_2025(), 'owner')
+add('excel-draft', 'owner', at('2025-01-01'), 200, export('y2025'), method='POST', body=EXCEL, effect=effect)
+effect = save('y2025', regenerate_2025('own_group'), 'full_collaborator')
+add('excel-draft-group-full-collaborator', 'full_collaborator', at('2025-06-15'), 200, export('y2025'), method='POST', body=EXCEL,
+    headers={'X-Group-Id': IDS['own_group']}, effect=effect)
+effect = save('y2025', regenerate_2025(), 'owner')
+add('excel-draft-form-body', 'owner', at('2025-06-15'), 200, export('y2025'), method='POST', raw_body='format=excel',
+    content_type='application/x-www-form-urlencoded', effect=effect)
+effect = save('y2025', regenerate_2025(), 'owner')
+add('excel-extra-keys-ignored', 'owner', at('2025-06-15'), 200, export('y2025'), method='POST',
+    body={'format': 'excel', 'balance_sheet': {'draft': False, 'year': 1}}, effect=effect)
+add('excel-approved-returns-stored', 'owner', at('2024-05-01'), 200, body('y2024'), method='POST', body=EXCEL)
+add('excel-format-case-sensitive-regenerates', 'owner', at('2025-01-01'), 200, body('y2025'), method='POST', body={'format': 'EXCEL'},
+    effect=save('y2025', regenerate_2025(), 'owner'))
+# The stored data has no 'incoming': the sheet is saved with its totals, then the export raises.
+effect = save('y2021', totals({'note': 'x'}, '2021-12-31'), 'owner')
+add('excel-export-error-after-save', 'owner', at('2021-06-01'), 500, SERVER, method='POST', body=EXCEL, effect=effect)
+add('excel-invalid-date-server-error', 'owner', at('2025-02-30'), 500, SERVER, method='POST', body=EXCEL)
+add('excel-restricted-missing-permission', 'restricted_collaborator', at('2025-01-01'), 403,
+    {'detail': 'Missing permission: bookeeping.management.balancesheet.update'}, method='POST', body=EXCEL)
+add('excel-athlete-forbidden', 'athlete', at('2025-01-01'), 403, FORBIDDEN, method='POST', body=EXCEL)
 # The stored data has no 'incoming': the KeyError is swallowed, the totals are still written.
 effect = save('y2021', totals({'note': 'x'}, '2021-12-31'), 'owner')
 add('draft-generation-error-keeps-data', 'owner', at('2021-06-01'), 200, body('y2021'), effect=effect)
@@ -267,6 +327,9 @@ add('default-date-creates-current-year', 'owner', SHEET, 200, body('current', cr
 data2023 = default_data()
 data2023['incoming']['generalIncome'] += [entry('Bar', 0, 5.5, CAT['c']), entry('Quote è', 2.5, 0, CAT['a'])]
 STATE['y2023'] = {'data': totals(data2023, '2023-12-31'), 'year': 2023, 'status': 1}
+STATE['y2017'] = {'data': totals(default_data(), '2017-12-31'), 'year': 2017, 'status': 1}
+add('excel-missing-year-creates-sheet', 'owner', at('2017-05-05'), 200, export('y2017'), method='POST', body=EXCEL,
+    effect={'kind': 'create', 'sheet': 'y2017', 'actor': 'owner', 'association': 'own_association', 'row': dict(STATE['y2017'])})
 add('missing-year-creates-sheet', 'owner', at('2023-07-01'), 200, body('y2023', created='$now'),
     effect={'kind': 'create', 'sheet': 'y2023', 'actor': 'owner', 'association': 'own_association', 'row': dict(STATE['y2023'])})
 
