@@ -134,6 +134,10 @@ jobs:
           PYMIME
           sudo install -m 0644 TESTS/fixtures/mime.types /etc/mime.types
           python -c "import mimetypes, os; assert [name for name in mimetypes.knownfiles if os.path.isfile(name)] == ['/etc/mime.types']"
+          # The placeholder certificate image falls back to Pillow's built-in font when DejaVu Sans is missing, as in
+          # the application image: the runner's copy is set aside.
+          if [ -d /usr/share/fonts/truetype/dejavu ]; then sudo mv /usr/share/fonts/truetype/dejavu /usr/share/fonts/truetype/dejavu.host; fi
+          test ! -e /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
           echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
           python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
           python -m pip install -r docs/manuale/requirements-offline.txt
