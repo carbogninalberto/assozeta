@@ -14,8 +14,13 @@ course_list (@api_view(['GET', 'POST'])) pins, in Django's order:
   query[status_flag] (int(); out of range matches nothing), sort[field]/sort[sort]
   (order_by(field) for 'asc', else order_by('-' + field); an unknown name is a 500);
 - all == '1': {'data': [...]} (optimized == '1': values('course_id', 'title'));
-- POST without all: request.data, then current_view_course (format must be pdf or
-  excel, otherwise a 500); generating the file is not ported (see the doc);
+- POST without all: request.data, then current_view_course over the whole filtered,
+  sorted queryset (format must be pdf or excel, otherwise a 500). 'excel' is
+  get_excel_base64 of Nome, Tipologia, Visibilità, Data inizio, Data fine, Data
+  creazione, In evidenza, Strutture, Iscritti (live course subscriptions of the
+  course), Tag, then one column per CourseTags of the association ('assegnato' when
+  the course has it); {'file': <base64>, 'filename': '[<today>] Corsi filtrati -
+  <denomination>.xlsx'}. The pdf file is not ported (see the doc);
 - otherwise KTDatatablePagination (pagination[page], pagination[perpage]) with
   {'data': {index: course + current_year + athletes}, 'meta': {total, page, pages,
   perpage, rowIds}}; athletes are the live course subscriptions keyed by index
@@ -89,6 +94,19 @@ COURSE_SUBSCRIPTIONS = {
     'cs7': {'id': next(ids), 'course': 'draft', 'subscription': 's2', 'paid': True, 'created': '2026-01-06T09:00:00Z', 'deleted': True},
     'cs8': {'id': next(ids), 'course': 'old', 'subscription': 'removed', 'paid': False, 'created': '2000-03-02T09:00:00Z', 'deleted': False},
 }
+# Two more tags of the foreign association, inserted after the others: their
+# names repeat the fixed column 'Nome' and the tag 'Estero' (duplicate columns).
+TAGS['tf_nome'] = {'id': next(ids), 'association': FOREIGN, 'name': 'Nome'}
+TAGS['tf_estero'] = {'id': next(ids), 'association': FOREIGN, 'name': 'Estero'}
+# The M2M reads of the export have no ORDER BY: tags and locations are seeded in
+# id order and each course lists them in that order, so heap order, through-row
+# order and primary-key order agree (course-list.md, "Row order").
+assert list(TAGS) == sorted(TAGS, key=lambda label: TAGS[label]['id'])
+assert list(LOCATIONS) == sorted(LOCATIONS, key=lambda label: LOCATIONS[label]['id'])
+for _row in COURSES.values():
+    assert _row['tags'] == sorted(_row['tags'], key=lambda label: TAGS[label]['id'])
+    assert _row['locations'] == sorted(_row['locations'], key=lambda label: LOCATIONS[label]['id'])
+DENOMINATION = {OWN: 'Message reads own', FOREIGN: 'Message reads foreign'}
 cases = []
 
 
@@ -311,6 +329,89 @@ add('post-malformed-json', 'owner', None, 400, {'detail': 'JSON parse error - Ex
 add('post-filter-error-before-body', 'owner', {'query[status_flag]': 'abc'}, 500, SERVER, method='POST', raw_body='nope',
     content_type='application/json')
 add('post-ignores-invalid-page', 'owner', {'pagination[page]': '0'}, 500, SERVER, method='POST', body={})
+
+# POST excel: current_view_course over the whole queryset (pagination ignored).
+TYPE_LABEL = {1: 'Default', 2: 'Quote multiple', 3: 'Abbonamento'}  # get_course_type_label, else 'Sconosciuto'
+STATUS_LABEL = {1: 'Non visibile', 2: 'Visibile'}  # get_status_label, else 'Sconosciuto'
+EXCEL = {'format': 'excel'}
+
+
+def ddmmyyyy(value):
+    """strftime('%d/%m/%Y') of a UTC datetime, '-' for None."""
+    return '-' if value is None else f'{value[8:10]}/{value[5:7]}/{value[:4]}'
+
+
+def enrolled(label):
+    """CourseSubscription.objects.filter(course_id=...).count(): live rows, any subscription."""
+    return sum(1 for row in COURSE_SUBSCRIPTIONS.values() if row['course'] == label and not row['deleted'])
+
+
+def export(labels, association=OWN):
+    """{'file': get_excel_base64(*rows, columns=columns), 'filename': ...} of current_view_course."""
+    rows = [COURSES[label] for label in labels]
+    tags = [label for label, tag in TAGS.items() if tag['association'] == association]  # seed (heap) order
+    columns = ['Nome', 'Tipologia', 'Visibilità', 'Data inizio', 'Data fine', 'Data creazione', 'In evidenza', 'Strutture',
+               'Iscritti', 'Tag'] + [TAGS[label]['name'] for label in tags]
+    data = [[row['title'] for row in rows],
+            [TYPE_LABEL.get(row['type'], 'Sconosciuto') for row in rows],
+            [STATUS_LABEL.get(row['status'], 'Sconosciuto') for row in rows],
+            [ddmmyyyy(row['start']) for row in rows],
+            [ddmmyyyy(row['end']) for row in rows],
+            [ddmmyyyy(row['created']) for row in rows],
+            ['In evidenza' if row['pinned'] else '-' for row in rows],
+            [', '.join(str(LOCATIONS[l]['title']) for l in row['locations']) for row in rows],
+            [{'int': str(enrolled(label))} for label in labels],
+            [', '.join(TAGS[t]['name'] for t in row['tags']) for row in rows]]
+    data += [['assegnato' if tag in row['tags'] else '' for row in rows] for tag in tags]
+    return {'file': {'$xlsx': {'engine': 'excel_utils', 'columns': columns, 'data': data}},
+            'filename': f'[$today] Corsi filtrati - {DENOMINATION[association]}.xlsx'}
+
+
+add('excel-owner', 'owner', None, 200, export(ALL), method='POST', body=EXCEL)
+add('excel-full-collaborator', 'full_collaborator', None, 200, export(ALL), method='POST', body=EXCEL)
+add('excel-admin-impersonating-owner', 'admin', None, 200, export(ALL), method='POST', body=EXCEL,
+    headers={'X-Impersonation-Id': '$session:admin_owner', 'User-Id': IDS['owner']})
+add('excel-owner-session', 'owner', None, 200, export(ALL), method='POST', body=EXCEL,
+    headers={'X-Impersonation-Id': '$session:owner_full', 'User-Id': IDS['full_collaborator']})
+add('excel-foreign-owner-duplicate-columns', 'foreign_owner', None, 200, export(['abroad', 'abroad_draft'], FOREIGN), method='POST',
+    body=EXCEL)
+add('excel-form-body', 'owner', None, 200, export(ALL), method='POST', raw_body='format=excel',
+    content_type='application/x-www-form-urlencoded')
+add('excel-form-last-format', 'owner', None, 200, export(ALL), method='POST', raw_body='format=pdf&format=excel',
+    content_type='application/x-www-form-urlencoded')
+add('excel-extra-fields-ignored', 'owner', None, 200, export(ALL), method='POST', body={'format': 'excel', 'type': 'pdf', 'all': '1'})
+add('excel-ignores-pagination', 'owner', {'pagination[perpage]': '1', 'pagination[page]': '0'}, 200, export(ALL), method='POST',
+    body=EXCEL)
+add('excel-group-own', 'owner', None, 200, export(['grouped']), method='POST', body=EXCEL, headers=group('own_group'))
+add('excel-group-foreign-empty', 'owner', None, 200, export([]), method='POST', body=EXCEL, headers=group('foreign_group'))
+add('excel-search', 'owner', {'query[generalSearch]': 'NUOTO'}, 200, export(['full', 'internal']), method='POST', body=EXCEL)
+add('excel-search-empty', 'owner', {'query[generalSearch]': 'zzz'}, 200, export([]), method='POST', body=EXCEL)
+add('excel-tags-or-duplicates', 'owner', {'query[tags]': tag('t1', 't2')}, 200, export(['full', 'full', 'grouped', 'draft']),
+    method='POST', body=EXCEL)
+add('excel-tags-and', 'owner', {'query[tags]': tag('t1', 't2'), 'query[tags_and]': '1'}, 200, export(['full']), method='POST',
+    body=EXCEL)
+add('excel-status-draft', 'owner', {'query[status_flag]': '1'}, 200, export(['draft']), method='POST', body=EXCEL)
+add('excel-status-overflow', 'owner', {'query[status_flag]': '40000'}, 200, export([]), method='POST', body=EXCEL)
+add('excel-subscription-excludes', 'owner', {'subscription_id': sub('s2')}, 200, export(['grouped', 'internal', 'draft', 'old']),
+    method='POST', body=EXCEL)
+add('excel-sort-title-asc', 'owner', {'sort[field]': 'title', 'sort[sort]': 'asc'}, 200,
+    export(['grouped', 'full', 'internal', 'draft', 'old']), method='POST', body=EXCEL)
+add('excel-sort-creation-asc', 'owner', {'sort[field]': 'creation_date', 'sort[sort]': 'asc'}, 200,
+    export(['old', 'draft', 'internal', 'grouped', 'full']), method='POST', body=EXCEL)
+add('excel-sort-random-one-row', 'owner', {'sort[field]': '?', 'sort[sort]': 'asc', 'query[status_flag]': '3'}, 200,
+    export(['internal']), method='POST', body=EXCEL)
+add('excel-sort-unknown-field', 'owner', {'sort[field]': 'nope', 'sort[sort]': 'asc'}, 500, SERVER, method='POST', body=EXCEL)
+# A name past a known field is compiled when current_view_course iterates the
+# rows: an invalid one raises there (a 500).
+add('excel-sort-unknown-transform', 'owner', {'sort[field]': 'title__nope', 'sort[sort]': 'asc'}, 500, SERVER, method='POST',
+    body=EXCEL)
+add('excel-format-case-sensitive', 'owner', None, 500, SERVER, method='POST', body={'format': 'EXCEL'})
+add('excel-format-list', 'owner', None, 500, SERVER, method='POST', body={'format': ['excel']})
+add('excel-string-body', 'owner', None, 500, SERVER, method='POST', raw_body='"excel"', content_type='application/json')
+add('excel-restricted-collaborator', 'restricted_collaborator', None, 403, {'detail': 'Missing permission: association.courses.read'},
+    method='POST', body=EXCEL)
+add('excel-athlete-lists', 'athlete', {'sport_association_id': OWN}, 200, listed(ACTIVE), method='POST', body=EXCEL)
+add('excel-owner-without-association', 'owner_without_association', None, 500, SERVER, method='POST', body=EXCEL)
 
 # Athletes.
 athlete_session = {'X-Impersonation-Id': '$session:owner_athlete', 'User-Id': IDS['athlete']}
