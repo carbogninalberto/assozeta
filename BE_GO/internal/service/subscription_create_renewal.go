@@ -90,6 +90,40 @@ func (s *SubscriptionCreates) renewalSource(ctx context.Context, tx domain.Subsc
 	return nil, nil
 }
 
+// groupedCustomData is _get_asd_custom_data_for_grouped_subscriptions: the
+// club data of the account's latest subscription whose custom data text
+// contains 'asd-o-ssd' or 'scuola-asc'; nothing without one.
+func groupedCustomData(ctx context.Context, tx domain.SubscriptionCreateTransaction, user string) (domain.RequestObject, error) {
+	rows, err := tx.GroupedCustomData(ctx, user)
+	if err != nil || len(rows) == 0 {
+		return nil, err
+	}
+	if len(rows) > 1 && rows[0].CreationDate.Equal(rows[1].CreationDate) {
+		// order_by('-creation_date').first() among equal dates is not ported.
+		return nil, domain.ErrSubscriptionCreateNotPorted
+	}
+	parsed, err := dto.ParsePythonJSON(rows[0].CustomData)
+	if err != nil {
+		return nil, err
+	}
+	stored, isObject := parsed.(domain.RequestObject)
+	if !isObject {
+		return nil, pythonAttributeError(parsed, "get")
+	}
+	get := func(key string, fallback any) any {
+		if value, present := stored.Lookup(key); present {
+			return value
+		}
+		return fallback
+	}
+	return domain.RequestObject{
+		{Name: "denomination", Value: get("denomination", "")}, {Name: "city", Value: get("city", "")},
+		{Name: "province", Value: get("province", "")}, {Name: "address", Value: get("address", "")},
+		{Name: "cap", Value: get("zip", "")}, {Name: "country", Value: get("country", "Italia")},
+		{Name: "tax_code", Value: get("tax_code", "")}, {Name: "email", Value: get("email", "")},
+	}, nil
+}
+
 // fillPreregistration is fill_data_preregisration: the request's person,
 // certificate, custom data, role and number are replaced by those of the
 // renewed subscription; the registration keeps the subscription type sent

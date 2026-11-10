@@ -232,6 +232,14 @@ func (t *subscriptionCreateTransaction) LatestNumber(ctx context.Context, associ
 	return &number, nil
 }
 
+func (t *subscriptionCreateTransaction) GroupedCustomData(ctx context.Context, user string) ([]domain.SubscriptionGroupedCustomData, error) {
+	rows := []domain.SubscriptionGroupedCustomData{}
+	err := t.tx.SelectContext(ctx, &rows, `SELECT custom_data::text AS custom_data, creation_date FROM application_subscription
+ WHERE user_id=$1 AND (UPPER(custom_data::text) LIKE UPPER('%asd-o-ssd%') OR UPPER(custom_data::text) LIKE UPPER('%scuola-asc%'))
+ ORDER BY creation_date DESC LIMIT 2`, user)
+	return rows, err
+}
+
 func (t *subscriptionCreateTransaction) RenewalSource(ctx context.Context, id, association string) (*domain.SubscriptionRenewalSource, error) {
 	rows := []domain.SubscriptionRenewalSource{}
 	if err := t.tx.SelectContext(ctx, &rows, `SELECT s.user_id, a.user_id AS owner_id, s.associate_id, s.medical_id, s.role, s.subscription_number,

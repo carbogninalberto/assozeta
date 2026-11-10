@@ -189,6 +189,26 @@
    "born": "1982-01-01",
    "user": "athlete",
    "email": null
+  },
+  "grouped_club": {
+   "id": "a1000000-0000-4000-8000-000000939018",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Club",
+   "last": "Affiliato",
+   "tax_code": "FFLCLB80A01H501G",
+   "born": "1980-01-01",
+   "user": "owner",
+   "email": null
+  },
+  "grouped_text": {
+   "id": "a1000000-0000-4000-8000-000000939019",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Testo",
+   "last": "Affiliato",
+   "tax_code": "FFLTST80A01H501H",
+   "born": "1980-01-01",
+   "user": "athlete",
+   "email": null
   }
  },
  "certificates": {
@@ -359,6 +379,52 @@
    "archived": false,
    "number": null,
    "user": "athlete"
+  },
+  "grouped_older": {
+   "id": "a1000000-0000-4000-8000-000000939020",
+   "associate": "grouped_club",
+   "start": "2024-01-01",
+   "end": "2024-12-31",
+   "archived": true,
+   "number": "8",
+   "created": "2024-03-01T00:00:00Z",
+   "custom_data": {
+    "type_of_associate": "asd-o-ssd",
+    "denomination": "Vecchia ASD",
+    "city": "Roma",
+    "zip": "00100"
+   }
+  },
+  "grouped_latest": {
+   "id": "a1000000-0000-4000-8000-000000939021",
+   "associate": "grouped_club",
+   "start": "2025-01-01",
+   "end": "2025-12-31",
+   "archived": true,
+   "number": "9",
+   "created": "2025-03-01T00:00:00Z",
+   "custom_data": {
+    "type_of_associate": "Scuola-ASC",
+    "denomination": "Scuola Nuova",
+    "city": "Milano",
+    "province": "MI",
+    "address": "Via Larga 1",
+    "zip": "20100",
+    "cap": "ignorato",
+    "tax_code": 12345678901,
+    "email": null
+   }
+  },
+  "grouped_text": {
+   "id": "a1000000-0000-4000-8000-000000939022",
+   "associate": "grouped_text",
+   "start": "2025-01-01",
+   "end": "2025-12-31",
+   "archived": true,
+   "number": null,
+   "user": "athlete",
+   "created": "2025-03-01T00:00:00Z",
+   "custom_data": "Affiliata ASD-O-SSD"
   }
  },
  "payments": {
@@ -14034,6 +14100,374 @@
     },
     "custom_data": null,
     "additional_fields": null
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-family-wizard-grouped",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "subs": [],
+    "payments": "$payments"
+   },
+   "effect": {
+    "actor": "anonymous",
+    "new": [
+     {
+      "label": "family",
+      "bind": "$family",
+      "match": {
+       "type": "grouped_subscriptions"
+      },
+      "columns": {}
+     },
+     {
+      "label": "associate",
+      "bind": "$associate_0",
+      "match": {
+       "first_name": "Gaia",
+       "last_name": "Gruppo"
+      },
+      "columns": {
+       "tax_code": "GRPGAI10A41H501G",
+       "born_date": "1990-03-15",
+       "sex": "F",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner",
+       "family_id": "$family"
+      }
+     },
+     {
+      "label": "payment",
+      "bind": "$payment_0",
+      "match": {
+       "associate_id": "$associate_0"
+      },
+      "columns": {
+       "subject": 1,
+       "description": "Iscrizione",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000930026",
+       "amount": "25.00",
+       "payment_date": "$today_midnight",
+       "meta_payment_categories": null,
+       "meta": null
+      }
+     },
+     {
+      "label": "subscription",
+      "bind": "$subscription_0",
+      "match": {
+       "associate_id": "$associate_0"
+      },
+      "columns": {
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner",
+       "payment_id": "$payment_0",
+       "type": 2,
+       "role": 1,
+       "status_flag": 1,
+       "meta": {
+        "plan_id": null,
+        "plan_name": null,
+        "membership_plan_id": null,
+        "membership_plan_name": null
+       },
+       "subscription_type": "",
+       "start_date": "$season_start",
+       "end_date": "$season_end",
+       "subscription_number": "545",
+       "custom_data": {
+        "city": "Milano",
+        "nota": "propria",
+        "denomination": "Scuola Nuova",
+        "province": "MI",
+        "address": "Via Larga 1",
+        "cap": "20100",
+        "country": "Italia",
+        "tax_code": 12345678901,
+        "email": null
+       },
+       "additional_fields": null
+      }
+     },
+     {
+      "label": "membership",
+      "bind": "$subscription_0_membership",
+      "match": {
+       "subscription_id": "$subscription_0"
+      },
+      "columns": {
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "associate_id": "$associate_0",
+       "payment_id": "$payment_0",
+       "membership_type": "$default_membership_type",
+       "start_date": "$season_start",
+       "end_date": "$season_end",
+       "price": null,
+       "membership_number": "545"
+      }
+     }
+    ],
+    "changed": {},
+    "deleted": {},
+    "tags": [],
+    "audit": [
+     {
+      "model": "family",
+      "action": 0,
+      "ref": "$family",
+      "changes": {},
+      "index": null,
+      "app": "application"
+     },
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "$associate_0",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "$associate_0",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$payment_0",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "$subscription_0",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "$subscription_0_membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "$subscription_0"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription_0",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notifications": [
+     {
+      "msg": "Nuova Iscrizione aggiunta per Gaia Gruppo.",
+      "association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ],
+    "payments": [
+     "$payment_0"
+    ]
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Capo",
+     "last_name": "Famiglia",
+     "tax_code": "FMGCPA80A01H501F",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "medical_certificate": {
+     "medical_id": null,
+     "certificate_expring_date": null
+    },
+    "custom_data": null,
+    "additional_fields": null,
+    "subscription_id": null,
+    "is_family_wizard": true,
+    "multiple_entry_form_data": [
+     {
+      "new_user_account": {
+       "new_member": false
+      },
+      "associate_data": {
+       "first_name": "Gaia",
+       "last_name": "Gruppo",
+       "tax_code": "GRPGAI10A41H501G",
+       "born_date": "15/03/1990",
+       "sex": "F"
+      },
+      "associate_tutor_data": null,
+      "signature": {
+       "there_is_signature": false,
+       "data": ""
+      },
+      "plan_id": null,
+      "membership_plan_id": null,
+      "custom_data": {
+       "city": "Propria",
+       "nota": "propria"
+      },
+      "additional_fields": null,
+      "medical_certificate": {
+       "medical_id": null,
+       "certificate_expring_date": null
+      },
+      "valid": true
+     }
+    ],
+    "sport_association": "message-reads-700001",
+    "type": "grouped_subscriptions"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-family-wizard-grouped-text-custom-data-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Capo",
+     "last_name": "Famiglia",
+     "tax_code": "FMGCPA80A01H501F",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "medical_certificate": {
+     "medical_id": null,
+     "certificate_expring_date": null
+    },
+    "custom_data": null,
+    "additional_fields": null,
+    "subscription_id": null,
+    "is_family_wizard": true,
+    "multiple_entry_form_data": [
+     {
+      "new_user_account": {
+       "new_member": false
+      },
+      "associate_data": {
+       "first_name": "Gino",
+       "last_name": "Gruppo",
+       "tax_code": "GRPGNI10A01H501G",
+       "born_date": "15/03/1990",
+       "sex": "M"
+      },
+      "associate_tutor_data": null,
+      "signature": {
+       "there_is_signature": false,
+       "data": ""
+      },
+      "plan_id": null,
+      "membership_plan_id": null,
+      "custom_data": {},
+      "additional_fields": null,
+      "medical_certificate": {
+       "medical_id": null,
+       "certificate_expring_date": null
+      },
+      "valid": true
+     }
+    ],
+    "sport_association": "message-reads-700001",
+    "type": "grouped_subscriptions"
    },
    "setup": null
   }

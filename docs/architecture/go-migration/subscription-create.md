@@ -197,6 +197,13 @@ written; the inputs refused for a registration are checked on the filled data, n
 `data['is_family_wizard'] is True` (with the four required keys present on the body) runs `_handle_family_subscription`:
 
 - the family type is `data.get('type', 'family')`, replaced by `family` unless it names a known type;
+- with `type: grouped_subscriptions`, before the transaction, `_get_asd_custom_data_for_grouped_subscriptions(request.user)` reads
+  the account's latest subscription (`-creation_date`) whose `custom_data` text contains `asd-o-ssd` or `scuola-asc` in any case
+  (`UPPER("custom_data"::text) LIKE UPPER('%asd-o-ssd%')`). Its `denomination`, `city`, `province`, `address`, `zip` (as `cap`),
+  `country` (`Italia` without the key), `tax_code` and `email` (`''` without the key) are merged over every valid entry's
+  `custom_data`; without such a subscription nothing is merged, and a matching value that is not an object is the 500 page. The
+  Family is stored with that type. Go: `groupedCustomData`. The web UI's grouped wizard (`SubscribeMultiple.svelte`) sends one
+  ordinary registration per entry and never this body;
 - one transaction: `Family.objects.create(type=...)` (create entry, indexed through the actor's association: none for the public
   form), then for every entry of `data['multiple_entry_form_data']` whose `valid` is exactly `true`: the entry gets
   `data['sport_association']`, the family on its `associate_data` and its own `custom_data`, and goes through
@@ -236,8 +243,8 @@ Refused with the 500 page before anything is committed:
 - form bodies, a non-empty `X-Group-Id` (the managers' group filter and stored group); an athlete request from an account that
   is neither an athlete nor an association; the quick mode from a member account during an impersonation session with an
   association scope, or with an id that is a number or a boolean; a `sport_association` that is a list or an object;
-- the family wizard with `type: grouped_subscriptions` (the custom data read from the account's earlier grouped
-  subscriptions), and in its entries every input refused for a single registration; in the quick subscription an impersonation session with an association scope, an
+- in the family wizard's entries every input refused for a single registration, and with `type: grouped_subscriptions` two
+  matching earlier subscriptions with the same newest creation date; in the quick subscription an impersonation session with an association scope, an
   owner with several associations, plan ids or fees of other shapes (booleans, containers, more than two decimals) and a
   certificate choice that depends on the unordered subscriptions;
 - in a preregistration that renews a subscription: a renewed member that has a tutor (`get_main_tutor` and its serialized
@@ -343,3 +350,10 @@ A preregistration that renews a subscription (125 cases).
 - GREEN natively (`famwiz-native-r1`): 125/125 on native Django and native Go.
 - Mutation (`famwiz-mutation-r2`): the renewed subscription's accounts not compared with the requester fails
   `subscription-create-preregistration-renewal-of-another-account-not-found` (CAUGHT).
+
+The family wizard with `type: grouped_subscriptions` (127 cases).
+
+- RED (`famwiz-red-r5`, the Go code of the previous commit): Django 127/127; Go 500 on `subscription-create-family-wizard-grouped`.
+- GREEN natively (`famwiz-native-r2`): 127/127 on native Django and native Go.
+- Mutation (`famwiz-mutation-r3`): the merged `cap` read from the stored `cap` key instead of `zip` fails
+  `subscription-create-family-wizard-grouped` (CAUGHT).

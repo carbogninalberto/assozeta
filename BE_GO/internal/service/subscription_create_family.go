@@ -16,9 +16,9 @@ func (s *SubscriptionCreates) family(ctx context.Context, identity domain.Resolv
 	request SubscriptionCreateRequest) (*SubscriptionCreateResult, error) {
 	server := domain.ErrSubscriptionCreateServer
 	// data.get('type', 'family'): a value that is not a known type is 'family'.
-	if kind, _ := data.Lookup("type"); kind == "grouped_subscriptions" {
-		// The grouped registration's custom data of earlier subscriptions is not ported.
-		return nil, domain.ErrSubscriptionCreateNotPorted
+	kind := "family"
+	if value, _ := data.Lookup("type"); value == "grouped_subscriptions" {
+		kind = "grouped_subscriptions"
 	}
 	value, present := data.Lookup("multiple_entry_form_data")
 	if !present {
@@ -53,8 +53,15 @@ func (s *SubscriptionCreates) family(ctx context.Context, identity domain.Resolv
 			s.cleanupStorage(ctx, keys)
 		}
 	}()
+	// A grouped registration merges the account's earlier club data over every entry's custom data.
+	var club domain.RequestObject
+	if kind == "grouped_subscriptions" {
+		if club, err = groupedCustomData(ctx, tx, identity.ScopeUser.ID); err != nil {
+			return nil, err
+		}
+	}
 	familyID := uuid.NewString()
-	if err = tx.InsertFamily(ctx, familyID, "family", request.Audit, s.now().UTC()); err != nil {
+	if err = tx.InsertFamily(ctx, familyID, kind, request.Audit, s.now().UTC()); err != nil {
 		return nil, err
 	}
 	today := subscriptionCreateToday(s.now())
@@ -84,9 +91,14 @@ func (s *SubscriptionCreates) family(ctx context.Context, identity domain.Resolv
 		entry = objectSet(entry, "associate_data", objectSet(associate, "family", familyID))
 		// {**entry['custom_data'], **asd_custom_data}: a missing key or a value that is not an object raises.
 		custom, _ := entry.Lookup("custom_data")
-		if _, isObject = custom.(domain.RequestObject); !isObject {
+		merged, isObject := custom.(domain.RequestObject)
+		if !isObject {
 			return nil, server
 		}
+		for _, field := range club {
+			merged = objectSet(merged, field.Name, field.Value)
+		}
+		entry = objectSet(entry, "custom_data", merged)
 		if !subscriptionRenewalRequested(entry) {
 			if err = subscriptionCreateRefuseInputs(entry, today); err != nil {
 				return nil, err

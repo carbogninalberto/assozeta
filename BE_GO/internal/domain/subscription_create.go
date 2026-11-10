@@ -130,6 +130,12 @@ type SubscriptionRenewalSource struct {
 	AdditionalFields *string `db:"additional_fields"`
 }
 
+// SubscriptionGroupedCustomData is the custom data of one earlier subscription of an account.
+type SubscriptionGroupedCustomData struct {
+	CustomData   string    `db:"custom_data"`
+	CreationDate time.Time `db:"creation_date"`
+}
+
 // SubscriptionCreateMembership is a SubscriptionMembership row.
 type SubscriptionCreateMembership struct {
 	ID, SubscriptionID, AssociationID, AssociateID string
@@ -203,6 +209,9 @@ type SubscriptionCreateTransaction interface {
 	MemberByEmail(ctx context.Context, email string) (*SubscriptionCreateMember, error)
 	// Member is the user's role and season settings.
 	Member(ctx context.Context, id string) (*SubscriptionCreateMember, error)
+	// GroupedCustomData are the two latest subscriptions of the user whose custom data text contains
+	// 'asd-o-ssd' or 'scuola-asc' in any case, newest first.
+	GroupedCustomData(ctx context.Context, user string) ([]SubscriptionGroupedCustomData, error)
 	// RenewalSource is Subscription.objects.filter(subscription_id=id, sport_association=association).first().
 	RenewalSource(ctx context.Context, id, association string) (*SubscriptionRenewalSource, error)
 	// InsertNewUser writes the account with its create entry (TokenUsername) and the username update entry.

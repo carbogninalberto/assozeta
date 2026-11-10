@@ -1052,6 +1052,44 @@ add('preregistration-renewal-by-member', 'athlete', 200, SUCCESS(25.0),
     body=renewal('renewable_member', kind=2, sport_association=OWNER_NAME, **{k: v for k, v in FORM.items() if k != 'subscription_id'}),
     effect=next_season(effect))
 
+# --- The family wizard with type grouped_subscriptions -------------------------------------------------------
+# _get_asd_custom_data_for_grouped_subscriptions(request.user): the latest subscription of the account whose
+# custom_data text contains 'asd-o-ssd' or 'scuola-asc' (any case) gives denomination, city, province, address,
+# cap (its 'zip'), country ('Italia' without the key), tax_code and email ('' without the key); they are merged over
+# every valid entry's custom_data. Without such a subscription nothing is merged; a stored value that is not an
+# object raises before the transaction.
+ASSOCIATES['grouped_club'] = {'id': next(extra_ids), 'association': OWN, 'first': 'Club', 'last': 'Affiliato', 'tax_code': 'FFLCLB80A01H501G',
+                              'born': '1980-01-01', 'user': 'owner', 'email': None}
+ASSOCIATES['grouped_text'] = {'id': next(extra_ids), 'association': OWN, 'first': 'Testo', 'last': 'Affiliato', 'tax_code': 'FFLTST80A01H501H',
+                              'born': '1980-01-01', 'user': 'athlete', 'email': None}
+SUBSCRIPTIONS['grouped_older'] = {'id': next(extra_ids), 'associate': 'grouped_club', 'start': '2024-01-01', 'end': '2024-12-31',
+                                  'archived': True, 'number': '8', 'created': '2024-03-01T00:00:00Z',
+                                  'custom_data': {'type_of_associate': 'asd-o-ssd', 'denomination': 'Vecchia ASD', 'city': 'Roma',
+                                                  'zip': '00100'}}
+SUBSCRIPTIONS['grouped_latest'] = {'id': next(extra_ids), 'associate': 'grouped_club', 'start': '2025-01-01', 'end': '2025-12-31',
+                                   'archived': True, 'number': '9', 'created': '2025-03-01T00:00:00Z',
+                                   'custom_data': {'type_of_associate': 'Scuola-ASC', 'denomination': 'Scuola Nuova', 'city': 'Milano',
+                                                   'province': 'MI', 'address': 'Via Larga 1', 'zip': '20100', 'cap': 'ignorato',
+                                                   'tax_code': 12345678901, 'email': None}}
+SUBSCRIPTIONS['grouped_text'] = {'id': next(extra_ids), 'associate': 'grouped_text', 'start': '2025-01-01', 'end': '2025-12-31',
+                                 'archived': True, 'number': None, 'user': 'athlete', 'created': '2025-03-01T00:00:00Z',
+                                 'custom_data': 'Affiliata ASD-O-SSD'}
+grouped_child = person('Gaia', 'Gruppo', 'GRPGAI10A41H501G', sex='F')
+grouped = family_effect('anonymous', [grouped_child], kind='grouped_subscriptions')
+for row in grouped['new']:
+    if row['label'] == 'subscription':
+        row['columns']['custom_data'] = {'city': 'Milano', 'nota': 'propria', 'denomination': 'Scuola Nuova', 'province': 'MI',
+                                         'address': 'Via Larga 1', 'cap': '20100', 'country': 'Italia', 'tax_code': 12345678901,
+                                         'email': None}
+add('family-wizard-grouped', 'anonymous', 200, FAMILY_SUCCESS,
+    body=family_body([family_entry(grouped_child, custom_data={'city': 'Propria', 'nota': 'propria'})], sport_association=OWNER_NAME,
+                     type='grouped_subscriptions'),
+    effect=grouped)
+# The account's matching custom data is a string: .get raises before the Family is created.
+add('family-wizard-grouped-text-custom-data-server-error', 'athlete', 500, SERVER,
+    body=family_body([family_entry(person('Gino', 'Gruppo', 'GRPGNI10A01H501G'))], sport_association=OWNER_NAME,
+                     type='grouped_subscriptions'))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/add authored sequence with row, audit, Celery and notification effects',
