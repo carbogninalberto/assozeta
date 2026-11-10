@@ -113,15 +113,26 @@ jobs:
           cache-dependency-path: |
             BE/requirements.txt
             TESTS/adapters/django/requirements-credentials.txt
+            TESTS/adapters/django/constraints-parity.txt
             TESTS/contracts/requirements-qr.txt
             docs/manuale/requirements-offline.txt
       - name: Install disposable parity dependencies
+        env:
+          # The requirement files pin direct dependencies only; this pins the rest to the recorded versions.
+          PIP_CONSTRAINT: ${{ github.workspace }}/TESTS/adapters/django/constraints-parity.txt
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
           sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
           sudo locale-gen
           python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
+          # Python and Go guess upload content types from the host's mime.types files. The production image
+          # has none, so the runner's are set aside.
+          python - <<'PYMIME' | while read -r file; do if [ -n "$file" ]; then sudo mv "$file" "$file.host"; fi; done
+          import mimetypes, os
+          print('\n'.join(sorted({name for name in mimetypes.knownfiles if os.path.isfile(name)})))
+          PYMIME
+          python -c "import mimetypes, os; assert not any(map(os.path.isfile, mimetypes.knownfiles))"
           echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
           python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
           python -m pip install -r docs/manuale/requirements-offline.txt

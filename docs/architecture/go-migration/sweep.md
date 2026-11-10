@@ -36,6 +36,11 @@ Pushes to `go/ci-family-matrix` and `go-ci/**` also start it: three small famili
 whole suite when the head commit message contains `[full-sweep]`. A new run on the same ref cancels the
 previous one.
 
+The runners install the requirement files with `TESTS/adapters/django/constraints-parity.txt` as a pip
+constraint, which pins the transitive dependencies to the versions the fixtures were recorded with, and set
+aside the host's `mime.types` files, which the production image does not have (Python and Go both read them
+to guess an upload's content type).
+
 The `Merge shards` job writes the result table to the run summary, fails if any job failed or is missing,
 and uploads one artifact, `family-sweep-<label>`, holding the merged summary, the logs and the receipts.
 
