@@ -672,7 +672,9 @@ func run() (runErr error) {
 	e.Any("/personas/:pk/info", personasHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	personasWritesHandler := handler.NewPersonasWritesHandler(personasService,
 		service.NewPersonaWrites(repository.NewPersonaWrites(db), personasService, time.Now, uuid.NewString).
-			WithPictures(composePersonaPictures(cfg), cfg.Storage.FileOverwrite),
+			WithPictures(composePersonaPictures(cfg), service.PersonaPictureSettings{Overwrite: cfg.Storage.FileOverwrite,
+				UseObjectACL: cfg.Storage.UseObjectACL, PublicBaseURL: cfg.Storage.PublicBaseURL, Endpoint: cfg.Storage.Endpoint,
+				Bucket: cfg.Storage.Bucket}),
 		service.NewPersonaSubscriptions(repository.NewPersonaSubscriptions(db), personasService),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	personasHandler.WithWrites(personasWritesHandler)

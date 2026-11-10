@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -16,10 +15,6 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/pymime"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 )
-
-// personaPictureBase is the host AssociateSerializer.to_internal_value joins
-// AWS_LOCATION and the storage path to.
-const personaPictureBase = "https://bakney-object-spaces.fra1.cdn.digitaloceanspaces.com"
 
 // PersonaPictureObjects is the default storage the picture upload uses.
 type PersonaPictureObjects interface {
@@ -34,36 +29,48 @@ type PersonaPictureInvalid struct{ Text string }
 
 func (e *PersonaPictureInvalid) Error() string { return "persona picture: " + e.Text }
 
-// WithPictures sets the storage of picture_path uploads; overwrite is
-// AWS_S3_FILE_OVERWRITE (no HeadObject before the save).
-func (s *PersonaWrites) WithPictures(objects PersonaPictureObjects, overwrite bool) *PersonaWrites {
-	s.pictures, s.pictureOverwrite = objects, overwrite
+// PersonaPictureSettings are the storage settings of picture_path uploads:
+// AWS_S3_FILE_OVERWRITE (no HeadObject before the save), AWS_S3_USE_OBJECT_ACL,
+// AWS_S3_PUBLIC_BASE_URL and the storage's endpoint and bucket.
+type PersonaPictureSettings struct {
+	Overwrite, UseObjectACL         bool
+	PublicBaseURL, Endpoint, Bucket string
+}
+
+// WithPictures sets the storage of picture_path uploads.
+func (s *PersonaWrites) WithPictures(objects PersonaPictureObjects, settings PersonaPictureSettings) *PersonaWrites {
+	s.pictures, s.pictureSettings = objects, settings
 	return s
 }
 
-var personaPictureFolder = regexp.MustCompile(`^[A-Za-z0-9_-]{1,64}$`)
-
 // personaPicturePlan reads the body's picture_path like to_internal_value:
-// upload is true for a string containing 'base64'. Other shapes that reach
-// the upload branch, and folders outside plain identifiers, are not ported.
-func personaPicturePlan(body domain.RequestObject) (data, folder string, upload bool, err error) {
+// upload is true for a string containing 'base64', decoded from the text
+// after the first comma (decode failures are the serializer's 400, before
+// the field validation). Other shapes that reach the upload branch are not
+// ported.
+func personaPicturePlan(body domain.RequestObject) (decoded []byte, upload bool, err error) {
 	if err = pictureUnported(body); err == nil {
-		return "", "", false, nil
+		return nil, false, nil
 	}
 	value, _ := body.Lookup("picture_path")
-	text, ok := value.(string)
+	data, ok := value.(string)
 	if !ok {
-		return "", "", false, err
+		return nil, false, err
 	}
-	folder = "None"
-	if id, present := body.Lookup("associate_id"); present && id != nil {
-		name, ok := id.(string)
-		if !ok || !personaPictureFolder.MatchString(name) {
-			return "", "", false, ErrPersonaNotPorted
+	encoded := data
+	if _, after, found := strings.Cut(data, ","); found {
+		encoded = after
+	}
+	decoded, err = dto.PythonB64Decode(encoded)
+	if err != nil {
+		var invalid *dto.PythonBase64Error
+		if errors.As(err, &invalid) && invalid.Message == "string argument should contain only ASCII characters" {
+			return nil, false, &PersonaPictureInvalid{Text: "Error processing image: " + invalid.Message}
 		}
-		folder = name
+		// binascii.Error becomes a ValidationError the surrounding handler wraps again.
+		return nil, false, &PersonaPictureInvalid{Text: "Error processing image: {'picture_path': ErrorDetail(string='Invalid base64 string', code='invalid')}"}
 	}
-	return text, folder, true, nil
+	return decoded, true, nil
 }
 
 // personaPictureTimestamp is str(timezone.now().timestamp()): the aware
@@ -76,50 +83,32 @@ func personaPictureTimestamp(now time.Time) string {
 	return text
 }
 
-// personaPictureJoin is os.path.join(base, location, path).
-func personaPictureJoin(base, location, path string) string {
-	joined := base
-	for _, part := range []string{location, path} {
-		switch {
-		case strings.HasPrefix(part, "/"):
-			joined = part
-		case joined == "" || strings.HasSuffix(joined, "/"):
-			joined += part
-		default:
-			joined += "/" + part
-		}
+// personaPictureURL is the object's address: the public base URL of the
+// storage, or its endpoint and bucket, then the object key.
+func personaPictureURL(settings PersonaPictureSettings, key string) string {
+	base := strings.TrimRight(strings.TrimSpace(settings.PublicBaseURL), "/")
+	if base == "" {
+		base = strings.TrimRight(settings.Endpoint, "/") + "/" + settings.Bucket
 	}
-	return joined
+	return base + "/" + key
 }
 
-// uploadPicture is the serializer's upload: the decoded text after the first
-// comma saved as associates/<folder>/picture_<timestamp>.jpg, put_object_acl
-// public-read, and the URL that replaces picture_path. Decode failures and a
-// refused ACL are the serializer's 400; other storage failures are refused.
-func (s *PersonaWrites) uploadPicture(ctx context.Context, data, folder string) (string, error) {
+// uploadPicture is _store_picture, run by create() / update() once the data
+// is valid: the picture saved as associates/<associate id>/picture_<timestamp>.jpg,
+// put_object_acl public-read when object ACLs are on, and the URL stored as
+// picture_path. A refused ACL is the serializer's 400; other storage
+// failures are refused.
+func (s *PersonaWrites) uploadPicture(ctx context.Context, decoded []byte, associate string) (string, error) {
 	if s.pictures == nil {
 		return "", ErrPersonaNotPorted
 	}
-	encoded := data
-	if _, after, found := strings.Cut(data, ","); found {
-		encoded = after
-	}
-	decoded, err := dto.PythonB64Decode(encoded)
-	if err != nil {
-		var invalid *dto.PythonBase64Error
-		if errors.As(err, &invalid) && invalid.Message == "string argument should contain only ASCII characters" {
-			return "", &PersonaPictureInvalid{Text: "Error processing image: " + invalid.Message}
-		}
-		// binascii.Error becomes a ValidationError the surrounding handler wraps again.
-		return "", &PersonaPictureInvalid{Text: "Error processing image: {'picture_path': ErrorDetail(string='Invalid base64 string', code='invalid')}"}
-	}
-	location := s.pictures.Location()
-	name := "associates/" + folder + "/picture_" + personaPictureTimestamp(s.now()) + ".jpg"
-	key, err := documentkey.S3Key(name, location)
+	location := strings.Trim(s.pictures.Location(), "/")
+	name := "associates/" + associate + "/picture_" + personaPictureTimestamp(s.now()) + ".jpg"
+	key, err := documentkey.S3Key(name, s.pictures.Location())
 	if err != nil {
 		return "", ErrPersonaNotPorted
 	}
-	if !s.pictureOverwrite {
+	if !s.pictureSettings.Overwrite {
 		// Storage.save: get_available_name (HeadObject), then one PutObject.
 		exists, err := s.pictures.Exists(ctx, key)
 		if err != nil || exists {
@@ -136,27 +125,33 @@ func (s *PersonaWrites) uploadPicture(ctx context.Context, data, folder string) 
 	if err := s.pictures.Put(ctx, key, decoded, contentType, encoding); err != nil {
 		return "", ErrPersonaNotPorted
 	}
-	if err := s.pictures.PutACL(ctx, location+"/"+name, "public-read"); err != nil {
-		// botocore's ClientError text for a refused request.
-		var api smithy.APIError
-		var response *smithyhttp.ResponseError
-		if errors.As(err, &api) && errors.As(err, &response) &&
-			(response.HTTPStatusCode() == http.StatusForbidden || response.HTTPStatusCode() == http.StatusNotFound) {
-			return "", &PersonaPictureInvalid{Text: "Error processing image: An error occurred (" + api.ErrorCode() +
-				") when calling the PutObjectAcl operation: " + api.ErrorMessage()}
-		}
-		return "", ErrPersonaNotPorted
+	object := name
+	if location != "" {
+		object = location + "/" + name
 	}
-	return personaPictureJoin(personaPictureBase, location, name), nil
+	if s.pictureSettings.UseObjectACL {
+		if err := s.pictures.PutACL(ctx, object, "public-read"); err != nil {
+			// botocore's ClientError text for a refused request.
+			var api smithy.APIError
+			var response *smithyhttp.ResponseError
+			if errors.As(err, &api) && errors.As(err, &response) &&
+				(response.HTTPStatusCode() == http.StatusForbidden || response.HTTPStatusCode() == http.StatusNotFound) {
+				return "", &PersonaPictureInvalid{Text: "Error processing image: An error occurred (" + api.ErrorCode() +
+					") when calling the PutObjectAcl operation: " + api.ErrorMessage()}
+			}
+			return "", ErrPersonaNotPorted
+		}
+	}
+	return personaPictureURL(s.pictureSettings, object), nil
 }
 
-// personaPictureBody is the body with picture_path replaced.
-func personaPictureBody(body domain.RequestObject, url string) domain.RequestObject {
-	result := make(domain.RequestObject, len(body))
-	copy(result, body)
-	for i := range result {
-		if result[i].Name == "picture_path" {
-			result[i].Value = url
+// personaWithoutPicture is the body without picture_path: the serializer
+// validates the other fields and sets the stored URL itself.
+func personaWithoutPicture(body domain.RequestObject) domain.RequestObject {
+	result := make(domain.RequestObject, 0, len(body))
+	for _, field := range body {
+		if field.Name != "picture_path" {
+			result = append(result, field)
 		}
 	}
 	return result
