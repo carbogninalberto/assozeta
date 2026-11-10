@@ -13591,27 +13591,27 @@
         "target": "instructor_hours_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/instructor_hours.go",
         "BE_GO/internal/dto/instructor_hours_write.go",
-        "BE_GO/internal/repository/instructor_hours.go",
-        "BE_GO/internal/service/instructor_hours.go",
         "BE_GO/internal/handler/instructor_hours.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/instructor_hours.go",
+        "BE_GO/internal/service/instructor_hours.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, tenant scope and audit index",
-        "application_instructorhours",
-        "application_instructor",
-        "application_payment",
-        "docmanager_document",
+        "application_associate",
         "application_course",
         "application_coursesubscription",
         "application_coursesubscription_membership_payments",
         "application_coursesubscriptioninstallment",
+        "application_instructor",
+        "application_instructorhours",
+        "application_payment",
         "application_subscription",
-        "application_associate"
+        "docmanager_document"
       ],
       "contract": {
         "methods": [
@@ -13640,21 +13640,28 @@
         "TESTS/adapters/django/instructor_hours_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/instructor-hours.md",
         {
-          "command": "python tools/go-migration/family.py run instructor-hours --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "fcd659cbdecc0f6bc8ef82a99495ac518f0bc70881c434560165432a72090653",
-          "scope": "HTTP family instructor-hours: 132/132 cases on native Django and native Go, 132/132 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 135/135; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "66630b0b465cd5fff80692b451156a4e21b65386a5643eb57ee8e8caa28fd31b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 135/135 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-v2doc-versioned-r2/results.json",
+          "receipt_sha256": "75ecd4d2b081560e3c6fc3a4ab970c4f8622b86cbcbcabfa53a60a562da64ad0"
+        },
+        {
+          "revision": "committing change printing only page rows whose hour is paid",
+          "result": "Mutation control: fails Go on instructor-hours-list-owner-prints-compensations (print.request-count).",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "29a0b667c44d6dc1c16e01042b81e3cf0d8eb440a9753dec459ad493779d11f5"
         }
       ],
       "notes": [
-        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete (instructors of request.user, the instructor relation resolved through its owner, entries indexed through the instructor's owner) with in-memory auditlog diffs and primary-key copies, and the calculate sums over the association's courses on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write.",
-        "Implementing evidence: docs/architecture/go-migration/instructor-hours.md",
-        "Implementing evidence: RED: Django 132/132; Go fails index.fields on the first case. (quality-reports/go-migration/instructor-hours-http-red-sync1/results.json)",
-        "Implementing evidence: GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/instructor-hours-http-versioned-sync1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instructor-hours-add-other-association-instructor (403 instead of 404). (quality-reports/go-migration/instructor-hours-http-mutation-sync2/results.json)"
+        "Implementing: KTDatatable list with date range/search, the page loop's paid sync, orphan document deletes and eager compensation prints (print_document_compensation through invoice-sync-print's runner), InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete (instructors of request.user, the instructor relation resolved through its owner, entries indexed through the instructor's owner) with in-memory auditlog diffs and primary-key copies, and the calculate sums over the association's courses on four transports; cascading document deletes and non-finite HTML JSON are refused (500) before any write."
       ]
     },
     {
@@ -13672,27 +13679,27 @@
         "target": "instructor_hours_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/instructor_hours.go",
         "BE_GO/internal/dto/instructor_hours_write.go",
-        "BE_GO/internal/repository/instructor_hours.go",
-        "BE_GO/internal/service/instructor_hours.go",
         "BE_GO/internal/handler/instructor_hours.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/instructor_hours.go",
+        "BE_GO/internal/service/instructor_hours.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, tenant scope and audit index",
-        "application_instructorhours",
-        "application_instructor",
-        "application_payment",
-        "docmanager_document",
+        "application_associate",
         "application_course",
         "application_coursesubscription",
         "application_coursesubscription_membership_payments",
         "application_coursesubscriptioninstallment",
+        "application_instructor",
+        "application_instructorhours",
+        "application_payment",
         "application_subscription",
-        "application_associate"
+        "docmanager_document"
       ],
       "contract": {
         "methods": [
@@ -13721,21 +13728,28 @@
         "TESTS/adapters/django/instructor_hours_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/instructor-hours.md",
         {
-          "command": "python tools/go-migration/family.py run instructor-hours --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "fcd659cbdecc0f6bc8ef82a99495ac518f0bc70881c434560165432a72090653",
-          "scope": "HTTP family instructor-hours: 132/132 cases on native Django and native Go, 132/132 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 135/135; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "66630b0b465cd5fff80692b451156a4e21b65386a5643eb57ee8e8caa28fd31b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 135/135 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-v2doc-versioned-r2/results.json",
+          "receipt_sha256": "75ecd4d2b081560e3c6fc3a4ab970c4f8622b86cbcbcabfa53a60a562da64ad0"
+        },
+        {
+          "revision": "committing change printing only page rows whose hour is paid",
+          "result": "Mutation control: fails Go on instructor-hours-list-owner-prints-compensations (print.request-count).",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "29a0b667c44d6dc1c16e01042b81e3cf0d8eb440a9753dec459ad493779d11f5"
         }
       ],
       "notes": [
-        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete (instructors of request.user, the instructor relation resolved through its owner, entries indexed through the instructor's owner) with in-memory auditlog diffs and primary-key copies, and the calculate sums over the association's courses on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write.",
-        "Implementing evidence: docs/architecture/go-migration/instructor-hours.md",
-        "Implementing evidence: RED: Django 132/132; Go fails index.fields on the first case. (quality-reports/go-migration/instructor-hours-http-red-sync1/results.json)",
-        "Implementing evidence: GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/instructor-hours-http-versioned-sync1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instructor-hours-add-other-association-instructor (403 instead of 404). (quality-reports/go-migration/instructor-hours-http-mutation-sync2/results.json)"
+        "Implementing: KTDatatable list with date range/search, the page loop's paid sync, orphan document deletes and eager compensation prints (print_document_compensation through invoice-sync-print's runner), InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete (instructors of request.user, the instructor relation resolved through its owner, entries indexed through the instructor's owner) with in-memory auditlog diffs and primary-key copies, and the calculate sums over the association's courses on four transports; cascading document deletes and non-finite HTML JSON are refused (500) before any write."
       ]
     },
     {
@@ -13753,27 +13767,27 @@
         "target": "instructor_hours_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/instructor_hours.go",
         "BE_GO/internal/dto/instructor_hours_write.go",
-        "BE_GO/internal/repository/instructor_hours.go",
-        "BE_GO/internal/service/instructor_hours.go",
         "BE_GO/internal/handler/instructor_hours.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/instructor_hours.go",
+        "BE_GO/internal/service/instructor_hours.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, tenant scope and audit index",
-        "application_instructorhours",
-        "application_instructor",
-        "application_payment",
-        "docmanager_document",
+        "application_associate",
         "application_course",
         "application_coursesubscription",
         "application_coursesubscription_membership_payments",
         "application_coursesubscriptioninstallment",
+        "application_instructor",
+        "application_instructorhours",
+        "application_payment",
         "application_subscription",
-        "application_associate"
+        "docmanager_document"
       ],
       "contract": {
         "methods": [
@@ -13802,21 +13816,28 @@
         "TESTS/adapters/django/instructor_hours_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/instructor-hours.md",
         {
-          "command": "python tools/go-migration/family.py run instructor-hours --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "fcd659cbdecc0f6bc8ef82a99495ac518f0bc70881c434560165432a72090653",
-          "scope": "HTTP family instructor-hours: 132/132 cases on native Django and native Go, 132/132 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 135/135; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "66630b0b465cd5fff80692b451156a4e21b65386a5643eb57ee8e8caa28fd31b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 135/135 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-v2doc-versioned-r2/results.json",
+          "receipt_sha256": "75ecd4d2b081560e3c6fc3a4ab970c4f8622b86cbcbcabfa53a60a562da64ad0"
+        },
+        {
+          "revision": "committing change printing only page rows whose hour is paid",
+          "result": "Mutation control: fails Go on instructor-hours-list-owner-prints-compensations (print.request-count).",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "29a0b667c44d6dc1c16e01042b81e3cf0d8eb440a9753dec459ad493779d11f5"
         }
       ],
       "notes": [
-        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete (instructors of request.user, the instructor relation resolved through its owner, entries indexed through the instructor's owner) with in-memory auditlog diffs and primary-key copies, and the calculate sums over the association's courses on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write.",
-        "Implementing evidence: docs/architecture/go-migration/instructor-hours.md",
-        "Implementing evidence: RED: Django 132/132; Go fails index.fields on the first case. (quality-reports/go-migration/instructor-hours-http-red-sync1/results.json)",
-        "Implementing evidence: GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/instructor-hours-http-versioned-sync1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instructor-hours-add-other-association-instructor (403 instead of 404). (quality-reports/go-migration/instructor-hours-http-mutation-sync2/results.json)"
+        "Implementing: KTDatatable list with date range/search, the page loop's paid sync, orphan document deletes and eager compensation prints (print_document_compensation through invoice-sync-print's runner), InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete (instructors of request.user, the instructor relation resolved through its owner, entries indexed through the instructor's owner) with in-memory auditlog diffs and primary-key copies, and the calculate sums over the association's courses on four transports; cascading document deletes and non-finite HTML JSON are refused (500) before any write."
       ]
     },
     {
@@ -13920,27 +13941,27 @@
         "target": "instructor_hours_calculate",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/instructor_hours.go",
         "BE_GO/internal/dto/instructor_hours_write.go",
-        "BE_GO/internal/repository/instructor_hours.go",
-        "BE_GO/internal/service/instructor_hours.go",
         "BE_GO/internal/handler/instructor_hours.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/instructor_hours.go",
+        "BE_GO/internal/service/instructor_hours.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, tenant scope and audit index",
-        "application_instructorhours",
-        "application_instructor",
-        "application_payment",
-        "docmanager_document",
+        "application_associate",
         "application_course",
         "application_coursesubscription",
         "application_coursesubscription_membership_payments",
         "application_coursesubscriptioninstallment",
+        "application_instructor",
+        "application_instructorhours",
+        "application_payment",
         "application_subscription",
-        "application_associate"
+        "docmanager_document"
       ],
       "contract": {
         "methods": [
@@ -13969,21 +13990,28 @@
         "TESTS/adapters/django/instructor_hours_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/instructor-hours.md",
         {
-          "command": "python tools/go-migration/family.py run instructor-hours --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "fcd659cbdecc0f6bc8ef82a99495ac518f0bc70881c434560165432a72090653",
-          "scope": "HTTP family instructor-hours: 132/132 cases on native Django and native Go, 132/132 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 135/135; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "66630b0b465cd5fff80692b451156a4e21b65386a5643eb57ee8e8caa28fd31b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 135/135 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-v2doc-versioned-r2/results.json",
+          "receipt_sha256": "75ecd4d2b081560e3c6fc3a4ab970c4f8622b86cbcbcabfa53a60a562da64ad0"
+        },
+        {
+          "revision": "committing change printing only page rows whose hour is paid",
+          "result": "Mutation control: fails Go on instructor-hours-list-owner-prints-compensations (print.request-count).",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "29a0b667c44d6dc1c16e01042b81e3cf0d8eb440a9753dec459ad493779d11f5"
         }
       ],
       "notes": [
-        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete (instructors of request.user, the instructor relation resolved through its owner, entries indexed through the instructor's owner) with in-memory auditlog diffs and primary-key copies, and the calculate sums over the association's courses on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write.",
-        "Implementing evidence: docs/architecture/go-migration/instructor-hours.md",
-        "Implementing evidence: RED: Django 132/132; Go fails index.fields on the first case. (quality-reports/go-migration/instructor-hours-http-red-sync1/results.json)",
-        "Implementing evidence: GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/instructor-hours-http-versioned-sync1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instructor-hours-add-other-association-instructor (403 instead of 404). (quality-reports/go-migration/instructor-hours-http-mutation-sync2/results.json)"
+        "Implementing: KTDatatable list with date range/search, the page loop's paid sync, orphan document deletes and eager compensation prints (print_document_compensation through invoice-sync-print's runner), InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete (instructors of request.user, the instructor relation resolved through its owner, entries indexed through the instructor's owner) with in-memory auditlog diffs and primary-key copies, and the calculate sums over the association's courses on four transports; cascading document deletes and non-finite HTML JSON are refused (500) before any write."
       ]
     },
     {
@@ -14001,27 +14029,27 @@
         "target": "instructor_hours_list",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/instructor_hours.go",
         "BE_GO/internal/dto/instructor_hours_write.go",
-        "BE_GO/internal/repository/instructor_hours.go",
-        "BE_GO/internal/service/instructor_hours.go",
         "BE_GO/internal/handler/instructor_hours.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/instructor_hours.go",
+        "BE_GO/internal/service/instructor_hours.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, tenant scope and audit index",
-        "application_instructorhours",
-        "application_instructor",
-        "application_payment",
-        "docmanager_document",
+        "application_associate",
         "application_course",
         "application_coursesubscription",
         "application_coursesubscription_membership_payments",
         "application_coursesubscriptioninstallment",
+        "application_instructor",
+        "application_instructorhours",
+        "application_payment",
         "application_subscription",
-        "application_associate"
+        "docmanager_document"
       ],
       "contract": {
         "methods": [
@@ -14039,7 +14067,7 @@
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.instructor.hours.read.",
         "resource_scope": "Hours of the uid instructor owned by request.user.",
-        "side_effects": "Page rows with a paid payment are marked paid (audited); page rows with a document and no payment delete the document (audited, SET_NULL references nulled); hour entries indexed through the instructor owner's association when the hour is stored, else the actor's.",
+        "side_effects": "Page rows with a paid payment are marked paid (audited); page rows with a document and no payment delete the document (audited, SET_NULL references nulled); page rows with a payment and no document run print_document_compensation.apply (GET CURRENT_HOST/document/compensation/<payment> with the request's Authorization) in loop order after the saves; hour entries indexed through the instructor owner's association when the hour is stored, else the actor's.",
         "transaction": "Django: per-row saves, not atomic; Go: one transaction.",
         "execution_owner": "django"
       },
@@ -14050,21 +14078,28 @@
         "TESTS/adapters/django/instructor_hours_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/instructor-hours.md",
         {
-          "command": "python tools/go-migration/family.py run instructor-hours --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "fcd659cbdecc0f6bc8ef82a99495ac518f0bc70881c434560165432a72090653",
-          "scope": "HTTP family instructor-hours: 132/132 cases on native Django and native Go, 132/132 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 135/135; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "66630b0b465cd5fff80692b451156a4e21b65386a5643eb57ee8e8caa28fd31b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 135/135 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-v2doc-versioned-r2/results.json",
+          "receipt_sha256": "75ecd4d2b081560e3c6fc3a4ab970c4f8622b86cbcbcabfa53a60a562da64ad0"
+        },
+        {
+          "revision": "committing change printing only page rows whose hour is paid",
+          "result": "Mutation control: fails Go on instructor-hours-list-owner-prints-compensations (print.request-count).",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "29a0b667c44d6dc1c16e01042b81e3cf0d8eb440a9753dec459ad493779d11f5"
         }
       ],
       "notes": [
-        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete (instructors of request.user, the instructor relation resolved through its owner, entries indexed through the instructor's owner) with in-memory auditlog diffs and primary-key copies, and the calculate sums over the association's courses on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write.",
-        "Implementing evidence: docs/architecture/go-migration/instructor-hours.md",
-        "Implementing evidence: RED: Django 132/132; Go fails index.fields on the first case. (quality-reports/go-migration/instructor-hours-http-red-sync1/results.json)",
-        "Implementing evidence: GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/instructor-hours-http-versioned-sync1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instructor-hours-add-other-association-instructor (403 instead of 404). (quality-reports/go-migration/instructor-hours-http-mutation-sync2/results.json)"
+        "Implementing: KTDatatable list with date range/search, the page loop's paid sync, orphan document deletes and eager compensation prints (print_document_compensation through invoice-sync-print's runner), InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete (instructors of request.user, the instructor relation resolved through its owner, entries indexed through the instructor's owner) with in-memory auditlog diffs and primary-key copies, and the calculate sums over the association's courses on four transports; cascading document deletes and non-finite HTML JSON are refused (500) before any write."
       ]
     },
     {
@@ -14650,21 +14685,21 @@
         "target": "invoice_bulk_archive",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/invoice_core.go",
         "BE_GO/internal/dto/invoice_core.go",
-        "BE_GO/internal/repository/invoice_core.go",
-        "BE_GO/internal/service/invoice_core.go",
         "BE_GO/internal/handler/invoice_core.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/invoice_core.go",
+        "BE_GO/internal/service/invoice_core.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
-        "payment-reads InvoiceSerializer and smart-search ports, course-subscriptions PaymentSerializer loader, personas-reads tutor relations",
-        "payment-archive Payment.save() defaults and deleteModelWithAudit",
+        "application_associate, application_associatetutorrelation, application_supplierandcustomers, application_instructor, docmanager_document",
         "application_invoice, application_invoice_attached_documents, application_invoicerows, application_payment",
-        "application_associate, application_associatetutorrelation, application_supplierandcustomers, application_instructor, docmanager_document"
+        "payment-archive Payment.save() defaults and deleteModelWithAudit",
+        "payment-reads InvoiceSerializer and smart-search ports, course-subscriptions PaymentSerializer loader, personas-reads tutor relations"
       ],
       "contract": {
         "methods": [
@@ -14693,21 +14728,28 @@
         "TESTS/adapters/django/invoice_core_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-core.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-core --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-core-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "7279556affdc621f93c6989a06c2170c981ddbb955156a15c5401a1a3ca11181",
-          "scope": "HTTP family invoice-core: 102/102 cases on native Django and native Go, 102/102 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 106/106; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "eeef725f9416f63e2c2391c5deed9e104cbcf500a83120c61f7a140cf1bfd65f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-v2doc-versioned-r2/results.json",
+          "receipt_sha256": "2bfc268c1d7d6e9676b54a7adc9a2cdab729ac851a7f16a4b3d8c3a36b18573d"
+        },
+        {
+          "revision": "committing change publishing once per distinct invoice instead of once per listed row",
+          "result": "Mutation control: fails Go on invoice-core-list-archived-true (celery.count).",
+          "artifact": "quality-reports/go-migration/invoice-core-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "e13d18cee9b0c278de0ef596c57a7a61ac945b02294da7cfb041f71b60bf4138"
         }
       ],
       "notes": [
-        "Implementing: Not ported (refused with the 500 page before any write): invoice/list pages with an invoice without a PDF (print_document_invoice.delay), random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/<uid>/update stays uncharacterized: every successful update runs print_document_invoice.apply (synchronous PDF). invoice-customers/add stays with invoice-parties (a valid add generates XML and PDF).",
-        "Implementing evidence: docs/architecture/go-migration/invoice-core.md",
-        "Implementing evidence: RED: Django 102/102; Go 404 on the first case. (quality-reports/go-migration/invoice-core-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/invoice-core-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-core-list-owner-default (quality-reports/go-migration/invoice-core-http-mutation-r2/results.json)"
+        "Implementing: Not ported (refused with the 500 page before any write): random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/list publishes print_document_invoice (Celery, tuple args) once per listed row without a PDF. invoice/<uid>/update is in invoice-sync-print; invoice-customers/add stays with invoice-parties."
       ]
     },
     {
@@ -14725,21 +14767,21 @@
         "target": "invoice_bulk_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/invoice_core.go",
         "BE_GO/internal/dto/invoice_core.go",
-        "BE_GO/internal/repository/invoice_core.go",
-        "BE_GO/internal/service/invoice_core.go",
         "BE_GO/internal/handler/invoice_core.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/invoice_core.go",
+        "BE_GO/internal/service/invoice_core.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
-        "payment-reads InvoiceSerializer and smart-search ports, course-subscriptions PaymentSerializer loader, personas-reads tutor relations",
-        "payment-archive Payment.save() defaults and deleteModelWithAudit",
+        "application_associate, application_associatetutorrelation, application_supplierandcustomers, application_instructor, docmanager_document",
         "application_invoice, application_invoice_attached_documents, application_invoicerows, application_payment",
-        "application_associate, application_associatetutorrelation, application_supplierandcustomers, application_instructor, docmanager_document"
+        "payment-archive Payment.save() defaults and deleteModelWithAudit",
+        "payment-reads InvoiceSerializer and smart-search ports, course-subscriptions PaymentSerializer loader, personas-reads tutor relations"
       ],
       "contract": {
         "methods": [
@@ -14768,21 +14810,28 @@
         "TESTS/adapters/django/invoice_core_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-core.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-core --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-core-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "7279556affdc621f93c6989a06c2170c981ddbb955156a15c5401a1a3ca11181",
-          "scope": "HTTP family invoice-core: 102/102 cases on native Django and native Go, 102/102 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 106/106; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "eeef725f9416f63e2c2391c5deed9e104cbcf500a83120c61f7a140cf1bfd65f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-v2doc-versioned-r2/results.json",
+          "receipt_sha256": "2bfc268c1d7d6e9676b54a7adc9a2cdab729ac851a7f16a4b3d8c3a36b18573d"
+        },
+        {
+          "revision": "committing change publishing once per distinct invoice instead of once per listed row",
+          "result": "Mutation control: fails Go on invoice-core-list-archived-true (celery.count).",
+          "artifact": "quality-reports/go-migration/invoice-core-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "e13d18cee9b0c278de0ef596c57a7a61ac945b02294da7cfb041f71b60bf4138"
         }
       ],
       "notes": [
-        "Implementing: Not ported (refused with the 500 page before any write): invoice/list pages with an invoice without a PDF (print_document_invoice.delay), random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/<uid>/update stays uncharacterized: every successful update runs print_document_invoice.apply (synchronous PDF). invoice-customers/add stays with invoice-parties (a valid add generates XML and PDF).",
-        "Implementing evidence: docs/architecture/go-migration/invoice-core.md",
-        "Implementing evidence: RED: Django 102/102; Go 404 on the first case. (quality-reports/go-migration/invoice-core-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/invoice-core-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-core-list-owner-default (quality-reports/go-migration/invoice-core-http-mutation-r2/results.json)"
+        "Implementing: Not ported (refused with the 500 page before any write): random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/list publishes print_document_invoice (Celery, tuple args) once per listed row without a PDF. invoice/<uid>/update is in invoice-sync-print; invoice-customers/add stays with invoice-parties."
       ]
     },
     {
@@ -14875,20 +14924,24 @@
         "target": "invoice_customers_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/invoice_parties.go",
+        "BE_GO/internal/domain/invoice_sync_print.go",
         "BE_GO/internal/dto/invoice_parties.go",
         "BE_GO/internal/dto/invoice_party_items.go",
-        "BE_GO/internal/repository/invoice_parties.go",
-        "BE_GO/internal/service/invoice_parties.go",
         "BE_GO/internal/handler/invoice_parties.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/invoice_parties.go",
+        "BE_GO/internal/repository/invoice_sync_print.go",
+        "BE_GO/internal/repository/invoice_views.go",
+        "BE_GO/internal/service/invoice_parties.go",
+        "BE_GO/internal/service/invoice_sync_print_customer.go"
       ],
       "dependencies": [
+        "DRF page-number pagination and supplier rendering (suppliers family)",
         "Existing identity, collaborator registry and association scope",
-        "auditlog LogEntry/AuditLogIndex resolvers",
-        "DRF page-number pagination and supplier rendering (suppliers family)"
+        "auditlog LogEntry/AuditLogIndex resolvers"
       ],
       "contract": {
         "methods": [
@@ -14917,21 +14970,28 @@
         "TESTS/adapters/django/invoice_parties_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-parties.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-parties --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-parties-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "caf8d19d8204cd1217255aab822b5cd1c578da946e7b072ef082e1047b9e453c",
-          "scope": "HTTP family invoice-parties: 136/136 cases on native Django and native Go, 136/136 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 138/138; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "7db3dbd74d1dce130f88c7d05cb3da69dbc336f65ba7686d756d257ff487dc5b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 138/138 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-versioned-r1/results.json",
+          "receipt_sha256": "ccfdcf214b4cfe06a556535dd4ec591abb0f5d7958fc24ac331e840cf3e5998a"
+        },
+        {
+          "revision": "committing change saving the regenerated XML without its auditlog entry",
+          "result": "Mutation control: fails Go on invoice-parties-customer-list-athlete-not-association (audit.count).",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "4db457c0130f7a14f0e74cddada1e675880dacd6fb8406faa48122ac54e6ef5e"
         }
       ],
       "notes": [
-        "Implementing: customer/supplier invoice list, add and update with exact effects; XML/PDF generation and print tasks (customer list loop, valid customer add), nested payment/supplier writes, payment_id stores and invoice pk changes are refused with a 500 before any write. invoice-customers/add stays uncharacterized: its validation outcomes are ported, but a valid add (XML/PDF generation) is refused.",
-        "Implementing evidence: docs/architecture/go-migration/invoice-parties.md",
-        "Implementing evidence: RED: Django 136/136; Go 404 on the first case. (quality-reports/go-migration/invoice-parties-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 136/136 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/invoice-parties-http-green-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-parties-supplier-add-deleted-supplier (200 instead of 400). (quality-reports/go-migration/invoice-parties-http-mutation-r1/results.json)"
+        "Implementing: customer/supplier invoice list, add and update with exact effects; the customer list's loop over invoices without a PDF (generate_invoice_xml of the stored row, audited save, eager print_document_customer_invoice) runs before the association lookup. Nested payment/supplier writes, payment_id stores, invoice pk changes and FatturaPA inputs outside internal/fatturapa are refused with a 500 before any write. A valid invoice-customers/add is in invoice-sync-print."
       ]
     },
     {
@@ -15065,20 +15125,24 @@
         "target": "invoice_customers_list",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/invoice_parties.go",
+        "BE_GO/internal/domain/invoice_sync_print.go",
         "BE_GO/internal/dto/invoice_parties.go",
         "BE_GO/internal/dto/invoice_party_items.go",
-        "BE_GO/internal/repository/invoice_parties.go",
-        "BE_GO/internal/service/invoice_parties.go",
         "BE_GO/internal/handler/invoice_parties.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/invoice_parties.go",
+        "BE_GO/internal/repository/invoice_sync_print.go",
+        "BE_GO/internal/repository/invoice_views.go",
+        "BE_GO/internal/service/invoice_parties.go",
+        "BE_GO/internal/service/invoice_sync_print_customer.go"
       ],
       "dependencies": [
+        "DRF page-number pagination and supplier rendering (suppliers family)",
         "Existing identity, collaborator registry and association scope",
-        "auditlog LogEntry/AuditLogIndex resolvers",
-        "DRF page-number pagination and supplier rendering (suppliers family)"
+        "auditlog LogEntry/AuditLogIndex resolvers"
       ],
       "contract": {
         "methods": [
@@ -15096,7 +15160,7 @@
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry bookeeping.documents.clientinvoices.read; administrators need impersonation.",
         "resource_scope": "request.user.sport_association.",
-        "side_effects": "None in Go (the Django XML/print loop is refused).",
+        "side_effects": "For every customer invoice without a PDF (any association): the XML regenerated and saved (auditlog update of xml, direct index to the invoice's association; an XML exception only skips the save), then print_document_customer_invoice.apply (GET CURRENT_HOST/document/einvoice/<id> with the request's Authorization). Runs before the association lookup.",
         "transaction": "Read.",
         "execution_owner": "django"
       },
@@ -15107,21 +15171,28 @@
         "TESTS/adapters/django/invoice_parties_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-parties.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-parties --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-parties-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "caf8d19d8204cd1217255aab822b5cd1c578da946e7b072ef082e1047b9e453c",
-          "scope": "HTTP family invoice-parties: 136/136 cases on native Django and native Go, 136/136 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 138/138; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "7db3dbd74d1dce130f88c7d05cb3da69dbc336f65ba7686d756d257ff487dc5b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 138/138 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-versioned-r1/results.json",
+          "receipt_sha256": "ccfdcf214b4cfe06a556535dd4ec591abb0f5d7958fc24ac331e840cf3e5998a"
+        },
+        {
+          "revision": "committing change saving the regenerated XML without its auditlog entry",
+          "result": "Mutation control: fails Go on invoice-parties-customer-list-athlete-not-association (audit.count).",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "4db457c0130f7a14f0e74cddada1e675880dacd6fb8406faa48122ac54e6ef5e"
         }
       ],
       "notes": [
-        "Implementing: customer/supplier invoice list, add and update with exact effects; XML/PDF generation and print tasks (customer list loop, valid customer add), nested payment/supplier writes, payment_id stores and invoice pk changes are refused with a 500 before any write. invoice-customers/add stays uncharacterized: its validation outcomes are ported, but a valid add (XML/PDF generation) is refused.",
-        "Implementing evidence: docs/architecture/go-migration/invoice-parties.md",
-        "Implementing evidence: RED: Django 136/136; Go 404 on the first case. (quality-reports/go-migration/invoice-parties-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 136/136 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/invoice-parties-http-green-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-parties-supplier-add-deleted-supplier (200 instead of 400). (quality-reports/go-migration/invoice-parties-http-mutation-r1/results.json)"
+        "Implementing: customer/supplier invoice list, add and update with exact effects; the customer list's loop over invoices without a PDF (generate_invoice_xml of the stored row, audited save, eager print_document_customer_invoice) runs before the association lookup. Nested payment/supplier writes, payment_id stores, invoice pk changes and FatturaPA inputs outside internal/fatturapa are refused with a 500 before any write. A valid invoice-customers/add is in invoice-sync-print."
       ]
     },
     {
@@ -15287,20 +15358,24 @@
         "target": "invoice_suppliers_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/invoice_parties.go",
+        "BE_GO/internal/domain/invoice_sync_print.go",
         "BE_GO/internal/dto/invoice_parties.go",
         "BE_GO/internal/dto/invoice_party_items.go",
-        "BE_GO/internal/repository/invoice_parties.go",
-        "BE_GO/internal/service/invoice_parties.go",
         "BE_GO/internal/handler/invoice_parties.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/invoice_parties.go",
+        "BE_GO/internal/repository/invoice_sync_print.go",
+        "BE_GO/internal/repository/invoice_views.go",
+        "BE_GO/internal/service/invoice_parties.go",
+        "BE_GO/internal/service/invoice_sync_print_customer.go"
       ],
       "dependencies": [
+        "DRF page-number pagination and supplier rendering (suppliers family)",
         "Existing identity, collaborator registry and association scope",
-        "auditlog LogEntry/AuditLogIndex resolvers",
-        "DRF page-number pagination and supplier rendering (suppliers family)"
+        "auditlog LogEntry/AuditLogIndex resolvers"
       ],
       "contract": {
         "methods": [
@@ -15329,21 +15404,28 @@
         "TESTS/adapters/django/invoice_parties_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-parties.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-parties --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-parties-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "caf8d19d8204cd1217255aab822b5cd1c578da946e7b072ef082e1047b9e453c",
-          "scope": "HTTP family invoice-parties: 136/136 cases on native Django and native Go, 136/136 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 138/138; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "7db3dbd74d1dce130f88c7d05cb3da69dbc336f65ba7686d756d257ff487dc5b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 138/138 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-versioned-r1/results.json",
+          "receipt_sha256": "ccfdcf214b4cfe06a556535dd4ec591abb0f5d7958fc24ac331e840cf3e5998a"
+        },
+        {
+          "revision": "committing change saving the regenerated XML without its auditlog entry",
+          "result": "Mutation control: fails Go on invoice-parties-customer-list-athlete-not-association (audit.count).",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "4db457c0130f7a14f0e74cddada1e675880dacd6fb8406faa48122ac54e6ef5e"
         }
       ],
       "notes": [
-        "Implementing: customer/supplier invoice list, add and update with exact effects; XML/PDF generation and print tasks (customer list loop, valid customer add), nested payment/supplier writes, payment_id stores and invoice pk changes are refused with a 500 before any write. invoice-customers/add stays uncharacterized: its validation outcomes are ported, but a valid add (XML/PDF generation) is refused.",
-        "Implementing evidence: docs/architecture/go-migration/invoice-parties.md",
-        "Implementing evidence: RED: Django 136/136; Go 404 on the first case. (quality-reports/go-migration/invoice-parties-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 136/136 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/invoice-parties-http-green-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-parties-supplier-add-deleted-supplier (200 instead of 400). (quality-reports/go-migration/invoice-parties-http-mutation-r1/results.json)"
+        "Implementing: customer/supplier invoice list, add and update with exact effects; the customer list's loop over invoices without a PDF (generate_invoice_xml of the stored row, audited save, eager print_document_customer_invoice) runs before the association lookup. Nested payment/supplier writes, payment_id stores, invoice pk changes and FatturaPA inputs outside internal/fatturapa are refused with a 500 before any write. A valid invoice-customers/add is in invoice-sync-print."
       ]
     },
     {
@@ -15361,20 +15443,24 @@
         "target": "invoice_suppliers_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/invoice_parties.go",
+        "BE_GO/internal/domain/invoice_sync_print.go",
         "BE_GO/internal/dto/invoice_parties.go",
         "BE_GO/internal/dto/invoice_party_items.go",
-        "BE_GO/internal/repository/invoice_parties.go",
-        "BE_GO/internal/service/invoice_parties.go",
         "BE_GO/internal/handler/invoice_parties.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/invoice_parties.go",
+        "BE_GO/internal/repository/invoice_sync_print.go",
+        "BE_GO/internal/repository/invoice_views.go",
+        "BE_GO/internal/service/invoice_parties.go",
+        "BE_GO/internal/service/invoice_sync_print_customer.go"
       ],
       "dependencies": [
+        "DRF page-number pagination and supplier rendering (suppliers family)",
         "Existing identity, collaborator registry and association scope",
-        "auditlog LogEntry/AuditLogIndex resolvers",
-        "DRF page-number pagination and supplier rendering (suppliers family)"
+        "auditlog LogEntry/AuditLogIndex resolvers"
       ],
       "contract": {
         "methods": [
@@ -15403,21 +15489,28 @@
         "TESTS/adapters/django/invoice_parties_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-parties.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-parties --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-parties-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "caf8d19d8204cd1217255aab822b5cd1c578da946e7b072ef082e1047b9e453c",
-          "scope": "HTTP family invoice-parties: 136/136 cases on native Django and native Go, 136/136 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 138/138; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "7db3dbd74d1dce130f88c7d05cb3da69dbc336f65ba7686d756d257ff487dc5b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 138/138 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-versioned-r1/results.json",
+          "receipt_sha256": "ccfdcf214b4cfe06a556535dd4ec591abb0f5d7958fc24ac331e840cf3e5998a"
+        },
+        {
+          "revision": "committing change saving the regenerated XML without its auditlog entry",
+          "result": "Mutation control: fails Go on invoice-parties-customer-list-athlete-not-association (audit.count).",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "4db457c0130f7a14f0e74cddada1e675880dacd6fb8406faa48122ac54e6ef5e"
         }
       ],
       "notes": [
-        "Implementing: customer/supplier invoice list, add and update with exact effects; XML/PDF generation and print tasks (customer list loop, valid customer add), nested payment/supplier writes, payment_id stores and invoice pk changes are refused with a 500 before any write. invoice-customers/add stays uncharacterized: its validation outcomes are ported, but a valid add (XML/PDF generation) is refused.",
-        "Implementing evidence: docs/architecture/go-migration/invoice-parties.md",
-        "Implementing evidence: RED: Django 136/136; Go 404 on the first case. (quality-reports/go-migration/invoice-parties-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 136/136 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/invoice-parties-http-green-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-parties-supplier-add-deleted-supplier (200 instead of 400). (quality-reports/go-migration/invoice-parties-http-mutation-r1/results.json)"
+        "Implementing: customer/supplier invoice list, add and update with exact effects; the customer list's loop over invoices without a PDF (generate_invoice_xml of the stored row, audited save, eager print_document_customer_invoice) runs before the association lookup. Nested payment/supplier writes, payment_id stores, invoice pk changes and FatturaPA inputs outside internal/fatturapa are refused with a 500 before any write. A valid invoice-customers/add is in invoice-sync-print."
       ]
     },
     {
@@ -15435,20 +15528,24 @@
         "target": "invoice_suppliers_list",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/invoice_parties.go",
+        "BE_GO/internal/domain/invoice_sync_print.go",
         "BE_GO/internal/dto/invoice_parties.go",
         "BE_GO/internal/dto/invoice_party_items.go",
-        "BE_GO/internal/repository/invoice_parties.go",
-        "BE_GO/internal/service/invoice_parties.go",
         "BE_GO/internal/handler/invoice_parties.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/invoice_parties.go",
+        "BE_GO/internal/repository/invoice_sync_print.go",
+        "BE_GO/internal/repository/invoice_views.go",
+        "BE_GO/internal/service/invoice_parties.go",
+        "BE_GO/internal/service/invoice_sync_print_customer.go"
       ],
       "dependencies": [
+        "DRF page-number pagination and supplier rendering (suppliers family)",
         "Existing identity, collaborator registry and association scope",
-        "auditlog LogEntry/AuditLogIndex resolvers",
-        "DRF page-number pagination and supplier rendering (suppliers family)"
+        "auditlog LogEntry/AuditLogIndex resolvers"
       ],
       "contract": {
         "methods": [
@@ -15477,21 +15574,28 @@
         "TESTS/adapters/django/invoice_parties_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-parties.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-parties --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-parties-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "caf8d19d8204cd1217255aab822b5cd1c578da946e7b072ef082e1047b9e453c",
-          "scope": "HTTP family invoice-parties: 136/136 cases on native Django and native Go, 136/136 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 138/138; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "7db3dbd74d1dce130f88c7d05cb3da69dbc336f65ba7686d756d257ff487dc5b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 138/138 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-versioned-r1/results.json",
+          "receipt_sha256": "ccfdcf214b4cfe06a556535dd4ec591abb0f5d7958fc24ac331e840cf3e5998a"
+        },
+        {
+          "revision": "committing change saving the regenerated XML without its auditlog entry",
+          "result": "Mutation control: fails Go on invoice-parties-customer-list-athlete-not-association (audit.count).",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "4db457c0130f7a14f0e74cddada1e675880dacd6fb8406faa48122ac54e6ef5e"
         }
       ],
       "notes": [
-        "Implementing: customer/supplier invoice list, add and update with exact effects; XML/PDF generation and print tasks (customer list loop, valid customer add), nested payment/supplier writes, payment_id stores and invoice pk changes are refused with a 500 before any write. invoice-customers/add stays uncharacterized: its validation outcomes are ported, but a valid add (XML/PDF generation) is refused.",
-        "Implementing evidence: docs/architecture/go-migration/invoice-parties.md",
-        "Implementing evidence: RED: Django 136/136; Go 404 on the first case. (quality-reports/go-migration/invoice-parties-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 136/136 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/invoice-parties-http-green-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-parties-supplier-add-deleted-supplier (200 instead of 400). (quality-reports/go-migration/invoice-parties-http-mutation-r1/results.json)"
+        "Implementing: customer/supplier invoice list, add and update with exact effects; the customer list's loop over invoices without a PDF (generate_invoice_xml of the stored row, audited save, eager print_document_customer_invoice) runs before the association lookup. Nested payment/supplier writes, payment_id stores, invoice pk changes and FatturaPA inputs outside internal/fatturapa are refused with a 500 before any write. A valid invoice-customers/add is in invoice-sync-print."
       ]
     },
     {
@@ -15582,21 +15686,21 @@
         "target": "invoice_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/invoice_core.go",
         "BE_GO/internal/dto/invoice_core.go",
-        "BE_GO/internal/repository/invoice_core.go",
-        "BE_GO/internal/service/invoice_core.go",
         "BE_GO/internal/handler/invoice_core.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/invoice_core.go",
+        "BE_GO/internal/service/invoice_core.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
-        "payment-reads InvoiceSerializer and smart-search ports, course-subscriptions PaymentSerializer loader, personas-reads tutor relations",
-        "payment-archive Payment.save() defaults and deleteModelWithAudit",
+        "application_associate, application_associatetutorrelation, application_supplierandcustomers, application_instructor, docmanager_document",
         "application_invoice, application_invoice_attached_documents, application_invoicerows, application_payment",
-        "application_associate, application_associatetutorrelation, application_supplierandcustomers, application_instructor, docmanager_document"
+        "payment-archive Payment.save() defaults and deleteModelWithAudit",
+        "payment-reads InvoiceSerializer and smart-search ports, course-subscriptions PaymentSerializer loader, personas-reads tutor relations"
       ],
       "contract": {
         "methods": [
@@ -15625,21 +15729,28 @@
         "TESTS/adapters/django/invoice_core_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-core.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-core --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-core-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "7279556affdc621f93c6989a06c2170c981ddbb955156a15c5401a1a3ca11181",
-          "scope": "HTTP family invoice-core: 102/102 cases on native Django and native Go, 102/102 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 106/106; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "eeef725f9416f63e2c2391c5deed9e104cbcf500a83120c61f7a140cf1bfd65f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-v2doc-versioned-r2/results.json",
+          "receipt_sha256": "2bfc268c1d7d6e9676b54a7adc9a2cdab729ac851a7f16a4b3d8c3a36b18573d"
+        },
+        {
+          "revision": "committing change publishing once per distinct invoice instead of once per listed row",
+          "result": "Mutation control: fails Go on invoice-core-list-archived-true (celery.count).",
+          "artifact": "quality-reports/go-migration/invoice-core-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "e13d18cee9b0c278de0ef596c57a7a61ac945b02294da7cfb041f71b60bf4138"
         }
       ],
       "notes": [
-        "Implementing: Not ported (refused with the 500 page before any write): invoice/list pages with an invoice without a PDF (print_document_invoice.delay), random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/<uid>/update stays uncharacterized: every successful update runs print_document_invoice.apply (synchronous PDF). invoice-customers/add stays with invoice-parties (a valid add generates XML and PDF).",
-        "Implementing evidence: docs/architecture/go-migration/invoice-core.md",
-        "Implementing evidence: RED: Django 102/102; Go 404 on the first case. (quality-reports/go-migration/invoice-core-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/invoice-core-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-core-list-owner-default (quality-reports/go-migration/invoice-core-http-mutation-r2/results.json)"
+        "Implementing: Not ported (refused with the 500 page before any write): random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/list publishes print_document_invoice (Celery, tuple args) once per listed row without a PDF. invoice/<uid>/update is in invoice-sync-print; invoice-customers/add stays with invoice-parties."
       ]
     },
     {
@@ -15871,21 +15982,21 @@
         "target": "invoice_list",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/invoice_core.go",
         "BE_GO/internal/dto/invoice_core.go",
-        "BE_GO/internal/repository/invoice_core.go",
-        "BE_GO/internal/service/invoice_core.go",
         "BE_GO/internal/handler/invoice_core.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/invoice_core.go",
+        "BE_GO/internal/service/invoice_core.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
-        "payment-reads InvoiceSerializer and smart-search ports, course-subscriptions PaymentSerializer loader, personas-reads tutor relations",
-        "payment-archive Payment.save() defaults and deleteModelWithAudit",
+        "application_associate, application_associatetutorrelation, application_supplierandcustomers, application_instructor, docmanager_document",
         "application_invoice, application_invoice_attached_documents, application_invoicerows, application_payment",
-        "application_associate, application_associatetutorrelation, application_supplierandcustomers, application_instructor, docmanager_document"
+        "payment-archive Payment.save() defaults and deleteModelWithAudit",
+        "payment-reads InvoiceSerializer and smart-search ports, course-subscriptions PaymentSerializer loader, personas-reads tutor relations"
       ],
       "contract": {
         "methods": [
@@ -15903,7 +16014,7 @@
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry bookeeping.documents.invoices.read.",
         "resource_scope": "query[invoice_id] resolves the live, group-aware invoice by id; otherwise request.user.sportassociation's live, group-aware invoices with a payment link or a meta, one row per linked payment.",
-        "side_effects": "None (pages with an invoice without a PDF are refused).",
+        "side_effects": "Publishes print_document_invoice.delay(invoice_id, Authorization) once per listed row without a PDF, in page order, after the page is built (broker failure: 500).",
         "transaction": "Read only.",
         "execution_owner": "django"
       },
@@ -15914,21 +16025,28 @@
         "TESTS/adapters/django/invoice_core_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-core.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-core --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-core-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "7279556affdc621f93c6989a06c2170c981ddbb955156a15c5401a1a3ca11181",
-          "scope": "HTTP family invoice-core: 102/102 cases on native Django and native Go, 102/102 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 106/106; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "eeef725f9416f63e2c2391c5deed9e104cbcf500a83120c61f7a140cf1bfd65f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-v2doc-versioned-r2/results.json",
+          "receipt_sha256": "2bfc268c1d7d6e9676b54a7adc9a2cdab729ac851a7f16a4b3d8c3a36b18573d"
+        },
+        {
+          "revision": "committing change publishing once per distinct invoice instead of once per listed row",
+          "result": "Mutation control: fails Go on invoice-core-list-archived-true (celery.count).",
+          "artifact": "quality-reports/go-migration/invoice-core-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "e13d18cee9b0c278de0ef596c57a7a61ac945b02294da7cfb041f71b60bf4138"
         }
       ],
       "notes": [
-        "Implementing: Not ported (refused with the 500 page before any write): invoice/list pages with an invoice without a PDF (print_document_invoice.delay), random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/<uid>/update stays uncharacterized: every successful update runs print_document_invoice.apply (synchronous PDF). invoice-customers/add stays with invoice-parties (a valid add generates XML and PDF).",
-        "Implementing evidence: docs/architecture/go-migration/invoice-core.md",
-        "Implementing evidence: RED: Django 102/102; Go 404 on the first case. (quality-reports/go-migration/invoice-core-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/invoice-core-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-core-list-owner-default (quality-reports/go-migration/invoice-core-http-mutation-r2/results.json)"
+        "Implementing: Not ported (refused with the 500 page before any write): random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/list publishes print_document_invoice (Celery, tuple args) once per listed row without a PDF. invoice/<uid>/update is in invoice-sync-print; invoice-customers/add stays with invoice-parties."
       ]
     },
     {
@@ -15946,21 +16064,21 @@
         "target": "invoice_list_archived",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/invoice_core.go",
         "BE_GO/internal/dto/invoice_core.go",
-        "BE_GO/internal/repository/invoice_core.go",
-        "BE_GO/internal/service/invoice_core.go",
         "BE_GO/internal/handler/invoice_core.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/invoice_core.go",
+        "BE_GO/internal/service/invoice_core.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
-        "payment-reads InvoiceSerializer and smart-search ports, course-subscriptions PaymentSerializer loader, personas-reads tutor relations",
-        "payment-archive Payment.save() defaults and deleteModelWithAudit",
+        "application_associate, application_associatetutorrelation, application_supplierandcustomers, application_instructor, docmanager_document",
         "application_invoice, application_invoice_attached_documents, application_invoicerows, application_payment",
-        "application_associate, application_associatetutorrelation, application_supplierandcustomers, application_instructor, docmanager_document"
+        "payment-archive Payment.save() defaults and deleteModelWithAudit",
+        "payment-reads InvoiceSerializer and smart-search ports, course-subscriptions PaymentSerializer loader, personas-reads tutor relations"
       ],
       "contract": {
         "methods": [
@@ -15989,21 +16107,28 @@
         "TESTS/adapters/django/invoice_core_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-core.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-core --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-core-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "7279556affdc621f93c6989a06c2170c981ddbb955156a15c5401a1a3ca11181",
-          "scope": "HTTP family invoice-core: 102/102 cases on native Django and native Go, 102/102 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 106/106; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "eeef725f9416f63e2c2391c5deed9e104cbcf500a83120c61f7a140cf1bfd65f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-v2doc-versioned-r2/results.json",
+          "receipt_sha256": "2bfc268c1d7d6e9676b54a7adc9a2cdab729ac851a7f16a4b3d8c3a36b18573d"
+        },
+        {
+          "revision": "committing change publishing once per distinct invoice instead of once per listed row",
+          "result": "Mutation control: fails Go on invoice-core-list-archived-true (celery.count).",
+          "artifact": "quality-reports/go-migration/invoice-core-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "e13d18cee9b0c278de0ef596c57a7a61ac945b02294da7cfb041f71b60bf4138"
         }
       ],
       "notes": [
-        "Implementing: Not ported (refused with the 500 page before any write): invoice/list pages with an invoice without a PDF (print_document_invoice.delay), random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/<uid>/update stays uncharacterized: every successful update runs print_document_invoice.apply (synchronous PDF). invoice-customers/add stays with invoice-parties (a valid add generates XML and PDF).",
-        "Implementing evidence: docs/architecture/go-migration/invoice-core.md",
-        "Implementing evidence: RED: Django 102/102; Go 404 on the first case. (quality-reports/go-migration/invoice-core-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/invoice-core-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-core-list-owner-default (quality-reports/go-migration/invoice-core-http-mutation-r2/results.json)"
+        "Implementing: Not ported (refused with the 500 page before any write): random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/list publishes print_document_invoice (Celery, tuple args) once per listed row without a PDF. invoice/<uid>/update is in invoice-sync-print; invoice-customers/add stays with invoice-parties."
       ]
     },
     {
@@ -24375,24 +24500,24 @@
         {
           "revision": "committing change, before Go code",
           "result": "RED: Django 261/261; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2sub-red-r2/results.json",
-          "receipt_sha256": "50bd3dd408f226c2b2f07e5871d015f315cd806fe4f6597d2656de3a1221400b"
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "ea7b9792b3cea7e2a10bcaff24abf3e12870f2bed980aa3dfe0fdf67bb83ecfd"
         },
         {
           "revision": "committing change",
           "result": "GREEN: 261/261 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2sub-merged-r1/results.json",
-          "receipt_sha256": "5fdfc296feff95055a100e429b93fb5f1113b5d8554761c929f50ae239996586"
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-versioned-r1/results.json",
+          "receipt_sha256": "0fbabbf4023881d8b5de7327855a466b27f1f1bd50140beecaed1ef558324170"
         },
         {
-          "revision": "committing change ordering the athlete list by ascending creation date",
-          "result": "Mutation control: fails Go on subscription-reads-list-athlete (response.body:data:0:subscription_id).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2sub-mutation-r1/results.json",
-          "receipt_sha256": "7ef28ef41fd61ab7b578432371d6ddfe173d8d930c5a247354883de5c13f6f0b"
+          "revision": "committing change rendering the membership payment's nested invoice as null",
+          "result": "Mutation control: fails Go on subscription-reads-info-hyphenless-uuid (membership_payments[0].invoice).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "08451bc4746c053fda8d7f250b02241f478b05398484356d75fbb136973a4af8"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions) and the info print dispatch (print_document_subscription.delay) are ported; association-scoped athlete sessions, the POST export, and membership payments with an invoice or instructor stay refused."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused."
       ]
     },
     {
@@ -24778,7 +24903,7 @@
         ],
         "request": "Path uid; optional X-Group-Id.",
         "response": "200 {\"data\": {\"info\": SubscriptionInfoSerializer, \"courses\": [CourseDetailSerializer + course_subscription (+ installments)], \"payments\": []}}.",
-        "errors": "401; 403 administrator without impersonation or registry permission; 405 other methods; 400 malformed uid; 403 'Subscription not found.' / 'Sport association not found.' (athletes) or 'User not allowed.'; 404 {'msg': 'Subscription not found.'}; 500 owner without live association, subscription without associate, without document_pdf (not ported).",
+        "errors": "401; 403 administrator without impersonation or registry permission; 405 other methods; 400 malformed uid; 403 'Subscription not found.' / 'Sport association not found.' (athletes) or 'User not allowed.'; 404 {'msg': 'Subscription not found.'}; 500 owner without live association, subscription without associate.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.members.read; athlete view for association-scoped sessions.",
         "resource_scope": "The group-aware subscription of the scoped association (athletes: their own and same tax code subscriptions).",
@@ -24797,24 +24922,24 @@
         {
           "revision": "committing change, before Go code",
           "result": "RED: Django 261/261; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2sub-red-r2/results.json",
-          "receipt_sha256": "50bd3dd408f226c2b2f07e5871d015f315cd806fe4f6597d2656de3a1221400b"
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "ea7b9792b3cea7e2a10bcaff24abf3e12870f2bed980aa3dfe0fdf67bb83ecfd"
         },
         {
           "revision": "committing change",
           "result": "GREEN: 261/261 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2sub-merged-r1/results.json",
-          "receipt_sha256": "5fdfc296feff95055a100e429b93fb5f1113b5d8554761c929f50ae239996586"
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-versioned-r1/results.json",
+          "receipt_sha256": "0fbabbf4023881d8b5de7327855a466b27f1f1bd50140beecaed1ef558324170"
         },
         {
-          "revision": "committing change ordering the athlete list by ascending creation date",
-          "result": "Mutation control: fails Go on subscription-reads-list-athlete (response.body:data:0:subscription_id).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2sub-mutation-r1/results.json",
-          "receipt_sha256": "7ef28ef41fd61ab7b578432371d6ddfe173d8d930c5a247354883de5c13f6f0b"
+          "revision": "committing change rendering the membership payment's nested invoice as null",
+          "result": "Mutation control: fails Go on subscription-reads-info-hyphenless-uuid (membership_payments[0].invoice).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "08451bc4746c053fda8d7f250b02241f478b05398484356d75fbb136973a4af8"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions) and the info print dispatch (print_document_subscription.delay) are ported; association-scoped athlete sessions, the POST export, and membership payments with an invoice or instructor stay refused."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused."
       ]
     },
     {
@@ -26869,24 +26994,24 @@
         {
           "revision": "committing change, before Go code",
           "result": "RED: Django 261/261; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2sub-red-r2/results.json",
-          "receipt_sha256": "50bd3dd408f226c2b2f07e5871d015f315cd806fe4f6597d2656de3a1221400b"
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "ea7b9792b3cea7e2a10bcaff24abf3e12870f2bed980aa3dfe0fdf67bb83ecfd"
         },
         {
           "revision": "committing change",
           "result": "GREEN: 261/261 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2sub-merged-r1/results.json",
-          "receipt_sha256": "5fdfc296feff95055a100e429b93fb5f1113b5d8554761c929f50ae239996586"
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-versioned-r1/results.json",
+          "receipt_sha256": "0fbabbf4023881d8b5de7327855a466b27f1f1bd50140beecaed1ef558324170"
         },
         {
-          "revision": "committing change ordering the athlete list by ascending creation date",
-          "result": "Mutation control: fails Go on subscription-reads-list-athlete (response.body:data:0:subscription_id).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2sub-mutation-r1/results.json",
-          "receipt_sha256": "7ef28ef41fd61ab7b578432371d6ddfe173d8d930c5a247354883de5c13f6f0b"
+          "revision": "committing change rendering the membership payment's nested invoice as null",
+          "result": "Mutation control: fails Go on subscription-reads-info-hyphenless-uuid (membership_payments[0].invoice).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "08451bc4746c053fda8d7f250b02241f478b05398484356d75fbb136973a4af8"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions) and the info print dispatch (print_document_subscription.delay) are ported; association-scoped athlete sessions, the POST export, and membership payments with an invoice or instructor stay refused."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused."
       ]
     },
     {
@@ -26954,24 +27079,24 @@
         {
           "revision": "committing change, before Go code",
           "result": "RED: Django 261/261; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2sub-red-r2/results.json",
-          "receipt_sha256": "50bd3dd408f226c2b2f07e5871d015f315cd806fe4f6597d2656de3a1221400b"
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "ea7b9792b3cea7e2a10bcaff24abf3e12870f2bed980aa3dfe0fdf67bb83ecfd"
         },
         {
           "revision": "committing change",
           "result": "GREEN: 261/261 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2sub-merged-r1/results.json",
-          "receipt_sha256": "5fdfc296feff95055a100e429b93fb5f1113b5d8554761c929f50ae239996586"
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-versioned-r1/results.json",
+          "receipt_sha256": "0fbabbf4023881d8b5de7327855a466b27f1f1bd50140beecaed1ef558324170"
         },
         {
-          "revision": "committing change ordering the athlete list by ascending creation date",
-          "result": "Mutation control: fails Go on subscription-reads-list-athlete (response.body:data:0:subscription_id).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2sub-mutation-r1/results.json",
-          "receipt_sha256": "7ef28ef41fd61ab7b578432371d6ddfe173d8d930c5a247354883de5c13f6f0b"
+          "revision": "committing change rendering the membership payment's nested invoice as null",
+          "result": "Mutation control: fails Go on subscription-reads-info-hyphenless-uuid (membership_payments[0].invoice).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "08451bc4746c053fda8d7f250b02241f478b05398484356d75fbb136973a4af8"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions) and the info print dispatch (print_document_subscription.delay) are ported; association-scoped athlete sessions, the POST export, and membership payments with an invoice or instructor stay refused."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused."
       ]
     },
     {
@@ -27039,24 +27164,24 @@
         {
           "revision": "committing change, before Go code",
           "result": "RED: Django 261/261; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2sub-red-r2/results.json",
-          "receipt_sha256": "50bd3dd408f226c2b2f07e5871d015f315cd806fe4f6597d2656de3a1221400b"
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "ea7b9792b3cea7e2a10bcaff24abf3e12870f2bed980aa3dfe0fdf67bb83ecfd"
         },
         {
           "revision": "committing change",
           "result": "GREEN: 261/261 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2sub-merged-r1/results.json",
-          "receipt_sha256": "5fdfc296feff95055a100e429b93fb5f1113b5d8554761c929f50ae239996586"
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-versioned-r1/results.json",
+          "receipt_sha256": "0fbabbf4023881d8b5de7327855a466b27f1f1bd50140beecaed1ef558324170"
         },
         {
-          "revision": "committing change ordering the athlete list by ascending creation date",
-          "result": "Mutation control: fails Go on subscription-reads-list-athlete (response.body:data:0:subscription_id).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2sub-mutation-r1/results.json",
-          "receipt_sha256": "7ef28ef41fd61ab7b578432371d6ddfe173d8d930c5a247354883de5c13f6f0b"
+          "revision": "committing change rendering the membership payment's nested invoice as null",
+          "result": "Mutation control: fails Go on subscription-reads-info-hyphenless-uuid (membership_payments[0].invoice).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "08451bc4746c053fda8d7f250b02241f478b05398484356d75fbb136973a4af8"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions) and the info print dispatch (print_document_subscription.delay) are ported; association-scoped athlete sessions, the POST export, and membership payments with an invoice or instructor stay refused."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused."
       ]
     },
     {
@@ -31822,45 +31947,45 @@
         "target": "document_compensation_view",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
-        "BE_GO/internal/djtemplate/render.go",
-        "BE_GO/internal/djtemplate/parse.go",
-        "BE_GO/internal/djtemplate/ifparser.go",
-        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/djtemplate/dates.go",
-        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/internal/djtemplate/ifparser.go",
         "BE_GO/internal/djtemplate/json.go",
+        "BE_GO/internal/djtemplate/parse.go",
+        "BE_GO/internal/djtemplate/render.go",
+        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/domain/document_views.go",
+        "BE_GO/internal/emailrender/shared.go",
+        "BE_GO/internal/handler/document_views.go",
         "BE_GO/internal/mentions/mentions.go",
         "BE_GO/internal/mentions/parse.go",
         "BE_GO/internal/mentions/tree.go",
-        "BE_GO/internal/emailrender/shared.go",
         "BE_GO/internal/pdfrender/client.go",
-        "BE_GO/internal/domain/document_views.go",
         "BE_GO/internal/repository/document_views.go",
-        "BE_GO/internal/service/document_views.go",
-        "BE_GO/internal/handler/document_views.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/document_views.go"
       ],
       "dependencies": [
+        "BE/application/impersonation_scope.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/utils.py",
+        "BE/application/templatetags/format.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/utils/printing.py",
+        "BE/core/settings.py",
         "BE/docmanager/views/printing_views.py",
         "BE/docmanager/views/utils.py",
-        "BE/application/models/utils.py",
-        "BE/application/models/user_models.py",
-        "BE/application/models/subscriptions_models.py",
-        "BE/application/models/payment_models.py",
-        "BE/application/models/courses_models.py",
-        "BE/application/templatetags/format.py",
-        "BE/application/utils/printing.py",
-        "BE/application/utils/api_utils.py",
-        "BE/application/impersonation_scope.py",
-        "BE/templates/document/application/subscription.html",
-        "BE/templates/document/application/subscription_classic.html",
         "BE/templates/document/application/compensation.html",
         "BE/templates/document/application/model.html",
+        "BE/templates/document/application/subscription.html",
+        "BE/templates/document/application/subscription_classic.html",
         "BE/templates/document/medical-appointments/agonistica.html",
-        "BE/templates/document/medical-appointments/non-agonistica.html",
-        "BE/core/settings.py"
+        "BE/templates/document/medical-appointments/non-agonistica.html"
       ],
       "contract": {
         "methods": [
@@ -31889,21 +32014,28 @@
         "TESTS/adapters/django/document_views_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/document-views.md",
         {
-          "command": "python tools/go-migration/family.py run document-views --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/document-views-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "fda45d47e61902c135902037defa005c3a97410f09a9e3c39c0fdd46c640fad7",
-          "scope": "HTTP family document-views: 114/114 cases on native Django and native Go, 114/114 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 114/114; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-views-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "92fa1453a8b64fde51f922e28241dce2ca1e6e19fae6f053a3b2b3c176df8a99"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
+          "artifact": "quality-reports/go-migration/document-views-http-v2doc-versioned-r1/results.json",
+          "receipt_sha256": "9811ebc3648ad19909c3de98b6a8db99c6e26e53aead13b2934208f488aa9530"
+        },
+        {
+          "revision": "committing change preserving whitespace only for direct children of <pre>",
+          "result": "Mutation control: fails Go on document-views-subscription-fallback-template (html.body).",
+          "artifact": "quality-reports/go-migration/document-views-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "ffece6e95cd5cf78df345a71e74a9b45b5882edef1fcad6a40d9719ac88bc55c"
         }
       ],
       "notes": [
-        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset, template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups.",
-        "Implementing evidence: docs/architecture/go-migration/document-views.md",
-        "Implementing evidence: RED: Django 114/114; Go 401 on the first case. (quality-reports/go-migration/document-views-http-native-r4/results.json)",
-        "Implementing evidence: GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with byte-exact HTML against contexts rendered by Django's template engine, the preview's renderer requests checked byte for byte, and unchanged model state. (quality-reports/go-migration/document-views-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on document-views-compensation-deleted (200 instead of the 500 page) (quality-reports/go-migration/document-views-http-mutation-r1/results.json)"
+        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset with <pre> whitespace preservation, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset (comments, raw-text elements, textarea, mismatched tags), template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups."
       ]
     },
     {
@@ -32407,45 +32539,45 @@
         "target": "document_medical_appointment_view",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
-        "BE_GO/internal/djtemplate/render.go",
-        "BE_GO/internal/djtemplate/parse.go",
-        "BE_GO/internal/djtemplate/ifparser.go",
-        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/djtemplate/dates.go",
-        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/internal/djtemplate/ifparser.go",
         "BE_GO/internal/djtemplate/json.go",
+        "BE_GO/internal/djtemplate/parse.go",
+        "BE_GO/internal/djtemplate/render.go",
+        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/domain/document_views.go",
+        "BE_GO/internal/emailrender/shared.go",
+        "BE_GO/internal/handler/document_views.go",
         "BE_GO/internal/mentions/mentions.go",
         "BE_GO/internal/mentions/parse.go",
         "BE_GO/internal/mentions/tree.go",
-        "BE_GO/internal/emailrender/shared.go",
         "BE_GO/internal/pdfrender/client.go",
-        "BE_GO/internal/domain/document_views.go",
         "BE_GO/internal/repository/document_views.go",
-        "BE_GO/internal/service/document_views.go",
-        "BE_GO/internal/handler/document_views.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/document_views.go"
       ],
       "dependencies": [
+        "BE/application/impersonation_scope.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/utils.py",
+        "BE/application/templatetags/format.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/utils/printing.py",
+        "BE/core/settings.py",
         "BE/docmanager/views/printing_views.py",
         "BE/docmanager/views/utils.py",
-        "BE/application/models/utils.py",
-        "BE/application/models/user_models.py",
-        "BE/application/models/subscriptions_models.py",
-        "BE/application/models/payment_models.py",
-        "BE/application/models/courses_models.py",
-        "BE/application/templatetags/format.py",
-        "BE/application/utils/printing.py",
-        "BE/application/utils/api_utils.py",
-        "BE/application/impersonation_scope.py",
-        "BE/templates/document/application/subscription.html",
-        "BE/templates/document/application/subscription_classic.html",
         "BE/templates/document/application/compensation.html",
         "BE/templates/document/application/model.html",
+        "BE/templates/document/application/subscription.html",
+        "BE/templates/document/application/subscription_classic.html",
         "BE/templates/document/medical-appointments/agonistica.html",
-        "BE/templates/document/medical-appointments/non-agonistica.html",
-        "BE/core/settings.py"
+        "BE/templates/document/medical-appointments/non-agonistica.html"
       ],
       "contract": {
         "methods": [
@@ -32474,21 +32606,28 @@
         "TESTS/adapters/django/document_views_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/document-views.md",
         {
-          "command": "python tools/go-migration/family.py run document-views --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/document-views-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "fda45d47e61902c135902037defa005c3a97410f09a9e3c39c0fdd46c640fad7",
-          "scope": "HTTP family document-views: 114/114 cases on native Django and native Go, 114/114 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 114/114; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-views-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "92fa1453a8b64fde51f922e28241dce2ca1e6e19fae6f053a3b2b3c176df8a99"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
+          "artifact": "quality-reports/go-migration/document-views-http-v2doc-versioned-r1/results.json",
+          "receipt_sha256": "9811ebc3648ad19909c3de98b6a8db99c6e26e53aead13b2934208f488aa9530"
+        },
+        {
+          "revision": "committing change preserving whitespace only for direct children of <pre>",
+          "result": "Mutation control: fails Go on document-views-subscription-fallback-template (html.body).",
+          "artifact": "quality-reports/go-migration/document-views-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "ffece6e95cd5cf78df345a71e74a9b45b5882edef1fcad6a40d9719ac88bc55c"
         }
       ],
       "notes": [
-        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset, template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups.",
-        "Implementing evidence: docs/architecture/go-migration/document-views.md",
-        "Implementing evidence: RED: Django 114/114; Go 401 on the first case. (quality-reports/go-migration/document-views-http-native-r4/results.json)",
-        "Implementing evidence: GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with byte-exact HTML against contexts rendered by Django's template engine, the preview's renderer requests checked byte for byte, and unchanged model state. (quality-reports/go-migration/document-views-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on document-views-compensation-deleted (200 instead of the 500 page) (quality-reports/go-migration/document-views-http-mutation-r1/results.json)"
+        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset with <pre> whitespace preservation, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset (comments, raw-text elements, textarea, mismatched tags), template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups."
       ]
     },
     {
@@ -32774,45 +32913,45 @@
         "target": "document_subscription_view",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
-        "BE_GO/internal/djtemplate/render.go",
-        "BE_GO/internal/djtemplate/parse.go",
-        "BE_GO/internal/djtemplate/ifparser.go",
-        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/djtemplate/dates.go",
-        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/internal/djtemplate/ifparser.go",
         "BE_GO/internal/djtemplate/json.go",
+        "BE_GO/internal/djtemplate/parse.go",
+        "BE_GO/internal/djtemplate/render.go",
+        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/domain/document_views.go",
+        "BE_GO/internal/emailrender/shared.go",
+        "BE_GO/internal/handler/document_views.go",
         "BE_GO/internal/mentions/mentions.go",
         "BE_GO/internal/mentions/parse.go",
         "BE_GO/internal/mentions/tree.go",
-        "BE_GO/internal/emailrender/shared.go",
         "BE_GO/internal/pdfrender/client.go",
-        "BE_GO/internal/domain/document_views.go",
         "BE_GO/internal/repository/document_views.go",
-        "BE_GO/internal/service/document_views.go",
-        "BE_GO/internal/handler/document_views.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/document_views.go"
       ],
       "dependencies": [
+        "BE/application/impersonation_scope.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/utils.py",
+        "BE/application/templatetags/format.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/utils/printing.py",
+        "BE/core/settings.py",
         "BE/docmanager/views/printing_views.py",
         "BE/docmanager/views/utils.py",
-        "BE/application/models/utils.py",
-        "BE/application/models/user_models.py",
-        "BE/application/models/subscriptions_models.py",
-        "BE/application/models/payment_models.py",
-        "BE/application/models/courses_models.py",
-        "BE/application/templatetags/format.py",
-        "BE/application/utils/printing.py",
-        "BE/application/utils/api_utils.py",
-        "BE/application/impersonation_scope.py",
-        "BE/templates/document/application/subscription.html",
-        "BE/templates/document/application/subscription_classic.html",
         "BE/templates/document/application/compensation.html",
         "BE/templates/document/application/model.html",
+        "BE/templates/document/application/subscription.html",
+        "BE/templates/document/application/subscription_classic.html",
         "BE/templates/document/medical-appointments/agonistica.html",
-        "BE/templates/document/medical-appointments/non-agonistica.html",
-        "BE/core/settings.py"
+        "BE/templates/document/medical-appointments/non-agonistica.html"
       ],
       "contract": {
         "methods": [
@@ -32841,21 +32980,28 @@
         "TESTS/adapters/django/document_views_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/document-views.md",
         {
-          "command": "python tools/go-migration/family.py run document-views --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/document-views-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "fda45d47e61902c135902037defa005c3a97410f09a9e3c39c0fdd46c640fad7",
-          "scope": "HTTP family document-views: 114/114 cases on native Django and native Go, 114/114 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 114/114; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-views-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "92fa1453a8b64fde51f922e28241dce2ca1e6e19fae6f053a3b2b3c176df8a99"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
+          "artifact": "quality-reports/go-migration/document-views-http-v2doc-versioned-r1/results.json",
+          "receipt_sha256": "9811ebc3648ad19909c3de98b6a8db99c6e26e53aead13b2934208f488aa9530"
+        },
+        {
+          "revision": "committing change preserving whitespace only for direct children of <pre>",
+          "result": "Mutation control: fails Go on document-views-subscription-fallback-template (html.body).",
+          "artifact": "quality-reports/go-migration/document-views-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "ffece6e95cd5cf78df345a71e74a9b45b5882edef1fcad6a40d9719ac88bc55c"
         }
       ],
       "notes": [
-        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset, template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups.",
-        "Implementing evidence: docs/architecture/go-migration/document-views.md",
-        "Implementing evidence: RED: Django 114/114; Go 401 on the first case. (quality-reports/go-migration/document-views-http-native-r4/results.json)",
-        "Implementing evidence: GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with byte-exact HTML against contexts rendered by Django's template engine, the preview's renderer requests checked byte for byte, and unchanged model state. (quality-reports/go-migration/document-views-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on document-views-compensation-deleted (200 instead of the 500 page) (quality-reports/go-migration/document-views-http-mutation-r1/results.json)"
+        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset with <pre> whitespace preservation, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset (comments, raw-text elements, textarea, mismatched tags), template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups."
       ]
     },
     {
@@ -32873,45 +33019,45 @@
         "target": "document_subscription_preview",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
-        "BE_GO/internal/djtemplate/render.go",
-        "BE_GO/internal/djtemplate/parse.go",
-        "BE_GO/internal/djtemplate/ifparser.go",
-        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/djtemplate/dates.go",
-        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/internal/djtemplate/ifparser.go",
         "BE_GO/internal/djtemplate/json.go",
+        "BE_GO/internal/djtemplate/parse.go",
+        "BE_GO/internal/djtemplate/render.go",
+        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/domain/document_views.go",
+        "BE_GO/internal/emailrender/shared.go",
+        "BE_GO/internal/handler/document_views.go",
         "BE_GO/internal/mentions/mentions.go",
         "BE_GO/internal/mentions/parse.go",
         "BE_GO/internal/mentions/tree.go",
-        "BE_GO/internal/emailrender/shared.go",
         "BE_GO/internal/pdfrender/client.go",
-        "BE_GO/internal/domain/document_views.go",
         "BE_GO/internal/repository/document_views.go",
-        "BE_GO/internal/service/document_views.go",
-        "BE_GO/internal/handler/document_views.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/document_views.go"
       ],
       "dependencies": [
+        "BE/application/impersonation_scope.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/utils.py",
+        "BE/application/templatetags/format.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/utils/printing.py",
+        "BE/core/settings.py",
         "BE/docmanager/views/printing_views.py",
         "BE/docmanager/views/utils.py",
-        "BE/application/models/utils.py",
-        "BE/application/models/user_models.py",
-        "BE/application/models/subscriptions_models.py",
-        "BE/application/models/payment_models.py",
-        "BE/application/models/courses_models.py",
-        "BE/application/templatetags/format.py",
-        "BE/application/utils/printing.py",
-        "BE/application/utils/api_utils.py",
-        "BE/application/impersonation_scope.py",
-        "BE/templates/document/application/subscription.html",
-        "BE/templates/document/application/subscription_classic.html",
         "BE/templates/document/application/compensation.html",
         "BE/templates/document/application/model.html",
+        "BE/templates/document/application/subscription.html",
+        "BE/templates/document/application/subscription_classic.html",
         "BE/templates/document/medical-appointments/agonistica.html",
-        "BE/templates/document/medical-appointments/non-agonistica.html",
-        "BE/core/settings.py"
+        "BE/templates/document/medical-appointments/non-agonistica.html"
       ],
       "contract": {
         "methods": [
@@ -32940,21 +33086,28 @@
         "TESTS/adapters/django/document_views_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/document-views.md",
         {
-          "command": "python tools/go-migration/family.py run document-views --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/document-views-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "fda45d47e61902c135902037defa005c3a97410f09a9e3c39c0fdd46c640fad7",
-          "scope": "HTTP family document-views: 114/114 cases on native Django and native Go, 114/114 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 114/114; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-views-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "92fa1453a8b64fde51f922e28241dce2ca1e6e19fae6f053a3b2b3c176df8a99"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
+          "artifact": "quality-reports/go-migration/document-views-http-v2doc-versioned-r1/results.json",
+          "receipt_sha256": "9811ebc3648ad19909c3de98b6a8db99c6e26e53aead13b2934208f488aa9530"
+        },
+        {
+          "revision": "committing change preserving whitespace only for direct children of <pre>",
+          "result": "Mutation control: fails Go on document-views-subscription-fallback-template (html.body).",
+          "artifact": "quality-reports/go-migration/document-views-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "ffece6e95cd5cf78df345a71e74a9b45b5882edef1fcad6a40d9719ac88bc55c"
         }
       ],
       "notes": [
-        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset, template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups.",
-        "Implementing evidence: docs/architecture/go-migration/document-views.md",
-        "Implementing evidence: RED: Django 114/114; Go 401 on the first case. (quality-reports/go-migration/document-views-http-native-r4/results.json)",
-        "Implementing evidence: GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with byte-exact HTML against contexts rendered by Django's template engine, the preview's renderer requests checked byte for byte, and unchanged model state. (quality-reports/go-migration/document-views-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on document-views-compensation-deleted (200 instead of the 500 page) (quality-reports/go-migration/document-views-http-mutation-r1/results.json)"
+        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset with <pre> whitespace preservation, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset (comments, raw-text elements, textarea, mismatched tags), template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups."
       ]
     },
     {
@@ -33062,45 +33215,45 @@
         "target": "document_template_view",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
-        "BE_GO/internal/djtemplate/render.go",
-        "BE_GO/internal/djtemplate/parse.go",
-        "BE_GO/internal/djtemplate/ifparser.go",
-        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/djtemplate/dates.go",
-        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/internal/djtemplate/ifparser.go",
         "BE_GO/internal/djtemplate/json.go",
+        "BE_GO/internal/djtemplate/parse.go",
+        "BE_GO/internal/djtemplate/render.go",
+        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/domain/document_views.go",
+        "BE_GO/internal/emailrender/shared.go",
+        "BE_GO/internal/handler/document_views.go",
         "BE_GO/internal/mentions/mentions.go",
         "BE_GO/internal/mentions/parse.go",
         "BE_GO/internal/mentions/tree.go",
-        "BE_GO/internal/emailrender/shared.go",
         "BE_GO/internal/pdfrender/client.go",
-        "BE_GO/internal/domain/document_views.go",
         "BE_GO/internal/repository/document_views.go",
-        "BE_GO/internal/service/document_views.go",
-        "BE_GO/internal/handler/document_views.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/document_views.go"
       ],
       "dependencies": [
+        "BE/application/impersonation_scope.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/utils.py",
+        "BE/application/templatetags/format.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/utils/printing.py",
+        "BE/core/settings.py",
         "BE/docmanager/views/printing_views.py",
         "BE/docmanager/views/utils.py",
-        "BE/application/models/utils.py",
-        "BE/application/models/user_models.py",
-        "BE/application/models/subscriptions_models.py",
-        "BE/application/models/payment_models.py",
-        "BE/application/models/courses_models.py",
-        "BE/application/templatetags/format.py",
-        "BE/application/utils/printing.py",
-        "BE/application/utils/api_utils.py",
-        "BE/application/impersonation_scope.py",
-        "BE/templates/document/application/subscription.html",
-        "BE/templates/document/application/subscription_classic.html",
         "BE/templates/document/application/compensation.html",
         "BE/templates/document/application/model.html",
+        "BE/templates/document/application/subscription.html",
+        "BE/templates/document/application/subscription_classic.html",
         "BE/templates/document/medical-appointments/agonistica.html",
-        "BE/templates/document/medical-appointments/non-agonistica.html",
-        "BE/core/settings.py"
+        "BE/templates/document/medical-appointments/non-agonistica.html"
       ],
       "contract": {
         "methods": [
@@ -33129,21 +33282,28 @@
         "TESTS/adapters/django/document_views_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/document-views.md",
         {
-          "command": "python tools/go-migration/family.py run document-views --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/document-views-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "fda45d47e61902c135902037defa005c3a97410f09a9e3c39c0fdd46c640fad7",
-          "scope": "HTTP family document-views: 114/114 cases on native Django and native Go, 114/114 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 114/114; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-views-http-v2doc-red-r1/results.json",
+          "receipt_sha256": "92fa1453a8b64fde51f922e28241dce2ca1e6e19fae6f053a3b2b3c176df8a99"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
+          "artifact": "quality-reports/go-migration/document-views-http-v2doc-versioned-r1/results.json",
+          "receipt_sha256": "9811ebc3648ad19909c3de98b6a8db99c6e26e53aead13b2934208f488aa9530"
+        },
+        {
+          "revision": "committing change preserving whitespace only for direct children of <pre>",
+          "result": "Mutation control: fails Go on document-views-subscription-fallback-template (html.body).",
+          "artifact": "quality-reports/go-migration/document-views-http-v2doc-mutation-r1/results.json",
+          "receipt_sha256": "ffece6e95cd5cf78df345a71e74a9b45b5882edef1fcad6a40d9719ac88bc55c"
         }
       ],
       "notes": [
-        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset, template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups.",
-        "Implementing evidence: docs/architecture/go-migration/document-views.md",
-        "Implementing evidence: RED: Django 114/114; Go 401 on the first case. (quality-reports/go-migration/document-views-http-native-r4/results.json)",
-        "Implementing evidence: GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with byte-exact HTML against contexts rendered by Django's template engine, the preview's renderer requests checked byte for byte, and unchanged model state. (quality-reports/go-migration/document-views-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on document-views-compensation-deleted (200 instead of the 500 page) (quality-reports/go-migration/document-views-http-mutation-r1/results.json)"
+        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset with <pre> whitespace preservation, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset (comments, raw-text elements, textarea, mismatched tags), template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups."
       ]
     },
     {
