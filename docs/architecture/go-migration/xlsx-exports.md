@@ -96,4 +96,4 @@ row of as many columns as there are dates: a repeated date label moves it onto t
 past the data, as openpyxl writes them). openpyxl's sheet-title rules apply: an invalid or empty title and one that differs
 from an earlier title only by case fail as in Django. Contract engines `report_sheets` and `attendance`
 (`TESTS/contracts/xlsx.py`); the golden generator builds 40 more workbooks with Django's own code and checks that the
-contract's builders give the same parts. Evidence: templates-reports 124/124 on four transports (`v2rep-versioned-r1`).
+contract's builders give the same parts. Evidence: templates-reports 125/125 on four transports (`v2rep-versioned-r2`).

@@ -113,7 +113,7 @@ xlsx-exports.md have the details.
 
 | Family | Route | Was refused | Evidence |
 |---|---|---|---|
-| templates-reports | `POST saved-reports/<pk>/run` | tools `export_data` (CSV, XLSX, PDF), `export_multi_sheet` and `get_attendance_matrix` (preview, XLSX, PDF) | 124 cases; RED `v2rep-red-r1` Django 124/124, Go 500; GREEN `v2rep-versioned-r1` 4 transports; mutation `v2rep-mutation-r1` (one sheet per course swapped with the single sheet) CAUGHT |
+| templates-reports | `POST saved-reports/<pk>/run` | tools `export_data` (CSV, XLSX, PDF), `export_multi_sheet` and `get_attendance_matrix` (preview, XLSX, PDF) | 125 cases; RED `v2rep-red-r1` Django 124/124, Go 500, and `v2rep-red-r2` Django 125/125, Go 500 (texts longer than a page); GREEN `v2rep-versioned-r2` 4 transports; mutations `v2rep-mutation-r1` (one sheet per course swapped with the single sheet) and `v2rep-mutation-r2` (a cut paragraph keeps one line too many) CAUGHT |
 
 ### Ported in the v2-pdf change
 
@@ -129,7 +129,9 @@ decoded document, byte for byte; dates within the request window) and the Go wri
 | balance-sheet | `POST balance-sheet` | export `format: pdf` of a draft | 89 cases; RED `v2pdf-red-r1` Django 86/86 (before the account-delete cases), Go 500; GREEN `v2pdf-versioned-r2` 4 transports; mutation `v2pdf-mutation-r1` (closing date one day late) CAUGHT |
 
 Still refused in the balance-sheet PDF (B: unusual data): a denomination or address with `&`, `<` or a soft hyphen, and a
-`data:image/jpeg` logo that is not a plain 8-bit JPEG (balance-sheet.md, "Not ported").
+`data:image/jpeg` logo that is not a plain 8-bit JPEG (balance-sheet.md, "Not ported"). The same paragraph inputs are
+refused in the saved-report PDFs (cell text, titles and the texts before and after the table). A paragraph cut between two
+pages is ported (v2-reports), except when one of its lines ends inside a long word.
 
 ## Remaining A items, per family
 

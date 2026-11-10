@@ -410,6 +410,12 @@ run('export-pdf-numbers', 'export_data', {'model_name': 'Carnet', 'format': 'pdf
     'order_by': ['lessons_number']}, 200, download('Carnet.pdf', 'application/pdf', pdf={
         'engine': 'report_table', 'headers': ['title', 'lessons_number', 'fee', 'public', 'description'], 'title': 'Carnet',
         'rows': [['', '0', '0.0', 'Vero', ''], ['Cinque', '5', '45.5', 'Falso', ''], ['Dieci ingressi', '10', '80.0', 'Vero', 'Pacchetto']]}))
+# Texts longer than a page: the paragraphs continue on the next one.
+LONG_TEXT = ' '.join(['il corso di nuoto agonistico per adulti si tiene nella piscina comunale ogni settimana'] * 110)
+run('export-pdf-texts-over-pages', 'export_data', {'model_name': 'Tags', 'format': 'pdf', 'fields': ['tag_name'],
+    'filters': {'tag_name__icontains': 'nuoto'}, 'order_by': ['tag_name'], 'text_before': LONG_TEXT, 'text_after': LONG_TEXT}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={'engine': 'report_table', 'headers': ['tag_name'], 'title': 'Tags',
+             'rows': [['Nuoto'], ['nuoto agonistico']], 'text_before': LONG_TEXT, 'text_after': LONG_TEXT}))
 
 run('sheets-missing-error', 'export_multi_sheet', {'filename': 'x'}, 500, FAILED)
 run('sheets-none', 'export_multi_sheet', {'sheets': []}, 400, {'error': 'No sheets specified'})

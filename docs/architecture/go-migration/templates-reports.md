@@ -158,10 +158,13 @@ code. GREEN: native Django, native Go, Caddy `/api/v1` and `/api/v2` pass
 84/84 with exact template, audit, index and report effects. Dropping the
 nullable `IS NOT NULL` from `exclude` fails the run.
 
-File tools (`v2rep-*` receipts): the fixture has 124 cases (40 more run
+File tools (`v2rep-*` receipts): the fixture has 125 cases (41 more run
 cases over the same tags, categories and carnets plus seeded courses,
 registries, days and enrolments). RED `v2rep-red-r1`: Django 124/124, Go the
-500 page on the first file case. GREEN `v2rep-versioned-r1`: native Django,
-native Go, Caddy `/api/v1` and `/api/v2` 124/124. Mutation `v2rep-mutation-r1`
-(one sheet per course swapped with the single sheet) CAUGHT by
-`run-attendance-export-xlsx-all`.
+500 page on the first file case; RED `v2rep-red-r2` (the texts longer than a
+page): Django 125/125, Go 500 on `run-export-pdf-texts-over-pages`. GREEN
+`v2rep-versioned-r2`: native Django, native Go, Caddy `/api/v1` and `/api/v2`
+125/125. Mutations CAUGHT: `v2rep-mutation-r1` (one sheet per course swapped
+with the single sheet, `run-attendance-export-xlsx-all`) and
+`v2rep-mutation-r2` (one line too many kept on the first page of a cut
+paragraph, `run-export-pdf-texts-over-pages`).
