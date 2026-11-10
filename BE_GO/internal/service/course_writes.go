@@ -106,6 +106,18 @@ func (s *CourseWrites) auditContext(ctx context.Context, tx domain.CourseWritesT
 		At: s.now().UTC().Truncate(time.Microsecond), Group: supplierGroup(request.GroupHeader)}, nil
 }
 
+// courseEventLookup is the transaction part of CourseEventsSerializer's
+// UniqueValidator.
+type courseEventLookup interface {
+	InstallmentIDTaken(ctx context.Context, id string, group *string) (bool, error)
+}
+
+// courseEventTaken binds the lookup to the request's X-Group-Id.
+func courseEventTaken(ctx context.Context, tx courseEventLookup, header string) dto.CourseEventTaken {
+	group := supplierGroup(header)
+	return func(id string) (bool, error) { return tx.InstallmentIDTaken(ctx, id, group) }
+}
+
 // createGroup is GroupAwareManager.create's raw X-Group-Id: a value the
 // UUIDField rejects, or an unknown group (deferred foreign key), fails the
 // create; a non-canonical spelling would be audited as sent (not ported).
@@ -363,8 +375,14 @@ func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdent
 	if eventsPresent {
 		if items, ok := dto.PythonIterate(events); ok {
 			for _, item := range items {
-				if _, _, err := dto.ValidateCourseEvent(item); err != nil {
+				event, _, err := dto.ValidateCourseEvent(item, courseEventTaken(ctx, tx, request.GroupHeader))
+				if err != nil {
 					return err
+				}
+				if event.InstallmentID != nil {
+					// dict(validated_data) keeps the UUID object: the save
+					// fails after auditlog's entry (not ported).
+					return domain.ErrCourseWritesNotPorted
 				}
 			}
 		}
@@ -451,7 +469,7 @@ func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdent
 		}
 		stored := []any{}
 		for _, item := range items {
-			event, invalid, err := dto.ValidateCourseEvent(item)
+			event, invalid, err := dto.ValidateCourseEvent(item, courseEventTaken(ctx, tx, request.GroupHeader))
 			if err != nil {
 				return err
 			}
@@ -592,7 +610,7 @@ func (s *CourseWrites) Add(ctx context.Context, identity domain.ResolvedIdentity
 	if err != nil {
 		return err
 	}
-	input, err := dto.ValidateCourseAdd(newCourse)
+	input, err := dto.ValidateCourseAdd(newCourse, courseEventTaken(ctx, tx, request.GroupHeader))
 	if err != nil {
 		return err
 	}

@@ -137,6 +137,8 @@ type CourseWritesTransaction interface {
 	DefaultPaymentCategory(ctx context.Context, association *string) (*string, error)
 	DefaultBankAccount(ctx context.Context, association *string) (*string, error)
 	GroupExists(ctx context.Context, id string) (bool, error)
+	// InstallmentIDTaken reports a live installment of the request's group with this primary key.
+	InstallmentIDTaken(ctx context.Context, id string, group *string) (bool, error)
 
 	// DeleteCourse is course.delete(): the collector with its signals.
 	DeleteCourse(ctx context.Context, course CourseWriteRow, audit CourseSubscriptionAudit) error

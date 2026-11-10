@@ -406,7 +406,7 @@ func (s *CourseEnrolment) serializerCreate(ctx context.Context, tx domain.Course
 	day := created.row.CreationDate.UTC()
 	day = time.Date(day.Year(), day.Month(), day.Day(), 0, 0, 0, 0, time.UTC)
 	for _, item := range events {
-		event, invalid, err := dto.ValidateCourseEvent(item)
+		event, invalid, err := dto.ValidateCourseEvent(item, courseEventTaken(ctx, tx, request.GroupHeader))
 		if err != nil {
 			return nil, err
 		}

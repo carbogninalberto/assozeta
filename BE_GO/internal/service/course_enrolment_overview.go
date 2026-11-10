@@ -341,7 +341,7 @@ func (s *CourseEnrolment) overviewPayments(ctx context.Context, tx domain.Course
 		day = time.Date(day.Year(), day.Month(), day.Day(), 0, 0, 0, 0, time.UTC)
 		var last *domain.CourseEnrolmentPayment
 		for _, item := range events {
-			event, invalid, err := dto.ValidateCourseEvent(item)
+			event, invalid, err := dto.ValidateCourseEvent(item, courseEventTaken(ctx, tx, request.GroupHeader))
 			if err != nil {
 				return nil, false, err
 			}
