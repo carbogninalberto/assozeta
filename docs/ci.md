@@ -46,9 +46,9 @@ non-root/read-only execution, maintenance exclusion and shutdown/crash recovery;
 it does not activate a backend or prove scheduler and Celery handoff parity.
 
 Releases do not rebuild the manual. A published release copies the verified
-manual of the current `:latest` backend image into its own image unchanged and
-records its origin in `MANUAL_CARRIED_FROM`; the reader keeps reporting the
-release the manual was verified for. To rebuild, verify and bundle a new
+manual of the current `:latest` backend image unchanged into both its Django and
+Go backend images and records its origin in `MANUAL_CARRIED_FROM`; both readers
+keep reporting the release the manual was verified for. To rebuild, verify and bundle a new
 manual, publish the release, then run **Build and publish images** manually
 from the release tag with `release_tag` set to that tag and `include_manual`
 checked:

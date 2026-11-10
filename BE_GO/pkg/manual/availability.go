@@ -380,6 +380,14 @@ func (l *Loader) bundle(ctx context.Context) (bool, error) {
 	return index != nil, err
 }
 func (l *Loader) loadBundle(ctx context.Context) (map[string]any, error) {
+	index, _, err := l.loadBundleOrigin(ctx)
+	return index, err
+}
+
+// loadBundleOrigin also reports whether the bundle is carried from an earlier
+// release. A carried bundle is validated for its declared origin and then
+// accepted for the running revision/release, matching bundle.load_bundle.
+func (l *Loader) loadBundleOrigin(ctx context.Context) (map[string]any, bool, error) {
 	s := l.settings
 	// pathlib.Path("") denotes the working directory, not a missing path.
 	if s.BundlePath == "" {
@@ -387,14 +395,25 @@ func (l *Loader) loadBundle(ctx context.Context) (map[string]any, error) {
 	}
 	present, err := exists(s.BundlePath)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	if !present {
 		if s.BundleRequired {
-			return nil, errEvidence
+			return nil, false, errEvidence
 		}
-		return nil, nil
+		return nil, false, nil
 	}
+	release, revision, carried, err := carriedOrigin(s.BundlePath)
+	if err != nil {
+		return nil, false, err
+	}
+	if carried {
+		s.Release, s.ApplicationRevision = release, revision
+	}
+	index, err := l.loadPresentBundle(ctx, s)
+	return index, carried && index != nil, err
+}
+func (l *Loader) loadPresentBundle(ctx context.Context, s Settings) (map[string]any, error) {
 	if !s.BundleRequired {
 		files, err := os.ReadDir(s.BundlePath)
 		if err != nil {

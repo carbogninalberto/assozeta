@@ -75,7 +75,13 @@ def prepare(base,spec,publisher):
   value=corpus('release-bundled');value['metadata']['manual_state']='generated-from-committed';write_index(bundle/'index.json',value);images(bundle)
   (bundle/'bundle.json').write_text(json.dumps(dict(format=1,distribution='immutable-backend-image',index_sha256=digest((bundle/'index.json').read_bytes()),corpus_identity=value['identity'],application_revision=REVISION,release='release-fixture',manual_revision='c'*40,verified_corpus_identity='d'*64)))
   settings['MANUAL_BUNDLE_PATH']=str(bundle)
- if mode in ('bundle','corrupt-bundle','wrong-version','bundle-before-remote','development-before-bundle','preview-before-invalid-bundle'):installed()
+ if mode in ('bundle','corrupt-bundle','wrong-version','bundle-before-remote','development-before-bundle','preview-before-invalid-bundle') or mode.startswith('carried'):installed()
+ if mode.startswith('carried'):
+  # A later release carries the bundle verified for release-fixture/REVISION; the
+  # origin is declared next to the bundle directory, as in the release image.
+  settings.update(MANUAL_APPLICATION_REVISION='b'*40,RUNNING_VERSION='release-next')
+  origin={'carried':'release-fixture '+REVISION,'carried-other-origin':'release-other '+REVISION,'carried-malformed':'release-fixture'}[mode]
+  (bundle.parent/'MANUAL_CARRIED_FROM').write_text(origin+'\n')
  if mode in ('corrupt-bundle','preview-before-invalid-bundle'):(bundle/'bundle.json').write_text('{}')
  if mode=='wrong-version':settings['RUNNING_VERSION']='wrong-release'
  if mode=='required-absent':settings['MANUAL_BUNDLE_REQUIRED']=True

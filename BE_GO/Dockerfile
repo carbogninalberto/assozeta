@@ -30,6 +30,8 @@ FROM alpine:3.21
 ARG VERSION=v0.0.0
 ARG CODE_REVISION=development
 ARG REQUIRE_MANUAL=false
+# "<release> <revision>" of an earlier release whose verified manual is carried.
+ARG MANUAL_CARRIED_FROM=""
 RUN apk add --no-cache ca-certificates tzdata && \
     addgroup -S -g 10001 assozeta && adduser -S -D -H -u 10001 -G assozeta assozeta
 WORKDIR /app
@@ -46,6 +48,8 @@ COPY --chown=0:0 release-manual/ /app/release-manual/
 RUN printf '%s\n' "$VERSION" > /app/VERSION && \
     printf '%s\n' "$CODE_REVISION" > /app/CODE_REVISION && \
     printf '%s\n' "$REQUIRE_MANUAL" > /app/MANUAL_REQUIRED && \
+    rm -f /app/MANUAL_CARRIED_FROM && \
+    if [ -n "$MANUAL_CARRIED_FROM" ]; then printf '%s\n' "$MANUAL_CARRIED_FROM" > /app/MANUAL_CARRIED_FROM; fi && \
     chmod -R a+rX,a-w /app/release-manual
 COPY --from=builder /server /app/server
 COPY --from=builder /worker /app/worker

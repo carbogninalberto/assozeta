@@ -77,6 +77,13 @@ def prepare(base, spec):
         settings.update(ASSOZETA_DEPLOYMENT_MODE='development', MANUAL_APPLICATION_REVISION='', MANUAL_SOURCE_ROOT=str(code))
     if spec.get('missing'):
         settings.update(MANUAL_BUNDLE_PATH=str(base/'absent'), MANUAL_INDEX_PATH=str(base/'missing.json'))
+    if spec.get('carried'):
+        # The running release carries the bundle verified for RELEASE/REVISION;
+        # MANUAL_CARRIED_FROM sits next to the bundle directory, as in the image.
+        settings.update(MANUAL_APPLICATION_REVISION='b'*40, RUNNING_VERSION='manual-tool-next')
+        origin = {'valid': f'{RELEASE} {REVISION}', 'other-origin': f'manual-tool-other {REVISION}',
+                  'malformed': RELEASE}[spec['carried']]
+        (bundle.parent/'MANUAL_CARRIED_FROM').write_text(origin+'\n')
     return settings, value
 
 
