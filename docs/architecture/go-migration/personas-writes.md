@@ -78,12 +78,27 @@ the production execution owner.
   `documentkey.S3Key`, `documentobjects.S3` `Exists`, `Put`, `PutACL`; `PersonaPictureSettings` from the storage configuration —
   a custom domain is a django-storages option the project settings do not define, so Go has none).
 
+## Tutor flags and numeric tutor ids
+
+`_handle_tutors` passes the raw JSON values on (rest-prof, ported from the former refusals):
+
+- `is_primary` reaches `update_or_create(defaults={'is_primary': value})`, a not-null `BooleanField`. The column keeps what `BooleanField.to_python`
+  prepares: booleans, the numbers equal to 0 or 1 (`1`, `0`, `1.0`, `0.0`) and the strings `t`/`True`/`1` and `f`/`False`/`0`. Anything else (`2`, `1.5`,
+  `'true'`, `'yes'`, `''`, `null`, lists, objects, huge numbers, `-1`) raises a `ValidationError` inside the atomic block of `update_or_create`: the 500 page,
+  the associate and the new tutor saved before it stay, the relation and its entry do not exist.
+- auditlog renders `str()` of the raw value, not of the stored one. A create entry carries `is_primary: ['None', '1']` (or `'t'`, `'1.0'`, ...); an update
+  compares `str(stored)` with `str(raw)` and writes an entry when they differ even if the column does not change (`['True', '1']`). A cleared primary
+  promotes the first relation as before (`['False', 'True']`).
+- A tutor id that is a number or a boolean reads as `UUID(int=n)` (DRF's `UUIDField` and Django's lookup): `5` or `0` name no row and create a new tutor,
+  `4242` or `True` update the tutor whose id is `UUID(int=4242)` / `UUID(int=1)` through `BasicAssociateSerializer`, and the relations not listed are dropped
+  as for string ids. Floats, negative numbers, numbers from `2**128`, numeric strings, lists and objects raise in the `exclude()` (or while building the set)
+  after the associate was saved: the 500 page.
+
 ## Not ported (refused with the 500 page before any write)
 
 - A `picture_path` list or object that reaches the upload branch, an existing object under the new key, storage failures other than
   a 403/404 answer to the ACL request (botocore's and s3transfer's texts), and uploads on the router's stock create.
-- `tutors_data` entries whose `is_primary` is not a boolean (auditlog renders the raw value), tutor ids that are numbers or
-  booleans, `born_date` texts with non-ASCII digits, and tutors under an `X-Group-Id` the manager would store raw (not a canonical,
+- `tutors_data` entries with `born_date` texts with non-ASCII digits, and tutors under an `X-Group-Id` the manager would store raw (not a canonical,
   existing group id) when a tutor may be created; an `X-Group-Id` of that kind on add (Django fails on the insert, or renders the
   raw header).
 - DELETE on `personas-subscriptions/<pk>/list` once the subscription is found (`Subscription.save()` derives missing dates from the
@@ -139,3 +154,7 @@ case's objects are removed so the run reports that case.
 - Mutation (`secoauth-mutation-r1`): naming the folder from the body's `associate_id` on update fails Go on
   `personas-writes-update-picture-full-collaborator` (`response.picture-url`, CAUGHT).
 - Re-run (`secoauth-rerun-r1`): router-personas 51/51 and router-persona-subscriptions 73/73 on native Django and Go.
+
+Rest-prof: 240 cases (46 added). RED: documented refusals, see the v2-refusals row; the added cases were 500 pages in Go before. Django 240/240 and Go 240/240
+natively on the first run. Two tutor seeds have the ids `UUID(int=4242)` and `UUID(int=1)`; five associates with a seeded relation carry the flag and update cases.
+Mutation (an entry only when the stored flag changes) fails the `update-primary-int-text-pair` case on Go.

@@ -2791,6 +2791,672 @@
    }
   },
   {
+   "name": "modules-writes-update-nested-valid-fields",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "The `.update()` method does not support writable nested fields by default.\nWrite an explicit `.update()` method for serializer `application.serializers.modules_serializers.ModulesSerializer`, or set `read_only=True` on nested serializer fields."
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "sport": "Calcio",
+     "tax_code": "12345678901",
+     "reviewed": "x",
+     "groups": 5,
+     "address_cap": "12345",
+     "sport_association_id": "a1000000-0000-4000-8000-000000642999",
+     "unknown": 1
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-text-errors",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'denomination': [ErrorDetail(string='This field may not be null.', code='null')], 'tax_code': [ErrorDetail(string='Ensure this field has no more than 11 characters.', code='max_length')], 'address': [ErrorDetail(string='This field may not be blank.', code='blank')], 'address_cap': [ErrorDetail(string='Enter exactly 5 digits', code='invalid')], 'regulation': [ErrorDetail(string='This field may not be blank.', code='blank')], 'logo': [ErrorDetail(string='Not a valid string.', code='invalid')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "denomination": null,
+     "tax_code": "xxxxxxxxxxxx",
+     "address": "",
+     "address_cap": "123",
+     "address_city": 5,
+     "regulation": "",
+     "logo": true
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-number-boolean-errors",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'subscription_fee': [ErrorDetail(string='A valid number is required.', code='invalid')], 'multiple_subscription_fee': [ErrorDetail(string='Must be a valid boolean.', code='invalid')], 'membership_fee': [ErrorDetail(string='Ensure that there are no more than 9 digits in total.', code='max_digits')], 'multiple_membership_fee': [ErrorDetail(string='This field may not be null.', code='null')], 'enable_quotes_management': [ErrorDetail(string='Must be a valid boolean.', code='invalid')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "subscription_fee": "abc",
+     "membership_fee": "1234567.123",
+     "multiple_subscription_fee": "maybe",
+     "multiple_membership_fee": null,
+     "enable_quotes_management": "x"
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-decimal-places",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'subscription_fee': [ErrorDetail(string='Ensure that there are no more than 2 decimal places.', code='max_decimal_places')], 'membership_fee': [ErrorDetail(string='Ensure that there are no more than 7 digits before the decimal point.', code='max_whole_digits')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "subscription_fee": 1.234,
+     "membership_fee": 12345678
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-null-fee",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'subscription_fee': [ErrorDetail(string='This field may not be null.', code='null')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "subscription_fee": null,
+     "membership_fee": null
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-blank-fees",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'subscription_fee': [ErrorDetail(string='A valid number is required.', code='invalid')], 'multiple_subscription_fee': [ErrorDetail(string='Must be a valid boolean.', code='invalid')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "subscription_fee": "",
+     "membership_fee": "",
+     "multiple_subscription_fee": "",
+     "additional_sections": {
+      "a": 1
+     },
+     "configuration": [
+      1
+     ],
+     "subscription_fee_plans": "x"
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-blank-nullable-fee",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "The `.update()` method does not support writable nested fields by default.\nWrite an explicit `.update()` method for serializer `application.serializers.modules_serializers.ModulesSerializer`, or set `read_only=True` on nested serializer fields."
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "membership_fee": "  ",
+     "enabled_for": null,
+     "custom_subscription_form_data": null
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-json-nulls",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'subscription_fee_plans': [ErrorDetail(string='This field may not be null.', code='null')], 'membership_fee_plans': [ErrorDetail(string='This field may not be null.', code='null')], 'configuration': [ErrorDetail(string='This field may not be null.', code='null')], 'additional_sections': [ErrorDetail(string='This field may not be null.', code='null')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "subscription_fee_plans": null,
+     "membership_fee_plans": null,
+     "additional_sections": null,
+     "configuration": null,
+     "custom_subscription_form_data": null,
+     "enabled_for": null,
+     "additional_fields": null,
+     "stripe_available_methods": null
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-primary-key-own",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'sport_association_id': [ErrorDetail(string='sport association with this sport association id already exists.', code='unique')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-primary-key-foreign",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'sport_association_id': [ErrorDetail(string='sport association with this sport association id already exists.', code='unique')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701002"
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-primary-key-deleted",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'sport_association_id': [ErrorDetail(string='sport association with this sport association id already exists.', code='unique')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701003"
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-primary-key-null",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'sport_association_id': [ErrorDetail(string='This field may not be null.', code='null')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "sport_association_id": null
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-primary-key-text",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'sport_association_id': [ErrorDetail(string='Must be a valid UUID.', code='invalid')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "sport_association_id": "x"
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-primary-key-list",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'sport_association_id': [ErrorDetail(string='Must be a valid UUID.', code='invalid')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "sport_association_id": [
+      1
+     ]
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-primary-key-unused",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "The `.update()` method does not support writable nested fields by default.\nWrite an explicit `.update()` method for serializer `application.serializers.modules_serializers.ModulesSerializer`, or set `read_only=True` on nested serializer fields."
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "sport_association_id": "A1000000-0000-4000-8000-000000642999"
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-primary-key-int",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "The `.update()` method does not support writable nested fields by default.\nWrite an explicit `.update()` method for serializer `application.serializers.modules_serializers.ModulesSerializer`, or set `read_only=True` on nested serializer fields."
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "sport_association_id": 5
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-primary-key-bool",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "The `.update()` method does not support writable nested fields by default.\nWrite an explicit `.update()` method for serializer `application.serializers.modules_serializers.ModulesSerializer`, or set `read_only=True` on nested serializer fields."
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "sport_association_id": true
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-column-limits",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'affiliate_code': [ErrorDetail(string='Ensure this field has no more than 8 characters.', code='max_length')], 'president_first_name': [ErrorDetail(string='Ensure this field has no more than 255 characters.', code='max_length')], 'iban': [ErrorDetail(string='Ensure this field has no more than 34 characters.', code='max_length')], 'website': [ErrorDetail(string='Ensure this field has no more than 1024 characters.', code='max_length')], 'abbreviated': [ErrorDetail(string='Ensure this field has no more than 100 characters.', code='max_length')], 'vat_number': [ErrorDetail(string='Ensure this field has no more than 20 characters.', code='max_length')], 'whatsapp': [ErrorDetail(string='Ensure this field has no more than 20 characters.', code='max_length')], 'extra_text_invoices': [ErrorDetail(string='This field may not be blank.', code='blank')], 'imported_from_associami': [ErrorDetail(string='Must be a valid boolean.', code='invalid')], 'show_regulation_to_members': [ErrorDetail(string='Must be a valid boolean.', code='invalid')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "affiliate_code": "123456789",
+     "iban": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+     "website": "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+     "abbreviated": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+     "vat_number": "vvvvvvvvvvvvvvvvvvvvv",
+     "whatsapp": "wwwwwwwwwwwwwwwwwwwww",
+     "president_first_name": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+     "president_last_name": 7,
+     "federation": "",
+     "enroll_number": "",
+     "sport": "",
+     "invoice_template": "",
+     "subscription_template": null,
+     "extra_text_invoices": "",
+     "imported_from_associami": "zz",
+     "show_regulation_to_members": 3
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-long-and-blank",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'denomination': [ErrorDetail(string='Ensure this field has no more than 150 characters.', code='max_length')], 'tax_code': [ErrorDetail(string='This field may not be blank.', code='blank')], 'address': [ErrorDetail(string='Ensure this field has no more than 150 characters.', code='max_length')], 'address_city': [ErrorDetail(string='Ensure this field has no more than 150 characters.', code='max_length')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "denomination": "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+     "tax_code": "  ",
+     "address": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+     "address_city": "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-not-strings",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'sport': [ErrorDetail(string='Not a valid string.', code='invalid')], 'iban': [ErrorDetail(string='Not a valid string.', code='invalid')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "sport": {
+      "a": 1
+     },
+     "iban": [
+      "x"
+     ],
+     "denomination": 5,
+     "tax_code": 1.5
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-text-field-types",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'document_header': [ErrorDetail(string='Not a valid string.', code='invalid')], 'invoice_footer': [ErrorDetail(string='This field may not be blank.', code='blank')], 'checkout_info': [ErrorDetail(string='Not a valid string.', code='invalid')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "regulation": null,
+     "demand": 5,
+     "logo": "ok",
+     "document_header": [
+      "a"
+     ],
+     "invoice_footer": "",
+     "checkout_info": false,
+     "president_signature": 1,
+     "stamp": null
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-null-characters",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'denomination': [ErrorDetail(string='Null characters are not allowed.', code='null_characters_not_allowed')], 'sport': [ErrorDetail(string='Null characters are not allowed.', code='null_characters_not_allowed')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "denomination": "\u0000",
+     "sport": "a\u0000b"
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-address-cap-digits-unicode",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "The `.update()` method does not support writable nested fields by default.\nWrite an explicit `.update()` method for serializer `application.serializers.modules_serializers.ModulesSerializer`, or set `read_only=True` on nested serializer fields."
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "address_cap": "١٢٣٤٥"
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-address-cap-digits-number",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "The `.update()` method does not support writable nested fields by default.\nWrite an explicit `.update()` method for serializer `application.serializers.modules_serializers.ModulesSerializer`, or set `read_only=True` on nested serializer fields."
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "address_cap": 12345
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-address-cap-digits-trimmed",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "The `.update()` method does not support writable nested fields by default.\nWrite an explicit `.update()` method for serializer `application.serializers.modules_serializers.ModulesSerializer`, or set `read_only=True` on nested serializer fields."
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "address_cap": " 12345 "
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-address-cap-null",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "The `.update()` method does not support writable nested fields by default.\nWrite an explicit `.update()` method for serializer `application.serializers.modules_serializers.ModulesSerializer`, or set `read_only=True` on nested serializer fields."
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "address_cap": null
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-address-cap-letters",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'address_cap': [ErrorDetail(string='Enter exactly 5 digits', code='invalid')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "address_cap": "abcde"
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-address-cap-short",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'address_cap': [ErrorDetail(string='Enter exactly 5 digits', code='invalid')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "address_cap": "1234"
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-address-cap-long",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'address_cap': [ErrorDetail(string='Enter exactly 5 digits', code='invalid'), ErrorDetail(string='Ensure this field has no more than 5 characters.', code='max_length')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "address_cap": "123456"
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-address-cap-blank",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'address_cap': [ErrorDetail(string='This field may not be blank.', code='blank')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "address_cap": ""
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-address-cap-boolean",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'address_cap': [ErrorDetail(string='Not a valid string.', code='invalid')]}}"
+   },
+   "effect": null,
+   "body": {
+    "title": "Mai salvato",
+    "sport_association": {
+     "address_cap": true
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-with-outer-errors",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'sport': [ErrorDetail(string='Ensure this field has no more than 100 characters.', code='max_length')]}, 'title': [ErrorDetail(string='Ensure this field has no more than 255 characters.', code='max_length')]}"
+   },
+   "effect": null,
+   "body": {
+    "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "sport_association": {
+     "sport": "sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+    }
+   }
+  },
+  {
+   "name": "modules-writes-update-nested-collaborator",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'sport': [ErrorDetail(string='Ensure this field has no more than 100 characters.', code='max_length')]}}"
+   },
+   "effect": null,
+   "body": {
+    "sport_association": {
+     "sport": "sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+    }
+   }
+  },
+  {
    "name": "modules-writes-update-new-key-copies",
    "actor": "owner",
    "method": "PATCH",

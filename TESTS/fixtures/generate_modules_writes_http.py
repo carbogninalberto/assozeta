@@ -353,6 +353,90 @@ add('update-nested-association-unknown-keys', 'owner', 'PATCH', update('edit'), 
     body={'title': 'Mai salvato', 'sport_association': {'sconosciuto': 1, 'altro': [None]}})
 
 
+# === nested sport_association dict with keys (SportAssociationSerializer validates every field present, in Meta.fields
+# order, before ModelSerializer.update refuses the nested write; the module is never saved)
+def nested_errors(*fields, outer=()):
+    """str(ValidationError) of {'sport_association': {field: [ErrorDetail, ...]}} (+ outer module fields after it)."""
+    inner = ', '.join(f"'{name}': [" + ', '.join(f'ErrorDetail(string={m!r}, code={c!r})' for m, c in details) + ']'
+                      for name, details in fields)
+    return error('{' + ', '.join([f"'sport_association': {{{inner}}}", *outer]) + '}')
+
+
+def nested_case(name, nested, *fields, **kw):
+    add('update-nested-' + name, 'owner', 'PATCH', update('edit'), 400, nested_errors(*fields, **kw),
+        body={'title': 'Mai salvato', 'sport_association': nested})
+
+
+def nested_valid(name, nested):
+    add('update-nested-' + name, 'owner', 'PATCH', update('edit'), 500, error(NESTED),
+        body={'title': 'Mai salvato', 'sport_association': nested})
+
+
+MAX = lambda n: (f'Ensure this field has no more than {n} characters.', 'max_length')
+BLANK, NULL, NOT_STRING, NOT_BOOL = (('This field may not be blank.', 'blank'), ('This field may not be null.', 'null'),
+                                     ('Not a valid string.', 'invalid'), ('Must be a valid boolean.', 'invalid'))
+UNIQUE_ID = ('sport association with this sport association id already exists.', 'unique')
+CAP = ('Enter exactly 5 digits', 'invalid')
+nested_valid('valid-fields', {'sport': 'Calcio', 'tax_code': '12345678901', 'reviewed': 'x', 'groups': 5, 'address_cap': '12345',
+                              'sport_association_id': UNKNOWN, 'unknown': 1})
+nested_case('text-errors', {'denomination': None, 'tax_code': 'x' * 12, 'address': '', 'address_cap': '123', 'address_city': 5,
+                            'regulation': '', 'logo': True},
+            ('denomination', [NULL]), ('tax_code', [MAX(11)]), ('address', [BLANK]), ('address_cap', [CAP]), ('regulation', [BLANK]),
+            ('logo', [NOT_STRING]))
+nested_case('number-boolean-errors', {'subscription_fee': 'abc', 'membership_fee': '1234567.123', 'multiple_subscription_fee': 'maybe',
+                                      'multiple_membership_fee': None, 'enable_quotes_management': 'x'},
+            ('subscription_fee', [('A valid number is required.', 'invalid')]), ('multiple_subscription_fee', [NOT_BOOL]),
+            ('membership_fee', [('Ensure that there are no more than 9 digits in total.', 'max_digits')]),
+            ('multiple_membership_fee', [NULL]), ('enable_quotes_management', [NOT_BOOL]))
+nested_case('decimal-places', {'subscription_fee': 1.234, 'membership_fee': 12345678},
+            ('subscription_fee', [('Ensure that there are no more than 2 decimal places.', 'max_decimal_places')]),
+            ('membership_fee', [('Ensure that there are no more than 7 digits before the decimal point.', 'max_whole_digits')]))
+nested_case('null-fee', {'subscription_fee': None, 'membership_fee': None}, ('subscription_fee', [NULL]))
+nested_case('blank-fees', {'subscription_fee': '', 'membership_fee': '', 'multiple_subscription_fee': '',
+                           'additional_sections': {'a': 1}, 'configuration': [1], 'subscription_fee_plans': 'x'},
+            ('subscription_fee', [('A valid number is required.', 'invalid')]), ('multiple_subscription_fee', [NOT_BOOL]))
+nested_valid('blank-nullable-fee', {'membership_fee': '  ', 'enabled_for': None, 'custom_subscription_form_data': None})
+nested_case('json-nulls', {'subscription_fee_plans': None, 'membership_fee_plans': None, 'additional_sections': None, 'configuration': None,
+                           'custom_subscription_form_data': None, 'enabled_for': None, 'additional_fields': None,
+                           'stripe_available_methods': None},
+            ('subscription_fee_plans', [NULL]), ('membership_fee_plans', [NULL]), ('configuration', [NULL]), ('additional_sections', [NULL]))
+for name, value in (('own', OWN), ('foreign', FOREIGN), ('deleted', DELETED)):
+    nested_case('primary-key-' + name, {'sport_association_id': value}, ('sport_association_id', [UNIQUE_ID]))
+nested_case('primary-key-null', {'sport_association_id': None}, ('sport_association_id', [NULL]))
+nested_case('primary-key-text', {'sport_association_id': 'x'}, ('sport_association_id', [('Must be a valid UUID.', 'invalid')]))
+nested_case('primary-key-list', {'sport_association_id': [1]}, ('sport_association_id', [('Must be a valid UUID.', 'invalid')]))
+nested_valid('primary-key-unused', {'sport_association_id': UNKNOWN.upper()})
+nested_valid('primary-key-int', {'sport_association_id': 5})
+nested_valid('primary-key-bool', {'sport_association_id': True})
+nested_case('column-limits', {'affiliate_code': '123456789', 'iban': 'x' * 35, 'website': 'w' * 1025, 'abbreviated': 'a' * 101,
+                              'vat_number': 'v' * 21, 'whatsapp': 'w' * 21, 'president_first_name': 'p' * 256, 'president_last_name': 7,
+                              'federation': '', 'enroll_number': '', 'sport': '', 'invoice_template': '', 'subscription_template': None,
+                              'extra_text_invoices': '', 'imported_from_associami': 'zz', 'show_regulation_to_members': 3},
+            ('affiliate_code', [MAX(8)]), ('president_first_name', [MAX(255)]), ('iban', [MAX(34)]), ('website', [MAX(1024)]),
+            ('abbreviated', [MAX(100)]), ('vat_number', [MAX(20)]), ('whatsapp', [MAX(20)]), ('extra_text_invoices', [BLANK]),
+            ('imported_from_associami', [NOT_BOOL]), ('show_regulation_to_members', [NOT_BOOL]))
+nested_case('long-and-blank', {'denomination': 'd' * 151, 'tax_code': '  ', 'address': 'a' * 151, 'address_city': 'c' * 151},
+            ('denomination', [MAX(150)]), ('tax_code', [BLANK]), ('address', [MAX(150)]), ('address_city', [MAX(150)]))
+nested_case('not-strings', {'sport': {'a': 1}, 'iban': ['x'], 'denomination': 5, 'tax_code': 1.5}, ('sport', [NOT_STRING]), ('iban', [NOT_STRING]))
+nested_case('text-field-types', {'regulation': None, 'demand': 5, 'logo': 'ok', 'document_header': ['a'], 'invoice_footer': '',
+                                 'checkout_info': False, 'president_signature': 1, 'stamp': None},
+            ('document_header', [NOT_STRING]), ('invoice_footer', [BLANK]), ('checkout_info', [NOT_STRING]))
+nested_case('null-characters', {'denomination': '\u0000', 'sport': 'a\u0000b'},
+            ('denomination', [('Null characters are not allowed.', 'null_characters_not_allowed')]),
+            ('sport', [('Null characters are not allowed.', 'null_characters_not_allowed')]))
+for name, value in (('digits-unicode', '١٢٣٤٥'), ('digits-number', 12345), ('digits-trimmed', ' 12345 '), ('null', None)):
+    nested_valid('address-cap-' + name, {'address_cap': value})
+nested_case('address-cap-letters', {'address_cap': 'abcde'}, ('address_cap', [CAP]))
+nested_case('address-cap-short', {'address_cap': '1234'}, ('address_cap', [CAP]))
+nested_case('address-cap-long', {'address_cap': '123456'}, ('address_cap', [CAP, MAX(5)]))
+nested_case('address-cap-blank', {'address_cap': ''}, ('address_cap', [BLANK]))
+nested_case('address-cap-boolean', {'address_cap': True}, ('address_cap', [NOT_STRING]))
+add('update-nested-with-outer-errors', 'owner', 'PATCH', update('edit'), 400,
+    nested_errors(('sport', [MAX(100)]), outer=[detail('title', 'Ensure this field has no more than 255 characters.', 'max_length')]),
+    body={'title': 'x' * 256, 'sport_association': {'sport': 's' * 101}})
+add('update-nested-collaborator', 'full_collaborator', 'PATCH', update('edit'), 400, nested_errors(('sport', [MAX(100)])),
+    body={'sport_association': {'sport': 's' * 101}})
+
 def created_audit(row, ident):
     """auditlog's diff of a module against nothing: None-valued fields are kept only for the association and the JSON fields."""
     changes = {'module_id': ['None', ident]}

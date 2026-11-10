@@ -66,7 +66,7 @@ func (h *ModulesWritesHandler) serve(c echo.Context, method, operation, name str
 	case errors.As(err, &invalidUUID):
 		return c.JSON(400, []string{invalidUUID.Detail})
 	case errors.As(err, &invalid) && update:
-		return c.JSON(400, map[string]string{"error": moduleErrorsRepr(invalid.Errors, english)})
+		return c.JSON(400, map[string]string{"error": moduleErrorsRepr(invalid.Errors, invalid.Nested, english)})
 	case errors.As(err, &invalid):
 		fields := make(map[string]any, len(invalid.Errors))
 		for field, codes := range invalid.Errors {
@@ -96,6 +96,8 @@ func moduleMessage(code string, english bool) string {
 			return "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
 		}
 		return "La data è in un formato errato. Usa uno dei seguenti formati: DD/MM/YYYY."
+	case code == dto.ModuleCapPattern:
+		return "Enter exactly 5 digits"
 	case code == dto.ModuleJSON:
 		if english {
 			return "Value must be valid JSON."
@@ -114,7 +116,7 @@ func moduleMessage(code string, english bool) string {
 // moduleErrorsRepr is str(ValidationError(serializer.errors)): the dict repr
 // of ErrorDetail lists in field order; the nested serializer's non-dict error
 // is its own {'non_field_errors': [...]} dict.
-func moduleErrorsRepr(errors dto.ModuleWriteErrors, english bool) string {
+func moduleErrorsRepr(errors dto.ModuleWriteErrors, nested []dto.DRFFieldError, english bool) string {
 	detail := func(code string) string {
 		return "[ErrorDetail(string=" + dto.PythonStringRepr(moduleMessage(code, english)) + ", code=" +
 			dto.PythonStringRepr(dto.ModuleDRFCode(code)) + ")]"
@@ -123,6 +125,10 @@ func moduleErrorsRepr(errors dto.ModuleWriteErrors, english bool) string {
 	parts := []string{}
 	for _, field := range order {
 		codes, ok := errors[field]
+		if field == "sport_association" && len(nested) > 0 {
+			parts = append(parts, "'sport_association': "+moduleNestedRepr(nested, english))
+			continue
+		}
 		if !ok {
 			continue
 		}
@@ -137,6 +143,24 @@ func moduleErrorsRepr(errors dto.ModuleWriteErrors, english bool) string {
 			text = "[" + strings.Join(items, ", ") + "]"
 		}
 		parts = append(parts, dto.PythonStringRepr(field)+": "+text)
+	}
+	return "{" + strings.Join(parts, ", ") + "}"
+}
+
+// moduleNestedRepr is the nested serializer's error dict: ErrorDetail lists in
+// the field order of its Meta.fields.
+func moduleNestedRepr(fields []dto.DRFFieldError, english bool) string {
+	parts := make([]string, len(fields))
+	for index, field := range fields {
+		items := make([]string, len(field.Codes))
+		for position, code := range field.Codes {
+			kind := dto.DRFErrorCode(code)
+			if strings.HasPrefix(code, "unique:") {
+				kind = "unique"
+			}
+			items[position] = "ErrorDetail(string=" + dto.PythonStringRepr(moduleMessage(code, english)) + ", code=" + dto.PythonStringRepr(kind) + ")"
+		}
+		parts[index] = dto.PythonStringRepr(field.Field) + ": [" + strings.Join(items, ", ") + "]"
 	}
 	return "{" + strings.Join(parts, ", ") + "}"
 }

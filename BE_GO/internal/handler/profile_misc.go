@@ -133,6 +133,11 @@ func (h *ProfileMiscHandler) Onboarding(c echo.Context) error {
 		return err
 	}
 	defer release()
+	// Django keeps a file part in memory (InMemoryUploadedFile) while the body is at most
+	// FILE_UPLOAD_MAX_MEMORY_SIZE; larger bodies use another file class, not reproduced.
+	if (request.ContentLength < 0 || request.ContentLength > 2621440) && dto.ProfileSettingsHasUpload(write.Body) {
+		return messageReadsError(c, service.ErrOnboardingNotPorted)
+	}
 	err = h.misc.Onboarding(write.Context, *identity, write.Body, write.Audit)
 	var invalid *service.OnboardingValidationError
 	var fresh *service.OnboardingFreshError
