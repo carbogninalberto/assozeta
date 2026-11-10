@@ -69,6 +69,8 @@ type mcpModel struct {
 	VerbosePlural  string      `json:"verbose_name_plural"`
 	Fields         []*mcpField `json:"fields"`
 	ManagerFilters []string    `json:"manager_filters"`
+	// GroupManager: the default manager filters by the request's X-Group-Id.
+	GroupManager bool `json:"group_manager"`
 }
 
 type mcpMetadata struct {

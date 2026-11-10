@@ -115,6 +115,18 @@ xlsx-exports.md have the details.
 |---|---|---|---|
 | templates-reports | `POST saved-reports/<pk>/run` | tools `export_data` (CSV, XLSX, PDF), `export_multi_sheet` and `get_attendance_matrix` (preview, XLSX, PDF) | 125 cases; RED `v2rep-red-r1` Django 124/124, Go 500, and `v2rep-red-r2` Django 125/125, Go 500 (texts longer than a page); GREEN `v2rep-versioned-r2` 4 transports; mutations `v2rep-mutation-r1` (one sheet per course swapped with the single sheet) and `v2rep-mutation-r2` (a cut paragraph keeps one line too many) CAUGHT |
 
+### Ported in the v2-reports-2 change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2rep2-*`; templates-reports.md ("Group and unusual arguments").
+
+| Family | Route | Was refused or different | Evidence |
+|---|---|---|---|
+| templates-reports | `POST saved-reports/<pk>/run` | Go divergence: the query tools (and the queries of `export_data` and `export_multi_sheet`) did not follow `X-Group-Id` on the group-aware models | 174 cases; RED `v2rep2-red-r1` Django 174/174, Go the rows of every group; GREEN `v2rep2-versioned-r2` 4 transports; mutation `v2rep2-mutation-r2` (group filter dropped) CAUGHT on `run-query-courses-group-header` |
+| templates-reports | same | file tools (B): a `format`, title, label or text argument that is not a string; a list or dict cell in the CSV; ISO date-time text in another spelling; a sheet without columns; a generated sheet name equal to an earlier one; a course without a title; `sheets` or a sheet of another type | same receipts (RED: these documented refusals); `go test ./internal/service -run FormatValueGolden` (2037 texts from CPython), 14 more golden workbooks |
+
+Still refused in the file tools: workbook labels that are equal numbers or beyond 64 bits, and the XLSX and PDF results on
+the MCP server and the assistant (mcp-server harness `mcp-server-tools-v2rep2-r2`: 135/135, 3 refused).
+
 ### Ported in the v2-pdf change
 
 Receipts are `quality-reports/go-migration/<family>-http-v2pdf-*`; [pdf-exports](pdf-exports.md) has the parity standard (the

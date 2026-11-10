@@ -370,7 +370,7 @@ def same_as_contract(data, spec):
 
 def sheet_rows(labels, rows):
     keys = [f'k{n}' for n in range(len(labels))]
-    return keys, [dict(zip(keys, [decode(value) for value in row])) for row in rows], dict(zip(keys, labels))
+    return keys, [dict(zip(keys, [decode(value) for value in row])) for row in rows], dict(zip(keys, [decode(label) for label in labels]))
 
 
 def report_xlsx(name, title, labels, rows, sheet_name=None):
@@ -442,6 +442,22 @@ report_sheets('rs-dup-titles', ('Tags', ['a'], [['1']]), ('Tags', ['a'], [['x']]
               names=['Tags', 'Tags (2)', 'Tags (3)'])
 report_sheets('rs-dup-long', ('L' * 40, ['a'], [['1']]), ('L' * 35, ['a'], [['x']]), names=['L' * 31, 'L' * 27 + ' (2)'])
 report_sheets('rs-collision', ('Tags', ['a'], [['1']]), ('Tags (2)', ['b', 'c'], [['x', 'y']]), ('Tags', ['c'], [['z']]))
+report_sheets('rs-collision-shorter', ('Tags', ['a', 'b'], [['1', 'x'], ['3', 'y'], ['5', 'z']]),
+              ('Tags', ['b', 'c', 'd'], [['p', I(1), ''], ['q', I(2), 'w'], ['r', I(3), '']]), ('Tags (2)', ['una colonna più larga'], [[I(7)]]),
+              names=['Tags', 'Tags (2)', 'Tags (2)'])
+# Labels that are not text: a number, null and a boolean are written as such; a list or dict raises.
+report_xlsx('rx-label-types', 'T', [I(5), F(1.5), None, {'bool': True}, 'testo', F(80.0), I(-12345678901)],
+            [['x', 'yy', 'z', I(1), 'w', '', ''], ['una cella più larga', 'w', '', I(2), '', '', '']])
+report_xlsx('rx-label-numbers', 'T', [I(5), F(1.5), I(7)], [['x', 'yy', 'z']])
+report_xlsx('rx-label-integers', 'T', [I(5), I(70)], [['x', 'yy']])
+report_xlsx('rx-label-booleans', 'T', [{'bool': True}, {'bool': False}], [['x', 'yy']])
+report_xlsx('rx-label-number-boolean', 'T', [F(1.5), {'bool': True}, None], [['x', 'yy', 'z']])
+report_xlsx('rx-label-null', 'T', [None, 'b'], [['x', 'yy']])
+report_xlsx('rx-label-list', 'T', [{'list': ['a']}, 'b'], [['x', 'y']])
+report_xlsx('rx-label-dict', 'T', ['b', {'dict': [['a', 'b']]}], [['x', 'y']])
+report_sheets('rs-label-types', ('Tags', [I(0), None], [['1', 'x']]), ('Carnet', ['a', {'bool': False}], [['x', I(3)]]), names=['Tags', 'Carnet'])
+report_xlsx('rx-no-columns', 'Tags', [], [[], [], []])
+report_sheets('rs-no-columns', ('Tags', [], [[], []]), ('Carnet', ['a'], [['x']]), names=['Tags', 'Carnet'])
 report_sheets('rs-case', ('Tags', ['a'], [['1']]), ('tags', ['b'], [['x']]))
 report_sheets('rs-empty-title', ('', ['a'], [['1']]))
 report_sheets('rs-title-invalid', ('ok', ['a'], [['1']]), ('a:b', ['a'], [['1']]))
@@ -467,6 +483,15 @@ attendance('ax-sheets', 'sheets', matrix('Calcio', DAYS[:2], [('Rossi Mario', ['
 attendance('ax-sheets-names', 'sheets', matrix('Nuoto: A/B [x]', DAYS[:1], [('a', ['P'])]), matrix('Nuoto- A-B -x', DAYS[:1], [('b', [''])]),
            matrix('///', DAYS[:1], [('c', ['P'])]), matrix('N' * 40, DAYS[:1], [('d', ['P'])]), matrix('N' * 33, DAYS[:1], [('e', ['P'])]))
 attendance('ax-sheets-no-rows', 'sheets', matrix('Calcio', DAYS, [('Rossi Mario', ['P', '', ''])]), matrix('Nuoto', DAYS, []))
+LONG = 'Ginnastica dolce per gli adulti'
+attendance('ax-sheets-collision', 'sheets', matrix(LONG[:27] + ' (2)', DAYS, [('Rossi Mario', ['P', '', 'P']), ('Bianchi Anna', ['', 'P', ''])]),
+           matrix(LONG + ' A', DAYS[:1], [('Verdi Luca', ['P'])]), matrix(LONG + ' B', DAYS[1:2], [('de Luca Ugo', [''])]))
+attendance('ax-sheets-collision-dup-dates', 'sheets', matrix(LONG[:27] + ' (2)', DAYS, [('Rossi Mario', ['P', '', 'P'])]),
+           matrix(LONG + ' A', DAYS[:1], [('Verdi Luca', ['P'])]), matrix(LONG + ' B', ['01/09/2026'] * 4, [('de Luca Ugo', ['', 'P', '', ''])]))
+attendance('ax-flat-untitled', 'flat', matrix('Calcio', DAYS[:2], [('Rossi Mario', ['P', ''])]), matrix(None, DAYS[1:], [('Bianchi Anna', ['', 'P'])]))
+attendance('ax-flat-all-untitled', 'flat', matrix(None, DAYS[:1], [('Rossi Mario', ['P'])]), matrix(None, DAYS[1:], [('Bianchi Anna', ['', 'P'])]))
+attendance('ax-sheets-untitled', 'sheets', matrix('Calcio', DAYS[:2], [('Rossi Mario', ['P', ''])]), matrix(None, DAYS[1:], [('Bianchi Anna', ['', 'P'])]))
+attendance('ax-single-untitled', 'single', matrix(None, DAYS, [('Rossi Mario', ['P', '', 'P'])]))
 
 OUTPUT.parent.mkdir(parents=True, exist_ok=True)
 OUTPUT.write_text(json.dumps({'versions': {'pandas': pandas.__version__, 'openpyxl': openpyxl.__version__,

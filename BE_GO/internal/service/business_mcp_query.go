@@ -61,6 +61,18 @@ func mcpToolOutcome(ctx context.Context, err error) (any, error) {
 	return nil, err
 }
 
+// mcpRaisedResult is an exception raised inside a tool function. A
+// saved-report run answers every exception alike; the MCP transport returns
+// str(e), so an exception whose text is not given (message "") stays refused
+// there.
+func mcpRaisedResult(ctx context.Context, message string) (any, error) {
+	if message == "" && ctx.Value(reportRunKey{}) == nil {
+		return nil, ErrBusinessMCPNotPorted
+	}
+	markMCPRaised(ctx)
+	return mcpErrorResult(message), nil
+}
+
 // runPlan executes a planned QueryBuilder call and renders its result.
 func (t *BusinessMCPTools) runPlan(ctx context.Context, plan dto.ReportPlan, timeoutMS int64) (any, error) {
 	if plan.Immediate != nil {
@@ -83,7 +95,7 @@ func (t *BusinessMCPTools) runPlan(ctx context.Context, plan dto.ReportPlan, tim
 // query plans and runs one QueryBuilder method with kwargs.
 func (t *BusinessMCPTools) query(ctx context.Context, tool string, kwargs domain.RequestObject) (any, error) {
 	var timeout int64
-	plan, err := dto.PlanMCPTool(tool, kwargs, t.association, func() (dto.ReportSettings, error) {
+	plan, err := dto.PlanMCPToolGroup(tool, kwargs, t.association, t.group, func() (dto.ReportSettings, error) {
 		settings, err := loadReportSettings(ctx, t.store)
 		timeout = settings.QueryTimeout * 1000
 		return settings, err
@@ -134,8 +146,7 @@ var mcpExportBlacklist = map[string]bool{"sport_association_id": true, "sport_as
 	"is_superuser": true, "is_staff": true, "updated_at": true}
 
 var (
-	mcpExportDateTime = regexp.MustCompile(`^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):\d{2}(\.\d{6})?\+00:00$`)
-	mcpExportDate     = regexp.MustCompile(`^(\d{4})-(\d{2})-(\d{2})$`)
+	mcpExportDate = regexp.MustCompile(`^(\d{4})-(\d{2})-(\d{2})$`)
 )
 
 // formatExportValue is exporters.format_value on a serialized value.
@@ -151,12 +162,12 @@ func mcpFormatExportValue(value any) (any, error) {
 	case string:
 		points := []rune(typed)
 		if len(points) >= 19 && points[4] == '-' && points[10] == 'T' {
-			if match := mcpExportDateTime.FindStringSubmatch(typed); match != nil {
-				return match[3] + "/" + match[2] + "/" + match[1] + " " + match[4] + ":" + match[5], nil
+			if formatted, ok := mcpISODateTime(typed); ok {
+				return formatted, nil
 			}
-			return nil, ErrBusinessMCPNotPorted // datetime.fromisoformat on other text
 		}
 		if len(points) == 10 && points[4] == '-' && points[7] == '-' {
+			// date.fromisoformat reads the UTF-8 bytes: only ten ASCII characters parse.
 			if match := mcpExportDate.FindStringSubmatch(typed); match != nil {
 				year, _ := strconv.Atoi(match[1])
 				month, _ := strconv.Atoi(match[2])
@@ -165,29 +176,21 @@ func mcpFormatExportValue(value any) (any, error) {
 					day <= time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC).Day() {
 					return match[3] + "/" + match[2] + "/" + match[1], nil
 				}
-				return typed, nil
-			}
-			for _, r := range typed {
-				if r > 127 {
-					return nil, ErrBusinessMCPNotPorted // date.fromisoformat on non-ASCII digits
-				}
 			}
 		}
 	}
 	return value, nil
 }
 
-// csvField is csv.writer's str() of a field.
+// csvField is csv.writer's str() of a field (None is the empty text).
 func mcpCSVField(value any) (string, error) {
 	switch typed := value.(type) {
 	case string:
 		return typed, nil
-	case json.Number:
-		return dto.PythonStr(typed), nil
 	case nil:
 		return "", nil
-	case domain.RequestObject, []any:
-		return "", ErrBusinessMCPNotPorted // str() of containers
+	case json.Number, bool, domain.RequestObject, []any:
+		return dto.PythonStr(typed), nil
 	}
 	return "", ErrBusinessMCPNotPorted
 }
@@ -271,7 +274,14 @@ func (t *BusinessMCPTools) exportData(ctx context.Context, arguments domain.Requ
 	format := mcpLookupOr(arguments, "format", "csv")
 	formatText, ok := format.(string)
 	if !ok {
-		return nil, ErrBusinessMCPNotPorted
+		// `format not in EXPORTERS`: a list or dict is not hashable.
+		switch format.(type) {
+		case []any:
+			return mcpRaisedResult(ctx, "unhashable type: 'list'")
+		case domain.RequestObject:
+			return mcpRaisedResult(ctx, "unhashable type: 'dict'")
+		}
+		return mcpErrorResult("Unsupported format: " + dto.PythonStr(format) + ". Use: csv, xlsx, pdf"), nil
 	}
 	if formatText != "csv" && formatText != "xlsx" && formatText != "pdf" {
 		return mcpErrorResult("Unsupported format: " + formatText + ". Use: csv, xlsx, pdf"), nil
@@ -302,7 +312,7 @@ func (t *BusinessMCPTools) exportData(ctx context.Context, arguments domain.Requ
 	}
 	titleText, ok := titleOrModel.(string)
 	if !ok {
-		return nil, ErrBusinessMCPNotPorted
+		return mcpRaisedResult(ctx, "") // sanitize_text: re.sub on a value that is not a str
 	}
 	filename, err := SanitizeText(titleText, "-")
 	if err != nil {
@@ -312,7 +322,10 @@ func (t *BusinessMCPTools) exportData(ctx context.Context, arguments domain.Requ
 	if value := mcpLookupOr(arguments, "column_labels", nil); mcpTruthy(value) {
 		object, ok := value.(domain.RequestObject)
 		if !ok {
-			return nil, ErrBusinessMCPNotPorted
+			// .get on a value that is not a dict, once per kept column.
+			if columns, _, _ := mcpExportColumns(data, nil); len(columns) > 0 {
+				return mcpRaisedResult(ctx, "")
+			}
 		}
 		labels = dto.PythonDict(object)
 	}
@@ -387,19 +400,19 @@ func (t *BusinessMCPTools) exportMultiSheet(ctx context.Context, arguments domai
 	if !mcpTruthy(sheets) {
 		return mcpErrorResult("No sheets specified"), nil
 	}
-	items, ok := sheets.([]any)
-	if !ok {
-		return nil, ErrBusinessMCPNotPorted
-	}
 	// QueryBuilder(sport_association_id) reads the settings once.
 	if _, err := loadReportSettings(ctx, t.store); err != nil {
 		return mcpToolOutcome(ctx, err)
+	}
+	items, ok := sheets.([]any)
+	if !ok {
+		return mcpRaisedResult(ctx, "") // enumerate() of a number, or .get on a character or key
 	}
 	var prepared []reportSheetData
 	for i, item := range items {
 		spec, ok := item.(domain.RequestObject)
 		if !ok {
-			return nil, ErrBusinessMCPNotPorted
+			return mcpRaisedResult(ctx, "") // .get on a value that is not a dict
 		}
 		spec = dto.PythonDict(spec)
 		modelName, _ := spec.Lookup("model_name")

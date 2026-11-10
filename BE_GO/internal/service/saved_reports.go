@@ -184,7 +184,7 @@ func (s *SavedReports) Run(ctx context.Context, identity domain.ResolvedIdentity
 }
 
 // RunGroup is Run for a request with the X-Group-Id header value group: the
-// file tools resolve courses through the group-aware manager.
+// tools read the group-aware models through their manager, which follows it.
 func (s *SavedReports) RunGroup(ctx context.Context, identity domain.ResolvedIdentity, raw string, body any, group string) (any, error) {
 	association, _, err := s.scope(ctx, identity)
 	if err != nil {
@@ -229,7 +229,7 @@ func (s *SavedReports) RunGroup(ctx context.Context, identity domain.ResolvedIde
 		return s.runFileTool(ctx, row.ToolName, merged, association, supplierGroup(group))
 	}
 	var timeout int64
-	plan, err := dto.PlanReportTool(row.ToolName, merged, association, func() (dto.ReportSettings, error) {
+	plan, err := dto.PlanReportToolGroup(row.ToolName, merged, association, supplierGroup(group), func() (dto.ReportSettings, error) {
 		settings, err := s.reportSettings(ctx)
 		timeout = settings.QueryTimeout * 1000
 		return settings, err

@@ -126,11 +126,9 @@ matrix for the MCP server as well.
 
 ## Not ported (refused with the HTML 500 page before any query)
 
-- In the file tools (below): a `format`, title, label or text argument that is
-  not a string, a cell holding a list or dict in the CSV, text that looks like
-  an ISO date and time in another spelling than `isoformat()`'s, a sheet
-  without columns, a generated sheet name equal to an earlier one, a course
-  without a title, and the paragraph inputs `pdfexport` refuses (pdf-exports.md).
+- In the file tools: workbook labels that are numbers equal to one another or
+  beyond 64 bits, and the paragraph inputs `pdfexport` refuses
+  (pdf-exports.md).
 - `get_schema` for a whitelisted model or the full schema (static model
   metadata).
 - The other whitelisted models; relation traversal (`a__b`), reverse
@@ -141,6 +139,42 @@ matrix for the MCP server as well.
   integers outside the column range, aggregate aliases with `__`, quotes,
   whitespace or a field's name, and HTML references other than the common
   named ones (`&amp;`, `&lt;`, `&gt;`, `&quot;`, `&apos;`, `&nbsp;`).
+
+## Group and unusual arguments (`v2rep2-*` receipts)
+
+- The query tools and the queries of the file tools read the group-aware
+  models (Associate, Course, Invoice, Payment, Subscription) through their
+  default manager: with an `X-Group-Id` that is a UUID (in any spelling
+  `uuid.UUID` reads) only the rows of that group are read; another value is
+  no filter. `mcp_models.json` records which managers do so
+  (`group_manager`). The MCP server has no request and no filter.
+- `format` that is not a string: named with `str()` in the `Unsupported
+  format` error; a list or dict raises (the 500 JSON).
+- A title, `header_text`, `text_before` or `text_after` that is not a string,
+  `column_labels` that is not a dict (with at least one column), a label that
+  is not a string in a PDF, a PDF without columns, `sheets` or one of its
+  items of another type: the exporter raises (the 500 JSON). `footer_text`
+  is written with `str()`. CSV labels and cells are written with `str()`
+  (a list or dict as its `repr`, null as the empty text). Workbook labels
+  keep their type (a number or boolean header cell, an empty one for null;
+  numbers with a float or a null among them are measured as floats, as in
+  pandas' index); a list or dict label raises.
+- Text shaped like an ISO date and time (`text[4] == '-'`, `text[10] == 'T'`,
+  19 characters or more) is rewritten when `datetime.fromisoformat` (CPython
+  3.13) reads it: week dates, basic times, fractions with `.` or `,`,
+  offsets; otherwise it is kept. `mcpISODateTime` ports the C parser;
+  `TESTS/fixtures/generate_format_value_golden.py` writes 2037 texts with
+  `format_value`'s own answers and `go test ./internal/service -run
+  FormatValueGolden` compares them. Years below 1000 are written with four
+  digits (the platform `strftime` of the reference run).
+- A sheet without columns (only identifier fields) is an empty sheet; a
+  workbook without any header cell keeps the plain styles.
+- A numbered sheet name equal to an earlier one: the later frame is written
+  over the earlier sheet, cell by cell and width by width (also in the
+  attendance workbook with one sheet per course).
+- A course without a title: `Presenze - None.pdf` for one course, the 500
+  JSON for its own workbook and for a document of several courses, the sheet
+  `Foglio` and an empty `Corso` cell in the workbooks of every course.
 
 MCP ledger entries: the code implements part of `query_data`, `count_data`,
 `get_field_values`, `aggregate_data` and `get_schema` (above); none is
@@ -168,3 +202,12 @@ page): Django 125/125, Go 500 on `run-export-pdf-texts-over-pages`. GREEN
 with the single sheet, `run-attendance-export-xlsx-all`) and
 `v2rep-mutation-r2` (one line too many kept on the first page of a cut
 paragraph, `run-export-pdf-texts-over-pages`).
+
+Group and unusual arguments (`v2rep2-*` receipts): 174 cases (49 more: 11 with
+or about `X-Group-Id`, 38 on the file tools; a second group, three courses
+with colliding sheet names and a course without a title are seeded). RED
+`v2rep2-red-r1`: Django 174/174, the earlier Go code answers the courses of
+every group on `run-query-courses-group-header` (the other cases are the
+documented refusals of v2-refusals.md). GREEN `v2rep2-versioned-r2`: native
+Django, native Go, Caddy `/api/v1` and `/api/v2` 174/174. Mutation
+`v2rep2-mutation-r2` (the manager's group filter dropped) CAUGHT.

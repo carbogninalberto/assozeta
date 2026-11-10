@@ -43,8 +43,8 @@ def moment(value):
 def seed_fixture(apps, private_work, raw):
     from auditlog.context import disable_auditlog
     from django.db import transaction
-    from application.models import (Associate, AttendanceDay, AttendanceRegistry, Carnet, Course, CourseSubscription, PaymentCategory,
-                                    SportAssociationModuleTemplates, Subscription, Tags)
+    from application.models import (Associate, AttendanceDay, AttendanceRegistry, Carnet, Course, CourseSubscription, Group,
+                                    PaymentCategory, SportAssociationModuleTemplates, Subscription, Tags)
     from application.models.report_models import SavedReport
     from TESTS.adapters.django.historical_read_cache import snapshot_historical_read_cache
     source = contract.load_source()
@@ -76,9 +76,12 @@ def seed_fixture(apps, private_work, raw):
                                         last_name=v['last'], sex='M', tax_code=f'RPTRPT80A{n + 10}H501U', is_minor=False))
             create(Subscription, Subscription(subscription_id=v['subscription'], sport_association_id=ids['own_association'],
                                               user_id=ids['owner'], associate_id=v['id'], status_flag=Subscription.ACCEPTED))
+        for v in seed['groups'].values():
+            create(Group, Group(group_id=v['id'], sport_association_id=v['association'], name=v['name']))
         for v in seed['courses'].values():
             create(Course, Course(course_id=v['id'], sport_association_id=v['association'], title=v['title'], deleted=v['deleted'],
-                                  group_id=v['group'], fee=Decimal('50.00')))
+                                  group_id=v['group'], fee=Decimal('50.00'), description=v['description'],
+                                  google_calendar_id=v['calendar']))
         for v in seed['enrolled'].values():
             create(CourseSubscription, CourseSubscription(
                 course_subscription_id=v['id'], course_id=seed['courses'][v['course']]['id'], deleted=v['deleted'],
