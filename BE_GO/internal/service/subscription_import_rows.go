@@ -38,7 +38,7 @@ var subscriptionImportDateWords = []string{"jan", "feb", "mar", "apr", "may", "j
 	"wed", "thu", "fri", "sat", "sun"}
 
 // subscriptionImportUnstorable is a cell json.dumps cannot encode: a
-// Timestamp, a datetime or NaT.
+// Timestamp or a datetime.
 type subscriptionImportUnstorable struct{ text string }
 
 // subscriptionImportDate is dateutil.parser.parse(text).date() on the ported
@@ -71,7 +71,8 @@ func subscriptionImportDate(text string) (date time.Time, parsed bool, err error
 }
 
 // subscriptionImportCell is the Python value of a cell after
-// process_row_value's strip and 'nan' check.
+// process_row_value's strip, 'nan' check and NaT check (an empty cell of a
+// date column is None).
 func subscriptionImportCell(value pandasxlsx.Value) any {
 	switch value.Kind {
 	case pandasxlsx.String:
@@ -87,7 +88,7 @@ func subscriptionImportCell(value pandasxlsx.Value) any {
 	case pandasxlsx.Time:
 		return subscriptionImportUnstorable{text: value.TimeText()}
 	case pandasxlsx.NaT:
-		return subscriptionImportUnstorable{text: "NaT"}
+		return nil
 	}
 	return nil
 }
@@ -215,6 +216,10 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(frame *pandasxlsx.Fram
 							{Name: "certificate_expring_date", Value: date.Format("02/01/2006")}}
 					}
 					effects.Certificates = append(effects.Certificates, certificate)
+					if _, cell := value.(subscriptionImportUnstorable); cell && parsed {
+						// stored_certificate_date: a date cell is stored as day/month/year.
+						value = date.Format("02/01/2006")
+					}
 				}
 			}
 			target := &row.associate

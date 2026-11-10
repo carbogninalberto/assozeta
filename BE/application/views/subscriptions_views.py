@@ -2718,12 +2718,13 @@ def subscription_import_upload(request):
 
     logger.info("subscription_import_upload")
     data = request.data
-    file_info = {"columns": [], "map": SubscriptionMaps.MAP}
+    # The map of this request: every key, filled from the columns of its upload.
+    file_info = {"columns": [], "map": dict(SubscriptionMaps.MAP)}
 
     # Handle new file upload
     if 'associates_file' in data.keys():
         associates_file = data['associates_file']
-        document, file_path = SubscriptionImportService.upload_and_store_file(associates_file)
+        document, file_path = SubscriptionImportService.upload_and_store_file(associates_file, sport_association)
         file_info['document_id'] = document.document_id
 
         rows_data_df = get_pandas_df_from_file(file_path)
@@ -2735,7 +2736,7 @@ def subscription_import_upload(request):
 
     # Handle existing document mapping
     elif 'document_id' in data.keys() and 'map' in data.keys():
-        file_path = SubscriptionImportService.retrieve_document_path(data['document_id'])
+        file_path = SubscriptionImportService.retrieve_document_path(data['document_id'], sport_association)
 
         rows_data_df = get_pandas_df_from_file(file_path)
         if rows_data_df is None:

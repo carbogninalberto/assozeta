@@ -91,6 +91,11 @@ func (s *DocumentUploads) save(ctx context.Context, document domain.NewDocument,
 	if err != nil {
 		return err
 	}
+	return s.saveNamed(ctx, name, content)
+}
+
+// saveNamed is save for a storage name already validated and cleaned.
+func (s *DocumentUploads) saveNamed(ctx context.Context, name string, content []byte) error {
 	key, err := documentkey.S3Key(name, s.objects.Location())
 	if err != nil {
 		return errors.Join(domain.ErrDocumentWritesNotPorted, err)
