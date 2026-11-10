@@ -44,7 +44,7 @@ def restore_files(root, archive):
     root = Path(root).resolve()
     record = validate(root, archive)
     path, _ = transaction(root)
-    # Source Compose may omit this target-only service after a previous recovery
+    # Source Compose may omit these target-only services after a previous recovery
     # attempt. Project/service labels still identify every replica before files
     # or database state are replaced. Stop failures must leave recovery pending.
     if record.get('target_go_backend_ref'):
@@ -63,12 +63,19 @@ def restore_files(root, archive):
     rollback(root, keep_pending=True)
 
 
+# Target-only Go services: the API and the opt-in task consumer (worker-go).
+GO_RESTORE_SERVICES = ('api-go', 'worker-go')
+
+
 def stop_go_api_for_restore(root, env_file):
     project = read_env(env_file).get('COMPOSE_PROJECT_NAME') or 'assozeta'
-    containers = subprocess.check_output([
-        'docker', 'ps', '-aq', '--filter', f'label=com.docker.compose.project={project}',
-        '--filter', 'label=com.docker.compose.service=api-go',
-    ], text=True).split()
+    containers = []
+    # Docker ANDs repeated label filters, so list each service separately.
+    for service in GO_RESTORE_SERVICES:
+        containers += subprocess.check_output([
+            'docker', 'ps', '-aq', '--filter', f'label=com.docker.compose.project={project}',
+            '--filter', f'label=com.docker.compose.service={service}',
+        ], text=True).split()
     if containers:
         subprocess.run(['docker', 'stop', '--time', '30', *containers], check=True)
         subprocess.run(['docker', 'rm', *containers], check=True)

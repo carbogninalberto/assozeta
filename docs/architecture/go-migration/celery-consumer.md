@@ -22,10 +22,12 @@ first task, `core.tasks.send_mail_async`. Routing is **off by default**; nothing
 - A retry or deferral republishes to the queue the message came from (`signature_from_request` passes an explicit
   `queue`, which overrides the route), so a message that Django runs from `celery` keeps its retries on `celery`.
 
-### Deployment change (documented, not enabled)
+### Deployment change
 
-Self-host compose today runs `celery -A core worker` without `-Q`; it consumes only the default queue, so routed names
-would wait on `assozeta-go` until a Go consumer runs. To enable Go ownership of a name:
+Self-host Compose ships steps 1 and 2 below: the Django worker runs with `-Q celery`, and `worker-go` (profile
+`go-tasks`, `/app/celery-consumer` from the Go image) is enabled with `ASSOZETA_GO_TASKS=1`. The lifecycle CLI refuses
+to start when `GO_TASK_QUEUE_TASKS` lists names and the consumer is not enabled. Operator procedure:
+`selfhost/OPERATIONS.md` ("Run background tasks on Go"). The original plan:
 
 1. Make the Django worker's queue explicit (same behaviour as today): `celery -A core worker -Q celery ...`.
 2. Add a service running `celery-consumer --env-file <deployment .env> --concurrency 2` with the same environment as the
