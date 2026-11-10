@@ -326,6 +326,42 @@ add('import-status-owner-success-undecodable', 'owner', task('success_broken'), 
 add('import-status-full-collaborator', 'full_collaborator', task('started'), 200, {
     'task_id': TASKS['started']['task_id'], 'status': 'STARTED', 'ready': False})
 add('import-status-admin-impersonating-owner', 'admin', ISTATUS + '?task_id=' + UNKNOWN, 200, pending(UNKNOWN), headers=ADMIN_OWNER)
+# Rows in an exception state: Celery rebuilds the exception from exc_type, exc_module and exc_message (the arguments),
+# and the view answers str() of it. key: (status, stored result, error text or None for the 500 page).
+exc = lambda kind, message, module='builtins': json.dumps({'exc_type': kind, 'exc_message': message, 'exc_module': module})
+DUPLICATE = 'duplicate key value violates unique constraint "application_user_pkey"\nDETAIL:  Key (user_id) already exists.\n'
+FAILED = {
+    'failed_value': ('FAILURE', exc('ValueError', ['Archivio non valido: manca manifest.json']), 'Archivio non valido: manca manifest.json'),
+    'failed_two_arguments': ('FAILURE', exc('Exception', ['Import fallito', 3]), "('Import fallito', 3)"),
+    'failed_no_arguments': ('FAILURE', exc('RuntimeError', []), ''),
+    'failed_key': ('FAILURE', exc('KeyError', ['users']), "'users'"),
+    'failed_key_two_arguments': ('FAILURE', exc('KeyError', ['users', None]), "('users', None)"),
+    'failed_integrity': ('FAILURE', exc('IntegrityError', [DUPLICATE], 'django.db.utils'), DUPLICATE),
+    'failed_scalar_arguments': ('FAILURE', exc('TypeError', [True, "l'archivio", 7]), '(True, "l\'archivio", 7)'),
+    'failed_null_argument': ('FAILURE', exc('AssertionError', [None]), 'None'),
+    'failed_text_message': ('FAILURE', exc('ValueError', 'testo, non lista'), 'testo, non lista'),
+    'failed_without_module': ('FAILURE', '{"exc_type": "ArchivioNonValido", "exc_message": ["è rotto"]}', 'è rotto'),
+    'failed_null_module_no_message': ('FAILURE', '{"exc_type": "ArchivioNonValido", "exc_module": null}', ''),
+    'failed_null_result': ('FAILURE', None, 'None'),
+    'failed_empty_object': ('FAILURE', '{}', 'None'),
+    'failed_without_type': ('FAILURE', '{"exc_message": ["x"], "exc_module": "builtins"}', None),
+    'failed_text_result': ('FAILURE', '"boom"', None),
+    'failed_number_result': ('FAILURE', '7', None),
+    'retry_value': ('RETRY', exc('ValueError', ['riprovo']), ''),
+    'retry_without_type': ('RETRY', '{"exc_message": ["x"]}', None),
+}
+for n, (key, (state, stored, _)) in enumerate(FAILED.items()):
+    TASKS[key] = {'task_id': uid(840 + n), 'status': state, 'result': stored}
+for key, (state, _, error) in FAILED.items():
+    label = 'import-status-owner-' + key.replace('_', '-')
+    if error is None:
+        add(label, 'owner', task(key), 500, SERVER)
+    elif state == 'RETRY':
+        add(label, 'owner', task(key), 200, {'task_id': TASKS[key]['task_id'], 'status': 'RETRY', 'ready': False})
+    else:
+        add(label, 'owner', task(key), 200, {'task_id': TASKS[key]['task_id'], 'status': state, 'ready': True, 'error': error})
+add('import-status-owner-revoked', 'owner', task('export_revoked'), 200,
+    {'task_id': TASKS['export_revoked']['task_id'], 'status': 'REVOKED', 'ready': True, 'error': 'revoked'})
 add('import-status-post-not-allowed', 'owner', ISTATUS, 405, method('POST'), method='POST')
 add('import-status-options', 'owner', ISTATUS, 200, IMPORT_OPTIONS, method='OPTIONS')
 
@@ -406,6 +442,14 @@ add('active-owner-terminal-other-user', 'owner', ACTIVE, 200, {'active': False},
     setup={'cache': last(snapshot(uid(926), user='full_collaborator', status='SUCCESS'))})
 add('active-owner-active-not-a-dict', 'owner', ACTIVE, 200, {'active': False, 'terminal': TERMINAL},
     setup={'cache': {**active('not a snapshot'), **last(TERMINAL)}})
+# The snapshot's task row in an exception state: FAILURE and REVOKED are ready, RETRY is not.
+for key in ('failed_value', 'export_revoked'):
+    add('active-owner-' + key.replace('_', '-') + '-row', 'owner', ACTIVE, 200, {'active': False},
+        setup={'cache': active(snapshot(TASKS[key]['task_id']))}, cache_after={})
+add('active-owner-retry-row', 'owner', ACTIVE, 200, {'active': True, **snapshot(TASKS['retry_value']['task_id'])},
+    setup={'cache': active(snapshot(TASKS['retry_value']['task_id']))})
+add('active-owner-failed-row-without-type', 'owner', ACTIVE, 500, SERVER,
+    setup={'cache': active(snapshot(TASKS['failed_without_type']['task_id']))})
 add('active-owner-foreign-snapshot-ignored', 'owner', ACTIVE, 200, {'active': False},
     setup={'cache': {ACTIVE_KEY('foreign_association'): FOREIGN_ACTIVE}})
 

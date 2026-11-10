@@ -314,6 +314,26 @@ Left refused in these families, with the reason: payment-misc plan fees and plan
 its own lookup and insert failure in Django; the plan editor writes strings and numbers); `send_receipt_email` of other types; modules-responses attachment names and form
 bodies; the Stripe request-shape rows (non-string ids, unencodable `stripe_available_methods`).
 
+### Ported in the v2-rest-c change
+
+Old data and rare inputs (class B rows; the first row of each family is `legacy: yes`). Receipts are `quality-reports/go-migration/<family>-http-v2restc-*`; each
+family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| course-attendance | `GET course/<uid>/attendees` (B, legacy: yes) | events of older calendars: an `event_id` that is not a UUID string (integers link as `UUID(int=...)`, other values leave the day unlinked after the audit entry of the failing save), `extendedProps` and `instructor` values of other JSON types | 111 cases; RED `v2restc-red-r1` Django 111/111, Go 500; GREEN `v2restc-green-r2` 4 transports; mutation `v2restc-mutation-r1` (day stored although the field rejects the id) CAUGHT |
+| subscription-misc | `DELETE subscription/<uid>/delete-document/<id>` (B, legacy: yes) | a Document other rows reference: `Document.delete()` with the shared deletion collector | 159 cases; RED `v2restc-red-r1` Django 159/159, Go 500; GREEN `v2restc-green-r2` 4 transports; mutation `v2restc-mutation-r1` (last entry with a diff of the document only) CAUGHT |
+| misc-routes | `GET calendar/events/export` (B, legacy: yes) | `start`/`end` with a non-zero UTC offset: the `TZID` icalendar names the offset with. Also float titles, event ids and labels (B) | 137 cases; RED `v2restc-red-r2` Django 137/137, Go 500; GREEN `v2restc-green-r2` 4 transports; mutation `v2restc-mutation-r2` (table read with the reversed sign) CAUGHT; google-calendar re-run |
+| misc-routes | `POST communications/send/post` (B) | a JSON float `message` (`str()` of the Python float) | same receipts |
+| association-transfer | `GET association/import/status`, `GET association/export/active` (B, legacy: yes) | `FAILURE`, `REVOKED` and `RETRY` task rows: the exception Celery rebuilds and its text | 235 cases; RED `v2restc-red-r1` Django 235/235, Go 500; GREEN `v2restc-green-r1` 4 transports; mutation `v2restc-mutation-r1` (single-argument `repr` on the wrong classes) CAUGHT |
+
+Left refused in these families, with the reason: course-attendance integer attendee, absence, instructor and check-in ids
+and float `lessons_left` (each site has its own lookup or arithmetic failure in Django; no writer produces them);
+calendar export ISO week dates, other separators, offsets with seconds and non-ASCII digits (no client wrote them), and an
+offset outside icalendar's table on a value only Django's regex reads (the timezone's name depends on which parser
+answers); stored exceptions of classes with their own `__init__` or `__str__` (the text is the class's);
+calculate-tax-code names outside the transliteration ranges.
+
 ## Remaining A items, per family
 
 UI paths under `UI/src/`, Go under `BE_GO/internal/`. Cost: cheap (hours), medium (a family change with new
@@ -367,7 +387,8 @@ attempt saw came from the harness storing the re-seeded rows in another physical
 | — | none left (`POST admin/diagnostics` is ported, see "Ported in this change") | | | |
 
 The B items of these families that a long-lived dataset may hit and that stay refused: import/status and
-export/active on `FAILURE`/`REVOKED` task rows (Celery's exception reconstruction) and data-restore archives with
+export/active on `FAILURE`/`REVOKED` task rows whose exception class the port does not rebuild (the common ones are
+ported, v2-rest-c) and data-restore archives with
 legacy Bakney invoices or tutors that would be reassigned (refused by the validation port).
 
 ### communications, camps, profile, personas, modules, oauth, google
@@ -413,7 +434,7 @@ Written from the family docs and the Go sources; `file:line` refer to `BE_GO/int
 | GET association/export/list | row with `file_size_bytes` NULL and non-empty `filepath` | ported (`exportSize`, v2-admin-legacy-green) | ported (was B, legacy: yes) | UI calls list (`src/routes/profile/sections/DataExports.svelte:96`), but the export writer always sets the size (`application/services/export_service.py:1102`); NULL only for exports created before `docmanager/migrations/0006_document_file_size_bytes.py`. Cost: medium (storage size + save). |
 | DELETE association/export/delete | existing export found | ported (deleteExport); a document other rows reference stays refused | ported | `DataExports.svelte:154` sends `{"document_id": <uuid from list>}` as JSON. |
 | POST association/export/start | past the count (<3) and active-key checks | ported (startExport) | ported | `DataExports.svelte:119` (POST, no body). Cost: expensive (Celery dispatch + cache registration). |
-| GET association/import/status | TaskResult row FAILURE/REVOKED/RETRY, non-utf-8 encoding, meta with `status`/children | service/association_transfer.go:300,303,312,317 | B | UI polls it (`src/store/instanceStore.js:535`), but rows only exist after an import start, which Go refuses; a FAILURE row could survive from a Django-era import that failed (legacy: yes, transient). Cost: medium (Celery exception reconstruction). |
+| GET association/import/status | TaskResult row FAILURE/REVOKED/RETRY with an exception class outside the ported set (plain builtins, `django.db.utils`, `TaskRevokedError`, classes without a module are ported: v2-rest-c), non-utf-8 encoding, meta with `status`/children | service/association_transfer.go (`celeryExceptionText`) | B | UI polls it (`src/store/instanceStore.js:535`), but rows only exist after an import start, which Go refuses; a FAILURE row could survive from a Django-era import that failed (legacy: yes, transient). Cost: medium (Celery exception reconstruction). |
 | GET association/import/status | result JSON with `__type__`, lone surrogates, floats beyond float64 | service/association_transfer.go:340,356,373 | B | Import task results are plain dicts. Cost: cheap-medium. |
 | POST association/import/validate, start | multipart body with a `file` upload | ported (ImportValidate, ImportStart); archives or values whose Python exception text would be answered stay refused (B) | ported | `src/store/instanceStore.js:448-453` (validate) and `:487-492` (start) send FormData with `file` from `src/routes/setup/StepImport.svelte`. Cost: expensive (ZIP validator; storage + Celery import). |
 | association/import/* (all) | no `InstanceConfiguration` and `X-Setup-Token` header present | ported (setupTokenMatches) | ported | The first-run setup wizard (`StepImport.svelte` via `instanceStore.js:207` `getSetupTokenHeaders`) always sends `X-Setup-Token` before an instance is configured. Cost: cheap (read `INSTANCE_SETUP_TOKEN` into Go config and compare). |
@@ -520,7 +541,7 @@ All sites use `domain.ErrCalendarNotPorted` (aliased `errCalendarNotPorted`).
 | POST course/<uid>/attendees/<day>/update, check-in, GET course/<uid>/attendees | integer/boolean ids (attendee, absence, event, instructor, check-in day) | service/course_calendar.go:114 (shared id reader) | B | UI sends UUID strings (events get `uuidv4()` ids, `association/course/overview/components/Calendar.svelte:198,623`; `src/routes/calendar/Calendar.svelte:197`). Cost: cheap. |
 | attendees update / check-in | carnet `lessons_left` stored as float or bool when consumed or given back | service/course_attendance.go:192 | B | Writers store `int()` (carnet-subscription update, topup). legacy: yes only for admin-edited meta. Cost: cheap. |
 | attendees update / check-in | lesson date text outside the fromisoformat subset, year < 1000, non-ASCII digits | service/course_attendance.go:208,1005 | B | UI dates come from `toApiTimestamp` (`src/utils/eventCalendar.js:31-48`). Cost: cheap. |
-| attendees / history (`get_extended_prop_for_attendance_day`) | linked event's `event_id` not a valid UUID string; `extendedProps` truthy non-dict; `instructor` truthy non-dict/list; non-dict list items | service/course_attendance.go:691,695,746,787,793 | B (legacy: yes) | Current UI creates UUID ids and dict/list props (`Calendar.svelte:204,231-291`). Events stored by older calendar versions may carry non-UUID ids. Cost: medium (swallowed failing save + logging). |
+| attendees / history (`get_extended_prop_for_attendance_day`) | linked event's `event_id` not a valid UUID string; `extendedProps` truthy non-dict; `instructor` truthy non-dict/list; non-dict list items | ported (`attendanceEventLink`, `instructorLabels`) | ported (v2-rest-c; was B, legacy: yes) | Current UI creates UUID ids and dict/list props (`Calendar.svelte:204,231-291`). Events stored by older calendar versions may carry non-UUID ids. Cost: medium (swallowed failing save + logging). |
 
 ### celery-producer.md
 Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples), canvas/options, result reads. No HTTP route of its own; each route that would need them refuses in its own family. Nothing to classify.
@@ -823,9 +844,9 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### misc-routes.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET calendar/events/export | stored event `start`/`end` with a non-zero UTC offset, ISO week dates, separators other than `T`/space, non-ASCII digits | `service/calendar_export.go:315,362,373,390,401,410,493` (`ErrMiscRoutesNotPorted`) | B | The current UI writes `toISOString()` (Z) (`utils/eventCalendar.js:66-79`), and the BE writers write UTC (`application/utils/instructors_utils.py:104`). legacy: yes (events saved by older clients with local offsets). Cost: medium (needs icalendar TZID naming). |
-| GET calendar/events/export | float/list/object `title`, `event_id`, instructor `label` | `service/calendar_export.go:257,261` | B | The UI sends string titles and ids. legacy: low. Cost: cheap. |
-| POST communications/send/post | JSON float `message` | `service/communications_post.go:59` | B | `Messages.svelte:96-100` sends form strings. |
+| GET calendar/events/export | stored event `start`/`end` with ISO week dates, separators other than `T`/space, offsets with seconds, non-ASCII digits (a non-zero UTC offset is ported: v2-rest-c, `calendarExportZoned`) | `service/calendar_export.go` (`ErrMiscRoutesNotPorted`) | B | The current UI writes `toISOString()` (Z) (`utils/eventCalendar.js:66-79`), and the BE writers write UTC (`application/utils/instructors_utils.py:104`). legacy: yes (events saved by older clients with local offsets). Cost: medium (needs icalendar TZID naming). |
+| GET calendar/events/export | list/object `title`, `event_id`, instructor `label` (floats are ported: v2-rest-c) | `service/calendar_export.go` (`calendarExportText`) | B | The UI sends string titles and ids. legacy: low. Cost: cheap. |
+| POST communications/send/post | JSON float `message` | ported (`communicationsPostMessage`) | ported (v2-rest-c; was B) | `Messages.svelte:96-100` sends form strings. |
 | GET subscription/<uid>/card?token= | unknown canonical token while a self-hosted Bakney pairing is pending/paired | `service/bakney_public_links.go` | ported | Ported in v2-misc-3 (`misc-routes.md`, `v2misc3-final-r1`). |
 
 ### misc-exports.md
@@ -997,7 +1018,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 |---|---|---|---|---|
 | GET subscription/validate-token-link-and-get-subscriptions | unknown canonical token while pairing pending/paired | `service/bakney_public_links.go` | ported | Ported in v2-misc-3 (`subscription-misc.md`, `v2misc3-final-r1`). |
 | POST subscription/calculate-tax-code | NFKD outside ranges, entities, >30 combining marks, lettered date slugs | `service/subscription_misc.go:119` | B | Exotic names. The UI sends `DD/MM/YYYY`-type dates. |
-| DELETE subscription/<uid>/delete-document/<id> | Document referenced by another row | `service/subscription_misc.go:492` | B | `upload-document` creates a fresh Document per file (`subscriptions_views.py:2779-2792`). legacy: yes (imports). Cost: medium. |
+| DELETE subscription/<uid>/delete-document/<id> | Document referenced by another row | ported (`DeleteSharedDocument`, the shared deletion collector) | ported (v2-rest-c; was B, legacy: yes) | `upload-document` creates a fresh Document per file (`subscriptions_views.py:2779-2792`). legacy: yes (imports). Cost: medium. |
 | POST subscription/generate-token-link | multipart `gym_name` file | `service/subscription_misc.go:250` | B | `components/modals/ShareModuleMultipleSubscriptionLink.svelte:37` sends JSON. |
 
 ### subscription-create.md
