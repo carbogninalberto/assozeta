@@ -26724,7 +26724,8 @@
         "BE_GO/internal/service/subscription_create_family.go",
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/dto/payment_state.go",
-        "BE_GO/internal/service/subscription_create_renewal.go"
+        "BE_GO/internal/service/subscription_create_renewal.go",
+        "BE_GO/internal/dto/associates_draft.go"
       ],
       "dependencies": [
         "subscription-renew",
@@ -26740,7 +26741,7 @@
           "/api/v2/subscription/add",
           "/api/subscription/add"
         ],
-        "request": "POST JSON {new_user_account, associate_data, associate_tutor_data, signature[, medical_certificate, custom_data, additional_fields, plan_id, membership_plan_id]}; ?m=only_associate quick mode. Anonymous or athlete: sport_association (the association user's username); preregistration: true for the next season, with subscription_id to renew that subscription (the person, certificate, custom data, role and number are then the renewed subscription's; associate_data.type is kept). Family wizard: is_family_wizard: true, type (family or grouped_subscriptions), multiple_entry_form_data [{valid, associate_data, custom_data, ...}]. Quick mode from a member account: {sport_association: association id, associate}.",
+        "request": "POST JSON {new_user_account, associate_data, associate_tutor_data, signature[, medical_certificate, custom_data, additional_fields, plan_id, membership_plan_id]}; ?m=only_associate quick mode. Anonymous or athlete: sport_association (the association user's username); preregistration: true for the next season, with subscription_id to renew that subscription (the person, certificate, custom data, role and number are then the renewed subscription's; associate_data.type is kept). Family wizard: is_family_wizard: true, type (family or grouped_subscriptions), multiple_entry_form_data [{valid, associate_data, custom_data, ...}]. Quick mode from a member account: {sport_association: association id, associate}. A/B/YYYY birth dates are read with the day first for the age.",
         "response": "{status: success, payment_id, amount (float or 0)}; quick mode {status: success, payment_id}. Family wizard: {status: success, subs: [], payments: [PaymentSerializer of each entry's stored payment, in entry order]}.",
         "errors": "400 {msg: validation errors.}; 400 serializer errors (associate fields, born_date DD/MM/YYYY, signature data); 400 {msg, code: '400'} membership plan; 403 registry / admin session / 'Seleziona la tua associazione.' / 'User is not a sport association'; 405; 409 {msg, code: '409', ref: subscription_duplicate}; 500 non-dict body, born date, medical_certificate null, int() errors, no association; 500 refused inputs (not ported). 400 {msg: Firma non valida., code: 400, ref: invalid_signature}; 503 signature_storage; 400 new member field errors. 403 'User not allowed.' (quick mode on another association's member or without a session; an association naming another one); 500 anonymous without sport_association or with an unknown username. Family wizard: 500 for a missing or non-list multiple_entry_form_data, an entry that is not an object or lacks valid, a valid entry without data.sport_association or with associate_data/custom_data that is not an object (all rolled back); an entry's own 400/403/409; 500 type grouped_subscriptions when the account's matching custom data is not an object. Renewing preregistration: 400 {msg: 'Iscrizione da rinnovare non trovata.', code: '400'} without a requester, for an unknown or malformed id, a subscription of another association or one the requester may not renew; 403 'User is not a sport association' for an athlete without sport_association; 500 without associate_data.type or for a stored number that is not an integer; 409 when the next season's subscription exists. Quick mode from a member account: 500 unknown or malformed association or associate, else 403 'User not allowed.'.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
@@ -26760,25 +26761,25 @@
         "docs/architecture/go-migration/subscription-create.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 127/127; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-create-http-famwiz-red-r5/results.json",
-          "receipt_sha256": "81b079c5e8c2a7c706f0e910aa7d127e5fe749a11dd490cdc7bf6495245d6a81"
+          "result": "RED: Django 149/149; Go fails state.row:application.Associate{\"address_city\": [\"Asti\", null]} on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-create-http-v2subs-red-r2/results.json",
+          "receipt_sha256": "3f0175b1f130e2be615d96d967e9806b3d503a855bef007e879ca36c09864085"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 127/127 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
-          "artifact": "quality-reports/go-migration/subscription-create-http-famwiz-versioned-r2/results.json",
-          "receipt_sha256": "e0d9661f74a46d962e86bd2021260159731baa1c423784e844649649c7598558"
+          "result": "GREEN: 149/149 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
+          "artifact": "quality-reports/go-migration/subscription-create-http-v2subs-versioned-r1/results.json",
+          "receipt_sha256": "837a289ce702f5056df5c749fb58ff013bf6b7ca8c38c14a3139b457732adc10"
         },
         {
-          "revision": "committing change reading the grouped wizard's merged cap from the stored cap key instead of zip",
-          "result": "Mutation control: fails Go on subscription-create-family-wizard-grouped (state.row:subscription custom_data).",
-          "artifact": "quality-reports/go-migration/subscription-create-http-famwiz-mutation-r3/results.json",
-          "receipt_sha256": "799440d33d578a374f1eec964b1a54200f02af2a12caa2a994385b9507ff876f"
+          "revision": "committing change reading A/B/YYYY month first",
+          "result": "Mutation control: fails Go on subscription-create-minor-day-first-birth-date (state.row: the tutor's address_city).",
+          "artifact": "quality-reports/go-migration/subscription-create-http-v2subs-mutation-r2/results.json",
+          "receipt_sha256": "01636390754fd0318d574c0ff1c519cd00d9afe9437206419772d49af3bcd661"
         }
       ],
       "notes": [
-        "Implementing: subscription/add for authenticated owners and collaborators: create_subscription (associate get_or_create, minor tutor, certificate owner, fees and plans, payment reuse/create, numbering, subscription, membership) in one transaction, then check_workflows_trigger and print_document_subscription Celery messages and the notification (broadcast rows, Redis store, user_broadcasts cache, Channels group_send written by Go plus the mirrored envelope). The family mode, the renewing preregistration, certificate expirations, type_of_associate filters, associate_id updates, form bodies and X-Group-Id are refused with a 500 before anything is committed. See docs/architecture/go-migration/subscription-create.md. API v2: the owner wizard's medical certificate date (today default, unparseable, uploaded certificate expiration) is ported. v2-sub-create: the quick re-subscription (m=only_associate), an owner's sport_association, signature uploads (shared with subscription/sign) and new member accounts with the welcome e-mail are ported. Own records: the quick re-subscription only uses the association's own members and an association account only names its own association (403 User not allowed.). v2-public-forms: the anonymous form (attributed to the user sport_association names, no actor), a logged-in athlete naming an association and preregistration: true without a subscription to renew (next season) are ported; the family wizard and the preregistration that renews a subscription stay refused. secsub2: the certificate named by medical_id is linked when it belongs to the association account or the requester, to a subscription of the association, or is an upload without an account and without a subscription of another association; any other id is treated like an unknown one (RED secsub2-red-r2, mutation secsub2-mutation-r1). v2-wizard: the family wizard (one Family, a subscription per valid entry, PaymentSerializer of the entries' payments) and the quick mode from a member account (both lookups, then 403) are ported; the family cases are checked with the renewal runner's row, audit and notification checks. famwiz: Django reads the family wizard's payments again before listing them (it answered the 500 page after the commit when the request created a payment; BE/application/tests/test_family_wizard_response.py) and Go renders every payment from its row (RED famwiz-red-r1, GREEN famwiz-versioned-r1, mutation famwiz-mutation-r1: payments in reverse entry order). A preregistration that renews a subscription is ported: the request takes the renewed subscription's person (by associate_id), certificate, custom data, additional fields, role and number, keeps its own type, and the new subscription stays with the renewed one's account; the requester must be the association's account or the subscription's account (RED famwiz-red-r4, mutation famwiz-mutation-r2: requester not compared). The family wizard with type grouped_subscriptions is ported: the club data of the account's latest subscription whose custom data text contains asd-o-ssd or scuola-asc is merged over every entry's custom data. Still refused in a renewing preregistration: a renewed member with a tutor, a sport_association or subscription_id that is not a string."
+        "Implementing: subscription/add for authenticated owners and collaborators: create_subscription (associate get_or_create, minor tutor, certificate owner, fees and plans, payment reuse/create, numbering, subscription, membership) in one transaction, then check_workflows_trigger and print_document_subscription Celery messages and the notification (broadcast rows, Redis store, user_broadcasts cache, Channels group_send written by Go plus the mirrored envelope). The family mode, the renewing preregistration, certificate expirations, type_of_associate filters, associate_id updates, form bodies and X-Group-Id are refused with a 500 before anything is committed. See docs/architecture/go-migration/subscription-create.md. API v2: the owner wizard's medical certificate date (today default, unparseable, uploaded certificate expiration) is ported. v2-sub-create: the quick re-subscription (m=only_associate), an owner's sport_association, signature uploads (shared with subscription/sign) and new member accounts with the welcome e-mail are ported. Own records: the quick re-subscription only uses the association's own members and an association account only names its own association (403 User not allowed.). v2-public-forms: the anonymous form (attributed to the user sport_association names, no actor), a logged-in athlete naming an association and preregistration: true without a subscription to renew (next season) are ported; the family wizard and the preregistration that renews a subscription stay refused. secsub2: the certificate named by medical_id is linked when it belongs to the association account or the requester, to a subscription of the association, or is an upload without an account and without a subscription of another association; any other id is treated like an unknown one (RED secsub2-red-r2, mutation secsub2-mutation-r1). v2-wizard: the family wizard (one Family, a subscription per valid entry, PaymentSerializer of the entries' payments) and the quick mode from a member account (both lookups, then 403) are ported; the family cases are checked with the renewal runner's row, audit and notification checks. famwiz: Django reads the family wizard's payments again before listing them (it answered the 500 page after the commit when the request created a payment; BE/application/tests/test_family_wizard_response.py) and Go renders every payment from its row (RED famwiz-red-r1, GREEN famwiz-versioned-r1, mutation famwiz-mutation-r1: payments in reverse entry order). A preregistration that renews a subscription is ported: the request takes the renewed subscription's person (by associate_id), certificate, custom data, additional fields, role and number, keeps its own type, and the new subscription stays with the renewed one's account; the requester must be the association's account or the subscription's account (RED famwiz-red-r4, mutation famwiz-mutation-r2: requester not compared). The family wizard with type grouped_subscriptions is ported: the club data of the account's latest subscription whose custom data text contains asd-o-ssd or scuola-asc is merged over every entry's custom data. Still refused in a renewing preregistration: a renewed member with a tutor, a sport_association or subscription_id that is not a string. v2subs: the quick re-subscription in an association-scoped session, a renewing preregistration whose member has a tutor, sport_association and subscription_id that are not strings, a new member with a role or a username are ported (RED v2subs-red-r1: documented refusals, v2-refusals.md). The age reads the birth date with the day first (person_date; Django unit test BE/application/tests/test_person_date.py; RED v2subs-red-r2), GREEN v2subs-versioned-r1, mutation v2subs-mutation-r2."
       ]
     },
     {
@@ -26796,7 +26797,7 @@
         "target": "subscription_associates_draft_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/associates_draft.go",
         "BE_GO/internal/dto/associates_draft.go",
@@ -26840,21 +26841,28 @@
         "TESTS/adapters/django/associates_draft_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/associates-draft.md",
         {
-          "command": "python tools/go-migration/family.py run associates-draft --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/associates-draft-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "2b4fff8adad0bc72a3c20c02ccb54a033b0808abb5630b72bcdda4ae10801c56",
-          "scope": "HTTP family associates-draft: 128/128 cases on native Django and native Go, 128/128 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 132/132; Go fails state.draft on the first case.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-v2subs-red-r1/results.json",
+          "receipt_sha256": "d75b545a60d8e5b171d8dc6b7f42d1da963c826eb7d0d3a298ecf6f90b8e8391"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-v2subs-versioned-r1/results.json",
+          "receipt_sha256": "ddce582adf18d13d21d981d8d22135760a585246a7f4a0ce4040bfdb62c7db9b"
+        },
+        {
+          "revision": "committing change reading A/B/YYYY month first",
+          "result": "Mutation control: fails Go on associates-draft-edit-day-first-minor-minor-tutor-invalid (state.draft).",
+          "artifact": "quality-reports/go-migration/associates-draft-http-v2subs-mutation-r1/results.json",
+          "receipt_sha256": "863b82761fefe6bb05dd88537f9889dc0e31b68149968f5c9e0f4586f9119447"
         }
       ],
       "notes": [
-        "Implementing: list with status expiry, add with AssociateSerializer validity (field rules, tenant-scoped relations), edit with mandatory-field and dateutil age validity, certificate linking/creation and non-atomic saves, delete and bulk-delete with audit on four transports; dateutil formats outside the ported subset and years before 1000 are refused (500) before any write; list/approve (create_subscription) is not ported.",
-        "Implementing evidence: docs/architecture/go-migration/associates-draft.md",
-        "Implementing evidence: RED: Django 128/128; Go 404 on the first case. (quality-reports/go-migration/associates-draft-http-native-r2/results.json)",
-        "Implementing evidence: GREEN: 128/128 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/associates-draft-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on the first edit that expects the saved draft and the created certificate. (quality-reports/go-migration/associates-draft-http-mutation-r1/results.json)"
+        "Implementing: list with status expiry, add with AssociateSerializer validity (field rules, tenant-scoped relations), edit with mandatory-field and dateutil age validity, certificate linking/creation and non-atomic saves, delete and bulk-delete with audit on four transports; dateutil formats outside the ported subset and years before 1000 are refused (500) before any write; list/approve (create_subscription) is not ported. v2subs: the edit's age check reads A/B/YYYY with the day first (person_date, dto.PersonDate); cases with dates computed on the day of the run (http_family.day_first_dates). RED v2subs-red-r1 (Django unit test first: BE/application/tests/test_person_date.py), GREEN v2subs-versioned-r1, mutation v2subs-mutation-r1."
       ]
     },
     {
@@ -26872,7 +26880,7 @@
         "target": "subscription_associates_draft_edit",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/associates_draft.go",
         "BE_GO/internal/dto/associates_draft.go",
@@ -26899,7 +26907,7 @@
           "/api/v2/subscription/associates-draft/<uid>/edit",
           "/api/subscription/associates-draft/<uid>/edit"
         ],
-        "request": "JSON edit_data (associate, associate_tutor, medical_certificate, ...) and certificate_expiring_date (%d/%m/%Y); without edit_data nothing is written.",
+        "request": "JSON edit_data (associate, associate_tutor, medical_certificate, ...) and certificate_expiring_date (%d/%m/%Y); without edit_data nothing is written. A/B/YYYY birth dates are read with the day first.",
         "response": "200 {'data': request.data} with the mutated edit_data (certificate id, expiration text).",
         "errors": "400 JSON parse (before the athlete check), is_valid_uuid list; 401 (anonymous; athletes empty); 403 registry / scoped session; 404 {'msg': 'not found.'}; 500 no association, non-dict body or edit_data parts, missing/unparseable born_date, malformed medical_id, bad expiration, unported dateutil formats.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
@@ -26916,21 +26924,28 @@
         "TESTS/adapters/django/associates_draft_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/associates-draft.md",
         {
-          "command": "python tools/go-migration/family.py run associates-draft --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/associates-draft-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "2b4fff8adad0bc72a3c20c02ccb54a033b0808abb5630b72bcdda4ae10801c56",
-          "scope": "HTTP family associates-draft: 128/128 cases on native Django and native Go, 128/128 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 132/132; Go fails state.draft on the first case.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-v2subs-red-r1/results.json",
+          "receipt_sha256": "d75b545a60d8e5b171d8dc6b7f42d1da963c826eb7d0d3a298ecf6f90b8e8391"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-v2subs-versioned-r1/results.json",
+          "receipt_sha256": "ddce582adf18d13d21d981d8d22135760a585246a7f4a0ce4040bfdb62c7db9b"
+        },
+        {
+          "revision": "committing change reading A/B/YYYY month first",
+          "result": "Mutation control: fails Go on associates-draft-edit-day-first-minor-minor-tutor-invalid (state.draft).",
+          "artifact": "quality-reports/go-migration/associates-draft-http-v2subs-mutation-r1/results.json",
+          "receipt_sha256": "863b82761fefe6bb05dd88537f9889dc0e31b68149968f5c9e0f4586f9119447"
         }
       ],
       "notes": [
-        "Implementing: list with status expiry, add with AssociateSerializer validity (field rules, tenant-scoped relations), edit with mandatory-field and dateutil age validity, certificate linking/creation and non-atomic saves, delete and bulk-delete with audit on four transports; dateutil formats outside the ported subset and years before 1000 are refused (500) before any write; list/approve (create_subscription) is not ported.",
-        "Implementing evidence: docs/architecture/go-migration/associates-draft.md",
-        "Implementing evidence: RED: Django 128/128; Go 404 on the first case. (quality-reports/go-migration/associates-draft-http-native-r2/results.json)",
-        "Implementing evidence: GREEN: 128/128 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/associates-draft-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on the first edit that expects the saved draft and the created certificate. (quality-reports/go-migration/associates-draft-http-mutation-r1/results.json)"
+        "Implementing: list with status expiry, add with AssociateSerializer validity (field rules, tenant-scoped relations), edit with mandatory-field and dateutil age validity, certificate linking/creation and non-atomic saves, delete and bulk-delete with audit on four transports; dateutil formats outside the ported subset and years before 1000 are refused (500) before any write; list/approve (create_subscription) is not ported. v2subs: the edit's age check reads A/B/YYYY with the day first (person_date, dto.PersonDate); cases with dates computed on the day of the run (http_family.day_first_dates). RED v2subs-red-r1 (Django unit test first: BE/application/tests/test_person_date.py), GREEN v2subs-versioned-r1, mutation v2subs-mutation-r1."
       ]
     },
     {
@@ -26948,7 +26963,7 @@
         "target": "subscription_associates_draft_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/associates_draft.go",
         "BE_GO/internal/dto/associates_draft.go",
@@ -26992,21 +27007,28 @@
         "TESTS/adapters/django/associates_draft_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/associates-draft.md",
         {
-          "command": "python tools/go-migration/family.py run associates-draft --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/associates-draft-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "2b4fff8adad0bc72a3c20c02ccb54a033b0808abb5630b72bcdda4ae10801c56",
-          "scope": "HTTP family associates-draft: 128/128 cases on native Django and native Go, 128/128 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 132/132; Go fails state.draft on the first case.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-v2subs-red-r1/results.json",
+          "receipt_sha256": "d75b545a60d8e5b171d8dc6b7f42d1da963c826eb7d0d3a298ecf6f90b8e8391"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-v2subs-versioned-r1/results.json",
+          "receipt_sha256": "ddce582adf18d13d21d981d8d22135760a585246a7f4a0ce4040bfdb62c7db9b"
+        },
+        {
+          "revision": "committing change reading A/B/YYYY month first",
+          "result": "Mutation control: fails Go on associates-draft-edit-day-first-minor-minor-tutor-invalid (state.draft).",
+          "artifact": "quality-reports/go-migration/associates-draft-http-v2subs-mutation-r1/results.json",
+          "receipt_sha256": "863b82761fefe6bb05dd88537f9889dc0e31b68149968f5c9e0f4586f9119447"
         }
       ],
       "notes": [
-        "Implementing: list with status expiry, add with AssociateSerializer validity (field rules, tenant-scoped relations), edit with mandatory-field and dateutil age validity, certificate linking/creation and non-atomic saves, delete and bulk-delete with audit on four transports; dateutil formats outside the ported subset and years before 1000 are refused (500) before any write; list/approve (create_subscription) is not ported.",
-        "Implementing evidence: docs/architecture/go-migration/associates-draft.md",
-        "Implementing evidence: RED: Django 128/128; Go 404 on the first case. (quality-reports/go-migration/associates-draft-http-native-r2/results.json)",
-        "Implementing evidence: GREEN: 128/128 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/associates-draft-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on the first edit that expects the saved draft and the created certificate. (quality-reports/go-migration/associates-draft-http-mutation-r1/results.json)"
+        "Implementing: list with status expiry, add with AssociateSerializer validity (field rules, tenant-scoped relations), edit with mandatory-field and dateutil age validity, certificate linking/creation and non-atomic saves, delete and bulk-delete with audit on four transports; dateutil formats outside the ported subset and years before 1000 are refused (500) before any write; list/approve (create_subscription) is not ported. v2subs: the edit's age check reads A/B/YYYY with the day first (person_date, dto.PersonDate); cases with dates computed on the day of the run (http_family.day_first_dates). RED v2subs-red-r1 (Django unit test first: BE/application/tests/test_person_date.py), GREEN v2subs-versioned-r1, mutation v2subs-mutation-r1."
       ]
     },
     {
@@ -27024,7 +27046,7 @@
         "target": "subscription_associates_draft_bulk_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/associates_draft.go",
         "BE_GO/internal/dto/associates_draft.go",
@@ -27068,21 +27090,28 @@
         "TESTS/adapters/django/associates_draft_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/associates-draft.md",
         {
-          "command": "python tools/go-migration/family.py run associates-draft --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/associates-draft-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "2b4fff8adad0bc72a3c20c02ccb54a033b0808abb5630b72bcdda4ae10801c56",
-          "scope": "HTTP family associates-draft: 128/128 cases on native Django and native Go, 128/128 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 132/132; Go fails state.draft on the first case.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-v2subs-red-r1/results.json",
+          "receipt_sha256": "d75b545a60d8e5b171d8dc6b7f42d1da963c826eb7d0d3a298ecf6f90b8e8391"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-v2subs-versioned-r1/results.json",
+          "receipt_sha256": "ddce582adf18d13d21d981d8d22135760a585246a7f4a0ce4040bfdb62c7db9b"
+        },
+        {
+          "revision": "committing change reading A/B/YYYY month first",
+          "result": "Mutation control: fails Go on associates-draft-edit-day-first-minor-minor-tutor-invalid (state.draft).",
+          "artifact": "quality-reports/go-migration/associates-draft-http-v2subs-mutation-r1/results.json",
+          "receipt_sha256": "863b82761fefe6bb05dd88537f9889dc0e31b68149968f5c9e0f4586f9119447"
         }
       ],
       "notes": [
-        "Implementing: list with status expiry, add with AssociateSerializer validity (field rules, tenant-scoped relations), edit with mandatory-field and dateutil age validity, certificate linking/creation and non-atomic saves, delete and bulk-delete with audit on four transports; dateutil formats outside the ported subset and years before 1000 are refused (500) before any write; list/approve (create_subscription) is not ported.",
-        "Implementing evidence: docs/architecture/go-migration/associates-draft.md",
-        "Implementing evidence: RED: Django 128/128; Go 404 on the first case. (quality-reports/go-migration/associates-draft-http-native-r2/results.json)",
-        "Implementing evidence: GREEN: 128/128 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/associates-draft-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on the first edit that expects the saved draft and the created certificate. (quality-reports/go-migration/associates-draft-http-mutation-r1/results.json)"
+        "Implementing: list with status expiry, add with AssociateSerializer validity (field rules, tenant-scoped relations), edit with mandatory-field and dateutil age validity, certificate linking/creation and non-atomic saves, delete and bulk-delete with audit on four transports; dateutil formats outside the ported subset and years before 1000 are refused (500) before any write; list/approve (create_subscription) is not ported. v2subs: the edit's age check reads A/B/YYYY with the day first (person_date, dto.PersonDate); cases with dates computed on the day of the run (http_family.day_first_dates). RED v2subs-red-r1 (Django unit test first: BE/application/tests/test_person_date.py), GREEN v2subs-versioned-r1, mutation v2subs-mutation-r1."
       ]
     },
     {
@@ -27100,7 +27129,7 @@
         "target": "subscription_associates_draft_list",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/associates_draft.go",
         "BE_GO/internal/dto/associates_draft.go",
@@ -27144,21 +27173,28 @@
         "TESTS/adapters/django/associates_draft_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/associates-draft.md",
         {
-          "command": "python tools/go-migration/family.py run associates-draft --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/associates-draft-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "2b4fff8adad0bc72a3c20c02ccb54a033b0808abb5630b72bcdda4ae10801c56",
-          "scope": "HTTP family associates-draft: 128/128 cases on native Django and native Go, 128/128 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 132/132; Go fails state.draft on the first case.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-v2subs-red-r1/results.json",
+          "receipt_sha256": "d75b545a60d8e5b171d8dc6b7f42d1da963c826eb7d0d3a298ecf6f90b8e8391"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-v2subs-versioned-r1/results.json",
+          "receipt_sha256": "ddce582adf18d13d21d981d8d22135760a585246a7f4a0ce4040bfdb62c7db9b"
+        },
+        {
+          "revision": "committing change reading A/B/YYYY month first",
+          "result": "Mutation control: fails Go on associates-draft-edit-day-first-minor-minor-tutor-invalid (state.draft).",
+          "artifact": "quality-reports/go-migration/associates-draft-http-v2subs-mutation-r1/results.json",
+          "receipt_sha256": "863b82761fefe6bb05dd88537f9889dc0e31b68149968f5c9e0f4586f9119447"
         }
       ],
       "notes": [
-        "Implementing: list with status expiry, add with AssociateSerializer validity (field rules, tenant-scoped relations), edit with mandatory-field and dateutil age validity, certificate linking/creation and non-atomic saves, delete and bulk-delete with audit on four transports; dateutil formats outside the ported subset and years before 1000 are refused (500) before any write; list/approve (create_subscription) is not ported.",
-        "Implementing evidence: docs/architecture/go-migration/associates-draft.md",
-        "Implementing evidence: RED: Django 128/128; Go 404 on the first case. (quality-reports/go-migration/associates-draft-http-native-r2/results.json)",
-        "Implementing evidence: GREEN: 128/128 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/associates-draft-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on the first edit that expects the saved draft and the created certificate. (quality-reports/go-migration/associates-draft-http-mutation-r1/results.json)"
+        "Implementing: list with status expiry, add with AssociateSerializer validity (field rules, tenant-scoped relations), edit with mandatory-field and dateutil age validity, certificate linking/creation and non-atomic saves, delete and bulk-delete with audit on four transports; dateutil formats outside the ported subset and years before 1000 are refused (500) before any write; list/approve (create_subscription) is not ported. v2subs: the edit's age check reads A/B/YYYY with the day first (person_date, dto.PersonDate); cases with dates computed on the day of the run (http_family.day_first_dates). RED v2subs-red-r1 (Django unit test first: BE/application/tests/test_person_date.py), GREEN v2subs-versioned-r1, mutation v2subs-mutation-r1."
       ]
     },
     {
@@ -27189,10 +27225,13 @@
         "BE_GO/internal/dto/testimonials.go",
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/repository/subscription_create.go",
-        "BE_GO/internal/repository/family_tax_codes.go"
+        "BE_GO/internal/repository/family_tax_codes.go",
+        "BE_GO/internal/service/course_enrolment_overview.go",
+        "BE_GO/internal/service/subscription_create_renewal.go"
       ],
       "dependencies": [
-        "subscription-create"
+        "subscription-create",
+        "course-enrolment"
       ],
       "contract": {
         "methods": [
@@ -27224,25 +27263,25 @@
         "docs/architecture/go-migration/subscription-renew.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 75/75; Go 200 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-red/results.json",
-          "receipt_sha256": "fc03e3f231560759687e792b4f923c0bf276c3f788c946cb2512a7bd36e6540d"
+          "result": "RED: Django 93/93; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-v2subs-red-r4/results.json",
+          "receipt_sha256": "c5161a588154648fb16556b31d77e6ec113449fb05c19e6a40807e781ada4166"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 75/75 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-green/results.json",
-          "receipt_sha256": "75e0cb5c8da351647e47e5b19bf2872a90ece08fba9daacf80538348b67319bc"
+          "result": "GREEN: 93/93 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-v2subs-versioned-r1/results.json",
+          "receipt_sha256": "beab2c4fe22e82c904385630b1e944ecc502b7417665fa25352b729589e79345"
         },
         {
-          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
-          "result": "Mutation control: fails Go on subscription-renew-renew-athlete-blank-tax-code-member (200 instead of 403).",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-mutation/results.json",
-          "receipt_sha256": "cfd9728777721cabe34e945e4b576ffccd2bc4ff55cf10457cbe3d063754b44e"
+          "revision": "committing change refusing a renewal with courses",
+          "result": "Mutation control: fails Go on subscription-renew-renew-with-courses (response.status).",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-v2subs-mutation-r3/results.json",
+          "receipt_sha256": "a3116a477ffde4ffcfb9fbbdc15e80f40ad1be43197141ddfa269b3e8472bfaf"
         }
       ],
       "notes": [
-        "Implementing: Renewals set only the association's own tags (Tags filtered by the new subscription's association); renewals with courses stay refused. secsub2: a member account renews its own subscriptions and those of its family, in the association they belong to (a subscription of the requester, or of a person sharing a tax code or a family with one of the requester's subscriptions, for the associate of the request; otherwise 403 User not allowed. before any write); data.user.email sets the account only for an association account; the certificate follows subscription-create with the member as requester. The runner also knows Family rows and requests without an actor (used by subscription-create's family cases). secaw: the member renewal check matches persons by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
+        "Implementing: Renewals set only the association's own tags (Tags filtered by the new subscription's association); renewals with courses stay refused. secsub2: a member account renews its own subscriptions and those of its family, in the association they belong to (a subscription of the requester, or of a person sharing a tax code or a family with one of the requester's subscriptions, for the associate of the request; otherwise 403 User not allowed. before any write); data.user.email sets the account only for an association account; the certificate follows subscription-create with the member as requester. The runner also knows Family rows and requests without an actor (used by subscription-create's family cases). secaw: the member renewal check matches persons by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go). v2subs: a renewal with courses is ported (each course through add_course_to_subscription on the renewal's transaction, the course-enrolment port sharing it); in an impersonation session with an association scope the requester lookup finds the session's association and an athlete session's payment cleanup keeps to the payments it sees. RED v2subs-red-r4 (documented refusal: renew with courses, v2-refusals.md), GREEN v2subs-versioned-r1, mutation v2subs-mutation-r3; course-enrolment and course-overview re-run green (v2subs-rerun-r1)."
       ]
     },
     {
@@ -27681,7 +27720,13 @@
         "BE_GO/cmd/server/subscription_import_upload.go",
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/config/subscription_import.go",
-        "BE_GO/internal/config/config.go"
+        "BE_GO/internal/config/config.go",
+        "BE_GO/internal/pandascsv/frame.go",
+        "BE_GO/internal/pandascsv/tokenizer.go",
+        "BE_GO/internal/pandascsv/numeric.go",
+        "BE_GO/internal/pandasxlsx/cells.go",
+        "BE_GO/internal/pandasxlsx/numeric.go",
+        "BE_GO/internal/pandasxlsx/values.go"
       ],
       "dependencies": [
         "pandascsv.Columns (8,379 pandas 2.2.3 golden inputs, TESTS/adapters/go/pandas_csv_golden.py)",
@@ -27693,7 +27738,9 @@
         "handler bufferMultipart/uploadBody/parseDjangoMultipart",
         "pandasxlsx.ReadText (the 1,545 readable golden workbooks read again with the text converter on every other column, testdata/pandas_text_frames.json.gz)",
         "config.SubscriptionImportSettings (SUBSCRIPTION_IMPORT_MAX_UPLOAD_BYTES, SUBSCRIPTION_IMPORT_RETENTION_HOURS)",
-        "documentobjects.S3.List/Delete for the import folder; repository deleteModelWithAuditReverse (Document delete)"
+        "documentobjects.S3.List/Delete for the import folder; repository deleteModelWithAuditReverse (Document delete)",
+        "pandascsv.Read/ReadText (48,721 inputs read by pandas 2.2.3, TESTS/adapters/go/pandas_csv_frames_golden.py)",
+        "pandasxlsx.ReadAll (6,504 workbooks, 11,059 text-column readings, 8,190 number-like texts, TESTS/adapters/go/pandas_xlsx_golden.py)"
       ],
       "contract": {
         "methods": [
@@ -27705,7 +27752,7 @@
           "/api/v2/subscription/import/upload",
           "/api/subscription/import/upload"
         ],
-        "request": "multipart associates_file (CSV or Excel workbook, at most SUBSCRIPTION_IMPORT_MAX_UPLOAD_BYTES, 20 MiB by default), or document_id + map with optional default, unmapped_static and unmapped_static_tutor (the import of the stored workbook).",
+        "request": "multipart associates_file (CSV or Excel workbook, at most SUBSCRIPTION_IMPORT_MAX_UPLOAD_BYTES, 20 MiB by default), or document_id + map with optional default, unmapped_static and unmapped_static_tutor (the import of the stored workbook). The stored document may be a CSV (';' delimited) or a workbook.",
         "response": "upload: 200 {'columns': [...], 'map': {every key: the column of this upload or None}, 'document_id': id}; import: 200 {'columns': [...], 'map': {every key: None}}",
         "errors": "401 (DRF and the view's bodiless 401 without an association); 403 admin without session, restricted collaborator, association-scoped context; 405; 413 {'msg'} for a file above the limit (before any write); 400 [str(exception)] for an invalid document_id; 400 {'msg': 'Importazione non riuscita. Controlla i dati e riprova.'} when the rows raise (nothing of the rows kept, the upload stays); 500 non-dict bodies, missing keys, non-file associates_file, unknown or already imported document, a document with no file in the import folder of the request's association, a stored file that cannot be read (all before any write), pandas errors and unknown extensions on upload (after the writes).",
         "authentication": "DRF IsAuthenticated (JWT/session).",
@@ -27725,25 +27772,25 @@
         "docs/architecture/go-migration/subscription-import-upload.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 55/55; Go fails state.kept on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-import-upload-http-imphard-red-r5/results.json",
-          "receipt_sha256": "71c6435c8413a8881484141a87a100f3ffad850633e4439270b32f4e1336ee1e"
+          "result": "RED: Django 67/67; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-import-upload-http-v2subs-red-r2/results.json",
+          "receipt_sha256": "4407b4e95d97522fb3b4c6e5335ee72dbd14ff63ceb41fcaf9d602ffe789d721"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 55/55 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/subscription-import-upload-http-imphard-versioned-r2/results.json",
-          "receipt_sha256": "b55239e4fe963b3cdc32acbca87b758034e9a0c95ff723286d804f257eba40e6"
+          "result": "GREEN: 67/67 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
+          "artifact": "quality-reports/go-migration/subscription-import-upload-http-v2subs-versioned-r1/results.json",
+          "receipt_sha256": "87f8d75f063e3ad1d2e514ac0503f8577ef2df0a3c1b7b6d211c0b99be41f426"
         },
         {
-          "revision": "committing change with A/B/YYYY read month first",
-          "result": "Mutation control: fails Go on subscription-import-upload-wizard-map (state.drafts).",
-          "artifact": "quality-reports/go-migration/subscription-import-upload-http-imphard-mutation-r1/results.json",
-          "receipt_sha256": "48073c24f653bea0a0a5571357bbf8f7b55e60d3873ca65cd8305070cca2741f"
+          "revision": "committing change reading the stored CSV without its text columns",
+          "result": "Mutation control: fails Go on subscription-import-upload-csv-import-members (state.drafts).",
+          "artifact": "quality-reports/go-migration/subscription-import-upload-http-v2subs-mutation-r1/results.json",
+          "receipt_sha256": "d8479037caa9e5b358739329fe12fcda951c2ab103cf1c01152089e46295724d"
         }
       ],
       "notes": [
-        "Implementing: Each request maps on its own copy of SubscriptionMaps.MAP; Go builds the map per request. Uploads are stored under subscription-import/<association id>/<timestamp>/<id>/<name> and the import reads the document's file only from the import folder of the request's association (no file there: the unknown-document 500 before any write). A date cell of the certificate column is stored as %d/%m/%Y and an empty cell of a date column is None. Second mutation control (secimp-mutation-r2, keeping one map for the process) fails Go on subscription-import-upload-csv-maps-its-own-columns; third (secimp-mutation-r3, an import folder without the association id) fails storage.keys on the first upload. Re-run green (secimp-rerun-r1): associates-draft, documents-writes. The mapping branch on a stored Excel workbook is ported with the view's swallowed exceptions (what was saved before one stays, no draft is created). Refused before any write: the import of a stored CSV document (read_csv value typing), workbooks outside the pandasxlsx subset (1904 dates, boolean/error/time cells, non-text headers, whole-number-only sheets, exponent or long decimal text), non-zero numbers and unported date text in date columns, tax codes beyond ASCII in a complete row, a non-object default when a value is missing, CSV outside the pandascsv subset (invalid UTF-8, NUL, bare CR), columns with İ/Σ, a file as document_id. imphard: rows that raise answer 400 {'msg'} and are rolled back (no certificate, no draft; the earlier 200 is gone); the columns the map gives to tax code, CAP, phone and card number are read as text (pandasxlsx.ReadText); date text is read with the day first unless it starts with the year; a date cell of any field is stored as day/month/year; sheets of whole numbers are imported; uploads above SUBSCRIPTION_IMPORT_MAX_UPLOAD_BYTES are 413; a completed import removes its upload and an association's next upload removes its uploads older than SUBSCRIPTION_IMPORT_RETENTION_HOURS (no periodic task). RED imphard-red-r5, GREEN imphard-versioned-r2, mutation imphard-mutation-r1; BE/application/tests/test_subscription_import_upload.py (16 tests)."
+        "Implementing: Each request maps on its own copy of SubscriptionMaps.MAP; Go builds the map per request. Uploads are stored under subscription-import/<association id>/<timestamp>/<id>/<name> and the import reads the document's file only from the import folder of the request's association (no file there: the unknown-document 500 before any write). A date cell of the certificate column is stored as %d/%m/%Y and an empty cell of a date column is None. Second mutation control (secimp-mutation-r2, keeping one map for the process) fails Go on subscription-import-upload-csv-maps-its-own-columns; third (secimp-mutation-r3, an import folder without the association id) fails storage.keys on the first upload. Re-run green (secimp-rerun-r1): associates-draft, documents-writes. The mapping branch on a stored Excel workbook is ported with the view's swallowed exceptions (what was saved before one stays, no draft is created). Refused before any write: the import of a stored CSV document (read_csv value typing), workbooks outside the pandasxlsx subset (1904 dates, boolean/error/time cells, non-text headers, whole-number-only sheets, exponent or long decimal text), non-zero numbers and unported date text in date columns, tax codes beyond ASCII in a complete row, a non-object default when a value is missing, CSV outside the pandascsv subset (invalid UTF-8, NUL, bare CR), columns with İ/Σ, a file as document_id. imphard: rows that raise answer 400 {'msg'} and are rolled back (no certificate, no draft; the earlier 200 is gone); the columns the map gives to tax code, CAP, phone and card number are read as text (pandasxlsx.ReadText); date text is read with the day first unless it starts with the year; a date cell of any field is stored as day/month/year; sheets of whole numbers are imported; uploads above SUBSCRIPTION_IMPORT_MAX_UPLOAD_BYTES are 413; a completed import removes its upload and an association's next upload removes its uploads older than SUBSCRIPTION_IMPORT_RETENTION_HOURS (no periodic task). RED imphard-red-r5, GREEN imphard-versioned-r2, mutation imphard-mutation-r1; BE/application/tests/test_subscription_import_upload.py (16 tests). v2subs: the final step on a stored CSV is ported (pandascsv.ReadText: the C tokenizer, number conversions and chunked type inference; numbers, decimals and booleans stored as Django stores them) and workbooks are read with pandasxlsx.ReadAll (boolean cells, the 1904 date system, date-only and ISO date cells, times, durations, integers beyond 64 bits); a time, a duration or an infinite number in a stored field fails the import (400). RED v2subs-red-r2 (documented refusal: stored CSV, v2-refusals.md), GREEN v2subs-versioned-r1, mutation v2subs-mutation-r1."
       ]
     },
     {
@@ -28464,10 +28511,13 @@
         "BE_GO/internal/dto/testimonials.go",
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/repository/subscription_create.go",
-        "BE_GO/internal/repository/family_tax_codes.go"
+        "BE_GO/internal/repository/family_tax_codes.go",
+        "BE_GO/internal/service/course_enrolment_overview.go",
+        "BE_GO/internal/service/subscription_create_renewal.go"
       ],
       "dependencies": [
-        "subscription-create"
+        "subscription-create",
+        "course-enrolment"
       ],
       "contract": {
         "methods": [
@@ -28479,14 +28529,14 @@
           "/api/v2/subscription/renew",
           "/api/subscription/renew"
         ],
-        "request": "POST JSON create_subscription data {new_user_account, associate_data (associate_id), associate_tutor_data, signature, medical_certificate, custom_data, additional_fields, plan_id, membership_plan_id, sport_association, user, tags, courses}.",
+        "request": "POST JSON create_subscription data {new_user_account, associate_data (associate_id), associate_tutor_data, signature, medical_certificate, custom_data, additional_fields, plan_id, membership_plan_id, sport_association, user, tags, courses}. courses: [{value: course id}] enrols the new subscription in each of the association's courses.",
         "response": "{status: success, payment_id}.",
         "errors": "400 {status: error, msg: str(e)} for Python exceptions (rolled back); 400 serializer errors / {msg, code: '400'}; 403 registry / admin session; 405; 409 duplicate; 500 athletes without sport_association; 500 refused inputs (not ported). A member account: 500 non-dict body or association, missing/malformed/unknown sport_association_id; 403 {detail: 'User not allowed.'} when the association has no renewable subscription of the requester for the associate.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated; registry association.members.create; collaborators act as the owner. A member account (not an association) renews only its own subscriptions and those of its family.",
         "resource_scope": "request.user.sport_association; associates by id or by tax code within it; payments of the association; tags by id. For a member account: the association named by sport_association.sport_association_id, only when it has a subscription of the requester (or of a person sharing a filled-in tax code or a family with one of the requester's subscriptions) for associate_data.associate_id or tax_code. data.user.email is read only for an association account.",
-        "side_effects": "create_subscription rows and audit; deleted unpaid payments (Payment delete cascade); subscription user update; tag links; after commit check_workflows_trigger(new_subscription), print_document_subscription, notification rows/Redis/Channels. The clean-up QuerySet.delete() also removes unpaid payments that have an invoice (the invoice stays).",
-        "transaction": "One atomic transaction around create_subscription and the post-processing; on_commit work after it.",
+        "side_effects": "create_subscription rows and audit; deleted unpaid payments (Payment delete cascade); subscription user update; tag links; after commit check_workflows_trigger(new_subscription), print_document_subscription, notification rows/Redis/Channels. The clean-up QuerySet.delete() also removes unpaid payments that have an invoice (the invoice stays). With courses: the course subscriptions, their payments and audit entries of add_course_to_subscription.",
+        "transaction": "One atomic transaction around create_subscription and the post-processing; on_commit work after it. The courses' enrolments run inside the renewal's transaction.",
         "execution_owner": "django"
       },
       "tests": [
@@ -28499,25 +28549,25 @@
         "docs/architecture/go-migration/subscription-renew.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 75/75; Go 200 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-red/results.json",
-          "receipt_sha256": "fc03e3f231560759687e792b4f923c0bf276c3f788c946cb2512a7bd36e6540d"
+          "result": "RED: Django 93/93; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-v2subs-red-r4/results.json",
+          "receipt_sha256": "c5161a588154648fb16556b31d77e6ec113449fb05c19e6a40807e781ada4166"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 75/75 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-green/results.json",
-          "receipt_sha256": "75e0cb5c8da351647e47e5b19bf2872a90ece08fba9daacf80538348b67319bc"
+          "result": "GREEN: 93/93 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-v2subs-versioned-r1/results.json",
+          "receipt_sha256": "beab2c4fe22e82c904385630b1e944ecc502b7417665fa25352b729589e79345"
         },
         {
-          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
-          "result": "Mutation control: fails Go on subscription-renew-renew-athlete-blank-tax-code-member (200 instead of 403).",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-mutation/results.json",
-          "receipt_sha256": "cfd9728777721cabe34e945e4b576ffccd2bc4ff55cf10457cbe3d063754b44e"
+          "revision": "committing change refusing a renewal with courses",
+          "result": "Mutation control: fails Go on subscription-renew-renew-with-courses (response.status).",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-v2subs-mutation-r3/results.json",
+          "receipt_sha256": "a3116a477ffde4ffcfb9fbbdc15e80f40ad1be43197141ddfa269b3e8472bfaf"
         }
       ],
       "notes": [
-        "Implementing: Renewals set only the association's own tags (Tags filtered by the new subscription's association); renewals with courses stay refused. secsub2: a member account renews its own subscriptions and those of its family, in the association they belong to (a subscription of the requester, or of a person sharing a tax code or a family with one of the requester's subscriptions, for the associate of the request; otherwise 403 User not allowed. before any write); data.user.email sets the account only for an association account; the certificate follows subscription-create with the member as requester. The runner also knows Family rows and requests without an actor (used by subscription-create's family cases). secaw: the member renewal check matches persons by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
+        "Implementing: Renewals set only the association's own tags (Tags filtered by the new subscription's association); renewals with courses stay refused. secsub2: a member account renews its own subscriptions and those of its family, in the association they belong to (a subscription of the requester, or of a person sharing a tax code or a family with one of the requester's subscriptions, for the associate of the request; otherwise 403 User not allowed. before any write); data.user.email sets the account only for an association account; the certificate follows subscription-create with the member as requester. The runner also knows Family rows and requests without an actor (used by subscription-create's family cases). secaw: the member renewal check matches persons by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go). v2subs: a renewal with courses is ported (each course through add_course_to_subscription on the renewal's transaction, the course-enrolment port sharing it); in an impersonation session with an association scope the requester lookup finds the session's association and an athlete session's payment cleanup keeps to the payments it sees. RED v2subs-red-r4 (documented refusal: renew with courses, v2-refusals.md), GREEN v2subs-versioned-r1, mutation v2subs-mutation-r3; course-enrolment and course-overview re-run green (v2subs-rerun-r1)."
       ]
     },
     {
