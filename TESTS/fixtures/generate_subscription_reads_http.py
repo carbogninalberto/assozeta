@@ -16,7 +16,9 @@ subscription_list (GET, POST):
   with email and phone (four separate EXISTS) while its own email or phone is
   empty or null; ``values_list('associate__<field>').distinct()`` (unordered);
   an unknown field is a FieldError (500).
-- athletes: their own branch (not ported in Go; not authored).
+- athletes: get_optimized_subscriptions (SubscriptionSerializerAthleteOptimizedList) of their own subscriptions and those
+  whose associate has one of their tax codes, by ``-creation_date``, ``meta`` {} (association-scoped athlete sessions are
+  not authored).
 - the scoped live association (500 without one); ``m`` absent: the
   unarchived subscriptions by ``-creation_date`` with the tag, age, hide,
   status, current-year, search, type-of-associate, certificate, payment and
@@ -47,8 +49,8 @@ association 403 ``User not allowed.``); the live course subscriptions
 (CourseDetailSerializer plus CourseSubscriptionOverviewSerializer and, for
 multi-payment ones, the installments) sorted by course creation date
 (descending, as strings); SubscriptionInfoSerializer. A subscription without
-document_pdf dispatches the Celery print task (not ported in Go; not
-authored).
+document_pdf dispatches print_document_subscription.delay(id, the
+Authorization header).
 
 subscription_calendar (GET): is_valid_uuid; the athlete's or the
 association's group-aware subscription (none: no events); the registries of
@@ -256,6 +258,41 @@ REGISTRIES = {
 FILES = {'privacy': {'id': uid('f11ef11e'), 'subscription': 'cur_mario', 'document': 'file', 'created': '2025-09-20T08:00:00Z'}}
 CARD = {'id': uid('ca2dca2d'), 'association': OWN, 'emit_only_on_approval': True, 'customized_template': {'colore': 'blu', 'n': 2}}
 
+# get_optimized_subscriptions (the athlete list): an athlete with own subscriptions in the foreign association, a member
+# without user (AssociateSerializer.user is the association owner's), a member without tax code (the renewal lookup
+# with IS NULL) and a grouped row. Subscriptions of other users with a tax code of the athlete's subscriptions are listed.
+LISTER = IDS['list_athlete'] = 'a1000000-0000-4000-8000-0000005ab598'
+EXTRA_USERS['list_athlete'] = {'id': LISTER, 'username': 'subscription-reads-list-athlete',
+                               'email': 'subscription-reads-list-athlete@example.test'}
+USERS[LISTER] = {'first_name': '', 'last_name': '', 'email': EXTRA_USERS['list_athlete']['email'], 'phone': None,
+                 'username': EXTRA_USERS['list_athlete']['username'], 'role': 2}
+ASSOCIATES['l_self'] = person('2023-08-12T08:00:00Z', first_name='Lara', last_name='Listata', sex='F', tax_code='LSTLRA85A41Z404K',
+                              born_date='1985-01-01', born_city='Bolzano', address='Via Roma 1', address_cap='39100', address_city='Bolzano',
+                              email='lara@example.test', phone='3401112233', user=LISTER, association=FOREIGN, family_role='madre')
+ASSOCIATES['l_kid'] = person('2023-08-13T08:00:00Z', first_name='Lino', last_name='Listino', sex='M', tax_code='LSTLNI15A01Z404M',
+                             born_date='2015-01-01', is_minor=True, association=FOREIGN)
+ASSOCIATES['l_notax'] = person('2023-08-14T08:00:00Z', first_name='Nina', last_name='Nontassata', sex='F', born_date='1990-02-02',
+                               user=LISTER, association=FOREIGN)
+SUBSCRIPTIONS['l_current'] = sub('2025-09-14T08:00:00Z', association=FOREIGN, user=LISTER, associate='l_self', medical='valid',
+                                 tags=['estero'], custom_data={'tipo': 'socio'}, number='7', notes='prima iscrizione')
+SUBSCRIPTIONS['l_past'] = sub('2025-09-15T08:00:00Z', association=FOREIGN, user=LISTER, associate='l_self', start='2023-09-01',
+                              end='2024-08-31', status=3, signature_storage_key='private/lara.png')
+SUBSCRIPTIONS['l_kid_own'] = sub('2025-09-16T08:00:00Z', association=FOREIGN, user=LISTER, associate='l_kid', start='2022-09-01',
+                                 end='2023-08-31', medical='expired', deleted=True)
+SUBSCRIPTIONS['l_kid_owner'] = sub('2025-09-17T08:00:00Z', association=FOREIGN, user=FOREIGN_OWNER, associate='l_kid', start='2021-01-01',
+                                   end='2021-12-31', group=FOREIGN_GROUP, medical='undated')
+SUBSCRIPTIONS['l_notax'] = sub('2025-09-18T08:00:00Z', association=FOREIGN, user=LISTER, associate='l_notax', start='2023-01-01',
+                               end='2023-12-31', group=FOREIGN_GROUP)
+COURSE_SUBS['l_swim'] = {'id': uid('c5c5c5c5'), 'course': 'swim', 'subscription': 'l_current', 'paid': True, 'multi': False,
+                         'created': '2025-09-14T09:00:00.125000Z', 'deleted': False}
+COURSE_SUBS['l_gone'] = {'id': uid('c5c5c5c5'), 'course': 'other', 'subscription': 'l_current', 'paid': False, 'multi': False,
+                         'created': '2025-09-14T10:00:00Z', 'deleted': True}
+COURSE_SUBS['l_untitled'] = {'id': uid('c5c5c5c5'), 'course': 'broken', 'subscription': 'l_past', 'paid': False, 'multi': False,
+                             'created': '2025-09-15T09:00:00Z', 'deleted': False}
+# CarnetSubscription rows (carnet, user and payment left empty): the athlete list's `carnets` Exists.
+CARNETS = {'l_current': {'id': uid('ca1eca1e'), 'subscription': 'l_current'}}
+S = {label: row['id'] for label, row in SUBSCRIPTIONS.items()}
+A = {label: row['id'] for label, row in ASSOCIATES.items()}
 
 # --- clock-independent helpers (the authored dates are far from the run date) --------------------------------------------
 def is_current(row):
@@ -708,7 +745,7 @@ def info_courses(sublabel, group=None):
 def info_body(sublabel, group=None):
     row = SUBSCRIPTIONS[sublabel]
     medical, medical_document = medical_fields(row)
-    document = DOCUMENTS[row['document']]
+    document = DOCUMENTS[row['document']] if row['document'] else None
     card = ({'emit_only_on_approval': CARD['emit_only_on_approval'], 'customized_template': CARD['customized_template']}
             if row['association'] == CARD['association'] else {'emit_only_on_approval': False, 'customized_template': {}})
     files = [{'subscription_file_id': f['id'], 'document_id': DOCUMENTS[f['document']]['id'], 'filename': DOCUMENTS[f['document']]['filename'],
@@ -729,7 +766,7 @@ def info_body(sublabel, group=None):
         'signature_url': row['signature_url'], 'archived': row['archived'], 'draft': row['draft'], 'trial': row['trial'], 'meta': row['meta'],
         'subscription_number': row['number'], 'subscription_type': row['subscription_type'], 'deleted': row['deleted'],
         'competitive': row['competitive'], 'notes': row['notes'], 'sport_association': row['association'], 'supplier': None,
-        'instructor': None, 'medical': medical['id'] if medical else None, 'document_pdf': document['id'],
+        'instructor': None, 'medical': medical['id'] if medical else None, 'document_pdf': document['id'] if document else None,
         'payment': PAYMENTS[row['payment']]['id'] if row['payment'] else None, 'group': row['group'],
         'tags': [TAGS[t]['id'] for t in row['tags']],
     }
@@ -1114,10 +1151,90 @@ add('calendar-athlete-own', 'athlete', calendar_path('athlete'), 200, calendar('
 add('calendar-athlete-not-own', 'athlete', calendar_path('cur_mario'), 200, calendar(None))
 add('calendar-athlete-malformed', 'athlete', '/subscription/nope/calendar', 400, BAD_UUID)
 
+# --- subscription_list for athletes: get_optimized_subscriptions ------------------------------------------------------------
+ASSOCIATION_SEARCH = {
+    OWN: {'denomination': 'Message reads own', 'tax_code': '70000000001', 'owner': OWNER,
+          'card': {'emit_only_on_approval': CARD['emit_only_on_approval'], 'customized_template': CARD['customized_template']}},
+    FOREIGN: {'denomination': 'Message reads foreign', 'tax_code': '70000000002', 'owner': FOREIGN_OWNER,
+              'card': {'emit_only_on_approval': False, 'customized_template': {}}},
+}
+
+
+def search_association(association):
+    """SportAssociationSearchSerializer: the seeded associations have no address; their owners no avatar, online
+    payments enabled without Stripe credentials (False); registration_features() lists the family registration."""
+    spec = ASSOCIATION_SEARCH[association]
+    user = USERS[spec['owner']]
+    return {'denomination': spec['denomination'], 'tax_code': spec['tax_code'], 'address': None, 'address_cap': None,
+            'address_city': None, 'sport_association_id': association, 'membership_card_configuration': spec['card'],
+            'user': {'first_name': user['first_name'], 'last_name': user['last_name'], 'username': user['username'], 'avatar_image': None,
+                     'preview_and_custom_features': ['Iscrizione per famiglia'], 'disable_account_creation': False,
+                     'force_account_creation': False, 'online_payments': False}}
+
+
+def athlete_associate(label):
+    """user_serializers.AssociateSerializer; get_user falls back to the association owner."""
+    row = ASSOCIATES[label]
+    owner = OWNER if row['association'] == OWN else FOREIGN_OWNER
+    keys = ('address', 'address_cap', 'address_city', 'born_city', 'born_date', 'email', 'sex', 'first_name', 'last_name', 'is_minor',
+            'tax_code', 'phone', 'family_role')
+    return {'associate_id': row['id'], **{key: row[key] for key in keys}, 'sport_association': row['association'],
+            'user': row['user'] or owner, 'family': row['family']}
+
+
+def athlete_item(label, group=None):
+    row = SUBSCRIPTIONS[label]
+    medical, medical_document = medical_fields(row)
+    document = DOCUMENTS[row['document']] if row['document'] else None
+    courses = [cs for cs in COURSE_SUBS.values() if cs['subscription'] == label and not cs['deleted']]
+    return {
+        'subscription_id': row['id'], 'creation_date': drf_time(row['created']), 'start_date': row['start'], 'end_date': row['end'],
+        'status_flag': row['status'], 'type': row['type'], 'role': row['role'], 'acceptance_date': row['acceptance_date'],
+        'resignation_date': row['resignation_date'], 'signature_url': row['signature_url'], 'deleted': row['deleted'],
+        'archived': row['archived'], 'draft': row['draft'], 'trial': row['trial'], 'meta': row['meta'], 'custom_data': row['custom_data'],
+        'additional_fields': row['additional_fields'], 'subscription_number': row['number'], 'subscription_type': row['subscription_type'],
+        'competitive': row['competitive'], 'notes': row['notes'], 'user': row['user'], 'supplier': None, 'instructor': None,
+        'document_pdf': document['id'] if document else None, 'payment': PAYMENTS[row['payment']]['id'] if row['payment'] else None,
+        'group': row['group'], 'tags': [TAGS[t]['id'] for t in row['tags']],
+        'associate': athlete_associate(row['associate']) if row['associate'] else None,
+        'sport_association': search_association(row['association']), 'is_current': is_current(row),
+        'carnets': any(c['subscription'] == label for c in CARNETS.values()),
+        'medical': medical['id'] if medical else None, 'medical_token': medical_document['token'] if medical_document else None,
+        'medical_expiration_date': medical['expiration'] if medical else None,
+        'medical_document': medical_document['id'] if medical_document else None,
+        'courses': [{'course_subscription_id': cs['id'], 'paid': cs['paid'], 'creation_date': drf_time(cs['created']),
+                     'course__title': COURSES[cs['course']]['title'], 'course__course_id': COURSES[cs['course']]['id'],
+                     'course__one_fee_payment': False, 'course__one_fee': 0.0, 'one_fee_payment': False} for cs in courses],
+        'renewal_available': not is_current(row) and not renewal_lookup(label, group),
+        'signature_present': bool(row['signature_storage_key'] or row['signature_url']),
+    }
+
+
+def athlete_list(user, group=None):
+    """Own subscriptions and those whose associate has a tax code of them (group-aware), by -creation_date."""
+    own = [k for k, r in SUBSCRIPTIONS.items() if r['user'] == user and visible(r, group)]
+    taxes = {ASSOCIATES[SUBSCRIPTIONS[k]['associate']]['tax_code'] for k in own if SUBSCRIPTIONS[k]['associate']} - {None}
+    labels = [k for k, r in SUBSCRIPTIONS.items() if visible(r, group) and (
+        r['user'] == user or (r['associate'] and ASSOCIATES[r['associate']]['tax_code'] in taxes))]
+    return {'data': {str(i): athlete_item(k, group) for i, k in enumerate(by_created(labels))}, 'meta': {}}
+
+
+add('list-athlete', 'list_athlete', LIST, 200, athlete_list(LISTER))
+add('list-athlete-post', 'list_athlete', LIST, 200, athlete_list(LISTER), method='POST', body={'format': 'pdf'})
+add('list-athlete-ignores-filters', 'list_athlete', LIST + '?query[status_flag]=4&pagination[perpage]=1', 200, athlete_list(LISTER))
+add('list-athlete-group', 'list_athlete', LIST, 200, athlete_list(LISTER, FOREIGN_GROUP), headers={'X-Group-Id': FOREIGN_GROUP})
+add('list-athlete-own-association', 'athlete', LIST, 200, athlete_list(ATHLETE))
+add('list-athlete-tax-code-other-user', 'multi_athlete', LIST, 200, athlete_list(MULTI))
+
+# --- subscription_info without document_pdf: print_document_subscription.delay(id, request.headers.get('authorization')) ---
+for name, actor, label in (('info-print-dispatch-owner', 'owner', 'baby'), ('info-print-dispatch-athlete', 'list_athlete', 'l_current')):
+    add(name, actor, info_path(label), 200, info_body(label))
+    cases[-1]['celery'] = [{'task': 'print_document_subscription', 'args': [S[label], '$authorization'], 'kwargs': []}]
+
 assert len({c['name'] for c in cases}) == len(cases)
 SOURCE = {'matrix_version': 1, 'scope': 'subscription list, list/all, list/archived, info and calendar reads', 'ids': IDS,
           'extra_users': EXTRA_USERS, 'users': USERS, 'documents': DOCUMENTS, 'medicals': MEDICALS, 'tags': TAGS, 'associates': ASSOCIATES, 'tutors': TUTORS,
           'payments': PAYMENTS, 'subscriptions': SUBSCRIPTIONS, 'courses': COURSES, 'course_subscriptions': COURSE_SUBS,
-          'installments': INSTALLMENTS, 'registries': REGISTRIES, 'files': FILES, 'card': CARD, 'cases': cases}
+          'installments': INSTALLMENTS, 'registries': REGISTRIES, 'files': FILES, 'card': CARD, 'carnets': CARNETS, 'cases': cases}
 OUTPUT.write_text(json.dumps(SOURCE, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')
