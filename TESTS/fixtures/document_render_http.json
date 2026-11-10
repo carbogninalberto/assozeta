@@ -56,6 +56,21 @@
    "denomination": "Render stagione",
    "start_day": 31,
    "start_month": 4
+  },
+  "form": {
+   "user": "a1000000-0000-4000-8000-000000984007",
+   "association": "a1000000-0000-4000-8000-000000984008",
+   "denomination": "Polisportiva Città (Biella)",
+   "form": {
+    "federation": "fidal",
+    "address": "Via Roma 1",
+    "address_cap": "13900",
+    "address_city": "Biella",
+    "whatsapp": "+39 333 1234567",
+    "president_first_name": "Élise",
+    "president_last_name": "Łukasz",
+    "stamp": "data:image/png;base64,AAAA"
+   }
   }
  },
  "association_ids": {
@@ -63,7 +78,8 @@
   "foreign": "a1000000-0000-4000-8000-000000701002",
   "latin": "a1000000-0000-4000-8000-000000984002",
   "wide": "a1000000-0000-4000-8000-000000984004",
-  "season": "a1000000-0000-4000-8000-000000984006"
+  "season": "a1000000-0000-4000-8000-000000984006",
+  "form": "a1000000-0000-4000-8000-000000984008"
  },
  "associates": {
   "mario": {
@@ -95,6 +111,41 @@
    "association": "own",
    "first": null,
    "last": " Neri　",
+   "email": null,
+   "user": null
+  },
+  "formfull": {
+   "id": "a1000000-0000-4000-8000-000000984053",
+   "association": "form",
+   "first": "Maria Chiara",
+   "last": "D'Angelò",
+   "email": null,
+   "user": null,
+   "form": {
+    "born_city": "Ωmega straße",
+    "born_date": "2012-05-09",
+    "address": "Via Garibaldi, 23 B int. 4",
+    "address_city": "Biella",
+    "id_number": "ca1234567",
+    "tax_code": "rssmra12e49a859x"
+   }
+  },
+  "formtutor": {
+   "id": "a1000000-0000-4000-8000-000000984054",
+   "association": "form",
+   "first": "Paola",
+   "last": "Tutrice",
+   "email": "tutor@example.test",
+   "user": null,
+   "form": {
+    "phone": "+39 0151234567"
+   }
+  },
+  "formbare": {
+   "id": "a1000000-0000-4000-8000-000000984055",
+   "association": "form",
+   "first": "Zoe",
+   "last": "None",
    "email": null,
    "user": null
   }
@@ -254,6 +305,30 @@
    "id": "a1000000-0000-4000-8000-000000984028",
    "association": "own",
    "associate": "athlete",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "formfull": {
+   "id": "a1000000-0000-4000-8000-000000984056",
+   "association": "form",
+   "associate": "formfull",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "formbare": {
+   "id": "a1000000-0000-4000-8000-000000984057",
+   "association": "form",
+   "associate": "formbare",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "formnone": {
+   "id": "a1000000-0000-4000-8000-000000984058",
+   "association": "form",
+   "associate": null,
    "user": "owner",
    "group": null,
    "document": null
@@ -746,8 +821,46 @@
    "region": "agonistica",
    "date": "2026-05-11",
    "document": "tok_medical"
+  },
+  "biella": {
+   "id": "a1000000-0000-4000-8000-000000984117",
+   "subscription": "formfull",
+   "region": "agonistica-piemonte-biella",
+   "date": "2026-05-12",
+   "document": null,
+   "sport": "Atletica leggera",
+   "address": "Centro medico, Via Dante 5"
+  },
+  "biella_bare": {
+   "id": "a1000000-0000-4000-8000-000000984118",
+   "subscription": "formbare",
+   "region": "agonistica-piemonte-biella",
+   "date": null,
+   "document": null
+  },
+  "biella_noassociate": {
+   "id": "a1000000-0000-4000-8000-000000984119",
+   "subscription": "formnone",
+   "region": "agonistica-piemonte-biella",
+   "date": "2026-05-13",
+   "document": null
+  },
+  "lombardia": {
+   "id": "a1000000-0000-4000-8000-000000984109",
+   "subscription": "plain",
+   "region": "agonistica-lombardia",
+   "date": "2026-05-14",
+   "document": null
   }
  },
+ "tutors": [
+  {
+   "associate": "formfull",
+   "tutor": "formtutor",
+   "primary": true
+  }
+ ],
+ "location": "document-render",
  "extra_users": {
   "member": {
    "id": "a1000000-0000-4000-8000-000000984027",
@@ -917,7 +1030,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -951,7 +1065,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione None  Neri.pdf"
   },
@@ -985,7 +1100,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Athlete Fixture.pdf"
   },
@@ -1019,7 +1135,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads foreign] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1056,7 +1173,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1092,7 +1210,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1128,7 +1247,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1165,7 +1285,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Athlete Fixture.pdf"
   },
@@ -1199,7 +1320,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Società Sportiva Ècole] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1233,7 +1355,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Club – Roma] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1267,7 +1390,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Club – Roma] Modulo di Iscrizione Δημήτρης Παπαδόπουλος.pdf"
   },
@@ -1301,7 +1425,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "body": {
     "ignored": true
@@ -1338,7 +1463,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1372,7 +1498,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1403,7 +1530,8 @@
     "storage_task": true,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    }
   },
   {
@@ -1506,7 +1634,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Athlete Fixture.pdf"
   },
@@ -1631,7 +1760,8 @@
     "storage_task": false,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    }
   },
   {
@@ -1661,7 +1791,8 @@
     "storage_task": false,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    }
   },
   {
@@ -1691,7 +1822,8 @@
     "storage_task": false,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    }
   },
   {
@@ -1721,7 +1853,8 @@
     "storage_task": false,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    }
   },
   {
@@ -1751,7 +1884,8 @@
     "storage_task": false,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    }
   },
   {
@@ -1784,7 +1918,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1915,7 +2050,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
   },
@@ -1953,7 +2089,8 @@
      "subject": "Ricevuta di pagamento 04/03/26",
      "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
      "recipient": "mario.rossi@example.test"
-    }
+    },
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
   },
@@ -1991,7 +2128,8 @@
      "subject": "Ricevuta di pagamento 04/03/26",
      "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
      "recipient": "mario.rossi@example.test"
-    }
+    },
+    "stored": false
    },
    "disposition": "attachment; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
   },
@@ -2025,7 +2163,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
   },
@@ -2063,7 +2202,8 @@
      "subject": "Ricevuta di pagamento 04/03/26",
      "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
      "recipient": "mario.rossi@example.test"
-    }
+    },
+    "stored": false
    },
    "raw_body": "send_receipt_email=1",
    "content_type": "application/x-www-form-urlencoded",
@@ -2103,7 +2243,8 @@
      "subject": "Ricevuta di pagamento 04/03/26",
      "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
      "recipient": "mario.rossi@example.test"
-    }
+    },
+    "stored": false
    },
    "raw_body": "send_receipt_email=true",
    "content_type": "application/x-www-form-urlencoded",
@@ -2139,7 +2280,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "raw_body": "send_receipt_email=true",
    "content_type": "application/x-www-form-urlencoded",
@@ -2175,7 +2317,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "body": {
     "send_receipt_email": "true"
@@ -2212,7 +2355,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-05.pdf"
   },
@@ -2246,7 +2390,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-06.pdf"
   },
@@ -2284,7 +2429,8 @@
      "subject": "Ricevuta di pagamento 31/12/26",
      "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 30,00 € del 31/12/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nSocietà Sportiva Ècole",
      "recipient": "mario.rossi@example.test"
-    }
+    },
+    "stored": false
    },
    "disposition": "inline; filename=[Società Sportiva Ècole] Ricevuta 2026-12-31.pdf"
   },
@@ -2324,7 +2470,8 @@
      "subject": "Ricevuta di pagamento 04/03/26",
      "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
      "recipient": "mario.rossi@example.test"
-    }
+    },
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
   },
@@ -2426,7 +2573,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-12.pdf"
   },
@@ -2477,7 +2625,8 @@
      "subject": "Ricevuta di pagamento 13/03/26",
      "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 16,00 € del 13/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
      "recipient": "mario.rossi@example.test"
-    }
+    },
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-13.pdf"
   },
@@ -2513,7 +2662,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-10.pdf"
   },
@@ -2550,7 +2700,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-11.pdf"
   },
@@ -2584,7 +2735,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-11.pdf"
   },
@@ -2618,7 +2770,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "raw_body": "send_receipt_email=0",
    "content_type": "application/x-www-form-urlencoded",
@@ -2908,7 +3061,8 @@
     "storage_task": false,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    }
   },
   {
@@ -3038,7 +3192,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Fattura FPR 7/2026.pdf"
   },
@@ -3074,7 +3229,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Fattura None None/None.pdf"
   },
@@ -3108,7 +3264,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads foreign] Fattura B 12/2025.pdf"
   },
@@ -3144,7 +3301,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Fattura FPR 7/2026.pdf"
   },
@@ -3230,7 +3388,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Fattura T 3/2026.pdf"
   },
@@ -3355,7 +3514,8 @@
     "storage_task": false,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    }
   },
   {
@@ -3489,7 +3649,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Compenso per Luca Bianchi del 2026-04-05.pdf"
   },
@@ -3518,7 +3679,8 @@
     "storage_task": true,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "attachment; filename=[Message reads own] Compenso per Luca Bianchi del 2026-04-06.pdf"
   },
@@ -3552,7 +3714,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads foreign] Compenso per Paolo Gialli del 2026-04-09.pdf"
   },
@@ -3586,7 +3749,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Compenso per Luca Bianchi del 2026-04-10.pdf"
   },
@@ -3663,7 +3827,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Compenso per Luca Bianchi del 2026-04-05.pdf"
   },
@@ -3865,7 +4030,8 @@
     "storage_task": false,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    }
   },
   {
@@ -3992,7 +4158,8 @@
     "storage_task": true,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    }
   },
   {
@@ -4031,7 +4198,8 @@
       "subscription": "plain"
      }
     ],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "body": {
     "additionalData": {
@@ -4072,7 +4240,8 @@
       "folder": "foreign"
      }
     ],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "body": {
     "additionalData": {
@@ -4107,7 +4276,8 @@
     "storage_task": true,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "body": {
     "additionalData": {
@@ -4143,7 +4313,8 @@
     "storage_task": true,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "body": {
     "additionalData": {
@@ -4178,7 +4349,8 @@
     "storage_task": true,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "body": {
     "additionalData": {
@@ -4213,7 +4385,8 @@
     "storage_task": true,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "body": {
     "additionalData": {
@@ -4248,7 +4421,8 @@
     "storage_task": true,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "body": {
     "additionalData": {
@@ -4283,7 +4457,8 @@
     "storage_task": true,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "body": {
     "additionalData": {
@@ -4323,7 +4498,8 @@
       "subscription": "foreign"
      }
     ],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "body": {
     "additionalData": {
@@ -4379,7 +4555,8 @@
       "folder": "own"
      }
     ],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "body": {
     "additionalData": {
@@ -4607,7 +4784,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Visita Agonistica del 2026-05-06.pdf"
   },
@@ -4641,7 +4819,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Società Sportiva Ècole] Visita Non Agonistica del 2026-05-07.pdf"
   },
@@ -4675,7 +4854,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Visita Agonistica del None.pdf"
   },
@@ -4709,7 +4889,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads foreign] Visita Non Agonistica del 2026-05-09.pdf"
   },
@@ -4743,7 +4924,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Visita Agonistica del 2026-05-11.pdf"
   },
@@ -4777,7 +4959,8 @@
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    },
    "disposition": "inline; filename=[Message reads own] Visita Agonistica del 2026-05-10.pdf"
   },
@@ -4966,8 +5149,205 @@
     "storage_task": false,
     "links": [],
     "creates": [],
-    "mail": null
+    "mail": null,
+    "stored": false
    }
+  },
+  {
+   "name": "document-render-medical-form-biella",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984117",
+   "headers": {},
+   "status": 200,
+   "response": "<form-pdf>",
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-12.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [
+     [
+      "medicalappointments",
+      "biella"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": true
+   },
+   "disposition": "inline; filename=[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-12.pdf",
+   "form": {
+    "sport_association.denomination": "  POLISPORTIVA CITTÀ (BIELLA)",
+    "sport_association.federation": "  FIDAL",
+    "sport_association.address": "  VIA ROMA 1",
+    "sport_association.address_cap": "  13900",
+    "sport_association.address_city": "  BIELLA",
+    "sport_association.whatsapp": "  +39 333 1234567",
+    "sport_association.user.email": "  DOCUMENT-RENDER-FORM@EXAMPLE.TEST",
+    "sport_association.president_first_name": "  ÉLISE",
+    "sport_association.president_last_name": "  ŁUKASZ",
+    "sport_association.stamp": "  data:image/png;base64,AAAA",
+    "other.today_datetime": "  02/01/2026 03:04",
+    "associate.last_name": "  D'ANGELÒ",
+    "associate.first_name": "  MARIA CHIARA",
+    "associate.born_city": "  ΩMEGA STRASSE",
+    "associate.born_date": "09/05/2012",
+    "associate.address_city": "  BIELLA",
+    "associate.address_no_number": "  VIA GARIBALDI  INT.",
+    "associate.address_number": "  23 B",
+    "associate.id_number": "  CA1234567",
+    "associate.tax_code": "  RSSMRA12E49A859X",
+    "main_tutor.phone": "  +39 0151234567",
+    "main_tutor.email": "  TUTOR@EXAMPLE.TEST",
+    "medical_appointment.sport": "  ATLETICA LEGGERA",
+    "other.address": "  CENTRO MEDICO, VIA DANTE 5"
+   }
+  },
+  {
+   "name": "document-render-medical-form-biella-again-download",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984117?download=1",
+   "headers": {},
+   "status": 200,
+   "response": "<form-pdf>",
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-12.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [
+     [
+      "medicalappointments",
+      "biella"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": true
+   },
+   "disposition": "attachment; filename=[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-12.pdf",
+   "form": {
+    "sport_association.denomination": "  POLISPORTIVA CITTÀ (BIELLA)",
+    "sport_association.federation": "  FIDAL",
+    "sport_association.address": "  VIA ROMA 1",
+    "sport_association.address_cap": "  13900",
+    "sport_association.address_city": "  BIELLA",
+    "sport_association.whatsapp": "  +39 333 1234567",
+    "sport_association.user.email": "  DOCUMENT-RENDER-FORM@EXAMPLE.TEST",
+    "sport_association.president_first_name": "  ÉLISE",
+    "sport_association.president_last_name": "  ŁUKASZ",
+    "sport_association.stamp": "  data:image/png;base64,AAAA",
+    "other.today_datetime": "  02/01/2026 03:04",
+    "associate.last_name": "  D'ANGELÒ",
+    "associate.first_name": "  MARIA CHIARA",
+    "associate.born_city": "  ΩMEGA STRASSE",
+    "associate.born_date": "09/05/2012",
+    "associate.address_city": "  BIELLA",
+    "associate.address_no_number": "  VIA GARIBALDI  INT.",
+    "associate.address_number": "  23 B",
+    "associate.id_number": "  CA1234567",
+    "associate.tax_code": "  RSSMRA12E49A859X",
+    "main_tutor.phone": "  +39 0151234567",
+    "main_tutor.email": "  TUTOR@EXAMPLE.TEST",
+    "medical_appointment.sport": "  ATLETICA LEGGERA",
+    "other.address": "  CENTRO MEDICO, VIA DANTE 5"
+   }
+  },
+  {
+   "name": "document-render-medical-form-biella-bare",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984118",
+   "headers": {},
+   "status": 200,
+   "response": "<form-pdf>",
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del None.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [
+     [
+      "medicalappointments",
+      "biella_bare"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": true
+   },
+   "disposition": "inline; filename=[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del None.pdf",
+   "form": {
+    "sport_association.denomination": "  POLISPORTIVA CITTÀ (BIELLA)",
+    "sport_association.federation": "  FIDAL",
+    "sport_association.address": "  VIA ROMA 1",
+    "sport_association.address_cap": "  13900",
+    "sport_association.address_city": "  BIELLA",
+    "sport_association.whatsapp": "  +39 333 1234567",
+    "sport_association.user.email": "  DOCUMENT-RENDER-FORM@EXAMPLE.TEST",
+    "sport_association.president_first_name": "  ÉLISE",
+    "sport_association.president_last_name": "  ŁUKASZ",
+    "sport_association.stamp": "  data:image/png;base64,AAAA",
+    "other.today_datetime": "  02/01/2026 03:04",
+    "associate.first_name": "  ZOE"
+   }
+  },
+  {
+   "name": "document-render-medical-form-without-associate",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984119",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'NoneType' object has no attribute 'main_tutor'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-13.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   }
+  },
+  {
+   "name": "document-render-medical-region-without-form",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984109",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "[Errno 2] No such file or directory: 'document/medical-appointments/non-agonistica.html'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Visita Agonistica Lombardia del 2026-05-14.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   }
+  },
+  {
+   "name": "document-render-medical-form-athlete-other",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984117",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
   }
  ]
 }

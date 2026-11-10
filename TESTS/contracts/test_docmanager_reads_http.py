@@ -1,6 +1,7 @@
 """Independently authored docmanager-reads HTTP expectations; no Django imports.
 
-A '<stream>' case names the stored object whose exact bytes must be returned,
+A '<stream>' case names the stored object whose exact bytes must be returned
+('$rendered': the PDF printed again for a missing object),
 with the exact Content-Type, Content-Length, Content-Disposition and
 Content-Encoding (absent when the authored value is None). Every other case is
 a JSON body or the stable server error page. Unlike http_family, a 401 carries
@@ -63,8 +64,11 @@ def assert_case(case, base_url, *, token, sessions):
     check(received.get('WWW-Authenticate') == ('Bearer realm="api"' if case['challenge'] else None), 'response.authentication')
     if case['response'] == '<stream>':
         stream = case['stream']
-        stored = load_source()['objects'][stream['object']]
-        body = base64.b64decode(stored['body_b64'])
+        if stream['object'] == '$rendered':
+            # The PDF the renderer stub printed, stored by the save_to_storage task.
+            body = RUNTIME['pdf']
+        else:
+            body = base64.b64decode(load_source()['objects'][stream['object']]['body_b64'])
         check(raw == body, 'stream.body')
         check(received.get('Content-Type') == stream['content_type'], 'stream.content-type')
         check(received.get('Content-Length') == str(len(body)), 'stream.content-length')

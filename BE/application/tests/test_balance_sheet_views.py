@@ -19,8 +19,9 @@ from rest_framework import status
 
 from application.models import User, BillingPlan, BillingSubscription, BalanceSheet
 from application.models.balance_sheet_models import CustomAccounts, CustomAccountsTransfer
+from application.models.payment_models import Payment
 from application.tests.fixtures.factories import (
-    create_test_user, create_test_sport_association, create_test_billing_subscription
+    create_test_user, create_test_sport_association, create_test_billing_subscription, create_test_payment
 )
 
 
@@ -360,6 +361,51 @@ class BalanceSheetAccountsDeleteTests(TestCase):
             f'/balance-sheet/accounts/{account.custom_account_id}/delete'
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_account_with_payments_refused(self):
+        account = create_test_custom_account(self.sport_association, editable=True)
+        payment = create_test_payment(sport_association=self.sport_association, paid=True)
+        # PaymentManager.create assigns the default account: move the payment afterwards.
+        Payment.objects.filter(pk=payment.pk).update(custom_accounts=account)
+        response = self.client.delete(
+            f'/balance-sheet/accounts/{account.custom_account_id}/delete'
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, {'msg': 'An account with transfers or payments cannot be deleted.'})
+        self.assertTrue(CustomAccounts.objects.filter(pk=account.pk).exists())
+        self.assertTrue(Payment.objects.filter(pk=payment.pk).exists())
+
+    def test_delete_account_with_transfers_refused(self):
+        account = create_test_custom_account(self.sport_association, editable=True)
+        other = create_test_custom_account(self.sport_association, editable=True)
+        for source, target in ((account, other), (other, account)):
+            transfer = create_test_account_transfer(self.sport_association, source, target)
+            response = self.client.delete(
+                f'/balance-sheet/accounts/{account.custom_account_id}/delete'
+            )
+            self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+            self.assertEqual(response.data, {'msg': 'An account with transfers or payments cannot be deleted.'})
+            self.assertTrue(CustomAccountsTransfer.objects.filter(pk=transfer.pk).exists())
+            transfer.delete()
+        self.assertTrue(CustomAccounts.objects.filter(pk=account.pk).exists())
+
+    def test_delete_refusal_matches_the_listed_deletable_flag(self):
+        account = create_test_custom_account(self.sport_association, editable=True)
+        payment = create_test_payment(sport_association=self.sport_association, paid=False)
+        # PaymentManager.create assigns the default account: move the payment afterwards.
+        Payment.objects.filter(pk=payment.pk).update(custom_accounts=account)
+        listed = {str(row['custom_account_id']): row
+                  for row in self.client.get('/balance-sheet/accounts/list?get_related=true').data['data']}
+        self.assertFalse(listed[str(account.pk)]['deletable'])
+        payment.delete()
+        listed = {str(row['custom_account_id']): row
+                  for row in self.client.get('/balance-sheet/accounts/list?get_related=true').data['data']}
+        self.assertTrue(listed[str(account.pk)]['deletable'])
+        response = self.client.delete(
+            f'/balance-sheet/accounts/{account.custom_account_id}/delete'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(CustomAccounts.objects.filter(pk=account.pk).exists())
 
 
 class BalanceSheetAccountsTransferListTests(TestCase):

@@ -124,6 +124,23 @@ func (s *DocumentUploads) save(ctx context.Context, document domain.NewDocument,
 	return s.saveNamed(ctx, name, content)
 }
 
+// GeneratedName reports whether default_storage.save would accept the name of
+// a document generated at created (no storage call).
+func (s *DocumentUploads) GeneratedName(created time.Time, id, filename string) error {
+	name, err := documentkey.UploadName(created, uuid.MustParse(id), filename)
+	if err != nil {
+		return err
+	}
+	_, err = documentkey.S3Key(name, s.objects.Location())
+	return err
+}
+
+// SaveGenerated is default_storage.save(os.path.join(str(created.timestamp()),
+// str(id), filename), ContentFile(content)) for a document a view generated.
+func (s *DocumentUploads) SaveGenerated(ctx context.Context, created time.Time, id, filename string, content []byte) error {
+	return s.save(ctx, domain.NewDocument{ID: id, Filename: filename, Created: created}, content)
+}
+
 // saveNamed is save for a storage name already validated and cleaned.
 func (s *DocumentUploads) saveNamed(ctx context.Context, name string, content []byte) error {
 	key, err := documentkey.S3Key(name, s.objects.Location())

@@ -302,7 +302,7 @@ def service_context(report, log):
     import stripe
     import threading
     from http.server import ThreadingHTTPServer
-    with printer.service_context(report, log), renderer.service_context(report, log):
+    with printer.service_context(report, log), renderer.renderer_context(report, log):
         server = ThreadingHTTPServer(('127.0.0.1', 0), stripe_routes._StubHandler)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         stripe_routes.STUB.update(lock=threading.Lock(), log=[], script=[])

@@ -78,6 +78,20 @@ type RenderAppointment struct {
 	Document        *string
 }
 
+// RenderAppointmentForm is what the regional PDF form of an appointment reads:
+// Text holds the stored columns by form key (nil for NULL), Address the
+// associate's address and Created the appointment's creation date. Associate
+// is nil for a subscription without one.
+type RenderAppointmentForm struct {
+	Associate *string
+	Text      map[string]*string
+	Address   *string
+	Created   time.Time
+}
+
+// RenderFormTutor is the phone and e-mail of Associate.main_tutor.
+type RenderFormTutor struct{ Phone, Email *string }
+
 // RenderHours is an InstructorHours row linked to a compensation.
 type RenderHours struct {
 	ID, Instructor string
@@ -122,6 +136,10 @@ type DocumentRenderStore interface {
 	Template(ctx context.Context, id, association string) (*RenderTemplate, error)
 	FolderExists(ctx context.Context, id int64) (bool, error)
 	Appointment(ctx context.Context, id string) (*RenderAppointment, error)
+	// AppointmentForm reads the values of the appointment's regional PDF form.
+	AppointmentForm(ctx context.Context, id string) (*RenderAppointmentForm, error)
+	// AppointmentFormTutor is Associate.get_main_tutor(): nil, the tutor, or ErrViewTutorWrite.
+	AppointmentFormTutor(ctx context.Context, associate string) (*RenderFormTutor, error)
 	CreateDocument(ctx context.Context, document NewRenderDocument, actorAssociation *string, audit LoginAuditContext, at time.Time) error
 	CreateArchive(ctx context.Context, id, association, document string, folder int64, created time.Time, audit LoginAuditContext, at time.Time) error
 	CreateSubscriptionFile(ctx context.Context, id string, subscription RenderSubscription, document string, created time.Time,

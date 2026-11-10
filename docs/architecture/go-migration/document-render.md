@@ -80,7 +80,7 @@ the same outbound request, the same acceptance rules and the same database and C
 - **medical-appointment** (`IsAuthenticated | HasMedicalAppointmentDocumentToken`): `MedicalAppointments.objects.filter(pk=uid).first()`. A missing
   row is the `'NoneType' ... 'subscription'` 500. The filename is `[<denomination>] <REGIONS[region]> del <date or None>.pdf`,
   and an unknown region is `500 {"exception": "'<region>'"}` (the KeyError repr). Regions `agonistica` and `non-agonistica` are
-  printed through the renderer.
+  printed through the renderer. The other regions go through `fill_pdf_and_store` (see "Regional PDF forms").
 - **Permissions**: identity resolution runs first, inside `IsAuthenticated`. That covers admin without a session, collaborator
   registry denials (no registry key: the "No permission mapping" 403), the athlete-view list and the scoped request guard. In a
   scoped session a uid outside the boundary is `403 Risorsa non disponibile per questo utente e associazione.`.
@@ -95,11 +95,51 @@ Go reads `PUPPETEER_HOST`, `PUPPETEER_PORT`, `CURRENT_HOST_PUPPETEER` and `DOCUM
 `DEFAULT_SUPPORT_EMAIL` is `WHITELABEL_NAME <EMAIL_HOST_SUPPORT>`, with `None` when unset. An empty bypass token never matches.
 Django cannot start without one.
 
+## Regional PDF forms (`fill_pdf_and_store`)
+
+For a region outside `agonistica`/`non-agonistica` the view creates the Document, takes `appointment.get_template()` and reads
+its form fields with pypdf. Nothing is sent to the renderer or to the broker.
+
+- `MODELS_TEMPLATE_MAP` has a PDF only for `agonistica-piemonte-biella`. Every other region gets the default HTML template
+  path, which `get_pdf_fields` opens as a file: `500 {"exception": "[Errno 2] No such file or directory:
+  'document/medical-appointments/non-agonistica.html'"}`. The Document stays, nothing is linked.
+- **Piemonte Biella**: the template is `templates/document/application/pdfs/piemonte-biella.pdf`, opened relative to the
+  server's working directory (`/app`, the `BE` folder, in the image). A subscription without an associate answers
+  `500 {"exception": "'NoneType' object has no attribute 'main_tutor'"}` after the Document.
+- **Values** (`extract_values` over the field names, `-` read as `.`): the association's denomination, federation, address,
+  postal code, city, WhatsApp number, president names, stamp and owner e-mail; the associate's names, birth city and date,
+  city, `address_no_number`, `address_number`, document number and tax code; the main tutor's phone and e-mail; the
+  appointment's sport, its address (`other.address`) and its creation date as `%d/%m/%Y %H:%M` in UTC
+  (`other.today_datetime`). A value is kept when it is not empty and its text is not `None`. Each kept value gets two leading
+  spaces and `str.upper()`, unless it contains `base64`. A value that then strips to `YYYY-MM-DD` is rewritten as
+  `DD/MM/YYYY` without the spaces.
+- **Filling** (`fill_pdf_fields`): pypdf copies every page into a new writer and sets `/V` (with `/Border`, `/DA`, and empty
+  `/AP` and `/MK`) on each widget of a page whose name is a field; names containing `signature` are skipped, and
+  `sport_association-address_city` and `other-today` are not widgets of a page, so they are never written. A field without a
+  value is written empty. Strings are PDFDocEncoding when every character has a byte, else UTF-16BE with a BOM; every byte
+  that is not an ASCII letter, digit or space is an octal escape.
+- **Storage and answer**: `default_storage.save('<creation timestamp>/<document id>/<filename>', bytes)`, then the saved
+  file is the body: `application/pdf`, `Content-Disposition: inline; filename=<filename>` (`attachment` with a truthy
+  `?download`), `Content-Length`. Then `appointment.document = document; appointment.save()`.
+
+Go (`internal/medicalform`): the output of pypdf for this template depends on the values only through the `/V` strings, so
+the package embeds that output with a marker in each field (`piemonte_biella.skeleton`), the field keys and pypdf's
+PDFDocEncoding table. `FillBiella` writes the values as `TextStringObject.write_to_stream` does and moves the xref offsets.
+`TESTS/fixtures/generate_medical_form_skeleton.py` generates the three files and `testdata/golden.json` from Django's own
+`fill_pdf_fields`; `--check` reports stale files, and `go test ./internal/medicalform` compares five authored value sets
+(empty, ASCII, escapes, PDFDocEncoding accents, UTF-16 with astral characters) with pypdf's digests. The service reads the
+rows (`AppointmentForm`, `AppointmentFormTutor`), creates the Document, saves the bytes through `service.DocumentUploads`
+(`SaveGenerated`: the upload views' `default_storage.save`) and links the appointment. Go does not read the object back.
+
 ## Not ported (refused with the 500 page before any write)
 
-- **medical-appointment** regions printed by `fill_pdf_and_store` (`agonistica-piemonte-biella` and every other region outside
-  `agonistica`/`non-agonistica` that `REGIONS` knows). Django fills the PDF form in-process with pypdf/PyMuPDF and writes it
-  to storage synchronously. There is no renderer request to reproduce, and the PDF bytes depend on the Python libraries.
+- **medical-appointment**, Piemonte Biella, when the association has a stored president signature (any text that is not empty
+  and not `None`): `fill_pdf_fields` first draws the signature, and then the stamp, on the first page with PyMuPDF
+  (`insert_image`, then a full `save`). That is image decoding and recompression inside MuPDF; the rules of this migration
+  keep image processing out of Go. Without a signature the stamp is never drawn (its text only fills the field).
+- **medical-appointment**, Piemonte Biella, for an associate whose tutor relations have no primary one
+  (`get_main_tutor()` would promote the first: a write), and for a filename `default_storage.save` rejects.
+- A storage failure while saving a filled form is the 500 page (Django answers the provider's text); the Document stays.
 - Filenames Django's header code or the ASGI server would reject (CR/LF, other C0 controls, DEL), or ones that would split
   `email.header` words (`\x85`, ` `, ` `). Django publishes the storage task and then answers 500; the template route
   is not affected.
@@ -214,3 +254,15 @@ invoice-sync-print 70/70 and payment-reads 276/276. The print consumer harness
 (`celery-consumer-print-process-secdoc2-r1`) passes every scenario. `document/medical/certificate/` (documents-writes) keeps
 taking uploads without an account: the registration form sends the certificate before one exists, and the new row belongs
 to the account when there is one (`docmanager.test_document_access`).
+
+Regional PDF forms (`v2doc2-*`): 6 more cases (199 in all). `service_context` now also owns a private MinIO that Django's
+default storage and Go share, and runs the servers from `BE` (the template path is relative). The cases: the Biella form with
+every value (accents, a `ß`, Greek, an address with two numbers, a primary tutor, a `base64` stamp text, the date rewrite),
+the same appointment again with `?download=1`, an associate with almost nothing (a last name `None`), a subscription without
+an associate, a region without a form (`agonistica-lombardia`) and an athlete account on another member's appointment. A
+form case answers exactly `fill_pdf_fields` over the authored values, and the bucket must hold that object, and nothing
+after any other case. RED `v2doc2-red-r3`: Django 199/199, Go the 500 page on `medical-form-biella`. GREEN
+`v2doc2-versioned-r1` (base already merged): 199/199 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation
+`v2doc2-mutation-r1`: without the date rewrite `medical-form-biella` fails `pdf.body`. Re-run green (`v2doc2-rerun-r2`,
+native): docmanager-reads 170/170, documents-writes 141/141, document-views 156/156, payment-reads 276/276. PDF answers now
+carry an explicit `Content-Length` (a filled form is larger than what net/http measures by itself).

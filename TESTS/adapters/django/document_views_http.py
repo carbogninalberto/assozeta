@@ -39,7 +39,7 @@ SOURCES = ('TESTS/fixtures/document_views_http.json', 'TESTS/contracts/test_docu
            'BE/application/impersonation_scope.py', 'BE/application/impersonation.py', 'BE/application/mixin.py',
            'BE/application/permissions_registry.py', 'BE/core/settings.py', 'BE/core/middleware.py',
            'BE/core/authentication.py') + harness.SOURCES
-service_context = renderer_runner.service_context
+service_context = renderer_runner.renderer_context
 STUB = renderer_runner.STUB
 
 

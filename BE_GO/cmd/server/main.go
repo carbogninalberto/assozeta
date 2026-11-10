@@ -291,9 +291,10 @@ func run() (runErr error) {
 	instanceManifestHandler := handler.NewInstanceManifestHandler(service.NewInstanceManifest(repository.NewInstanceManifest(db)))
 	instanceLogoHandler := composeInstanceLogo(cfg)
 	instanceSetupHandler := composeInstanceSetup(cfg, db, instanceService, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
-	docmanagerReadsHandler := handler.NewDocmanagerReadsHandler(service.NewDocmanagerReads(repository.NewDocmanagerReads(db),
+	docmanagerReads := service.NewDocmanagerReads(repository.NewDocmanagerReads(db),
 		composeDocumentObjects(cfg), service.NewActorAuthentication(accounts, tokens), cfg.SessionSecret, time.Now).
-		WithDocumentDelete(repository.NewDocumentDelete(db, time.Now)),
+		WithDocumentDelete(repository.NewDocumentDelete(db, time.Now))
+	docmanagerReadsHandler := handler.NewDocmanagerReadsHandler(docmanagerReads,
 		service.NewActorAuthentication(accounts, tokens), identities).WithWrites(middleware.SessionAuditContext, paymentCategoryOperations)
 
 	// document/<kind>/<uid> PDF routes: the Puppeteer FastRender service (PUPPETEER_HOST/PORT) prints
@@ -309,6 +310,10 @@ func run() (runErr error) {
 	documentRenders := service.NewDocumentRender(repository.NewDocumentRender(db),
 		pdfrender.New(os.Getenv("PUPPETEER_HOST"), os.Getenv("PUPPETEER_PORT"), os.Getenv("CURRENT_HOST_PUPPETEER")), tasks,
 		documentRenderSettings(cfg), time.Now, uuid.NewString)
+	// document/medical-appointment fills the regional PDF forms itself and saves them in the default storage.
+	documentRenders.WithFormStorage(composeDocumentStorage(cfg, db, sessions))
+	// A stored PDF whose object is missing is printed again by document/retrieve.
+	docmanagerReads.WithReprinter(documentRenders)
 	documentRenderHandler := handler.NewDocumentRenderHandler(documentRenders,
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 

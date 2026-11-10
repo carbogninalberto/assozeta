@@ -19,7 +19,52 @@ func TestGuessMatchesPythonDefaults(t *testing.T) {
 			t.Errorf("Guess(%q) = %q, %v, %v; want %q", name, got, ok, err, want)
 		}
 	}
-	for _, name := range []string{"data:text/plain,x.pdf", "ab:c.pdf", " \tab:c.pdf"} {
+	// Names urlparse reads as a URL: mimetypes.guess_type's own answers (CPython 3.13).
+	for _, item := range [][3]string{
+		{"data:text/plain,x.pdf", "text/plain", ""},
+		{"ab:c.pdf", "application/pdf", ""},
+		{" \tab:c.pdf", "application/pdf", ""},
+		{"Nota:spese.pdf", "application/pdf", ""},
+		{"NOTA:Spese.PDF", "application/pdf", ""},
+		{"nota:spese", "", ""},
+		{"nota:a.tar.gz", "application/x-tar", "gzip"},
+		{"ab:c.pdf#x.txt", "application/pdf", ""},
+		{"ab:c.pdf?x.txt", "application/pdf", ""},
+		{"ab:c.txt;v.pdf", "application/pdf", ""},
+		{"http:c.txt;v.pdf", "text/plain", ""},
+		{"http:a;b/c.txt;v.pdf", "text/plain", ""},
+		{"http://host/c.png", "image/png", ""},
+		{"ab://host", "", ""},
+		{"ab://host.pdf", "", ""},
+		{"ab://host?x/y.pdf", "", ""},
+		{"ab://host/dir.d/f.html", "text/html", ""},
+		{"a+b-c.9:x.txt", "text/plain", ""},
+		{"a_b:x.txt", "text/plain", ""},
+		{"1ab:x.txt", "text/plain", ""},
+		{"ab:", "", ""},
+		{"data:x.pdf", "", ""},
+		{"data:,x.pdf", "text/plain", ""},
+		{"data:image/png;base64,AAAA.pdf", "image/png", ""},
+		{"data:a=b/c,x", "text/plain", ""},
+		{"data:text,x", "text/plain", ""},
+		{"DATA:Text/HTML,x", "Text/HTML", ""},
+		{"data://host/text/css,x", "/text/css", ""},
+		{"data:text/css#,x", "", ""},
+		{"ab:\nc.p\tdf", "application/pdf", ""},
+		{"ab:x.pdf\n", "application/pdf", ""},
+		{"àb:c.pdf", "application/pdf", ""},
+		{"ab:ç.pdf", "application/pdf", ""},
+		{"tel:x.txt;y.pdf", "text/plain", ""},
+		{"ab:.pdf", "", ""},
+		{"ab:a/.pdf", "", ""},
+		{"ab:a.d/b", "", ""},
+	} {
+		kind, ok, encoding, err := table.GuessType(item[0])
+		if err != nil || ok != (item[1] != "") || kind != item[1] || encoding != item[2] {
+			t.Errorf("GuessType(%q) = %q, %v, %q, %v; want %q, %q", item[0], kind, ok, encoding, err, item[1], item[2])
+		}
+	}
+	for _, name := range []string{"ab://[::1]/c.pdf", "ab://hôst/c.pdf", "data:text/hé,x"} {
 		if _, _, err := table.Guess(name); err != ErrURLName {
 			t.Errorf("Guess(%q) error = %v; want ErrURLName", name, err)
 		}

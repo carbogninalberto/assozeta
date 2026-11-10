@@ -116,16 +116,20 @@ func (r *DocmanagerReads) VisibleDocument(ctx context.Context, scope domain.Reso
 	return visible, err
 }
 
-// RenderSource reports whether download_file/view_file would render a missing
-// object again: exactly one subscription, or else exactly one invoice, has it
-// as its PDF.
-func (r *DocmanagerReads) RenderSource(ctx context.Context, document string, group *string) (bool, error) {
-	var render bool
-	err := r.db.GetContext(ctx, &render, `SELECT
-  (SELECT COUNT(*) FROM application_subscription s WHERE s.document_pdf_id=$1::uuid AND ($2::uuid IS NULL OR s.group_id=$2::uuid))=1
-  OR (SELECT COUNT(*) FROM application_invoice i WHERE i.document_pdf_id=$1::uuid AND NOT i.deleted AND ($2::uuid IS NULL OR i.group_id=$2::uuid))=1`,
-		document, group)
-	return render, err
+// RenderSource is the view download_file/view_file print again for a missing
+// object: the one subscription, or else the one invoice, that has it as its
+// PDF. "" when neither count is exactly one.
+func (r *DocmanagerReads) RenderSource(ctx context.Context, document string, group *string) (string, error) {
+	var view string
+	err := r.db.GetContext(ctx, &view, `SELECT CASE
+  WHEN (SELECT COUNT(*) FROM application_subscription s WHERE s.document_pdf_id=$1::uuid AND ($2::uuid IS NULL OR s.group_id=$2::uuid))=1
+   THEN 'document/subscription/' || (SELECT s.subscription_id::text FROM application_subscription s
+    WHERE s.document_pdf_id=$1::uuid AND ($2::uuid IS NULL OR s.group_id=$2::uuid)) || '/view'
+  WHEN (SELECT COUNT(*) FROM application_invoice i WHERE i.document_pdf_id=$1::uuid AND NOT i.deleted AND ($2::uuid IS NULL OR i.group_id=$2::uuid))=1
+   THEN 'document/invoice/' || (SELECT i.invoice_id::text FROM application_invoice i
+    WHERE i.document_pdf_id=$1::uuid AND NOT i.deleted AND ($2::uuid IS NULL OR i.group_id=$2::uuid)) || '/view'
+  ELSE '' END`, document, group)
+	return view, err
 }
 
 // HasActiveAssociation is SportAssociation.objects.filter(user=user).first() is not None.

@@ -16,7 +16,7 @@ below describe what Go itself does not serve; with the handoff on, an A or B ite
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 69** (about 63 distinct after duplicates; 1 ported in v2-reports (the saved-report file tools); 5 ported in v2-pdf (the reportlab documents); 2 ported in v2-deletes; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard, 3 in v2-misc-3 (which also narrows the smtp/verify row to connect timeouts) and 1 in the famwiz change (the preregistration that renews a subscription; also the excel half of the course-subscriptions export row), below), **B 218** (54 with
+Counts (table rows, appendix): **A 69** (about 63 distinct after duplicates; 1 ported and 1 narrowed (the Biella form, to associations with a stored signature) in v2-documents-rest; 5 ported in v2-pdf (the reportlab documents); 2 ported in v2-deletes; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard, 3 in v2-misc-3 (which also narrows the smtp/verify row to connect timeouts) and 1 in the famwiz change (the preregistration that renews a subscription; also the excel half of the course-subscriptions export row), below), **B 218** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -255,6 +255,17 @@ Receipts are `quality-reports/go-migration/<family>-http-v2del-*`; each family d
 | document-delete | `DELETE document/<uid>/delete` | every existing document of a requester with an association (A): the ownership walk over the objects referencing it, then `Document.delete()` with its cascade and audit entries | 57 cases; RED `v2del-red-r3` Django 57/57, Go 500; GREEN `v2del-versioned-r1` 4 transports; mutation `v2del-mutation-r1` (update entries counted as creation entries) CAUGHT; docmanager-reads 155/155 re-run (`v2del-rerun-r1`) |
 | balance-sheet | `DELETE balance-sheet/accounts/<uid>/delete` | an account that any payment references (A: payments removed from the list or of another group leave it deletable in the UI): the collector deletes the account, its transfers and its payments, with the payments' delete receivers | 80 cases; RED `v2del-red-r1` Django 80/80, Go 500; GREEN `v2del-versioned-r1` 4 transports; mutation `v2del-mutation-r1` (payment receiver skipped) CAUGHT; balance-account-writes 29/29, balance-transfer-writes 30/30 and balance-accounts 25/25 re-run (`v2del-rerun-r1`) |
 
+### Ported in the v2-documents-rest change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2doc2-*`; each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| balance-sheet | `DELETE balance-sheet/accounts/<uid>/delete` | not a refusal: the route now answers 403 for an account with transfers or payments (the rule of the list's `deletable` flag), in Django and Go | Django tests first; 84 cases; RED `v2doc2-red-r1` Django 84/84, Go 200; GREEN `v2doc2-versioned-r2` 4 transports; mutation `v2doc2-mutation-r2` (rule needing both a transfer and a payment) CAUGHT; balance-accounts 25/25, balance-account-writes 29/29, balance-transfer-writes 30/30 re-run (`v2doc2-rerun-r1`) |
+| docmanager-reads | `GET document/retrieve/<uid>` | a stored PDF whose object is missing and that one subscription or invoice references (A): the renderer prints the view again, `save_to_storage` is published, and the stream answers the missing-key text until the worker has stored the file | 170 cases; RED `v2doc2-red-r1` Django 170/170, Go 500 page; GREEN `v2doc2-versioned-r1` 4 transports; mutation `v2doc2-mutation-r1` (stored under the document's filepath) CAUGHT; document-render and documents-writes re-run (`v2doc2-rerun-r1`) |
+| docmanager-reads | `GET document/retrieve/<uid>` | a filename `urllib.parse` reads as a URL, such as `Nota:spese.pdf` (B, legacy: yes): the type is guessed from the URL's path, and a `data:` name answers the type it spells | 175 cases; RED `v2doc2-red-r2` Django 175/175, Go 500 page; GREEN `v2doc2-versioned-r2` 4 transports; mutation `v2doc2-mutation-r2` (query not cut from the path) CAUGHT; `pkg/pymime` pinned by 37 `guess_type` answers; documents-writes re-run (`v2doc2-rerun-r3`) |
+| document-render | `GET document/medical-appointment/<uid>` | region `agonistica-piemonte-biella` for an association without a stored signature (A): the view fills the PDF form itself (pypdf), saves it in the default storage and answers it. Also the regions without a form (B): the Document is created and the answer is the missing-template 500 | 199 cases with a private MinIO; RED `v2doc2-red-r3` Django 199/199, Go 500 page; GREEN `v2doc2-versioned-r1` 4 transports; mutation `v2doc2-mutation-r1` (no date rewrite) CAUGHT; docmanager-reads, documents-writes, document-views and payment-reads re-run (`v2doc2-rerun-r2`) |
+
 ## Remaining A items, per family
 
 UI paths under `UI/src/`, Go under `BE_GO/internal/`. Cost: cheap (hours), medium (a family change with new
@@ -295,8 +306,7 @@ attempt saw came from the harness storing the re-seeded rows in another physical
 ### documents / docmanager / document-views
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| GET document/retrieve | PDF object missing, still referenced | `ReceiptList.svelte:68`, `MembersList.svelte:527` | `service/docmanager_reads.go:241-246` | medium |
-| GET document/medical-appointment/<uid> | region `agonistica-piemonte-biella` (server-side call to `CURRENT_HOST`) | `AddMedicalAppointment.svelte:30` | `service/document_render.go:657` | expensive |
+| GET document/medical-appointment/<uid> | region `agonistica-piemonte-biella` when the association has a stored president signature: Django draws it (and the stamp) on the form with PyMuPDF (image processing, refused by the porting rules). Without a signature the form is ported (v2-documents-rest) | `AddMedicalAppointment.svelte:30` | `service/document_render.go` (`medicalJob`) | expensive (image) |
 
 ### invoices / instructors
 | Route | Condition | UI call | Go site | Cost |
@@ -532,7 +542,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### document-render.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| GET document/medical-appointment/<uid> | region other than `agonistica`/`non-agonistica` (PDF form fill) | service/document_render.go:657 (`ErrDocumentRenderNotPorted`) | A | The add-appointment form offers `agonistica-piemonte-biella` (`association/Members/detail/sections/modals/AddMedicalAppointment.svelte:30`, select :160-167). The route is requested by the printing call to `CURRENT_HOST` (`application/printing_tasks.py:47`), not by the browser, so it hits Go only when `CURRENT_HOST` points at the Go API. |
+| GET document/medical-appointment/<uid> | region `agonistica-piemonte-biella` with a stored president signature (PyMuPDF draws it on the form); the form without a signature and the regions without a form are ported (v2-documents-rest) | service/document_render.go, `medicalJob` (`ErrDocumentRenderNotPorted`) | A | The add-appointment form offers `agonistica-piemonte-biella` (`association/Members/detail/sections/modals/AddMedicalAppointment.svelte:30`, select :160-167). The route is requested by the printing call to `CURRENT_HOST` (`application/printing_tasks.py:47`), not by the browser, so it hits Go only when `CURRENT_HOST` points at the Go API. |
 | document/* | filename with CR/LF/C0/DEL or `email.header` splitting chars | service/document_render.go:230 | B (legacy: yes) | Filenames derive from member/association names; control characters need pasted or imported data. Cost: cheap-medium. |
 | POST document/template/<uid> | body not none/JSON object/urlencoded, malformed JSON, non-object `additionalData`, `subscription` not str/int/bool/null | handler/document_render.go:124; service/document_render.go:553,562,567,584 | B | UI sends `{template, additionalData: <object>}` as JSON (`association/archive/modals/GenerateFromTemplateModal.svelte:31-36`). Cost: cheap. |
 | GET document/invoice/<uid> | multipart/other body with falsy query flag | handler/document_render.go:124 | B | Called by the printing task with GET and no body (`application/printing_tasks.py:12`). |
@@ -599,9 +609,9 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### docmanager-reads.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET document/retrieve/<uid> | object absent and referenced by a subscription or invoice (re-render) | `service/docmanager_reads.go:241-246` | **A** | Links everywhere (`accounting/receipts/ReceiptList.svelte:68`, `Members/MembersList.svelte:527`). Produced by a restore with "allow missing media" (`profile/sections/DataImport.svelte:188-189`) or a failed/pending `save_to_storage`. Medium confidence on frequency. |
-| GET document/retrieve | provider errors (HEAD ≠404, GetObject failure) | `service/docmanager_reads.go:237,266` | B | Infrastructure. cheap. |
-| GET document/retrieve | URL-like names (`abc:…`), trailing newline, inline empty name, invalid UTF-8/NUL, odd creation dates | `service/docmanager_reads.go:225,233,256,262`; `BE_GO/pkg/pymime/pymime.go:146-163` | B | Generated names start with `[`; an uploaded name like `Nota:spese.pdf` (Linux/Android) would hit it. legacy: yes; cheap. |
+| GET document/retrieve/<uid> | object absent and referenced by a subscription or invoice (re-render) | `service/docmanager_reads.go:241-246` | **A** (ported in v2-documents-rest) | Links everywhere (`accounting/receipts/ReceiptList.svelte:68`, `Members/MembersList.svelte:527`). Produced by a restore with "allow missing media" (`profile/sections/DataImport.svelte:188-189`) or a failed/pending `save_to_storage`. Medium confidence on frequency. |
+| GET document/retrieve | provider errors (HEAD ≠404, GetObject failure other than a missing key) | `service/docmanager_reads.go:237,266` | B | Infrastructure. cheap. |
+| GET document/retrieve | URL-like names with a bracketed or non-ASCII network location (the other URL-like names are ported in v2-documents-rest), trailing newline, inline empty name, invalid UTF-8/NUL, odd creation dates | `service/docmanager_reads.go:225,233,256,262`; `BE_GO/pkg/pymime/pymime.go:146-163` | B | Generated names start with `[`; an uploaded name like `Nota:spese.pdf` (Linux/Android) would hit it. legacy: yes; cheap. |
 | GET document/retrieve | download token JSON with NaN/Infinity | token decode | C | Needs `SECRET_KEY`. |
 | — | `SECRET_KEY_FALLBACKS` | — | C | Not configured. |
 
