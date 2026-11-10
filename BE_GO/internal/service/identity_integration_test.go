@@ -123,15 +123,20 @@ func TestIdentityResolutionWithDjangoDatabaseAndSessions(t *testing.T) {
 		t.Fatal(err)
 	}
 	// Persisted sessions of the fixture: 9 on its member 15 (212), 9 on its subscriber 22 (210),
-	// 8 on its subscriber 24 whose link to association 90 is deleted (213).
+	// 9 on its subscriber 26 whose link to association 80 is deleted (217), the instance owner 8 on
+	// athlete 15 of association 90 (200) and on athlete 25 linked to both associations (214).
 	ownMember := domain.IdentityRequest{Path: "/profile/info", Method: "GET", SessionID: "00000000-0000-4000-8000-000000000212", References: &domain.RequestReferences{Operation: "profile_info"}}
 	subscriber := ownMember
 	subscriber.SessionID = "00000000-0000-4000-8000-000000000210"
 	linkedElsewhere := ownMember
-	linkedElsewhere.SessionID = "00000000-0000-4000-8000-000000000213"
+	linkedElsewhere.SessionID = "00000000-0000-4000-8000-000000000217"
+	otherAthlete := ownMember
+	otherAthlete.SessionID = "00000000-0000-4000-8000-000000000200"
+	linkedToBoth := ownMember
+	linkedToBoth.SessionID = "00000000-0000-4000-8000-000000000214"
 	transitions := []struct {
 		name, table, column, key, id, detail string
-		changed, original                    bool
+		changed, original                    any
 		actor                                *domain.Account
 		request                              domain.IdentityRequest
 	}{
@@ -142,7 +147,9 @@ func TestIdentityResolutionWithDjangoDatabaseAndSessions(t *testing.T) {
 		{"association-deleted", "application_sportassociation", "deleted", "sport_association_id", "00000000-0000-4000-8000-000000000080", "Associazione non disponibile.", true, false, &actor, request},
 		{"membership-removed", "application_associate", "deleted", "associate_id", "00000000-0000-4000-8000-000000000091", "Utente non disponibile per l’impersonificazione.", true, false, &foreignOwner, ownMember},
 		{"subscription-removed", "application_subscription", "deleted", "subscription_id", "00000000-0000-4000-8000-000000000092", "Utente non disponibile per l’impersonificazione.", true, false, &foreignOwner, subscriber},
-		{"membership-elsewhere-restored", "application_associate", "deleted", "associate_id", "00000000-0000-4000-8000-000000000095", "Utente non disponibile per l’impersonificazione.", false, true, &actor, linkedElsewhere},
+		{"membership-elsewhere-restored", "application_associate", "deleted", "associate_id", "00000000-0000-4000-8000-000000000099", "Utente non disponibile per l’impersonificazione.", false, true, &foreignOwner, linkedElsewhere},
+		{"instance-not-self-hosted", "instance_instanceconfiguration", "self_hosted", "domain", "identity.example.test", "Utente non disponibile per l’impersonificazione.", false, true, &actor, otherAthlete},
+		{"instance-primary-association-changed", "instance_instanceconfiguration", "primary_association_id", "domain", "identity.example.test", "Utente non disponibile per l’impersonificazione.", "00000000-0000-4000-8000-000000000090", "00000000-0000-4000-8000-000000000080", &actor, linkedToBoth},
 	}
 	for _, change := range transitions {
 		t.Run(change.name, func(t *testing.T) {

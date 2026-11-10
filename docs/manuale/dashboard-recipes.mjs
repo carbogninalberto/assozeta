@@ -21,7 +21,7 @@ const reviewed = {
   "BE/application/models/carnet_models.py": "3e3cb2cfb3d2be09cc5db6b97b43e2a2f391d91ccb61dfb38c99bf0ec7913713",
   "BE/application/utils/api_utils.py": "5db286fc73e92356b476514f4d6561a3300b36668ee99831ca1b197835a5cabf",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
-  "BE/application/impersonation.py": "6c011159998ceff71dc6bbccfad9faed5451c819d7f31f93b7c0bc62371c9610",
+  "BE/application/impersonation.py": "760fd6e63c6baebee14744cbdfe571ac4aa4e0fb1a5e0ac9b6147dfcf299cced",
   "UI/src/components/widgets/Associates.svelte": "5bb400b1d4716eaa0a8fb48186f328ecedddf2b0ab2aab66893ba426acf2eeab",
   "UI/src/components/widgets/Payments.svelte": "4e3e6fe698b9208613e9a2ee270294b601ab5a5b89abb7ba3a48c7eec86328b5",
   "UI/src/components/widgets/BestCourses.svelte": "345edb15c8c27c746c2bb2d88da65293d257d59f12a2761ea19d4549c2e0cdb0",
