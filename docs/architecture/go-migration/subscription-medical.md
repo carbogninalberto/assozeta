@@ -48,7 +48,7 @@ the list (`-date`): a GET to `CURRENT_HOST/document/medical-appointment/<id>` wi
 `Authorization`, every reply and error ignored, behind the restore operation lock like the add route (same `InvoiceSyncPrint`
 printer). The row is serialized as it was loaded (`document` and `document_token` null). Cases
 `list-appointments-without-document`, `-renderer-fails` and `-impersonated` (the CURRENT_HOST stub records the requests): 136 cases.
-Native Django and Go 136/136 (`restdocs-sm-local`). On GitHub the family stops at the placeholder image case
+GREEN on four transports, run locally: 136/136 (`subscription-medical-http-restdocs-sm-versioned`). On GitHub the family stops at the placeholder image case
 (`storage.placeholder-bytes`), also on the base branch (the CI image's zlib; not caused by this change). Mutation (the print sent
 for the subscription id) CAUGHT.
 

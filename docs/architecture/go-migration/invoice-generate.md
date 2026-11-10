@@ -70,7 +70,7 @@ its canonical form and the new invoice keeps the text as sent (create entry, res
 dated by its payment); float fees on an exact tie are stored half away from zero and answered half even (the re-save compares the
 stored column value with the float); `meta.subscription_data.name` is formatted with `str()` for floats, lists and dicts. Cases
 `group-header-upper-case`, `subscription-subject-fee-tie`, `flag-payment-date-fee-tie`, `meta-name-{float,list,dict}`: 56 cases,
-receipt `invoice-generate-http-sweep-restdocs-4` (GitHub run RUN4): 4 transports. Mutation (the re-save compared with the rendered fee)
+receipt `invoice-generate-http-sweep-restdocs-4` (GitHub run 42913093092): 4 transports. Mutation (the re-save compared with the rendered fee)
 CAUGHT.
 
 ## Not ported (refused with the 500 page before any write)
