@@ -1287,6 +1287,76 @@
    "effect": null
   },
   {
+   "name": "course-enrolment-make-payment-athlete-other-subscription",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000041/make-payment",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-enrolment-make-payment-athlete-without-subscription",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000046/make-payment",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-enrolment-make-payment-athlete-unknown",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000999999/make-payment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "course-enrolment-make-payment-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000041/make-payment",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-enrolment-make-payment-other-association-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000045/make-payment",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-enrolment-make-payment-other-association-owner",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000041/make-payment",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
    "name": "course-enrolment-make-payment-owner",
    "actor": "owner",
    "method": "POST",
@@ -1882,7 +1952,7 @@
   },
   {
    "name": "course-enrolment-make-payment-course-association",
-   "actor": "owner",
+   "actor": "foreign_owner",
    "method": "POST",
    "path": "/course-installment/e0000000-0000-4000-8000-000000000045/make-payment",
    "headers": {},
@@ -1951,7 +2021,7 @@
     }
    },
    "effect": {
-    "actor": "owner",
+    "actor": "foreign_owner",
     "rows": {
      "application.CourseSubscriptionInstallment": {
       "e0000000-0000-4000-8000-000000000045": {
@@ -2684,6 +2754,80 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-enrolment-overview-add-athlete-other-subscription",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/course/e0000000-0000-4000-8000-000000000027/overview/e0000000-0000-4000-8000-000000000006/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-enrolment-overview-add-athlete-other-association-subscription",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/course/e0000000-0000-4000-8000-000000000017/overview/e0000000-0000-4000-8000-000000000008/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-enrolment-overview-add-athlete-unknown-subscription",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/course/e0000000-0000-4000-8000-000000000027/overview/e0000000-0000-4000-8000-000000999999/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-enrolment-overview-add-athlete-unknown-course",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/course/e0000000-0000-4000-8000-000000999999/overview/e0000000-0000-4000-8000-000000000005/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-enrolment-overview-add-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/course/e0000000-0000-4000-8000-000000000025/overview/e0000000-0000-4000-8000-000000000005/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-enrolment-overview-add-owner-without-association-unknown-course",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/course/e0000000-0000-4000-8000-000000999999/overview/e0000000-0000-4000-8000-000000000005/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
    "effect": null,
    "body": {}
   },
@@ -4336,128 +4480,6 @@
        "course.sport_association"
       ],
       "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@oa8'), 'course_id': UUID('e0000000-0000-4000-8000-000000000027'), 'paid': False, 'creation_date': {created:@oa8}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000005'), 'payment_id': UUID('@oa8p'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
-     }
-    ]
-   },
-   "body": {}
-  },
-  {
-   "name": "course-enrolment-overview-add-owner-without-association",
-   "actor": "owner_without_association",
-   "method": "POST",
-   "path": "/course/e0000000-0000-4000-8000-000000000025/overview/e0000000-0000-4000-8000-000000000005/add",
-   "headers": {},
-   "status": 200,
-   "response": {
-    "data": {
-     "msg": "associate added.",
-     "payment": null,
-     "course_subscription": {
-      "course_subscription_id": "@oa9",
-      "course": {
-       "course_id": "e0000000-0000-4000-8000-000000000025",
-       "athletes": null,
-       "tags": [],
-       "locations": [],
-       "status_flag": 2,
-       "course_type": 1,
-       "creation_date": "2026-02-01T08:00:00Z",
-       "title": "Gratis",
-       "description": "Descrizione Gratis",
-       "multi_payments": false,
-       "fee": "0.00",
-       "events": null,
-       "one_fee_payment": false,
-       "one_fee": "0.00",
-       "google_calendar_id": null,
-       "google_background_color": "#123456",
-       "multiple_quotes": null,
-       "start_date": null,
-       "end_date": null,
-       "pinned": false,
-       "billed_duration_is_sport_season": false,
-       "billed_frequency": 1,
-       "billed_from_subscription_date": false,
-       "billed_from_day_of_month": 1,
-       "auto_renewal": false,
-       "deleted": false,
-       "sport_association": "a1000000-0000-4000-8000-000000701001",
-       "group": null
-      },
-      "paid": false,
-      "creation_date": "$now",
-      "subscription": "e0000000-0000-4000-8000-000000000005",
-      "payment": null,
-      "multi_payments": false,
-      "one_fee_payment": false,
-      "archived": false,
-      "type": 1,
-      "multiple_quote": null,
-      "billed_frequency": 1,
-      "billed_from": null,
-      "billed_until": null,
-      "billed_from_day_of_month": 1,
-      "membership_active": true,
-      "membership_fee": "0.00",
-      "auto_renewal": false,
-      "deleted": false,
-      "membership_payments": []
-     }
-    }
-   },
-   "effect": {
-    "actor": "owner_without_association",
-    "rows": {},
-    "created": {
-     "application.CourseSubscription": [
-      {
-       "$sym": "@oa9",
-       "course_subscription_id": "@oa9",
-       "course_id": "e0000000-0000-4000-8000-000000000025",
-       "paid": false,
-       "creation_date": "$now",
-       "subscription_id": "e0000000-0000-4000-8000-000000000005",
-       "payment_id": null,
-       "multi_payments": false,
-       "one_fee_payment": false,
-       "archived": false,
-       "type": 1,
-       "multiple_quote": null,
-       "billed_frequency": 1,
-       "billed_from": null,
-       "billed_until": null,
-       "billed_from_day_of_month": 1,
-       "membership_active": true,
-       "membership_fee": "0.00",
-       "auto_renewal": false,
-       "deleted": false
-      }
-     ]
-    },
-    "links": {},
-    "audit": [
-     {
-      "model": "coursesubscription",
-      "key": "@oa9",
-      "action": 0,
-      "changes": {
-       "$stored": "create",
-       "overrides": {
-        "membership_fee": [
-         "None",
-         "0.0"
-        ],
-        "payment": [
-         "None",
-         "None"
-        ]
-       }
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "course.sport_association"
-      ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@oa9'), 'course_id': UUID('e0000000-0000-4000-8000-000000000025'), 'paid': False, 'creation_date': {created:@oa9}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
      }
     ]
    },

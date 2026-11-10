@@ -17,16 +17,18 @@ athlete membership request fails on Course.objects.get(course_id=<Course>)
 
 course/<uid>/overview/<uid_subscription>/add (course_overview_add, not
 atomic) checks both uids, takes the caller's association by
-filter().first(), the live group-aware course and subscription, refuses
-another association's course (403) and then uses the subscription's
-association; add_course_to_subscription creates the row (an existing live
+filter().first(), the live group-aware course and subscription; athletes
+enrol subscriptions of their own user (else 403), other callers need an
+association owning the course (else 403); the subscription's association
+is then used; add_course_to_subscription creates the row (an existing live
 row returns a Response the view cannot render: 500), the one-fee, quote,
 installment or course-fee payment of the subscription's user and links the
 last payment.
 
 course-installment/<uid>/make-payment (course_installment_make_payment, not
 atomic) resolves the live group-aware installment by id (missing: 500),
-creates a payment for its amount and date for the subscription's user and
+answers 403 unless the caller is the athlete of the row's subscription or
+the owner of the course's association, creates a payment for its amount and date for the subscription's user and
 associate in the course's association and links it to the installment.
 Run with ``python3 -I``.
 """
@@ -399,6 +401,13 @@ add('make-payment-unknown', 'owner', MP_PATH(UNKNOWN), 500, SERVER)
 add('make-payment-deleted-installment', 'owner', MP_PATH('deleted'), 500, SERVER)
 add('make-payment-group-header-hides', 'owner', MP_PATH('group'), 500, SERVER, headers=GROUP('foreign_group'))
 add('make-payment-without-subscription', 'owner', MP_PATH('nosub'), 500, SERVER)
+# Athletes pay installments of their own user's subscriptions; other callers those of their association's courses.
+add('make-payment-athlete-other-subscription', 'athlete', MP_PATH('plain'), 403, NOT_ALLOWED)
+add('make-payment-athlete-without-subscription', 'athlete', MP_PATH('nosub'), 403, NOT_ALLOWED)
+add('make-payment-athlete-unknown', 'athlete', MP_PATH(UNKNOWN), 500, SERVER)
+add('make-payment-owner-without-association', 'owner_without_association', MP_PATH('plain'), 403, NOT_ALLOWED)
+add('make-payment-other-association-course', 'owner', MP_PATH('far'), 403, NOT_ALLOWED)
+add('make-payment-other-association-owner', 'foreign_owner', MP_PATH('plain'), 403, NOT_ALLOWED)
 
 
 def make_payment(name, actor, label, *, sym, headers=None, group=None):
@@ -422,8 +431,8 @@ make_payment('make-payment-owner', 'owner', 'plain', sym='@mp1')
 make_payment('make-payment-replaces-link', 'full_collaborator', 'linked', sym='@mp2')
 make_payment('make-payment-grouped', 'owner', 'group', sym='@mp3', headers=GROUP('own_group'), group=OWN_GROUP)
 make_payment('make-payment-athlete', 'athlete', 'athlete', sym='@mp4')
-# The installment resolves by id; the payment takes the course's association.
-make_payment('make-payment-course-association', 'owner', 'far', sym='@mp6')
+# The payment takes the course's association.
+make_payment('make-payment-course-association', 'foreign_owner', 'far', sym='@mp6')
 make_payment('make-payment-soft-deleted-row', 'owner', 'gone_row', sym='@mp7')
 add('make-payment-owner-scoped-athlete-hidden', 'owner', MP_PATH('plain'), 403,
     {'detail': 'Risorsa non disponibile per questo utente e associazione.'}, headers=ATHLETE_SESSION)
@@ -453,6 +462,13 @@ add('overview-add-other-association-course', 'owner', oa('far', 'hans'), 403, NO
 add('overview-add-course-without-association', 'owner', oa('orphan', 'luisa'), 500, SERVER, body={})
 add('overview-add-unknown-subscription', 'owner', oa('ov_fee', UNKNOWN), 500, SERVER, body={})
 add('overview-add-existing-row', 'owner', oa('ov_fee', 'mario'), 500, SERVER, body={})
+# Athletes enrol subscriptions of their own user; other callers need an association.
+add('overview-add-athlete-other-subscription', 'athlete', oa('ov_athlete', 'luisa'), 403, NOT_ALLOWED, body={})
+add('overview-add-athlete-other-association-subscription', 'athlete', oa('far', 'hans'), 403, NOT_ALLOWED, body={})
+add('overview-add-athlete-unknown-subscription', 'athlete', oa('ov_athlete', UNKNOWN), 500, SERVER, body={})
+add('overview-add-athlete-unknown-course', 'athlete', oa(UNKNOWN, 'mario'), 500, SERVER, body={})
+add('overview-add-owner-without-association', 'owner_without_association', oa('ov_free', 'mario'), 403, NOT_ALLOWED, body={})
+add('overview-add-owner-without-association-unknown-course', 'owner_without_association', oa(UNKNOWN, 'mario'), 403, NOT_ALLOWED, body={})
 add('overview-add-owner-scoped-athlete', 'owner', oa('ov_fee', 'luisa'), 403,
     {'detail': 'Risorsa non disponibile per questo utente e associazione.'}, body={}, headers=ATHLETE_SESSION)
 
@@ -529,9 +545,8 @@ add('overview-add-unknown-quote-fails', 'owner', oa('ov_quotes', 'mario'), 500, 
               cs_repr('@oa12', 'ov_quotes', 'mario', quote=raw_quote))]))
 overview_add('overview-add-free-course', 'owner', 'ov_free', 'luisa', sym='oa6', kind='none')
 overview_add('overview-add-grouped', 'owner', 'ov_group', 'group', sym='oa7', headers=GROUP('own_group'), group=OWN_GROUP)
-# Athletes and owners without an association use the subscription's association.
+# Athletes use their subscription's association.
 overview_add('overview-add-athlete', 'athlete', 'ov_athlete', 'mario', sym='oa8')
-overview_add('overview-add-owner-without-association', 'owner_without_association', 'ov_free', 'mario', sym='oa9', kind='none')
 overview_add('overview-add-subscription-association', 'owner', 'ov_cross', 'hans', sym='oa10')
 # Impersonation sessions: the athlete's own subscription (its association), the collaborator as the owner.
 overview_add('overview-add-impersonated-athlete', 'owner', 'ov_session_athlete', 'mario', sym='oa13', headers=ATHLETE_SESSION)

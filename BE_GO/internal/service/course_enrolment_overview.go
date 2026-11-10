@@ -63,6 +63,12 @@ func overviewQuote(stored *string, selected any) (any, error) {
 	return selected, nil
 }
 
+// enrolmentAthleteOwns is the athlete check of course_overview_add and
+// course_installment_make_payment: the subscription of the caller's user.
+func enrolmentAthleteOwns(identity domain.ResolvedIdentity, user *string) bool {
+	return user != nil && *user == identity.ScopeUser.ID
+}
+
 // OverviewAdd follows course_overview_add and add_course_to_subscription.
 func (s *CourseEnrolment) OverviewAdd(ctx context.Context, identity domain.ResolvedIdentity, rawCourse, rawSubscription string,
 	request CourseEnrolmentRequest) (map[string]any, error) {
@@ -113,7 +119,17 @@ func (s *CourseEnrolment) OverviewAdd(ctx context.Context, identity domain.Resol
 	if subscription != nil && !courseEnrolmentScoped(identity, subscription.AssociationID) {
 		subscription = nil
 	}
-	if own != nil {
+	if identity.ScopeUser.Role == domain.RoleAthlete {
+		if subscription == nil {
+			return nil, courseEnrolmentServer
+		}
+		if !enrolmentAthleteOwns(identity, subscription.UserID) {
+			return nil, domain.ErrCourseWritesForeign
+		}
+	} else {
+		if own == nil {
+			return nil, domain.ErrCourseWritesForeign
+		}
 		if course == nil || course.AssociationID == nil {
 			return nil, courseEnrolmentServer
 		}
@@ -359,8 +375,25 @@ func (s *CourseEnrolment) MakePayment(ctx context.Context, identity domain.Resol
 	if installment != nil && !courseEnrolmentScoped(identity, installment.SubscriptionAssociation, installment.CourseAssociation) {
 		installment = nil
 	}
-	if installment == nil || installment.SubscriptionID == nil {
-		// raise Exception('Installment not found.'), or subscription.user on None.
+	if installment == nil {
+		// raise Exception('Installment not found.')
+		return nil, courseEnrolmentServer
+	}
+	if identity.ScopeUser.Role == domain.RoleAthlete {
+		if installment.SubscriptionID == nil || !enrolmentAthleteOwns(identity, installment.SubscriptionUserID) {
+			return nil, domain.ErrCourseWritesForeign
+		}
+	} else {
+		own, err := tx.OwnerAssociationFirst(ctx, identity.ScopeUser.ID)
+		if err != nil {
+			return nil, err
+		}
+		if own == nil || !courseEnrolmentScoped(identity, own) || installment.CourseAssociation == nil || *installment.CourseAssociation != *own {
+			return nil, domain.ErrCourseWritesForeign
+		}
+	}
+	if installment.SubscriptionID == nil {
+		// subscription.user on None.
 		return nil, courseEnrolmentServer
 	}
 	audit, err := s.auditContext(ctx, tx, identity, request)
