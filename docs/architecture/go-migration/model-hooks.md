@@ -10,8 +10,12 @@ lists those writers, what Django runs at each, and the evidence that the branche
 
 `Payment.save()`, in order:
 
-1. `payment_category is None`: `PaymentCategory.objects.filter(name__iexact='entrate e proventi da attività tipiche').first()`
-   (matched by name, lowest key first; the migration-seeded global row in practice).
+1. `payment_category is None`: `PaymentCategory.default_for(self.sport_association_id)`: the default payment category is
+   taken from the payment's association, the lowest-key category named `'entrate e proventi da attività tipiche'`
+   (case-insensitive) among that association's categories and the global ones; None when there is none. The
+   subscription, course, camp and payment helpers that pick the same default explicitly use `default_for` too. In Go
+   every lookup passes the payment's association (`secCategoryDefaultSQL` in `repository/sec_category_default.go`,
+   and the import consumer's `paymentSave`).
 2. `description is None`: `get_course_carnet_name()` by subject. Course (2): the first `CourseSubscription`, else
    `CourseSubscriptionInstallment`, else `CarnetSubscription` of the payment (`all_objects()` for the first two) gives
    `payment.meta['description']` or the course/carnet title; else the course JSON `label` (`"<label>, "`); else

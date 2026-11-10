@@ -60,6 +60,10 @@ CATEGORIES = {
     'own': {'id': next(ids), 'name': 'Quote fixture', 'association': OWN},
     'global': {'id': next(ids), 'name': 'Categoria globale', 'association': None},
     'foreign': {'id': next(ids), 'name': 'Categoria estera', 'association': FOREIGN},
+    # Same name as Payment.save()'s default, owned by the other association and keyed
+    # below every uuid4 key: the default stays the own or global row.
+    'foreign_default': {'id': '00000000-0000-4000-8000-000000000501', 'name': 'Entrate e proventi da attività tipiche',
+                        'association': FOREIGN},
 }
 ACCOUNTS = {
     'bank': {'id': next(ids), 'name': 'Banca fixture', 'type': 2, 'code': 'BNK', 'association': OWN, 'editable': False},

@@ -218,8 +218,15 @@ def new_cs(sym, course_label, subscription, *, payment=None, multi=False, one_fe
             'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': fee, 'auto_renewal': renewal, 'deleted': False}
 
 
+# The other association's own 'Entrate e proventi da attività tipiche' category (seeded by the
+# adapter, keyed below every uuid4 key): Payment.save() gives it to that association's payments.
+FAR_DEFAULT = {'id': '00000000-0000-4000-8000-000000000501', 'name': 'Entrate e proventi da attività tipiche'}
+
+
 def new_payment(sym, amount, *, user, associate, association=OWN, created='$now', description=None, meta=None, group=None,
-                category='$category', course_json=None, payment_date=None, bank=None):
+                category=None, course_json=None, payment_date=None, bank=None):
+    if category is None:
+        category = '$category' if association == OWN else FAR_DEFAULT['id']
     if description is None:
         # Payment.save(): get_course_carnet_name() joins the course label, else 'Quota Corso'.
         description = course_json['label'] + ', ' if course_json else 'Quota Corso'
@@ -315,7 +322,8 @@ def payment_item(row, *, subscription_id=None):
             'subscription_id': subscription_id, 'instructor_id': None, 'instructor': None, 'supplier': None, 'supplier_id': None,
             'custom_account_type': ACCOUNTS[row['custom_accounts_id']][0], 'custom_account_name': ACCOUNTS[row['custom_accounts_id']][1],
             'invoice': None,
-            'attachments': [], 'payment_category_name': '$category_name' if row['payment_category_id'] == '$category' else 'Quote fixture',
+            'attachments': [], 'payment_category_name': {'$category': '$category_name', FAR_DEFAULT['id']: FAR_DEFAULT['name']}.get(
+                row['payment_category_id'], 'Quote fixture'),
             'type': 'default', 'subject': 2, 'amount': row['amount'], 'creation_date': row['creation_date'], 'payment_date': row['payment_date'],
             'paid': False, 'expense': False, 'description': row['description'], 'meta_payment_categories': None, 'payment_intent_id': None,
             'archived': False, 'invoice_fiscal_code': None, 'meta': row['meta'], 'notes': None, 'deleted': False, 'course': row['course'],

@@ -23,6 +23,7 @@ import re
 from TESTS.contracts import test_course_enrolment_http as contract
 from TESTS.adapters.django import course_writes_http as writes
 from TESTS.adapters.django import family_harness as harness
+from TESTS.adapters.django import default_payment_category
 from TESTS.adapters.django.workflow_writes_http import keyed
 
 SOURCES = ('TESTS/fixtures/course_enrolment_http.json', 'TESTS/contracts/test_course_enrolment_http.py',
@@ -36,7 +37,7 @@ SOURCES = ('TESTS/fixtures/course_enrolment_http.json', 'TESTS/contracts/test_co
            'BE/application/models/subscriptions_models.py', 'BE/application/models/user_models.py',
            'BE/application/models/balance_sheet_models.py', 'BE/application/signals.py', 'BE/application/mixin.py',
            'BE/application/impersonation_scope.py', 'BE/application/tenant_scope.py', 'BE/application/audit_resolvers.py',
-           'BE/application/utils/api_utils.py') + harness.SOURCES
+           'BE/application/utils/api_utils.py') + harness.SOURCES + default_payment_category.SOURCES
 ROWS, LINKS, KEYS, NAMES = writes.ROWS, writes.LINKS, writes.KEYS, writes.NAMES
 MANAGED = writes.MANAGED
 TODAY = re.compile(r'\{today:([^}]+)\}')
@@ -49,6 +50,8 @@ def seed_rows(source, created):
     for key, name in source['categories'].items():
         PaymentCategory._base_manager.bulk_create([PaymentCategory(payment_category_id=key, name=name)])
         created.append((PaymentCategory, key))
+    # A same-named default category of the other association, keyed below every uuid4 key.
+    default_payment_category.seed_other_association_category(source['ids']['foreign_association'], created)
     CustomAccounts._base_manager.bulk_create([CustomAccounts(
         custom_account_id=source['bank'], enabled=True, name='Banca fixture', initial_balance=0, account_type=CustomAccounts.BANK,
         account_code='BANK-FIXTURE', sport_association_id=source['ids']['own_association'], editable=False)])
@@ -65,7 +68,7 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
     with base_fixture_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
         source = contract.load_source()
         ids = source['ids']
-        category = PaymentCategory.objects.filter(name__iexact=source['category_name']).first()
+        category = default_payment_category.default_category(ids['own_association'])
         contract.require(category is not None, 'fixture.default-category')
         own = Payment.get_default_bank_account(ids['own_association'])
         contract.require(own is not None and str(own.pk) == source['bank'], 'fixture.default-bank')

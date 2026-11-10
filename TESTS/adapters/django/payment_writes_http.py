@@ -28,8 +28,8 @@ from TESTS.adapters.django import invoice_sync_print_http as printer
 from TESTS.adapters.django import family_harness as harness
 from TESTS.adapters.django.camps_periods_http import plain
 from TESTS.adapters.django.carnet_subscription_topup_http import auditlog_moment
-from TESTS.adapters.django.course_subscriptions_http import default_category
 from TESTS.adapters.django.workflow_writes_http import keyed
+from TESTS.adapters.django import default_payment_category
 
 SOURCES = ('TESTS/fixtures/payment_writes_http.json', 'TESTS/contracts/test_payment_writes_http.py',
            'TESTS/adapters/django/payment_writes_http.py', 'TESTS/adapters/django/camps_periods_http.py',
@@ -42,7 +42,7 @@ SOURCES = ('TESTS/fixtures/payment_writes_http.json', 'TESTS/contracts/test_paym
            'BE/application/impersonation_scope.py', 'BE/application/audit_resolvers.py', 'BE/application/tenant_scope.py',
            'BE/application/permissions_registry.py', 'BE/application/utils/api_utils.py', 'BE/docmanager/models.py',
            'TESTS/adapters/django/invoice_sync_print_http.py', 'BE/application/printing_tasks.py', 'BE/instance/restore/task_base.py',
-           'BE/application/serializers/invoice_serializers.py') + harness.SOURCES
+           'BE/application/serializers/invoice_serializers.py') + harness.SOURCES + default_payment_category.SOURCES
 PAYMENT = 'application.Payment'
 service_context = printer.service_context
 
@@ -128,7 +128,9 @@ base_fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(p
 @contextmanager
 def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
     with base_fixture_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
-        category, name = default_category()
+        row = default_payment_category.default_category(base_contract.load_source()['ids']['own_association'])
+        base_contract.require(row is not None, 'fixture.default-category')
+        category, name = str(row.pk), row.name
         fixture['default_category'], fixture['default_category_name'] = category, name
         fixture['sessions'] = {**fixture['sessions'], '$default_category': category, '$default_category_name': name}
         yield fixture

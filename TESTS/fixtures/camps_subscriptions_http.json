@@ -57,6 +57,12 @@
    "name": "Servizi esteri",
    "created": "2026-05-02T08:00:00Z",
    "association": "a1000000-0000-4000-8000-000000701002"
+  },
+  "foreign_default": {
+   "id": "00000000-0000-4000-8000-000000000501",
+   "name": "Entrate e proventi da attività tipiche",
+   "created": "2026-05-02T08:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701002"
   }
  },
  "associates": {
