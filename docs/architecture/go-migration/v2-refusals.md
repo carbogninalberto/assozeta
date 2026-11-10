@@ -82,6 +82,7 @@ Receipts are `quality-reports/go-migration/<family>-http-v2misc-*`; each family 
 |---|---|---|---|
 | profile-misc | `PATCH onboarding/update` | `onboarding_data` carrying the row's own `users_onboarding_id` and `user` (every checklist step) | 101 cases; RED `v2misc-red-r1` Django 101/101, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r2` (ids compared as raw strings) CAUGHT |
 | google-calendar | `GET google/calendar/config` | request carrying a `sessionid` cookie (a second "Connetti a Google" in the same browser) | 89 cases; RED `v2misc-red-r2` Django 89/89, Go 500; GREEN `v2misc-green-r2` 4 transports; mutation `v2misc-mutation-r1` (session saved with SET NX) CAUGHT |
+| modules-responses | `POST modules/response/<id>/add-attachment` | filename with a compression suffix (`archive.tar.gz`, ...) | 145 cases; RED `v2misc-red-r1` Django 145/145, Go 500; GREEN `v2misc-green-r3` 4 transports; mutation `v2misc-mutation-r1` (encoding guessed on the lower-cased name) CAUGHT |
 
 ## Remaining A items, per family
 
@@ -180,7 +181,6 @@ legacy Bakney invoices or tutors that would be reassigned (refused by the valida
 | GET camps-and-retreats/<uid>/subscriptions/list | camp payment with an invoice | `CampsAndRetreatsOverview.svelte:308` | `service/camps_subscriptions.go:143` | medium |
 | PATCH camps-and-retreats/periods/services/<uid>/update | walks a soft-deleted/other-group unpaid payment | `EditServiceModal.svelte:29-35` | `service/camps_periods.go:755` | medium |
 | personas add/update | `picture_path` data URL (photo) | `preview-blocks/image-upload.svelte:35-38` | `service/personas_writes.go:270-288` | medium |
-| modules add-attachment | compressed-suffix filename (`.gz`, `.tgz`, ...) | `routes/forms/PublicModule.svelte:60-73` | `service/modules_responses.go:466` | cheap-medium |
 | oauth2/signup | Google/Apple configured | `routes/login/Login.svelte:425-447` | `service/oauth_accounts.go:448` | medium-expensive |
 
 Not HTTP (websocket, Django today): agent exports to XLSX/PDF (`service/business_mcp_query.go:290`).
@@ -637,7 +637,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### modules-responses.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST modules/response/<id>/add-attachment | filename with a compression suffix (`.gz .tgz .bz2 .xz .z .br .svgz .taz .tz .tbz2 .txz`), longer than 255 chars, or containing `/`, `\` or NUL | `service/modules_responses.go:466` (rule at `:441-456`) | A | `routes/forms/PublicModule.svelte:60-73` sends `{filename: file.name, base64}` from an `<input type=file>` with no `accept` (`:170-174`). A user picking `archive.tar.gz` triggers it. Cost: cheap–medium (mimetypes encoding → ContentEncoding on the S3 put). |
+| POST modules/response/<id>/add-attachment | filename longer than 255 chars, or containing `/`, `\` or NUL | `service/modules_responses.go` (`attachmentNamePorted`) | B | Compression suffixes ported in v2-misc (`ContentEncoding` from `mimetypes`). A browser's `file.name` has no separators; 255+ character names are unusual. |
 | same | storage name already taken with `AWS_S3_FILE_OVERWRITE` off | `service/modules_responses.go:498` | C | The path includes the timestamp and a new document UUID, so it cannot collide. Note: this check runs after the Document commit (`:470-474`), not before any write as the doc says. |
 | POST add-attachment / response/add | form or multipart body | `service/modules_responses.go:213,370` | B | The UI sends JSON (`PublicModule.svelte:47-50,67-73`). |
 | POST add-attachment | non-string `filename`/`base64` | `service/modules_responses.go:466` | B | The UI sends strings. |
