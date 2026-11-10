@@ -551,6 +551,49 @@ class AttendeesViewTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
+class AttendeesListingUnlinkedDayTests(BaseAPITestCase):
+    """GET /course/<uid>/attendees with a day whose event id cannot be linked."""
+
+    def test_listing_writes_nothing_for_a_day_whose_event_id_is_not_a_uuid(self):
+        from auditlog.models import LogEntry
+
+        course = create_test_course(sport_association=self.sport_association)
+        event = create_test_event(event_id='lezione-1', title='Lesson 1')
+        start = datetime.strptime(event['start'], '%Y-%m-%dT%H:%M:%S.000Z').replace(tzinfo=dt_timezone.utc)
+        registry = create_test_attendance_registry(course, events=[event])
+        # The first unlinked day has no event at its hour, so the mapping pass stops there.
+        create_test_attendance_day(
+            registry, attendance_day_id=uuid.UUID(int=1), title='Free', date=start - timedelta(days=30),
+        )
+        day = create_test_attendance_day(
+            registry, attendance_day_id=uuid.UUID(int=2), title='Lesson 1', date=start,
+        )
+        stored = AttendanceDay.objects.filter(pk=day.pk).values().get()
+        entries = LogEntry.objects.count()
+
+        for _ in range(2):
+            response = self.client.get(f'/course/{course.course_id}/attendees')
+
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            listed = {str(row['attendance_day_id']): row for row in response.data['data']['events']}
+            self.assertEqual(listed[str(day.pk)]['start'], event['start'])
+            self.assertEqual(LogEntry.objects.count(), entries)
+            self.assertEqual(AttendanceDay.objects.filter(pk=day.pk).values().get(), stored)
+
+    def test_listing_links_a_day_to_its_event(self):
+        course = create_test_course(sport_association=self.sport_association)
+        event = create_test_event(title='Lesson 1')
+        start = datetime.strptime(event['start'], '%Y-%m-%dT%H:%M:%S.000Z').replace(tzinfo=dt_timezone.utc)
+        registry = create_test_attendance_registry(course, events=[event])
+        day = create_test_attendance_day(registry, title='Lesson 1', date=start)
+
+        response = self.client.get(f'/course/{course.course_id}/attendees')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        day.refresh_from_db()
+        self.assertEqual(str(day.associated_event), event['event_id'])
+
+
 class AttendeesUpdateTests(BaseAPITestCase):
     """Tests for attendees_update endpoint with carnet business logic."""
 
