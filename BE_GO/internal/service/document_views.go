@@ -60,6 +60,48 @@ type DocumentViewRequest struct {
 	// Authorization is request.headers.get('authorization'): the preview's
 	// PDF is rendered as the requester.
 	Authorization *string
+	// Promotion admits get_main_tutor's saved relation; nil keeps the refusal.
+	Promotion *DocumentViewPromotion
+}
+
+// DocumentViewPromotion is what get_main_tutor's audited save needs: the
+// request's audit context and the write admission.
+type DocumentViewPromotion struct {
+	Admit func() (context.Context, domain.LoginAuditContext, error)
+}
+
+type viewPromotionKey struct{}
+
+type viewPromotion struct {
+	identity domain.ResolvedIdentity
+	request  *DocumentViewPromotion
+}
+
+func withViewPromotion(ctx context.Context, identity domain.ResolvedIdentity, promotion *DocumentViewPromotion) context.Context {
+	if promotion == nil || identity.ScopeUser == nil {
+		return ctx
+	}
+	return context.WithValue(ctx, viewPromotionKey{}, &viewPromotion{identity: identity, request: promotion})
+}
+
+// mainTutor is Associate.get_main_tutor(): without a primary relation the
+// first one is promoted and saved as the view renders.
+func (s *DocumentViews) mainTutor(ctx context.Context, associate string) (*domain.ViewAssociate, error) {
+	tutor, err := s.store.MainTutor(ctx, associate)
+	if !errors.Is(err, domain.ErrViewTutorWrite) {
+		return tutor, err
+	}
+	promotion, _ := ctx.Value(viewPromotionKey{}).(*viewPromotion)
+	if promotion == nil {
+		return nil, err
+	}
+	admitted, audit, admitErr := promotion.request.Admit()
+	if admitErr != nil {
+		return nil, admitErr
+	}
+	return s.store.PromoteMainTutor(admitted, associate, domain.ViewTutorPromotion{
+		Context: paymentCategoryAuditContext(promotion.identity, audit), ActorID: promotion.identity.Actor.ID,
+		At: s.now().UTC().Truncate(time.Microsecond)})
 }
 
 // DocumentViewReply: an HTML page (with the language it was rendered in) or a DRF JSON body.
@@ -84,7 +126,7 @@ func (s *DocumentViews) AuthorizeBypass(authorization *string) (bool, error) {
 }
 
 func (s *DocumentViews) Render(ctx context.Context, identity domain.ResolvedIdentity, request DocumentViewRequest) (*DocumentViewReply, error) {
-	reply, err := s.render(ctx, identity, request)
+	reply, err := s.render(withViewPromotion(ctx, identity, request.Promotion), identity, request)
 	if err != nil {
 		if errors.Is(err, djtemplate.ErrUnsupported) || errors.Is(err, mentions.ErrUnsupported) || errors.Is(err, domain.ErrViewTutorWrite) {
 			return nil, fmt.Errorf("%w: %v", ErrDocumentViewNotPorted, err)
@@ -186,7 +228,7 @@ func (s *DocumentViews) associateObject(ctx context.Context, associate *domain.V
 	full := pythonFullNameOf(associate.FirstName, associate.LastName)
 	id := associate.ID
 	mainTutor := djtemplate.Lazy(func() (any, error) {
-		tutor, err := s.store.MainTutor(ctx, id)
+		tutor, err := s.mainTutor(ctx, id)
 		if err != nil || tutor == nil {
 			return nil, err
 		}
@@ -321,7 +363,7 @@ func (s *DocumentViews) template(ctx context.Context, identity domain.ResolvedId
 						return nil, lookupError(err)
 					}
 					context["associate"] = associateResolver(associate)
-					tutor, err := s.store.MainTutor(ctx, associate.ID)
+					tutor, err := s.mainTutor(ctx, associate.ID)
 					if err != nil {
 						return nil, err
 					}

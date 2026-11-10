@@ -311,10 +311,6 @@ func (s *AssociationTransfer) ImportStatus(ctx context.Context, task string) (*A
 	if row == nil {
 		return &AssociationTransferReply{Status: 200, Body: map[string]any{"task_id": task, "status": "PENDING", "ready": false}}, nil
 	}
-	switch row.Status {
-	case "FAILURE", "REVOKED", "RETRY":
-		return nil, domain.ErrAssociationTransferNotPorted
-	}
 	if row.Encoding != "utf-8" {
 		return nil, domain.ErrAssociationTransferNotPorted
 	}
@@ -333,6 +329,20 @@ func (s *AssociationTransfer) ImportStatus(ctx context.Context, task string) (*A
 			return nil, domain.ErrAssociationTransferNotPorted
 		}
 	}
+	switch row.Status {
+	case "FAILURE", "REVOKED", "RETRY":
+		// The backend rebuilds the exception for every exception state; only a
+		// ready one (not RETRY) is answered, as str() of it.
+		text, err := celeryExceptionText(row.Result)
+		if err != nil {
+			return nil, err
+		}
+		body := map[string]any{"task_id": task, "status": row.Status, "ready": row.Status != "RETRY"}
+		if row.Status != "RETRY" {
+			body["error"] = text
+		}
+		return &AssociationTransferReply{Status: 200, Body: body}, nil
+	}
 	body := map[string]any{"task_id": task, "status": row.Status, "ready": row.Status == "SUCCESS"}
 	if row.Status == "SUCCESS" {
 		var result any
@@ -346,6 +356,103 @@ func (s *AssociationTransfer) ImportStatus(ctx context.Context, task string) (*A
 		}
 	}
 	return &AssociationTransferReply{Status: 200, Body: body}, nil
+}
+
+// celeryPlainExceptions are the exception classes Celery finds in a module the
+// Django process has loaded whose str() is BaseException's: no arguments is
+// "", one is str() of it, several are the tuple's repr. KeyError answers the
+// repr of a single argument.
+var celeryPlainExceptions = map[string]map[string]bool{
+	"builtins": {"Exception": true, "ValueError": true, "TypeError": true, "RuntimeError": true, "IndexError": true, "KeyError": true,
+		"AssertionError": true, "ZeroDivisionError": true, "NotImplementedError": true, "LookupError": true, "ArithmeticError": true,
+		"OverflowError": true, "RecursionError": true, "MemoryError": true, "BufferError": true, "EOFError": true,
+		"AttributeError": true, "NameError": true},
+	"django.db.utils": {"Error": true, "InterfaceError": true, "DatabaseError": true, "DataError": true, "OperationalError": true,
+		"IntegrityError": true, "InternalError": true, "ProgrammingError": true, "NotSupportedError": true},
+	"celery.exceptions": {"TaskRevokedError": true},
+}
+
+var errCeleryException = errors.New("stored exception cannot be rebuilt")
+
+// celeryExceptionText is str(exception_to_python(result)) for the stored
+// result of a row in an exception state: "None" for a missing or falsy result;
+// an error (the 500 page) for a result that is not a dictionary or lacks
+// exc_type. Without exc_module Celery creates the class itself; with one, only
+// the classes of celeryPlainExceptions are ported, with scalar arguments.
+func celeryExceptionText(result *string) (string, error) {
+	if result == nil || *result == "" {
+		return "None", nil
+	}
+	value, err := celeryJSON(*result)
+	if err != nil {
+		return "", err
+	}
+	if !dto.PythonTruthy(value) {
+		return "None", nil
+	}
+	object, ok := value.(map[string]any)
+	if !ok {
+		if _, list := value.([]any); list {
+			return "", domain.ErrAssociationTransferNotPorted // dict() of a list of pairs
+		}
+		return "", errCeleryException // dict() of a string, number or True raises
+	}
+	if len(object) == 0 {
+		return "None", nil
+	}
+	rawType, present := object["exc_type"]
+	if !present {
+		return "", errCeleryException
+	}
+	kind, ok := rawType.(string)
+	if !ok || strings.ContainsRune(kind, 0) {
+		return "", domain.ErrAssociationTransferNotPorted
+	}
+	switch module := object["exc_module"].(type) {
+	case nil:
+	case string:
+		if !celeryPlainExceptions[module][kind] {
+			return "", domain.ErrAssociationTransferNotPorted
+		}
+		if module != "builtins" || kind != "KeyError" {
+			kind = ""
+		}
+	default:
+		return "", domain.ErrAssociationTransferNotPorted
+	}
+	arguments := []any{""}
+	if message, present := object["exc_message"]; present {
+		if list, isList := message.([]any); isList {
+			arguments = list
+		} else {
+			arguments = []any{message}
+		}
+	}
+	for _, argument := range arguments {
+		switch v := argument.(type) {
+		case nil, bool, string:
+		case json.Number:
+			if strings.ContainsAny(string(v), ".eE") {
+				return "", domain.ErrAssociationTransferNotPorted
+			}
+		default:
+			return "", domain.ErrAssociationTransferNotPorted
+		}
+	}
+	switch len(arguments) {
+	case 0:
+		return "", nil
+	case 1:
+		if kind == "KeyError" && object["exc_module"] != nil {
+			return dto.PythonRepr(arguments[0]), nil
+		}
+		return dto.PythonStr(arguments[0]), nil
+	}
+	parts := make([]string, len(arguments))
+	for i, argument := range arguments {
+		parts[i] = dto.PythonRepr(argument)
+	}
+	return "(" + strings.Join(parts, ", ") + ")", nil
 }
 
 // celeryJSON decodes a stored JSON value; invalid JSON is kombu's DecodeError

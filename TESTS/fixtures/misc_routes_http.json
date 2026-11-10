@@ -144,6 +144,41 @@
    "group": null,
    "deleted": false,
    "title": "Corso"
+  },
+  "foreign_zoned": {
+   "id": "a1000000-0000-4000-8000-0000e1000054",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null,
+   "deleted": false,
+   "title": "Corso"
+  },
+  "foreign_offset_day_start": {
+   "id": "a1000000-0000-4000-8000-0000e1000055",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null,
+   "deleted": false,
+   "title": "Corso"
+  },
+  "foreign_offset_day_end": {
+   "id": "a1000000-0000-4000-8000-0000e1000056",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null,
+   "deleted": false,
+   "title": "Corso"
+  },
+  "foreign_offset_past_year": {
+   "id": "a1000000-0000-4000-8000-0000e1000057",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null,
+   "deleted": false,
+   "title": "Corso"
+  },
+  "foreign_floats": {
+   "id": "a1000000-0000-4000-8000-0000e1000059",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null,
+   "deleted": false,
+   "title": "Corso"
   }
  },
  "registries": {
@@ -427,23 +462,143 @@
      "extendedProps": null
     }
    ]
+  },
+  "foreign_zoned": {
+   "id": "a1000000-0000-4000-8000-0000e1000058",
+   "course": "foreign_zoned",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000068",
+     "title": "Ora legale",
+     "start": "2019-06-10T18:00:00+02:00",
+     "end": "2019-06-10T19:00:00+02:00",
+     "allDay": false
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000069",
+     "title": "Ora solare",
+     "start": "2019-01-10T18:00:00.000+01:00",
+     "end": null,
+     "allDay": false
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000070",
+     "title": "Compatto",
+     "start": "20190610T180000+0200",
+     "end": "2019-06-10 19:00-03:30",
+     "allDay": false
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000071",
+     "title": "Nepal",
+     "start": "2019-06-10T18:00:00+05:45",
+     "end": "2019-06-10T19:00:00Z",
+     "allDay": false
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000072",
+     "title": "Solo ore",
+     "start": "2019-06-10T18+02",
+     "end": "2019-06-10T19:00:00-00:30",
+     "allDay": false
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000073",
+     "title": "Forma breve",
+     "start": "2019-6-10 9:05+02:00",
+     "end": "2019-06-10T10:00:00 +0100",
+     "allDay": false
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000074",
+     "title": "Ovest",
+     "start": "2019-06-10T18:00:00-05:00",
+     "end": "None",
+     "allDay": false
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000075",
+     "title": "Mezzanotte",
+     "start": "2019-12-31T23:30:00+09:00",
+     "end": null,
+     "allDay": false
+    }
+   ]
+  },
+  "foreign_floats": {
+   "id": "a1000000-0000-4000-8000-0000e1000060",
+   "course": "foreign_floats",
+   "events": [
+    {
+     "event_id": 0.1,
+     "title": 2.5,
+     "start": "2026-03-07T10:00:00Z",
+     "end": "2026-03-07T11:00:00Z",
+     "allDay": false,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-0000e1000061",
+       "label": 1e-07
+      }
+     }
+    }
+   ]
+  },
+  "foreign_offset_day_start": {
+   "id": "a1000000-0000-4000-8000-0000e1000062",
+   "course": "foreign_offset_day_start",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000063",
+     "title": "x",
+     "start": "2019-06-10T18:00:00+24:00",
+     "end": null,
+     "allDay": false
+    }
+   ]
+  },
+  "foreign_offset_day_end": {
+   "id": "a1000000-0000-4000-8000-0000e1000064",
+   "course": "foreign_offset_day_end",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000065",
+     "title": "x",
+     "start": "2019-06-10T18:00:00+02:00",
+     "end": "2019-6-10 9:05-99:00",
+     "allDay": false
+    }
+   ]
+  },
+  "foreign_offset_past_year": {
+   "id": "a1000000-0000-4000-8000-0000e1000066",
+   "course": "foreign_offset_past_year",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000067",
+     "title": "x",
+     "start": "9999-12-31T23:30:00+02:00",
+     "end": null,
+     "allDay": false
+    }
+   ]
   }
  },
  "associates": {
   "mario": {
-   "id": "a1000000-0000-4000-8000-0000e1000054",
+   "id": "a1000000-0000-4000-8000-0000e1000076",
    "association": "a1000000-0000-4000-8000-000000701001",
    "first": "Mario",
    "last": "Rossi"
   },
   "giulia": {
-   "id": "a1000000-0000-4000-8000-0000e1000055",
+   "id": "a1000000-0000-4000-8000-0000e1000077",
    "association": "a1000000-0000-4000-8000-000000701001",
    "first": "Giulia",
    "last": "Neri"
   },
   "hans": {
-   "id": "a1000000-0000-4000-8000-0000e1000056",
+   "id": "a1000000-0000-4000-8000-0000e1000078",
    "association": "a1000000-0000-4000-8000-000000701002",
    "first": "Hans",
    "last": "Müller"
@@ -451,7 +606,7 @@
  },
  "subscriptions": {
   "card": {
-   "id": "a1000000-0000-4000-8000-0000e1000057",
+   "id": "a1000000-0000-4000-8000-0000e1000079",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "mario",
    "number": "17",
@@ -461,7 +616,7 @@
    "deleted": false
   },
   "second": {
-   "id": "a1000000-0000-4000-8000-0000e1000058",
+   "id": "a1000000-0000-4000-8000-0000e1000080",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "giulia",
    "number": null,
@@ -471,7 +626,7 @@
    "deleted": false
   },
   "grouped": {
-   "id": "a1000000-0000-4000-8000-0000e1000059",
+   "id": "a1000000-0000-4000-8000-0000e1000081",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "giulia",
    "number": "0",
@@ -481,7 +636,7 @@
    "deleted": false
   },
   "flagged": {
-   "id": "a1000000-0000-4000-8000-0000e1000060",
+   "id": "a1000000-0000-4000-8000-0000e1000082",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "mario",
    "number": "9",
@@ -491,7 +646,7 @@
    "deleted": true
   },
   "orphan": {
-   "id": "a1000000-0000-4000-8000-0000e1000061",
+   "id": "a1000000-0000-4000-8000-0000e1000083",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": null,
    "number": "17",
@@ -501,7 +656,7 @@
    "deleted": false
   },
   "abroad": {
-   "id": "a1000000-0000-4000-8000-0000e1000062",
+   "id": "a1000000-0000-4000-8000-0000e1000084",
    "association": "a1000000-0000-4000-8000-000000701002",
    "associate": "hans",
    "number": "A-1",
@@ -511,7 +666,7 @@
    "deleted": false
   },
   "expired_anon": {
-   "id": "a1000000-0000-4000-8000-0000e1000063",
+   "id": "a1000000-0000-4000-8000-0000e1000085",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "mario",
    "number": "17",
@@ -521,7 +676,7 @@
    "deleted": false
   },
   "expired_owner": {
-   "id": "a1000000-0000-4000-8000-0000e1000064",
+   "id": "a1000000-0000-4000-8000-0000e1000086",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "mario",
    "number": "17",
@@ -533,65 +688,65 @@
  },
  "tokens": {
   "card": {
-   "id": "a1000000-0000-4000-8000-0000e1000065",
+   "id": "a1000000-0000-4000-8000-0000e1000087",
    "subscription": "card",
-   "token": "a1000000-0000-4000-8000-0000e1000066",
+   "token": "a1000000-0000-4000-8000-0000e1000088",
    "created": "2026-01-01T09:00:00Z",
    "expires": "2099-01-01T10:00:00Z"
   },
   "second": {
-   "id": "a1000000-0000-4000-8000-0000e1000067",
+   "id": "a1000000-0000-4000-8000-0000e1000089",
    "subscription": "second",
-   "token": "a1000000-0000-4000-8000-0000e1000068",
+   "token": "a1000000-0000-4000-8000-0000e1000090",
    "created": "2026-01-01T09:00:00Z",
    "expires": "2099-01-01T10:00:00Z"
   },
   "grouped": {
-   "id": "a1000000-0000-4000-8000-0000e1000069",
+   "id": "a1000000-0000-4000-8000-0000e1000091",
    "subscription": "grouped",
-   "token": "a1000000-0000-4000-8000-0000e1000070",
+   "token": "a1000000-0000-4000-8000-0000e1000092",
    "created": "2026-01-01T09:00:00Z",
    "expires": "2099-01-01T10:00:00Z"
   },
   "flagged": {
-   "id": "a1000000-0000-4000-8000-0000e1000071",
+   "id": "a1000000-0000-4000-8000-0000e1000093",
    "subscription": "flagged",
-   "token": "a1000000-0000-4000-8000-0000e1000072",
+   "token": "a1000000-0000-4000-8000-0000e1000094",
    "created": "2026-01-01T09:00:00Z",
    "expires": "2099-01-01T10:00:00Z"
   },
   "orphan": {
-   "id": "a1000000-0000-4000-8000-0000e1000073",
+   "id": "a1000000-0000-4000-8000-0000e1000095",
    "subscription": "orphan",
-   "token": "a1000000-0000-4000-8000-0000e1000074",
+   "token": "a1000000-0000-4000-8000-0000e1000096",
    "created": "2026-01-01T09:00:00Z",
    "expires": "2099-01-01T10:00:00Z"
   },
   "abroad": {
-   "id": "a1000000-0000-4000-8000-0000e1000075",
+   "id": "a1000000-0000-4000-8000-0000e1000097",
    "subscription": "abroad",
-   "token": "a1000000-0000-4000-8000-0000e1000076",
+   "token": "a1000000-0000-4000-8000-0000e1000098",
    "created": "2026-01-01T09:00:00Z",
    "expires": "2099-01-01T10:00:00Z"
   },
   "expired_anon": {
-   "id": "a1000000-0000-4000-8000-0000e1000077",
+   "id": "a1000000-0000-4000-8000-0000e1000099",
    "subscription": "expired_anon",
-   "token": "a1000000-0000-4000-8000-0000e1000078",
+   "token": "a1000000-0000-4000-8000-0000e1000100",
    "created": "2019-12-29T10:00:00.250000Z",
    "expires": "2020-01-01T10:00:00Z"
   },
   "expired_owner": {
-   "id": "a1000000-0000-4000-8000-0000e1000079",
+   "id": "a1000000-0000-4000-8000-0000e1000101",
    "subscription": "expired_owner",
-   "token": "a1000000-0000-4000-8000-0000e1000080",
+   "token": "a1000000-0000-4000-8000-0000e1000102",
    "created": "2019-12-29T10:00:00Z",
    "expires": "2020-01-01T10:00:00Z"
   }
  },
  "configurations": {
   "foreign": {
-   "id": "a1000000-0000-4000-8000-0000e1000081",
+   "id": "a1000000-0000-4000-8000-0000e1000103",
    "association": "a1000000-0000-4000-8000-000000701002",
    "emit_only_on_approval": true,
    "customized_template": {
@@ -616,6 +771,60 @@
   }
  },
  "cases": [
+  {
+   "name": "misc-routes-export-offset-times",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000054",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$ics": "BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:Ora legale\r\nDTSTART;TZID=Africa/Blantyre:20190610T180000\r\nDTEND;TZID=Africa/Blantyre:20190610T190000\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000068\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Ora solare\r\nDTSTART;TZID=Africa/Bangui:20190110T180000\r\nDTEND;TZID=Africa/Bangui:20190110T190000\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000069\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Compatto\r\nDTSTART;TZID=Africa/Blantyre:20190610T180000\r\nDTEND;TZID=America/Paramaribo:20190610T190000\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000070\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Nepal\r\nDTSTART;TZID=\"UTC+05:45\":20190610T180000\r\nDTEND:20190610T190000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000071\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Solo ore\r\nDTSTART;TZID=Africa/Blantyre:20190610T180000\r\nDTEND;TZID=\"UTC-00:30\":20190610T190000\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000072\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Forma breve\r\nDTSTART;TZID=Africa/Blantyre:20190610T090500\r\nDTEND;TZID=Africa/Bangui:20190610T100000\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000073\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Ovest\r\nDTSTART;TZID=America/Atikokan:20190610T180000\r\nDTEND;TZID=America/Atikokan:20190610T190000\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000074\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Mezzanotte\r\nDTSTART;TZID=Asia/Jayapura:20191231T233000\r\nDTEND;TZID=Asia/Jayapura:20200101T003000\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000075\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-float-texts",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000059",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$ics": "BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:2.5\r\nDTSTART:20260307T100000Z\r\nDTEND:20260307T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:0.1\r\nDESCRIPTION:Instructor: 1e-07\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-foreign-offset-day-start-server-error",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000055",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-foreign-offset-day-end-server-error",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000056",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-foreign-offset-past-year-server-error",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000057",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
   {
    "name": "misc-routes-export-owner",
    "actor": "owner",
@@ -1078,6 +1287,86 @@
    "body": {
     "message": 12345
    }
+  },
+  {
+   "name": "misc-routes-post-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "post sent."
+   },
+   "effect": {
+    "kind": "post",
+    "actor": "owner",
+    "session": null,
+    "message": "1.5",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "raw_body": "{\"message\": 1.50}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "misc-routes-post-float-exponent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "post sent."
+   },
+   "effect": {
+    "kind": "post",
+    "actor": "owner",
+    "session": null,
+    "message": "1000.0",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "raw_body": "{\"message\": 1E+3}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "misc-routes-post-float-small",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "post sent."
+   },
+   "effect": {
+    "kind": "post",
+    "actor": "owner",
+    "session": null,
+    "message": "1e-07",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "raw_body": "{\"message\": 1e-7}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "misc-routes-post-float-beyond-range",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "post sent."
+   },
+   "effect": {
+    "kind": "post",
+    "actor": "owner",
+    "session": null,
+    "message": "-inf",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "raw_body": "{\"message\": -1e999}",
+   "content_type": "application/json"
   },
   {
    "name": "misc-routes-post-max-length",
@@ -1577,7 +1866,7 @@
    "name": "misc-routes-card-anonymous-creates-configuration",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1000088",
    "headers": {},
    "status": 200,
    "response": {
@@ -1612,7 +1901,7 @@
    "name": "misc-routes-card-anonymous",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1000088",
    "headers": {},
    "status": 200,
    "response": {
@@ -1643,7 +1932,7 @@
    "name": "misc-routes-card-empty-values",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000058/card?token=a1000000-0000-4000-8000-0000e1000068",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000080/card?token=a1000000-0000-4000-8000-0000e1000090",
    "headers": {},
    "status": 200,
    "response": {
@@ -1674,7 +1963,7 @@
    "name": "misc-routes-card-upper-case-token",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=A1000000-0000-4000-8000-0000E1000066",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=A1000000-0000-4000-8000-0000E1000088",
    "headers": {},
    "status": 200,
    "response": {
@@ -1705,7 +1994,7 @@
    "name": "misc-routes-card-upper-case-uid",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/A1000000-0000-4000-8000-0000E1000057/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "path": "/subscription/A1000000-0000-4000-8000-0000E1000079/card?token=a1000000-0000-4000-8000-0000e1000088",
    "headers": {},
    "status": 200,
    "response": {
@@ -1736,7 +2025,7 @@
    "name": "misc-routes-card-soft-deleted-subscription",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000060/card?token=a1000000-0000-4000-8000-0000e1000072",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000082/card?token=a1000000-0000-4000-8000-0000e1000094",
    "headers": {},
    "status": 200,
    "response": {
@@ -1767,7 +2056,7 @@
    "name": "misc-routes-card-other-association-configuration",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000062/card?token=a1000000-0000-4000-8000-0000e1000076",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000084/card?token=a1000000-0000-4000-8000-0000e1000098",
    "headers": {},
    "status": 200,
    "response": {
@@ -1810,7 +2099,7 @@
    "name": "misc-routes-card-group",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000059/card?token=a1000000-0000-4000-8000-0000e1000070",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000081/card?token=a1000000-0000-4000-8000-0000e1000092",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },
@@ -1843,7 +2132,7 @@
    "name": "misc-routes-card-other-group-server-error",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000059/card?token=a1000000-0000-4000-8000-0000e1000070",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000081/card?token=a1000000-0000-4000-8000-0000e1000092",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
    },
@@ -1855,7 +2144,7 @@
    "name": "misc-routes-card-without-associate-server-error",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000061/card?token=a1000000-0000-4000-8000-0000e1000074",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000083/card?token=a1000000-0000-4000-8000-0000e1000096",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1865,7 +2154,7 @@
    "name": "misc-routes-card-athlete",
    "actor": "athlete",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1000088",
    "headers": {},
    "status": 200,
    "response": {
@@ -1896,7 +2185,7 @@
    "name": "misc-routes-card-owner",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000062/card?token=a1000000-0000-4000-8000-0000e1000076",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000084/card?token=a1000000-0000-4000-8000-0000e1000098",
    "headers": {},
    "status": 200,
    "response": {
@@ -1939,7 +2228,7 @@
    "name": "misc-routes-card-missing-token",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card",
    "headers": {},
    "status": 400,
    "response": {
@@ -1951,7 +2240,7 @@
    "name": "misc-routes-card-empty-token",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=",
    "headers": {},
    "status": 400,
    "response": {
@@ -1963,7 +2252,7 @@
    "name": "misc-routes-card-token-of-other-subscription",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000058/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000080/card?token=a1000000-0000-4000-8000-0000e1000088",
    "headers": {},
    "status": 400,
    "response": {
@@ -1975,7 +2264,7 @@
    "name": "misc-routes-card-unknown-token",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1999998",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1999998",
    "headers": {},
    "status": 400,
    "response": {
@@ -1987,7 +2276,7 @@
    "name": "misc-routes-card-unknown-upper-case-token",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=A1000000-0000-4000-8000-0000E1999998",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=A1000000-0000-4000-8000-0000E1999998",
    "headers": {},
    "status": 400,
    "response": {
@@ -1999,7 +2288,7 @@
    "name": "misc-routes-card-malformed-token-server-error",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=abc",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=abc",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -2009,7 +2298,7 @@
    "name": "misc-routes-card-expired-anonymous",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000063/card?token=a1000000-0000-4000-8000-0000e1000078",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000085/card?token=a1000000-0000-4000-8000-0000e1000100",
    "headers": {},
    "status": 400,
    "response": {
@@ -2026,7 +2315,7 @@
    "name": "misc-routes-card-expired-owner",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000064/card?token=a1000000-0000-4000-8000-0000e1000080",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000086/card?token=a1000000-0000-4000-8000-0000e1000102",
    "headers": {},
    "status": 400,
    "response": {
@@ -2046,7 +2335,7 @@
    "name": "misc-routes-card-expired-again",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000063/card?token=a1000000-0000-4000-8000-0000e1000078",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000085/card?token=a1000000-0000-4000-8000-0000e1000100",
    "headers": {},
    "status": 400,
    "response": {
@@ -2058,7 +2347,7 @@
    "name": "misc-routes-card-malformed-uid",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/abc/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "path": "/subscription/abc/card?token=a1000000-0000-4000-8000-0000e1000088",
    "headers": {},
    "status": 400,
    "response": [
@@ -2070,7 +2359,7 @@
    "name": "misc-routes-card-get-restricted-missing-permission",
    "actor": "restricted_collaborator",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1000088",
    "headers": {},
    "status": 403,
    "response": {
@@ -2082,7 +2371,7 @@
    "name": "misc-routes-card-get-admin-without-session",
    "actor": "admin",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1000088",
    "headers": {},
    "status": 403,
    "response": {
@@ -2094,7 +2383,7 @@
    "name": "misc-routes-card-post-owner",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card",
    "headers": {},
    "status": 200,
    "response": {
@@ -2116,7 +2405,7 @@
    "name": "misc-routes-card-post-soft-deleted",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000060/card",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000082/card",
    "headers": {},
    "status": 200,
    "response": {
@@ -2137,7 +2426,7 @@
    "name": "misc-routes-card-post-full-collaborator",
    "actor": "full_collaborator",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000059/card",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000081/card",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },
@@ -2160,7 +2449,7 @@
    "name": "misc-routes-card-post-admin-impersonating-owner",
    "actor": "admin",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000058/card",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000080/card",
    "headers": {
     "X-Impersonation-Id": "$session:admin_owner",
     "User-Id": "a1000000-0000-4000-8000-000000700001"
@@ -2184,7 +2473,7 @@
    "name": "misc-routes-card-post-other-group",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000059/card",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000081/card",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
    },
@@ -2198,7 +2487,7 @@
    "name": "misc-routes-card-post-other-association",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000062/card",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000084/card",
    "headers": {},
    "status": 404,
    "response": {
@@ -2234,7 +2523,7 @@
    "name": "misc-routes-card-post-anonymous",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card",
    "headers": {},
    "status": 403,
    "response": {
@@ -2246,7 +2535,7 @@
    "name": "misc-routes-card-post-athlete",
    "actor": "athlete",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card",
    "headers": {},
    "status": 403,
    "response": {
@@ -2258,7 +2547,7 @@
    "name": "misc-routes-card-post-owner-without-association-server-error",
    "actor": "owner_without_association",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -2268,7 +2557,7 @@
    "name": "misc-routes-card-post-restricted-missing-permission",
    "actor": "restricted_collaborator",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card",
    "headers": {},
    "status": 403,
    "response": {
@@ -2280,7 +2569,7 @@
    "name": "misc-routes-card-post-admin-without-session",
    "actor": "admin",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card",
    "headers": {},
    "status": 403,
    "response": {
@@ -2292,7 +2581,7 @@
    "name": "misc-routes-card-post-owner-scoped-athlete-resource",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card",
    "headers": {
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
@@ -2307,7 +2596,7 @@
    "name": "misc-routes-card-paired-server-vouches",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 200,
    "response": {
@@ -2354,13 +2643,13 @@
         "kind": "card",
         "generation": "a1000000-0000-4000-8000-0000e1880004",
         "expires_at": "$iso+600",
-        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+        "resource_id": "a1000000-0000-4000-8000-0000e1000079"
        }
       },
       "body": {
        "kind": "card",
        "token": "a1000000-0000-4000-8000-0000e1880010",
-       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000079",
        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
        "secret": "$secret"
       }
@@ -2372,7 +2661,7 @@
    "name": "misc-routes-card-pending-pairing-vouches-athlete",
    "actor": "athlete",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 200,
    "response": {
@@ -2419,13 +2708,13 @@
         "kind": "card",
         "generation": "a1000000-0000-4000-8000-0000e1880004",
         "expires_at": "$iso+600",
-        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+        "resource_id": "a1000000-0000-4000-8000-0000e1000079"
        }
       },
       "body": {
        "kind": "card",
        "token": "a1000000-0000-4000-8000-0000e1880010",
-       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000079",
        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
        "secret": "$secret"
       }
@@ -2437,7 +2726,7 @@
    "name": "misc-routes-card-paired-server-rejects",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -2462,7 +2751,7 @@
       "body": {
        "kind": "card",
        "token": "a1000000-0000-4000-8000-0000e1880010",
-       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000079",
        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
        "secret": "$secret"
       }
@@ -2474,7 +2763,7 @@
    "name": "misc-routes-card-paired-server-refuses-token",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -2499,7 +2788,7 @@
       "body": {
        "kind": "card",
        "token": "a1000000-0000-4000-8000-0000e1880010",
-       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000079",
        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
        "secret": "$secret"
       }
@@ -2511,7 +2800,7 @@
    "name": "misc-routes-card-paired-server-unavailable",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -2534,7 +2823,7 @@
       "body": {
        "kind": "card",
        "token": "a1000000-0000-4000-8000-0000e1880010",
-       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000079",
        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
        "secret": "$secret"
       }
@@ -2546,7 +2835,7 @@
    "name": "misc-routes-card-paired-server-not-json",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -2569,7 +2858,7 @@
       "body": {
        "kind": "card",
        "token": "a1000000-0000-4000-8000-0000e1880010",
-       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000079",
        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
        "secret": "$secret"
       }
@@ -2581,7 +2870,7 @@
    "name": "misc-routes-card-paired-server-other-protocol",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -2609,13 +2898,13 @@
         "kind": "card",
         "generation": "a1000000-0000-4000-8000-0000e1880004",
         "expires_at": "$iso+600",
-        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+        "resource_id": "a1000000-0000-4000-8000-0000e1000079"
        }
       },
       "body": {
        "kind": "card",
        "token": "a1000000-0000-4000-8000-0000e1880010",
-       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000079",
        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
        "secret": "$secret"
       }
@@ -2627,7 +2916,7 @@
    "name": "misc-routes-card-paired-server-other-resource",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -2655,13 +2944,13 @@
         "kind": "card",
         "generation": "a1000000-0000-4000-8000-0000e1880004",
         "expires_at": "$iso+600",
-        "resource_id": "a1000000-0000-4000-8000-0000e1000058"
+        "resource_id": "a1000000-0000-4000-8000-0000e1000080"
        }
       },
       "body": {
        "kind": "card",
        "token": "a1000000-0000-4000-8000-0000e1880010",
-       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000079",
        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
        "secret": "$secret"
       }
@@ -2673,7 +2962,7 @@
    "name": "misc-routes-card-paired-server-other-kind",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -2701,13 +2990,13 @@
         "kind": "cumulative",
         "generation": "a1000000-0000-4000-8000-0000e1880004",
         "expires_at": "$iso+600",
-        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+        "resource_id": "a1000000-0000-4000-8000-0000e1000079"
        }
       },
       "body": {
        "kind": "card",
        "token": "a1000000-0000-4000-8000-0000e1880010",
-       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000079",
        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
        "secret": "$secret"
       }
@@ -2719,7 +3008,7 @@
    "name": "misc-routes-card-paired-server-other-origin",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -2747,13 +3036,13 @@
         "kind": "card",
         "generation": "a1000000-0000-4000-8000-0000e1880004",
         "expires_at": "$iso+600",
-        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+        "resource_id": "a1000000-0000-4000-8000-0000e1000079"
        }
       },
       "body": {
        "kind": "card",
        "token": "a1000000-0000-4000-8000-0000e1880010",
-       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000079",
        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
        "secret": "$secret"
       }
@@ -2765,7 +3054,7 @@
    "name": "misc-routes-card-paired-server-generation-not-canonical",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -2793,13 +3082,13 @@
         "kind": "card",
         "generation": "A1000000-0000-4000-8000-0000E1880004",
         "expires_at": "$iso+600",
-        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+        "resource_id": "a1000000-0000-4000-8000-0000e1000079"
        }
       },
       "body": {
        "kind": "card",
        "token": "a1000000-0000-4000-8000-0000e1880010",
-       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000079",
        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
        "secret": "$secret"
       }
@@ -2811,7 +3100,7 @@
    "name": "misc-routes-card-paired-server-expired-grant",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -2839,13 +3128,13 @@
         "kind": "card",
         "generation": "a1000000-0000-4000-8000-0000e1880004",
         "expires_at": "$iso-60",
-        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+        "resource_id": "a1000000-0000-4000-8000-0000e1000079"
        }
       },
       "body": {
        "kind": "card",
        "token": "a1000000-0000-4000-8000-0000e1880010",
-       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000079",
        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
        "secret": "$secret"
       }
@@ -2857,7 +3146,7 @@
    "name": "misc-routes-card-paired-server-naive-expiry",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -2885,13 +3174,13 @@
         "kind": "card",
         "generation": "a1000000-0000-4000-8000-0000e1880004",
         "expires_at": "$naive+600",
-        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+        "resource_id": "a1000000-0000-4000-8000-0000e1000079"
        }
       },
       "body": {
        "kind": "card",
        "token": "a1000000-0000-4000-8000-0000e1880010",
-       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000079",
        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
        "secret": "$secret"
       }
@@ -2903,7 +3192,7 @@
    "name": "misc-routes-card-paired-server-expiry-not-a-date",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -2931,13 +3220,13 @@
         "kind": "card",
         "generation": "a1000000-0000-4000-8000-0000e1880004",
         "expires_at": "domani",
-        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+        "resource_id": "a1000000-0000-4000-8000-0000e1000079"
        }
       },
       "body": {
        "kind": "card",
        "token": "a1000000-0000-4000-8000-0000e1880010",
-       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000079",
        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
        "secret": "$secret"
       }
@@ -2949,7 +3238,7 @@
    "name": "misc-routes-card-paired-server-expiry-number",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -2977,13 +3266,13 @@
         "kind": "card",
         "generation": "a1000000-0000-4000-8000-0000e1880004",
         "expires_at": 4102444800,
-        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+        "resource_id": "a1000000-0000-4000-8000-0000e1000079"
        }
       },
       "body": {
        "kind": "card",
        "token": "a1000000-0000-4000-8000-0000e1880010",
-       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000079",
        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
        "secret": "$secret"
       }
@@ -2995,7 +3284,7 @@
    "name": "misc-routes-card-paired-other-association-not-asked",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000062/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000084/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -3015,7 +3304,7 @@
    "name": "misc-routes-card-paired-upper-case-token-not-asked",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=A1000000-0000-4000-8000-0000E1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=A1000000-0000-4000-8000-0000E1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -3035,7 +3324,7 @@
    "name": "misc-routes-card-pairing-disconnected-not-asked",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -3055,7 +3344,7 @@
    "name": "misc-routes-card-pairing-other-origin-not-asked",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -3076,7 +3365,7 @@
    "name": "misc-routes-card-pairing-other-association-not-asked",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -3097,7 +3386,7 @@
    "name": "misc-routes-card-pairing-not-self-hosted-not-asked",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1880010",
    "headers": {},
    "status": 400,
    "response": {
@@ -3118,7 +3407,7 @@
    "name": "misc-routes-card-paired-local-token-not-asked",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card?token=a1000000-0000-4000-8000-0000e1000088",
    "headers": {},
    "status": 200,
    "response": {
@@ -3157,7 +3446,7 @@
    "name": "misc-routes-card-wrong-method",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card",
    "headers": {},
    "status": 405,
    "response": {
@@ -3169,7 +3458,7 @@
    "name": "misc-routes-card-options",
    "actor": "anonymous",
    "method": "OPTIONS",
-   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000079/card",
    "headers": {},
    "status": 200,
    "response": {

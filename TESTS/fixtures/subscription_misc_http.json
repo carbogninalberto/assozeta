@@ -274,6 +274,12 @@
    "token": "a1000000-0000-4000-8000-000001410019",
    "filename": "foreign.pdf",
    "created": "2024-03-01T08:00:00Z"
+  },
+  "shared": {
+   "id": "a1000000-0000-4000-8000-000001410020",
+   "token": "a1000000-0000-4000-8000-000001410021",
+   "filename": "shared.pdf",
+   "created": "2024-03-01T08:00:00Z"
   }
  },
  "subscriptions": {
@@ -293,7 +299,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410020"
+   "id": "a1000000-0000-4000-8000-000001410022"
   },
   "fed_asd_twin": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -312,7 +318,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410021"
+   "id": "a1000000-0000-4000-8000-000001410023"
   },
   "fed_school": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -330,7 +336,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410022"
+   "id": "a1000000-0000-4000-8000-000001410024"
   },
   "fed_upper": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -348,7 +354,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410023"
+   "id": "a1000000-0000-4000-8000-000001410025"
   },
   "fed_nested": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -368,7 +374,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410024"
+   "id": "a1000000-0000-4000-8000-000001410026"
   },
   "fed_number": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -386,7 +392,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410025"
+   "id": "a1000000-0000-4000-8000-000001410027"
   },
   "fed_null": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -404,7 +410,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410026"
+   "id": "a1000000-0000-4000-8000-000001410028"
   },
   "fed_dict": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -424,7 +430,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410027"
+   "id": "a1000000-0000-4000-8000-000001410029"
   },
   "fed_list": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -444,7 +450,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410028"
+   "id": "a1000000-0000-4000-8000-000001410030"
   },
   "fed_unnamed": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -461,7 +467,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410029"
+   "id": "a1000000-0000-4000-8000-000001410031"
   },
   "fed_suffix": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -479,7 +485,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410030"
+   "id": "a1000000-0000-4000-8000-000001410032"
   },
   "fed_other": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -497,7 +503,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410031"
+   "id": "a1000000-0000-4000-8000-000001410033"
   },
   "fed_deleted": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -515,7 +521,7 @@
    "deleted": true,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410032"
+   "id": "a1000000-0000-4000-8000-000001410034"
   },
   "fed_grouped": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -533,7 +539,7 @@
    "deleted": false,
    "group": "a1000000-0000-4000-8000-000000714001",
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410033"
+   "id": "a1000000-0000-4000-8000-000001410035"
   },
   "fed_foreign": {
    "association": "a1000000-0000-4000-8000-000000701002",
@@ -551,7 +557,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410034"
+   "id": "a1000000-0000-4000-8000-000001410036"
   },
   "v_olimpia": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -571,7 +577,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410035"
+   "id": "a1000000-0000-4000-8000-000001410037"
   },
   "v_olimpya": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -588,7 +594,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410036"
+   "id": "a1000000-0000-4000-8000-000001410038"
   },
   "v_palazzo": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -605,7 +611,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410037"
+   "id": "a1000000-0000-4000-8000-000001410039"
   },
   "v_note": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -622,7 +628,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410038"
+   "id": "a1000000-0000-4000-8000-000001410040"
   },
   "v_future": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -642,7 +648,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410039"
+   "id": "a1000000-0000-4000-8000-000001410041"
   },
   "v_bianchi_now": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -657,7 +663,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410040"
+   "id": "a1000000-0000-4000-8000-000001410042"
   },
   "v_bianchi_old": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -677,7 +683,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410041"
+   "id": "a1000000-0000-4000-8000-000001410043"
   },
   "v_neri_next": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -692,7 +698,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410042"
+   "id": "a1000000-0000-4000-8000-000001410044"
   },
   "v_neri_old": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -712,7 +718,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410043"
+   "id": "a1000000-0000-4000-8000-000001410045"
   },
   "v_unlinked_now": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -727,7 +733,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410044"
+   "id": "a1000000-0000-4000-8000-000001410046"
   },
   "v_unlinked": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -744,7 +750,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410045"
+   "id": "a1000000-0000-4000-8000-000001410047"
   },
   "v_deleted": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -764,7 +770,7 @@
    "deleted": true,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410046"
+   "id": "a1000000-0000-4000-8000-000001410048"
   },
   "v_grouped": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -784,7 +790,7 @@
    "deleted": false,
    "group": "a1000000-0000-4000-8000-000000714001",
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410047"
+   "id": "a1000000-0000-4000-8000-000001410049"
   },
   "v_ali": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -802,7 +808,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410048"
+   "id": "a1000000-0000-4000-8000-000001410050"
   },
   "v_empty": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -819,7 +825,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410049"
+   "id": "a1000000-0000-4000-8000-000001410051"
   },
   "v_abroad_school": {
    "association": "a1000000-0000-4000-8000-000000701002",
@@ -839,7 +845,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410050"
+   "id": "a1000000-0000-4000-8000-000001410052"
   },
   "v_kodokan": {
    "association": "a1000000-0000-4000-8000-000000701002",
@@ -856,7 +862,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410051"
+   "id": "a1000000-0000-4000-8000-000001410053"
   },
   "v_numbers": {
    "association": "a1000000-0000-4000-8000-000000701002",
@@ -874,7 +880,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410052"
+   "id": "a1000000-0000-4000-8000-000001410054"
   },
   "d_own": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -889,7 +895,7 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410053"
+   "id": "a1000000-0000-4000-8000-000001410055"
   },
   "d_grouped": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -904,7 +910,7 @@
    "deleted": false,
    "group": "a1000000-0000-4000-8000-000000714001",
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410054"
+   "id": "a1000000-0000-4000-8000-000001410056"
   },
   "d_foreign": {
    "association": "a1000000-0000-4000-8000-000000701002",
@@ -919,82 +925,94 @@
    "deleted": false,
    "group": null,
    "created": "2020-01-01T08:00:00Z",
-   "id": "a1000000-0000-4000-8000-000001410055"
+   "id": "a1000000-0000-4000-8000-000001410057"
   }
  },
  "files": {
   "privacy": {
-   "id": "a1000000-0000-4000-8000-000001410056",
+   "id": "a1000000-0000-4000-8000-000001410058",
    "subscription": "d_own",
    "document": "privacy",
    "created": "2024-03-02T08:00:00Z"
   },
   "impersonated": {
-   "id": "a1000000-0000-4000-8000-000001410057",
+   "id": "a1000000-0000-4000-8000-000001410059",
    "subscription": "d_own",
    "document": "impersonated",
    "created": "2024-03-02T09:00:00Z"
   },
   "grouped": {
-   "id": "a1000000-0000-4000-8000-000001410058",
+   "id": "a1000000-0000-4000-8000-000001410060",
    "subscription": "d_grouped",
    "document": "grouped",
    "created": "2024-03-02T10:00:00Z"
   },
   "foreign": {
-   "id": "a1000000-0000-4000-8000-000001410059",
+   "id": "a1000000-0000-4000-8000-000001410061",
    "subscription": "d_foreign",
    "document": "foreign",
    "created": "2024-03-02T11:00:00Z"
+  },
+  "shared_own": {
+   "id": "b3000000-0000-4000-8000-000000970901",
+   "subscription": "d_own",
+   "document": "shared",
+   "created": "2024-03-02T12:00:00Z"
+  },
+  "shared_grouped": {
+   "id": "b3000000-0000-4000-8000-000000970902",
+   "subscription": "d_grouped",
+   "document": "shared",
+   "created": "2024-03-02T13:00:00Z"
   }
  },
  "links": {
   "olimpia": {
-   "id": "a1000000-0000-4000-8000-000001410067",
+   "id": "a1000000-0000-4000-8000-000001410069",
    "association": "a1000000-0000-4000-8000-000000701001",
-   "token": "a1000000-0000-4000-8000-000001410060",
+   "token": "a1000000-0000-4000-8000-000001410062",
    "gym_name": "Palestra Olimpia",
    "expires": "2099-01-01T00:00:00Z"
   },
   "expired": {
-   "id": "a1000000-0000-4000-8000-000001410068",
+   "id": "a1000000-0000-4000-8000-000001410070",
    "association": "a1000000-0000-4000-8000-000000701001",
-   "token": "a1000000-0000-4000-8000-000001410061",
+   "token": "a1000000-0000-4000-8000-000001410063",
    "gym_name": "Palestra Olimpia",
    "expires": "2020-01-01T00:00:00Z"
   },
   "abroad": {
-   "id": "a1000000-0000-4000-8000-000001410069",
+   "id": "a1000000-0000-4000-8000-000001410071",
    "association": "a1000000-0000-4000-8000-000000701002",
-   "token": "a1000000-0000-4000-8000-000001410062",
+   "token": "a1000000-0000-4000-8000-000001410064",
    "gym_name": "Kodokan Roma",
    "expires": "2099-01-01T00:00:00Z"
   },
   "unnamed": {
-   "id": "a1000000-0000-4000-8000-000001410070",
+   "id": "a1000000-0000-4000-8000-000001410072",
    "association": "a1000000-0000-4000-8000-000000701001",
-   "token": "a1000000-0000-4000-8000-000001410063",
+   "token": "a1000000-0000-4000-8000-000001410065",
    "gym_name": null,
    "expires": "2099-01-01T00:00:00Z"
   },
   "numbers": {
-   "id": "a1000000-0000-4000-8000-000001410071",
+   "id": "a1000000-0000-4000-8000-000001410073",
    "association": "a1000000-0000-4000-8000-000000701002",
-   "token": "a1000000-0000-4000-8000-000001410064",
+   "token": "a1000000-0000-4000-8000-000001410066",
    "gym_name": "Numeri",
    "expires": "2099-01-01T00:00:00Z"
   },
   "ali": {
-   "id": "a1000000-0000-4000-8000-000001410072",
+   "id": "a1000000-0000-4000-8000-000001410074",
    "association": "a1000000-0000-4000-8000-000000701001",
-   "token": "a1000000-0000-4000-8000-000001410065",
+   "token": "a1000000-0000-4000-8000-000001410067",
    "gym_name": "ALI",
    "expires": "2099-01-01T00:00:00Z"
   },
   "empty": {
-   "id": "a1000000-0000-4000-8000-000001410073",
+   "id": "a1000000-0000-4000-8000-000001410075",
    "association": "a1000000-0000-4000-8000-000000701001",
-   "token": "a1000000-0000-4000-8000-000001410066",
+   "token": "a1000000-0000-4000-8000-000001410068",
    "gym_name": "",
    "expires": "2099-01-01T00:00:00Z"
   }
@@ -2108,37 +2126,37 @@
     {
      "denomination": "ASD Alpha",
      "id": [
-      "a1000000-0000-4000-8000-000001410020",
-      "a1000000-0000-4000-8000-000001410021"
+      "a1000000-0000-4000-8000-000001410022",
+      "a1000000-0000-4000-8000-000001410023"
      ]
     },
     {
      "denomination": "Scuola Beta",
-     "id": "a1000000-0000-4000-8000-000001410022"
-    },
-    {
-     "denomination": "Delta",
-     "id": "a1000000-0000-4000-8000-000001410023"
-    },
-    {
-     "denomination": "Nested",
      "id": "a1000000-0000-4000-8000-000001410024"
     },
     {
-     "denomination": 5,
+     "denomination": "Delta",
      "id": "a1000000-0000-4000-8000-000001410025"
     },
     {
-     "denomination": null,
+     "denomination": "Nested",
      "id": "a1000000-0000-4000-8000-000001410026"
     },
     {
+     "denomination": 5,
+     "id": "a1000000-0000-4000-8000-000001410027"
+    },
+    {
+     "denomination": null,
+     "id": "a1000000-0000-4000-8000-000001410028"
+    },
+    {
      "denomination": "Removed",
-     "id": "a1000000-0000-4000-8000-000001410032"
+     "id": "a1000000-0000-4000-8000-000001410034"
     },
     {
      "denomination": "Grouped",
-     "id": "a1000000-0000-4000-8000-000001410033"
+     "id": "a1000000-0000-4000-8000-000001410035"
     }
    ],
    "effect": null,
@@ -2155,37 +2173,37 @@
     {
      "denomination": "ASD Alpha",
      "id": [
-      "a1000000-0000-4000-8000-000001410020",
-      "a1000000-0000-4000-8000-000001410021"
+      "a1000000-0000-4000-8000-000001410022",
+      "a1000000-0000-4000-8000-000001410023"
      ]
     },
     {
      "denomination": "Scuola Beta",
-     "id": "a1000000-0000-4000-8000-000001410022"
-    },
-    {
-     "denomination": "Delta",
-     "id": "a1000000-0000-4000-8000-000001410023"
-    },
-    {
-     "denomination": "Nested",
      "id": "a1000000-0000-4000-8000-000001410024"
     },
     {
-     "denomination": 5,
+     "denomination": "Delta",
      "id": "a1000000-0000-4000-8000-000001410025"
     },
     {
-     "denomination": null,
+     "denomination": "Nested",
      "id": "a1000000-0000-4000-8000-000001410026"
     },
     {
+     "denomination": 5,
+     "id": "a1000000-0000-4000-8000-000001410027"
+    },
+    {
+     "denomination": null,
+     "id": "a1000000-0000-4000-8000-000001410028"
+    },
+    {
      "denomination": "Removed",
-     "id": "a1000000-0000-4000-8000-000001410032"
+     "id": "a1000000-0000-4000-8000-000001410034"
     },
     {
      "denomination": "Grouped",
-     "id": "a1000000-0000-4000-8000-000001410033"
+     "id": "a1000000-0000-4000-8000-000001410035"
     }
    ],
    "effect": null,
@@ -2205,37 +2223,37 @@
     {
      "denomination": "ASD Alpha",
      "id": [
-      "a1000000-0000-4000-8000-000001410020",
-      "a1000000-0000-4000-8000-000001410021"
+      "a1000000-0000-4000-8000-000001410022",
+      "a1000000-0000-4000-8000-000001410023"
      ]
     },
     {
      "denomination": "Scuola Beta",
-     "id": "a1000000-0000-4000-8000-000001410022"
-    },
-    {
-     "denomination": "Delta",
-     "id": "a1000000-0000-4000-8000-000001410023"
-    },
-    {
-     "denomination": "Nested",
      "id": "a1000000-0000-4000-8000-000001410024"
     },
     {
-     "denomination": 5,
+     "denomination": "Delta",
      "id": "a1000000-0000-4000-8000-000001410025"
     },
     {
-     "denomination": null,
+     "denomination": "Nested",
      "id": "a1000000-0000-4000-8000-000001410026"
     },
     {
+     "denomination": 5,
+     "id": "a1000000-0000-4000-8000-000001410027"
+    },
+    {
+     "denomination": null,
+     "id": "a1000000-0000-4000-8000-000001410028"
+    },
+    {
      "denomination": "Removed",
-     "id": "a1000000-0000-4000-8000-000001410032"
+     "id": "a1000000-0000-4000-8000-000001410034"
     },
     {
      "denomination": "Grouped",
-     "id": "a1000000-0000-4000-8000-000001410033"
+     "id": "a1000000-0000-4000-8000-000001410035"
     }
    ],
    "effect": null,
@@ -2253,7 +2271,7 @@
    "response": [
     {
      "denomination": "Grouped",
-     "id": "a1000000-0000-4000-8000-000001410033"
+     "id": "a1000000-0000-4000-8000-000001410035"
     }
    ],
    "effect": null
@@ -2283,37 +2301,37 @@
     {
      "denomination": "ASD Alpha",
      "id": [
-      "a1000000-0000-4000-8000-000001410020",
-      "a1000000-0000-4000-8000-000001410021"
+      "a1000000-0000-4000-8000-000001410022",
+      "a1000000-0000-4000-8000-000001410023"
      ]
     },
     {
      "denomination": "Scuola Beta",
-     "id": "a1000000-0000-4000-8000-000001410022"
-    },
-    {
-     "denomination": "Delta",
-     "id": "a1000000-0000-4000-8000-000001410023"
-    },
-    {
-     "denomination": "Nested",
      "id": "a1000000-0000-4000-8000-000001410024"
     },
     {
-     "denomination": 5,
+     "denomination": "Delta",
      "id": "a1000000-0000-4000-8000-000001410025"
     },
     {
-     "denomination": null,
+     "denomination": "Nested",
      "id": "a1000000-0000-4000-8000-000001410026"
     },
     {
+     "denomination": 5,
+     "id": "a1000000-0000-4000-8000-000001410027"
+    },
+    {
+     "denomination": null,
+     "id": "a1000000-0000-4000-8000-000001410028"
+    },
+    {
      "denomination": "Removed",
-     "id": "a1000000-0000-4000-8000-000001410032"
+     "id": "a1000000-0000-4000-8000-000001410034"
     },
     {
      "denomination": "Grouped",
-     "id": "a1000000-0000-4000-8000-000001410033"
+     "id": "a1000000-0000-4000-8000-000001410035"
     }
    ],
    "effect": null,
@@ -2329,7 +2347,7 @@
    "response": [
     {
      "denomination": "Abroad",
-     "id": "a1000000-0000-4000-8000-000001410034"
+     "id": "a1000000-0000-4000-8000-000001410036"
     }
    ],
    "effect": null
@@ -2890,7 +2908,7 @@
    "name": "subscription-misc-validate-expired-token",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410061",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410063",
    "headers": {},
    "status": 200,
    "response": {
@@ -2902,14 +2920,14 @@
    "name": "subscription-misc-validate-anonymous",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410060",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
    "headers": {},
    "status": 200,
    "response": {
     "expired": false,
     "subscriptions": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410035",
+      "subscription_id": "a1000000-0000-4000-8000-000001410037",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -2989,7 +3007,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410036",
+      "subscription_id": "a1000000-0000-4000-8000-000001410038",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -3066,7 +3084,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410043",
+      "subscription_id": "a1000000-0000-4000-8000-000001410045",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -3146,7 +3164,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410045",
+      "subscription_id": "a1000000-0000-4000-8000-000001410047",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -3201,7 +3219,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410046",
+      "subscription_id": "a1000000-0000-4000-8000-000001410048",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -3281,7 +3299,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410047",
+      "subscription_id": "a1000000-0000-4000-8000-000001410049",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -3378,14 +3396,14 @@
    "name": "subscription-misc-validate-owner",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410060",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
    "headers": {},
    "status": 200,
    "response": {
     "expired": false,
     "subscriptions": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410035",
+      "subscription_id": "a1000000-0000-4000-8000-000001410037",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -3465,7 +3483,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410036",
+      "subscription_id": "a1000000-0000-4000-8000-000001410038",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -3542,7 +3560,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410043",
+      "subscription_id": "a1000000-0000-4000-8000-000001410045",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -3622,7 +3640,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410045",
+      "subscription_id": "a1000000-0000-4000-8000-000001410047",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -3677,7 +3695,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410046",
+      "subscription_id": "a1000000-0000-4000-8000-000001410048",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -3757,7 +3775,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410047",
+      "subscription_id": "a1000000-0000-4000-8000-000001410049",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -3854,14 +3872,14 @@
    "name": "subscription-misc-validate-athlete",
    "actor": "athlete",
    "method": "GET",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410060",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
    "headers": {},
    "status": 200,
    "response": {
     "expired": false,
     "subscriptions": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410035",
+      "subscription_id": "a1000000-0000-4000-8000-000001410037",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -3941,7 +3959,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410036",
+      "subscription_id": "a1000000-0000-4000-8000-000001410038",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -4018,7 +4036,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410043",
+      "subscription_id": "a1000000-0000-4000-8000-000001410045",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -4098,7 +4116,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410045",
+      "subscription_id": "a1000000-0000-4000-8000-000001410047",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -4153,7 +4171,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410046",
+      "subscription_id": "a1000000-0000-4000-8000-000001410048",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -4233,7 +4251,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410047",
+      "subscription_id": "a1000000-0000-4000-8000-000001410049",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -4330,14 +4348,14 @@
    "name": "subscription-misc-validate-restricted-collaborator",
    "actor": "restricted_collaborator",
    "method": "GET",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410060",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
    "headers": {},
    "status": 200,
    "response": {
     "expired": false,
     "subscriptions": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410035",
+      "subscription_id": "a1000000-0000-4000-8000-000001410037",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -4417,7 +4435,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410036",
+      "subscription_id": "a1000000-0000-4000-8000-000001410038",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -4494,7 +4512,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410043",
+      "subscription_id": "a1000000-0000-4000-8000-000001410045",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -4574,7 +4592,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410045",
+      "subscription_id": "a1000000-0000-4000-8000-000001410047",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -4629,7 +4647,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410046",
+      "subscription_id": "a1000000-0000-4000-8000-000001410048",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -4709,7 +4727,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410047",
+      "subscription_id": "a1000000-0000-4000-8000-000001410049",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -4806,7 +4824,7 @@
    "name": "subscription-misc-validate-own-group",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410060",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },
@@ -4815,7 +4833,7 @@
     "expired": false,
     "subscriptions": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410047",
+      "subscription_id": "a1000000-0000-4000-8000-000001410049",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -4911,7 +4929,7 @@
    "name": "subscription-misc-validate-foreign-group",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410060",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
    },
@@ -4927,14 +4945,14 @@
    "name": "subscription-misc-validate-foreign-association",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410064",
    "headers": {},
    "status": 200,
    "response": {
     "expired": false,
     "subscriptions": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410051",
+      "subscription_id": "a1000000-0000-4000-8000-000001410053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -5019,14 +5037,14 @@
    "name": "subscription-misc-validate-short-name",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410065",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410067",
    "headers": {},
    "status": 200,
    "response": {
     "expired": false,
     "subscriptions": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410048",
+      "subscription_id": "a1000000-0000-4000-8000-000001410050",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -5098,14 +5116,14 @@
    "name": "subscription-misc-validate-empty-name",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410066",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410068",
    "headers": {},
    "status": 200,
    "response": {
     "expired": false,
     "subscriptions": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410049",
+      "subscription_id": "a1000000-0000-4000-8000-000001410051",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -5168,7 +5186,7 @@
    "name": "subscription-misc-validate-upper-case-token",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token=A1000000-0000-4000-8000-000001410060",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=A1000000-0000-4000-8000-000001410062",
    "headers": {},
    "status": 200,
    "response": {
@@ -5180,7 +5198,7 @@
    "name": "subscription-misc-validate-braced-token",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token={a1000000-0000-4000-8000-000001410060}",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token={a1000000-0000-4000-8000-000001410062}",
    "headers": {},
    "status": 200,
    "response": {
@@ -5192,14 +5210,14 @@
    "name": "subscription-misc-validate-repeated-token",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token=bad&token=a1000000-0000-4000-8000-000001410062",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=bad&token=a1000000-0000-4000-8000-000001410064",
    "headers": {},
    "status": 200,
    "response": {
     "expired": false,
     "subscriptions": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410051",
+      "subscription_id": "a1000000-0000-4000-8000-000001410053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -5284,7 +5302,7 @@
    "name": "subscription-misc-validate-null-gym-name",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410063",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410065",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -5294,7 +5312,7 @@
    "name": "subscription-misc-validate-number-school-name",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410064",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410066",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -5311,7 +5329,7 @@
     "expired": false,
     "subscriptions": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410035",
+      "subscription_id": "a1000000-0000-4000-8000-000001410037",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -5391,7 +5409,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410036",
+      "subscription_id": "a1000000-0000-4000-8000-000001410038",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -5468,7 +5486,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410043",
+      "subscription_id": "a1000000-0000-4000-8000-000001410045",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -5548,7 +5566,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410045",
+      "subscription_id": "a1000000-0000-4000-8000-000001410047",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -5603,7 +5621,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410046",
+      "subscription_id": "a1000000-0000-4000-8000-000001410048",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -5683,7 +5701,7 @@
       "group": null
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410047",
+      "subscription_id": "a1000000-0000-4000-8000-000001410049",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -5822,7 +5840,7 @@
     "expired": false,
     "subscriptions": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410047",
+      "subscription_id": "a1000000-0000-4000-8000-000001410049",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -6351,14 +6369,14 @@
    "name": "subscription-misc-validate-paired-local-token-not-asked",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410064",
    "headers": {},
    "status": 200,
    "response": {
     "expired": false,
     "subscriptions": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000001410051",
+      "subscription_id": "a1000000-0000-4000-8000-000001410053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -6475,7 +6493,7 @@
    "name": "subscription-misc-validate-admin-without-session",
    "actor": "admin",
    "method": "GET",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410060",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
    "headers": {},
    "status": 403,
    "response": {
@@ -6487,7 +6505,7 @@
    "name": "subscription-misc-validate-wrong-method",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410060",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
    "headers": {},
    "status": 405,
    "response": {
@@ -6521,7 +6539,7 @@
    "name": "subscription-misc-delete-anonymous",
    "actor": "anonymous",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410053/delete-document/a1000000-0000-4000-8000-000001410056",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
    "headers": {},
    "status": 401,
    "response": {
@@ -6533,7 +6551,7 @@
    "name": "subscription-misc-delete-admin-without-session",
    "actor": "admin",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410053/delete-document/a1000000-0000-4000-8000-000001410056",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
    "headers": {},
    "status": 403,
    "response": {
@@ -6545,7 +6563,7 @@
    "name": "subscription-misc-delete-restricted-collaborator",
    "actor": "restricted_collaborator",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410053/delete-document/a1000000-0000-4000-8000-000001410056",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
    "headers": {},
    "status": 403,
    "response": {
@@ -6557,7 +6575,7 @@
    "name": "subscription-misc-delete-owner-scoped-athlete",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410053/delete-document/a1000000-0000-4000-8000-000001410056",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
    "headers": {
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
@@ -6572,7 +6590,7 @@
    "name": "subscription-misc-delete-wrong-method",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410053/delete-document/a1000000-0000-4000-8000-000001410056",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
    "headers": {},
    "status": 405,
    "response": {
@@ -6584,7 +6602,7 @@
    "name": "subscription-misc-delete-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410053/delete-document/a1000000-0000-4000-8000-000001410056",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
    "headers": {},
    "status": 200,
    "response": {
@@ -6605,7 +6623,7 @@
    "name": "subscription-misc-delete-malformed-subscription",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/subscription/nope/delete-document/a1000000-0000-4000-8000-000001410056",
+   "path": "/subscription/nope/delete-document/a1000000-0000-4000-8000-000001410058",
    "headers": {},
    "status": 400,
    "response": [
@@ -6617,7 +6635,7 @@
    "name": "subscription-misc-delete-malformed-file",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410053/delete-document/nope",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/nope",
    "headers": {},
    "status": 400,
    "response": [
@@ -6629,7 +6647,7 @@
    "name": "subscription-misc-delete-athlete",
    "actor": "athlete",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410053/delete-document/a1000000-0000-4000-8000-000001410056",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
    "headers": {},
    "status": 403,
    "response": {
@@ -6641,7 +6659,7 @@
    "name": "subscription-misc-delete-owner-without-association",
    "actor": "owner_without_association",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410053/delete-document/a1000000-0000-4000-8000-000001410056",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
    "headers": {},
    "status": 403,
    "response": {
@@ -6653,7 +6671,7 @@
    "name": "subscription-misc-delete-deleted-association",
    "actor": "deleted_association_owner",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410053/delete-document/a1000000-0000-4000-8000-000001410056",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
    "headers": {},
    "status": 403,
    "response": {
@@ -6665,7 +6683,7 @@
    "name": "subscription-misc-delete-unknown-subscription",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001419999/delete-document/a1000000-0000-4000-8000-000001410056",
+   "path": "/subscription/a1000000-0000-4000-8000-000001419999/delete-document/a1000000-0000-4000-8000-000001410058",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -6675,7 +6693,7 @@
    "name": "subscription-misc-delete-foreign-subscription",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410059",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410057/delete-document/a1000000-0000-4000-8000-000001410061",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -6685,7 +6703,7 @@
    "name": "subscription-misc-delete-unknown-file",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410053/delete-document/a1000000-0000-4000-8000-000001419999",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001419999",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -6695,7 +6713,7 @@
    "name": "subscription-misc-delete-file-of-another-subscription",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410053/delete-document/a1000000-0000-4000-8000-000001410058",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410060",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -6705,7 +6723,7 @@
    "name": "subscription-misc-delete-group-hidden",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410054/delete-document/a1000000-0000-4000-8000-000001410058",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410056/delete-document/a1000000-0000-4000-8000-000001410060",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
    },
@@ -6717,7 +6735,7 @@
    "name": "subscription-misc-delete-owner",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410053/delete-document/a1000000-0000-4000-8000-000001410056",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
    "headers": {},
    "status": 200,
    "response": {
@@ -6735,7 +6753,7 @@
    "name": "subscription-misc-delete-owner-again",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410053/delete-document/a1000000-0000-4000-8000-000001410056",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -6745,7 +6763,7 @@
    "name": "subscription-misc-delete-association-scoped-session",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410053/delete-document/a1000000-0000-4000-8000-000001410057",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410059",
    "headers": {
     "X-Impersonation-Id": "$session:owner_full",
     "User-Id": "a1000000-0000-4000-8000-000000700002"
@@ -6766,7 +6784,7 @@
    "name": "subscription-misc-delete-admin-impersonating-owner-grouped",
    "actor": "admin",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410054/delete-document/a1000000-0000-4000-8000-000001410058",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410056/delete-document/a1000000-0000-4000-8000-000001410060",
    "headers": {
     "X-Impersonation-Id": "$session:admin_owner",
     "User-Id": "a1000000-0000-4000-8000-000000700001",
@@ -6783,6 +6801,37 @@
     "actor": "admin",
     "association": "a1000000-0000-4000-8000-000000711001"
    }
+  },
+  {
+   "name": "subscription-misc-delete-document-of-two-files",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/b3000000-0000-4000-8000-000000970901",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "subscription file deleted"
+   },
+   "effect": {
+    "kind": "document",
+    "file": "shared_own",
+    "cascade": [
+     "shared_grouped"
+    ],
+    "document": true,
+    "actor": "owner",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "name": "subscription-misc-delete-document-of-two-files-other-gone",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410056/delete-document/b3000000-0000-4000-8000-000000970902",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
   }
  ]
 }
