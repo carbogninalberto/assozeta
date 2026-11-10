@@ -2,12 +2,13 @@
 
 Seeds documents, medical certificates, tags, associates (one tutor relation),
 payments, subscriptions with their tags, courses, course subscriptions,
-installments, attendance registries, a subscription file and a membership card
-configuration (audit disabled). The routes are reads: every case must leave
+installments, attendance registries, a subscription file, a membership card
+configuration (audit disabled) and the authored association-scoped sessions. The routes are reads: every case must leave
 the complete model state unchanged, and publish exactly its authored Celery
 tasks (subscription_info's print_document_subscription when the subscription
 has no document_pdf) to the run's broker.
 """
+from contextlib import contextmanager
 from datetime import date, datetime
 from decimal import Decimal
 import time
@@ -29,12 +30,14 @@ SOURCES = ('TESTS/fixtures/subscription_reads_http.json', 'TESTS/contracts/test_
            'BE/application/utils/api_utils.py', 'BE/application/utils/printing.py', 'BE/application/mixin.py',
            'BE/application/impersonation_scope.py', 'BE/application/permissions.py', 'BE/application/permissions_registry.py',
            'BE/application/urls.py', 'BE/docmanager/models.py', 'BE/application/models/carnet_models.py', 'BE/application/tasks.py',
-           'BE/core/celery.py') + harness.SOURCES
+           'BE/core/celery.py', 'BE/application/impersonation.py') + harness.SOURCES
 
 ASSOCIATE_FIELDS = ('picture_path', 'first_name', 'last_name', 'sex', 'tax_code', 'born_city', 'address_city', 'address', 'address_cap',
                     'nationality', 'nationality_residence', 'email', 'phone', 'phone_2', 'phone_3', 'phone_4', 'phone_label',
                     'phone_2_label', 'phone_3_label', 'phone_4_label', 'is_minor', 'disabled', 'draft', 'deleted', 'family_role',
                     'id_number', 'migrated', 'notes')
+# Session label -> identifier of the run's association-scoped sessions.
+SESSIONS = {}
 
 
 def moment(text):
@@ -114,7 +117,8 @@ def seed_rows(source, created):
         link.objects.bulk_create([link(subscription_id=row['id'], tags_id=tags[t]['id']) for t in row['tags']])
     courses = source['courses']
     for row in courses.values():
-        insert(Course, Course(course_id=row['id'], sport_association_id=source['ids']['own_association'], course_type=1, title=row['title'],
+        insert(Course, Course(course_id=row['id'], sport_association_id=row.get('association', source['ids']['own_association']),
+                              course_type=1, title=row['title'],
                               creation_date=moment(row['created']), multi_payments=row['multi'], fee=Decimal(row['fee']),
                               deleted=row['deleted'], events=row['events'], google_background_color='#3a87ad'))
     course_subscriptions = source['course_subscriptions']
@@ -149,9 +153,36 @@ def seed_rows(source, created):
     insert(SportAssociationMembershipCardConfiguration, SportAssociationMembershipCardConfiguration(
         sport_association_membership_card_configuration_id=card['id'], sport_association_id=card['association'],
         emit_only_on_approval=card['emit_only_on_approval'], customized_template=card['customized_template']))
+    seed_sessions(source)
 
 
-fixture_context = harness.with_celery_broker(harness.fixture_context_for(contract, seed_rows))
+def seed_sessions(source):
+    """The association-scoped sessions of an owner for one of its athletes (application.impersonation.begin's record)."""
+    import uuid
+    from django.core.cache import cache
+    from application.impersonation import session_key, SESSION_TTL
+    SESSIONS.clear()
+    contract.require(source['sessions'], 'fixture.sessions-authored')
+    for label, row in source['sessions'].items():
+        identifier = str(uuid.uuid4())
+        record = {'actor_id': source['ids'][row['actor']], 'target_id': source['ids'][row['target']], 'association_id': row['association']}
+        contract.require(cache.get(session_key(identifier)) is None, 'fixture.session-collision')
+        cache.set(session_key(identifier), record, SESSION_TTL)
+        contract.require(cache.get(session_key(identifier)) == record, 'fixture.session')
+        SESSIONS[label] = identifier
+
+
+_fixture_context = harness.with_celery_broker(harness.fixture_context_for(contract, seed_rows))
+
+
+@contextmanager
+def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
+    """The shared fixture plus the sessions seed_sessions created."""
+    with _fixture_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
+        source = contract.load_source()
+        contract.require(set(SESSIONS) == set(source['sessions']) and not set(SESSIONS) & set(fixture['sessions']), 'fixture.session-labels')
+        fixture['sessions'] = {**fixture['sessions'], **SESSIONS}
+        yield fixture
 
 
 def assert_effect(case, before, after, source, context):

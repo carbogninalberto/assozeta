@@ -23,6 +23,8 @@ type SubscriptionReads struct {
 	// athletes enables the athlete list; tasks the info print dispatch.
 	athletes *subscriptionReadsAthlete
 	tasks    celery.Publisher
+	// sessions is scoped_queryset's boundary of association-scoped athlete sessions.
+	sessions ScopedResourceReader
 }
 
 func NewSubscriptionReads(store domain.SubscriptionReadsStore, courses domain.CourseSubscriptionStore, now func() time.Time) *SubscriptionReads {
@@ -50,9 +52,54 @@ func subscriptionReadsTruthy(query domain.RequestObject, name string) string {
 }
 
 // subscriptionReadsScopedAthlete is an association-scoped session of an
-// athlete: scoped_queryset()'s family boundary on Subscription is not ported.
+// athlete: scoped_queryset() adds its family boundary on Subscription.
 func subscriptionReadsScopedAthlete(identity domain.ResolvedIdentity) bool {
 	return identity.ScopeUser.Role == domain.RoleAthlete && paymentReadsScope(identity) != nil
+}
+
+// WithSessionVisibility enables the athlete views in association-scoped
+// sessions: reader answers scoped_queryset(Subscription.objects).
+func (s *SubscriptionReads) WithSessionVisibility(reader ScopedResourceReader) *SubscriptionReads {
+	s.sessions = reader
+	return s
+}
+
+// subscriptionReadsVisibleBatch is the reader's batch bound (repository.MaxResourceBatch).
+const subscriptionReadsVisibleBatch = 512
+
+// sessionVisible keeps, in an association-scoped athlete session, the ids
+// scoped_queryset(Subscription.objects) holds: the association's group-aware
+// subscriptions of the athlete and of its live, group-aware members that are
+// the athlete's or carry a filled-in tax code of the athlete's subscriptions
+// there. The order of ids is kept; other identities keep every id.
+func (s *SubscriptionReads) sessionVisible(ctx context.Context, identity domain.ResolvedIdentity, group *string, ids []string) ([]string, error) {
+	if !subscriptionReadsScopedAthlete(identity) {
+		return ids, nil
+	}
+	if s.sessions == nil {
+		return nil, domain.ErrSubscriptionReadsNotPorted
+	}
+	scope := domain.ResourceScope{AssociationID: identity.ImpersonationAssociationID, EffectiveID: identity.ScopeUser.ID, Role: identity.ScopeUser.Role}
+	if group != nil {
+		scope.GroupID = *group
+	}
+	visible := map[string]bool{}
+	for start := 0; start < len(ids); start += subscriptionReadsVisibleBatch {
+		found, err := s.sessions.Available(ctx, scope, "subscription", ids[start:min(start+subscriptionReadsVisibleBatch, len(ids))])
+		if err != nil {
+			return nil, err
+		}
+		for _, id := range found {
+			visible[id] = true
+		}
+	}
+	kept := make([]string, 0, len(ids))
+	for _, id := range ids {
+		if visible[id] {
+			kept = append(kept, id)
+		}
+	}
+	return kept, nil
 }
 
 func (s *SubscriptionReads) association(ctx context.Context, identity domain.ResolvedIdentity) (string, error) {
@@ -254,9 +301,9 @@ func (s *SubscriptionReads) List(ctx context.Context, request SubscriptionReadsR
 	query, identity := request.Query, request.Identity
 	group, scope := supplierGroup(request.GroupHeader), paymentReadsScope(identity)
 	if field := subscriptionReadsTruthy(query, "field"); field != "" {
-		if subscriptionReadsScopedAthlete(identity) {
-			return nil, domain.ErrSubscriptionReadsNotPorted
-		}
+		// In an association-scoped athlete session the scope is the acting
+		// owner's association and OwnerUser the athlete: the two filters
+		// together hold no row, as in Django.
 		column, ok := subscriptionReadsAssociateColumns[field]
 		if !ok {
 			// A FieldError, or a relation path / transform values_list() would follow (not ported): both the 500 page.
@@ -292,11 +339,7 @@ func (s *SubscriptionReads) List(ctx context.Context, request SubscriptionReadsR
 		return domain.RequestObject{{Name: "data", Value: data}}, nil
 	}
 	if identity.ScopeUser.Role == domain.RoleAthlete {
-		if scope != nil {
-			// scoped_queryset's family visibility for association-scoped athlete sessions is not ported.
-			return nil, domain.ErrSubscriptionReadsNotPorted
-		}
-		return s.athleteList(ctx, identity.ScopeUser.ID, group)
+		return s.athleteList(ctx, identity, group)
 	}
 	association, err := s.association(ctx, identity)
 	if err != nil {
@@ -558,9 +601,9 @@ func subscriptionReadsSorting(filter *domain.SubscriptionReadsFilter, query doma
 // ListAll follows subscription_list_all.
 func (s *SubscriptionReads) ListAll(ctx context.Context, request SubscriptionReadsRequest) (any, error) {
 	query, identity := request.Query, request.Identity
-	if subscriptionReadsScopedAthlete(identity) {
-		return nil, domain.ErrSubscriptionReadsNotPorted
-	}
+	// An athlete lists user=request.user rows: inside an association-scoped
+	// session those are the athlete's rows of the scope, all within
+	// scoped_queryset's boundary.
 	group, scope := supplierGroup(request.GroupHeader), paymentReadsScope(identity)
 	athlete := identity.ScopeUser.Role == domain.RoleAthlete
 	key, keyPresent := paymentReadsParam(query, "sport_association")
@@ -811,15 +854,15 @@ func (s *SubscriptionReads) Info(ctx context.Context, request SubscriptionReadsR
 	if err != nil {
 		return nil, err
 	}
-	if subscriptionReadsScopedAthlete(identity) {
-		return nil, domain.ErrSubscriptionReadsNotPorted
-	}
 	id := parsed.String()
 	group, scope := supplierGroup(request.GroupHeader), paymentReadsScope(identity)
 	var association string
 	if identity.ScopeUser.Role == domain.RoleAthlete {
 		allowed, err := s.store.AllowedForAthlete(ctx, identity.ScopeUser.ID, group, scope)
 		if err != nil {
+			return nil, err
+		}
+		if allowed, err = s.sessionVisible(ctx, identity, group, allowed); err != nil {
 			return nil, err
 		}
 		found := false
@@ -1069,9 +1112,8 @@ func (s *SubscriptionReads) Calendar(ctx context.Context, request SubscriptionRe
 	if err != nil {
 		return nil, err
 	}
-	if subscriptionReadsScopedAthlete(identity) {
-		return nil, domain.ErrSubscriptionReadsNotPorted
-	}
+	// The athlete's own subscription (user=request.user) is within an
+	// association-scoped session's boundary whenever it is in the scope.
 	group, scope := supplierGroup(request.GroupHeader), paymentReadsScope(identity)
 	var row *domain.SubscriptionReadsRow
 	if identity.ScopeUser.Role == domain.RoleAthlete {

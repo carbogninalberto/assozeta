@@ -17,8 +17,9 @@ subscription_list (GET, POST):
   empty or null; ``values_list('associate__<field>').distinct()`` (unordered);
   an unknown field is a FieldError (500).
 - athletes: get_optimized_subscriptions (SubscriptionSerializerAthleteOptimizedList) of their own subscriptions and those
-  whose associate has one of their filled-in tax codes (family_tax_codes), by ``-creation_date``, ``meta`` {} (association-scoped athlete sessions are
-  not authored).
+  whose associate has one of their filled-in tax codes (family_tax_codes), by ``-creation_date``, ``meta`` {}; an
+  association-scoped athlete session keeps to scoped_queryset's subscriptions (the association's rows of the athlete
+  and of its live, group-aware members that are the athlete's or share a filled-in tax code).
 - the scoped live association (500 without one); ``m`` absent: the
   unarchived subscriptions by ``-creation_date`` with the tag, age, hide,
   status, current-year, search, type-of-associate, certificate, payment and
@@ -319,6 +320,42 @@ SUBSCRIPTIONS['e_own'] = {**SUB_DEFAULTS, 'association': FOREIGN, 'user': BLANK,
                           'id': '5ab5c0de-ffff-4fff-8fff-ffffffffffaa', 'created': '2025-09-19T08:00:00Z'}
 SUBSCRIPTIONS['e_other'] = {**SUB_DEFAULTS, 'associate': 'e_other', 'id': '5ab5c0de-ffff-4fff-8fff-ffffffffffab',
                             'created': '2025-09-20T08:00:00Z'}
+# An association-scoped session of the foreign owner for the list athlete (scoped_queryset): the session keeps to the
+# association's subscriptions of the athlete and of the association's live, group-aware members that are the athlete's
+# or carry a filled-in tax code of the athlete's subscriptions there. Fixed ids, as above.
+SESSIONS = {'foreign_lister': {'actor': 'foreign_owner', 'target': 'list_athlete', 'association': FOREIGN}}
+KID_TAX, SELF_TAX = ASSOCIATES['l_kid']['tax_code'], ASSOCIATES['l_self']['tax_code']
+
+
+def session_person(suffix, created, **values):
+    return {**ASSOCIATE_DEFAULTS, 'association': FOREIGN, **values, 'id': f'decafbad-ffff-4fff-8fff-ffffffffff{suffix}', 'created': created}
+
+
+def session_sub(suffix, created, year, **values):
+    return {**SUB_DEFAULTS, 'association': FOREIGN, 'user': FOREIGN_OWNER, 'start': f'{year}-01-01', 'end': f'{year}-12-31', **values,
+            'id': f'5ab5c0de-ffff-4fff-8fff-ffffffffff{suffix}', 'created': created}
+
+
+# A soft-deleted member with the kid's tax code and a member row of the other association with the athlete's (live
+# members of one association have distinct tax codes); the grouped subscriptions are of the athlete's ungrouped member.
+ASSOCIATES['v_gone'] = session_person('ac', '2023-08-17T08:00:00Z', first_name='Livio', last_name='Rimosso', sex='M', tax_code=KID_TAX,
+                                      born_date='1970-03-03', deleted=True)
+ASSOCIATES['v_away'] = session_person('ad', '2023-08-18T08:00:00Z', first_name='Lia', last_name='Altrove', sex='F', tax_code=SELF_TAX,
+                                      born_date='1971-04-04', association=OWN)
+SUBSCRIPTIONS['v_gone'] = session_sub('ac', '2025-09-21T08:00:00Z', 2019, associate='v_gone')
+SUBSCRIPTIONS['v_away'] = session_sub('ad', '2025-09-22T08:00:00Z', 2018, associate='v_away')
+SUBSCRIPTIONS['v_group_own'] = session_sub('ae', '2025-09-23T08:00:00Z', 2017, user=LISTER, associate='l_self', group=FOREIGN_GROUP)
+SUBSCRIPTIONS['v_group_kin'] = session_sub('af', '2025-09-24T08:00:00Z', 2016, associate='l_self', group=FOREIGN_GROUP)
+# The athlete's own member row (no tax code) subscribed by the owner: a member of the session, not a row of the athlete's lists.
+SUBSCRIPTIONS['v_member'] = session_sub('ba', '2025-09-25T08:00:00Z', 2015, associate='l_notax')
+# A course of the foreign association with a registry: the session's courses and calendar keep to it.
+COURSES['f_yoga'] = {'id': 'c0a5ec0a-ffff-4fff-8fff-ffffffffffaa', 'title': 'Corso yoga', 'created': '2024-05-10T09:00:00Z', 'multi': False,
+                     'fee': '30.00', 'deleted': False, 'events': None, 'association': FOREIGN}
+COURSE_SUBS['v_yoga'] = {'id': 'c5c5c5c5-ffff-4fff-8fff-ffffffffffaa', 'course': 'f_yoga', 'subscription': 'l_current', 'paid': False,
+                         'multi': False, 'created': '2025-09-14T11:00:00Z', 'deleted': False}
+REGISTRIES['f_yoga'] = {'id': '7e617e61-ffff-4fff-8fff-ffffffffffaa', 'course': 'f_yoga', 'events': [
+    {'event_id': 'e0e0e0e0-ffff-4fff-8fff-ffffffffffaa', 'title': 'Pratica', 'start': '2025-10-02T18:00:00', 'end': '2025-10-02T19:00:00',
+     'allDay': False}]}
 S = {label: row['id'] for label, row in SUBSCRIPTIONS.items()}
 A = {label: row['id'] for label, row in ASSOCIATES.items()}
 
@@ -719,7 +756,7 @@ def course_detail(label):
             'one_fee': '0.00', 'google_calendar_id': None, 'google_background_color': '#3a87ad', 'multiple_quotes': None,
             'start_date': None, 'end_date': None, 'pinned': False, 'billed_duration_is_sport_season': False, 'billed_frequency': 1,
             'billed_from_subscription_date': False, 'billed_from_day_of_month': 1, 'auto_renewal': False, 'deleted': row['deleted'],
-            'sport_association': OWN, 'group': None, 'tags': [], 'locations': []}
+            'sport_association': row.get('association', OWN), 'group': None, 'tags': [], 'locations': []}
 
 
 def simplify_associate(label):
@@ -780,10 +817,13 @@ def membership_payment(label):
             'sport_association': row['association'], 'custom_accounts': None, 'signature': None, 'group': row['group']}
 
 
-def info_courses(sublabel, group=None):
+def info_courses(sublabel, group=None, scope=None):
+    """scope: the session's association (the course subscriptions of its subscriptions and courses)."""
     courses = []
     for k, cs in COURSE_SUBS.items():
         if cs['subscription'] != sublabel or cs['deleted']:
+            continue
+        if scope is not None and COURSES[cs['course']].get('association', OWN) != scope:
             continue
         item = course_detail(cs['course'])
         item['course_subscription'] = overview(k, group)
@@ -796,7 +836,7 @@ def info_courses(sublabel, group=None):
     return sorted(courses, key=lambda c: c['creation_date'], reverse=True)
 
 
-def info_body(sublabel, group=None):
+def info_body(sublabel, group=None, scope=None):
     row = SUBSCRIPTIONS[sublabel]
     medical, medical_document = medical_fields(row)
     document = DOCUMENTS[row['document']] if row['document'] else None
@@ -826,14 +866,15 @@ def info_body(sublabel, group=None):
     }
     if medical:
         info['competitive_medical_certificate'] = medical['competitive']
-    return {'data': {'info': info, 'courses': info_courses(sublabel, group), 'payments': []}}
+    return {'data': {'info': info, 'courses': info_courses(sublabel, group, scope), 'payments': []}}
 
 
 # --- subscription_calendar -----------------------------------------------------------------------------------------------
-def calendar(sublabel):
+def calendar(sublabel, scope=None):
     events = []
     if sublabel is not None:
-        courses = {cs['course'] for cs in COURSE_SUBS.values() if cs['subscription'] == sublabel and not cs['deleted']}
+        courses = {cs['course'] for cs in COURSE_SUBS.values() if cs['subscription'] == sublabel and not cs['deleted']
+                   and (scope is None or COURSES[cs['course']].get('association', OWN) == scope)}
         for registry in REGISTRIES.values():
             if registry['course'] in courses and registry['events']:
                 title = COURSES[registry['course']]['title']
@@ -1366,12 +1407,121 @@ for name, actor, label in (('info-print-dispatch-owner', 'owner', 'baby'), ('inf
     add(name, actor, info_path(label), 200, info_body(label))
     cases[-1]['celery'] = [{'task': 'print_document_subscription', 'args': [S[label], '$authorization'], 'kwargs': []}]
 
+# --- association-scoped athlete sessions: scoped_queryset's boundary on every read ------------------------------------------
+FOREIGN_LISTER = {'X-Impersonation-Id': '$session:foreign_lister', 'User-Id': LISTER}
+NOT_AVAILABLE_RESOURCE = {'detail': 'Risorsa non disponibile per questo utente e associazione.'}
+
+
+def session_visible(user, association, group=None):
+    """scoped_queryset(Subscription.objects) of an athlete's session, with the tax codes of the athlete's subscriptions there."""
+    own = [k for k, r in SUBSCRIPTIONS.items() if r['user'] == user and r['association'] == association and visible(r, group)]
+    taxes = {ASSOCIATES[SUBSCRIPTIONS[k]['associate']]['tax_code'] for k in own if SUBSCRIPTIONS[k]['associate']} - {None, ''}
+    members = {k for k, row in ASSOCIATES.items() if row['association'] == association and not row['deleted'] and visible(row, group)
+               and (row['user'] == user or row['tax_code'] in taxes)}
+    return [k for k, r in SUBSCRIPTIONS.items() if r['association'] == association and visible(r, group)
+            and (r['user'] == user or r['associate'] in members)], taxes
+
+
+def session_listed(user, association, group=None):
+    """get_optimized_subscriptions inside the session: own or same tax code, among the session's subscriptions."""
+    labels, taxes = session_visible(user, association, group)
+    return [k for k in labels if SUBSCRIPTIONS[k]['user'] == user
+            or (SUBSCRIPTIONS[k]['associate'] and ASSOCIATES[SUBSCRIPTIONS[k]['associate']]['tax_code'] in taxes)]
+
+
+def session_list(user, association, group=None):
+    return {'data': {str(i): athlete_item(k, group) for i, k in enumerate(by_created(session_listed(user, association, group)))},
+            'meta': {}}
+
+
+def dispatch(label):
+    cases[-1]['celery'] = [{'task': 'print_document_subscription', 'args': [S[label], '$authorization'], 'kwargs': []}]
+
+
+LISTED = by_created(session_listed(LISTER, FOREIGN))
+assert LISTED == ['v_group_kin', 'v_group_own', 'l_notax', 'l_kid_owner', 'l_kid_own', 'l_past', 'l_current']
+VISIBLE = set(session_visible(LISTER, FOREIGN)[0])
+assert VISIBLE == set(LISTED) | {'v_member'} and not VISIBLE & {'v_gone', 'v_away'}
+# Outside a session the same athlete also lists the deleted member's, the other association's member's and the kin's rows.
+UNSCOPED = set(athlete_list(LISTER)['data'][i]['subscription_id'] for i in athlete_list(LISTER)['data'])
+assert UNSCOPED == {S[k] for k in (VISIBLE - {'v_member'}) | {'v_gone', 'v_away'}}
+add('list-session-athlete', 'foreign_owner', LIST, 200, session_list(LISTER, FOREIGN), headers=FOREIGN_LISTER)
+add('list-session-athlete-post', 'foreign_owner', LIST, 200, session_list(LISTER, FOREIGN), method='POST', body=EXCEL,
+    headers=FOREIGN_LISTER)
+add('list-session-athlete-ignores-filters', 'foreign_owner', LIST + '?query[status_flag]=3&pagination[perpage]=1', 200,
+    session_list(LISTER, FOREIGN), headers=FOREIGN_LISTER)
+# Group-aware members: the athlete's member row is outside the group.
+assert by_created(session_listed(LISTER, FOREIGN, FOREIGN_GROUP)) == ['v_group_own', 'l_notax']
+assert S['v_group_kin'] in {row['subscription_id'] for row in athlete_list(LISTER, FOREIGN_GROUP)['data'].values()}
+add('list-session-athlete-group', 'foreign_owner', LIST, 200, session_list(LISTER, FOREIGN, FOREIGN_GROUP),
+    headers={**FOREIGN_LISTER, 'X-Group-Id': FOREIGN_GROUP})
+add('list-session-athlete-own-association', 'owner', LIST, 200, session_list(ATHLETE, OWN), headers=SCOPED_ATHLETE)
+assert session_listed(ATHLETE, OWN) == ['athlete']
+# The field mode keeps to the associations of the user: the session's association is the owner's.
+add('list-session-athlete-field', 'foreign_owner', LIST + '?field=email', 200, {'data': []}, headers=FOREIGN_LISTER)
+
+SESSION_ALL = by_created([k for k in VISIBLE if SUBSCRIPTIONS[k]['user'] == LISTER])
+assert SESSION_ALL == ['v_group_own', 'l_notax', 'l_kid_own', 'l_past', 'l_current']
+add('all-session-athlete', 'foreign_owner', ALL + f'?sport_association={FOREIGN}', 200, all_body(SESSION_ALL), headers=FOREIGN_LISTER)
+add('all-session-athlete-without-association', 'foreign_owner', ALL, 403, {'msg': 'not allowed'}, headers=FOREIGN_LISTER)
+add('all-session-athlete-other-association', 'foreign_owner', ALL + f'?sport_association={OWN}', 403, NOT_AVAILABLE_RESOURCE,
+    headers=FOREIGN_LISTER)
+add('all-session-athlete-malformed-association', 'foreign_owner', ALL + '?sport_association=nope', 403, NOT_AVAILABLE_RESOURCE,
+    headers=FOREIGN_LISTER)
+# The owner's username passes the session's reference check; the view then compares it with the association key.
+add('all-session-athlete-association-username', 'foreign_owner', ALL + f"?sport_association={USERS[FOREIGN_OWNER]['username']}", 500, SERVER,
+    headers=FOREIGN_LISTER)
+add('all-session-athlete-current-year', 'foreign_owner', ALL + f'?sport_association={FOREIGN}&current_year=1', 200,
+    all_body([k for k in SESSION_ALL if is_current(SUBSCRIPTIONS[k])]), headers=FOREIGN_LISTER)
+add('all-session-athlete-course', 'foreign_owner', ALL + f"?sport_association={FOREIGN}&course_id={COURSES['f_yoga']['id']}", 200,
+    all_body([k for k in SESSION_ALL if k != 'l_current']), headers=FOREIGN_LISTER)
+add('all-session-athlete-course-other-association', 'foreign_owner',
+    ALL + f"?sport_association={FOREIGN}&course_id={COURSES['swim']['id']}", 403, NOT_AVAILABLE_RESOURCE, headers=FOREIGN_LISTER)
+add('all-session-athlete-preregistration', 'foreign_owner', PREREG + f'&sport_association={FOREIGN}', 200,
+    preregistration([k for k in SESSION_ALL if SUBSCRIPTIONS[k]['status'] in (1, 2, 4, 5)]), headers=FOREIGN_LISTER)
+add('all-session-athlete-own-association', 'owner', ALL + f'?sport_association={OWN}', 200, all_body(['athlete']), headers=SCOPED_ATHLETE)
+
+add('info-session-athlete-own', 'foreign_owner', info_path('l_current'), 200, info_body('l_current', scope=FOREIGN), headers=FOREIGN_LISTER)
+dispatch('l_current')
+assert len(info_body('l_current', scope=FOREIGN)['data']['courses']) == 1 and len(info_body('l_current')['data']['courses']) == 2
+add('info-session-athlete-family', 'foreign_owner', info_path('l_kid_owner'), 200, info_body('l_kid_owner', scope=FOREIGN),
+    headers=FOREIGN_LISTER)
+dispatch('l_kid_owner')
+add('info-session-athlete-group', 'foreign_owner', info_path('v_group_own'), 200, info_body('v_group_own', FOREIGN_GROUP, scope=FOREIGN),
+    headers={**FOREIGN_LISTER, 'X-Group-Id': FOREIGN_GROUP})
+dispatch('v_group_own')
+add('info-session-athlete-kin', 'foreign_owner', info_path('v_group_kin'), 200, info_body('v_group_kin', scope=FOREIGN),
+    headers=FOREIGN_LISTER)
+dispatch('v_group_kin')
+add('info-session-athlete-kin-outside-group', 'foreign_owner', info_path('v_group_kin'), 403, NOT_AVAILABLE_RESOURCE,
+    headers={**FOREIGN_LISTER, 'X-Group-Id': FOREIGN_GROUP})
+add('info-session-athlete-deleted-member', 'foreign_owner', info_path('v_gone'), 403, NOT_AVAILABLE_RESOURCE, headers=FOREIGN_LISTER)
+add('info-session-athlete-member-elsewhere', 'foreign_owner', info_path('v_away'), 403, NOT_AVAILABLE_RESOURCE, headers=FOREIGN_LISTER)
+# A member of the session that the athlete's own lookup does not list.
+add('info-session-athlete-member-row', 'foreign_owner', info_path('v_member'), 403, {'detail': 'Subscription not found.'},
+    headers=FOREIGN_LISTER)
+add('info-session-athlete-uppercase', 'foreign_owner', f"/subscription/{S['l_current'].upper()}/info", 403,
+    {'detail': 'Subscription not found.'}, headers=FOREIGN_LISTER)
+add('info-session-athlete-other-association', 'foreign_owner', info_path('cur_mario'), 403, NOT_AVAILABLE_RESOURCE, headers=FOREIGN_LISTER)
+add('info-session-athlete-unknown', 'foreign_owner', f'/subscription/{UNKNOWN}/info', 403, NOT_AVAILABLE_RESOURCE, headers=FOREIGN_LISTER)
+add('info-session-athlete-malformed', 'foreign_owner', '/subscription/nope/info', 403, NOT_AVAILABLE_RESOURCE, headers=FOREIGN_LISTER)
+add('info-session-athlete-own-association', 'owner', info_path('athlete'), 200, info_body('athlete', scope=OWN), headers=SCOPED_ATHLETE)
+
+assert calendar('l_current', FOREIGN) != calendar('l_current') and len(calendar('l_current', FOREIGN)['data']['events']) == 1
+add('calendar-session-athlete-own', 'foreign_owner', calendar_path('l_current'), 200, calendar('l_current', FOREIGN), headers=FOREIGN_LISTER)
+add('calendar-athlete-courses-of-two-associations', 'list_athlete', calendar_path('l_current'), 200, calendar('l_current'), unordered=True)
+add('calendar-session-athlete-family', 'foreign_owner', calendar_path('l_kid_owner'), 200, calendar(None), headers=FOREIGN_LISTER)
+add('calendar-session-athlete-deleted-member', 'foreign_owner', calendar_path('v_gone'), 403, NOT_AVAILABLE_RESOURCE, headers=FOREIGN_LISTER)
+add('calendar-session-athlete-malformed', 'foreign_owner', '/subscription/nope/calendar', 403, NOT_AVAILABLE_RESOURCE,
+    headers=FOREIGN_LISTER)
+add('calendar-session-athlete-own-association', 'owner', calendar_path('athlete'), 200, calendar('athlete', OWN), headers=SCOPED_ATHLETE)
+
 assert len({c['name'] for c in cases}) == len(cases)
 SOURCE = {'matrix_version': 1, 'scope': 'subscription list, list/all, list/archived, info and calendar reads', 'ids': IDS,
           'extra_users': EXTRA_USERS, 'users': USERS, 'documents': DOCUMENTS, 'medicals': MEDICALS, 'tags': TAGS, 'associates': ASSOCIATES, 'tutors': TUTORS,
           'payments': PAYMENTS, 'subscriptions': SUBSCRIPTIONS, 'courses': COURSES, 'course_subscriptions': COURSE_SUBS,
           'installments': INSTALLMENTS, 'registries': REGISTRIES, 'files': FILES, 'card': CARD, 'carnets': CARNETS,
-          'membership_instructor': MEMBERSHIP_INSTRUCTOR, 'membership_invoice': MEMBERSHIP_INVOICE, 'membership_payments': MEMBERSHIPS,
+          'sessions': SESSIONS, 'membership_instructor': MEMBERSHIP_INSTRUCTOR, 'membership_invoice': MEMBERSHIP_INVOICE, 'membership_payments': MEMBERSHIPS,
           'cases': cases}
 OUTPUT.write_text(json.dumps(SOURCE, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')
