@@ -70,5 +70,5 @@ Compensation prints of list rows (API v2 gap): 135 cases; the adapter runs invoi
 and checks each case's outbound requests (`case['prints']`).
 
 - RED (`v2doc-red-r1`): Django 135/135; Go 500 on `instructor-hours-list-owner-prints-compensations`.
-- GREEN (`v2doc-versioned-r1`): 135/135 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- GREEN (`v2doc-versioned-r2`, after merging the current base): 135/135 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`v2doc-mutation-r1`): printing only paid rows fails `instructor-hours-list-owner-prints-compensations` (`print.request-count`, CAUGHT).

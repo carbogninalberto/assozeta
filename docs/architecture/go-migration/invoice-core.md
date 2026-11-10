@@ -112,5 +112,5 @@ Print dispatch for listed invoices without a PDF (API v2 gap): 106 cases; the ad
 broker (`family_harness.with_celery_broker`) and checks every case's published messages (`case['celery']`).
 
 - RED (`v2doc-red-r1`): Django 106/106; Go 500 on `invoice-core-list-archived-true`.
-- GREEN (`v2doc-versioned-r1`): 106/106 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- GREEN (`v2doc-versioned-r2`, after merging the current base): 106/106 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`v2doc-mutation-r1`): publishing once per distinct invoice fails `invoice-core-list-archived-true` (`celery.count`, CAUGHT).
