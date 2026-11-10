@@ -135,9 +135,11 @@ jobs:
           sudo install -m 0644 TESTS/fixtures/mime.types /etc/mime.types
           python -c "import mimetypes, os; assert [name for name in mimetypes.knownfiles if os.path.isfile(name)] == ['/etc/mime.types']"
           # The placeholder certificate image falls back to Pillow's built-in font when DejaVu Sans is missing, as in
-          # the application image: the runner's copy is set aside.
-          if [ -d /usr/share/fonts/truetype/dejavu ]; then sudo mv /usr/share/fonts/truetype/dejavu /usr/share/fonts/truetype/dejavu.host; fi
-          test ! -e /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
+          # the application image. Pillow also looks the file name up in the system font directories, so every
+          # copy is moved out of them.
+          sudo mkdir -p /opt/runner-fonts.host
+          find /usr/share/fonts /usr/local/share/fonts -name 'DejaVuSans.ttf' 2>/dev/null | while read -r file; do sudo mv "$file" "/opt/runner-fonts.host/$(echo "$file" | tr / _)"; done
+          test -z "$(find /usr/share/fonts /usr/local/share/fonts "$HOME/.fonts" "$HOME/.local/share/fonts" -name 'DejaVuSans.ttf' 2>/dev/null)"
           # Pillow loads libfribidi at run time and then lays text out with Raqm; the application image has no
           # libfribidi, so text is laid out with the basic engine there. The runner's copy is set aside.
           find /usr/lib /lib -name 'libfribidi.so*' ! -name '*.host' 2>/dev/null | while read -r file; do sudo mv "$file" "$file.host"; done

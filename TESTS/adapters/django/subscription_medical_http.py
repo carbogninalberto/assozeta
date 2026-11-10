@@ -271,10 +271,7 @@ def assert_effect(case, before, after, source, context):
         contract.require(listing() == STATE['objects'] | {name}, 'storage.placeholder-key')
         stored = STORAGE['client'].get_object(Bucket=BUCKET, Key=name)
         body = stored['Body'].read()
-        expected = buffer.getvalue()
-        contract.require(body[:8] == b'\x89PNG\r\n\x1a\n' and body == expected,
-                         f'storage.placeholder-bytes:{len(body)}:{len(expected)}:ihdr={expected[16:29].hex()}:{body[16:29].hex()}:'
-                         f'dejavu={os.path.exists("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")}:' + font_diagnostic(effect['text']))
+        contract.require(body[:8] == b'\x89PNG\r\n\x1a\n' and body == buffer.getvalue(), f'storage.placeholder-bytes:{len(body)}')
         contract.require(stored['ContentType'] == 'image/png' and stored.get('ContentEncoding') is None, 'storage.placeholder-metadata')
         STATE['objects'] = STATE['objects'] | {name}
         text = topup.auditlog_moment
@@ -420,14 +417,3 @@ def prepared(source):
 
 
 run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepared)
-
-
-def font_diagnostic(text=''):
-    from PIL import features, ImageFont, ImageDraw, Image
-    import PIL
-    draw = ImageDraw.Draw(Image.new('RGB', (600, 100)))
-    font = ImageFont.load_default()
-    sized = ImageFont.load_default(10)
-    return (f'pil={PIL.__version__}:raqm={features.check("raqm")}:fribidi={features.version("fribidi")}:font={type(font).__name__}:'
-            f'size={getattr(font, "size", None)}:{font.getname()}:engine={getattr(font, "layout_engine", None)}:'
-            f'lines={[(len(l), draw.textbbox((0, 0), l, font=font)) for l in text.split(chr(10))]}:bbox={draw.textbbox((0, 0), "Attenzione", font=font)}:')
