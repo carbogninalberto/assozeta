@@ -428,10 +428,12 @@ def exported(module):
                               '-' if row['queue'] is None else {'int': str(row['queue'])}, user, payment,
                               'Approvata' if row['approved'] else 'Non approvata',
                               ','.join(DOCUMENTS[d]['filename'] for d in row['attachments'])])
-    labels = [label for label, _ in columns] + ['Data creazione', 'Progressivo risposta', 'Posizione in coda', 'Utente', 'Pagamento',
-                                                'Approvato', 'Allegati']
+    # A list or an object label is written as its text and sized by its item count.
+    sized = [(str(label), len(label)) for label, _ in columns] + [(text, len(text)) for text in (
+        'Data creazione', 'Progressivo risposta', 'Posizione in coda', 'Utente', 'Pagamento', 'Approvato', 'Allegati')]
+    labels = [label for label, _ in sized]
     spec = {'engine': 'xlsxwriter', 'sheet': 'Risposte', 'columns': labels, 'rows': rows, 'index': False,
-            'widths': [len(label) + 10 for label in labels]}
+            'widths': [size + 10 for _, size in sized]}
     return {'data': {'file': {'$xlsx': spec}, 'filename': f"[$today] Risposte al modulo ({MODULES[module]['title']}).xls",
                      'type': 'xlsx'}}
 
@@ -468,9 +470,9 @@ add('export-elements-dict', 'owner', 'GET', export('export_dict'), 500, SERVER)
 add('export-props-text', 'owner', 'GET', export('export_props_text'), 500, SERVER)
 add('export-props-list', 'owner', 'GET', export('export_props_list'), 500, SERVER)
 add('export-props-number', 'owner', 'GET', export('export_props_number'), 500, SERVER)
-# A list or an object as column label: the workbook writer refuses the header cell.
-add('export-label-list', 'owner', 'GET', export('export_label_list'), 500, SERVER)
-add('export-label-dict', 'owner', 'GET', export('export_label_dict'), 500, SERVER)
+# A list or an object as column label: the header cell is its text, the column width its item count.
+add('export-label-list', 'owner', 'GET', export('export_label_list'), 200, exported('export_label_list'))
+add('export-label-dict', 'owner', 'GET', export('export_label_dict'), 200, exported('export_label_dict'))
 
 add('info-anonymous', 'anonymous', 'GET', info('risposte-aperto'), 200, INFO_OPEN)
 add('info-admin-without-session', 'admin', 'GET', info('risposte-aperto'), 403, NO_SESSION)

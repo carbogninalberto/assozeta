@@ -2590,8 +2590,54 @@
    "method": "GET",
    "path": "/modules/a1000000-0000-4000-8000-000000643803/export",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Risposte",
+       "columns": [
+        "['a', 'b']",
+        "Data creazione",
+        "Progressivo risposta",
+        "Posizione in coda",
+        "Utente",
+        "Pagamento",
+        "Approvato",
+        "Allegati"
+       ],
+       "rows": [
+        [
+         "-",
+         "02/09/2026 10:00",
+         {
+          "int": "0"
+         },
+         "-",
+         "-",
+         "-",
+         "Approvata",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        12,
+        24,
+        30,
+        27,
+        16,
+        19,
+        19,
+        18
+       ]
+      }
+     },
+     "filename": "[$today] Risposte al modulo (Modulo).xls",
+     "type": "xlsx"
+    }
+   },
    "effect": null
   },
   {
@@ -2600,8 +2646,54 @@
    "method": "GET",
    "path": "/modules/a1000000-0000-4000-8000-000000643804/export",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Risposte",
+       "columns": [
+        "{'a': 1}",
+        "Data creazione",
+        "Progressivo risposta",
+        "Posizione in coda",
+        "Utente",
+        "Pagamento",
+        "Approvato",
+        "Allegati"
+       ],
+       "rows": [
+        [
+         "-",
+         "02/09/2026 10:00",
+         {
+          "int": "0"
+         },
+         "-",
+         "-",
+         "-",
+         "Approvata",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        11,
+        24,
+        30,
+        27,
+        16,
+        19,
+        19,
+        18
+       ]
+      }
+     },
+     "filename": "[$today] Risposte al modulo (Modulo).xls",
+     "type": "xlsx"
+    }
+   },
    "effect": null
   },
   {
