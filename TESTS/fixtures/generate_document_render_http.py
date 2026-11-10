@@ -95,7 +95,11 @@ SUBSCRIPTIONS = {
     'odd': {'id': uid(38), 'association': 'own', 'associate': 'odd', 'user': 'owner', 'group': None, 'document': None},
     'foreign': {'id': uid(39), 'association': 'foreign', 'associate': 'mario', 'user': 'foreign_owner', 'group': None, 'document': None},
     'season': {'id': uid(29), 'association': 'season', 'associate': 'mario', 'user': 'owner', 'group': None, 'document': None},
+    # A later subscription of the athlete's associate, entered by the association.
+    'renewal': {'id': uid(28), 'association': 'own', 'associate': 'athlete', 'user': 'owner', 'group': None, 'document': None},
 }
+# Another member of the association (an athlete account without records).
+EXTRA_USERS = {'member': {'id': uid(27), 'username': 'document-render-member', 'email': 'document-render-member@example.test'}}
 
 # Invoices and their payments (label shared). payment None: the invoice has no payment.
 INVOICES = {
@@ -290,6 +294,19 @@ add('subscription-invalid-uuid-quote', 'owner', "/document/subscription/it's", 5
 add('subscription-group-other', 'owner', f"/document/subscription/{S('group')}", 500, exception('Subscription matching query does not exist.'),
     headers={'X-Group-Id': IDS['foreign_group']})
 add('subscription-scoped-athlete-other', 'owner', f"/document/subscription/{S('plain')}", 403, SCOPED_HIDDEN, headers=SCOPED)
+# The PDF is generated for the association's staff and for the member the subscription belongs to.
+add('subscription-athlete-associate', 'athlete', f"/document/subscription/{S('renewal')}", 200, PDF,
+    renders=[render('subscription', S('renewal'))],
+    effect=effect(subscription_name('renewal'), actor='athlete', links=[('subscription', 'renewal')]),
+    disposition='inline; filename=' + subscription_name('renewal'))
+add('subscription-athlete-other', 'athlete', f"/document/subscription/{S('plain')}", 403, SCOPED_HIDDEN)
+add('subscription-athlete-other-post', 'athlete', f"/document/subscription/{S('previous')}?download=1", 403, SCOPED_HIDDEN, method='POST',
+    body={'ignored': True})
+add('subscription-athlete-other-without-associate', 'athlete', f"/document/subscription/{S('noassociate')}", 403, SCOPED_HIDDEN)
+add('subscription-athlete-unknown', 'athlete', f'/document/subscription/{UNKNOWN}', 500,
+    exception('Subscription matching query does not exist.'))
+add('subscription-member-of-athlete', 'member', f"/document/subscription/{S('athlete')}", 403, SCOPED_HIDDEN)
+add('subscription-member-of-associate', 'member', f"/document/subscription/{S('renewal')}", 403, SCOPED_HIDDEN)
 add('subscription-without-associate', 'owner', f"/document/subscription/{S('noassociate')}", 500,
     exception("'NoneType' object has no attribute 'get_full_name'"))
 failure = lambda text: exception('PDF rendering failed: ' + text)
@@ -371,7 +388,16 @@ invoice_ok('invoice-document-token-hex', 'anonymous', 'plain', who=None,
            query=f"?token={DOCUMENTS['shared']['token'].replace('-', '').upper()}", authorization=None)
 invoice_ok('invoice-group-own', 'owner', 'group', headers={'X-Group-Id': IDS['own_group']})
 invoice_ok('invoice-scoped-athlete', 'owner', 'athlete', headers=SCOPED)
-invoice_ok('invoice-athlete-direct', 'athlete', 'plain', who='athlete')
+# The receipt is generated for the association's staff and for the member it belongs to.
+invoice_ok('invoice-athlete-own', 'athlete', 'athlete', who='athlete')
+invoice_ok('invoice-athlete-own-receipt-email-form', 'athlete', 'athlete', who='athlete', method='POST', raw_body='send_receipt_email=0',
+           content_type='application/x-www-form-urlencoded')
+add('invoice-athlete-direct', 'athlete', f"/document/invoice/{I('plain')}", 403, SCOPED_HIDDEN)
+add('invoice-athlete-other-receipt-email', 'athlete', f"/document/invoice/{I('plain')}?send_receipt_email=true", 403, SCOPED_HIDDEN,
+    method='POST', body={'send_receipt_email': 'true'})
+add('invoice-athlete-other-without-payment', 'athlete', f"/document/invoice/{I('nopayment')}", 403, SCOPED_HIDDEN)
+add('invoice-athlete-unknown', 'athlete', f'/document/invoice/{UNKNOWN}', 404, exception('Invoice not found'))
+add('invoice-member-of-athlete', 'member', f"/document/invoice/{I('athlete')}", 403, SCOPED_HIDDEN)
 add('invoice-document-token-unknown', 'anonymous', f"/document/invoice/{I('plain')}?token={UNKNOWN}", 401, ANONYMOUS)
 add('invoice-document-token-garbage', 'anonymous', f"/document/invoice/{I('plain')}?token=garbage", 500, SERVER)
 add('invoice-document-token-empty', 'anonymous', f"/document/invoice/{I('plain')}?token=", 500, SERVER)
@@ -536,6 +562,7 @@ OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'document PDF routes through the renderer service',
     'ids': IDS, 'associations': ASSOCIATIONS, 'association_ids': ASSOCIATION_IDS, 'associates': ASSOCIATES, 'documents': DOCUMENTS,
     'subscriptions': SUBSCRIPTIONS, 'invoices': INVOICES, 'payments': PAYMENTS, 'instructors': INSTRUCTORS, 'hours': HOURS,
-    'customer_invoices': CUSTOMER_INVOICES, 'templates': TEMPLATES, 'folders': FOLDERS, 'medical': MEDICAL, 'cases': cases},
+    'customer_invoices': CUSTOMER_INVOICES, 'templates': TEMPLATES, 'folders': FOLDERS, 'medical': MEDICAL,
+    'extra_users': EXTRA_USERS, 'cases': cases},
     ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

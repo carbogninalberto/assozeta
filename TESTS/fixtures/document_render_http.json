@@ -224,6 +224,14 @@
    "user": "owner",
    "group": null,
    "document": null
+  },
+  "renewal": {
+   "id": "a1000000-0000-4000-8000-000000984028",
+   "association": "own",
+   "associate": "athlete",
+   "user": "owner",
+   "group": null,
+   "document": null
   }
  },
  "invoices": {
@@ -628,6 +636,13 @@
    "region": "non-agonistica",
    "date": "2026-05-09",
    "document": "old_medical"
+  }
+ },
+ "extra_users": {
+  "member": {
+   "id": "a1000000-0000-4000-8000-000000984027",
+   "username": "document-render-member",
+   "email": "document-render-member@example.test"
   }
  },
  "cases": [
@@ -1339,6 +1354,121 @@
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
    },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-athlete-associate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984028",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984028/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Athlete Fixture.pdf",
+    "actor": "athlete",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "renewal"
+     ]
+    ],
+    "creates": [],
+    "mail": null
+   },
+   "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Athlete Fixture.pdf"
+  },
+  {
+   "name": "document-render-subscription-athlete-other",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-athlete-other-post",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984031?download=1",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null,
+   "body": {
+    "ignored": true
+   }
+  },
+  {
+   "name": "document-render-subscription-athlete-other-without-associate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984034",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-athlete-unknown",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984999",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Subscription matching query does not exist."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-member-of-athlete",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984033",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-member-of-associate",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984028",
+   "headers": {},
    "status": 403,
    "response": {
     "detail": "Risorsa non disponibile per questo utente e associazione."
@@ -2225,16 +2355,16 @@
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-11.pdf"
   },
   {
-   "name": "document-render-invoice-athlete-direct",
+   "name": "document-render-invoice-athlete-own",
    "actor": "athlete",
    "method": "GET",
-   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984049",
    "headers": {},
    "status": 200,
    "response": "<pdf>",
    "renders": [
     {
-     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984049/view",
      "authorization": "$bearer",
      "reply": {
       "status": 200,
@@ -2244,19 +2374,123 @@
     }
    ],
    "effect": {
-    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "document": "[Message reads own] Ricevuta 2026-03-11.pdf",
     "actor": "athlete",
     "storage_task": true,
     "links": [
      [
       "invoice",
-      "plain"
+      "athlete"
      ]
     ],
     "creates": [],
     "mail": null
    },
-   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-11.pdf"
+  },
+  {
+   "name": "document-render-invoice-athlete-own-receipt-email-form",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984049",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984049/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-11.pdf",
+    "actor": "athlete",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "athlete"
+     ]
+    ],
+    "creates": [],
+    "mail": null
+   },
+   "raw_body": "send_receipt_email=0",
+   "content_type": "application/x-www-form-urlencoded",
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-11.pdf"
+  },
+  {
+   "name": "document-render-invoice-athlete-direct",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-athlete-other-receipt-email",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?send_receipt_email=true",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null,
+   "body": {
+    "send_receipt_email": "true"
+   }
+  },
+  {
+   "name": "document-render-invoice-athlete-other-without-payment",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984043",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-athlete-unknown",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984999",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Invoice not found"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-member-of-athlete",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984049",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
   },
   {
    "name": "document-render-invoice-document-token-unknown",
