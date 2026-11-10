@@ -545,8 +545,12 @@ func run() (runErr error) {
 	e.Any("/payment/add", paymentWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/bulk-add", paymentWritesHandler.BulkAdd, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/:uid/update", paymentWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	// payment_sign's print_document_compensation.apply and the apply's send_email_html (render + send_mail_async).
 	paymentMiscHandler := handler.NewPaymentMiscHandler(service.NewPaymentMisc(repository.NewPaymentMisc(repository.NewPaymentStates(db)), time.Now,
-		uuid.NewString, cfg.WhitelabelName), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
+		uuid.NewString, cfg.WhitelabelName).WithCompensationPrint(paymentInvoicePrinter).WithMail(service.NewEmailRenderRoutes(
+		repository.NewEmailRenderRoutes(db), tasks, service.EmailRenderSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName,
+			DefaultFromEmail: cfg.DefaultFromEmail, DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel}, time.Now)),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
 		paymentCategoryOperations)
 	e.Any("/payment/simulation/partial-quotes", paymentMiscHandler.Simulation, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/simulation/partial-quotes-apply", paymentMiscHandler.Apply, middleware.DjangoSessionAudit(sessionAuthentication))
