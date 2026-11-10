@@ -37,7 +37,7 @@ USER_FIELDS = ('balance_sheet_year', 'subscription_start_day', 'subscription_sta
                'lead_sport_market_channel', 'phone')
 FLAG_FIELDS = ('show', 'create_membership', 'view_membership', 'approve_payment', 'download_invoice', 'view_collaborators',
                'view_settings')
-ASSOCIATIONS = {'own': 'own_association', 'foreign': 'foreign_association'}
+ASSOCIATIONS = {'own': 'own_association', 'foreign': 'foreign_association', 'deleted': 'deleted_association'}
 
 
 def balance_start(now):
@@ -171,7 +171,7 @@ def assert_effect(case, before, after, source, context):
         contract.require(event['cid'] == case['name'] and event['additional_data'] is None and event['changes_text'] == '', 'audit.context')
         contract.require(context['remote'].setdefault('addr', event['remote_addr']) == event['remote_addr'], 'audit.remote-consistent')
         index = indexes.get(str(event['id']))
-        if association is None:
+        if association is None or spec.get('index') is False:
             contract.require(index is None, 'index.absent')
             continue
         indexed += 1

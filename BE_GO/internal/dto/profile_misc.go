@@ -2,6 +2,7 @@ package dto
 
 import (
 	"encoding/json"
+	"math"
 	"math/big"
 	"regexp"
 	"strconv"
@@ -82,6 +83,10 @@ func drfSerializerData(value any) (domain.RequestObject, []DRFFieldError) {
 	if value == nil {
 		return nil, []DRFFieldError{{Field: "non_field_errors", Codes: []string{"no-data"}}}
 	}
+	if _, ok := value.(domain.RequestUpload); ok {
+		// A multipart file part of a size the in-memory upload handler keeps.
+		return nil, []DRFFieldError{{Field: "non_field_errors", Codes: []string{"dictionary:InMemoryUploadedFile"}}}
+	}
 	return nil, []DRFFieldError{{Field: "non_field_errors", Codes: []string{"dictionary:" + pythonTypeName(value)}}}
 }
 
@@ -125,6 +130,10 @@ func ParseOnboardingAssociation(value any) (OnboardingAssociationInput, []DRFFie
 				errors = append(errors, DRFFieldError{Field: name, Codes: []string{PaymentCategoryValidationNull}})
 				return nil, false
 			}
+			return nil, true
+		}
+		if null && trimmedEmpty(PythonStr(raw)) {
+			// DecimalField.validate_empty_values: a blank value of a nullable field is None.
 			return nil, true
 		}
 		parsed, code := DRFDecimal(raw, 9, 2)
@@ -300,17 +309,10 @@ func PythonFloatRepr(value any) (string, bool) {
 		return "", false
 	}
 	number, err := strconv.ParseFloat(text, 64)
-	if err != nil || number != number || number > 1e16 || number < -1e16 {
+	if err != nil || number != number || math.IsInf(number, 0) {
 		return "", false
 	}
-	if number != 0 && number < 1e-4 && number > -1e-4 {
-		return "", false // repr would use an exponent
-	}
-	repr := strconv.FormatFloat(number, 'f', -1, 64)
-	if !strings.ContainsAny(repr, ".") {
-		repr += ".0"
-	}
-	return repr, true
+	return pythonFloatRepr(number), true
 }
 
 var pythonASCIIInt = regexp.MustCompile(`^[ \t\n\r\v\f]*[+-]?\d+(?:_\d+)*[ \t\n\r\v\f]*$`)
