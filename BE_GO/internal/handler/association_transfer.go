@@ -1,9 +1,14 @@
 package handler
 
 import (
+	"bytes"
 	"context"
+	"io"
 	"mime"
+	"mime/multipart"
 	"net/http"
+	"strings"
+	"unicode"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
@@ -17,11 +22,12 @@ type AssociationTransferHandler struct {
 	transfer   *service.AssociationTransfer
 	actors     *service.ActorAuthentication
 	identities *service.IdentityResolver
+	audit      LoginAuditReader
 }
 
 func NewAssociationTransferHandler(transfer *service.AssociationTransfer, actors *service.ActorAuthentication,
-	identities *service.IdentityResolver) *AssociationTransferHandler {
-	return &AssociationTransferHandler{transfer: transfer, actors: actors, identities: identities}
+	identities *service.IdentityResolver, audit LoginAuditReader) *AssociationTransferHandler {
+	return &AssociationTransferHandler{transfer: transfer, actors: actors, identities: identities, audit: audit}
 }
 
 const (
@@ -103,7 +109,11 @@ func (h *AssociationTransferHandler) ExportDelete(c echo.Context) error {
 		if err != nil {
 			return nil, err
 		}
-		return h.transfer.Delete(ctx, identity, body)
+		audit, err := h.audit(c.Request())
+		if err != nil {
+			return nil, err
+		}
+		return h.transfer.Delete(ctx, identity, body, audit)
 	})
 }
 
@@ -116,6 +126,15 @@ func (h *AssociationTransferHandler) ExportStart(c echo.Context) error {
 // dispatch (DRF checks permissions first).
 func (h *AssociationTransferHandler) importRoute(c echo.Context, verb, operation string, run func(ctx context.Context) (*service.AssociationTransferReply, error)) error {
 	viewsetAllow(c, verb)
+	// The scoped-request guard may parse the body; keep the raw bytes for the upload parser.
+	if request := c.Request(); request.Body != nil && request.ContentLength > 0 {
+		raw, err := io.ReadAll(request.Body)
+		if err != nil {
+			return messageReadsError(c, err)
+		}
+		request.Body = io.NopCloser(bytes.NewReader(raw))
+		c.Set(importRawBodyKey, raw)
+	}
 	identity, err := messageMutationsIdentityFor(c, h.actors, h.identities, verb, operation, true)
 	if identity == nil {
 		return err
@@ -150,41 +169,119 @@ func (h *AssociationTransferHandler) ImportStatus(c echo.Context) error {
 	})
 }
 
-// ImportValidate mirrors validate_import; parsing an uploaded archive is not ported.
+// ImportValidate mirrors validate_import.
 func (h *AssociationTransferHandler) ImportValidate(c echo.Context) error {
-	return h.importRoute(c, http.MethodPost, "validate_import", func(context.Context) (*service.AssociationTransferReply, error) {
-		return importUpload(c)
+	return h.importRoute(c, http.MethodPost, "validate_import", func(ctx context.Context) (*service.AssociationTransferReply, error) {
+		upload, reply, err := importUpload(c)
+		if reply != nil || err != nil {
+			return reply, err
+		}
+		return h.transfer.ImportValidate(ctx, *upload)
 	})
 }
 
-// ImportStart mirrors start_import; storing the archive and dispatching the
-// import task are not ported.
+// ImportStart mirrors start_import.
 func (h *AssociationTransferHandler) ImportStart(c echo.Context) error {
-	return h.importRoute(c, http.MethodPost, "start_import", func(context.Context) (*service.AssociationTransferReply, error) {
-		return importUpload(c)
+	return h.importRoute(c, http.MethodPost, "start_import", func(ctx context.Context) (*service.AssociationTransferReply, error) {
+		upload, reply, err := importUpload(c)
+		if reply != nil || err != nil {
+			return reply, err
+		}
+		return h.transfer.ImportStart(ctx, *upload)
 	})
 }
 
-// importUpload is request.FILES.get('file') with the multipart and form
-// parsers only: a body of another type is 415, no body or no file is 400.
-func importUpload(c echo.Context) (*service.AssociationTransferReply, error) {
+const importRawBodyKey = "association-import-raw-body"
+
+// importUpload is request.FILES.get('file') and
+// request.data.get('owner_password', ”) with the multipart and form parsers
+// only: a body of another type is 415, no body is 400.
+func importUpload(c echo.Context) (*service.AssociationImportUpload, *service.AssociationTransferReply, error) {
 	request := c.Request()
 	if request.ContentLength <= 0 {
-		return &service.AssociationTransferReply{Status: 400, Body: map[string]string{"error": "File ZIP richiesto"}}, nil
+		return &service.AssociationImportUpload{Password: ""}, nil, nil
 	}
-	media, _, _ := mime.ParseMediaType(request.Header.Get("Content-Type"))
+	media, params, _ := mime.ParseMediaType(request.Header.Get("Content-Type"))
 	if media != "multipart/form-data" && media != "application/x-www-form-urlencoded" {
-		return nil, &restInputError{Status: 415, Detail: restText(request, "media")}
+		return nil, nil, &restInputError{Status: 415, Detail: restText(request, "media")}
 	}
-	body, err := readMessageMutationsBody(c)
-	if err != nil {
-		return nil, err
-	}
-	object, _ := body.(domain.RequestObject)
-	if file, ok := object.Lookup("file"); ok {
-		if _, upload := file.(domain.RequestUpload); upload {
-			return nil, domain.ErrAssociationTransferNotPorted
+	if media == "application/x-www-form-urlencoded" {
+		body, err := readMessageMutationsBody(c)
+		if err != nil {
+			return nil, nil, err
 		}
+		upload := &service.AssociationImportUpload{Password: ""}
+		if object, ok := body.(domain.RequestObject); ok {
+			if value, present := object.Lookup("owner_password"); present {
+				upload.Password = value
+			}
+		}
+		return upload, nil, nil
 	}
-	return &service.AssociationTransferReply{Status: 400, Body: map[string]string{"error": "File ZIP richiesto"}}, nil
+	raw, _ := c.Get(importRawBodyKey).([]byte)
+	return parseImportMultipart(raw, params["boundary"])
+}
+
+// parseImportMultipart is Django's MultiPartParser for the import routes:
+// the last value per field and per file name, file parts with a sanitized
+// filename, request.data's merge of files after fields.
+func parseImportMultipart(raw []byte, boundary string) (*service.AssociationImportUpload, *service.AssociationTransferReply, error) {
+	if boundary == "" {
+		return nil, nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid boundary in multipart: None"}
+	}
+	fields := map[string]string{}
+	files := map[string]*service.AssociationImportFile{}
+	reader := multipart.NewReader(bytes.NewReader(raw), boundary)
+	for {
+		part, err := reader.NextRawPart()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid multipart data"}
+		}
+		content, err := io.ReadAll(part)
+		if err != nil {
+			return nil, nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid multipart data"}
+		}
+		if part.Header.Get("Content-Transfer-Encoding") != "" {
+			return nil, nil, domain.ErrAssociationTransferNotPorted
+		}
+		disposition := part.Header.Get("Content-Disposition")
+		if disposition == "" {
+			continue
+		}
+		parameters, ok := djangoHeaderParameters(disposition)
+		if !ok {
+			return nil, nil, domain.ErrAssociationTransferNotPorted
+		}
+		name, named := parameters["name"]
+		if !named {
+			continue
+		}
+		name = strings.TrimFunc(name, unicode.IsSpace)
+		if filename := parameters["filename"]; filename != "" {
+			sanitized, ok := djangoUploadName(filename)
+			if !ok {
+				return nil, nil, domain.ErrAssociationTransferNotPorted
+			}
+			if sanitized != "" {
+				kind := part.Header.Get("Content-Type")
+				if index := strings.IndexByte(kind, ';'); index >= 0 {
+					kind = kind[:index]
+				}
+				files[name] = &service.AssociationImportFile{Name: sanitized, ContentType: strings.ToLower(strings.TrimSpace(kind)),
+					Content: content}
+			}
+			continue
+		}
+		fields[name] = string(content)
+	}
+	upload := &service.AssociationImportUpload{File: files["file"], Password: ""}
+	if file, ok := files["owner_password"]; ok {
+		upload.Password = file
+	} else if value, ok := fields["owner_password"]; ok {
+		upload.Password = value
+	}
+	return upload, nil, nil
 }

@@ -65,12 +65,27 @@ document('own_report', 'own_association', 'report.pdf', day=25, created='2026-01
 document('own_upper', 'own_association', 'Export_upper.zip', day=26, created='2026-01-26T10:00:00+00:00')
 document('foreign1', 'foreign_association', 'export_foreign.zip', day=3, created='2026-01-03T09:00:00+00:00', size=77)
 
-# The foreign association has an export in progress: its active cache key exists.
-ACTIVE_KEYS = {'foreign_association': {'task_id': uid(900), 'sport_association_id': FOREIGN, 'user_id': IDS['foreign_owner'],
-                                       'status': 'PENDING', 'ready': False, 'estimate': '0%',
-                                       'progress': {'percent': 0, 'phase': 'queued'}, 'updated_at': '2026-01-01T00:00:00+00:00'}}
+# The foreign association's export in progress: its active cache key, set for the cases that need it.
+FOREIGN_ACTIVE = {'task_id': uid(900), 'sport_association_id': FOREIGN, 'user_id': IDS['foreign_owner'],
+                  'status': 'PENDING', 'ready': False, 'estimate': '0%',
+                  'progress': {'percent': 0, 'phase': 'queued'}, 'updated_at': '2026-01-01T00:00:00+00:00'}
+ACTIVE_KEY = lambda association: f'association-export-active:{IDS[association]}'
+LAST_KEY = lambda association: f'association-export-last:{IDS[association]}'
+TASK_KEY = lambda task_id: f'association-export-task:{task_id}'
+
+# Old own exports (before every listed date) that the delete cases remove; tokens are fixed for the audit entries.
+for n, (filepath, size) in enumerate((('exports/own/export_old_a.zip', 10), (None, None), ('exports/own/export_old_c.zip', 30),
+                                      ('exports/own/export_old_d.zip', 40), ('exports/own/export_old_e.zip', 50)), 1):
+    key = 'old' + 'abcde'[n - 1]
+    document(key, 'own_association', f'export_old_{"abcde"[n - 1]}.zip', day=n, created=f'2025-06-0{n}T07:00:00+00:00',
+             filepath=filepath, size=size)
+    DOCUMENTS[key]['token'] = uid(700 + n)
+    ARCHIVES[key]['date'] = f'2025-06-0{n}'
 
 TASKS = {
+    'export_running': {'task_id': uid(810), 'status': 'PROGRESS', 'result': '{"percent": 40}'},
+    'export_done': {'task_id': uid(811), 'status': 'SUCCESS', 'result': '{"success": true}'},
+    'export_revoked': {'task_id': uid(812), 'status': 'REVOKED', 'result': '{"exc_type": "TaskRevokedError", "exc_message": ["revoked"], "exc_module": "celery.exceptions"}'},
     'started': {'task_id': uid(800), 'status': 'STARTED', 'result': '{"pid": 7, "hostname": "worker"}'},
     'progress': {'task_id': 'import-progress-task', 'status': 'PROGRESS', 'result': '{"current": 3}'},
     'success': {'task_id': uid(801), 'status': 'SUCCESS',
@@ -87,15 +102,20 @@ UNKNOWN = uid(999)
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, association=None):
+def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, association=None,
+        setup=None, cache_after=None, objects_after=None, effect=None, raw_b64=None):
     case = {'name': f'association-transfer-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'effect': None}
+            'status': status, 'response': response, 'effect': effect,
+            'setup': {'instance': True, 'cache': {}, 'objects': {}, **(setup or {})},
+            'cache_after': cache_after, 'objects_after': objects_after}
     if association is not None:
         case['association'] = IDS[association]
     if body is not None:
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    if raw_b64 is not None:
+        case['raw_b64'], case['content_type'] = raw_b64, content_type
     cases.append(case)
 
 
@@ -203,7 +223,8 @@ add('status-without-association-task-first', 'owner_without_association', STATUS
 add('status-without-association', 'owner_without_association', STATUS + '?task_id=' + UNKNOWN, 404, NO_ASSOCIATION)
 add('status-owner-unknown-task', 'owner', STATUS + '?task_id=' + UNKNOWN, 404, NOT_FOUND)
 add('status-owner-import-task-not-registered', 'owner', STATUS + '?task_id=' + TASKS['success']['task_id'], 404, NOT_FOUND)
-add('status-owner-foreign-active-task', 'owner', STATUS + '?task_id=' + uid(900), 404, NOT_FOUND)
+add('status-owner-foreign-active-task', 'owner', STATUS + '?task_id=' + uid(900), 404, NOT_FOUND,
+    setup={'cache': {ACTIVE_KEY('foreign_association'): FOREIGN_ACTIVE}})
 add('status-owner-free-text-task', 'owner', STATUS + '?task_id=not%20a%20uuid', 404, NOT_FOUND)
 add('status-repeated-task-last-wins', 'owner', STATUS + '?task_id=' + UNKNOWN + '&task_id=', 400, TASK_REQUIRED)
 add('status-post-not-allowed', 'owner', STATUS, 405, method('POST'), method='POST', body={})
@@ -262,7 +283,8 @@ add('start-owner-export-limit', 'owner', START, 409, {'error': 'Elimina un expor
     body={'include_media': False})
 add('start-admin-impersonating-owner-limit', 'admin', START, 409, {'error': 'Elimina un export prima di crearne uno nuovo'},
     method='POST', body={}, headers=ADMIN_OWNER)
-add('start-foreign-owner-already-running', 'foreign_owner', START, 409, {'error': 'Un export è già in corso'}, method='POST', body={})
+add('start-foreign-owner-already-running', 'foreign_owner', START, 409, {'error': 'Un export è già in corso'}, method='POST', body={},
+    setup={'cache': {ACTIVE_KEY('foreign_association'): FOREIGN_ACTIVE}})
 add('start-get-not-allowed', 'owner', START, 405, method('GET'))
 add('start-options', 'owner', START, 200, EXPORT_OPTIONS, method='OPTIONS')
 
@@ -328,9 +350,319 @@ for route in ('validate', 'start'):
     add(f'{name}-get-not-allowed', 'owner', path, 405, method('GET'))
     add(f'{name}-options', 'owner', path, 200, IMPORT_OPTIONS, method='OPTIONS')
 
-assert len({c['name'] for c in cases}) == len(cases)
+
+# === export/active with cached snapshots ========================================================
+SETUP_TOKEN = 'contract-setup-token'
+PROGRESS = {'percent': 40, 'phase': 'files', 'label': 'Copia file', 'completed': 4, 'total': 10, 'files_failed': 0}
+
+
+def snapshot(task_id, *, association='own_association', user='owner', status='PROGRESS', **extra):
+    return {'task_id': task_id, 'sport_association_id': IDS[association], 'user_id': IDS[user], 'status': status,
+            'ready': status in ('SUCCESS', 'FAILURE'), 'estimate': '40%', 'progress': PROGRESS,
+            'updated_at': '2026-02-01T10:00:00.123456+00:00', **extra}
+
+
+RUNNING = snapshot(uid(920))
+STARTED_ROW = snapshot(TASKS['export_running']['task_id'])
+DONE = snapshot(TASKS['export_done']['task_id'])
+TERMINAL = snapshot(TASKS['export_done']['task_id'], status='SUCCESS', result={'document_id': uid(930), 'filename': 'export_x.zip'})
+TERMINAL_FAILED = snapshot(uid(921), status='FAILURE', error='Export non riuscito')
+unchanged = lambda *keys: {key: 'unchanged' for key in keys}
+active = lambda value: {ACTIVE_KEY('own_association'): value}
+last = lambda value: {LAST_KEY('own_association'): value}
+add('active-owner-running', 'owner', ACTIVE, 200, {'active': True, **RUNNING}, setup={'cache': active(RUNNING)})
+add('active-owner-running-row', 'owner', ACTIVE, 200, {'active': True, **STARTED_ROW}, setup={'cache': active(STARTED_ROW)})
+add('active-admin-impersonating-owner-running', 'admin', ACTIVE, 200, {'active': True, **RUNNING}, headers=ADMIN_OWNER,
+    setup={'cache': active(RUNNING)})
+add('active-admin-without-session-running', 'admin', ACTIVE, 200, {'active': True, **RUNNING}, setup={'cache': active(RUNNING)})
+add('active-owner-running-extra-keys', 'owner', ACTIVE, 200,
+    {'active': True, **snapshot(uid(922), nested={'a': [1, 2.5, None, True]}, label='è')},
+    setup={'cache': active(snapshot(uid(922), nested={'a': [1, 2.5, None, True]}, label='è'))})
+add('active-owner-snapshot-other-user', 'owner', ACTIVE, 200, {'active': False},
+    setup={'cache': active(snapshot(uid(923), user='full_collaborator'))})
+add('active-owner-snapshot-other-association', 'owner', ACTIVE, 200, {'active': False},
+    setup={'cache': active(snapshot(uid(924), association='foreign_association'))})
+add('active-owner-snapshot-integer-user', 'owner', ACTIVE, 200, {'active': False},
+    setup={'cache': active({**RUNNING, 'user_id': 5})})
+add('active-owner-snapshot-without-task', 'owner', ACTIVE, 500, SERVER,
+    setup={'cache': active({key: value for key, value in RUNNING.items() if key != 'task_id'})})
+add('active-owner-finished-with-terminal', 'owner', ACTIVE, 200, {'active': False, 'terminal': TERMINAL},
+    setup={'cache': {**active(DONE), **last(TERMINAL)}}, cache_after=unchanged(LAST_KEY('own_association')))
+add('active-owner-finished-without-terminal', 'owner', ACTIVE, 200, {'active': False}, setup={'cache': active(DONE)},
+    cache_after={})
+add('active-owner-finished-other-terminal', 'owner', ACTIVE, 200, {'active': False},
+    setup={'cache': {**active(DONE), **last(TERMINAL_FAILED)}}, cache_after=unchanged(LAST_KEY('own_association')))
+add('active-owner-terminal-success', 'owner', ACTIVE, 200, {'active': False, 'terminal': TERMINAL}, setup={'cache': last(TERMINAL)})
+add('active-owner-terminal-failure', 'owner', ACTIVE, 200, {'active': False, 'terminal': TERMINAL_FAILED},
+    setup={'cache': last(TERMINAL_FAILED)})
+add('active-owner-terminal-not-final', 'owner', ACTIVE, 200, {'active': False},
+    setup={'cache': last(snapshot(uid(925), status='PROGRESS'))})
+add('active-owner-terminal-other-user', 'owner', ACTIVE, 200, {'active': False},
+    setup={'cache': last(snapshot(uid(926), user='full_collaborator', status='SUCCESS'))})
+add('active-owner-active-not-a-dict', 'owner', ACTIVE, 200, {'active': False, 'terminal': TERMINAL},
+    setup={'cache': {**active('not a snapshot'), **last(TERMINAL)}})
+add('active-owner-foreign-snapshot-ignored', 'owner', ACTIVE, 200, {'active': False},
+    setup={'cache': {ACTIVE_KEY('foreign_association'): FOREIGN_ACTIVE}})
+
+# === export/delete of an existing export ========================================================
+
+
+def deleted(*keys, actor_association='own_association', additional=None):
+    return {'archives': [ARCHIVES[k]['id'] for k in keys], 'documents': [DOCUMENTS[k]['id'] for k in keys],
+            'archive_changes': {ARCHIVES[k]['id']: {'sport_association_documents_archive_id': [ARCHIVES[k]['id'], 'None'],
+                                                    'sport_association': [OWN, 'None'], 'document': [DOCUMENTS[k]['id'], 'None'],
+                                                    'date': [ARCHIVES[k]['date'], 'None'], 'folder': ['None', 'None']} for k in keys},
+            'document_changes': {DOCUMENTS[k]['id']: {name: [value, 'None'] for name, value in (
+                ('document_id', DOCUMENTS[k]['id']), ('creation_date', DOCUMENTS[k]['created'].replace('T', ' ').removesuffix('+00:00')),
+                ('filepath', DOCUMENTS[k]['filepath']), ('filename', DOCUMENTS[k]['filename']),
+                ('file_size_bytes', None if DOCUMENTS[k]['size'] is None else str(DOCUMENTS[k]['size'])),
+                ('token', DOCUMENTS[k]['token'])) if value is not None}
+                | {'customer_invoice_pdf': ['application.CustomerInvoice.None', 'None']} for k in keys},
+            'actor_association': actor_association, 'additional_data': additional, 'celery': []}
+
+
+SUCCESS_DELETE = {'success': True, 'message': 'Export eliminato'}
+OBJECT = {'body': 'PK export archive', 'content_type': 'application/zip'}
+add('delete-owner-existing-export', 'owner', DELETE, 200, SUCCESS_DELETE, method='DELETE', body=d(DOCUMENTS['olda']['id']),
+    setup={'objects': {DOCUMENTS['olda']['filepath']: OBJECT, 'exports/own/keep.zip': OBJECT}},
+    objects_after={'exports/own/keep.zip': OBJECT}, effect=deleted('olda'))
+add('delete-owner-export-without-file', 'owner', DELETE, 200, SUCCESS_DELETE, method='DELETE', body=d(DOCUMENTS['oldb']['id']),
+    effect=deleted('oldb'))
+add('delete-owner-export-object-missing', 'owner', DELETE, 200, SUCCESS_DELETE, method='DELETE',
+    body=d(DOCUMENTS['oldc']['id'].upper()), effect=deleted('oldc'))
+add('delete-admin-impersonating-owner-export', 'admin', DELETE, 200, SUCCESS_DELETE, method='DELETE',
+    body=d(DOCUMENTS['oldd']['id']), headers=ADMIN_OWNER, setup={'objects': {DOCUMENTS['oldd']['filepath']: OBJECT}},
+    objects_after={}, effect=deleted('oldd', actor_association='admin_association', additional={
+        'actor_id': IDS['admin'], 'association_id': None, 'target_user_id': IDS['owner'],
+        'impersonation_session': '$session:admin_owner'}))
+add('delete-owner-form-existing-export', 'owner', DELETE, 200, SUCCESS_DELETE, method='DELETE',
+    raw_body='document_id=' + DOCUMENTS['olde']['id'].replace('-', ''), content_type='application/x-www-form-urlencoded',
+    setup={'objects': {DOCUMENTS['olde']['filepath']: OBJECT}}, objects_after={}, effect=deleted('olde'))
+add('delete-owner-already-deleted', 'owner', DELETE, 404, NOT_FOUND, method='DELETE', body=d(DOCUMENTS['olda']['id']))
+
+# === export/start dispatch =======================================================================
+QUEUED = {'percent': 0, 'phase': 'queued', 'label': 'Export in attesa', 'completed': None, 'total': None}
+STARTED = {'task_id': '$task', 'status': 'started', 'estimate': '0%', 'progress': QUEUED, 'updated_at': '$isonow',
+           'message': 'Export avviato. Riceverai una email quando sarà completato.'}
+
+
+def dispatched(user):
+    return {ACTIVE_KEY('foreign_association'): {'value': {
+                'task_id': '$task', 'sport_association_id': FOREIGN, 'user_id': IDS[user], 'status': 'PENDING', 'ready': False,
+                'estimate': '0%', 'progress': QUEUED, 'updated_at': '$updated'}, 'ttl': 7200},
+            TASK_KEY('$task'): {'value': {'sport_association_id': FOREIGN, 'user_id': IDS[user]}, 'ttl': 86400}}
+
+
+def export_task(user):
+    return {'celery': [{'task': 'export_association_data', 'args': [],
+                        'kwargs': [['sport_association_id', FOREIGN], ['user_id', IDS[user]]], 'id': '$task'}]}
+
+
+add('start-foreign-owner-dispatch', 'foreign_owner', START, 202, STARTED, method='POST', body={},
+    cache_after=dispatched('foreign_owner'), effect=export_task('foreign_owner'))
+add('start-admin-impersonating-foreign-dispatch', 'admin', START, 202, STARTED, method='POST', headers=ADMIN_FOREIGN,
+    cache_after=dispatched('foreign_owner'), effect=export_task('foreign_owner'))
+add('start-foreign-owner-terminal-kept', 'foreign_owner', START, 202, STARTED, method='POST', body={'include_media': False},
+    setup={'cache': {LAST_KEY('foreign_association'): {**FOREIGN_ACTIVE, 'status': 'SUCCESS'}}},
+    cache_after={**dispatched('foreign_owner'), **unchanged(LAST_KEY('foreign_association'))}, effect=export_task('foreign_owner'))
+add('start-foreign-owner-running-other-task-key', 'foreign_owner', START, 202, STARTED, method='POST',
+    setup={'cache': {TASK_KEY(uid(900)): {'sport_association_id': FOREIGN, 'user_id': IDS['foreign_owner']}}},
+    cache_after={**dispatched('foreign_owner'), **unchanged(TASK_KEY(uid(900)))}, effect=export_task('foreign_owner'))
+
+# === setup wizard: no InstanceConfiguration, X-Setup-Token =======================================
+TOKEN_HEADER = {'X-Setup-Token': SETUP_TOKEN}
+NO_INSTANCE = {'instance': False}
+add('import-status-setup-token', 'anonymous', ISTATUS + '?task_id=' + UNKNOWN, 200, pending(UNKNOWN), headers=TOKEN_HEADER,
+    setup=NO_INSTANCE)
+add('import-status-setup-token-success-row', 'anonymous', task('success_text'), 200, {
+    'task_id': TASKS['success_text']['task_id'], 'status': 'SUCCESS', 'ready': True, 'result': 'Import completato'},
+    headers=TOKEN_HEADER, setup=NO_INSTANCE)
+add('import-status-setup-token-wrong', 'anonymous', ISTATUS + '?task_id=x', 401, ANONYMOUS, headers={'X-Setup-Token': 'wrong'},
+    setup=NO_INSTANCE)
+add('import-status-setup-token-empty', 'anonymous', ISTATUS + '?task_id=x', 401, ANONYMOUS, headers={'X-Setup-Token': ''},
+    setup=NO_INSTANCE)
+add('import-status-setup-token-prefix', 'anonymous', ISTATUS + '?task_id=x', 401, ANONYMOUS,
+    headers={'X-Setup-Token': SETUP_TOKEN[:-1]}, setup=NO_INSTANCE)
+add('import-status-setup-token-owner-wrong', 'owner', ISTATUS + '?task_id=x', 403, SETUP_DENIED,
+    headers={'X-Setup-Token': 'wrong'}, setup=NO_INSTANCE)
+add('import-status-setup-token-owner-missing', 'owner', ISTATUS + '?task_id=x', 403, SETUP_DENIED, setup=NO_INSTANCE)
+add('import-status-setup-token-owner', 'owner', ISTATUS + '?task_id=' + UNKNOWN, 200, pending(UNKNOWN), headers=TOKEN_HEADER,
+    setup=NO_INSTANCE)
+add('import-status-setup-token-missing-task', 'anonymous', ISTATUS, 400, TASK_REQUIRED, headers=TOKEN_HEADER, setup=NO_INSTANCE)
+add('import-status-setup-token-options', 'anonymous', ISTATUS, 200, IMPORT_OPTIONS, method='OPTIONS', headers=TOKEN_HEADER,
+    setup=NO_INSTANCE)
+add('import-status-setup-token-post-not-allowed', 'anonymous', ISTATUS, 405, method('POST'), method='POST', headers=TOKEN_HEADER,
+    setup=NO_INSTANCE)
+add('import-status-configured-token-ignored', 'anonymous', ISTATUS + '?task_id=x', 401, ANONYMOUS, headers=TOKEN_HEADER)
+add('import-validate-setup-token-without-file', 'anonymous', '/association/import/validate', 400, FILE_REQUIRED, method='POST',
+    headers=TOKEN_HEADER, setup=NO_INSTANCE)
+add('import-start-setup-token-json', 'anonymous', '/association/import/start', 415,
+    {'detail': 'Unsupported media type "application/json" in request.'}, method='POST', body={'file': 'x'}, headers=TOKEN_HEADER,
+    setup=NO_INSTANCE)
+
+# === import/validate with archives ===============================================================
+import base64
+import io
+import zipfile
+
+NEW_ASSOCIATION, NEW_OWNER, NEW_MEMBER = uid(950), uid(951), uid(952)
+# A PBKDF2-SHA256 hash Django can authenticate against (600000 iterations, 22-character salt, 32-byte digest).
+PBKDF2 = 'pbkdf2_sha256$600000$AbCdEfGhIjKlMnOpQrStUv$' + base64.b64encode(bytes(range(32))).decode()
+
+
+def make_zip(members):
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as archive:
+        for name, value in members.items():
+            info = zipfile.ZipInfo(name, date_time=(2026, 1, 15, 10, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            archive.writestr(info, value if isinstance(value, bytes) else json.dumps(value, ensure_ascii=False).encode())
+    return buffer.getvalue()
+
+
+MANIFEST = {'version': '1.0.0', 'export_format': 'bakney_sport_export_v1', 'export_date': '2026-01-15T10:00:00+00:00',
+            'association': {'sport_association_id': NEW_ASSOCIATION, 'denomination': 'Società importata', 'extra': 1},
+            'models_exported': [{'name': 'SportAssociation', 'file': 'data/01_sport_association.json', 'count': 1},
+                                {'name': 'User', 'file': '02_users.json', 'count': 2},
+                                {'name': 'Course', 'file': 'data/10_courses.json', 'count': 0}, {'name': 'NoFile'}]}
+
+
+def export_members(*, association=NEW_ASSOCIATION, owner=NEW_OWNER, password=PBKDF2, users=None, associations=None, manifest=None):
+    record = {'sport_association_id': association, 'user_id': owner, 'denomination': 'Società importata', 'tax_code': '01234567890'}
+    users = users if users is not None else [
+        {'user_id': owner, 'username': 'imported-owner', 'email': 'owner@imported.example.test', 'password': password},
+        {'user_id': NEW_MEMBER, 'username': 'imported-member', 'email': 'member@imported.example.test', 'password': '!'}]
+    return {'manifest.json': manifest or MANIFEST, 'data/01_sport_association.json': associations or [record],
+            'data/02_users.json': users}
+
+
+def upload(route, name, archive, *, filename='export.zip', kind='application/zip', extra=()):
+    parts = [('file', filename, kind, archive), *extra]
+    lines = b''
+    for field, file, content_type, value in parts:
+        disposition = f'form-data; name="{field}"' + (f'; filename="{file}"' if file is not None else '')
+        lines += f'--{BOUNDARY}\r\nContent-Disposition: {disposition}\r\n'.encode()
+        if content_type:
+            lines += f'Content-Type: {content_type}\r\n'.encode()
+        lines += b'\r\n' + (value if isinstance(value, bytes) else value.encode()) + b'\r\n'
+    return base64.b64encode(lines + f'--{BOUNDARY}--\r\n'.encode()).decode(), f'multipart/form-data; boundary={BOUNDARY}'
+
+
+def validation(archive, *, valid=True, errors=(), warnings=(), info=None):
+    size = len(archive)
+    base = {'file_size_bytes': size, 'file_size_mb': round(size / (1024 * 1024), 2)}
+    return {'is_valid': valid, 'errors': list(errors), 'warnings': list(warnings), 'info': {**base, **(info or {})}}
+
+
+OWNER_INFO = lambda requires, *, owner=NEW_OWNER: {'user_id': owner, 'username': 'imported-owner',
+                                                   'email': 'owner@imported.example.test', 'requires_recovery_password': requires}
+IMPORTED = {'sport_association_id': NEW_ASSOCIATION, 'denomination': 'Società importata', 'tax_code': '01234567890'}
+FILES_INFO = {'export_format': 'bakney_sport_export_v1', 'export_date': '2026-01-15T10:00:00+00:00', 'expected_files': 3,
+              'missing_files': 1}
+VALIDATE = '/association/import/validate'
+ARCHIVES_IN = {}
+
+
+def validate_case(name, archive, response, *, actor='owner', headers=None, setup=None, filename='export.zip', status=200):
+    raw, kind = upload('validate', name, archive, filename=filename)
+    ARCHIVES_IN[name] = archive
+    add('import-validate-' + name, actor, VALIDATE, status, response, method='POST', raw_b64=raw, content_type=kind,
+        headers=headers, setup=setup)
+
+
+valid = make_zip(export_members())
+validate_case('valid-archive', valid, validation(valid, warnings=['Missing data file: data/10_courses.json'],
+                                                 info={**FILES_INFO, 'association': IMPORTED, 'owner_user': OWNER_INFO(False)}))
+validate_case('setup-token-valid-archive', valid, validation(valid, warnings=['Missing data file: data/10_courses.json'],
+              info={**FILES_INFO, 'association': IMPORTED, 'owner_user': OWNER_INFO(False)}), actor='anonymous',
+              headers=TOKEN_HEADER, setup=NO_INSTANCE)
+validate_case('full-collaborator-valid-archive', valid, validation(valid, warnings=['Missing data file: data/10_courses.json'],
+              info={**FILES_INFO, 'association': IMPORTED, 'owner_user': OWNER_INFO(False)}), actor='full_collaborator')
+unusable = make_zip(export_members(password='!unusable'))
+validate_case('unusable-owner-password', unusable, validation(unusable, warnings=['Missing data file: data/10_courses.json'],
+              info={**FILES_INFO, 'association': IMPORTED, 'owner_user': OWNER_INFO(True)}))
+low = make_zip(export_members(password='pbkdf2_sha256$600000$$' + base64.b64encode(bytes(32)).decode()))
+validate_case('owner-password-without-salt', low, validation(low, warnings=['Missing data file: data/10_courses.json'],
+              info={**FILES_INFO, 'association': IMPORTED, 'owner_user': OWNER_INFO(True)}))
+conflict = make_zip(export_members(association=OWN, owner=IDS['owner'], password='!',
+                                   users=[{'user_id': IDS['owner'], 'username': 'imported-owner', 'email': 'owner@imported.example.test',
+                                           'password': '!'},
+                                          {'user_id': IDS['athlete'], 'username': 'a'}, {'user_id': IDS['full_collaborator']},
+                                          {'user_id': UNKNOWN}, {'username': 'no id'}]))
+validate_case('existing-association-and-users', conflict, validation(conflict, valid=False, errors=[
+    f'Association UUID conflict: {OWN} already exists', f'User UUID collision: {IDS["athlete"]} already exists and is not linked '
+    'to the archive owner'], warnings=['Missing data file: data/10_courses.json'],
+    info={**FILES_INFO, 'association': {**IMPORTED, 'sport_association_id': OWN},
+          'owner_user': OWNER_INFO(False, owner=IDS['owner'])}))
+other_owner = make_zip(export_members(owner=IDS['foreign_owner'], users=[
+    {'user_id': IDS['foreign_owner'], 'username': 'imported-owner', 'email': 'owner@imported.example.test', 'password': '!'}]))
+validate_case('owner-owns-another-association', other_owner, validation(other_owner, valid=False, errors=[
+    f'Owner user already owns another SportAssociation: {FOREIGN}'], warnings=['Missing data file: data/10_courses.json'],
+    info={**FILES_INFO, 'association': IMPORTED, 'owner_user': OWNER_INFO(False, owner=IDS['foreign_owner'])}))
+not_zip = b'This is not a ZIP archive.'
+validate_case('not-a-zip', not_zip, {'is_valid': False, 'errors': ['$tmp-path:Not a valid ZIP file: :backup.zip'], 'warnings': [],
+                                     'info': {}}, filename='backup.zip')
+no_manifest = make_zip({'data/01_sport_association.json': []})
+validate_case('missing-manifest', no_manifest, validation(no_manifest, valid=False, errors=['Missing manifest.json in export file']))
+other_format = make_zip({'manifest.json': {'export_format': 'other', 'note': 'x'}})
+validate_case('unsupported-format', other_format, validation(other_format, valid=False, errors=[
+    'Missing required manifest field: version', 'Missing required manifest field: export_date',
+    'Missing required manifest field: association', 'Unsupported export format: other'],
+    info={'export_format': 'other', 'export_date': None, 'association': {}}))
+only_manifest = make_zip({'manifest.json': MANIFEST})
+validate_case('missing-association-file', only_manifest, validation(only_manifest, valid=False, errors=[
+    'Missing required data file: 01_sport_association.json'], warnings=[
+    'Missing data file: data/01_sport_association.json', 'Missing data file: data/02_users.json',
+    'Missing data file: data/10_courses.json'], info={**FILES_INFO, 'missing_files': 3, 'association': MANIFEST['association']}))
+two = make_zip(export_members(associations=[{'sport_association_id': NEW_ASSOCIATION, 'user_id': NEW_OWNER}] * 2))
+validate_case('two-associations', two, validation(two, valid=False, errors=[
+    'Export must contain exactly one SportAssociation record in data/01_sport_association.json'],
+    warnings=['Missing data file: data/10_courses.json'], info={**FILES_INFO, 'association': MANIFEST['association']}))
+no_user = make_zip(export_members(associations=[{'sport_association_id': NEW_ASSOCIATION, 'user_id': ''}]))
+validate_case('association-without-owner', no_user, validation(no_user, valid=False, errors=[
+    'SportAssociation record is missing user_id for owner selection'], warnings=['Missing data file: data/10_courses.json'],
+    info={**FILES_INFO, 'association': MANIFEST['association']}))
+orphan = make_zip(export_members(users=[{'user_id': NEW_MEMBER}]))
+validate_case('owner-not-in-users', orphan, validation(orphan, valid=False, errors=[
+    f'Expected exactly one User with user_id {NEW_OWNER} matching SportAssociation.user_id'],
+    warnings=['Missing data file: data/10_courses.json'], info={**FILES_INFO, 'association': MANIFEST['association']}))
+no_users = make_zip({key: value for key, value in export_members().items() if key != 'data/02_users.json'})
+validate_case('missing-users-file', no_users, validation(no_users, valid=False, errors=['Missing required data file: 02_users.json'],
+              warnings=['Missing data file: data/02_users.json', 'Missing data file: data/10_courses.json'],
+              info={**FILES_INFO, 'missing_files': 2, 'association': MANIFEST['association']}))
+raw, kind = upload('validate', 'upper', valid, filename='EXPORT.ZIP')
+add('import-validate-admin-impersonating-owner-archive', 'admin', VALIDATE, 200,
+    validation(valid, warnings=['Missing data file: data/10_courses.json'],
+               info={**FILES_INFO, 'association': IMPORTED, 'owner_user': OWNER_INFO(False)}),
+    method='POST', raw_b64=raw, content_type=kind, headers=ADMIN_OWNER)
+
+# === import/start with an archive ================================================================
+IMPORT_STARTED = {'task_id': '$task', 'status': 'started', 'message': 'Import avviato. Controlla lo stato con task_id.'}
+IMPORT_START = '/association/import/start'
+
+
+def import_started(name, archive, password, *, actor='owner', headers=None, setup=None, kind='application/zip', stored=None,
+                   extra=(), filename='export.zip'):
+    raw, content = upload('start', name, archive, kind=kind, extra=extra, filename=filename)
+    add('import-start-' + name, actor, IMPORT_START, 202, IMPORT_STARTED, method='POST', raw_b64=raw, content_type=content,
+        headers=headers, setup=setup,
+        objects_after={'$upload': {'body_b64': base64.b64encode(archive).decode(), 'content_type': stored or kind}},
+        effect={'celery': [{'task': 'import_association_data', 'args': [],
+                            'kwargs': [['zip_file_path', '$upload'], ['owner_password', password]], 'id': '$task'}]})
+
+
+import_started('owner-archive', valid, '', )
+import_started('owner-archive-password', valid, 'recovery secret',
+               extra=[('owner_password', None, None, 'first'), ('owner_password', None, None, 'recovery secret')])
+import_started('setup-token-archive', valid, 'è segreta', actor='anonymous', headers=TOKEN_HEADER, setup=NO_INSTANCE,
+               extra=[('owner_password', None, None, 'è segreta')])
+import_started('windows-zip-type', not_zip, '', kind='application/x-zip-compressed')
+import_started('archive-without-type', valid, '', kind=None, stored='application/zip', filename='export')
+import_started('admin-impersonating-owner-archive', valid, '', actor='admin', headers=ADMIN_OWNER)
+
+import collections; assert len({c['name'] for c in cases}) == len(cases), [k for k, v in collections.Counter(c['name'] for c in cases).items() if v > 1]
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'association export/import routes: reads, refusals and pre-dispatch checks',
-    'ids': IDS, 'documents': DOCUMENTS, 'archives': ARCHIVES, 'active_keys': ACTIVE_KEYS, 'tasks': TASKS,
+    'ids': IDS, 'documents': DOCUMENTS, 'archives': ARCHIVES, 'tasks': TASKS, 'setup_token': SETUP_TOKEN,
     'instance': INSTANCE, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

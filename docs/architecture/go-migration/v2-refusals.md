@@ -31,8 +31,13 @@ Cross-cutting facts used for the classes:
 |---|---|---|---|
 | statistic-reads | `GET statistic/dashboard?widget=todaylessons` | always (`statistic_reads.go`, `ErrStatisticNotPorted`) | fixture `statistic_reads_http.json` 86 cases; RED Django 86/86, Go 500; GREEN 4 transports 86/86; mutation (case-sensitive `events` match) CAUGHT |
 | statistic-reads | `GET statistic/dashboard?widget=expiredPayments` | always | same run |
+| association-transfer | `GET association/export/active` | export snapshot key in the cache | fixture `association_transfer_http.json` 210 cases; RED Django 210/210, Go 500; GREEN 4 transports 210/210 (`v2-admin-green`); mutation (snapshot of another user accepted) CAUGHT |
+| association-transfer | `DELETE association/export/delete` | an existing export | same run |
+| association-transfer | `POST association/export/start` | always | same run |
+| association-transfer | `POST association/import/validate`, `start` | with a file | same run |
+| association-transfer | `association/import/*` with `X-Setup-Token` | before an instance exists | same run |
 
-Details in `statistic-reads.md`.
+Details in `statistic-reads.md` and `association-transfer.md`.
 
 ## Remaining A items, per family
 
@@ -123,11 +128,6 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 ### association transfer, data restore, instance setup and administration
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| GET association/export/active | export snapshot key in the cache | `utils/NotificationService.js:177` | `service/association_transfer.go:88` | medium |
-| DELETE association/export/delete | an existing export | `routes/profile/sections/DataExports.svelte:154` | `service/association_transfer.go:230` | medium |
-| POST association/export/start | always | `DataExports.svelte:119` | `service/association_transfer.go:255` | expensive |
-| association/import/validate, start | with a file | `store/instanceStore.js:448-492` | `handler/association_transfer.go:186` | expensive |
-| association/import/* (setup wizard) | `X-Setup-Token` before an instance exists | `store/instanceStore.js:205-208` | `service/association_transfer.go:268` | cheap |
 | POST instance/configure | `type: import` | `SetupWizard.svelte:129-134` | `service/instance_setup.go:133-134` | medium |
 | POST instance/admin/data-restore | every upload | `DataImport.svelte:172-174` | `service/data_restore.go:407` | expensive |
 | POST admin/diagnostics | every run | `SelfInstance.svelte:155` | `service/instance_admin.go:1227` | expensive |
@@ -170,15 +170,15 @@ Written from the family docs and the Go sources; `file:line` refer to `BE_GO/int
 ### association-transfer.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| GET association/export/active | active or last-export snapshot key exists in Django cache | service/association_transfer.go:88 (`ErrAssociationTransferNotPorted`) | A | `src/utils/NotificationService.js:177` calls it for each owner session; the last-export key is set by every completed export, so it stays set after any export. |
+| GET association/export/active | active or last-export snapshot key exists in Django cache | ported (`service/association_transfer_writes.go` activeExport) | ported | `src/utils/NotificationService.js:177` calls it for each owner session; the last-export key is set by every completed export, so it stays set after any export. |
 | GET association/export/status | task owner key exists | service/association_transfer.go:112 | B | Route not called by UI (`EXPORT.STATUS` defined in `endpoints.js:498`, no caller in `src/`). Key only exists after a start, which is itself refused. Cost: medium (cached progress + AsyncResult). |
 | GET association/export/list | row with `file_size_bytes` NULL and non-empty `filepath` | service/association_transfer.go:132 | B (legacy: yes) | UI calls list (`src/routes/profile/sections/DataExports.svelte:96`), but the export writer always sets the size (`application/services/export_service.py:1102`); NULL only for exports created before `docmanager/migrations/0006_document_file_size_bytes.py`. Cost: medium (storage size + save). |
-| DELETE association/export/delete | existing export found | service/association_transfer.go:230 | A | `DataExports.svelte:154` sends `{"document_id": <uuid from list>}` as JSON. |
-| POST association/export/start | past the count (<3) and active-key checks | service/association_transfer.go:255 | A | `DataExports.svelte:119` (POST, no body). Cost: expensive (Celery dispatch + cache registration). |
+| DELETE association/export/delete | existing export found | ported (deleteExport); a document other rows reference stays refused | ported | `DataExports.svelte:154` sends `{"document_id": <uuid from list>}` as JSON. |
+| POST association/export/start | past the count (<3) and active-key checks | ported (startExport) | ported | `DataExports.svelte:119` (POST, no body). Cost: expensive (Celery dispatch + cache registration). |
 | GET association/import/status | TaskResult row FAILURE/REVOKED/RETRY, non-utf-8 encoding, meta with `status`/children | service/association_transfer.go:300,303,312,317 | B | UI polls it (`src/store/instanceStore.js:535`), but rows only exist after an import start, which Go refuses; a FAILURE row could survive from a Django-era import that failed (legacy: yes, transient). Cost: medium (Celery exception reconstruction). |
 | GET association/import/status | result JSON with `__type__`, lone surrogates, floats beyond float64 | service/association_transfer.go:340,356,373 | B | Import task results are plain dicts. Cost: cheap-medium. |
-| POST association/import/validate, start | multipart body with a `file` upload | handler/association_transfer.go:186 | A | `src/store/instanceStore.js:448-453` (validate) and `:487-492` (start) send FormData with `file` from `src/routes/setup/StepImport.svelte`. Cost: expensive (ZIP validator; storage + Celery import). |
-| association/import/* (all) | no `InstanceConfiguration` and `X-Setup-Token` header present | service/association_transfer.go:268 | A | The first-run setup wizard (`StepImport.svelte` via `instanceStore.js:207` `getSetupTokenHeaders`) always sends `X-Setup-Token` before an instance is configured. Cost: cheap (read `INSTANCE_SETUP_TOKEN` into Go config and compare). |
+| POST association/import/validate, start | multipart body with a `file` upload | ported (ImportValidate, ImportStart); archives or values whose Python exception text would be answered stay refused (B) | ported | `src/store/instanceStore.js:448-453` (validate) and `:487-492` (start) send FormData with `file` from `src/routes/setup/StepImport.svelte`. Cost: expensive (ZIP validator; storage + Celery import). |
+| association/import/* (all) | no `InstanceConfiguration` and `X-Setup-Token` header present | ported (setupTokenMatches) | ported | The first-run setup wizard (`StepImport.svelte` via `instanceStore.js:207` `getSetupTokenHeaders`) always sends `X-Setup-Token` before an instance is configured. Cost: cheap (read `INSTANCE_SETUP_TOKEN` into Go config and compare). |
 | DELETE association/export/delete | `document_id` string containing `_`, `+` or whitespace | dto/association_transfer.go:28 | B | UI sends the UUID it received from list. Cost: cheap. |
 
 ### audit-logs.md
