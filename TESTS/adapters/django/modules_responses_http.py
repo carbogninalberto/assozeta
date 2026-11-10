@@ -5,7 +5,7 @@ for the whole run and switches Django's default storage to S3Boto3Storage on
 it before either server starts, so the Go server receives the same AWS_*
 settings. Each workload starts from an empty bucket; after every case the
 complete object listing under AWS_LOCATION (key, size, sha256, ContentType,
-CacheControl, no ContentEncoding or user metadata) must equal the objects
+CacheControl, ContentEncoding only when authored, no user metadata) must equal the objects
 the sequence has stored so far.
 
 Seeds modules of the own and the foreign association and without one, their
@@ -87,9 +87,12 @@ def stored_objects():
         contract.require(key.startswith(location + '/'), 'storage.location')
         head = client.head_object(Bucket=BUCKET, Key=key)
         body = client.get_object(Bucket=BUCKET, Key=key)['Body'].read()
-        contract.require(head.get('ContentEncoding') is None and not head.get('Metadata'), 'storage.object-metadata')
+        contract.require(not head.get('Metadata'), 'storage.object-metadata')
         result[key[len(location) + 1:]] = {'size': len(body), 'sha256': hashlib.sha256(body).hexdigest(),
                                            'content_type': head.get('ContentType'), 'cache_control': head.get('CacheControl')}
+        if head.get('ContentEncoding') is not None:
+            # mimetypes' encoding of a compression suffix (S3Storage._get_write_parameters).
+            result[key[len(location) + 1:]]['content_encoding'] = head['ContentEncoding']
     return result
 
 
@@ -290,7 +293,18 @@ def seed_rows(source, created):
             moduleresponses_id=row['id'], document_id=source['documents'][d]['id']) for d in row['attachments']])
 
 
-fixture_context = harness.fixture_context_for(contract, seed_rows, purge=tuple(lambda index=index: models()[index] for index in (0, 1)))
+_base_fixture_context = harness.fixture_context_for(contract, seed_rows, purge=tuple(lambda index=index: models()[index] for index in (0, 1)))
+
+
+@contextmanager
+def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
+    """VACUUM the responses table before seeding (outside the seed transaction): the rows a previous workload
+    deleted leave reusable space, so the export rows are placed in authored order whatever autovacuum did."""
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute('VACUUM application_moduleresponses')
+    with _base_fixture_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
+        yield fixture
 _run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepared_diffs)
 
 

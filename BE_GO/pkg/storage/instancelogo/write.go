@@ -16,7 +16,9 @@ import (
 // and AWS_DEFAULT_ACL when set.
 type WriteParameters struct {
 	ContentType, CacheControl string
-	ACL                       *string
+	// ContentEncoding is mimetypes.guess_type's encoding ("" for None).
+	ContentEncoding string
+	ACL             *string
 }
 
 // Delete is S3Storage.delete: a missing object is not an error.
@@ -62,6 +64,9 @@ func (s *S3) Save(ctx context.Context, name string, body []byte, parameters Writ
 		ContentLength: aws.Int64(int64(len(body))), ContentType: aws.String(parameters.ContentType)}
 	if parameters.CacheControl != "" {
 		input.CacheControl = aws.String(parameters.CacheControl)
+	}
+	if parameters.ContentEncoding != "" {
+		input.ContentEncoding = aws.String(parameters.ContentEncoding)
 	}
 	if parameters.ACL != nil {
 		input.ACL = types.ObjectCannedACL(*parameters.ACL)

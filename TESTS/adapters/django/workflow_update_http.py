@@ -7,7 +7,9 @@ An updated row must hold the authored name, description, tree and enabled
 values with the same key, association and created_at, and a fresh updated_at;
 its new auditlog entries match the authored ones in order (one per save with
 changed fields; auditlog never lists updated_at): the changed fields, the actor,
-impersonation data, correlation id and a direct index row.
+impersonation data, correlation id and a direct index row. Every case also checks
+the Celery broker: a future cron trigger publishes check_workflows_trigger_cron
+(args [UUID], eta at the localized time plus the clock gap), any other case nothing.
 """
 import ipaddress
 from datetime import datetime, timedelta, timezone
@@ -21,7 +23,7 @@ SOURCES = ('TESTS/fixtures/workflow_update_http.json', 'TESTS/contracts/test_wor
            'BE/communications/views.py', 'BE/communications/serializers.py', 'BE/communications/models.py',
            'BE/application/permissions.py', 'BE/application/tenant_scope.py', 'BE/application/audit_resolvers.py',
            'BE/application/permissions_registry.py', 'BE/application/impersonation_scope.py',
-           'BE/application/utils/api_utils.py') + harness.SOURCES
+           'BE/application/utils/api_utils.py', 'BE/core/celery.py', 'BE/instance/restore/task_base.py') + harness.SOURCES
 WORKFLOW = 'communications.AutomationWorkflow'
 MANAGED = (WORKFLOW, harness.AUDIT, harness.INDEX)
 
@@ -44,9 +46,18 @@ def recent(text):
     return abs(datetime.now(timezone.utc) - datetime.fromisoformat(text).replace(tzinfo=timezone.utc)) < timedelta(minutes=10)
 
 
+def prepare(source):
+    import time
+    return {'started': time.time()}
+
+
 def assert_effect(case, before, after, source, context):
+    import time
     harness.require_unmanaged_unchanged(contract, before, after, MANAGED)
     effect = case['effect']
+    # trigger() of a future cron time: check_workflows_trigger_cron with the countdown's eta; nothing otherwise.
+    harness.celery_published(contract, context['fixture'], (effect or {}).get('celery', []),
+                             since=context['prepared']['started'], until=time.time())
     if effect is None:
         contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
         return
@@ -83,5 +94,5 @@ def assert_effect(case, before, after, source, context):
                          and index['resolution_path'] == 'direct', 'index.fields')
 
 
-fixture_context = harness.fixture_context_for(contract, seed_rows)
-run_workload = harness.run_workload_for(contract, assert_effect)
+fixture_context = harness.with_celery_broker(harness.fixture_context_for(contract, seed_rows))
+run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare)

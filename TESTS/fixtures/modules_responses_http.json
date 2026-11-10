@@ -5856,6 +5856,594 @@
    }
   },
   {
+   "name": "modules-responses-attach-compressed-tar-gz",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "archivio.tar.gz",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "archivio.tar.gz"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 17,
+     "sha256": "4243e3bdaad46e0a0ba85fb6c0ff84f7ab4dd1824c6d83490f0e75479acf2ff7",
+     "content_type": "application/x-tar",
+     "cache_control": "max-age=86400",
+     "content_encoding": "gzip"
+    }
+   },
+   "body": {
+    "filename": "archivio.tar.gz",
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+   }
+  },
+  {
+   "name": "modules-responses-attach-compressed-tgz",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "Backup.TGZ",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "Backup.TGZ"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 17,
+     "sha256": "4243e3bdaad46e0a0ba85fb6c0ff84f7ab4dd1824c6d83490f0e75479acf2ff7",
+     "content_type": "application/x-tar",
+     "cache_control": "max-age=86400",
+     "content_encoding": "gzip"
+    }
+   },
+   "body": {
+    "filename": "Backup.TGZ",
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+   }
+  },
+  {
+   "name": "modules-responses-attach-compressed-gz-only",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "dati.gz",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "dati.gz"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 17,
+     "sha256": "4243e3bdaad46e0a0ba85fb6c0ff84f7ab4dd1824c6d83490f0e75479acf2ff7",
+     "content_type": "application/octet-stream",
+     "cache_control": "max-age=86400",
+     "content_encoding": "gzip"
+    }
+   },
+   "body": {
+    "filename": "dati.gz",
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+   }
+  },
+  {
+   "name": "modules-responses-attach-compressed-csv-bz2",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "soci.csv.bz2",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "soci.csv.bz2"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 17,
+     "sha256": "4243e3bdaad46e0a0ba85fb6c0ff84f7ab4dd1824c6d83490f0e75479acf2ff7",
+     "content_type": "text/csv",
+     "cache_control": "max-age=86400",
+     "content_encoding": "bzip2"
+    }
+   },
+   "body": {
+    "filename": "soci.csv.bz2",
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+   }
+  },
+  {
+   "name": "modules-responses-attach-compressed-txz",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "foto.txz",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "foto.txz"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 17,
+     "sha256": "4243e3bdaad46e0a0ba85fb6c0ff84f7ab4dd1824c6d83490f0e75479acf2ff7",
+     "content_type": "application/x-tar",
+     "cache_control": "max-age=86400",
+     "content_encoding": "xz"
+    }
+   },
+   "body": {
+    "filename": "foto.txz",
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+   }
+  },
+  {
+   "name": "modules-responses-attach-compressed-svgz",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "logo.svgz",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "logo.svgz"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 17,
+     "sha256": "4243e3bdaad46e0a0ba85fb6c0ff84f7ab4dd1824c6d83490f0e75479acf2ff7",
+     "content_type": "image/svg+xml",
+     "cache_control": "max-age=86400",
+     "content_encoding": "gzip"
+    }
+   },
+   "body": {
+    "filename": "logo.svgz",
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+   }
+  },
+  {
+   "name": "modules-responses-attach-compressed-pdf-br",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "modulo.pdf.br",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "modulo.pdf.br"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 17,
+     "sha256": "4243e3bdaad46e0a0ba85fb6c0ff84f7ab4dd1824c6d83490f0e75479acf2ff7",
+     "content_type": "application/pdf",
+     "cache_control": "max-age=86400",
+     "content_encoding": "br"
+    }
+   },
+   "body": {
+    "filename": "modulo.pdf.br",
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+   }
+  },
+  {
+   "name": "modules-responses-attach-compressed-upper-z",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "vecchio.tar.Z",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "vecchio.tar.Z"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 17,
+     "sha256": "4243e3bdaad46e0a0ba85fb6c0ff84f7ab4dd1824c6d83490f0e75479acf2ff7",
+     "content_type": "application/x-tar",
+     "cache_control": "max-age=86400",
+     "content_encoding": "compress"
+    }
+   },
+   "body": {
+    "filename": "vecchio.tar.Z",
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+   }
+  },
+  {
+   "name": "modules-responses-attach-compressed-lower-z",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "nota.z",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "nota.z"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 17,
+     "sha256": "4243e3bdaad46e0a0ba85fb6c0ff84f7ab4dd1824c6d83490f0e75479acf2ff7",
+     "content_type": "application/octet-stream",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "filename": "nota.z",
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+   }
+  },
+  {
+   "name": "modules-responses-attach-compressed-upper-gz",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "ARCHIVIO.GZ",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "ARCHIVIO.GZ"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 17,
+     "sha256": "4243e3bdaad46e0a0ba85fb6c0ff84f7ab4dd1824c6d83490f0e75479acf2ff7",
+     "content_type": "application/octet-stream",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "filename": "ARCHIVIO.GZ",
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+   }
+  },
+  {
    "name": "modules-responses-attach-unknown-response-server-error",
    "actor": "athlete",
    "method": "POST",

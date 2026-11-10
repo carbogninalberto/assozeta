@@ -283,8 +283,18 @@ def check_celery_message(contract, raw, spec, *, since, until, where=''):
     contract.require(isinstance(task_id, str) and uuid_shape.match(task_id) and task_id[14] == '4', 'celery.id' + where)
     # apply_async(task_id=...): the authored id.
     contract.require(spec.get('id', task_id) == task_id, 'celery.task-id' + where)
+    eta = spec.get('eta')
+    if spec.get('eta_from') is not None:
+        # apply_async(countdown=target - now): eta is app.now() + countdown, the target plus the time between the
+        # two clock reads (microseconds), rendered by isoformat() in UTC.
+        from datetime import datetime, timedelta
+        received = headers.get('eta')
+        contract.require(isinstance(received, str) and received.endswith('+00:00'), 'celery.eta-shape' + where)
+        moment, target = datetime.fromisoformat(received), datetime.fromisoformat(spec['eta_from'])
+        contract.require(received == moment.isoformat() and target <= moment <= target + timedelta(seconds=5), 'celery.eta' + where)
+        eta = received
     expected_headers = {
-        'lang': 'py', 'task': spec['task'], 'id': task_id, 'shadow': None, 'eta': spec.get('eta'), 'expires': spec.get('expires'),
+        'lang': 'py', 'task': spec['task'], 'id': task_id, 'shadow': None, 'eta': eta, 'expires': spec.get('expires'),
         'group': None, 'group_index': None, 'retries': 0, 'timelimit': spec.get('timelimit', [None, None]), 'root_id': task_id, 'parent_id': None,
         'argsrepr': saferepr(list(args) if spec.get('args_list') else args, 1024), 'kwargsrepr': saferepr(kwargs, 1024), 'origin': headers['origin'], 'ignore_result': False,
         'replaced_task_nesting': 0, 'stamped_headers': None, 'stamps': {}, 'assozeta_published_at': headers['assozeta_published_at']}
