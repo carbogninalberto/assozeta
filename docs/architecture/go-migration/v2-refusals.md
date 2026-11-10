@@ -127,6 +127,22 @@ Receipts are `quality-reports/go-migration/<family>-http-v2rep2-*`; templates-re
 Still refused in the file tools: workbook labels that are equal numbers or beyond 64 bits, and the XLSX and PDF results on
 the MCP server and the assistant (mcp-server harness `mcp-server-tools-v2rep2-r2`: 135/135, 3 refused).
 
+### Ported in the v2-reports-3 change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2rep3-*`; pdf-exports.md ("Paragraph markup") has the details.
+
+| Family | Route | Was refused or different | Evidence |
+|---|---|---|---|
+| balance-sheet | `POST balance-sheet` | `format: pdf` (B): a denomination or address with `&`, `<`, entities, tags or a soft hyphen; a `data:image/jpeg` logo in base64 with line breaks or other characters, base64 Python refuses, or a four-component JPEG | 97 cases (a second association with a logo and an address, a third one with an unclosed tag); RED: the documented refusal; GREEN `v2rep3-versioned-r1` 4 transports; mutation `v2rep3-mutation-r2` (bold oblique drawn bold) CAUGHT on `pdf-logo-address-markup`; `go test ./internal/pdfexport` (106 golden documents, 2755 parsed texts from reportlab) |
+| balance-sheet | `GET/POST balance-sheet` | Go divergence: the profile of the response was read by owner among the active associations; Django's reverse accessor resolves the row by its owner | same receipts; RED `v2rep3-native-r2` Django 97/97, Go 500 on `deleted-association-owner-creates-sheet` |
+| templates-reports | `POST saved-reports/<pk>/run` | PDF labels, cells and texts with the same paragraph inputs (B); a text cut between two pages where a line ends inside a long word | 178 cases; RED `v2rep3-red-r1` Django 178/178, Go 500 on `run-export-pdf-markup`; GREEN `v2rep3-versioned-r1` 4 transports; mutation `v2rep3-mutation-r1` (fragments of different fonts merged) CAUGHT on `run-export-pdf-markup` |
+
+Still refused in these PDFs (B): the paragraph tags that draw lines, links, images, rises, other sizes or colours (`u`,
+`strike`, `a`, `font`, `sup` and the others in pdf-exports.md), a `<para>` with attributes, and logo data Python's base64
+accepts that is not a JPEG Go's decoder reads. Markup reportlab's parser raises on (an unclosed tag, `A<B`) is no refusal:
+the export fails as in Django. Re-run green natively: printing-generate 113/113 and subscription-reads 350/350
+(`v2rep3-rerun-r1`), course-list 159/159 and course-subscriptions 145/145 (`v2rep3-rerun-r2`).
+
 ### Ported in the v2-pdf change
 
 Receipts are `quality-reports/go-migration/<family>-http-v2pdf-*`; [pdf-exports](pdf-exports.md) has the parity standard (the
@@ -140,10 +156,8 @@ decoded document, byte for byte; dates within the request window) and the Go wri
 | course-subscriptions | `POST course-subscriptions/list` | export `format: pdf` | 145 cases; RED `v2pdf-red-r2` Django 145/145, Go 500; GREEN `v2pdf-versioned-r2` 4 transports; mutation `v2pdf-mutation-r1` (list title instead of the carnet title) CAUGHT |
 | balance-sheet | `POST balance-sheet` | export `format: pdf` of a draft | 89 cases; RED `v2pdf-red-r1` Django 86/86 (before the account-delete cases), Go 500; GREEN `v2pdf-versioned-r2` 4 transports; mutation `v2pdf-mutation-r1` (closing date one day late) CAUGHT |
 
-Still refused in the balance-sheet PDF (B: unusual data): a denomination or address with `&`, `<` or a soft hyphen, and a
-`data:image/jpeg` logo that is not a plain 8-bit JPEG (balance-sheet.md, "Not ported"). The same paragraph inputs are
-refused in the saved-report PDFs (cell text, titles and the texts before and after the table). A paragraph cut between two
-pages is ported (v2-reports), except when one of its lines ends inside a long word.
+The paragraph inputs of the balance-sheet and saved-report PDFs (`&`, `<`, soft hyphens, a paragraph cut inside a long
+word, a logo in lenient base64) are ported in v2-reports-3, below.
 
 ## Remaining A items, per family
 
