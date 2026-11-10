@@ -116,11 +116,19 @@ def sweep_results(summary, root):
             artifact = Path(f'quality-reports/go-migration/sweep-{label}/process-{name}.log')
             command = f'python -m TESTS.adapters.go.{name}'
             path = root / artifact
-            lines = [l for l in path.read_text().splitlines() if l.strip()] if path.is_file() else []
-            if not lines or '"success": true' not in lines[-1]:
+            reports = []
+            for line in (path.read_text().splitlines() if path.is_file() else []):
+                try:
+                    parsed = json.loads(line) if line.lstrip().startswith('{') else None
+                except ValueError:
+                    parsed = None
+                if isinstance(parsed, dict) and 'success' in parsed:
+                    reports.append(line.strip())
+            # stdout and stderr share the log: the harness's last JSON report decides, not a trailing warning.
+            if not reports or json.loads(reports[-1])['success'] is not True:
                 out[key] = f'sweep {key} log missing or not successful: {artifact}'
                 continue
-            scope = f'Process harness {name}: ' + lines[-1][:300]
+            scope = f'Process harness {name}: ' + reports[-1][:300]
         else:
             raise PromotionError(f'unknown sweep result key {key}')
         out[key] = {'command': command, 'revision': head, 'result': 'passed', 'artifact': str(artifact),

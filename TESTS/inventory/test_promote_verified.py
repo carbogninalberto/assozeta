@@ -44,7 +44,7 @@ class PromoteVerifiedTests(unittest.TestCase):
         self.git = git
         self.write('quality-reports/go-migration/foo-bar-http-sweep-L/results.json',
                    {'success': True, 'workloads': [{'label': t, 'cases': [{'case': 'a'}, {'case': 'b'}]} for t in TRANSPORTS]})
-        self.write('quality-reports/go-migration/sweep-L/process-baz_process.log', 'build ok\n{"success": true, "cases": 3}\n')
+        self.write('quality-reports/go-migration/sweep-L/process-baz_process.log', 'build ok\n{"success": true, "cases": 3}\nWARNING: trailing stderr line\n')
         receipt = self.write('quality-reports/go-migration/ledger-verified-r/cmd/1-results.json', {'success': True})
         self.sweep = {'head': self.head, 'label': 'L', 'total': 2, 'results': {
             'http:foo-bar': {'ok': True}, 'process:baz_process': {'ok': True}}}
@@ -157,6 +157,12 @@ class PromoteVerifiedTests(unittest.TestCase):
         self.assertEqual(report['promoted'], ['route:BE/x.py:foo'])
         self.assertEqual(document['entries'][0]['evidence'][0]['command'],
                          'python tools/go-migration/family.py run foo-bar --versioned --label verified-x')
+
+    def test_process_log_needs_a_successful_last_report(self):
+        self.write('quality-reports/go-migration/sweep-L/process-baz_process.log',
+                   '{"success": true}\n{"success": false, "errors": ["x"]}\nwarning\n')
+        report = self.run_promote()
+        self.assertIn('not successful', ' '.join(report['blocked']['route:BE/x.py:foo']))
 
     def test_cli_refuses_empty_inputs_dry_runs_and_requires_a_complete_sweep(self):
         ledger = self.write('ledger.json', self.document)
