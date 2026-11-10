@@ -81,6 +81,7 @@ Receipts are `quality-reports/go-migration/<family>-http-v2misc-*`; each family 
 | Family | Route | Was refused | Evidence |
 |---|---|---|---|
 | profile-misc | `PATCH onboarding/update` | `onboarding_data` carrying the row's own `users_onboarding_id` and `user` (every checklist step) | 101 cases; RED `v2misc-red-r1` Django 101/101, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r2` (ids compared as raw strings) CAUGHT |
+| google-calendar | `GET google/calendar/config` | request carrying a `sessionid` cookie (a second "Connetti a Google" in the same browser) | 89 cases; RED `v2misc-red-r2` Django 89/89, Go 500; GREEN `v2misc-green-r2` 4 transports; mutation `v2misc-mutation-r1` (session saved with SET NX) CAUGHT |
 
 ## Remaining A items, per family
 
@@ -181,7 +182,6 @@ legacy Bakney invoices or tutors that would be reassigned (refused by the valida
 | personas add/update | `picture_path` data URL (photo) | `preview-blocks/image-upload.svelte:35-38` | `service/personas_writes.go:270-288` | medium |
 | modules add-attachment | compressed-suffix filename (`.gz`, `.tgz`, ...) | `routes/forms/PublicModule.svelte:60-73` | `service/modules_responses.go:466` | cheap-medium |
 | oauth2/signup | Google/Apple configured | `routes/login/Login.svelte:425-447` | `service/oauth_accounts.go:448` | medium-expensive |
-| GET google/calendar/config | browser already has a `sessionid` cookie | `Integrations.svelte:187` | `handler/google_calendar.go:114-116` | cheap-medium |
 
 Not HTTP (websocket, Django today): agent exports to XLSX/PDF (`service/business_mcp_query.go:290`).
 
@@ -505,7 +505,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### google-calendar.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET google/calendar/config | request carries a `sessionid` cookie | `BE_GO/internal/handler/google_calendar.go:114-116`, `ErrGoogleServer` | **A** | `routes/profile/sections/Integrations.svelte:187` (same-origin `fetch`, cookies sent). The first config GET itself sets `sessionid` (Path=/, 14 days; `handler/google_calendar.go:124`), so a second "Connetti a Google" (after cancelling consent or after disconnecting) in the same browser is refused. |
+| GET google/calendar/config | `sessionid` of a cache session holding more than a state; several `Cookie` headers with a `sessionid`; odd characters | `handler/google_calendar.go` (`googleCalendarSessionCookie`), `service/google_calendar.go` (`ConfigGet`) | B | Ported in v2-misc for the sessions the UI produces: the first config GET's own session (state only), expired or short keys. A Django admin login on the same host would leave a richer session. |
 | config/export/list | stored credentials or client-secret file of other shapes, non-default universe domain | `service/google_calendar.go:55-56,167,186` | B | Written by the OAuth flow / operator file. legacy: possible (older google-auth fields); medium. |
 | POST google/calendar/<id>/export | colour not `#rrggbb`, event dates outside subset, Rome years outside 1000–9998, odd instructor labels | `googleapi.ErrNotPorted` via `service/google_calendar.go:55` | B | `google_background_color` defaults to `random_color()` (7 chars, `BE/application/models/course_models.py:88`); events written by the UI calendar in ISO. legacy: yes (imported events); medium. UI call: `course/overview/OverviewCourse.svelte:160`. |
 | all | unusual Google answers / redirects | googleapi | B | Provider behaviour. |
