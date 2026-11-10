@@ -23359,7 +23359,7 @@
         "target": "SavedReportViewSet.as_view({'post': 'run'})",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/module_templates.go",
         "BE_GO/internal/dto/module_templates.go",
@@ -23374,12 +23374,27 @@
         "BE_GO/internal/handler/saved_reports.go",
         "BE_GO/internal/handler/message_mutations.go",
         "BE_GO/internal/handler/payment_categories.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/report_files.go",
+        "BE_GO/internal/service/business_mcp.go",
+        "BE_GO/internal/service/business_mcp_query.go",
+        "BE_GO/internal/pdfexport/report.go",
+        "BE_GO/internal/pdfexport/widths.go",
+        "BE_GO/internal/pdfexport/table.go",
+        "BE_GO/internal/pdfexport/paragraph.go",
+        "BE_GO/internal/pdfexport/doc.go",
+        "BE_GO/internal/pdfexport/canvas.go",
+        "BE_GO/internal/xlsxexport/report.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/pdfrender/header.go"
       ],
       "dependencies": [
         "Existing identity, collaborator registry and association scope",
         "application_sportassociationmoduletemplates; auditlog LogEntry/AuditLogIndex resolvers",
-        "application_savedreport; application_tags, application_paymentcategory, application_carnet; instance_instanceconfiguration (AI integration settings)"
+        "application_savedreport; application_tags, application_paymentcategory, application_carnet; instance_instanceconfiguration (AI integration settings)",
+        "application_course, application_attendanceregistry, application_attendanceday, application_coursesubscription, application_subscription, application_associate (attendance matrix)",
+        "BE_GO/internal/pdfexport (golden: go test ./internal/pdfexport, TESTS/fixtures/generate_pdf_golden.py, TESTS/contracts/pdf.py) and BE_GO/internal/xlsxexport (golden: go test ./internal/xlsxexport, TESTS/fixtures/generate_xlsx_golden.py, TESTS/contracts/xlsx.py)"
       ],
       "contract": {
         "methods": [
@@ -23393,11 +23408,11 @@
           "/api/saved-reports/<pk>/run"
         ],
         "request": "JSON object with optional overrides dict merged over the stored params (see templates-reports.md).",
-        "response": "200 {\"data\": tool result}; DELETE 204 empty.",
-        "errors": "400 Unknown tool or a tool result with error; 401; 403 unmapped or impersonation; 404 Report not found; 500 JSON tool exception; 500 HTML for lookup/merge exceptions and not-ported tool inputs.",
+        "response": "200 {\"data\": tool result}, or the file of a tool result with data_base64 (text/csv; charset=utf-8, the XLSX type or application/pdf, with Content-Disposition attachment; filename=\"<name>\"); DELETE 204 empty.",
+        "errors": "400 Unknown tool or a tool result with error (the whole result); 401; 403 unmapped or impersonation; 404 Report not found; 500 JSON tool exception; 500 HTML for lookup/merge exceptions, a file name the header refuses and not-ported tool inputs.",
         "authentication": "core.middleware.IsAuthenticated (identity resolution).",
         "permissions": "Unmapped in the registry.",
-        "resource_scope": "Owner association and created_by=request.user; tool queries scoped by the association and soft-delete flags.",
+        "resource_scope": "Owner association and created_by=request.user; tool queries scoped by the association and soft-delete flags; attendance courses through the group-aware manager (X-Group-Id).",
         "side_effects": "None for POST (read-only queries with the statement timeout); DELETE removes the report.",
         "transaction": "Read-only queries; autocommit delete.",
         "execution_owner": "django"
@@ -23409,21 +23424,28 @@
         "TESTS/adapters/django/templates_reports_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/templates-reports.md",
         {
-          "command": "python tools/go-migration/family.py run templates-reports --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/templates-reports-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "099ddcab9347f6fa51fe34d7bcf6b38e666a8f6beee14c9a2607524fe22e3347",
-          "scope": "HTTP family templates-reports: 84/84 cases on native Django and native Go, 84/84 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 125/125; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep-red-r2/results.json",
+          "receipt_sha256": "bf757794a353b32230e874872efce3dc6d50ce15bef72396ee3be0fe3ad9e990"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 125/125 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep-versioned-r2/results.json",
+          "receipt_sha256": "7c8654703922a5dd5f9a31667042026439e7d53d89257452f727d653db2cc0d0"
+        },
+        {
+          "revision": "a paragraph cut between two pages keeps one line too many on the first page",
+          "result": "Mutation control: CAUGHT: fails Go on templates-reports-run-export-pdf-texts-over-pages (500 where Django answers the document). Earlier receipts of the same change: RED v2rep-red-r1 (Django 124/124, Go 500 on the first file case), mutation v2rep-mutation-r1 (attendance workbook layout swapped) CAUGHT on run-attendance-export-xlsx-all.",
+          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep-mutation-r2/results.json",
+          "receipt_sha256": "7e61d61f13b9e866721d5b35342e959831f795769db02e12a42045a7c84cb531"
         }
       ],
       "notes": [
-        "Implementing: Not ported (refused with the HTML 500 page before any query): the export_data, export_multi_sheet and get_attendance_matrix tools (file generation), get_schema for whitelisted models and the full schema, whitelisted models other than Tags/PaymentCategory/Carnet, relation traversal, reverse relations, joins, date-part transforms, JSON field filters/values, relation ordering/grouping, lookups outside exact/iexact/contains/icontains/(i)startswith/(i)endswith/gt/gte/lt/lte/in/range/isnull, boolean/float limits, non-canonical UUID spellings, out-of-range integers and decimals, unusual aggregate aliases and HTML references other than common named ones. No mcp_definition entry is fully covered (query_data, count_data, get_field_values, aggregate_data and get_schema are partial).",
-        "Implementing evidence: docs/architecture/go-migration/templates-reports.md",
-        "Implementing evidence: RED: Django 84/84; Go 404 on the first case. (quality-reports/go-migration/templates-reports-http-native-r5/results.json)",
-        "Implementing evidence: GREEN: 84/84 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact template, audit, index and report effects. (quality-reports/go-migration/templates-reports-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on templates-reports-run-query-carnets-exclude-nullable (response.body:data:count). (quality-reports/go-migration/templates-reports-http-mutation-r1/results.json)"
+        "Implementing: Implementing: the file tools export_data (CSV, XLSX, PDF), export_multi_sheet and get_attendance_matrix (preview, XLSX, PDF) answer their download, their 400 result or the JSON 500 (templates-reports.md, \"File tools\"; decoded-document PDF parity in pdf-exports.md, part-by-part XLSX parity in xlsx-exports.md). Refused with the HTML 500 page: get_schema for whitelisted models and the full schema, whitelisted models other than Tags/PaymentCategory/Carnet in the query tools, relation traversal, reverse relations, joins, date-part transforms, JSON field filters, relation ordering/grouping, lookups outside the listed ones, boolean/float limits, non-canonical UUID spellings, out-of-range integers and decimals, unusual aggregate aliases, HTML references other than the common named ones; in the file tools a format, title, label or text argument that is not a string, a list or dict cell in the CSV, ISO date-time text in another spelling than isoformat(), a sheet without columns, a generated sheet name equal to an earlier one, a course without a title and the paragraph inputs pdfexport refuses (text with &, < or a soft hyphen; a cut paragraph with a line ending inside a long word). See docs/architecture/go-migration/templates-reports.md."
       ]
     },
     {
@@ -29646,7 +29668,7 @@
         "target": "SportAssociationModuleTemplatesViewSet.as_view({'patch': 'update'})",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/module_templates.go",
         "BE_GO/internal/dto/module_templates.go",
@@ -29661,12 +29683,27 @@
         "BE_GO/internal/handler/saved_reports.go",
         "BE_GO/internal/handler/message_mutations.go",
         "BE_GO/internal/handler/payment_categories.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/report_files.go",
+        "BE_GO/internal/service/business_mcp.go",
+        "BE_GO/internal/service/business_mcp_query.go",
+        "BE_GO/internal/pdfexport/report.go",
+        "BE_GO/internal/pdfexport/widths.go",
+        "BE_GO/internal/pdfexport/table.go",
+        "BE_GO/internal/pdfexport/paragraph.go",
+        "BE_GO/internal/pdfexport/doc.go",
+        "BE_GO/internal/pdfexport/canvas.go",
+        "BE_GO/internal/xlsxexport/report.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/pdfrender/header.go"
       ],
       "dependencies": [
         "Existing identity, collaborator registry and association scope",
         "application_sportassociationmoduletemplates; auditlog LogEntry/AuditLogIndex resolvers",
-        "application_savedreport; application_tags, application_paymentcategory, application_carnet; instance_instanceconfiguration (AI integration settings)"
+        "application_savedreport; application_tags, application_paymentcategory, application_carnet; instance_instanceconfiguration (AI integration settings)",
+        "application_course, application_attendanceregistry, application_attendanceday, application_coursesubscription, application_subscription, application_associate (attendance matrix)",
+        "BE_GO/internal/pdfexport (golden: go test ./internal/pdfexport, TESTS/fixtures/generate_pdf_golden.py, TESTS/contracts/pdf.py) and BE_GO/internal/xlsxexport (golden: go test ./internal/xlsxexport, TESTS/fixtures/generate_xlsx_golden.py, TESTS/contracts/xlsx.py)"
       ],
       "contract": {
         "methods": [
@@ -29696,21 +29733,28 @@
         "TESTS/adapters/django/templates_reports_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/templates-reports.md",
         {
-          "command": "python tools/go-migration/family.py run templates-reports --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/templates-reports-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "099ddcab9347f6fa51fe34d7bcf6b38e666a8f6beee14c9a2607524fe22e3347",
-          "scope": "HTTP family templates-reports: 84/84 cases on native Django and native Go, 84/84 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 125/125; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep-red-r2/results.json",
+          "receipt_sha256": "bf757794a353b32230e874872efce3dc6d50ce15bef72396ee3be0fe3ad9e990"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 125/125 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep-versioned-r2/results.json",
+          "receipt_sha256": "7c8654703922a5dd5f9a31667042026439e7d53d89257452f727d653db2cc0d0"
+        },
+        {
+          "revision": "a paragraph cut between two pages keeps one line too many on the first page",
+          "result": "Mutation control: CAUGHT: fails Go on templates-reports-run-export-pdf-texts-over-pages (500 where Django answers the document). Earlier receipts of the same change: RED v2rep-red-r1 (Django 124/124, Go 500 on the first file case), mutation v2rep-mutation-r1 (attendance workbook layout swapped) CAUGHT on run-attendance-export-xlsx-all.",
+          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep-mutation-r2/results.json",
+          "receipt_sha256": "7e61d61f13b9e866721d5b35342e959831f795769db02e12a42045a7c84cb531"
         }
       ],
       "notes": [
-        "Implementing: Not ported (refused with the HTML 500 page before any query): the export_data, export_multi_sheet and get_attendance_matrix tools (file generation), get_schema for whitelisted models and the full schema, whitelisted models other than Tags/PaymentCategory/Carnet, relation traversal, reverse relations, joins, date-part transforms, JSON field filters/values, relation ordering/grouping, lookups outside exact/iexact/contains/icontains/(i)startswith/(i)endswith/gt/gte/lt/lte/in/range/isnull, boolean/float limits, non-canonical UUID spellings, out-of-range integers and decimals, unusual aggregate aliases and HTML references other than common named ones. No mcp_definition entry is fully covered (query_data, count_data, get_field_values, aggregate_data and get_schema are partial).",
-        "Implementing evidence: docs/architecture/go-migration/templates-reports.md",
-        "Implementing evidence: RED: Django 84/84; Go 404 on the first case. (quality-reports/go-migration/templates-reports-http-native-r5/results.json)",
-        "Implementing evidence: GREEN: 84/84 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact template, audit, index and report effects. (quality-reports/go-migration/templates-reports-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on templates-reports-run-query-carnets-exclude-nullable (response.body:data:count). (quality-reports/go-migration/templates-reports-http-mutation-r1/results.json)"
+        "Implementing: Implementing: the file tools export_data (CSV, XLSX, PDF), export_multi_sheet and get_attendance_matrix (preview, XLSX, PDF) answer their download, their 400 result or the JSON 500 (templates-reports.md, \"File tools\"; decoded-document PDF parity in pdf-exports.md, part-by-part XLSX parity in xlsx-exports.md). Refused with the HTML 500 page: get_schema for whitelisted models and the full schema, whitelisted models other than Tags/PaymentCategory/Carnet in the query tools, relation traversal, reverse relations, joins, date-part transforms, JSON field filters, relation ordering/grouping, lookups outside the listed ones, boolean/float limits, non-canonical UUID spellings, out-of-range integers and decimals, unusual aggregate aliases, HTML references other than the common named ones; in the file tools a format, title, label or text argument that is not a string, a list or dict cell in the CSV, ISO date-time text in another spelling than isoformat(), a sheet without columns, a generated sheet name equal to an earlier one, a course without a title and the paragraph inputs pdfexport refuses (text with &, < or a soft hyphen; a cut paragraph with a line ending inside a long word). See docs/architecture/go-migration/templates-reports.md."
       ]
     },
     {
