@@ -337,8 +337,11 @@ type subscriptionCreated struct {
 
 func (s *SubscriptionCreates) create(ctx context.Context, identity domain.ResolvedIdentity, data domain.RequestObject,
 	request SubscriptionCreateRequest) (*SubscriptionCreateResult, error) {
-	if err := subscriptionCreateRefuseInputs(data, subscriptionCreateToday(s.now())); err != nil {
-		return nil, err
+	// A preregistration that renews a subscription replaces these inputs: they are checked after the fill.
+	if !subscriptionRenewalRequested(data) {
+		if err := subscriptionCreateRefuseInputs(data, subscriptionCreateToday(s.now())); err != nil {
+			return nil, err
+		}
 	}
 	tx, err := s.store.BeginSubscriptionCreate(ctx)
 	if err != nil {
@@ -366,11 +369,21 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	now := s.now().UTC()
 	today := subscriptionCreateDay(now)
 	// data['preregistration'] is True: the next season. With a subscription_id
-	// it renews that subscription (fill_data_preregisration), which is not ported.
-	preregistration := false
+	// it renews that subscription (fill_data_preregisration): the registration
+	// is the renewed member's, owned by the renewed subscription's account.
+	preregistration, renewal := false, false
+	var renewedUser *string
 	if flag, _ := data.Lookup("preregistration"); flag == true {
-		if source, _ := data.Lookup("subscription_id"); source != nil {
-			return nil, domain.ErrSubscriptionCreateNotPorted
+		if subscriptionRenewalRequested(data) {
+			filled, owner, err := s.fillPreregistration(ctx, tx, identity, data, request)
+			if err != nil {
+				return nil, err
+			}
+			// The inputs refused for a registration, now on the renewed subscription's data.
+			if err = subscriptionCreateRefuseInputs(filled, subscriptionCreateToday(s.now())); err != nil {
+				return nil, err
+			}
+			data, renewedUser, renewal = filled, owner, true
 		}
 		preregistration = true
 	}
@@ -863,7 +876,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	row := domain.SubscriptionCreateRow{ID: subscriptionID, AssociationID: association, AssociateID: saved.ID, UserID: memberID,
 		Type: subscriptionType, Role: role, Status: status, MedicalID: medical, PaymentID: paymentID, CustomData: customData,
 		AdditionalFields: additionalFields, Meta: meta, Number: number.String(), SubscriptionType: settings.DefaultMembershipType,
-		Created: createdAt, Start: dates.Start, End: dates.End}
+		Created: createdAt, Start: dates.Start, End: dates.End, Renewal: renewal, RenewedUser: renewedUser}
 	if err = tx.InsertSubscription(ctx, row); err != nil {
 		return nil, err
 	}

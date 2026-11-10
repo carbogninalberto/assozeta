@@ -111,6 +111,23 @@ type SubscriptionCreateRow struct {
 	SubscriptionType                       *string
 	Created                                time.Time
 	Start, End                             *CalendarDate
+	// Renewal stores RenewedUser (the renewed subscription's account, possibly none) instead of UserID.
+	Renewal     bool
+	RenewedUser *string
+}
+
+// SubscriptionRenewalSource is the subscription a preregistration renews, with
+// the account of its association.
+type SubscriptionRenewalSource struct {
+	UserID           *string `db:"user_id"`
+	OwnerID          string  `db:"owner_id"`
+	AssociateID      *string `db:"associate_id"`
+	MedicalID        *string `db:"medical_id"`
+	Role             int64   `db:"role"`
+	Number           *string `db:"subscription_number"`
+	SubscriptionType *string `db:"subscription_type"`
+	CustomData       *string `db:"custom_data"`
+	AdditionalFields *string `db:"additional_fields"`
 }
 
 // SubscriptionCreateMembership is a SubscriptionMembership row.
@@ -186,6 +203,8 @@ type SubscriptionCreateTransaction interface {
 	MemberByEmail(ctx context.Context, email string) (*SubscriptionCreateMember, error)
 	// Member is the user's role and season settings.
 	Member(ctx context.Context, id string) (*SubscriptionCreateMember, error)
+	// RenewalSource is Subscription.objects.filter(subscription_id=id, sport_association=association).first().
+	RenewalSource(ctx context.Context, id, association string) (*SubscriptionRenewalSource, error)
 	// InsertNewUser writes the account with its create entry (TokenUsername) and the username update entry.
 	InsertNewUser(ctx context.Context, user SubscriptionCreateNewUser, audit LoginAuditContext) error
 }

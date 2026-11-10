@@ -87,8 +87,10 @@ func (s *SubscriptionCreates) family(ctx context.Context, identity domain.Resolv
 		if _, isObject = custom.(domain.RequestObject); !isObject {
 			return nil, server
 		}
-		if err = subscriptionCreateRefuseInputs(entry, today); err != nil {
-			return nil, err
+		if !subscriptionRenewalRequested(entry) {
+			if err = subscriptionCreateRefuseInputs(entry, today); err != nil {
+				return nil, err
+			}
 		}
 		subscription, err := s.createSubscription(ctx, tx, identity, entry, request)
 		if err != nil {

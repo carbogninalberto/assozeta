@@ -169,6 +169,26 @@
    "born": "1975-01-01",
    "user": "owner",
    "email": null
+  },
+  "renewed": {
+   "id": "a1000000-0000-4000-8000-000000939013",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Remo",
+   "last": "Rinnovo",
+   "tax_code": "RNNRME80A01H501R",
+   "born": "1980-01-01",
+   "user": "athlete",
+   "email": "remo.rinnovo@example.test"
+  },
+  "renewed_member": {
+   "id": "a1000000-0000-4000-8000-000000939014",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Rina",
+   "last": "Rinnovo",
+   "tax_code": "RNNRNI82A41H501S",
+   "born": "1982-01-01",
+   "user": "athlete",
+   "email": null
   }
  },
  "certificates": {
@@ -227,6 +247,11 @@
   "public_upload": {
    "id": "a1000000-0000-4000-8000-000000939008",
    "user": null
+  },
+  "renewed": {
+   "id": "a1000000-0000-4000-8000-000000939015",
+   "user": null,
+   "expiration": "2026-12-31"
   }
  },
  "subscriptions": {
@@ -308,6 +333,32 @@
    "number": "901",
    "association": "a1000000-0000-4000-8000-000000701002",
    "medical": "other_subscription"
+  },
+  "renewable": {
+   "id": "a1000000-0000-4000-8000-000000939016",
+   "associate": "renewed",
+   "start": "$season_start",
+   "end": "$season_end",
+   "archived": false,
+   "number": "15",
+   "medical": "renewed",
+   "user": "athlete",
+   "role": 3,
+   "custom_data": {
+    "tipo": "agonista"
+   },
+   "additional_fields": {
+    "taglia": "L"
+   }
+  },
+  "renewable_member": {
+   "id": "a1000000-0000-4000-8000-000000939017",
+   "associate": "renewed_member",
+   "start": "$season_start",
+   "end": "$season_end",
+   "archived": false,
+   "number": null,
+   "user": "athlete"
   }
  },
  "payments": {
@@ -13207,6 +13258,782 @@
     ],
     "sport_association": "message-reads-700001",
     "type": "altro"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-preregistration-renewal-anonymous-not-found",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Iscrizione da rinnovare non trovata.",
+    "code": "400"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Altro",
+     "last_name": "Nome",
+     "tax_code": "LTRNMO90C01H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 1
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "preregistration": true,
+    "subscription_id": "a1000000-0000-4000-8000-000000939016",
+    "sport_association": "message-reads-700001",
+    "plan_id": null,
+    "membership_plan_id": null,
+    "medical_certificate": {
+     "medical_id": null,
+     "certificate_expring_date": null
+    },
+    "custom_data": null,
+    "additional_fields": null
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-preregistration-renewal-of-another-account-not-found",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Iscrizione da rinnovare non trovata.",
+    "code": "400"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Altro",
+     "last_name": "Nome",
+     "tax_code": "LTRNMO90C01H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 1
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "preregistration": true,
+    "subscription_id": "a1000000-0000-4000-8000-000000930011",
+    "sport_association": "message-reads-700001"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-preregistration-renewal-of-another-association-not-found",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Iscrizione da rinnovare non trovata.",
+    "code": "400"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Altro",
+     "last_name": "Nome",
+     "tax_code": "LTRNMO90C01H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 1
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "preregistration": true,
+    "subscription_id": "a1000000-0000-4000-8000-000000930013"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-preregistration-renewal-unknown-association-not-found",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Iscrizione da rinnovare non trovata.",
+    "code": "400"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Altro",
+     "last_name": "Nome",
+     "tax_code": "LTRNMO90C01H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 1
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "preregistration": true,
+    "subscription_id": "a1000000-0000-4000-8000-000000939016",
+    "sport_association": "nessuno"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-preregistration-renewal-unknown-not-found",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Iscrizione da rinnovare non trovata.",
+    "code": "400"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Altro",
+     "last_name": "Nome",
+     "tax_code": "LTRNMO90C01H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 1
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "preregistration": true,
+    "subscription_id": "a1000000-0000-4000-8000-000000939999"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-preregistration-renewal-malformed-id-not-found",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Iscrizione da rinnovare non trovata.",
+    "code": "400"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Altro",
+     "last_name": "Nome",
+     "tax_code": "LTRNMO90C01H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 1
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "preregistration": true,
+    "subscription_id": "non-un-id"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-preregistration-renewal-athlete-without-association",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Altro",
+     "last_name": "Nome",
+     "tax_code": "LTRNMO90C01H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 1
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "preregistration": true,
+    "subscription_id": "a1000000-0000-4000-8000-000000939017"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-preregistration-renewal-without-type-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Altro",
+     "last_name": "Nome",
+     "tax_code": "LTRNMO90C01H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "preregistration": true,
+    "subscription_id": "a1000000-0000-4000-8000-000000939016"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-preregistration-renewal-text-number-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Altro",
+     "last_name": "Nome",
+     "tax_code": "LTRNMO90C01H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 1
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "preregistration": true,
+    "subscription_id": "a1000000-0000-4000-8000-000000930014"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-preregistration-renewal-by-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "renewed",
+     "columns": {
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 1,
+     "role": 3,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "user_id": "a1000000-0000-4000-8000-000000700004",
+     "custom_data": {
+      "tipo": "agonista"
+     },
+     "additional_fields": {
+      "taglia": "L"
+     },
+     "creation_date": "$next_season_created",
+     "start_date": "$next_season_start",
+     "end_date": "$next_season_end",
+     "subscription_number": "15",
+     "medical_id": "a1000000-0000-4000-8000-000000939015"
+    },
+    "membership": null,
+    "medical": {
+     "label": "renewed",
+     "columns": {
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "expiration_date": "2026-12-31"
+     },
+     "audit": {
+      "user": [
+       "None",
+       "a1000000-0000-4000-8000-000000700001"
+      ],
+      "expiration_date": [
+       "2026-12-31",
+       "2026-12-31 00:00:00"
+      ]
+     },
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "actor.sport_association"
+     ]
+    },
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700004",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "medicalcertificate",
+      "action": 1,
+      "ref": "renewed",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "expiration_date": [
+        "2026-12-31",
+        "2026-12-31 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {
+       "start_date": [
+        "None",
+        "$next_season_start_text"
+       ],
+       "end_date": [
+        "None",
+        "$next_season_end_text"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Remo Rinnovo.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Altro",
+     "last_name": "Nome",
+     "tax_code": "LTRNMO90C01H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 1
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "preregistration": true,
+    "subscription_id": "a1000000-0000-4000-8000-000000939016",
+    "custom_data": {
+     "type_of_associate": "ignorato"
+    },
+    "additional_fields": {
+     "ignorato": true
+    },
+    "medical_certificate": null
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-preregistration-renewal-twice",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "msg": "Questa iscrizione esiste già.",
+    "code": "409",
+    "ref": "subscription_duplicate"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Altro",
+     "last_name": "Nome",
+     "tax_code": "LTRNMO90C01H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 1
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "preregistration": true,
+    "subscription_id": "a1000000-0000-4000-8000-000000939016"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-preregistration-renewal-by-member",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "athlete",
+    "associate": {
+     "match": "renewed_member",
+     "columns": {}
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "start_date": "$next_season_start",
+     "end_date": "$next_season_end",
+     "user_id": "a1000000-0000-4000-8000-000000700004",
+     "subscription_number": "544",
+     "creation_date": "$next_season_created"
+    },
+    "membership": {
+     "membership_type": "$next_membership_type",
+     "start_date": "$next_season_start",
+     "end_date": "$next_season_end",
+     "price": null,
+     "membership_number": "544"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {
+       "start_date": [
+        "None",
+        "$next_season_start_text"
+       ],
+       "end_date": [
+        "None",
+        "$next_season_end_text"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     },
+     {
+      "task": "send_email_template",
+      "args": [],
+      "kwargs": [
+       [
+        "recipient_list",
+        [
+         "message-reads-700001@example.test"
+        ]
+       ],
+       [
+        "subject",
+        "[$denomination] Ricordati di approvare l'iscrizione di Rina Rinnovo"
+       ],
+       [
+        "template",
+        "email/account/email_new_subscription.html"
+       ],
+       [
+        "data",
+        {
+         "athlete_first_name": "Rina",
+         "athlete_last_name": "Rinnovo",
+         "sport_association": {
+          "denomination": "$denomination"
+         },
+         "app_host": "$app_url",
+         "settings": {
+          "WHITELABEL_NAME": "$whitelabel_name",
+          "IS_WHITELABEL": "$is_whitelabel"
+         }
+        }
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Rina Rinnovo.",
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "user": "athlete"
+    },
+    "member": "a1000000-0000-4000-8000-000000700004"
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Altro",
+     "last_name": "Nome",
+     "tax_code": "LTRNMO90C01H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 2
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "preregistration": true,
+    "subscription_id": "a1000000-0000-4000-8000-000000939017",
+    "sport_association": "message-reads-700001",
+    "plan_id": null,
+    "membership_plan_id": null,
+    "medical_certificate": {
+     "medical_id": null,
+     "certificate_expring_date": null
+    },
+    "custom_data": null,
+    "additional_fields": null
    },
    "setup": null
   }

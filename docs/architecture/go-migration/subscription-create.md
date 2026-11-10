@@ -170,6 +170,28 @@ association: another association's username is DRF's 403 `User not allowed.`, be
   (`['None', '2027-01-01 00:00:00+00:00']`); the membership's dates and default type (`Tesseramento <from>/<to>`) are the next
   season's; the payment keeps today's date.
 
+## A preregistration that renews a subscription
+
+`preregistration: true` with a `subscription_id` that is not null runs `fill_data_preregisration` first:
+
+- `_renewal_source`: without an authenticated requester there is none. The association is the one of the account
+  `data['sport_association']` names (a truthy value; no such association: none), else `user.sport_association` (an athlete is
+  403 `User is not a sport association`). The subscription is read by id in that association (an id the UUID field rejects
+  matches nothing) and is renewable when the requester is the association's account or the subscription's account. Otherwise
+  the answer is 400 `{"msg": "Iscrizione da rinnovare non trovata.", "code": "400"}`;
+- the request keeps only `associate_data.type` (a missing key is the 500 page), `plan_id`, `membership_plan_id` and
+  `sport_association`. `associate_data` becomes `AssociateSerializer` of the stored associate (with its `associate_id`, so the
+  associate is updated by key; `born_date` as `DD/MM/YYYY`) plus the renewed `role` and `subscription_number`;
+  `medical_certificate` is the renewed certificate's id with its expiration date as `DD/MM/YYYY` (so the linked certificate's
+  date is assigned again as a datetime and its entry renders `['2026-12-31', '2026-12-31 00:00:00']`); `custom_data` and
+  `additional_fields` are the stored ones; the signature is absent and no account is created;
+- the registration then runs as a next-season preregistration. The new subscription belongs to the renewed subscription's
+  account (possibly none), keeps its number (an integer text; anything else is the 500 page after the earlier writes, which roll
+  back) and role; the associate and the payment belong to `create_subscription`'s user, who also receives the notification.
+
+Go: `fillPreregistration` and `renewalSource` (`subscription_create_renewal.go`) build the same request object before anything is
+written; the inputs refused for a registration are checked on the filled data, not on the request's.
+
 ## The family wizard
 
 `data['is_family_wizard'] is True` (with the four required keys present on the body) runs `_handle_family_subscription`:
@@ -218,9 +240,9 @@ Refused with the 500 page before anything is committed:
   subscriptions), and in its entries every input refused for a single registration; in the quick subscription an impersonation session with an association scope, an
   owner with several associations, plan ids or fees of other shapes (booleans, containers, more than two decimals) and a
   certificate choice that depends on the unordered subscriptions;
-- `preregistration: true` with a `subscription_id` (the preregistration that renews a subscription:
-  `fill_data_preregisration` re-reads the associate, tutor, certificate and membership from it); preregistration in renewals and
-  draft approvals;
+- in a preregistration that renews a subscription: a renewed member that has a tutor (`get_main_tutor` and its serialized
+  data), a `sport_association` that is not a string, a `subscription_id` that is not a string, an account name matching several
+  associations, a renewed subscription without an associate; preregistration in renewals and draft approvals;
 - new member info with a `username` (create_user's TypeError, 500), a `role` other than athlete, a non-string e-mail, a numeric
   `new_member` flag; a signature upload whose generated key already exists;
 - a `medical_certificate` without `medical_id` whose `certificate_expring_date` parses to a date other than today (the placeholder
@@ -313,3 +335,11 @@ The family wizard's answer (113 cases).
 - GREEN (`famwiz-versioned-r1`): 113/113 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`famwiz-mutation-r1`): the payments listed in reverse entry order fails `subscription-create-family-wizard`
   (CAUGHT).
+
+A preregistration that renews a subscription (125 cases).
+
+- RED (`famwiz-red-r4`, the Go code of the previous commit): Django 125/125; Go 500 on
+  `subscription-create-preregistration-renewal-anonymous-not-found`.
+- GREEN natively (`famwiz-native-r1`): 125/125 on native Django and native Go.
+- Mutation (`famwiz-mutation-r2`): the renewed subscription's accounts not compared with the requester fails
+  `subscription-create-preregistration-renewal-of-another-account-not-found` (CAUGHT).
