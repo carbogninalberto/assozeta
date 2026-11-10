@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math"
+	"math/big"
 	"os"
 	"strconv"
 	"testing"
@@ -66,7 +67,10 @@ func decodeValue(t *testing.T, raw json.RawMessage) Value {
 			json.Unmarshal(body, &scalar)
 			number, err := strconv.ParseInt(scalar, 10, 64)
 			if err != nil {
-				t.Fatalf("int %s", scalar)
+				if _, ok := new(big.Int).SetString(scalar, 10); !ok {
+					t.Fatalf("int %s", scalar)
+				}
+				return BigIntValue(scalar)
 			}
 			return IntValue(number)
 		case "float":

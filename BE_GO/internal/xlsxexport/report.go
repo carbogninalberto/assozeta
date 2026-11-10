@@ -3,6 +3,7 @@ package xlsxexport
 import (
 	"errors"
 	"math"
+	"math/big"
 	"regexp"
 	"strconv"
 	"strings"
@@ -21,37 +22,132 @@ type ReportSheet struct {
 	Labels []Value
 }
 
+// labelIndex is the dtype of the Index pandas builds from the labels
+// (lib.maybe_convert_objects): object, float64 or an integer one.
+type labelIndex int
+
+const (
+	labelObject labelIndex = iota
+	labelFloat
+	labelInteger
+)
+
+func labelBig(label Value) *big.Int {
+	if label.Kind == Int {
+		return big.NewInt(label.Int)
+	}
+	number, ok := new(big.Int).SetString(label.Text, 10)
+	if !ok {
+		return new(big.Int)
+	}
+	return number
+}
+
+func labelFloat64(label Value) float64 {
+	if label.Kind == Float {
+		return label.Float
+	}
+	number, _ := new(big.Float).SetInt(labelBig(label)).Float64()
+	return number
+}
+
+var (
+	labelMaxUint = new(big.Int).SetUint64(math.MaxUint64)
+	labelMaxInt  = big.NewInt(math.MaxInt64)
+	labelMinInt  = big.NewInt(math.MinInt64)
+)
+
+// labelDtype reads the labels in order as pandas does: a label that is no
+// number, an integer outside both 64-bit ranges, or unsigned and negative
+// integers together, make an object index, unless a None came before the
+// integers (they are then read as floats); a float or a None among numbers
+// makes a float index.
+func labelDtype(labels []Value) labelIndex {
+	null, float, unsigned, signed, numbers := false, false, false, false, 0
+	for _, label := range labels {
+		switch label.Kind {
+		case None:
+			null = true
+		case Float:
+			float = true
+			numbers++
+		case Int, BigInt:
+			numbers++
+			if null {
+				continue
+			}
+			value := labelBig(label)
+			unsigned = unsigned || value.Cmp(labelMaxInt) > 0 && value.Cmp(labelMaxUint) <= 0
+			signed = signed || value.Sign() < 0
+			if unsigned && signed || value.Cmp(labelMaxUint) > 0 || value.Cmp(labelMinInt) < 0 {
+				return labelObject
+			}
+		default:
+			return labelObject
+		}
+	}
+	switch {
+	case numbers == 0:
+		return labelObject
+	case float || null:
+		return labelFloat
+	}
+	return labelInteger
+}
+
 // LabelTexts is str(label) of the column labels as pandas holds them: labels
 // that are all numbers or None, with a float or a None among them, form a
 // float index (an int is written as a float, None as nan).
 func LabelTexts(labels []Value) []string {
-	numbers, floats := 0, false
-	for _, label := range labels {
-		switch label.Kind {
-		case Int:
-			numbers++
-		case Float:
-			numbers++
-			floats = true
-		case None:
-			floats = true
-		default:
-			numbers = -len(labels) - 1
-		}
-	}
+	dtype := labelDtype(labels)
 	texts := make([]string, len(labels))
 	for i, label := range labels {
 		texts[i] = labelText(label)
-		if numbers > 0 && floats {
+		if dtype == labelFloat {
 			switch label.Kind {
-			case Int:
-				texts[i] = pythonFloatRepr(float64(label.Int))
+			case Int, BigInt:
+				texts[i] = pythonFloatRepr(labelFloat64(label))
 			case None:
 				texts[i] = "nan"
 			}
 		}
 	}
 	return texts
+}
+
+// labelKeys names the pandas column of every label: labels that are equal in
+// Python (1, 1.0 and True; a float index compares the floats) share a key and
+// so a column selection, like equal texts.
+func labelKeys(labels []Value, columns []string) []string {
+	keys := make([]string, len(columns))
+	dtype := labelDtype(labels)
+	for i, column := range columns {
+		keys[i] = "s:" + column
+		if i >= len(labels) {
+			continue
+		}
+		switch label := labels[i]; label.Kind {
+		case None:
+			keys[i] = "None"
+		case Bool:
+			keys[i] = "n:0"
+			if label.Bool {
+				keys[i] = "n:1"
+			}
+		case Int, BigInt, Float:
+			number := labelFloat64(label)
+			switch {
+			case label.Kind != Float && dtype != labelFloat:
+				keys[i] = "n:" + labelBig(label).String()
+			case number == math.Trunc(number) && !math.IsInf(number, 0):
+				whole, _ := new(big.Float).SetFloat64(number).Int(nil)
+				keys[i] = "n:" + whole.String()
+			default:
+				keys[i] = "f:" + pythonFloatRepr(number)
+			}
+		}
+	}
+	return keys
 }
 
 func labelText(label Value) string {
@@ -71,42 +167,41 @@ func labelText(label Value) string {
 	return label.Text
 }
 
-// typedLabels puts the labels that are not text into the header row. Two of
-// them naming the same pandas column (equal numbers) are not ported.
+// typedLabels puts the labels that are not text into the header row.
 func typedLabels(sheet *opSheet, labels []Value) error {
 	if labels == nil || len(sheet.rows) == 0 {
 		return nil
 	}
-	seen := map[string]bool{}
+	nones := 0
 	for i, label := range labels {
 		cell := opCell{col: i + 1, styled: true}
-		key := "None"
 		switch label.Kind {
 		case Str:
 			continue
 		case None:
 			cell.kind = 's'
-		case Int:
-			cell.kind, cell.text = 'n', percentG(float64(label.Int), false)
-			key = strconv.FormatFloat(float64(label.Int), 'g', -1, 64)
+			if nones++; nones > 1 {
+				return ErrNotPorted // two None labels
+			}
+		case Int, BigInt:
+			number := labelFloat64(label)
+			if math.IsInf(number, 0) {
+				return ErrNotPorted // float(label) overflows where pandas reads it
+			}
+			cell.kind, cell.text = 'n', percentG(number, false)
 		case Float:
 			if math.IsNaN(label.Float) || math.IsInf(label.Float, 0) {
 				return ErrNotPorted
 			}
 			cell.kind, cell.text = 'n', percentG(label.Float, false)
-			key = strconv.FormatFloat(label.Float, 'g', -1, 64)
 		case Bool:
-			cell.kind, cell.text, key = 'b', "0", "0"
+			cell.kind, cell.text = 'b', "0"
 			if label.Bool {
-				cell.text, key = "1", "1"
+				cell.text = "1"
 			}
 		default:
 			return ErrNotPorted
 		}
-		if seen[key] {
-			return ErrNotPorted
-		}
-		seen[key] = true
 		sheet.rows[0].cells[i] = cell
 	}
 	return nil
@@ -156,7 +251,7 @@ func pySlice(text string, n int) string {
 // numeric coercion of every column whose values all convert, Int64 for
 // all-integer columns and the widths min(max(len(str(value)), len(label)) +
 // 2, 50).
-func reportSheet(title string, columns []string, data [][]Value) (opSheet, error) {
+func reportSheet(title string, columns []string, labels []Value, data [][]Value) (opSheet, error) {
 	if len(data) != len(columns) || len(columns) > 702 {
 		return opSheet{}, ErrNotPorted
 	}
@@ -164,9 +259,10 @@ func reportSheet(title string, columns []string, data [][]Value) (opSheet, error
 		return opSheet{title: title}, nil // a frame without columns writes no cell
 	}
 	rows := len(data[0])
+	keys := labelKeys(labels, columns)
 	uses := map[string]int{}
-	for _, name := range columns {
-		uses[name]++
+	for _, key := range keys {
+		uses[key]++
 	}
 	frame := make([]frameColumn, len(columns))
 	widths := make([]string, len(columns))
@@ -184,7 +280,7 @@ func reportSheet(title string, columns []string, data [][]Value) (opSheet, error
 			return opSheet{}, err
 		}
 		frame[i] = column
-		if uses[columns[i]] > 1 {
+		if uses[keys[i]] > 1 {
 			widths[i] = strconv.Itoa(min(max(rows, pyLen(columns[i]))+2, 50))
 			continue
 		}
@@ -244,7 +340,7 @@ func ReportWorkbook(sheet ReportSheet, now time.Time) ([]byte, error) {
 	if err := titles.add(name); err != nil {
 		return nil, err
 	}
-	built, err := reportSheet(name, sheet.Columns, sheet.Data)
+	built, err := reportSheet(name, sheet.Columns, sheet.Labels, sheet.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -311,7 +407,7 @@ func ReportSheetsWorkbook(sheets []ReportSheet, now time.Time) ([]byte, error) {
 		if err != nil && !exists {
 			return nil, err
 		}
-		built, err := reportSheet(name, sheet.Columns, sheet.Data)
+		built, err := reportSheet(name, sheet.Columns, sheet.Labels, sheet.Data)
 		if err != nil {
 			return nil, err
 		}

@@ -127,8 +127,11 @@ matrix for the MCP server as well.
 ## Not ported (refused with the HTML 500 page before any query)
 
 - In the file tools: workbook labels that are numbers equal to one another or
-  beyond 64 bits, and the paragraph inputs `pdfexport` refuses
-  (pdf-exports.md).
+  beyond 64 bits, and the paragraph tags `pdfexport` refuses (pdf-exports.md,
+  "Paragraph markup"). Labels, cells and texts with `&`, `<`, entities, `<b>`,
+  `<i>`, `<br/>` or soft hyphens are drawn as reportlab draws them, and markup
+  its parser raises on (`A<B` opens a tag) fails the export like any other
+  exception (`v2rep3-*` receipts).
 - `get_schema` for a whitelisted model or the full schema (static model
   metadata).
 - The other whitelisted models; relation traversal (`a__b`), reverse
@@ -211,3 +214,9 @@ every group on `run-query-courses-group-header` (the other cases are the
 documented refusals of v2-refusals.md). GREEN `v2rep2-versioned-r2`: native
 Django, native Go, Caddy `/api/v1` and `/api/v2` 174/174. Mutation
 `v2rep2-mutation-r2` (the manager's group filter dropped) CAUGHT.
+
+Paragraph markup (`v2rep3-*` receipts): 178 cases (4 more: `run-export-pdf-markup`,
+`run-export-pdf-markup-over-pages` with a text of several fragments and a
+9000-character word cut over pages, `run-export-pdf-markup-unclosed-error` and
+`run-export-pdf-label-markup-error`). RED: the documented refusal. GREEN and
+mutation: see v2-refusals.md, "Ported in the v2-reports-3 change".

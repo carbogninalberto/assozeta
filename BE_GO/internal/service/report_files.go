@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math"
+	"math/big"
 	"strconv"
 	"strings"
 
@@ -58,7 +59,7 @@ func (s *SavedReports) runFileTool(ctx context.Context, tool string, params doma
 	}
 	raised := false
 	ctx = context.WithValue(WithMCPRaised(ctx, &raised), reportRunKey{}, true)
-	tools := &BusinessMCPTools{store: reportRunStore{s.store}, association: association, now: s.now, files: true, group: group}
+	tools := &BusinessMCPTools{store: reportRunStore{s.store}, association: association, now: s.now, group: group}
 	result, err := tools.Execute(ctx, tool, params)
 	if err != nil {
 		return nil, err
@@ -89,6 +90,17 @@ func (s *SavedReports) runFileTool(ctx context.Context, tool string, params doma
 		return nil, ErrSavedReportRaised // BadHeaderError, outside the view's try
 	}
 	return &ReportDownload{Bytes: data, ContentType: contentType.(string), Disposition: pdfrender.HeaderBytes(disposition)}, nil
+}
+
+// mcpRunOnly marks an exception whose text is not given: a saved-report run
+// answers every exception alike, the MCP transport returns str(e) and stays
+// refused.
+func mcpRunOnly(ctx context.Context) error {
+	if ctx.Value(reportRunKey{}) == nil {
+		return ErrBusinessMCPNotPorted
+	}
+	markMCPRaised(ctx)
+	return nil
 }
 
 // courseGroup is the X-Group-Id filter of Course.objects during a request.
@@ -168,7 +180,9 @@ func mcpReportSheet(title string, data []any, labels domain.RequestObject) (xlsx
 				label = xlsxexport.BoolValue(typed)
 			case json.Number:
 				var err error
-				if label, err = mcpExportXLSXValue(typed); err != nil {
+				if whole, ok := new(big.Int).SetString(string(typed), 10); ok && !whole.IsInt64() {
+					label = xlsxexport.BigIntValue(whole.String()) // an int label of any size names the column
+				} else if label, err = mcpExportXLSXValue(typed); err != nil {
 					return xlsxexport.ReportSheet{}, err
 				}
 			default:
@@ -197,8 +211,7 @@ func mcpReportSheet(title string, data []any, labels domain.RequestObject) (xlsx
 func mcpBuiltFile(ctx context.Context, file []byte, err error) ([]byte, error) {
 	switch {
 	case errors.Is(err, xlsxexport.ErrDjango), errors.Is(err, pdfexport.ErrLayout):
-		markMCPRaised(ctx)
-		return nil, nil
+		return nil, mcpRunOnly(ctx)
 	case errors.Is(err, xlsxexport.ErrNotPorted), errors.Is(err, pdfexport.ErrNotPorted):
 		return nil, ErrBusinessMCPNotPorted
 	}
@@ -226,10 +239,7 @@ func mcpOptionalText(arguments domain.RequestObject, name string) (string, bool)
 }
 
 func (t *BusinessMCPTools) exportPDF(ctx context.Context, data []any, labels domain.RequestObject, title string, arguments domain.RequestObject) ([]byte, error) {
-	raised := func() ([]byte, error) {
-		markMCPRaised(ctx)
-		return nil, nil
-	}
+	raised := func() ([]byte, error) { return nil, mcpRunOnly(ctx) }
 	// PDFExporter raises on: a label that is not a str (Paragraph), a table
 	// without columns, a header or body text that is not a str (stringWidth,
 	// Paragraph). The footer is written with '%s'.
@@ -292,11 +302,8 @@ func mcpFileResult(filename, contentType string, file []byte) domain.RequestObje
 
 // exportSheets is the end of tool_export_multi_sheet for a run: the file
 // name, the workbook and the result's file keys.
-func (t *BusinessMCPTools) exportSheets(ctx context.Context, prepared []reportSheetData, arguments domain.RequestObject) (any, error) {
-	raise := func() (any, error) {
-		markMCPRaised(ctx)
-		return mcpErrorResult(""), nil
-	}
+func (t *BusinessMCPTools) exportSheets(ctx context.Context, prepared []reportSheetData, specs []any, arguments domain.RequestObject) (any, error) {
+	raise := func() (any, error) { return mcpErrorResult(""), mcpRunOnly(ctx) }
 	name := "Export"
 	switch value := mcpLookupOr(arguments, "filename", "Export").(type) {
 	case string:
@@ -341,19 +348,41 @@ func (t *BusinessMCPTools) exportSheets(ctx context.Context, prepared []reportSh
 	if file, err = mcpBuiltFile(ctx, file, err); err != nil || file == nil {
 		return mcpErrorResult(""), err
 	}
-	return mcpFileResult(name+".xlsx", reportXLSXType, file), nil
+	result := mcpFileResult(name+".xlsx", reportXLSXType, file)
+	if ctx.Value(reportRunKey{}) != nil {
+		return result, nil
+	}
+	// The MCP transport answers the whole dict (row and sheet counts, save_info).
+	filename, ok := mcpLookupOr(arguments, "filename", "Export").(string)
+	if !ok {
+		return nil, ErrBusinessMCPNotPorted
+	}
+	rows := 0
+	for _, item := range prepared {
+		rows += len(item.data)
+	}
+	modelNames := []any{}
+	for _, spec := range specs {
+		if value, _ := spec.(domain.RequestObject).Lookup("model_name"); mcpTruthy(value) {
+			modelNames = append(modelNames, value)
+		}
+	}
+	hint := strconv.Itoa(rows) + " righe, " + strconv.Itoa(len(prepared)) + " fogli"
+	sheetsValue, _ := arguments.Lookup("sheets")
+	result = append(result,
+		domain.RequestField{Name: "row_count", Value: json.Number(strconv.Itoa(rows))},
+		domain.RequestField{Name: "sheet_count", Value: json.Number(strconv.Itoa(len(prepared)))},
+		domain.RequestField{Name: "save_info", Value: mcpObj("tool_name", "export_multi_sheet",
+			"params", mcpObj("filename", filename, "sheets", sheetsValue),
+			"name", filename+" - "+t.now().Format("02/01/2006"), "description", "Export multi-foglio "+filename+" - "+hint,
+			"description_hint", hint, "ui_config", mcpObj(), "model_names", modelNames)})
+	return result, nil
 }
 
 // attendanceFile is the export branch of tool_get_attendance_matrix for a
 // run: the PDF, or the workbook in one of its three layouts.
 func (t *BusinessMCPTools) attendanceFile(ctx context.Context, matrices []*attendanceMatrix, multi bool, arguments domain.RequestObject) (any, error) {
-	if !t.files {
-		return nil, ErrBusinessMCPNotPorted // the files are built for a saved-report run only
-	}
-	raised := func() (any, error) {
-		markMCPRaised(ctx)
-		return mcpErrorResult(""), nil
-	}
+	raised := func() (any, error) { return mcpErrorResult(""), mcpRunOnly(ctx) }
 	pdf := false
 	if format, ok := mcpLookupOr(arguments, "format", "xlsx").(string); ok && format == "pdf" {
 		pdf = true
@@ -409,5 +438,101 @@ func (t *BusinessMCPTools) attendanceFile(ctx context.Context, matrices []*atten
 	if file, err = mcpBuiltFile(ctx, file, err); err != nil || file == nil {
 		return mcpErrorResult(""), err
 	}
-	return mcpFileResult(name, contentType, file), nil
+	result := mcpFileResult(name, contentType, file)
+	if ctx.Value(reportRunKey{}) == nil {
+		// The MCP transport answers the whole dict; a saved-report run only
+		// reads the file keys.
+		return t.attendanceSaveInfo(result, matrices, multi, arguments)
+	}
+	return result, nil
+}
+
+// attendanceSaveInfo adds row_count, total_dates and save_info to the file
+// result of tool_get_attendance_matrix. Argument values it writes back as
+// they came stay refused unless they are strings (booleans for the flags).
+func (t *BusinessMCPTools) attendanceSaveInfo(result domain.RequestObject, matrices []*attendanceMatrix, multi bool,
+	arguments domain.RequestObject) (any, error) {
+	text := func(name string) (string, bool, bool) {
+		value, present := arguments.Lookup(name)
+		if !present || value == nil {
+			return "", false, true
+		}
+		str, ok := value.(string)
+		return str, str != "", ok
+	}
+	params := mcpObj("export", true)
+	format, ok := mcpLookupOr(arguments, "format", "xlsx").(string)
+	if !ok {
+		return nil, ErrBusinessMCPNotPorted
+	}
+	params = append(params, domain.RequestField{Name: "format", Value: format})
+	var courseID, courseName, dateFrom, dateTo string
+	var truthy [4]bool
+	for i, target := range []*string{&courseID, &courseName, &dateFrom, &dateTo} {
+		var ok bool
+		name := []string{"course_id", "course_name", "date_from", "date_to"}[i]
+		if *target, truthy[i], ok = text(name); !ok {
+			return nil, ErrBusinessMCPNotPorted
+		}
+		if truthy[i] {
+			params = append(params, domain.RequestField{Name: name, Value: *target})
+		}
+	}
+	if value := mcpLookupOr(arguments, "multi_sheet", false); mcpTruthy(value) {
+		flag, ok := value.(bool)
+		if !ok {
+			return nil, ErrBusinessMCPNotPorted
+		}
+		params = append(params, domain.RequestField{Name: "multi_sheet", Value: flag})
+	}
+	if value := mcpLookupOr(arguments, "export", false); value != true {
+		return nil, ErrBusinessMCPNotPorted
+	}
+	rows, totalDates := 0, 0
+	for _, matrix := range matrices {
+		rows += len(matrix.rows)
+		totalDates += matrix.totalDates
+	}
+	fromDisplay, toDisplay := "inizio", "oggi"
+	if truthy[2] {
+		fromDisplay = dateFrom
+	}
+	if truthy[3] {
+		toDisplay = dateTo
+	}
+	hint := strconv.Itoa(rows) + " iscritti, " + strconv.Itoa(totalDates) + " lezioni"
+	if multi {
+		hint += ", " + strconv.Itoa(len(matrices)) + " corsi"
+	}
+	fields := []any{
+		mcpObj("key", "date_from", "type", "date", "label", "Data inizio"),
+		mcpObj("key", "date_to", "type", "date", "label", "Data fine"),
+		mcpObj("key", "format", "type", "select", "label", "Formato", "options", []any{"xlsx", "pdf"}),
+	}
+	if multi {
+		fields = append(fields, mcpObj("key", "multi_sheet", "type", "boolean", "label", "Fogli separati per corso"))
+	}
+	var label any
+	switch {
+	case truthy[1]:
+		label = courseName
+	case multi:
+		label = "Tutti i corsi"
+	default:
+		label = mcpOptional(matrices[0].course)
+	}
+	description := "Registro presenze " + dto.PythonStr(label)
+	if truthy[2] || truthy[3] {
+		description += " (" + fromDisplay + " - " + toDisplay + ")"
+	}
+	description += " - " + hint
+	from, _ := arguments.Lookup("date_from")
+	to, _ := arguments.Lookup("date_to")
+	result = append(result,
+		domain.RequestField{Name: "row_count", Value: json.Number(strconv.Itoa(rows))},
+		domain.RequestField{Name: "total_dates", Value: json.Number(strconv.Itoa(totalDates))},
+		domain.RequestField{Name: "save_info", Value: mcpObj("tool_name", "get_attendance_matrix", "params", params,
+			"name", "Presenze "+fromDisplay+" - "+toDisplay, "description", description, "description_hint", hint,
+			"ui_config", mcpObj("fields", fields), "course_name", label, "date_from", from, "date_to", to)})
+	return result, nil
 }

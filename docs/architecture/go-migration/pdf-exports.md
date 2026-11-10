@@ -71,15 +71,47 @@ paragraphs:
   digest and the standard numbers image names by first appearance on both sides. Everything else about the image (bytes,
   dictionary, placement) is compared exactly.
 
-Refused (`ErrNotPorted`, the callers answer the 500 page before any write): paragraph text containing `&`, `<` or a soft
-hyphen (reportlab's markup parser and its multi-fragment layout are not ported), a paragraph cut between two pages when one
-of its lines ends inside a long word, and a logo that is not an 8-bit grey or colour JPEG in strict base64. Any other
-paragraph too long for the page is cut as `Paragraph.split` cuts it: the lines that fit stay (never one alone), the rest
-continues as a paragraph of the remaining words.
+Refused (`ErrNotPorted`, the callers answer the 500 page before any write): the paragraph tags whose drawing is not ported
+(see "Paragraph markup"), and logo data that is neither refused by Python's base64 nor a JPEG Go's decoder reads (whether PIL
+reads it, and as what, is not reproduced).
 
 A document reportlab fails to build is `ErrLayout`, which each caller answers as Django answers an exception of the export:
 a row taller than a page (`LayoutError`), a list value in a cell (reportlab takes it for a list of flowables), rows of
-another length than the columns, an invalid alignment.
+another length than the columns, an invalid alignment, paragraph markup the parser raises on.
+
+## Paragraph markup
+
+Every paragraph text goes through reportlab's `ParaParser`, an `html.parser.HTMLParser` with character references left
+alone. Go ports both:
+
+- `htmlparser.go` is CPython 3.13's `HTMLParser.goahead(0)`: start and end tags with the tolerant attribute patterns (their
+  backtracking included), comments, declarations, processing instructions, CDATA sections, the raw-text elements (`script`,
+  `style`, `title`, `textarea`, `plaintext` and the others), entity and character references with their terminators, and
+  the incomplete construct at the end that a feed without `close()` leaves unread;
+- `paraparser.go` is the tag stack: `<b>`, `<strong>`, `<i>`, `<em>` choose the bold and oblique Helvetica fonts, `<br/>`
+  breaks the line, unknown tags are ignored, the 2121 entity names reportlab knows are replaced (`entities_gen.go`), an
+  unknown one is drawn as written. A tag closed out of order or left open, text inside `<br>`, a character reference beyond
+  U+10FFFF and the other inputs the parser raises on are `ErrLayout`: the export fails as in Django (`A<B` opens a tag `b`
+  that is never closed). The tags that draw lines, links, images, rises, other sizes or colours, bullets and sequences
+  (`u`, `strike`, `a`, `link`, `img`, `sup`, `sub`, `font`, `span`, `greek`, `unichar`, `nobr`, `bullet`, `seq*`, `onDraw`,
+  `index`) and a `<para>` with attributes are refused.
+
+One fragment is laid out as before (reportlab's kind 0), now with soft hyphens: a word is cut at its last soft hyphen that
+fits, with a `-`. Several fragments (text around `&amp;` is three of them) take the kind 1 layout: `_getFragWords`, the line
+breaking with the space shrinkage counted over the line's fragments, long words cut character by character
+(`_splitFragWord`), soft hyphens (`_SHYWord.shyphenate`), and the drawing with one text run per fragment and the font
+switches reportlab writes. A paragraph cut between two pages keeps the frag words of its lines: a long word cut by the page
+is joined again and cut anew on the next one, in both layouts (`_split_blParaSimple`, `_split_blParaProcessed`), with the
+effects reportlab has there (a `<br/>` at the cut starts the next page with an empty line; hyphens at the end of a rejoined
+piece are dropped; a soft hyphen at the very end of a word fails the document).
+
+The text object merges a move that directly follows another one (`PDFTextObject.moveCursor`), as in centred paragraphs of
+several lines. Objects are numbered in the order reportlab creates them: a font or image first used on a later page comes
+after the pages before it.
+
+The logo is read as Django reads it: `base64.b64decode` without validation (characters outside the alphabet are skipped;
+an unfinished group, or no data at all, gives the `[LOGO]` paragraph), and a four-component JPEG is embedded as `DeviceCMYK`
+with the inverting `/Decode` array.
 
 ## Golden test
 
@@ -88,8 +120,12 @@ their decoded form in `BE_GO/internal/pdfexport/testdata/golden.json`; `go test 
 and compares it byte for byte in that form (people, no rows, every value type, escapes and substitution fonts, several pages,
 a page filled exactly, A3, A2, wider than A2, a row taller than the page, alignment, portrait; balance sheets without a logo,
 with colour and grey JPEG logos, on several pages, with long, unbroken, empty and multi-line denominations, substitution
-fonts in the header, and the closing line on a page of its own: 35 documents, 66 with the saved-report ones below), and checks the digest of a document against
-reportlab's invariant one. `refusal_test.go` pins the refused inputs.
+fonts in the header, and the closing line on a page of its own: 35 documents, 66 with the saved-report ones below, 106
+with the markup ones: entities, `&` and `<`, tags, soft hyphens, long words and paragraphs cut over pages in both layouts,
+logos in lenient base64 and CMYK, 14 of them raising), and checks the digest of a document against
+reportlab's invariant one. `TESTS/fixtures/generate_pdf_paragraphs.py` writes `testdata/paragraphs.json`: what reportlab's
+`Paragraph` makes of 2755 texts (155 authored, 2600 drawn from markup pieces with a fixed seed): the fragments, an exception,
+or fragments Go refuses; `TestParagraphParserCorpus` compares each one. `refusal_test.go` pins the refused inputs.
 
 ## Evidence
 

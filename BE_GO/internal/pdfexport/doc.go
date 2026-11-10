@@ -123,7 +123,16 @@ func (d *docTemplate) add(f flowable) bool {
 
 // build is BaseDocTemplate.build for tables, paragraphs, spacers and page
 // breaks.
-func (d *docTemplate) build(flowables []flowable) ([]byte, error) {
+func (d *docTemplate) build(flowables []flowable) (document []byte, err error) {
+	defer func() {
+		// An exception reportlab raises while it lays a paragraph out.
+		if failure := recover(); failure != nil {
+			if _, ok := failure.(paraFailure); !ok {
+				panic(failure)
+			}
+			document, err = nil, ErrLayout
+		}
+	}()
 	d.c = newCanvas(d.pageW, d.pageH)
 	postponed := map[flowable]bool{}
 	for len(flowables) > 0 {

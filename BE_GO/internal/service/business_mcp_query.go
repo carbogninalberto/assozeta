@@ -301,9 +301,6 @@ func (t *BusinessMCPTools) exportData(ctx context.Context, arguments domain.Requ
 	if len(data) == 0 {
 		return mcpObj("error", "No data to export", "count", json.Number("0")), nil
 	}
-	if formatText != "csv" && !t.files {
-		return nil, ErrBusinessMCPNotPorted // XLSX and PDF files are built for a saved-report run only
-	}
 	modelName, _ := arguments.Lookup("model_name")
 	title := mcpLookupOr(arguments, "title", "")
 	titleOrModel := title
@@ -409,12 +406,14 @@ func (t *BusinessMCPTools) exportMultiSheet(ctx context.Context, arguments domai
 		return mcpRaisedResult(ctx, "") // enumerate() of a number, or .get on a character or key
 	}
 	var prepared []reportSheetData
+	var specs []any
 	for i, item := range items {
 		spec, ok := item.(domain.RequestObject)
 		if !ok {
 			return mcpRaisedResult(ctx, "") // .get on a value that is not a dict
 		}
 		spec = dto.PythonDict(spec)
+		specs = append(specs, spec)
 		modelName, _ := spec.Lookup("model_name")
 		if !mcpTruthy(modelName) {
 			return mcpErrorResult("Sheet " + strconv.Itoa(i+1) + ": model_name is required"), nil
@@ -438,10 +437,7 @@ func (t *BusinessMCPTools) exportMultiSheet(ctx context.Context, arguments domai
 	if len(prepared) == 0 {
 		return mcpObj("error", "No data to export from any sheet", "count", json.Number("0")), nil
 	}
-	if !t.files {
-		return nil, ErrBusinessMCPNotPorted // the XLSX workbook is built for a saved-report run only
-	}
-	return t.exportSheets(ctx, prepared, arguments)
+	return t.exportSheets(ctx, prepared, specs, arguments)
 }
 
 // ---------------------------------------------------------------------------

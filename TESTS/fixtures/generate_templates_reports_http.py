@@ -496,6 +496,22 @@ run('export-xlsx-label-values', 'export_data', {**NUOTO, 'format': 'xlsx', 'colu
 run('export-xlsx-label-float-boolean', 'export_data', {**NUOTO, 'format': 'xlsx', 'column_labels': {'tag_name': 1.5, 'creation_date': True}},
     200, download('Tags.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
         {'title': 'Tags', 'columns': [F(1.5), {'bool': True}], 'rows': [['Nuoto', '15/09/2026 08:30']]}]}))
+# Labels that are equal numbers name the same pandas columns (neither is converted, their widths follow the row count); an
+# integer label of any size is a number in the header row.
+run('export-xlsx-label-equal-numbers', 'export_data', {**NUOTO, 'format': 'xlsx', 'column_labels': {'tag_name': 1, 'creation_date': 1.0}},
+    200, download('Tags.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': [I(1), F(1.0)], 'rows': [['Nuoto', '15/09/2026 08:30']]}]}))
+run('export-xlsx-label-equal-boolean', 'export_data', {**NUOTO, 'format': 'xlsx', 'column_labels': {'tag_name': True, 'creation_date': 1}},
+    200, download('Tags.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': [{'bool': True}, I(1)], 'rows': [['Nuoto', '15/09/2026 08:30']]}]}))
+run('export-xlsx-label-big-integer', 'export_data',
+    {**NUOTO, 'format': 'xlsx', 'column_labels': {'tag_name': 2 ** 70, 'creation_date': -2 ** 63 - 1}},
+    200, download('Tags.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': [I(2 ** 70), I(-2 ** 63 - 1)], 'rows': [['Nuoto', '15/09/2026 08:30']]}]}))
+run('export-xlsx-label-unsigned-integers', 'export_data',
+    {**NUOTO, 'format': 'xlsx', 'column_labels': {'tag_name': 2 ** 63, 'creation_date': 2 ** 63}},
+    200, download('Tags.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': [I(2 ** 63), I(2 ** 63)], 'rows': [['Nuoto', '15/09/2026 08:30']]}]}))
 run('export-xlsx-label-list-error', 'export_data', {**NUOTO, 'format': 'xlsx', 'column_labels': {'tag_name': ['a']}}, 500, FAILED)
 run('sheets-label-dict-error', 'export_multi_sheet', {'sheets': [{**NUOTO, 'column_labels': {'tag_name': {'a': 1}}}]}, 500, FAILED)
 run('export-pdf-no-columns-error', 'export_data', {**ONLY_IDS, 'format': 'pdf'}, 500, FAILED)
@@ -509,6 +525,20 @@ run('export-pdf-footer-number', 'export_data', {**NUOTO_PDF, 'footer_text': 7}, 
     download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'footer_text': '7'}))
 run('export-pdf-footer-list', 'export_data', {**NUOTO_PDF, 'footer_text': [1, 'a', None]}, 200,
     download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'footer_text': "[1, 'a', None]"}))
+# Labels and texts are reportlab paragraphs: '&', entities, tags and soft hyphens go through its markup parser, and a text
+# longer than a page is cut where it stands, inside a long word too. Markup the parser raises on fails the export.
+MARKUP_LABELS = {'tag_name': 'Nome & <b>tag</b>', 'creation_date': 'A < B &lt;data&gt;'}
+MARKUP_TABLE = {**NUOTO_TABLE, 'headers': list(MARKUP_LABELS.values())}
+run('export-pdf-markup', 'export_data', {**NUOTO_PDF, 'column_labels': MARKUP_LABELS, 'text_before': 'Sport &amp; Fun<br/>R&D <i>club</i>',
+    'text_after': 'poli\xadsportiva 1<2 &euro;'}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**MARKUP_TABLE, 'text_before': 'Sport &amp; Fun<br/>R&D <i>club</i>',
+                                                 'text_after': 'poli\xadsportiva 1<2 &euro;'}))
+MARKUP_TEXT = ' '.join(['il <b>corso</b> di nuoto &amp; pallanuoto <i>agonistico</i> R&D per adulti della poli\xadsportiva'] * 120)
+WORD_TEXT = 'prima ' * 30 + 'X' * 9000 + ' dopo'
+run('export-pdf-markup-over-pages', 'export_data', {**NUOTO_PDF, 'text_before': MARKUP_TEXT, 'text_after': WORD_TEXT}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': MARKUP_TEXT, 'text_after': WORD_TEXT}))
+run('export-pdf-markup-unclosed-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <b>b'}, 500, FAILED)
+run('export-pdf-label-markup-error', 'export_data', {**NUOTO_PDF, 'column_labels': {'tag_name': 'A<B'}}, 500, FAILED)
 
 run('sheets-missing-error', 'export_multi_sheet', {'filename': 'x'}, 500, FAILED)
 run('sheets-none', 'export_multi_sheet', {'sheets': []}, 400, {'error': 'No sheets specified'})

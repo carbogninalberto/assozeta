@@ -20,6 +20,7 @@ rows:
 Set ASSOZETA_MCP_SERVER_GO_ROOT to another BE_GO tree (the RED receipt uses
 the base revision's) and ASSOZETA_MCP_SERVER_LABEL to name the receipt.
 """
+import base64
 import hashlib
 import json
 import os
@@ -134,7 +135,13 @@ CASES = [
     ('export_data', {'model_name': 'Associate', 'format': 'csv', 'filters': {'sex': 'F', 'first_name__icontains': 'a'}}, None),
     ('export_data', {'model_name': 'Associate', 'format': 'csv', 'filters': {'first_name': 'Nessuno'}}, {'error': 'No data to export', 'count': 0}),
     ('export_data', {'model_name': 'Associate', 'format': 'xlsx', 'filters': {'first_name': 'Nessuno'}}, {'error': 'No data to export', 'count': 0}),
-    ('export_data', {'model_name': 'Associate', 'format': 'xlsx'}, 'refused'),
+    ('export_data', {'model_name': 'Associate', 'format': 'xlsx'}, {'type': 'export_ready', 'filename': 'Associate.xlsx'}),
+    ('export_data', {'model_name': 'Payment', 'format': 'xlsx', 'title': 'Incassi & spese', 'fields': ['payment_date', 'amount', 'type', 'description', 'associate__first_name'], 'order_by': ['payment_date'], 'column_labels': {'amount': 'Importo', 'payment_date': 'Data'}}, None),
+    ('export_data', {'model_name': 'Course', 'format': 'xlsx', 'fields': ['title', 'fee', 'status_flag', 'start_date'], 'order_by': ['title'], 'limit': 2}, {'type': 'export_ready'}),
+    ('export_data', {'model_name': 'Associate', 'format': 'pdf', 'fields': ['first_name', 'last_name', 'sex'], 'order_by': ['last_name'], 'title': 'Soci'}, {'type': 'export_ready', 'filename': 'Soci.pdf'}),
+    ('export_data', {'model_name': 'Payment', 'format': 'pdf', 'fields': ['payment_date', 'amount', 'description'], 'order_by': ['payment_date'], 'header_text': 'Pagamenti', 'footer_text': 'Pagina', 'text_before': 'Prima', 'text_after': 'Dopo'}, {'type': 'export_ready'}),
+    ('export_data', {'model_name': 'Course', 'format': 'pdf', 'fields': ['title', 'fee', 'start_date'], 'order_by': ['title'], 'column_labels': {'title': 'Corso', 'fee': 'Quota'}, 'include_archived': True}, {'type': 'export_ready'}),
+    ('export_data', {'model_name': 'Associate', 'format': 'xlsx', 'title': 5}, 'refused'),
     ('export_data', {'model_name': 'Associate', 'format': 'doc'}, {'error': 'Unsupported format: doc. Use: csv, xlsx, pdf'}),
     ('export_data', {'model_name': 'Nope', 'format': 'csv'}, {'error': "Model 'Nope' is not whitelisted"}),
     ('export_data', {'model_name': 'Course', 'format': 'csv', 'fields': ['title', 'description', 'fee', 'start_date', 'status_flag'], 'order_by': ['title'], 'limit': 2, 'include_archived': True, 'header_text': 'x'}, None),
@@ -142,7 +149,8 @@ CASES = [
     ('export_multi_sheet', {'sheets': [{'model_name': 'Associate'}, {'title': 'x'}]}, {'error': 'Sheet 2: model_name is required'}),
     ('export_multi_sheet', {'sheets': [{'model_name': 'Associate', 'filters': {'first_name': 'Nessuno'}}]}, {'error': 'No data to export from any sheet', 'count': 0}),
     ('export_multi_sheet', {'sheets': [{'model_name': 'Associate', 'filters': {'nope': 1}}]}, None),
-    ('export_multi_sheet', {'sheets': [{'model_name': 'Associate'}]}, 'refused'),
+    ('export_multi_sheet', {'sheets': [{'model_name': 'Associate'}]}, {'type': 'export_ready', 'filename': 'Export.xlsx'}),
+    ('export_multi_sheet', {'sheets': [{'model_name': 'Course', 'title': 'Corsi', 'fields': ['title', 'fee'], 'order_by': ['title']}, {'model_name': 'Payment', 'fields': ['payment_date', 'amount'], 'order_by': ['payment_date'], 'column_labels': {'amount': 'Importo'}}, {'model_name': 'Associate', 'filters': {'first_name': 'Nessuno'}}], 'filename': 'Riepilogo/anno'}, {'type': 'export_ready', 'filename': 'Riepilogo-anno.xlsx'}),
     ('get_attendance_matrix', {}, {'multi': True}),
     ('get_attendance_matrix', {'course_id': I['nuoto']}, {'course': 'Nuoto Adulti', 'dates': ['03/03/2025', '10/03/2025', '01/04/2025'], 'total_enrolled': 2, 'total_dates': 3}),
     ('get_attendance_matrix', {'course_id': I['nuoto'], 'date_from': '2025-03-05', 'date_to': '2025-12-31'}, None),
@@ -156,7 +164,12 @@ CASES = [
     ('get_attendance_matrix', {'course_name': 'o', 'date_from': 'bad'}, None),
     ('get_attendance_matrix', {'date_from': '2025-05-01'}, None),
     ('get_attendance_matrix', {'date_from': '2027-05-01'}, {'error': 'Nessun dato di presenza trovato per nessun corso nel periodo indicato.'}),
-    ('get_attendance_matrix', {'course_id': I['nuoto'], 'export': True}, 'refused'),
+    ('get_attendance_matrix', {'course_id': I['nuoto'], 'export': True}, {'type': 'export_ready'}),
+    ('get_attendance_matrix', {'course_id': I['nuoto'], 'export': True, 'format': 'pdf'}, {'type': 'export_ready'}),
+    ('get_attendance_matrix', {'export': True}, {'type': 'export_ready'}),
+    ('get_attendance_matrix', {'export': True, 'multi_sheet': True}, {'type': 'export_ready'}),
+    ('get_attendance_matrix', {'export': True, 'format': 'pdf'}, {'type': 'export_ready'}),
+    ('get_attendance_matrix', {'course_name': 'yoga', 'export': True, 'date_from': '2025-01-01'}, {'type': 'export_ready'}),
     ('get_attendance_matrix', {'course_name': 'zumba', 'export': True}, None),
     ('sanitize_text', {'text': 'a/b'}, {'result': 'a-b'}),
     ('list_reports', {'user_id': str(I['anna'])}, None),
@@ -252,6 +265,23 @@ def matches(result, expected):
     if isinstance(expected, tuple):
         return isinstance(result, dict) and str(result.get('error', '')).startswith(expected[1])
     return isinstance(result, dict) and all(result.get(key) == value for key, value in expected.items())
+
+
+def file_digest(text):
+    """The result text with a data_base64 file replaced by its normalized parts (the creation times set aside)."""
+    result = json.loads(text)
+    if not isinstance(result, dict) or 'data_base64' not in result or str(result.get('content_type')).startswith('text/'):
+        return text
+    from TESTS.contracts import pdf, xlsx
+    data = base64.b64decode(result['data_base64'], validate=True)
+    if result.get('content_type') == 'application/pdf':
+        parts, _, _ = pdf.normalize(data)
+        digest = hashlib.sha256(b'\0'.join(parts)).hexdigest()
+    else:
+        kept = [(name, kind, flags, xlsx.STAMP.sub(rb'\1-\4', body) if name == 'docProps/core.xml' else body)
+                for name, kind, flags, body in xlsx.parts(data)]
+        digest = hashlib.sha256(repr(kept).encode('latin-1', 'backslashreplace')).hexdigest()
+    return json.dumps(dict(result, data_base64=digest), default=str)
 
 
 def django_call(tool, arguments):
@@ -379,10 +409,10 @@ def main():
                     assert expected == 'refused', f'{label_case}: Go refused a call it ports'
                 else:
                     go_text = raw[len('{"result": '):-1]
-                    if go_text != django_text:
+                    if file_digest(go_text) != file_digest(django_text):
                         (output / 'difference.json').write_text(json.dumps({'case': label_case, 'django': django_text, 'go': go_text}) + '\n')
                     assert expected != 'refused', f'{label_case}: Go must refuse'
-                    assert go_text == django_text, f'{label_case}: Go result differs from Django'
+                    assert file_digest(go_text) == file_digest(django_text), f'{label_case}: Go result differs from Django'
                     go = 'pass'
                 outcomes.append(dict(outcome, go=go))
                 print(f'{go.upper()}: {label_case}', flush=True)
@@ -453,6 +483,8 @@ def main():
              'BE/application/mcp_server/server.py', 'BE/application/mcp_server/query_builder.py', 'BE/application/mcp_server/security.py',
              'BE/application/mcp_server/schema.py', 'BE/application/mcp_server/attendance.py',
              'BE/application/mcp_server/exporters/csv_exporter.py', 'BE/application/mcp_server/exporters/__init__.py',
+             'BE/application/mcp_server/exporters/xlsx_exporter.py', 'BE/application/mcp_server/exporters/pdf_exporter.py',
+             'BE_GO/internal/service/report_files.go',
              'BE/application/management/commands/run_mcp_server.py',
              'BE_GO/internal/dto/mcp_query.go', 'BE_GO/internal/dto/mcp_prep.go', 'BE_GO/internal/dto/mcp_models.go',
              'BE_GO/internal/dto/mcp_schema.go', 'BE_GO/internal/dto/report_tools.go', 'BE_GO/internal/dto/mcp_models.json',

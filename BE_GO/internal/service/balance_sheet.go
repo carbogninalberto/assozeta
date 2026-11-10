@@ -171,7 +171,15 @@ func (r *sheetRun) yearRange(ctx context.Context, moment time.Time) (time.Time, 
 	return from, to, nil
 }
 
+// profile is SportAssociationSerializer(user.sportassociation): the reverse
+// accessor resolves the row by its owner through the base manager, so the
+// association the run already holds is read by id.
 func (r *sheetRun) profile(ctx context.Context) (*dto.AssociationProfile, error) {
+	if byID, ok := r.s.profiles.(interface {
+		ReadAssociation(ctx context.Context, association string) (*dto.AssociationProfile, error)
+	}); ok {
+		return byID.ReadAssociation(ctx, r.association)
+	}
 	return r.s.profiles.Read(ctx, r.identity.ScopeUser.ID)
 }
 

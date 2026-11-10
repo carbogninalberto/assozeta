@@ -109,12 +109,16 @@ type font struct {
 }
 
 var (
-	fontZapfDingbats       = &font{name: "ZapfDingbats", widths: &zapfDingbatsWidths, encoding: zapfDingbatsEncoding}
-	fontSymbol             = &font{name: "Symbol", widths: &symbolWidths, encoding: symbolEncoding}
-	fontHelvetica          = &font{name: "Helvetica", widths: &helveticaWidths, encoding: winAnsiEncoding, subs: []*font{fontSymbol, fontZapfDingbats}, ascent: 718, descent: -207}
-	fontHelveticaBold      = &font{name: "Helvetica-Bold", widths: &helveticaBoldWidths, encoding: winAnsiEncoding, subs: []*font{fontSymbol, fontZapfDingbats}, ascent: 718, descent: -207}
-	fontsByName            = map[string]*font{"Helvetica": fontHelvetica, "Helvetica-Bold": fontHelveticaBold, "Symbol": fontSymbol, "ZapfDingbats": fontZapfDingbats}
-	notdefChar        byte = 'n' // every standard font falls back to ZapfDingbats 'n'
+	fontZapfDingbats  = &font{name: "ZapfDingbats", widths: &zapfDingbatsWidths, encoding: zapfDingbatsEncoding}
+	fontSymbol        = &font{name: "Symbol", widths: &symbolWidths, encoding: symbolEncoding}
+	fontHelvetica     = &font{name: "Helvetica", widths: &helveticaWidths, encoding: winAnsiEncoding, subs: []*font{fontSymbol, fontZapfDingbats}, ascent: 718, descent: -207}
+	fontHelveticaBold = &font{name: "Helvetica-Bold", widths: &helveticaBoldWidths, encoding: winAnsiEncoding, subs: []*font{fontSymbol, fontZapfDingbats}, ascent: 718, descent: -207}
+	// The oblique fonts share the widths of the upright ones.
+	fontHelveticaOblique     = &font{name: "Helvetica-Oblique", widths: &helveticaWidths, encoding: winAnsiEncoding, subs: []*font{fontSymbol, fontZapfDingbats}, ascent: 718, descent: -207}
+	fontHelveticaBoldOblique = &font{name: "Helvetica-BoldOblique", widths: &helveticaBoldWidths, encoding: winAnsiEncoding, subs: []*font{fontSymbol, fontZapfDingbats}, ascent: 718, descent: -207}
+	fontsByName              = map[string]*font{"Helvetica": fontHelvetica, "Helvetica-Bold": fontHelveticaBold, "Helvetica-Oblique": fontHelveticaOblique,
+		"Helvetica-BoldOblique": fontHelveticaBoldOblique, "Symbol": fontSymbol, "ZapfDingbats": fontZapfDingbats}
+	notdefChar byte = 'n' // every standard font falls back to ZapfDingbats 'n'
 )
 
 type run struct {
@@ -211,6 +215,7 @@ type jpegImage struct {
 	data          []byte
 	width, height int
 	colorSpace    string
+	inverted      bool // DeviceCMYK with /Decode [ 1 0 1 0 1 0 1 0 ]
 }
 
 type canvasState struct {
@@ -227,14 +232,17 @@ type pageRecord struct {
 
 type canvas struct {
 	pageW, pageH float64
-	resources    []resource // in order of first use: their object numbers follow
-	fontNumbers  map[string]int
-	imageNames   map[string]bool
-	code         []string
-	state        canvasState
-	stack        []canvasState
-	pages        []pageRecord
-	pageImages   []string
+	resources    []resource // in order of first use
+	// sequence is the order in which reportlab numbers the objects: a resource (-index-1) when it is first used, a page
+	// (index) when it is shown.
+	sequence    []int
+	fontNumbers map[string]int
+	imageNames  map[string]bool
+	code        []string
+	state       canvasState
+	stack       []canvasState
+	pages       []pageRecord
+	pageImages  []string
 	// err is set by a flowable that meets an input this package does not
 	// reproduce while it is laid out.
 	err error
@@ -257,6 +265,7 @@ func (c *canvas) fontRef(f *font) string {
 	if !ok {
 		number = len(c.fontNumbers) + 1
 		c.fontNumbers[f.name] = number
+		c.sequence = append(c.sequence, -len(c.resources)-1)
 		c.resources = append(c.resources, resource{font: f})
 	}
 	return "/F" + strconv.Itoa(number)
@@ -300,6 +309,7 @@ func (c *canvas) transform(a, b, cc, d, e, f float64) {
 func (c *canvas) drawImage(image *jpegImage, width, height float64) {
 	if !c.imageNames[image.name] {
 		c.imageNames[image.name] = true
+		c.sequence = append(c.sequence, -len(c.resources)-1)
 		c.resources = append(c.resources, resource{image: image})
 	}
 	c.pageImages = append(c.pageImages, image.name)
@@ -372,6 +382,7 @@ func (c *canvas) showPage() {
 	if len(c.code) == 0 {
 		body = "1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET\n \n"
 	}
+	c.sequence = append(c.sequence, len(c.pages))
 	c.pages = append(c.pages, pageRecord{width: c.pageW, height: c.pageH, content: []byte(body), images: c.pageImages})
 	c.code = nil
 	c.pageImages = nil
@@ -439,14 +450,14 @@ func (c *canvas) save(now time.Time) []byte {
 	const fontDict = 1
 	number := fontDict
 	resourceNumber := make([]int, len(c.resources))
-	for i := range c.resources {
-		number++
-		resourceNumber[i] = number
-	}
 	pageNumber := make([]int, len(c.pages))
-	for i := range c.pages {
+	for _, item := range c.sequence {
 		number++
-		pageNumber[i] = number
+		if item < 0 {
+			resourceNumber[-item-1] = number
+		} else {
+			pageNumber[item] = number
+		}
 	}
 	catalog, info, tree := number+1, number+2, number+3
 	number += 3
@@ -479,7 +490,8 @@ func (c *canvas) save(now time.Time) []byte {
 		}
 	}
 	object(fontDict, pdfDict(fonts))
-	for i, res := range c.resources {
+	kids := make([]string, len(c.pages))
+	writeResource := func(i int, res resource) {
 		if res.font != nil {
 			entries := map[string]string{"BaseFont": "/" + res.font.name, "Name": "/F" + strconv.Itoa(c.fontNumbers[res.font.name]),
 				"Subtype": "/Type1", "Type": "/Font"}
@@ -487,16 +499,19 @@ func (c *canvas) save(now time.Time) []byte {
 				entries["Encoding"] = "/WinAnsiEncoding"
 			}
 			object(resourceNumber[i], pdfDict(entries))
-			continue
+			return
 		}
 		encoded := ascii85Encode(res.image.data)
-		object(resourceNumber[i], pdfDict(map[string]string{
+		entries := map[string]string{
 			"BitsPerComponent": "8", "ColorSpace": "/" + res.image.colorSpace, "Filter": "[ /ASCII85Decode /DCTDecode ]",
 			"Height": strconv.Itoa(res.image.height), "Length": strconv.Itoa(len(encoded)), "Subtype": "/Image", "Type": "/XObject",
-			"Width": strconv.Itoa(res.image.width)})+"\nstream\n"+string(encoded)+"endstream\n")
+			"Width": strconv.Itoa(res.image.width)}
+		if res.image.inverted {
+			entries["Decode"] = "[ 1 0 1 0 1 0 1 0 ]"
+		}
+		object(resourceNumber[i], pdfDict(entries)+"\nstream\n"+string(encoded)+"endstream\n")
 	}
-	kids := make([]string, len(c.pages))
-	for i, page := range c.pages {
+	writePage := func(i int, page pageRecord) {
 		resources := map[string]string{"Font": ref(fontDict), "ProcSet": "[ /PDF /Text /ImageB /ImageC /ImageI ]"}
 		if len(page.images) > 0 {
 			used := map[string]string{}
@@ -509,6 +524,13 @@ func (c *canvas) save(now time.Time) []byte {
 			"Contents": ref(streamNumber[i]), "MediaBox": pdfArray([]string{"0", "0", fpStr(page.width), fpStr(page.height)}),
 			"Parent": ref(tree), "Resources": pdfDict(resources), "Rotate": "0", "Trans": pdfDict(nil), "Type": "/Page"}))
 		kids[i] = ref(pageNumber[i])
+	}
+	for _, item := range c.sequence {
+		if item < 0 {
+			writeResource(-item-1, c.resources[-item-1])
+		} else {
+			writePage(item, c.pages[item])
+		}
 	}
 	object(catalog, pdfDict(map[string]string{"PageMode": "/UseNone", "Pages": ref(tree), "Type": "/Catalog"}))
 	date := fmt.Sprintf("(D:%04d%02d%02d%02d%02d%02d+00'00')", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute(), now.Second())

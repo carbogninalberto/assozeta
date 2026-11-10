@@ -130,6 +130,20 @@ SHEETS = {
               'data': {'note': 'x'}},
     'y2019': {'id': next(ids), 'association': OWN, 'status': 1, 'year': 2019, 'archived': False, 'created': '2020-01-10T09:00:00Z', 'data': None},
 }
+# Profile fields the adapter writes on the seeded associations (the others keep the base fixture's: no logo, no address).
+LOGO = ('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABsSFBcUERsXFhceHBsgKEIrKCUlKFE6PTBCYFVlZF9VXVtqeJmBanGQc1tdhbWGkJ6jq62rZ4C8ybqmx5moq6T/2wBD'
+        'ARweHigjKE4rK06kbl1upKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKT/wAARCAAIAAwDASIAAhEBAxEB/8QAHwAAAQUB'
+        'AQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJico'
+        'KSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ'
+        '2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMi'
+        'MoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOk'
+        'paanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwCjRRRXOewf/9k=')
+PROFILES = {
+    'foreign_association': {'denomination': 'Sport & Fun <i>club</i> A.S.D.', 'address_city': 'Città di Ca\xadstello &amp; dintorni',
+                            'address_cap': '06012', 'address': 'Via <b>Roma</b> 1 – R&D <3',
+                            'logo': 'data:image/jpeg;base64,' + '\n'.join(LOGO[i:i + 76] for i in range(0, len(LOGO), 76))},
+    'deleted_association': {'address': 'Via <b>Roma 1'},
+}
 STATE = {label: {'data': json.loads(json.dumps(row['data'])), 'year': row['year'], 'status': row['status']} for label, row in SHEETS.items()}
 
 
@@ -277,7 +291,7 @@ def comma(value):
     return f'{value:.2f}'.replace('.', ',')
 
 
-def export(label, denomination='Message reads own', fmt='excel'):
+def export(label, denomination='Message reads own', fmt='excel', profile=None):
     """{'file': get_excel_base64(descriptions, institutional, commercial, totals), 'filename': ...} of export_balance_sheet."""
     data, rows = STATE[label]['data'], []
     blank = lambda text='': rows.append([text, '', '', ''])
@@ -308,15 +322,18 @@ def export(label, denomination='Message reads own', fmt='excel'):
         # generate_pdf_from_data(rows, columns, title=..., align=..., header=custom_header, isA3=True, landscape=False,
         # additional_data=...): the seeded association has no logo and no address (the header's '[LOGO]' paragraph and
         # ', , '), the balance year starts on 1 January (the balances are dated 31 December).
+        # A seeded profile (PROFILES) brings a logo and an address into the header.
         year = STATE[label]['year']
+        profile = profile or {}
+        logo, place = profile.get('logo'), ', '.join(profile.get(key) or '' for key in ('address_city', 'address_cap', 'address'))
         header = f"""
         <div style="text-align: center;display:flex;justify-content: center;width: 200px;margin:auto; margin-bottom: 20px;">
             <div style="text-align: center;">
-                <img src="None" style="height: 1000px;"/>
+                <img src="{logo}" style="height: 1000px;"/>
             </div>
             <div style="text-align: center;">
                 <h1 style="font-size: 20px;">{denomination}</h1>
-                <h2 style="font-size: 16px;">, , </h2>
+                <h2 style="font-size: 16px;">{place}</h2>
                 <h3 style="font-size: 16px;">Approvato il ____/____/______</h3>
             </div>
         </div>
@@ -429,6 +446,17 @@ STATE['foreign'] = {'data': totals(default_data(), '2024-12-31', association=FOR
 add('foreign-owner-creates-sheet', 'foreign_owner', at('2024-02-01'), 200, body('foreign', created='$now', association=FOREIGN),
     effect={'kind': 'create', 'sheet': 'foreign', 'actor': 'foreign_owner', 'association': 'foreign_association', 'row': dict(STATE['foreign'])})
 
+# --- POST format pdf of associations with a logo and an address ------------------------------------------------------------------------
+# The header paragraphs go through reportlab's markup parser: '&', entities, tags and soft hyphens in the denomination and
+# the address, a JPEG logo in base64 with line breaks.
+add('pdf-logo-address-markup', 'foreign_owner', at('2024-02-01'), 200,
+    export('foreign', PROFILES['foreign_association']['denomination'], 'pdf', PROFILES['foreign_association']), method='POST', body=PDF,
+    effect=save('foreign', json.loads(json.dumps(STATE['foreign']['data'])), 'foreign_owner'))
+add('pdf-logo-address-markup-group-header', 'foreign_owner', at('2024-12-31'), 200,
+    export('foreign', PROFILES['foreign_association']['denomination'], 'pdf', PROFILES['foreign_association']), method='POST', body=PDF,
+    headers={'X-Group-Id': IDS['foreign_group']},
+    effect=save('foreign', totals(json.loads(json.dumps(STATE['foreign']['data'])), '2024-12-31', 'foreign_group', FOREIGN), 'foreign_owner'))
+
 # --- DELETE resets the year's sheet ---------------------------------------------------------------------------------------------------
 REFRESHED = {'msg': 'Balance sheet refreshed.'}
 add('delete-resets-data', 'full_collaborator', at('2021-06-01'), 200, REFRESHED, method='DELETE',
@@ -442,6 +470,15 @@ add('delete-deleted-association-owner-missing-year', 'deleted_association_owner'
     method='DELETE')
 add('post-deleted-association-owner-without-sheet', 'deleted_association_owner', SHEET, 404, {'msg': 'No balance sheet found.'}, method='POST',
     body={'balance_sheet': {'draft': True, 'year': 2024}})
+# Its seeded address is markup reportlab's parser raises on: the export fails after the sheet is read and saved.
+DELETED = IDS['deleted_association']
+STATE['deleted'] = {'data': totals(default_data(), '2020-12-31', association=DELETED), 'year': 2020, 'status': 1}
+add('deleted-association-owner-creates-sheet', 'deleted_association_owner', at('2020-06-01'), 200,
+    body('deleted', created='$now', association=DELETED),
+    effect={'kind': 'create', 'sheet': 'deleted', 'actor': 'deleted_association_owner', 'association': 'deleted_association',
+            'row': dict(STATE['deleted'])})
+add('pdf-unclosed-markup-server-error', 'deleted_association_owner', at('2020-06-01'), 500, SERVER, method='POST', body=PDF,
+    effect=save('deleted', json.loads(json.dumps(STATE['deleted']['data'])), 'deleted_association_owner'))
 add('delete-owner-without-association-info', 'owner_without_association', at('2018-01-01'), 403, INFO, method='DELETE')
 
 # --- balance-sheet/accounts/<uid>/delete ----------------------------------------------------------------------------------------------
@@ -500,5 +537,5 @@ add('account-deleted-with-instalment-payment', 'owner', remove('ledger_installme
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Balance sheet and account delete authored sequence with audit effects',
                               'ids': IDS, 'categories': CATEGORIES, 'accounts': ACCOUNTS, 'transfers': TRANSFERS, 'payments': PAYMENTS, 'course': COURSE, 'installments': INSTALLMENTS,
-                              'sheets': SHEETS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+                              'sheets': SHEETS, 'profiles': PROFILES, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

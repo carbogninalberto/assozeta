@@ -43,6 +43,11 @@ def seed_rows(source, created):
     from application.models.payment_models import PaymentCategory
     from application.models.balance_sheet_models import BalanceSheet, CustomAccounts, CustomAccountsTransfer
     ids, accounts = source['ids'], source['accounts']
+    # Profile fields of associations the base fixture created (deleted with them): a logo, an address, a denomination.
+    from application.models import SportAssociation
+    contract.require(len(source['profiles']) > 0, 'fixture.profiles')
+    for label, fields in source['profiles'].items():
+        contract.require(SportAssociation._base_manager.filter(pk=ids[label]).update(**fields) == 1, 'fixture.profile:' + label)
 
     def insert(model, row):
         model._base_manager.bulk_create([row])
