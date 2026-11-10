@@ -38,6 +38,13 @@ type CourseLocationWriteTransaction interface {
 	DeleteLocation(ctx context.Context, id string, audit LoginAuditContext, at time.Time) error
 	// LocationDocuments is the nested documents JSON of CourseLocationSerializer.
 	LocationDocuments(ctx context.Context, id string) (string, error)
+	// ActorAssociation is SportAssociation.objects.filter(user=actor).first().
+	ActorAssociation(ctx context.Context, actor string) (*string, error)
+	// CreateDocument is Document.objects.create(filename=...) with its
+	// auditlog entry (indexed to the actor's association).
+	CreateDocument(ctx context.Context, document NewDocument, actorAssociation *string, audit LoginAuditContext, at time.Time) error
+	// LinkDocument is course_location.documents.add(document).
+	LinkDocument(ctx context.Context, location, document string) error
 	Commit() error
 	Rollback() error
 }

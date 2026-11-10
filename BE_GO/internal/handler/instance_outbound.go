@@ -20,6 +20,44 @@ func NewInstanceOutboundHandler(admin *InstanceAdminHandler, outbound *service.I
 	return &InstanceOutboundHandler{InstanceAdminHandler: admin, outbound: outbound}
 }
 
+// Diagnostics is DiagnosticsView: GET is the stored snapshot, POST claims the
+// lease and runs the probes; both 200s carry Cache-Control: no-store.
+func (h *InstanceOutboundHandler) Diagnostics(c echo.Context) error {
+	if ok, err := h.begin(c, "GET, POST, HEAD, OPTIONS", "instance_diagnostics", false); !ok {
+		return err
+	}
+	request := c.Request()
+	switch {
+	case request.Method == http.MethodOptions:
+		return supplierOptions(c, "Diagnostics", "")
+	case isRead(request.Method):
+		body, err := h.admin.Diagnostics(request.Context())
+		if err != nil {
+			return h.fail(c, err)
+		}
+		c.Response().Header().Set("Cache-Control", "no-store")
+		return c.JSON(200, body)
+	case request.Method == http.MethodPost:
+		// The view never reads request.data.
+		tracked, err := h.operations.Track(request.Context())
+		if err != nil {
+			return paymentCategoryError(c, err)
+		}
+		defer tracked.Release()
+		ctx, err := tracked.Admit()
+		if err != nil {
+			return paymentCategoryError(c, err)
+		}
+		body, err := h.outbound.RunDiagnostics(ctx)
+		if err != nil {
+			return h.fail(c, err)
+		}
+		c.Response().Header().Set("Cache-Control", "no-store")
+		return c.JSON(200, body)
+	}
+	return h.notAllowed(c)
+}
+
 // Releases is InstanceReleasesView (GET).
 func (h *InstanceOutboundHandler) Releases(c echo.Context) error {
 	if ok, err := h.begin(c, "GET, HEAD, OPTIONS", "instance_releases", false); !ok {

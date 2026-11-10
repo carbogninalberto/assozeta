@@ -149,6 +149,9 @@ func (t *courseSubscriptionTransaction) MembershipPayments(ctx context.Context, 
 		if err != nil {
 			return nil, err
 		}
+		if payment.Instructor, payment.Invoice, err = paymentNestedRows(ctx, t.tx, payment.InvoicePartyPayment); err != nil {
+			return nil, err
+		}
 		result[link.Row] = append(result[link.Row], payment)
 	}
 	return result, nil

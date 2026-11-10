@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 11 in v2-subscriptions and 3 in v2-payments, below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions and 3 in v2-payments, below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -48,8 +48,17 @@ Cross-cutting facts used for the classes:
 | payment-misc | `GET payment/simulation/partial-quotes-apply` with a quote for a member's own account (fee e-mail, no SMTP configuration) | always for such members | `payment_misc_http.json` 90 cases; RED `v2pay-red-r1` Django 90/90, Go 500; GREEN `v2pay-final-r1` 4 transports; mutation `v2pay-mutation-r1` CAUGHT |
 | payment-misc | `POST payment/sign` with a signature (Signature, payment save, eager compensation print) | always with a signature | same run |
 | subscription-create | `POST subscription/add` from the owner wizard: default certificate date (today), emptied date, uploaded certificate with its expiration | always (date always sent) | `subscription_create_http.json` 45 cases; RED `v2gaps-red-r1` Django 45/45, Go 500; GREEN `v2gaps-versioned-r1` 4 transports; mutation CAUGHT; subscription-renew 54/54 and associates-draft 128/128 re-run |
+| course-enrolment | `POST course-subscriptions/add`, overview add, installment make-payment | association-scoped impersonation session | fixture `course_enrolment_http.json` 102 cases; RED Django 102/102, Go 500 (`v2c-red2`); GREEN 4 transports 102/102 (`v2c-green`); mutation (cents rounded half down) CAUGHT |
+| course-enrolment | quote payments (add, overview add) | quote amount not `\d{1,7}([.,]\d{1,2})?` (`1.000`, ` 50 `, `2,675`, ...) | same run |
+| course-subscriptions | `PATCH course-subscriptions/<pk>/update` | body has `events` (the edit form always sends it) | fixture `course_subscriptions_http.json` 114 cases; RED Django 114/114, Go 500 (`v2c-red`); GREEN 4 transports 114/114 (`v2c-green`); mutation (instalment label numbered from 0) CAUGHT |
+| course-subscriptions | `GET course-subscriptions/list` (and update responses) | membership payment with an invoice or an instructor (the latter B, legacy: yes) | same run |
+| course-location-writes | `POST course/locations/add`, `PATCH course/locations/<pk>/update` | `documents_data` files (Document, storage write, link) | fixture `course_location_writes_http.json` 51 cases with a private MinIO; RED Django 51/51, Go 500 (`v2c-red`); GREEN 4 transports 51/51 (`v2c-green`); mutation (document not linked) CAUGHT |
+| course-calendar | `GET calendar/events?get_lesson=true` (opening an event) | event matches an attendance day | fixture `course_calendar_http.json` 164 cases; RED Django 164/164, Go 500 (`v2c-red`); GREEN 4 transports 164/164 (`v2c-green`); mutation (lesson without the registry events) CAUGHT |
+| course-writes | course add/update/delete, overview update/delete | association-scoped impersonation session | fixture `course_writes_http.json` 119 cases; RED Django 119/119, Go 500 (`v2c-red`); GREEN 4 transports 119/119 (`v2c-green`); mutation (session filter inverted) CAUGHT |
+| instance-admin | `POST instance/admin/diagnostics` | every run (lease claimable) | fixture `instance_admin_http.json` 172 cases; RED Django 172/172, Go 500 (`diag-red`); GREEN 4 transports 172/172 (`diag-green`); mutation (`diag-mutation`, worker answer other than pong counted) CAUGHT |
+| instance-admin | `GET/PUT admin`, `GET/PUT/DELETE admin/email`, `POST admin/email/test` (B, legacy: yes) | environment `WHITELABEL_NAME`/`EMAIL_HOST_USER` outside the plain atom form | same run (`WHITELABEL_NAME='A.S.D. Polisportiva "Città" (Aurora)'`); `config/parseaddr.go` pinned by 667 parseaddr outputs |
 
-Details in `statistic-reads.md`, `payment-writes.md`, `association-transfer.md`, `instance-setup.md`, `data-restore.md` and `instance-updates.md`.
+Details in `instance-admin.md`, `course-locations.md`, `course-calendar.md`, `course-subscriptions.md`, `course-enrolment.md`, `course-writes.md`, `statistic-reads.md`, `payment-writes.md`, `association-transfer.md`, `instance-setup.md`, `data-restore.md` and `instance-updates.md`.
 
 ### Ported in the v2-subscriptions change
 
@@ -125,14 +134,11 @@ Why these stay (v2-subscriptions):
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | POST course-subscriptions/list | export pdf/excel | `course-subscriptions-list.svelte:575-588` | `service/course_subscriptions.go:177` | medium |
-| PATCH course-subscriptions/<pk>/update | body has `events` (always) | `AddEditCourseSubscriptionModal.svelte:61-67` | `service/course_subscription_update.go:408-411` | medium-expensive (cheap partial: unchanged events) |
-| GET course-subscriptions/list | membership payment with an invoice | `membership-list.svelte:385` | `service/course_subscriptions.go:114-116` | medium |
-| course enrolment routes | any impersonation session | `AddEditCourseSubscriptionModal.svelte:80-92`, `Members/detail/sections/Courses.svelte:366` | `service/course_enrolment.go:64` | medium |
-| course enrolment | free-text quote amount outside `\d{1,7}([.,]\d{1,2})?` | `course/add/sections/partials/multiple-quotes.svelte:44-53` | `service/course_enrolment.go:132` | cheap |
-| course add/update/delete, overview update/delete | any impersonation session | `course/add/AddCourse.svelte:67`, `OverviewCourse.svelte:304` | `service/course_writes.go:55` | medium |
 | POST course/list | print pdf/excel | `course/CourseList.svelte:806-812` | `handler/course_list.go:69` | expensive |
-| course/locations add/update | with `documents_data` | `course/modals/AddModal.svelte:30-50` | `service/course_location_writes.go:111,120` | medium-expensive |
-| GET calendar/events?get_lesson=true | event matches an attendance day | `routes/calendar/Calendar.svelte:539` | `service/course_calendar.go:1618` | medium (the todaylessons port reuses the same helper) |
+
+Still refused: both "Stampa vista corrente" exports. The `pdf` format (the modal's default) is reportlab's in-process
+`generate_pdf_from_data` (time-stamped, not byte-reproducible); `excel` is portable with `xlsxexport.PandasOpenpyxl` but
+the rows follow the querysets' unordered database order, which needs a deterministic order proof against Django first.
 
 ### documents / docmanager / document-views
 | Route | Condition | UI call | Go site | Cost |
@@ -158,16 +164,11 @@ Why these stay (v2-subscriptions):
 ### association transfer, data restore, instance setup and administration
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST admin/diagnostics | every run | `SelfInstance.svelte:155` | `service/instance_admin.go:1227` | expensive |
+| — | none left (`POST admin/diagnostics` is ported, see "Ported in this change") | | | |
 
-Still refused: running the diagnostics needs the worker probe (`app.control.inspect().ping()`, Celery's remote
-control over the broker's pidbox fanout and reply queues, which the Go producer does not implement), the `api` probe
-fixed to `http://127.0.0.1:8000/healthz` (the Django process's own port, not the Go server's) and the probe
-subprocess semantics (10 s deadline, sanitized results). Every run executes all ten probes, so no partial port is
-possible. The other B items of these families that a long-lived dataset may hit and that stay refused: import/status
-and export/active on `FAILURE`/`REVOKED` task rows (Celery's exception reconstruction), data-restore archives with
-legacy Bakney invoices or tutors that would be reassigned (refused by the validation port), and a
-`WHITELABEL_NAME` that is not a plain atom list (`email.utils.parseaddr`).
+The B items of these families that a long-lived dataset may hit and that stay refused: import/status and
+export/active on `FAILURE`/`REVOKED` task rows (Celery's exception reconstruction) and data-restore archives with
+legacy Bakney invoices or tutors that would be reassigned (refused by the validation port).
 
 ### communications, camps, profile, personas, modules, oauth, google
 | Route | Condition | UI call | Go site | Cost |
@@ -327,7 +328,7 @@ Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples)
 ### course-calendar.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| GET calendar/events?event_id=...&get_lesson=true | `get_lesson` true and the event matches an attendance day (`get_extended_prop_for_attendance_day`) | service/course_calendar.go:1618 (`ErrCalendarNotPorted`) | A | Opening an event in the global calendar sends `get_lesson=true` (`src/routes/calendar/Calendar.svelte:539`, `src/routes/calendar/modals/AddCalendarEvent.svelte:445`); any course lesson whose register has a day for it matches. |
+| GET calendar/events?event_id=...&get_lesson=true | `get_lesson` true and the event matches an attendance day (`get_extended_prop_for_attendance_day`) | service/course_calendar.go:1618 (`ErrCalendarNotPorted`) | ported | Ported (`course-calendar.md`, `v2c-green`). |
 | POST course/<uid>/calendar/update, calendar/events/update | non-string `event_id`, list/string `extendedProps`, non-string `start`; stored events not a list or list/dict starts | service/course_calendar.go:114,128,762,775,782,1102 | B | UI sends `serializeCalendarEvents` output (string ids, dict props, string starts) (`association/course/overview/components/Calendar.svelte:59`, `src/routes/calendar/Calendar.svelte:77-85,664`). Cost: cheap-medium. |
 | GET course/<uid>/calendar, calendar/events | datetimes whose UTC instant falls outside years 1..9999 | service/course_calendar.go:435,1326 | B | Needs year 0001/9999 boundary dates. Cost: cheap. |
 | GET course/<uid>/calendar | collaborator scope user | service/course_calendar.go:341 | C | Scope user is never a collaborator (doc). |
@@ -336,16 +337,16 @@ Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples)
 ### course-locations.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST course/locations/add, PATCH course/locations/<pk>/update | a `documents_data` item that would upload (has `document` + `filename` and decodes), or indexed form keys `documents_data[n]` | service/course_location_writes.go:111,120 (`ErrCourseLocationUploadUnsupported`) | A | `association/course/modals/AddModal.svelte:30-50` (add) and :101-115 (update) convert attached files to `{document: <base64>, filename}` and send them as JSON. Indexed form keys: B (UI sends JSON). |
+| POST course/locations/add, PATCH course/locations/<pk>/update | a `documents_data` item that would upload (has `document` + `filename` and decodes), or indexed form keys `documents_data[n]` | service/course_location_writes.go:111,120 (`ErrCourseLocationUploadUnsupported`) | ported | Ported (`course-locations.md`, `v2c-green`); indexed form keys stay refused (B). |
 | PATCH course/locations/<pk>/update | changed `course_location_id` | service/course_location_writes.go:183 (`ErrCourseLocationPrimaryKeyChange`) | B | UI targets `data.course_location_id` and does not change it. Cost: medium. |
 
 ### course-enrolment.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST course-subscriptions/add, course/<uid>/overview/<sub>/add, course-installment/<uid>/make-payment | request under an impersonation session (`ImpersonationAssociationID` set) | service/course_enrolment.go:64 (`ErrCourseEnrolmentNotPorted`) | A | UI sends `X-Impersonation-Id` on every call during impersonation (`src/utils/ApiMiddleware.js:133`), available to superusers / `can_impersonate` users (`src/utils/impersonation.js:23-25`, `components/ImpersonationPanel.svelte`). Enrolling from `overview/modals/AddEditCourseSubscriptionModal.svelte:80-92` while impersonating is refused. |
+| POST course-subscriptions/add, course/<uid>/overview/<sub>/add, course-installment/<uid>/make-payment | request under an impersonation session (`ImpersonationAssociationID` set) | service/course_enrolment.go:64 (`ErrCourseEnrolmentNotPorted`) | ported | Ported (`course-enrolment.md`, `v2c-green`). |
 | same three routes | non-canonical `X-Group-Id` spelling | service/course_enrolment.go:85 | B | UI sends the stored canonical id (`ApiMiddleware.js:141`). Cost: cheap. |
 | POST course-subscriptions/add | form body | service/course_enrolment.go:640,736 | B | UI sends a JSON list. Cost: medium. |
-| POST course-subscriptions/add, overview add | stored quote `amount` not `^\d{1,7}([.,]\d{1,2})?$` (e.g. `1.000`, `50 `, `50.000`) | service/course_enrolment.go:132 | A | Quote amounts are free text (`association/course/add/sections/partials/multiple-quotes.svelte:44-53` via `components/formBuilder/preview-blocks/currency-input.svelte:48-60`, `type="text"`, no mask) and saved unvalidated (`views/course_views.py:216-217`). Enrolling with such a quote reaches the check. Medium confidence on how often users type separators. |
+| POST course-subscriptions/add, overview add | stored quote `amount` not `^\d{1,7}([.,]\d{1,2})?$` (e.g. `1.000`, `50 `, `50.000`) | service/course_enrolment.go:132 | ported | Ported: `float()` grammar, prec-9 decimal, numeric(9,2) rounding (`course-enrolment.md`, `v2c-green`). |
 | same | non-object `payment_category`, non-string category `value`, overview selection without string `value`, stored non-string `quote_id` | service/course_enrolment.go:538,543; service/course_enrolment_overview.go:31,36,57,151,259 | B | UI stores `{label, value}` objects and `crypto.randomUUID()` quote ids (`multiple-quotes.svelte:20`); selections come from SmartSelect (`search/modals/AddToCourse.svelte:167-176`). Cost: cheap. |
 | POST course/<uid>/overview/<sub>/add | non-object or form body | service/course_enrolment_overview.go:82 | B | UI sends JSON objects (`Members/detail/sections/Courses.svelte:366-375`, `search/modals/AddToCourse.svelte:68-78`). |
 | POST course/<uid>/overview/<sub>/add | athlete on a membership course (prefill) | service/course_enrolment_overview.go:137 | B | Overview add is only called from association pages. Cost: medium. |
@@ -360,7 +361,7 @@ Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples)
 ### course-writes.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST course/add, PATCH course/<uid>/update, POST course/<uid>/delete, overview update/delete | impersonation session (`ImpersonationAssociationID` set) | service/course_writes.go:55 (`ErrCourseWritesNotPorted`) | A | Same mechanism as course-enrolment: `ApiMiddleware.js:133`; course add `association/course/add/AddCourse.svelte:67`, update `overview/OverviewCourse.svelte:304`. |
+| POST course/add, PATCH course/<uid>/update, POST course/<uid>/delete, overview update/delete | impersonation session (`ImpersonationAssociationID` set) | service/course_writes.go:55 (`ErrCourseWritesNotPorted`) | ported | Ported (`course-writes.md`, `v2c-green`). |
 | course/add, overview update | non-canonical `X-Group-Id` | service/course_writes.go:82; service/course_writes_overview.go:216 | B | UI sends canonical ids. Cost: cheap. |
 | PATCH course/<uid>/update | `fee`/`one_fee` not plain decimals (7.2) | service/course_writes.go:303,313 | B | UI sends `fee.replace(',', '.')` from a text input (`OverviewCourse.svelte:309-310`); only malformed typing (`1.000,50`) reaches it, where Django's own decimal handling also fails. Cost: cheap. |
 | PATCH course/<uid>/update | odd booleans, out-of-range/non-int billing integers, non-ISO dates | service/course_writes.go:341,352,360,374,378 | B | UI sends JS booleans, numbers and stored ISO dates (`OverviewCourse.svelte:314-320`). Cost: cheap. |
@@ -396,11 +397,11 @@ Coordination/status doc; no refusals. Nothing to classify.
 |---|---|---|---|---|
 | POST course-subscriptions/add | "not routed in Go" | — | n/a | Superseded: now routed (`BE_GO/cmd/server/main.go:588`, `courseEnrolmentHandler.Add`, another family). |
 | POST course-subscriptions/list (export pdf/excel) | any POST (export) | `BE_GO/internal/service/course_subscriptions.go:177`, `ErrCourseSubscriptionExportUnsupported` | **A** | `routes/association/course/overview/partials/course-subscriptions-list.svelte:575-588` → `components/modals/CurrentViewPrintingModal.svelte:41` POST `{format:'pdf'|'excel'}`. |
-| PATCH course-subscriptions/<pk>/update | `events` key present and non-null | `service/course_subscription_update.go:408-411`, `ErrCourseSubscriptionNotPorted` | **A** | `routes/association/course/overview/modals/AddEditCourseSubscriptionModal.svelte:61-67,119-121` always sends `events: [...]` (even `[]`, which Go treats as non-nil). Every non-membership subscription edit is refused. |
+| PATCH course-subscriptions/<pk>/update | `events` key present and non-null | `service/course_subscription_update.go:408-411`, `ErrCourseSubscriptionNotPorted` | ported | Ported (`course-subscriptions.md`, `v2c-green`). |
 | PATCH …/update | changed primary key | same site | B | UI never sends `course_subscription_id` in the body. legacy: no; cheap. |
 | PATCH …/update | HTML-form input for `multiple_quote`/`events` | `service/course_subscription_update.go:371` | B | UI sends JSON. legacy: no; cheap. |
-| GET/POST course-subscriptions/list | a rendered membership payment with `invoice_id` | `service/course_subscriptions.go:114-116` | **A** | Membership payments get an invoice from the UI's "generate invoice" (`routes/accounting/payment/partials/payment-overview.svelte:212`, `payment/modals/AddEditModal.svelte:276` → Django `payment_views.py:2035-2036` sets `payment.invoice`). List called at `partials/membership-list.svelte:385`. |
-| same | a rendered membership payment with `instructor_id` | same site | B | No UI path links an instructor to a membership payment. legacy: yes (admin edits); medium. |
+| GET/POST course-subscriptions/list | a rendered membership payment with `invoice_id` | `service/course_subscriptions.go:114-116` | ported | Ported for GET and update renders (`v2c-green`); the POST export stays refused. |
+| same | a rendered membership payment with `instructor_id` | same site | ported | Ported with the invoice case (`v2c-green`). |
 | DELETE course-subscriptions/<pk>/delete | row payment is also an unpaid installment's payment | `service/course_subscriptions.go:262` | B | No current writer shares one payment (`BE/application/views/course_views.py:118-148,985-1038` create separate payments). legacy: possible but unproven; medium. |
 
 ### document-views.md
@@ -467,12 +468,12 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### instance-admin.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST instance/admin/diagnostics | lease claimable (every real run) | `BE_GO/internal/service/instance_admin.go:1227`, `ErrInstanceAdminRefused` | **A** | `routes/profile/sections/SelfInstance.svelte:155`. |
+| POST instance/admin/diagnostics | lease claimable (every real run) | ported (`service/instance_diagnostics.go`) | ported | `SelfInstance.svelte:155`. Refused only for stored shapes snapshot() does not interpret (C, before the lease) and production mode without an update runner client. |
 | GET/POST instance/admin/updates | production mode | ported (`service/instance_updates.go`) | ported | `SelfInstance.svelte:249` (status), `:307` (request). Self-host installs run in production mode. |
 | POST instance/admin/restarts | production mode | ported (`service/instance_updates.go`) | ported | `SelfInstance.svelte:190`. |
 | writes | form/multipart bodies | `handler/instance_admin.go:67` | B | UI sends JSON (`InstanceEmail.svelte:55`, `InstanceIntegration.svelte:65`). cheap. |
 | PUT admin/integrations/<provider> | AI `base_url` with non-ASCII host | instance_admin service | B | Free-text field; IDN AI endpoints are unusual. legacy: no; cheap. |
-| admin, admin/email | env `EMAIL_PORT` non-integer, or `WHITELABEL_NAME`/`EMAIL_HOST_USER` outside the simple form | `service/instance_admin.go:470`; `BE_GO/internal/config/instance_admin.go:148-171` | B | Operator env, default `WHITELABEL_NAME=Assozeta` passes; a name with `.`, `,` or accents (e.g. "Polisportiva Città") would be refused when no stored e-mail config exists. legacy: yes (env); cheap. |
+| admin, admin/email | env `EMAIL_PORT` non-integer | `service/instance_admin.go` `environmentEmail` | B | Operator env. legacy: yes (env); cheap. `WHITELABEL_NAME`/`EMAIL_HOST_USER` are ported (`config/parseaddr.go`, Python's strict parseaddr). |
 | reads/writes | stored JSON shapes (non-object settings/leases/records, non-list checks, non-int revisions) | `service/instance_admin.go:240,462,566,903,1211,1221` | C | Only written by the app itself as objects/lists/ints. |
 | admin/logo | "left on Django" | — | n/a | Superseded: routed in Go (`cmd/server/main.go:836`), see instance-setup. |
 
@@ -522,7 +523,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### instance-outbound.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST admin/email/test | stored settings missing keys / non-string; env from outside simple form | `BE_GO/internal/service/instance_outbound.go:220,252` | B/C | Stored settings are written whole by `admin/email` PUT (C); env form as in instance-admin (B, legacy: env). |
+| POST admin/email/test | stored settings missing keys / non-string | `BE_GO/internal/service/instance_outbound.go:220,252` | C | Stored settings are written whole by `admin/email` PUT. The environment sender is ported (parseaddr). |
 | POST admin/email/test (send) | message outside the rendered subset (non-ASCII/quoted recipient or from address, header line breaks) | `service/instance_outbound.go:328,404` | B | `profile/sections/InstanceEmail.svelte:77` sends a typed recipient; non-ASCII addresses are unusual. Non-ASCII sender names are handled (`smtpsend/backend.go:150-151`). cheap. |
 | POST admin/integrations/<p>/test | AI base URL that requests would rewrite (upper-case host, user info, quoted chars) | `service/instance_outbound.go:511` | B | Free text in `InstanceIntegration.svelte`; e.g. `https://API.example.com` would be refused. legacy: yes (stored URL); cheap. |
 | GET admin/releases | cached catalog not a `normalize_release` pickle | outbound service | C | Cache written only by the app. |

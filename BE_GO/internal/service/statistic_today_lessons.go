@@ -50,6 +50,33 @@ func (s *CourseAttendance) TodayLessons(ctx context.Context, identity domain.Res
 	})
 }
 
+// CalendarLesson is get_extended_prop_for_attendance_day for the day
+// full_events_calendar matched (get_lesson), inside the calendar view's own
+// transaction: the day is read again (its registry is the one the view walks,
+// unchanged by the request), and linking an unlinked day to its event is
+// saved with its auditlog entry.
+func (s *CourseAttendance) CalendarLesson(ctx context.Context, tx domain.CourseAttendanceTransaction, identity domain.ResolvedIdentity,
+	audit domain.LoginAuditContext, registry domain.AttendanceRegistryRow, day string, scope *string) (any, error) {
+	r := &attendanceRun{s: s, tx: tx, identity: identity, audit: audit, scope: domain.AttendanceScope{Association: scope}}
+	row, err := tx.Day(ctx, day, nil, nil, scope)
+	if err != nil {
+		return nil, err
+	}
+	if row == nil {
+		return nil, errCalendarRaised
+	}
+	r.labels = row.CourseAssociation
+	attendees, err := calendarParse(row.Attendees)
+	if err != nil {
+		return nil, err
+	}
+	absences, err := calendarParse(row.ExpectedAbsences)
+	if err != nil {
+		return nil, err
+	}
+	return r.extendedProps(ctx, registry, *row, attendees, &absences)
+}
+
 // StatisticTodayLessons is the todaylessons widget (CourseAttendance).
 type StatisticTodayLessons interface {
 	TodayLessons(ctx context.Context, identity domain.ResolvedIdentity, audit domain.LoginAuditContext, association string,

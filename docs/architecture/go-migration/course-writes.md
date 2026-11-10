@@ -92,10 +92,17 @@ with its meta) and an installment. A past event without `all` in the body is a 5
 (truthy) switches instalment rows to the course's one-fee payment (description from its meta).
 Response `{'data': {'msg': 'course subscription update.'}}`.
 
+## Impersonation sessions
+
+During an association-scoped impersonation session the views' `scoped_queryset` lookups (the owner's association, course,
+subscription, course subscription) find only rows of the session's association; references outside it get the scoped-request
+guard's 403 first. The owner acting as its full collaborator adds, updates and deletes courses and overview rows; acting as an
+athlete it reaches course-overview update for the athlete's own rows (payments in the subscription's association). Audit entries
+carry the session context.
+
 ## Not ported (refused with a 500 before any write)
 
 - `course/<uid>/overview/<uid_subscription>/add` (not routed in Go).
-- Association-scoped impersonation sessions (`scoped_queryset` boundaries) on all five routes; the guard's own 403s are ported.
 - course/add: a non-canonical `X-Group-Id` spelling (auditlog would record it as sent); event amounts given as floats that are
   not exact to the cent (Python `Decimal(float)` arithmetic).
 - course/update: `fee`/`one_fee` other than plain decimals with up to seven whole digits and two places (a null `one_fee`),
@@ -124,6 +131,12 @@ association, title rewrite of the association's payments, course-overview update
 - GREEN (`versioned-sync1`): 104/104 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact effects.
 - Mutation (`mutation-sync1`): dropping the association filter from the title rewrite's payment lookup fails `update-full`
   (CAUGHT).
+
+Impersonation sessions (119 cases):
+
+- RED (`v2c-red`): Django 119/119; Go fails `delete-impersonated-collaborator` (refused).
+- GREEN (`v2c-green`): 119/119 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact effects.
+- Mutation (`v2c-mutation-scope`): inverting the session association filter fails `delete-impersonated-collaborator` (CAUGHT).
 
 Course.save() and the delete signal's branches (`update-title-from-blank`, `update-title-from-null`, `update-title-to-empty`,
 `delete-membership-cascade`): a stored empty or null title changes without reading payments; a new empty title removes the old

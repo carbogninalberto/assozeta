@@ -16,9 +16,9 @@ Routes (BE/application/views/attendee_views.py):
   association's live courses (instructor collaborators: only their events),
   className as a one-item list (a tuple in the view), attendance day ids, then
   the association's global events when the actor may read events; the global
-  calendar row is created on first read. Lesson details (get_lesson) are not
-  ported: every authored case that matches an attendance day passes
-  get_lesson=false.
+  calendar row is created on first read. Lesson details (get_lesson, the
+  default) add get_extended_prop_for_attendance_day of the matched day
+  (section 8).
 - POST calendar/events/update (`full_events_calendar_update`, atomic):
   mutate_events validation and per-action event permissions, reminders scoped
   to the association, then the global calendar save.
@@ -818,6 +818,38 @@ add('events-invalid-stored-start-range', 'foreign_owner', EVENTS + '?start=2026-
     400, ['Invalid calendar date.'])
 add('calendar-invalid-stored-start', 'anonymous', CAL('abroad2'), 200,
     course_calendar('abroad2', DRAFT, [BAD], sync=False, association='Message reads foreign', logo=None))
+
+# ===========================================================================
+# 8. lesson details (get_lesson): opening an event of the global calendar
+# ===========================================================================
+
+
+def lesson(day_ref, course, *, event=None):
+    """get_extended_prop_for_attendance_day of a day without attendees in a course without subscriptions: the registry event
+    of the same hour (linked days only to their own event_id), its extendedProps and times."""
+    row = STATE['days'][day_ref]
+    props = copy.deepcopy(event.get('extendedProps', {})) if event else {}
+    return {'title': row['title'], 'allDay': event.get('allDay', False) if event else False, 'extended_props': props,
+            'attendance_day_id': day_ref, 'attendance_registry': row['registry'], 'date': row['date'],
+            'start': event['start'] if event else None, 'end': event['end'] if event else None, 'course_id': C[course],
+            'total_attendees': 0, 'total_expected_absences': 0, 'potential_attendees': [], 'total_expected_total': 0, 'attendees': [],
+            'expected_absences': []}
+
+
+def with_lesson(row, value):
+    row['extendedProps']['lesson'] = value
+    return row
+
+
+add('events-lesson', 'owner', EVENTS + f'?event_id={EA[7]}&get_lesson=true', 200, events([
+    with_lesson(listed('beta', A7C, OWN_COLORS['beta'], '$new:day-beta-a7'), lesson('$new:day-beta-a7', 'beta', event=A7C))]))
+add('events-lesson-collaborator', 'full_collaborator', EVENTS + f'?event_id={EA[7]}&get_lesson=1', 200, events([
+    with_lesson(listed('beta', A7C, OWN_COLORS['beta'], '$new:day-beta-a7'), lesson('$new:day-beta-a7', 'beta', event=A7C))]))
+# The day is linked to the lowercase id; the stored event id is uppercase, so no event matches.
+add('events-lesson-linked-to-other-spelling', 'owner', EVENTS + f'?event_id={EB[2]}', 200, events([
+    with_lesson(listed('beta', B2, OWN_COLORS['beta'], '$new:day-b2'), lesson('$new:day-b2', 'beta'))]))
+# Registry event starts are read with strptime('%Y-%m-%dT%H:%M:%S.%fZ'): an offset start raises.
+add('events-lesson-offset-start-server-error', 'owner', EVENTS + f'?event_id={EC[1]}&get_lesson=true', 500, SERVER)
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Course calendar and full events calendar authored sequence with exact effects',

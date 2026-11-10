@@ -405,14 +405,25 @@ func (s *CourseSubscriptions) Update(ctx context.Context, identity domain.Resolv
 	if err != nil {
 		return nil, err
 	}
-	if write.Events != nil || write.ID != nil && *write.ID != instance.ID {
-		// Installment edits and a primary-key change (Model.save() would
-		// insert a copy) are not ported.
+	if write.ID != nil && *write.ID != instance.ID {
+		// A primary-key change (Model.save() would insert a copy) is not ported.
 		return nil, ErrCourseSubscriptionNotPorted
+	}
+	var events courseSubscriptionEventPlan
+	if write.Events != nil {
+		if events, err = s.planEvents(ctx, tx, instance, write.Events, group, request.GroupHeader); err != nil {
+			return nil, err
+		}
 	}
 	context, err := s.auditContext(ctx, tx, identity, audit, group)
 	if err != nil {
 		return nil, err
+	}
+	if write.Events != nil {
+		// serializer.save(): the events edit runs before the instance save.
+		if err = s.applyEvents(ctx, tx, instance, events, group, context); err != nil {
+			return nil, err
+		}
 	}
 	row := instance
 	applyCourseSubscriptionWrite(&row, write)

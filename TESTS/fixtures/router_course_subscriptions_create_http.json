@@ -724,11 +724,158 @@
    "auto_renewal": false,
    "deleted": false,
    "group_id": null
+  },
+  "session_fee": {
+   "course_id": "e0000000-0000-4000-8000-000000000029",
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "status_flag": 2,
+   "course_type": 1,
+   "creation_date": "2026-02-01T08:00:00Z",
+   "title": "Sessione",
+   "description": "Descrizione Sessione",
+   "multi_payments": false,
+   "fee": "50.00",
+   "events": null,
+   "one_fee_payment": false,
+   "one_fee": "0.00",
+   "google_calendar_id": null,
+   "google_background_color": "#123456",
+   "multiple_quotes": null,
+   "start_date": null,
+   "end_date": null,
+   "pinned": false,
+   "billed_duration_is_sport_season": false,
+   "billed_frequency": 1,
+   "billed_from_subscription_date": false,
+   "billed_from_day_of_month": 1,
+   "auto_renewal": false,
+   "deleted": false,
+   "group_id": null
+  },
+  "ov_session_athlete": {
+   "course_id": "e0000000-0000-4000-8000-000000000030",
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "status_flag": 2,
+   "course_type": 1,
+   "creation_date": "2026-02-01T08:00:00Z",
+   "title": "Arrampicata",
+   "description": "Descrizione Arrampicata",
+   "multi_payments": false,
+   "fee": "12.00",
+   "events": null,
+   "one_fee_payment": false,
+   "one_fee": "0.00",
+   "google_calendar_id": null,
+   "google_background_color": "#123456",
+   "multiple_quotes": null,
+   "start_date": null,
+   "end_date": null,
+   "pinned": false,
+   "billed_duration_is_sport_season": false,
+   "billed_frequency": 1,
+   "billed_from_subscription_date": false,
+   "billed_from_day_of_month": 1,
+   "auto_renewal": false,
+   "deleted": false,
+   "group_id": null
+  },
+  "ov_session_full": {
+   "course_id": "e0000000-0000-4000-8000-000000000031",
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "status_flag": 2,
+   "course_type": 1,
+   "creation_date": "2026-02-01T08:00:00Z",
+   "title": "Canoa",
+   "description": "Descrizione Canoa",
+   "multi_payments": false,
+   "fee": "9.00",
+   "events": null,
+   "one_fee_payment": false,
+   "one_fee": "0.00",
+   "google_calendar_id": null,
+   "google_background_color": "#123456",
+   "multiple_quotes": null,
+   "start_date": null,
+   "end_date": null,
+   "pinned": false,
+   "billed_duration_is_sport_season": false,
+   "billed_frequency": 1,
+   "billed_from_subscription_date": false,
+   "billed_from_day_of_month": 1,
+   "auto_renewal": false,
+   "deleted": false,
+   "group_id": null
+  },
+  "ov_quote_text": {
+   "course_id": "e0000000-0000-4000-8000-000000000032",
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "status_flag": 2,
+   "course_type": 2,
+   "creation_date": "2026-02-01T08:00:00Z",
+   "title": "Zumba",
+   "description": "Descrizione Zumba",
+   "multi_payments": false,
+   "fee": "0.00",
+   "events": null,
+   "one_fee_payment": false,
+   "one_fee": "0.00",
+   "google_calendar_id": null,
+   "google_background_color": "#123456",
+   "multiple_quotes": [
+    {
+     "quote_id": "q1",
+     "title": "Mille",
+     "amount": "1.000"
+    }
+   ],
+   "start_date": null,
+   "end_date": null,
+   "pinned": false,
+   "billed_duration_is_sport_season": false,
+   "billed_frequency": 1,
+   "billed_from_subscription_date": false,
+   "billed_from_day_of_month": 1,
+   "auto_renewal": false,
+   "deleted": false,
+   "group_id": null
+  },
+  "ov_quote_word": {
+   "course_id": "e0000000-0000-4000-8000-000000000033",
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "status_flag": 2,
+   "course_type": 2,
+   "creation_date": "2026-02-01T08:00:00Z",
+   "title": "Boxe",
+   "description": "Descrizione Boxe",
+   "multi_payments": false,
+   "fee": "0.00",
+   "events": null,
+   "one_fee_payment": false,
+   "one_fee": "0.00",
+   "google_calendar_id": null,
+   "google_background_color": "#123456",
+   "multiple_quotes": [
+    {
+     "quote_id": "q1",
+     "title": "Prova",
+     "amount": "dieci"
+    }
+   ],
+   "start_date": null,
+   "end_date": null,
+   "pinned": false,
+   "billed_duration_is_sport_season": false,
+   "billed_frequency": 1,
+   "billed_from_subscription_date": false,
+   "billed_from_day_of_month": 1,
+   "auto_renewal": false,
+   "deleted": false,
+   "group_id": null
   }
  },
  "payments": {
   "old": {
-   "payment_id": "e0000000-0000-4000-8000-000000000029",
+   "payment_id": "e0000000-0000-4000-8000-000000000034",
    "type": "default",
    "subject": 2,
    "amount": "30.00",
@@ -759,7 +906,7 @@
  },
  "course_subscriptions": {
   "existing": {
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000030",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000035",
    "course_id": "e0000000-0000-4000-8000-000000000020",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
@@ -780,7 +927,7 @@
    "deleted": false
   },
   "mp": {
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000031",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000036",
    "course_id": "e0000000-0000-4000-8000-000000000011",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
@@ -801,7 +948,7 @@
    "deleted": false
   },
   "mp_far": {
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000032",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000037",
    "course_id": "e0000000-0000-4000-8000-000000000017",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
@@ -822,7 +969,7 @@
    "deleted": false
   },
   "mp_nosub": {
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000033",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000038",
    "course_id": "e0000000-0000-4000-8000-000000000011",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
@@ -843,7 +990,7 @@
    "deleted": false
   },
   "mp_athlete": {
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000034",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000039",
    "course_id": "e0000000-0000-4000-8000-000000000011",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
@@ -864,7 +1011,7 @@
    "deleted": false
   },
   "mp_gone": {
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000035",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000040",
    "course_id": "e0000000-0000-4000-8000-000000000011",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
@@ -887,8 +1034,8 @@
  },
  "installments": {
   "plain": {
-   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000036",
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000031",
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000041",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000036",
    "id": 0,
    "amount": "30.00",
    "paid": false,
@@ -899,20 +1046,20 @@
    "deleted": false
   },
   "linked": {
-   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000037",
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000031",
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000042",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000036",
    "id": 1,
    "amount": "25.50",
    "paid": false,
    "payment_date": "2099-01-10T00:00:00Z",
-   "payment_id": "e0000000-0000-4000-8000-000000000029",
+   "payment_id": "e0000000-0000-4000-8000-000000000034",
    "archived": false,
    "group_id": null,
    "deleted": false
   },
   "group": {
-   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000038",
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000031",
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000043",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000036",
    "id": 2,
    "amount": "12.00",
    "paid": false,
@@ -923,8 +1070,8 @@
    "deleted": false
   },
   "deleted": {
-   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000039",
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000031",
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000044",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000036",
    "id": 3,
    "amount": "30.00",
    "paid": false,
@@ -935,8 +1082,8 @@
    "deleted": true
   },
   "far": {
-   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000040",
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000032",
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000045",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000037",
    "id": 0,
    "amount": "15.00",
    "paid": false,
@@ -947,8 +1094,8 @@
    "deleted": false
   },
   "nosub": {
-   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000041",
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000033",
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000046",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000038",
    "id": 0,
    "amount": "30.00",
    "paid": false,
@@ -959,8 +1106,8 @@
    "deleted": false
   },
   "athlete": {
-   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000042",
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000034",
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000047",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000039",
    "id": 0,
    "amount": "18.00",
    "paid": false,
@@ -971,10 +1118,34 @@
    "deleted": false
   },
   "gone_row": {
-   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000043",
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000035",
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000048",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000040",
    "id": 0,
    "amount": "7.00",
+   "paid": false,
+   "payment_date": "2099-01-10T00:00:00Z",
+   "payment_id": null,
+   "archived": false,
+   "group_id": null,
+   "deleted": false
+  },
+  "athlete_session": {
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000049",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000039",
+   "id": 4,
+   "amount": "19.00",
+   "paid": false,
+   "payment_date": "2099-01-10T00:00:00Z",
+   "payment_id": null,
+   "archived": false,
+   "group_id": null,
+   "deleted": false
+  },
+  "full_session": {
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000050",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000036",
+   "id": 5,
+   "amount": "21.00",
    "paid": false,
    "payment_date": "2099-01-10T00:00:00Z",
    "payment_id": null,
@@ -2350,7 +2521,7 @@
    },
    "effect": null,
    "body": {
-    "course_subscription_id": "e0000000-0000-4000-8000-000000000031",
+    "course_subscription_id": "e0000000-0000-4000-8000-000000000036",
     "course": "e0000000-0000-4000-8000-000000000009",
     "subscription_id": "e0000000-0000-4000-8000-000000000006"
    }

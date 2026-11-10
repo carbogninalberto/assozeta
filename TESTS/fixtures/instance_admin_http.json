@@ -4286,10 +4286,10 @@
     "source": "environment",
     "host": "",
     "port": 465,
-    "username": "",
+    "username": "segreteria@polisportiva.example",
     "security": "none",
-    "from_email": "",
-    "sender_name": "Assozeta",
+    "from_email": "segreteria@polisportiva.example",
+    "sender_name": "A.S.D. Polisportiva Città (Aurora)",
     "revision": 4,
     "password_configured": false,
     "credential_error": false,
@@ -4375,10 +4375,10 @@
     "source": "environment",
     "host": "",
     "port": 465,
-    "username": "",
+    "username": "segreteria@polisportiva.example",
     "security": "none",
-    "from_email": "",
-    "sender_name": "Assozeta",
+    "from_email": "segreteria@polisportiva.example",
+    "sender_name": "A.S.D. Polisportiva Città (Aurora)",
     "revision": 4,
     "password_configured": false,
     "credential_error": false,
@@ -6909,6 +6909,2724 @@
     ],
     "overall": "not_checked",
     "checked_at": "2026-01-02T03:04:06+00:00",
+    "email_test": null,
+    "integrations": [
+     {
+      "id": "stripe",
+      "label": "Stripe",
+      "status": "not_configured",
+      "level": "configuration",
+      "message": "Integrazione facoltativa non configurata.",
+      "checked_at": "$isonow",
+      "core": false
+     },
+     {
+      "id": "google",
+      "label": "Accesso Google",
+      "status": "passed",
+      "level": "configuration",
+      "message": "Client ID configurato. Un accesso reale con il provider non è stato verificato.",
+      "checked_at": "$isonow",
+      "core": false
+     },
+     {
+      "id": "apple",
+      "label": "Accesso Apple",
+      "status": "warning",
+      "level": "configuration",
+      "message": "Client ID configurato per verificare token Apple. Il pulsante di accesso Apple sul web non è disponibile in questa versione.",
+      "checked_at": "$isonow",
+      "core": false
+     }
+    ]
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null
+  },
+  {
+   "name": "instance-admin-diagnostics-run-passed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/diagnostics",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "checks": [
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "URL pubblico raggiungibile con certificato HTTPS valido.",
+      "checked_at": "$isonow",
+      "id": "public_url",
+      "label": "URL pubblico e HTTPS",
+      "core": true,
+      "section": "overview"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "L’API risponde con la versione in esecuzione.",
+      "checked_at": "$isonow",
+      "id": "api",
+      "label": "API",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Il database risponde a una query di lettura. Nessun dato è stato modificato.",
+      "checked_at": "$isonow",
+      "id": "database",
+      "label": "Database",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Archivio accessibile in lettura. Scrittura e caricamento file non sono stati provati.",
+      "checked_at": "$isonow",
+      "id": "storage",
+      "label": "Archivio file",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Un worker risponde tramite il broker. Non sono stati eseguiti task applicativi.",
+      "checked_at": "$isonow",
+      "id": "worker",
+      "label": "Worker",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il ciclo dello scheduler è attivo (segnale negli ultimi 90 secondi). L’esito dei task non è verificato.",
+      "checked_at": "$isonow",
+      "id": "scheduler",
+      "label": "Scheduler",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Il renderer apre e chiude una pagina nel browser. La generazione di un documento PDF non è stata provata.",
+      "checked_at": "$isonow",
+      "id": "renderer",
+      "label": "Renderer PDF",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "configuration",
+      "message": "Campi SMTP e mittente presenti. Connessione e invio non verificati: usa i test espliciti nella sezione Email.",
+      "checked_at": "$isonow",
+      "id": "email",
+      "label": "Configurazione email",
+      "core": false,
+      "section": "email"
+     },
+     {
+      "status": "not_applicable",
+      "level": "configuration",
+      "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+      "checked_at": "$isonow",
+      "id": "updater",
+      "label": "Servizio aggiornamenti",
+      "core": false,
+      "section": "backups"
+     },
+     {
+      "status": "not_applicable",
+      "level": "configuration",
+      "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+      "checked_at": "$isonow",
+      "id": "backups",
+      "label": "Preparazione backup",
+      "core": false,
+      "section": "backups"
+     }
+    ],
+    "overall": "passed",
+    "checked_at": "$isonow",
+    "email_test": null,
+    "integrations": [
+     {
+      "id": "stripe",
+      "label": "Stripe",
+      "status": "not_configured",
+      "level": "configuration",
+      "message": "Integrazione facoltativa non configurata.",
+      "checked_at": "$isonow",
+      "core": false
+     },
+     {
+      "id": "google",
+      "label": "Accesso Google",
+      "status": "passed",
+      "level": "configuration",
+      "message": "Client ID configurato. Un accesso reale con il provider non è stato verificato.",
+      "checked_at": "$isonow",
+      "core": false
+     },
+     {
+      "id": "apple",
+      "label": "Accesso Apple",
+      "status": "warning",
+      "level": "configuration",
+      "message": "Client ID configurato per verificare token Apple. Il pulsante di accesso Apple sul web non è disponibile in questa versione.",
+      "checked_at": "$isonow",
+      "core": false
+     }
+    ]
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza v1",
+     "abbreviation": "AB",
+     "primary_color": "#ABCDEF",
+     "support_email": "Admin@Example.test",
+     "ui_api_version": "v1",
+     "email_settings": {
+      "host": "mail.example.test",
+      "port": 465,
+      "security": "tls",
+      "username": "relay",
+      "from_email": "relay@example.test",
+      "sender_name": "Relay"
+     },
+     "email_password": {
+      "$secret": "placeholder secret 2"
+     },
+     "email_revision": 5,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "URL pubblico raggiungibile con certificato HTTPS valido.",
+        "checked_at": "$isonow",
+        "id": "public_url",
+        "label": "URL pubblico e HTTPS",
+        "core": true,
+        "section": "overview"
+       },
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "L’API risponde con la versione in esecuzione.",
+        "checked_at": "$isonow",
+        "id": "api",
+        "label": "API",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Il database risponde a una query di lettura. Nessun dato è stato modificato.",
+        "checked_at": "$isonow",
+        "id": "database",
+        "label": "Database",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Archivio accessibile in lettura. Scrittura e caricamento file non sono stati provati.",
+        "checked_at": "$isonow",
+        "id": "storage",
+        "label": "Archivio file",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Un worker risponde tramite il broker. Non sono stati eseguiti task applicativi.",
+        "checked_at": "$isonow",
+        "id": "worker",
+        "label": "Worker",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "passed",
+        "level": "functional",
+        "message": "Il ciclo dello scheduler è attivo (segnale negli ultimi 90 secondi). L’esito dei task non è verificato.",
+        "checked_at": "$isonow",
+        "id": "scheduler",
+        "label": "Scheduler",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Il renderer apre e chiude una pagina nel browser. La generazione di un documento PDF non è stata provata.",
+        "checked_at": "$isonow",
+        "id": "renderer",
+        "label": "Renderer PDF",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Campi SMTP e mittente presenti. Connessione e invio non verificati: usa i test espliciti nella sezione Email.",
+        "checked_at": "$isonow",
+        "id": "email",
+        "label": "Configurazione email",
+        "core": false,
+        "section": "email"
+       },
+       {
+        "status": "not_applicable",
+        "level": "configuration",
+        "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+        "checked_at": "$isonow",
+        "id": "updater",
+        "label": "Servizio aggiornamenti",
+        "core": false,
+        "section": "backups"
+       },
+       {
+        "status": "not_applicable",
+        "level": "configuration",
+        "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+        "checked_at": "$isonow",
+        "id": "backups",
+        "label": "Preparazione backup",
+        "core": false,
+        "section": "backups"
+       }
+      ],
+      "checked_at": "$isonow",
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": "$lease45",
+       "email_test": 2.5
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 6,
+       "settings": null
+      },
+      "google": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "fixture.apps.googleusercontent.com"
+       }
+      },
+      "apple": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "org.example.fixture"
+       }
+      },
+      "ai": {
+       "revision": 2,
+       "settings": {
+        "enabled": false,
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "http://[::1]:8080/v1",
+        "max_iterations": 1,
+        "max_results": 1,
+        "query_timeout": 1,
+        "ws_rate_limit": 1000,
+        "ws_timeout": 1,
+        "history_cap": 1000,
+        "api_key": {
+         "$secret": ""
+        }
+       }
+      }
+     }
+    },
+    "touched": false
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "body": {},
+   "setup": {
+    "leases": {
+     "diagnostics": 1.5,
+     "email_test": 2.5
+    },
+    "email_settings": {
+     "host": "mail.example.test",
+     "port": 465,
+     "security": "tls",
+     "username": "relay",
+     "from_email": "relay@example.test",
+     "sender_name": "Relay"
+    },
+    "email_password": "placeholder secret 2"
+   },
+   "outbound": [
+    {
+     "connect": "example.org:443",
+     "method": "GET",
+     "path": "/api/healthz",
+     "headers": {
+      "host": "example.org",
+      "user-agent": "python-requests/2.34.2",
+      "accept-encoding": "gzip, deflate",
+      "accept": "*/*",
+      "connection": "keep-alive"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJzdGF0dXMiOiAib2siLCAidmVyc2lvbiI6ICJ2MC4wLjAifQ=="
+     }
+    }
+   ],
+   "stubs": {
+    "api": {
+     "replies": [
+      {
+       "status": 200,
+       "headers": {
+        "Content-Type": "application/json"
+       },
+       "raw_b64": "eyJzdGF0dXMiOiAib2siLCAidmVyc2lvbiI6ICJ2MC4wLjAifQ=="
+      }
+     ],
+     "expect": [
+      {
+       "method": "GET",
+       "path": "/healthz",
+       "headers": {
+        "host": "$self",
+        "user-agent": "python-requests/2.34.2",
+        "accept-encoding": "gzip, deflate",
+        "accept": "*/*",
+        "connection": "keep-alive"
+       }
+      }
+     ]
+    },
+    "renderer": {
+     "replies": [
+      {
+       "status": 200,
+       "headers": {
+        "Content-Type": "application/json"
+       },
+       "raw_b64": "eyJzdGF0dXMiOiAib2sifQ=="
+      }
+     ],
+     "expect": [
+      {
+       "method": "GET",
+       "path": "/healthz",
+       "headers": {
+        "host": "$self",
+        "user-agent": "python-requests/2.34.2",
+        "accept-encoding": "gzip, deflate",
+        "accept": "*/*",
+        "connection": "keep-alive"
+       }
+      }
+     ]
+    },
+    "s3": {
+     "replies": [
+      {
+       "status": 200,
+       "headers": {
+        "Content-Type": "application/xml"
+       },
+       "raw_b64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPExpc3RCdWNrZXRSZXN1bHQgeG1sbnM9Imh0dHA6Ly9zMy5hbWF6b25hd3MuY29tL2RvYy8yMDA2LTAzLTAxLyI+PE5hbWU+Y29udHJhY3Q8L05hbWU+PFByZWZpeD5zdG9yYWdlPC9QcmVmaXg+PEtleUNvdW50PjA8L0tleUNvdW50PjxNYXhLZXlzPjE8L01heEtleXM+PEVuY29kaW5nVHlwZT51cmw8L0VuY29kaW5nVHlwZT48SXNUcnVuY2F0ZWQ+ZmFsc2U8L0lzVHJ1bmNhdGVkPjwvTGlzdEJ1Y2tldFJlc3VsdD4="
+      }
+     ],
+     "expect": [
+      {
+       "method": "GET",
+       "path": "/$bucket",
+       "query": {
+        "list-type": "2",
+        "prefix": "storage",
+        "max-keys": "1",
+        "encoding-type": "url"
+       },
+       "signed": true
+      }
+     ]
+    }
+   },
+   "worker": {
+    "mode": "pong",
+    "expect": [
+     {
+      "channel": "/0.celery.pidbox",
+      "envelope_keys": [
+       "body",
+       "content-encoding",
+       "content-type",
+       "headers",
+       "properties"
+      ],
+      "content-encoding": "utf-8",
+      "content-type": "application/json",
+      "headers": {
+       "clock": 1,
+       "expires": "$expires"
+      },
+      "properties": {
+       "delivery_mode": 2,
+       "delivery_info": {
+        "exchange": "celery.pidbox",
+        "routing_key": ""
+       },
+       "priority": 0,
+       "body_encoding": "base64",
+       "delivery_tag": "$uuid"
+      },
+      "body": {
+       "method": "ping",
+       "arguments": {},
+       "destination": null,
+       "pattern": null,
+       "matcher": null,
+       "ticket": "$uuid",
+       "reply_to": {
+        "exchange": "reply.celery.pidbox",
+        "routing_key": "$uuid"
+       }
+      }
+     }
+    ]
+   },
+   "heartbeat": "fresh",
+   "race": false
+  },
+  {
+   "name": "instance-admin-diagnostics-run-just-finished",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/diagnostics",
+   "headers": {},
+   "status": 429,
+   "response": {
+    "error": "Diagnostica già in corso o appena terminata. Attendi fino a 45 secondi e riprova."
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": "45",
+   "audit": null,
+   "body": {}
+  },
+  {
+   "name": "instance-admin-diagnostics-after-run",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/diagnostics",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "checks": [
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "URL pubblico raggiungibile con certificato HTTPS valido.",
+      "checked_at": "$isonow",
+      "id": "public_url",
+      "label": "URL pubblico e HTTPS",
+      "core": true,
+      "section": "overview"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "L’API risponde con la versione in esecuzione.",
+      "checked_at": "$isonow",
+      "id": "api",
+      "label": "API",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Il database risponde a una query di lettura. Nessun dato è stato modificato.",
+      "checked_at": "$isonow",
+      "id": "database",
+      "label": "Database",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Archivio accessibile in lettura. Scrittura e caricamento file non sono stati provati.",
+      "checked_at": "$isonow",
+      "id": "storage",
+      "label": "Archivio file",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Un worker risponde tramite il broker. Non sono stati eseguiti task applicativi.",
+      "checked_at": "$isonow",
+      "id": "worker",
+      "label": "Worker",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il ciclo dello scheduler è attivo (segnale negli ultimi 90 secondi). L’esito dei task non è verificato.",
+      "checked_at": "$isonow",
+      "id": "scheduler",
+      "label": "Scheduler",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Il renderer apre e chiude una pagina nel browser. La generazione di un documento PDF non è stata provata.",
+      "checked_at": "$isonow",
+      "id": "renderer",
+      "label": "Renderer PDF",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "configuration",
+      "message": "Campi SMTP e mittente presenti. Connessione e invio non verificati: usa i test espliciti nella sezione Email.",
+      "checked_at": "$isonow",
+      "id": "email",
+      "label": "Configurazione email",
+      "core": false,
+      "section": "email"
+     },
+     {
+      "status": "not_applicable",
+      "level": "configuration",
+      "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+      "checked_at": "$isonow",
+      "id": "updater",
+      "label": "Servizio aggiornamenti",
+      "core": false,
+      "section": "backups"
+     },
+     {
+      "status": "not_applicable",
+      "level": "configuration",
+      "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+      "checked_at": "$isonow",
+      "id": "backups",
+      "label": "Preparazione backup",
+      "core": false,
+      "section": "backups"
+     }
+    ],
+    "overall": "passed",
+    "checked_at": "$isonow",
+    "email_test": null,
+    "integrations": [
+     {
+      "id": "stripe",
+      "label": "Stripe",
+      "status": "not_configured",
+      "level": "configuration",
+      "message": "Integrazione facoltativa non configurata.",
+      "checked_at": "$isonow",
+      "core": false
+     },
+     {
+      "id": "google",
+      "label": "Accesso Google",
+      "status": "passed",
+      "level": "configuration",
+      "message": "Client ID configurato. Un accesso reale con il provider non è stato verificato.",
+      "checked_at": "$isonow",
+      "core": false
+     },
+     {
+      "id": "apple",
+      "label": "Accesso Apple",
+      "status": "warning",
+      "level": "configuration",
+      "message": "Client ID configurato per verificare token Apple. Il pulsante di accesso Apple sul web non è disponibile in questa versione.",
+      "checked_at": "$isonow",
+      "core": false
+     }
+    ]
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null
+  },
+  {
+   "name": "instance-admin-diagnostics-run-failures",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/diagnostics",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "checks": [
+     {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "L’endpoint di salute non risponde con la versione attesa. Verifica URL, rete e reverse proxy.",
+      "checked_at": "$isonow",
+      "id": "public_url",
+      "label": "URL pubblico e HTTPS",
+      "core": true,
+      "section": "overview"
+     },
+     {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "L’endpoint di salute non risponde con la versione attesa. Verifica URL, rete e reverse proxy.",
+      "checked_at": "$isonow",
+      "id": "api",
+      "label": "API",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Il database risponde a una query di lettura. Nessun dato è stato modificato.",
+      "checked_at": "$isonow",
+      "id": "database",
+      "label": "Database",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "checked_at": "$isonow",
+      "id": "storage",
+      "label": "Archivio file",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "Nessun worker risponde. Verifica worker e broker e riprova.",
+      "checked_at": "$isonow",
+      "id": "worker",
+      "label": "Worker",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "Segnale dello scheduler assente o scaduto. Avvia o riavvia il servizio beat e ripeti dopo un minuto.",
+      "checked_at": "$isonow",
+      "id": "scheduler",
+      "label": "Scheduler",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "Il renderer non supera il controllo di salute. Verifica il servizio PDF.",
+      "checked_at": "$isonow",
+      "id": "renderer",
+      "label": "Renderer PDF",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "warning",
+      "level": "configuration",
+      "message": "SMTP senza cifratura. Configura TLS o SSL prima di inviare credenziali o messaggi.",
+      "checked_at": "$isonow",
+      "id": "email",
+      "label": "Configurazione email",
+      "core": false,
+      "section": "email"
+     },
+     {
+      "status": "not_applicable",
+      "level": "configuration",
+      "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+      "checked_at": "$isonow",
+      "id": "updater",
+      "label": "Servizio aggiornamenti",
+      "core": false,
+      "section": "backups"
+     },
+     {
+      "status": "not_applicable",
+      "level": "configuration",
+      "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+      "checked_at": "$isonow",
+      "id": "backups",
+      "label": "Preparazione backup",
+      "core": false,
+      "section": "backups"
+     }
+    ],
+    "overall": "failed",
+    "checked_at": "$isonow",
+    "email_test": null,
+    "integrations": [
+     {
+      "id": "stripe",
+      "label": "Stripe",
+      "status": "not_configured",
+      "level": "configuration",
+      "message": "Integrazione facoltativa non configurata.",
+      "checked_at": "$isonow",
+      "core": false
+     },
+     {
+      "id": "google",
+      "label": "Accesso Google",
+      "status": "passed",
+      "level": "configuration",
+      "message": "Client ID configurato. Un accesso reale con il provider non è stato verificato.",
+      "checked_at": "$isonow",
+      "core": false
+     },
+     {
+      "id": "apple",
+      "label": "Accesso Apple",
+      "status": "warning",
+      "level": "configuration",
+      "message": "Client ID configurato per verificare token Apple. Il pulsante di accesso Apple sul web non è disponibile in questa versione.",
+      "checked_at": "$isonow",
+      "core": false
+     }
+    ]
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza v1",
+     "abbreviation": "AB",
+     "primary_color": "#ABCDEF",
+     "support_email": "Admin@Example.test",
+     "ui_api_version": "v1",
+     "email_settings": {
+      "host": "mail.example.test",
+      "port": 465,
+      "security": "none",
+      "username": "",
+      "from_email": "relay@example.test",
+      "sender_name": "Relay"
+     },
+     "email_password": {
+      "$secret": ""
+     },
+     "email_revision": 5,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "status": "failed",
+        "level": "connectivity",
+        "message": "L’endpoint di salute non risponde con la versione attesa. Verifica URL, rete e reverse proxy.",
+        "checked_at": "$isonow",
+        "id": "public_url",
+        "label": "URL pubblico e HTTPS",
+        "core": true,
+        "section": "overview"
+       },
+       {
+        "status": "failed",
+        "level": "connectivity",
+        "message": "L’endpoint di salute non risponde con la versione attesa. Verifica URL, rete e reverse proxy.",
+        "checked_at": "$isonow",
+        "id": "api",
+        "label": "API",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Il database risponde a una query di lettura. Nessun dato è stato modificato.",
+        "checked_at": "$isonow",
+        "id": "database",
+        "label": "Database",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "failed",
+        "level": "connectivity",
+        "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+        "checked_at": "$isonow",
+        "id": "storage",
+        "label": "Archivio file",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "failed",
+        "level": "connectivity",
+        "message": "Nessun worker risponde. Verifica worker e broker e riprova.",
+        "checked_at": "$isonow",
+        "id": "worker",
+        "label": "Worker",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "failed",
+        "level": "connectivity",
+        "message": "Segnale dello scheduler assente o scaduto. Avvia o riavvia il servizio beat e ripeti dopo un minuto.",
+        "checked_at": "$isonow",
+        "id": "scheduler",
+        "label": "Scheduler",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "failed",
+        "level": "connectivity",
+        "message": "Il renderer non supera il controllo di salute. Verifica il servizio PDF.",
+        "checked_at": "$isonow",
+        "id": "renderer",
+        "label": "Renderer PDF",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "warning",
+        "level": "configuration",
+        "message": "SMTP senza cifratura. Configura TLS o SSL prima di inviare credenziali o messaggi.",
+        "checked_at": "$isonow",
+        "id": "email",
+        "label": "Configurazione email",
+        "core": false,
+        "section": "email"
+       },
+       {
+        "status": "not_applicable",
+        "level": "configuration",
+        "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+        "checked_at": "$isonow",
+        "id": "updater",
+        "label": "Servizio aggiornamenti",
+        "core": false,
+        "section": "backups"
+       },
+       {
+        "status": "not_applicable",
+        "level": "configuration",
+        "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+        "checked_at": "$isonow",
+        "id": "backups",
+        "label": "Preparazione backup",
+        "core": false,
+        "section": "backups"
+       }
+      ],
+      "checked_at": "$isonow",
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": "$lease45"
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 6,
+       "settings": null
+      },
+      "google": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "fixture.apps.googleusercontent.com"
+       }
+      },
+      "apple": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "org.example.fixture"
+       }
+      },
+      "ai": {
+       "revision": 2,
+       "settings": {
+        "enabled": false,
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "http://[::1]:8080/v1",
+        "max_iterations": 1,
+        "max_results": 1,
+        "query_timeout": 1,
+        "ws_rate_limit": 1000,
+        "ws_timeout": 1,
+        "history_cap": 1000,
+        "api_key": {
+         "$secret": ""
+        }
+       }
+      }
+     }
+    },
+    "touched": false
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "body": {},
+   "setup": {
+    "leases": {},
+    "email_settings": {
+     "host": "mail.example.test",
+     "port": 465,
+     "security": "none",
+     "username": "",
+     "from_email": "relay@example.test",
+     "sender_name": "Relay"
+    },
+    "email_password": ""
+   },
+   "outbound": [
+    {
+     "connect": "example.org:443",
+     "method": "GET",
+     "path": "/api/healthz",
+     "headers": {
+      "host": "example.org",
+      "user-agent": "python-requests/2.34.2",
+      "accept-encoding": "gzip, deflate",
+      "accept": "*/*",
+      "connection": "keep-alive"
+     },
+     "reply": {
+      "status": 503,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJzdGF0dXMiOiAib2siLCAidmVyc2lvbiI6ICJ2MC4wLjAifQ=="
+     }
+    }
+   ],
+   "stubs": {
+    "api": {
+     "replies": [
+      {
+       "status": 200,
+       "headers": {
+        "Content-Type": "application/json"
+       },
+       "raw_b64": "eyJzdGF0dXMiOiAib2siLCAidmVyc2lvbiI6ICJ2OS45LjkifQ=="
+      }
+     ],
+     "expect": [
+      {
+       "method": "GET",
+       "path": "/healthz",
+       "headers": {
+        "host": "$self",
+        "user-agent": "python-requests/2.34.2",
+        "accept-encoding": "gzip, deflate",
+        "accept": "*/*",
+        "connection": "keep-alive"
+       }
+      }
+     ]
+    },
+    "renderer": {
+     "replies": [
+      {
+       "status": 200,
+       "headers": {
+        "Content-Type": "application/json"
+       },
+       "raw_b64": "eyJzdGF0dXMiOiAic3RhcnRpbmcifQ=="
+      }
+     ],
+     "expect": [
+      {
+       "method": "GET",
+       "path": "/healthz",
+       "headers": {
+        "host": "$self",
+        "user-agent": "python-requests/2.34.2",
+        "accept-encoding": "gzip, deflate",
+        "accept": "*/*",
+        "connection": "keep-alive"
+       }
+      }
+     ]
+    },
+    "s3": {
+     "replies": [
+      {
+       "status": 403,
+       "headers": {
+        "Content-Type": "application/xml"
+       },
+       "raw_b64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPEVycm9yPjxDb2RlPkFjY2Vzc0RlbmllZDwvQ29kZT48TWVzc2FnZT5BY2Nlc3MgRGVuaWVkPC9NZXNzYWdlPjxSZXF1ZXN0SWQ+Y29udHJhY3Q8L1JlcXVlc3RJZD48L0Vycm9yPg=="
+      }
+     ],
+     "expect": [
+      {
+       "method": "GET",
+       "path": "/$bucket",
+       "query": {
+        "list-type": "2",
+        "prefix": "storage",
+        "max-keys": "1",
+        "encoding-type": "url"
+       },
+       "signed": true
+      }
+     ]
+    }
+   },
+   "worker": {
+    "mode": "silent",
+    "expect": [
+     {
+      "channel": "/0.celery.pidbox",
+      "envelope_keys": [
+       "body",
+       "content-encoding",
+       "content-type",
+       "headers",
+       "properties"
+      ],
+      "content-encoding": "utf-8",
+      "content-type": "application/json",
+      "headers": {
+       "clock": 1,
+       "expires": "$expires"
+      },
+      "properties": {
+       "delivery_mode": 2,
+       "delivery_info": {
+        "exchange": "celery.pidbox",
+        "routing_key": ""
+       },
+       "priority": 0,
+       "body_encoding": "base64",
+       "delivery_tag": "$uuid"
+      },
+      "body": {
+       "method": "ping",
+       "arguments": {},
+       "destination": null,
+       "pattern": null,
+       "matcher": null,
+       "ticket": "$uuid",
+       "reply_to": {
+        "exchange": "reply.celery.pidbox",
+        "routing_key": "$uuid"
+       }
+      }
+     }
+    ]
+   },
+   "heartbeat": "stale",
+   "race": false
+  },
+  {
+   "name": "instance-admin-diagnostics-run-odd-answers",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/diagnostics",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "checks": [
+     {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "checked_at": "$isonow",
+      "id": "public_url",
+      "label": "URL pubblico e HTTPS",
+      "core": true,
+      "section": "overview"
+     },
+     {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "L’endpoint di salute non risponde con la versione attesa. Verifica URL, rete e reverse proxy.",
+      "checked_at": "$isonow",
+      "id": "api",
+      "label": "API",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Il database risponde a una query di lettura. Nessun dato è stato modificato.",
+      "checked_at": "$isonow",
+      "id": "database",
+      "label": "Database",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "checked_at": "$isonow",
+      "id": "storage",
+      "label": "Archivio file",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "Nessun worker risponde. Verifica worker e broker e riprova.",
+      "checked_at": "$isonow",
+      "id": "worker",
+      "label": "Worker",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "Segnale dello scheduler assente o scaduto. Avvia o riavvia il servizio beat e ripeti dopo un minuto.",
+      "checked_at": "$isonow",
+      "id": "scheduler",
+      "label": "Scheduler",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "checked_at": "$isonow",
+      "id": "renderer",
+      "label": "Renderer PDF",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "checked_at": "$isonow",
+      "id": "email",
+      "label": "Configurazione email",
+      "core": false,
+      "section": "email"
+     },
+     {
+      "status": "not_applicable",
+      "level": "configuration",
+      "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+      "checked_at": "$isonow",
+      "id": "updater",
+      "label": "Servizio aggiornamenti",
+      "core": false,
+      "section": "backups"
+     },
+     {
+      "status": "not_applicable",
+      "level": "configuration",
+      "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+      "checked_at": "$isonow",
+      "id": "backups",
+      "label": "Preparazione backup",
+      "core": false,
+      "section": "backups"
+     }
+    ],
+    "overall": "failed",
+    "checked_at": "$isonow",
+    "email_test": null,
+    "integrations": [
+     {
+      "id": "stripe",
+      "label": "Stripe",
+      "status": "not_configured",
+      "level": "configuration",
+      "message": "Integrazione facoltativa non configurata.",
+      "checked_at": "$isonow",
+      "core": false
+     },
+     {
+      "id": "google",
+      "label": "Accesso Google",
+      "status": "passed",
+      "level": "configuration",
+      "message": "Client ID configurato. Un accesso reale con il provider non è stato verificato.",
+      "checked_at": "$isonow",
+      "core": false
+     },
+     {
+      "id": "apple",
+      "label": "Accesso Apple",
+      "status": "warning",
+      "level": "configuration",
+      "message": "Client ID configurato per verificare token Apple. Il pulsante di accesso Apple sul web non è disponibile in questa versione.",
+      "checked_at": "$isonow",
+      "core": false
+     }
+    ]
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza v1",
+     "abbreviation": "AB",
+     "primary_color": "#ABCDEF",
+     "support_email": "Admin@Example.test",
+     "ui_api_version": "v1",
+     "email_settings": {
+      "host": "mail.example.test",
+      "port": 465,
+      "security": "tls",
+      "username": "relay",
+      "from_email": "relay@example.test",
+      "sender_name": "Relay"
+     },
+     "email_password": {
+      "$literal": "not-a-fernet-token"
+     },
+     "email_revision": 5,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "status": "failed",
+        "level": "connectivity",
+        "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+        "checked_at": "$isonow",
+        "id": "public_url",
+        "label": "URL pubblico e HTTPS",
+        "core": true,
+        "section": "overview"
+       },
+       {
+        "status": "failed",
+        "level": "connectivity",
+        "message": "L’endpoint di salute non risponde con la versione attesa. Verifica URL, rete e reverse proxy.",
+        "checked_at": "$isonow",
+        "id": "api",
+        "label": "API",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Il database risponde a una query di lettura. Nessun dato è stato modificato.",
+        "checked_at": "$isonow",
+        "id": "database",
+        "label": "Database",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "failed",
+        "level": "connectivity",
+        "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+        "checked_at": "$isonow",
+        "id": "storage",
+        "label": "Archivio file",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "failed",
+        "level": "connectivity",
+        "message": "Nessun worker risponde. Verifica worker e broker e riprova.",
+        "checked_at": "$isonow",
+        "id": "worker",
+        "label": "Worker",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "failed",
+        "level": "connectivity",
+        "message": "Segnale dello scheduler assente o scaduto. Avvia o riavvia il servizio beat e ripeti dopo un minuto.",
+        "checked_at": "$isonow",
+        "id": "scheduler",
+        "label": "Scheduler",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "failed",
+        "level": "connectivity",
+        "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+        "checked_at": "$isonow",
+        "id": "renderer",
+        "label": "Renderer PDF",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "failed",
+        "level": "connectivity",
+        "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+        "checked_at": "$isonow",
+        "id": "email",
+        "label": "Configurazione email",
+        "core": false,
+        "section": "email"
+       },
+       {
+        "status": "not_applicable",
+        "level": "configuration",
+        "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+        "checked_at": "$isonow",
+        "id": "updater",
+        "label": "Servizio aggiornamenti",
+        "core": false,
+        "section": "backups"
+       },
+       {
+        "status": "not_applicable",
+        "level": "configuration",
+        "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+        "checked_at": "$isonow",
+        "id": "backups",
+        "label": "Preparazione backup",
+        "core": false,
+        "section": "backups"
+       }
+      ],
+      "checked_at": "$isonow",
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": "$lease45"
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 6,
+       "settings": null
+      },
+      "google": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "fixture.apps.googleusercontent.com"
+       }
+      },
+      "apple": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "org.example.fixture"
+       }
+      },
+      "ai": {
+       "revision": 2,
+       "settings": {
+        "enabled": false,
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "http://[::1]:8080/v1",
+        "max_iterations": 1,
+        "max_results": 1,
+        "query_timeout": 1,
+        "ws_rate_limit": 1000,
+        "ws_timeout": 1,
+        "history_cap": 1000,
+        "api_key": {
+         "$secret": ""
+        }
+       }
+      }
+     }
+    },
+    "touched": false
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "body": {},
+   "setup": {
+    "leases": null,
+    "email_settings": {
+     "host": "mail.example.test",
+     "port": 465,
+     "security": "tls",
+     "username": "relay",
+     "from_email": "relay@example.test",
+     "sender_name": "Relay"
+    },
+    "email_password": {
+     "$literal": "not-a-fernet-token"
+    }
+   },
+   "outbound": [
+    {
+     "connect": "example.org:443",
+     "method": "GET",
+     "path": "/api/healthz",
+     "headers": {
+      "host": "example.org",
+      "user-agent": "python-requests/2.34.2",
+      "accept-encoding": "gzip, deflate",
+      "accept": "*/*",
+      "connection": "keep-alive"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {},
+      "raw_b64": "b2s="
+     }
+    }
+   ],
+   "stubs": {
+    "api": {
+     "replies": [
+      {
+       "status": 302,
+       "headers": {
+        "Location": "http://127.0.0.1:9/healthz"
+       },
+       "raw_b64": ""
+      }
+     ],
+     "expect": [
+      {
+       "method": "GET",
+       "path": "/healthz",
+       "headers": {
+        "host": "$self",
+        "user-agent": "python-requests/2.34.2",
+        "accept-encoding": "gzip, deflate",
+        "accept": "*/*",
+        "connection": "keep-alive"
+       }
+      }
+     ]
+    },
+    "renderer": {
+     "replies": [
+      {
+       "status": 200,
+       "headers": {
+        "Content-Type": "application/json"
+       },
+       "raw_b64": "W3sic3RhdHVzIjogIm9rIn1d"
+      }
+     ],
+     "expect": [
+      {
+       "method": "GET",
+       "path": "/healthz",
+       "headers": {
+        "host": "$self",
+        "user-agent": "python-requests/2.34.2",
+        "accept-encoding": "gzip, deflate",
+        "accept": "*/*",
+        "connection": "keep-alive"
+       }
+      }
+     ]
+    },
+    "s3": {
+     "replies": [
+      {
+       "mode": "reset"
+      }
+     ],
+     "expect": [
+      {
+       "method": "GET",
+       "path": "/$bucket",
+       "query": {
+        "list-type": "2",
+        "prefix": "storage",
+        "max-keys": "1",
+        "encoding-type": "url"
+       },
+       "signed": true
+      }
+     ]
+    }
+   },
+   "worker": {
+    "mode": "pang",
+    "expect": [
+     {
+      "channel": "/0.celery.pidbox",
+      "envelope_keys": [
+       "body",
+       "content-encoding",
+       "content-type",
+       "headers",
+       "properties"
+      ],
+      "content-encoding": "utf-8",
+      "content-type": "application/json",
+      "headers": {
+       "clock": 1,
+       "expires": "$expires"
+      },
+      "properties": {
+       "delivery_mode": 2,
+       "delivery_info": {
+        "exchange": "celery.pidbox",
+        "routing_key": ""
+       },
+       "priority": 0,
+       "body_encoding": "base64",
+       "delivery_tag": "$uuid"
+      },
+      "body": {
+       "method": "ping",
+       "arguments": {},
+       "destination": null,
+       "pattern": null,
+       "matcher": null,
+       "ticket": "$uuid",
+       "reply_to": {
+        "exchange": "reply.celery.pidbox",
+        "routing_key": "$uuid"
+       }
+      }
+     }
+    ]
+   },
+   "heartbeat": null,
+   "race": false
+  },
+  {
+   "name": "instance-admin-diagnostics-run-timeout",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/diagnostics",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "checks": [
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "URL pubblico raggiungibile con certificato HTTPS valido.",
+      "checked_at": "$isonow",
+      "id": "public_url",
+      "label": "URL pubblico e HTTPS",
+      "core": true,
+      "section": "overview"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "L’API risponde con la versione in esecuzione.",
+      "checked_at": "$isonow",
+      "id": "api",
+      "label": "API",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Il database risponde a una query di lettura. Nessun dato è stato modificato.",
+      "checked_at": "$isonow",
+      "id": "database",
+      "label": "Database",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Archivio accessibile in lettura. Scrittura e caricamento file non sono stati provati.",
+      "checked_at": "$isonow",
+      "id": "storage",
+      "label": "Archivio file",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Un worker risponde tramite il broker. Non sono stati eseguiti task applicativi.",
+      "checked_at": "$isonow",
+      "id": "worker",
+      "label": "Worker",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il ciclo dello scheduler è attivo (segnale negli ultimi 90 secondi). L’esito dei task non è verificato.",
+      "checked_at": "$isonow",
+      "id": "scheduler",
+      "label": "Scheduler",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "Tempo massimo superato. Controlla la disponibilità del servizio e riprova.",
+      "checked_at": "$isonow",
+      "id": "renderer",
+      "label": "Renderer PDF",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "warning",
+      "level": "configuration",
+      "message": "Nome utente e password SMTP incompleti. Completa entrambe le credenziali oppure rimuovile per un relay senza autenticazione.",
+      "checked_at": "$isonow",
+      "id": "email",
+      "label": "Configurazione email",
+      "core": false,
+      "section": "email"
+     },
+     {
+      "status": "not_applicable",
+      "level": "configuration",
+      "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+      "checked_at": "$isonow",
+      "id": "updater",
+      "label": "Servizio aggiornamenti",
+      "core": false,
+      "section": "backups"
+     },
+     {
+      "status": "not_applicable",
+      "level": "configuration",
+      "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+      "checked_at": "$isonow",
+      "id": "backups",
+      "label": "Preparazione backup",
+      "core": false,
+      "section": "backups"
+     }
+    ],
+    "overall": "failed",
+    "checked_at": "$isonow",
+    "email_test": null,
+    "integrations": [
+     {
+      "id": "stripe",
+      "label": "Stripe",
+      "status": "not_configured",
+      "level": "configuration",
+      "message": "Integrazione facoltativa non configurata.",
+      "checked_at": "$isonow",
+      "core": false
+     },
+     {
+      "id": "google",
+      "label": "Accesso Google",
+      "status": "passed",
+      "level": "configuration",
+      "message": "Client ID configurato. Un accesso reale con il provider non è stato verificato.",
+      "checked_at": "$isonow",
+      "core": false
+     },
+     {
+      "id": "apple",
+      "label": "Accesso Apple",
+      "status": "warning",
+      "level": "configuration",
+      "message": "Client ID configurato per verificare token Apple. Il pulsante di accesso Apple sul web non è disponibile in questa versione.",
+      "checked_at": "$isonow",
+      "core": false
+     }
+    ]
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza v1",
+     "abbreviation": "AB",
+     "primary_color": "#ABCDEF",
+     "support_email": "Admin@Example.test",
+     "ui_api_version": "v1",
+     "email_settings": {
+      "host": "mail.example.test",
+      "port": 465,
+      "security": "tls",
+      "username": "relay",
+      "from_email": "relay@example.test",
+      "sender_name": "Relay"
+     },
+     "email_password": {
+      "$secret": ""
+     },
+     "email_revision": 5,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "URL pubblico raggiungibile con certificato HTTPS valido.",
+        "checked_at": "$isonow",
+        "id": "public_url",
+        "label": "URL pubblico e HTTPS",
+        "core": true,
+        "section": "overview"
+       },
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "L’API risponde con la versione in esecuzione.",
+        "checked_at": "$isonow",
+        "id": "api",
+        "label": "API",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Il database risponde a una query di lettura. Nessun dato è stato modificato.",
+        "checked_at": "$isonow",
+        "id": "database",
+        "label": "Database",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Archivio accessibile in lettura. Scrittura e caricamento file non sono stati provati.",
+        "checked_at": "$isonow",
+        "id": "storage",
+        "label": "Archivio file",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Un worker risponde tramite il broker. Non sono stati eseguiti task applicativi.",
+        "checked_at": "$isonow",
+        "id": "worker",
+        "label": "Worker",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "passed",
+        "level": "functional",
+        "message": "Il ciclo dello scheduler è attivo (segnale negli ultimi 90 secondi). L’esito dei task non è verificato.",
+        "checked_at": "$isonow",
+        "id": "scheduler",
+        "label": "Scheduler",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "failed",
+        "level": "connectivity",
+        "message": "Tempo massimo superato. Controlla la disponibilità del servizio e riprova.",
+        "checked_at": "$isonow",
+        "id": "renderer",
+        "label": "Renderer PDF",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "warning",
+        "level": "configuration",
+        "message": "Nome utente e password SMTP incompleti. Completa entrambe le credenziali oppure rimuovile per un relay senza autenticazione.",
+        "checked_at": "$isonow",
+        "id": "email",
+        "label": "Configurazione email",
+        "core": false,
+        "section": "email"
+       },
+       {
+        "status": "not_applicable",
+        "level": "configuration",
+        "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+        "checked_at": "$isonow",
+        "id": "updater",
+        "label": "Servizio aggiornamenti",
+        "core": false,
+        "section": "backups"
+       },
+       {
+        "status": "not_applicable",
+        "level": "configuration",
+        "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+        "checked_at": "$isonow",
+        "id": "backups",
+        "label": "Preparazione backup",
+        "core": false,
+        "section": "backups"
+       }
+      ],
+      "checked_at": "$isonow",
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": "$lease45"
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 6,
+       "settings": null
+      },
+      "google": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "fixture.apps.googleusercontent.com"
+       }
+      },
+      "apple": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "org.example.fixture"
+       }
+      },
+      "ai": {
+       "revision": 2,
+       "settings": {
+        "enabled": false,
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "http://[::1]:8080/v1",
+        "max_iterations": 1,
+        "max_results": 1,
+        "query_timeout": 1,
+        "ws_rate_limit": 1000,
+        "ws_timeout": 1,
+        "history_cap": 1000,
+        "api_key": {
+         "$secret": ""
+        }
+       }
+      }
+     }
+    },
+    "touched": false
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "body": {},
+   "setup": {
+    "leases": {},
+    "email_settings": {
+     "host": "mail.example.test",
+     "port": 465,
+     "security": "tls",
+     "username": "relay",
+     "from_email": "relay@example.test",
+     "sender_name": "Relay"
+    },
+    "email_password": ""
+   },
+   "outbound": [
+    {
+     "connect": "example.org:443",
+     "method": "GET",
+     "path": "/api/healthz",
+     "headers": {
+      "host": "example.org",
+      "user-agent": "python-requests/2.34.2",
+      "accept-encoding": "gzip, deflate",
+      "accept": "*/*",
+      "connection": "keep-alive"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJzdGF0dXMiOiAib2siLCAidmVyc2lvbiI6ICJ2MC4wLjAifQ=="
+     }
+    }
+   ],
+   "stubs": {
+    "api": {
+     "replies": [
+      {
+       "status": 200,
+       "headers": {
+        "Content-Type": "application/json"
+       },
+       "raw_b64": "eyJzdGF0dXMiOiAib2siLCAidmVyc2lvbiI6ICJ2MC4wLjAifQ=="
+      }
+     ],
+     "expect": [
+      {
+       "method": "GET",
+       "path": "/healthz",
+       "headers": {
+        "host": "$self",
+        "user-agent": "python-requests/2.34.2",
+        "accept-encoding": "gzip, deflate",
+        "accept": "*/*",
+        "connection": "keep-alive"
+       }
+      }
+     ]
+    },
+    "renderer": {
+     "replies": [
+      {
+       "mode": "trickle"
+      }
+     ],
+     "expect": [
+      {
+       "method": "GET",
+       "path": "/healthz",
+       "headers": {
+        "host": "$self",
+        "user-agent": "python-requests/2.34.2",
+        "accept-encoding": "gzip, deflate",
+        "accept": "*/*",
+        "connection": "keep-alive"
+       }
+      }
+     ]
+    },
+    "s3": {
+     "replies": [
+      {
+       "status": 200,
+       "headers": {
+        "Content-Type": "application/xml"
+       },
+       "raw_b64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPExpc3RCdWNrZXRSZXN1bHQgeG1sbnM9Imh0dHA6Ly9zMy5hbWF6b25hd3MuY29tL2RvYy8yMDA2LTAzLTAxLyI+PE5hbWU+Y29udHJhY3Q8L05hbWU+PFByZWZpeD5zdG9yYWdlPC9QcmVmaXg+PEtleUNvdW50PjA8L0tleUNvdW50PjxNYXhLZXlzPjE8L01heEtleXM+PEVuY29kaW5nVHlwZT51cmw8L0VuY29kaW5nVHlwZT48SXNUcnVuY2F0ZWQ+ZmFsc2U8L0lzVHJ1bmNhdGVkPjwvTGlzdEJ1Y2tldFJlc3VsdD4="
+      }
+     ],
+     "expect": [
+      {
+       "method": "GET",
+       "path": "/$bucket",
+       "query": {
+        "list-type": "2",
+        "prefix": "storage",
+        "max-keys": "1",
+        "encoding-type": "url"
+       },
+       "signed": true
+      }
+     ]
+    }
+   },
+   "worker": {
+    "mode": "pong",
+    "expect": [
+     {
+      "channel": "/0.celery.pidbox",
+      "envelope_keys": [
+       "body",
+       "content-encoding",
+       "content-type",
+       "headers",
+       "properties"
+      ],
+      "content-encoding": "utf-8",
+      "content-type": "application/json",
+      "headers": {
+       "clock": 1,
+       "expires": "$expires"
+      },
+      "properties": {
+       "delivery_mode": 2,
+       "delivery_info": {
+        "exchange": "celery.pidbox",
+        "routing_key": ""
+       },
+       "priority": 0,
+       "body_encoding": "base64",
+       "delivery_tag": "$uuid"
+      },
+      "body": {
+       "method": "ping",
+       "arguments": {},
+       "destination": null,
+       "pattern": null,
+       "matcher": null,
+       "ticket": "$uuid",
+       "reply_to": {
+        "exchange": "reply.celery.pidbox",
+        "routing_key": "$uuid"
+       }
+      }
+     }
+    ]
+   },
+   "heartbeat": "integer",
+   "race": false
+  },
+  {
+   "name": "instance-admin-diagnostics-run-email-changed",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/instance/admin/diagnostics",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "checks": [
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "URL pubblico raggiungibile con certificato HTTPS valido.",
+      "checked_at": "$isonow",
+      "id": "public_url",
+      "label": "URL pubblico e HTTPS",
+      "core": true,
+      "section": "overview"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "L’API risponde con la versione in esecuzione.",
+      "checked_at": "$isonow",
+      "id": "api",
+      "label": "API",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Il database risponde a una query di lettura. Nessun dato è stato modificato.",
+      "checked_at": "$isonow",
+      "id": "database",
+      "label": "Database",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Archivio accessibile in lettura. Scrittura e caricamento file non sono stati provati.",
+      "checked_at": "$isonow",
+      "id": "storage",
+      "label": "Archivio file",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Un worker risponde tramite il broker. Non sono stati eseguiti task applicativi.",
+      "checked_at": "$isonow",
+      "id": "worker",
+      "label": "Worker",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il ciclo dello scheduler è attivo (segnale negli ultimi 90 secondi). L’esito dei task non è verificato.",
+      "checked_at": "$isonow",
+      "id": "scheduler",
+      "label": "Scheduler",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Il renderer apre e chiude una pagina nel browser. La generazione di un documento PDF non è stata provata.",
+      "checked_at": "$isonow",
+      "id": "renderer",
+      "label": "Renderer PDF",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "not_checked",
+      "level": "connectivity",
+      "message": "Esegui la diagnostica per verificare questo servizio.",
+      "checked_at": null,
+      "id": "email",
+      "label": "Configurazione email",
+      "core": false,
+      "section": "email"
+     },
+     {
+      "status": "not_applicable",
+      "level": "configuration",
+      "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+      "checked_at": "$isonow",
+      "id": "updater",
+      "label": "Servizio aggiornamenti",
+      "core": false,
+      "section": "backups"
+     },
+     {
+      "status": "not_applicable",
+      "level": "configuration",
+      "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+      "checked_at": "$isonow",
+      "id": "backups",
+      "label": "Preparazione backup",
+      "core": false,
+      "section": "backups"
+     }
+    ],
+    "overall": "passed",
+    "checked_at": "$isonow",
+    "email_test": null,
+    "integrations": [
+     {
+      "id": "stripe",
+      "label": "Stripe",
+      "status": "not_configured",
+      "level": "configuration",
+      "message": "Integrazione facoltativa non configurata.",
+      "checked_at": "$isonow",
+      "core": false
+     },
+     {
+      "id": "google",
+      "label": "Accesso Google",
+      "status": "passed",
+      "level": "configuration",
+      "message": "Client ID configurato. Un accesso reale con il provider non è stato verificato.",
+      "checked_at": "$isonow",
+      "core": false
+     },
+     {
+      "id": "apple",
+      "label": "Accesso Apple",
+      "status": "warning",
+      "level": "configuration",
+      "message": "Client ID configurato per verificare token Apple. Il pulsante di accesso Apple sul web non è disponibile in questa versione.",
+      "checked_at": "$isonow",
+      "core": false
+     }
+    ]
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza v1",
+     "abbreviation": "AB",
+     "primary_color": "#ABCDEF",
+     "support_email": "Admin@Example.test",
+     "ui_api_version": "v1",
+     "email_settings": {
+      "host": "mail.example.test",
+      "port": 465,
+      "security": "tls",
+      "username": "relay",
+      "from_email": "relay@example.test",
+      "sender_name": "Relay"
+     },
+     "email_password": {
+      "$secret": "placeholder secret 2"
+     },
+     "email_revision": 6,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "URL pubblico raggiungibile con certificato HTTPS valido.",
+        "checked_at": "$isonow",
+        "id": "public_url",
+        "label": "URL pubblico e HTTPS",
+        "core": true,
+        "section": "overview"
+       },
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "L’API risponde con la versione in esecuzione.",
+        "checked_at": "$isonow",
+        "id": "api",
+        "label": "API",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Il database risponde a una query di lettura. Nessun dato è stato modificato.",
+        "checked_at": "$isonow",
+        "id": "database",
+        "label": "Database",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Archivio accessibile in lettura. Scrittura e caricamento file non sono stati provati.",
+        "checked_at": "$isonow",
+        "id": "storage",
+        "label": "Archivio file",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Un worker risponde tramite il broker. Non sono stati eseguiti task applicativi.",
+        "checked_at": "$isonow",
+        "id": "worker",
+        "label": "Worker",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "passed",
+        "level": "functional",
+        "message": "Il ciclo dello scheduler è attivo (segnale negli ultimi 90 secondi). L’esito dei task non è verificato.",
+        "checked_at": "$isonow",
+        "id": "scheduler",
+        "label": "Scheduler",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Il renderer apre e chiude una pagina nel browser. La generazione di un documento PDF non è stata provata.",
+        "checked_at": "$isonow",
+        "id": "renderer",
+        "label": "Renderer PDF",
+        "core": true,
+        "section": "diagnostics"
+       },
+       {
+        "status": "not_applicable",
+        "level": "configuration",
+        "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+        "checked_at": "$isonow",
+        "id": "updater",
+        "label": "Servizio aggiornamenti",
+        "core": false,
+        "section": "backups"
+       },
+       {
+        "status": "not_applicable",
+        "level": "configuration",
+        "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+        "checked_at": "$isonow",
+        "id": "backups",
+        "label": "Preparazione backup",
+        "core": false,
+        "section": "backups"
+       }
+      ],
+      "checked_at": "$isonow",
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": "$lease45"
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 6,
+       "settings": null
+      },
+      "google": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "fixture.apps.googleusercontent.com"
+       }
+      },
+      "apple": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "org.example.fixture"
+       }
+      },
+      "ai": {
+       "revision": 2,
+       "settings": {
+        "enabled": false,
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "http://[::1]:8080/v1",
+        "max_iterations": 1,
+        "max_results": 1,
+        "query_timeout": 1,
+        "ws_rate_limit": 1000,
+        "ws_timeout": 1,
+        "history_cap": 1000,
+        "api_key": {
+         "$secret": ""
+        }
+       }
+      }
+     }
+    },
+    "touched": false
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "body": {},
+   "setup": {
+    "leases": {},
+    "email_settings": {
+     "host": "mail.example.test",
+     "port": 465,
+     "security": "tls",
+     "username": "relay",
+     "from_email": "relay@example.test",
+     "sender_name": "Relay"
+    },
+    "email_password": "placeholder secret 2"
+   },
+   "outbound": [
+    {
+     "connect": "example.org:443",
+     "method": "GET",
+     "path": "/api/healthz",
+     "headers": {
+      "host": "example.org",
+      "user-agent": "python-requests/2.34.2",
+      "accept-encoding": "gzip, deflate",
+      "accept": "*/*",
+      "connection": "keep-alive"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJzdGF0dXMiOiAib2siLCAidmVyc2lvbiI6ICJ2MC4wLjAifQ=="
+     }
+    }
+   ],
+   "stubs": {
+    "api": {
+     "replies": [
+      {
+       "status": 200,
+       "headers": {
+        "Content-Type": "application/json"
+       },
+       "raw_b64": "eyJzdGF0dXMiOiAib2siLCAidmVyc2lvbiI6ICJ2MC4wLjAifQ=="
+      }
+     ],
+     "expect": [
+      {
+       "method": "GET",
+       "path": "/healthz",
+       "headers": {
+        "host": "$self",
+        "user-agent": "python-requests/2.34.2",
+        "accept-encoding": "gzip, deflate",
+        "accept": "*/*",
+        "connection": "keep-alive"
+       }
+      }
+     ]
+    },
+    "renderer": {
+     "replies": [
+      {
+       "status": 200,
+       "headers": {
+        "Content-Type": "application/json"
+       },
+       "raw_b64": "eyJzdGF0dXMiOiAib2sifQ=="
+      }
+     ],
+     "expect": [
+      {
+       "method": "GET",
+       "path": "/healthz",
+       "headers": {
+        "host": "$self",
+        "user-agent": "python-requests/2.34.2",
+        "accept-encoding": "gzip, deflate",
+        "accept": "*/*",
+        "connection": "keep-alive"
+       }
+      }
+     ]
+    },
+    "s3": {
+     "replies": [
+      {
+       "status": 200,
+       "headers": {
+        "Content-Type": "application/xml"
+       },
+       "raw_b64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPExpc3RCdWNrZXRSZXN1bHQgeG1sbnM9Imh0dHA6Ly9zMy5hbWF6b25hd3MuY29tL2RvYy8yMDA2LTAzLTAxLyI+PE5hbWU+Y29udHJhY3Q8L05hbWU+PFByZWZpeD5zdG9yYWdlPC9QcmVmaXg+PEtleUNvdW50PjA8L0tleUNvdW50PjxNYXhLZXlzPjE8L01heEtleXM+PEVuY29kaW5nVHlwZT51cmw8L0VuY29kaW5nVHlwZT48SXNUcnVuY2F0ZWQ+ZmFsc2U8L0lzVHJ1bmNhdGVkPjwvTGlzdEJ1Y2tldFJlc3VsdD4="
+      }
+     ],
+     "expect": [
+      {
+       "method": "GET",
+       "path": "/$bucket",
+       "query": {
+        "list-type": "2",
+        "prefix": "storage",
+        "max-keys": "1",
+        "encoding-type": "url"
+       },
+       "signed": true
+      }
+     ]
+    }
+   },
+   "worker": {
+    "mode": "pong",
+    "expect": [
+     {
+      "channel": "/0.celery.pidbox",
+      "envelope_keys": [
+       "body",
+       "content-encoding",
+       "content-type",
+       "headers",
+       "properties"
+      ],
+      "content-encoding": "utf-8",
+      "content-type": "application/json",
+      "headers": {
+       "clock": 1,
+       "expires": "$expires"
+      },
+      "properties": {
+       "delivery_mode": 2,
+       "delivery_info": {
+        "exchange": "celery.pidbox",
+        "routing_key": ""
+       },
+       "priority": 0,
+       "body_encoding": "base64",
+       "delivery_tag": "$uuid"
+      },
+      "body": {
+       "method": "ping",
+       "arguments": {},
+       "destination": null,
+       "pattern": null,
+       "matcher": null,
+       "ticket": "$uuid",
+       "reply_to": {
+        "exchange": "reply.celery.pidbox",
+        "routing_key": "$uuid"
+       }
+      }
+     }
+    ]
+   },
+   "heartbeat": "fresh",
+   "race": true
+  },
+  {
+   "name": "instance-admin-diagnostics-after-runs",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/diagnostics",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "checks": [
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "URL pubblico raggiungibile con certificato HTTPS valido.",
+      "checked_at": "$isonow",
+      "id": "public_url",
+      "label": "URL pubblico e HTTPS",
+      "core": true,
+      "section": "overview"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "L’API risponde con la versione in esecuzione.",
+      "checked_at": "$isonow",
+      "id": "api",
+      "label": "API",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Il database risponde a una query di lettura. Nessun dato è stato modificato.",
+      "checked_at": "$isonow",
+      "id": "database",
+      "label": "Database",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Archivio accessibile in lettura. Scrittura e caricamento file non sono stati provati.",
+      "checked_at": "$isonow",
+      "id": "storage",
+      "label": "Archivio file",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Un worker risponde tramite il broker. Non sono stati eseguiti task applicativi.",
+      "checked_at": "$isonow",
+      "id": "worker",
+      "label": "Worker",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il ciclo dello scheduler è attivo (segnale negli ultimi 90 secondi). L’esito dei task non è verificato.",
+      "checked_at": "$isonow",
+      "id": "scheduler",
+      "label": "Scheduler",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "passed",
+      "level": "connectivity",
+      "message": "Il renderer apre e chiude una pagina nel browser. La generazione di un documento PDF non è stata provata.",
+      "checked_at": "$isonow",
+      "id": "renderer",
+      "label": "Renderer PDF",
+      "core": true,
+      "section": "diagnostics"
+     },
+     {
+      "status": "not_checked",
+      "level": "connectivity",
+      "message": "Esegui la diagnostica per verificare questo servizio.",
+      "checked_at": null,
+      "id": "email",
+      "label": "Configurazione email",
+      "core": false,
+      "section": "email"
+     },
+     {
+      "status": "not_applicable",
+      "level": "configuration",
+      "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+      "checked_at": "$isonow",
+      "id": "updater",
+      "label": "Servizio aggiornamenti",
+      "core": false,
+      "section": "backups"
+     },
+     {
+      "status": "not_applicable",
+      "level": "configuration",
+      "message": "Disponibile nelle installazioni self-hosted in modalità produzione.",
+      "checked_at": "$isonow",
+      "id": "backups",
+      "label": "Preparazione backup",
+      "core": false,
+      "section": "backups"
+     }
+    ],
+    "overall": "passed",
+    "checked_at": "$isonow",
     "email_test": null,
     "integrations": [
      {

@@ -26,6 +26,16 @@ func (o documentUploadObjects) Put(ctx context.Context, key string, body []byte,
 		CacheControl: o.cacheControl, ACL: o.acl})
 }
 
+// composeCourseLocationUploads is the document storage for course location
+// documents_data uploads (default_storage.save).
+func composeCourseLocationUploads(cfg config.Config, db *sqlx.DB) *service.DocumentUploads {
+	objects := documentUploadObjects{S3: composeDocumentObjects(cfg), cacheControl: cfg.Storage.CacheControl}
+	if cfg.Storage.DefaultACL != nil {
+		objects.acl = *cfg.Storage.DefaultACL
+	}
+	return service.NewDocumentUploads(repository.NewDocumentUploads(db), objects, nil, cfg.Storage.FileOverwrite, time.Now, uuid.NewString)
+}
+
 func composeDocumentUploads(cfg config.Config, db *sqlx.DB, sessions *repository.DjangoImpersonationCache, actors *service.ActorAuthentication,
 	identities *service.IdentityResolver, audit handler.LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *handler.DocumentUploadsHandler {
 	uploads := composeDocumentStorage(cfg, db, sessions)

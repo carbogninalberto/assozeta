@@ -1,6 +1,6 @@
 {
  "matrix_version": 1,
- "scope": "Course location add, update and delete authored sequence with audit effects",
+ "scope": "Course location add, update and delete authored sequence with audit and storage effects",
  "ids": {
   "owner": "a1000000-0000-4000-8000-000000700001",
   "full_collaborator": "a1000000-0000-4000-8000-000000700002",
@@ -86,6 +86,7 @@
    "documents": []
   }
  },
+ "location": "course-locations",
  "cases": [
   {
    "name": "course-location-writes-add-anonymous",
@@ -664,6 +665,128 @@
    }
   },
   {
+   "name": "course-location-writes-add-with-documents",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "course_location_id": "$new",
+    "documents": [
+     {
+      "document_id": "$document",
+      "creation_date": "$now",
+      "filepath": null,
+      "filename": "regolamento.pdf",
+      "file_size_bytes": null,
+      "token": "$token"
+     },
+     {
+      "document_id": "$document",
+      "creation_date": "$now",
+      "filepath": null,
+      "filename": "orari è.txt",
+      "file_size_bytes": null,
+      "token": "$token"
+     }
+    ],
+    "title": "Con allegati",
+    "description": null,
+    "address": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": "Con allegati",
+     "description": null,
+     "address": null
+    },
+    "uploads": [
+     {
+      "filename": "regolamento.pdf",
+      "body_b64": "UmVnb2xhbWVudG8gZGVsbGEgcGlzY2luYQ==",
+      "content_type": "application/pdf",
+      "encoding": null
+     },
+     {
+      "filename": "orari è.txt",
+      "body_b64": "THVuLVZlbiA5LTIx",
+      "content_type": "text/plain",
+      "encoding": null
+     }
+    ]
+   },
+   "body": {
+    "title": "Con allegati",
+    "documents_data": [
+     {
+      "document": "UmVnb2xhbWVudG8gZGVsbGEgcGlzY2luYQ==",
+      "filename": "regolamento.pdf"
+     },
+     {
+      "document": "THVuLVZlbiA5LTIx",
+      "filename": "orari è.txt"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-location-writes-add-with-compressed-document",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "course_location_id": "$new",
+    "documents": [
+     {
+      "document_id": "$document",
+      "creation_date": "$now",
+      "filepath": null,
+      "filename": "mappa.tar.gz",
+      "file_size_bytes": null,
+      "token": "$token"
+     }
+    ],
+    "title": "Archivio",
+    "description": null,
+    "address": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": "Archivio",
+     "description": null,
+     "address": null
+    },
+    "uploads": [
+     {
+      "filename": "mappa.tar.gz",
+      "body_b64": "YXJjaGl2aW8=",
+      "content_type": "application/x-tar",
+      "encoding": "gzip"
+     }
+    ]
+   },
+   "body": {
+    "title": "Archivio",
+    "documents_data": [
+     {
+      "document": "YXJjaGl2aW8=",
+      "filename": "mappa.tar.gz"
+     }
+    ]
+   }
+  },
+  {
    "name": "course-location-writes-update-anonymous",
    "actor": "anonymous",
    "method": "PATCH",
@@ -974,6 +1097,105 @@
     "documents_data": [
      {
       "document": ""
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-location-writes-update-document-then-missing-key",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/locations/a1000000-0000-4000-8000-000000980005/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "document key not present"
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "pool",
+    "changes": {},
+    "stored": {
+     "title": null,
+     "description": "Vasca",
+     "address": ""
+    },
+    "uploads": [
+     {
+      "filename": "turni.pdf",
+      "body_b64": "VHVybmkgZXN0aXZp",
+      "content_type": "application/pdf",
+      "encoding": null
+     }
+    ]
+   },
+   "body": {
+    "documents_data": [
+     {
+      "document": "VHVybmkgZXN0aXZp",
+      "filename": "turni.pdf"
+     },
+     {
+      "filename": "senza.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-location-writes-update-with-document",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/locations/a1000000-0000-4000-8000-000000980006/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "course_location_id": "a1000000-0000-4000-8000-000000980006",
+    "documents": [
+     {
+      "document_id": "$document",
+      "creation_date": "$now",
+      "filepath": null,
+      "filename": "nuovo.pdf",
+      "file_size_bytes": null,
+      "token": "$token"
+     }
+    ],
+    "title": "Palestra grande",
+    "description": "Nuova",
+    "address": "Via 3",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "gym",
+    "changes": {
+     "title": [
+      "Palestra",
+      "Palestra grande"
+     ]
+    },
+    "stored": {
+     "title": "Palestra grande",
+     "description": "Nuova",
+     "address": "Via 3"
+    },
+    "uploads": [
+     {
+      "filename": "nuovo.pdf",
+      "body_b64": "TnVvdm8gcmVnb2xhbWVudG8=",
+      "content_type": "application/pdf",
+      "encoding": null
+     }
+    ]
+   },
+   "body": {
+    "title": "Palestra grande",
+    "documents_data": [
+     {
+      "document": "TnVvdm8gcmVnb2xhbWVudG8=",
+      "filename": "nuovo.pdf"
      }
     ]
    }

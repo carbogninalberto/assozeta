@@ -63,14 +63,25 @@ CourseSubscriptionSerializer}}` with float amounts and DRF-encoded dates.
 association (default bank account, default category, `Quota Corso`); the installment's save records the new payment (index through
 the course). Response `{'data': PaymentSerializer}`.
 
+## Impersonation sessions and quote amounts
+
+- During an association-scoped impersonation session (an owner acting as its collaborator or as one of its athletes) the views'
+  `scoped_queryset` lookups (association, course, subscription, installment) find only rows of the session's association; the
+  scoped-request guard has already answered 403 for references outside it. course-subscriptions/add uses no scoped lookup. Audit
+  entries carry the session context (`impersonation_session`, `actor_id`, `target_user_id`, `association_id`).
+- A quote amount is `float(amount.replace(',', '.'))` (Python's `float()` grammar: surrounding whitespace, underscores, exponents,
+  Unicode digits). The payment stores `Context(prec=9).create_decimal_from_float(value)` rounded by `numeric(9,2)` half away from
+  zero (`2,675` stores 2.68); audit entries record `str(float)`. `payment.amount > 0` compares the float, so a sub-cent amount is
+  linked to the row. Text `float()` rejects, `nan`, `inf`, values over seven whole digits and negative amounts (the
+  `payment_amount_positive` check constraint) raise: a rollback on course-subscriptions/add, the created row kept on
+  course-overview add (not atomic).
+
 ## Not ported (refused with a 500 before any write)
 
-- Association-scoped impersonation sessions on all three routes (the guard's own 403s are ported) and non-canonical `X-Group-Id`
-  spellings.
+- Non-canonical `X-Group-Id` spellings.
 - course-subscriptions/add: HTML form bodies.
-- Quote payments whose `amount` is not plain digits with up to seven whole and two decimal places (`,` or `.`), a non-object
-  `payment_category`, a non-string category `value`; overview quote selections without a string `value` and stored quotes with a
-  non-string `quote_id`.
+- Quote payments with a non-object `payment_category` or a non-string category `value`; overview quote selections without a
+  string `value` and stored quotes with a non-string `quote_id`.
 - course-overview add: non-object bodies, HTML form bodies, and the athlete membership prefill.
 - Payments rendered with an instructor or invoice (make-payment).
 
@@ -84,3 +95,10 @@ the course). Response `{'data': PaymentSerializer}`.
 - Mutation (`mutation-r1`): dropping the `X-Group-Id` filter from the installment lookup fails
   `course-enrolment-make-payment-group-header-hides` (CAUGHT).
 - `course-subscriptions` and `course-writes` stay green after the route block was added to `main.go`.
+
+Impersonation sessions and free-text quote amounts (102 cases):
+
+- RED (`v2c-red2`): Django 102/102; Go fails `make-payment-impersonated-athlete` (refused).
+- GREEN (`v2c-green`): 102/102 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact effects.
+- Mutation (`v2c-mutation-half-down`): rounding cents half down fails `add-quote-amount-three-decimals` (CAUGHT).
+- `router-course-subscriptions-create` (reuses this seed; fixture regenerated) stays green on four transports (`v2c-rerun2`, 29/29).

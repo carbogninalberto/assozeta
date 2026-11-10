@@ -16314,6 +16314,167 @@
     }
    },
    "effect": null
+  },
+  {
+   "name": "course-calendar-events-lesson",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/calendar/events?event_id=a0000000-0000-4000-8000-000000000007&get_lesson=true",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "event_id": "a0000000-0000-4000-8000-000000000007",
+       "title": "Lezione 7",
+       "start": "2026-12-07T17:00:00.000Z",
+       "end": "2026-12-07T18:00:00.000Z",
+       "allDay": false,
+       "extendedProps": {
+        "reminder_enabled": false,
+        "attendace_day_id": "$new:day-beta-a7",
+        "course": "a1000000-0000-4000-8000-000000960005",
+        "description": "Corso Beta - Lezione 7",
+        "lesson": {
+         "title": "Lezione 7",
+         "allDay": false,
+         "extended_props": {
+          "reminder_enabled": false
+         },
+         "attendance_day_id": "$new:day-beta-a7",
+         "attendance_registry": "$new:registry-beta",
+         "date": "2026-12-07T17:00:00Z",
+         "start": "2026-12-07T17:00:00.000Z",
+         "end": "2026-12-07T18:00:00.000Z",
+         "course_id": "a1000000-0000-4000-8000-000000960005",
+         "total_attendees": 0,
+         "total_expected_absences": 0,
+         "potential_attendees": [],
+         "total_expected_total": 0,
+         "attendees": [],
+         "expected_absences": []
+        }
+       },
+       "className": [
+        "fc-event-secondary fc-event-light-secondary"
+       ],
+       "id": "a0000000-0000-4000-8000-000000000007"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-calendar-events-lesson-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/calendar/events?event_id=a0000000-0000-4000-8000-000000000007&get_lesson=1",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "event_id": "a0000000-0000-4000-8000-000000000007",
+       "title": "Lezione 7",
+       "start": "2026-12-07T17:00:00.000Z",
+       "end": "2026-12-07T18:00:00.000Z",
+       "allDay": false,
+       "extendedProps": {
+        "reminder_enabled": false,
+        "attendace_day_id": "$new:day-beta-a7",
+        "course": "a1000000-0000-4000-8000-000000960005",
+        "description": "Corso Beta - Lezione 7",
+        "lesson": {
+         "title": "Lezione 7",
+         "allDay": false,
+         "extended_props": {
+          "reminder_enabled": false
+         },
+         "attendance_day_id": "$new:day-beta-a7",
+         "attendance_registry": "$new:registry-beta",
+         "date": "2026-12-07T17:00:00Z",
+         "start": "2026-12-07T17:00:00.000Z",
+         "end": "2026-12-07T18:00:00.000Z",
+         "course_id": "a1000000-0000-4000-8000-000000960005",
+         "total_attendees": 0,
+         "total_expected_absences": 0,
+         "potential_attendees": [],
+         "total_expected_total": 0,
+         "attendees": [],
+         "expected_absences": []
+        }
+       },
+       "className": [
+        "fc-event-secondary fc-event-light-secondary"
+       ],
+       "id": "a0000000-0000-4000-8000-000000000007"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-calendar-events-lesson-linked-to-other-spelling",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/calendar/events?event_id=B0000000-0000-4000-8000-000000000002",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "event_id": "B0000000-0000-4000-8000-000000000002",
+       "title": "Prova 2",
+       "start": "2026-11-10T18:00:00.000Z",
+       "end": "2026-11-10T19:00:00.000Z",
+       "allDay": false,
+       "extendedProps": {
+        "reminder_enabled": false,
+        "attendace_day_id": "$new:day-b2",
+        "course": "a1000000-0000-4000-8000-000000960005",
+        "description": "Corso Beta - Prova 2",
+        "lesson": {
+         "title": "Prova 2",
+         "allDay": false,
+         "extended_props": {},
+         "attendance_day_id": "$new:day-b2",
+         "attendance_registry": "$new:registry-beta",
+         "date": "2026-11-10T18:00:00Z",
+         "start": null,
+         "end": null,
+         "course_id": "a1000000-0000-4000-8000-000000960005",
+         "total_attendees": 0,
+         "total_expected_absences": 0,
+         "potential_attendees": [],
+         "total_expected_total": 0,
+         "attendees": [],
+         "expected_absences": []
+        }
+       },
+       "className": [
+        "fc-event-secondary fc-event-light-secondary"
+       ],
+       "id": "B0000000-0000-4000-8000-000000000002"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-calendar-events-lesson-offset-start-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/calendar/events?event_id=c0000000-0000-4000-8000-000000000001&get_lesson=true",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
   }
  ]
 }
