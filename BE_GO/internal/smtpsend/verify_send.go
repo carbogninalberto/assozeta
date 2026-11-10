@@ -2,7 +2,10 @@ package smtpsend
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
+	"net"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -36,9 +39,57 @@ func VerifySend(ctx context.Context, s Server, given, address, to string, messag
 
 // PythonMessage is str(exception) for the failures whose Python text is
 // fixed: smtplib reply exceptions (the args tuple), the fixed-text smtplib
-// errors and a refused connection. ok is false for every other failure (TLS
-// handshake, name resolution, connect timeouts, resets).
+// errors, a refused connection, a plain-text SMTP reply where the TLS
+// handshake was expected and a host name the resolver does not know. ok is
+// false for every other failure (other TLS errors, temporary resolver
+// failures, connect timeouts, resets).
 func PythonMessage(err error) (string, bool) {
+	return pythonMessage(err, runtime.GOOS)
+}
+
+// wrongVersionNumber is str(ssl.SSLError) of CPython 3.13.16 when the peer
+// answers the ClientHello with plain text (OpenSSL's SSL_R_WRONG_VERSION_NUMBER;
+// the suffix is the handshake call site in that release's _ssl.c).
+const wrongVersionNumber = "[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032)"
+
+// unknownHostText is str(socket.gaierror) for EAI_NONAME: the C library's
+// code and gai_strerror text (macOS, and glibc as in the Django image).
+var unknownHostText = map[string]string{
+	"darwin": "[Errno 8] nodename nor servname provided, or not known",
+	"linux":  "[Errno -2] Name or service not known",
+}
+
+// plainHostName reports a host the 'idna' codec passes through unchanged:
+// ASCII, no empty label, every label under 64 bytes.
+func plainHostName(host string) bool {
+	if host == "" || len(host) > 253 {
+		return false
+	}
+	for _, label := range strings.Split(host, ".") {
+		if label == "" || len(label) > 63 {
+			return false
+		}
+		for i := 0; i < len(label); i++ {
+			if label[i] < 0x20 || label[i] > 0x7e {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func pythonMessage(err error, goos string) (string, bool) {
+	var header tls.RecordHeaderError
+	if errors.As(err, &header) && header.Msg == "first record does not look like a TLS handshake" &&
+		header.RecordHeader[0] >= '0' && header.RecordHeader[0] <= '9' && header.RecordHeader[1] != 3 {
+		// An SMTP reply line where the ServerHello was expected.
+		return wrongVersionNumber, true
+	}
+	var dns *net.DNSError
+	if errors.As(err, &dns) && dns.IsNotFound && !dns.IsTimeout && !dns.IsTemporary && plainHostName(dns.Name) {
+		text, ok := unknownHostText[goos]
+		return text, ok
+	}
 	var smtp *Error
 	if errors.As(err, &smtp) {
 		switch {

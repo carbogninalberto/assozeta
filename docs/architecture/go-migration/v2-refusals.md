@@ -170,6 +170,7 @@ Receipts are `quality-reports/go-migration/<family>-http-v2misc3-*`; each family
 | Family | Route | Was refused | Evidence |
 |---|---|---|---|
 | personas-writes | `POST personas/add`, `PATCH personas/<pk>/update` | `picture_path` data URL (the photo widget): decoded, stored as `associates/<id>/picture_<timestamp>.jpg`, ACL `public-read`, CDN URL saved | 188 cases with a private MinIO; RED `v2misc3-red-r4` Django 188/188, Go 500; GREEN `v2misc3-versioned-r3` 4 transports; mutation `v2misc3-mutation-r3` (ACL key without the location) CAUGHT; subscription-sign 47/47, router-personas 51/51 and router-persona-subscriptions 73/73 re-run |
+| communications-smtp | `GET communications/settings/smtp/verify` | `SSL` chosen for a port that speaks plain SMTP first (`[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032)`); a host name the resolver does not know (`socket.gaierror` text of the platform) | 88 cases; RED `v2misc3-red-r2` Django 88/88, Go 500; GREEN `v2misc3-versioned-r1` 4 transports; mutation `v2misc3-mutation-r1` (call site of another CPython release) CAUGHT |
 
 ## Remaining A items, per family
 
@@ -251,12 +252,14 @@ legacy Bakney invoices or tutors that would be reassigned (refused by the valida
 ### communications, camps, profile, personas, modules, oauth, google
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| GET communications/settings/smtp/verify | a failed connection whose Python text comes from the platform libraries: TLS handshake error (for example `SSL` on a STARTTLS port), name resolution failure, connect timeout | `communication/settings/sections/EmailSMTP.svelte:155` | `service/communications_smtp.go` (`Verify`) | medium |
+| GET communications/settings/smtp/verify | a connect timeout (wrong port behind a firewall), a resolver that cannot be reached, a TLS handshake timeout | `communication/settings/sections/EmailSMTP.svelte:155` | `service/communications_smtp.go` (`Verify`) | not byte-reproducible |
 | oauth2/signup | Google/Apple configured | `routes/login/Login.svelte:425-447` | `service/oauth_accounts.go:448` | medium-expensive |
 
 Why these stay (v2-misc):
-- smtp/verify: the dialogue is ported (v2-misc-2). What stays is the text of OpenSSL, resolver and connect-timeout errors, which
-  depends on the Python build and the platform; Go answers the 500 page instead of a `verified: false` body.
+- smtp/verify: the dialogue is ported (v2-misc-2), and so are the texts of `SSL` on a plain-SMTP port and of an unknown host
+  (v2-misc-3). What stays: connect timeouts (Python reports the last error of every address in the C library's order), an
+  unreachable resolver and handshake timeouts; Go answers the 500 page instead of a `verified: false` body
+  (`communications-smtp.md`, "Platform texts").
 - oauth2/signup with providers: needs stubbed Google/Apple token verification in the oauth-accounts adapter.
 
 Not HTTP (websocket, Django today): agent exports to XLSX/PDF (`service/business_mcp_query.go:290`).
@@ -432,7 +435,7 @@ Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples)
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
 | GET communications/settings/smtp/verify | configuration with a host that would connect | `service/communications_smtp.go` (`Verify`) | ported | Ported in v2-misc-2 (`communications-smtp.md`, `v2misc2-green-r2`). |
-| GET communications/settings/smtp/verify | TLS handshake error, name resolution failure, connect timeout, reset; falsy port with a plain host; missing user or password; sender name outside letters, digits, spaces and `. - _ &` | `service/communications_smtp.go` (`Verify`, `smtpVerifyPlan`) | A (failed connection) / B (the rest) | A wrong encryption or a mistyped host in `EmailSMTP.svelte` reaches the first group. Cost: medium (platform error texts). |
+| GET communications/settings/smtp/verify | connect timeout, unreachable resolver, TLS handshake timeout or another OpenSSL reason, reset; falsy port with a plain host; missing user or password; sender name outside letters, digits, spaces and `. - _ &` | `service/communications_smtp.go` (`Verify`, `smtpVerifyPlan`) | A (connect timeout) / B (the rest) | `SSL` on a plain-SMTP port and an unknown host are ported in v2-misc-3 (`v2misc3-versioned-r1`). A wrong port behind a firewall still reaches the connect timeout: not byte-reproducible (`communications-smtp.md`). |
 | GET communications/settings/smtp/verify | host port suffix with non-ASCII/separator characters | service/communications_smtp.go:217 | B | Needs a host typed as `smtp:２５` or similar. Cost: cheap. |
 
 ### course-writes.md

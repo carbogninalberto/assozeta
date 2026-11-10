@@ -72,9 +72,44 @@ Go answers HTTP 500 (`domain.ErrSMTPVerifyNotPorted`, logged) for these verify i
   digits, spaces and `. - _ &` (what `email.utils.parseaddr` reads differently),
   and hosts whose port suffix contains non-ASCII characters.
 - After a failed connection whose Python text depends on the platform
-  libraries: TLS handshake errors (for example `SSL` chosen on a STARTTLS
-  port), name resolution failures, connect timeouts, resets and read timeouts
-  inside TLS. Nothing is written in either case.
+  libraries, other than the two cases under "Platform texts" below: other TLS
+  handshake errors, temporary resolver failures, connect timeouts, resets and
+  read timeouts inside TLS. Nothing is written in either case.
+
+## Platform texts (v2-misc-3)
+
+Two failures of an ordinary misconfiguration answer `{'verified': false, 'msg': ...}`
+with the text Python builds from the platform libraries:
+
+- **`SSL` on a port that speaks plain SMTP first** (587 or 25): the greeting
+  arrives where the ServerHello is expected. `str(ssl.SSLError)` is
+  `[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032)`: OpenSSL's
+  reason and the handshake call site of CPython 3.13.16's `_ssl.c`. The harness
+  interpreter (OpenSSL 3.5) and the backend image (`python:3.13.16-slim-bookworm`,
+  OpenSSL 3.0) give the same text; a Python upgrade changes the number. Go maps
+  `tls.RecordHeaderError` "first record does not look like a TLS handshake" whose
+  first byte is an ASCII digit (an SMTP reply line).
+- **A host name the resolver does not know**: `str(socket.gaierror)` for
+  `EAI_NONAME`, `[Errno 8] nodename nor servname provided, or not known` on
+  macOS and `[Errno -2] Name or service not known` with glibc (the backend
+  image). Go maps a `net.DNSError` with `IsNotFound` by `runtime.GOOS` (darwin,
+  linux) for ASCII names without empty or over-long labels (what Python's `idna`
+  codec passes through). The Linux text was read from the backend image; the
+  harness proves the macOS one. A name that exists without address records is
+  `[Errno -5] No address associated with hostname` in glibc and reaches Go as
+  the same not-found error: Go answers the `-2` text there.
+
+Still refused, with the reason:
+
+- Connect timeouts: `socket.create_connection` tries every address in the C
+  library's order with the full timeout each and reports the last error
+  (`timed out`, or `[Errno 101] Network is unreachable` when a later IPv6
+  address fails at once); the order and the errno texts are the C library's.
+  No local stimulus makes both backends time out the same way.
+- A resolver that cannot be reached (`[Errno -3] Temporary failure in name
+  resolution`) and names the `idna` codec rejects.
+- TLS handshake timeouts (`_ssl.c:<line>: The handshake operation timed out`)
+  and other OpenSSL reasons.
 
 Go stores the validated password value exactly as the model column holds it
 (the instance administration encryption helpers do not apply to this model).
@@ -112,3 +147,14 @@ the four transports. Mutation `v2misc2-mutation-r1` (test email
 addressed to the SMTP user) fails `communications-smtp-verify-starttls-sends-test-email`
 on Go (`smtp.transcripts`). Re-run: communications-send-email 55/55 and
 instance-outbound 106/106 and payment-misc 96/96 (`v2misc2-rerun-r2`).
+
+### API v2: platform texts (v2-misc-3)
+
+88 cases (5 new: `SSL` against the STARTTLS and the plain fake servers, three
+unknown hosts under the reserved `.invalid` name with each encryption).
+
+- RED (`v2misc3-red-r2`): Django 88/88; Go 500 on `communications-smtp-verify-ssl-on-starttls-port`.
+- GREEN (`v2misc3-versioned-r1`): 88/88 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`v2misc3-mutation-r1`): the call site number of another CPython release fails Go on
+  `communications-smtp-verify-ssl-on-starttls-port` (CAUGHT).
+- `smtpsend` unit tests pin both platform texts and the inputs that stay refused.

@@ -22,6 +22,7 @@ from contextlib import contextmanager
 import errno
 import ipaddress
 import re
+import sys
 import tempfile
 import time
 import types
@@ -44,6 +45,8 @@ CONFIGURATION = 'communications.CommunicationConfiguration'
 MANAGED = (CONFIGURATION, harness.AUDIT, harness.INDEX)
 COLUMNS = ('email_smtp_host', 'email_smtp_port', 'email_smtp_user', 'email_smtp_password', 'email_sender_name', 'email_encryption',
            'daily_email_limit', 'daily_email_balance')
+# str(socket.gaierror) for EAI_NONAME: the C library's code and gai_strerror text.
+UNRESOLVED = {'darwin': '[Errno 8] nodename nor servname provided, or not known', 'linux': '[Errno -2] Name or service not known'}
 MODES = ('starttls', 'ssl', 'plain', 'noauth', 'norcpt', 'nomail', 'silent')
 
 
@@ -108,7 +111,8 @@ def check_smtp(case, email):
     require = base_contract.require
     spec = (case.get('effect') or {}).get('smtp')
     servers = STUB['servers']
-    expected = len(spec['connections']) if spec else 0
+    opaque = bool(spec) and 'opaque' in spec
+    expected = (spec['opaque'] if opaque else len(spec['connections'])) if spec else 0
     deadline = time.monotonic() + 15
     while spec and servers[spec['server']].count() < expected and time.monotonic() < deadline:
         time.sleep(0.05)
@@ -117,6 +121,10 @@ def check_smtp(case, email):
         transcripts = server.take()
         if spec and name == spec['server']:
             require(len(transcripts) == expected, 'smtp.connections')
+            if opaque:
+                # A TLS ClientHello where the server reads SMTP lines: no command was understood.
+                require(all('<quit>' not in units and '<tls>' not in units for units in transcripts), 'smtp.opaque')
+                continue
             require(sorted(normalized_transcript(units, email) for units in transcripts) == sorted(spec['connections']),
                     'smtp.transcripts')
         else:
@@ -136,7 +144,9 @@ def _assert_case(case, base_url, *, token, sessions):
     response = case['response']
     if isinstance(response, dict) and isinstance(response.get('msg'), str):
         refused = f'[Errno {errno.ECONNREFUSED}] Connection refused'
-        response = {**response, 'msg': response['msg'].replace('$owner', email).replace('$refused', refused)}
+        base_contract.require(sys.platform in UNRESOLVED, 'fixture.platform')
+        response = {**response, 'msg': response['msg'].replace('$owner', email).replace('$refused', refused)
+                    .replace('$unresolved', UNRESOLVED[sys.platform])}
     status = base_contract.assert_case({**case, 'response': response}, base_url, token=token, sessions=sessions)
     check_smtp(case, email)
     return status

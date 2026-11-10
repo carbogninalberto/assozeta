@@ -1931,6 +1931,180 @@
     "email_smtp_password": "placeholder-smtp",
     "email_encryption": "NONE"
    }
+  },
+  {
+   "name": "communications-smtp-verify-ssl-on-starttls-port",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032)"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:starttls",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "A.S.D. Sport & Co",
+     "email_encryption": "SSL",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "starttls",
+     "opaque": 1
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:starttls",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "SSL"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-ssl-on-plain-port",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032)"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "A.S.D. Sport & Co",
+     "email_encryption": "SSL",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "plain",
+     "opaque": 1
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:plain",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "SSL"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-unknown-host",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "$unresolved"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "smtp.mistyped.invalid",
+     "email_smtp_port": 587,
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "A.S.D. Sport & Co",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": null
+   },
+   "setup": {
+    "email_smtp_host": "smtp.mistyped.invalid",
+    "email_smtp_port": 587,
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "TLS"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-unknown-host-ssl",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "$unresolved"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "mail.mistyped.invalid",
+     "email_smtp_port": 465,
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "A.S.D. Sport & Co",
+     "email_encryption": "SSL",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": null
+   },
+   "setup": {
+    "email_smtp_host": "mail.mistyped.invalid",
+    "email_smtp_port": 465,
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "SSL"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-unknown-host-no-encryption",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "$unresolved"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "smtp_x.mistyped.invalid",
+     "email_smtp_port": 25,
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "A.S.D. Sport & Co",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": null
+   },
+   "setup": {
+    "email_smtp_host": "smtp_x.mistyped.invalid",
+    "email_smtp_port": 25,
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE"
+   }
   }
  ]
 }
