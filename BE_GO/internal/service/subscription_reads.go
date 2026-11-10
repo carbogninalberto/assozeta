@@ -350,8 +350,14 @@ func (s *SubscriptionReads) List(ctx context.Context, request SubscriptionReadsR
 		return nil, err
 	}
 	if request.Method == "POST" {
-		// current_view_subscriptions: a missing or unknown format raises; the PDF and Excel exports are not ported.
-		return nil, domain.ErrSubscriptionReadsNotPorted
+		title := "Iscrizioni filtrate"
+		switch subscriptionReadsTruthy(query, "type") {
+		case "athletes":
+			title = "Tesserati"
+		case "associates":
+			title = "Libro Soci"
+		}
+		return nil, &SubscriptionReadsExport{filter: filter, group: group, association: association, title: title, lazy: lazy}
 	}
 	return s.page(ctx, filter, query, lazy, func(ids []string) ([]any, error) {
 		rows, err := s.rows(ctx, ids, group)

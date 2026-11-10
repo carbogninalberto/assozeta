@@ -155,14 +155,14 @@ Notes for the remaining payment items:
 ### subscription-reads / subscription-lifecycle / subscription-renew / subscription-transfer / subscription-medical
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST subscription/list | current-view print `format` pdf/excel | `components/modals/CurrentViewPrintingModal.svelte:31,41` | `service/subscription_reads.go:345` | excel medium, pdf expensive |
+| POST subscription/list | current-view print `format` pdf (excel is ported) | `components/modals/CurrentViewPrintingModal.svelte:31,41` | `service/subscription_reads_export.go:45` | expensive |
 | list, list/all, info, calendar | staff impersonating an athlete with an association scope | athlete pages while impersonating | `service/subscription_reads.go:252,547,800,1054` | medium |
 | POST .../medical-certificate/set-certificate-expiration | member without a certificate | `Members/detail/sections/modals/AddMedicalCertificate.svelte:51` | `service/subscription_medical.go:389` | medium |
 | POST subscription/renew | member with courses (pre-filled) | `Members/modals/RenewalModal.svelte:58` | `service/subscription_renew.go:96` | medium-expensive |
 | GET subscription card, validate-token-link | unknown token while a Bakney pairing is active | `Tessera.svelte:54`, `SubscribeMultiple.svelte:222` | `service/subscription_card.go:61`, `service/subscription_misc.go:318` | medium |
 
 Why these stay (v2-subscriptions):
-- POST subscription/list export: the PDF is a synchronous render and the Excel a pandas layout; neither was in scope here.
+- POST subscription/list export: the PDF is a synchronous render and stays refused; the Excel export is ported (subscription-reads.md, "Excel export").
 - association-scoped athlete sessions: needs scoped_queryset's family boundary on every related read (subscriptions, course
   subscriptions, installments, files, registries); impersonation-only.
 - set-certificate-expiration without a certificate: Django draws a PNG with PIL/FreeType; not byte-reproducible, refused before any write.
@@ -914,7 +914,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | GET subscription/list (athlete, no `field`) | every athlete request (`get_optimized_subscriptions` not ported) | `service/subscription_reads.go:290`, `ErrSubscriptionReadsNotPorted` | **ported** (v2-subscriptions) | Athlete pages call it: `routes/activities/subscription/SubscriptionList.svelte:40` (route `/subscription/list/:tab?`, athlete-only, `routes.js:472-478`), `routes/search/modals/BuyCarnetFor.svelte:58`, `routes/search/profile/sections/AvailableCarnets.svelte:17`. Django `subscriptions_views.py:1071` |
-| POST subscription/list (current-view export, `format` pdf/excel) | any POST | `:345` | **A** | The "Vista corrente" button (`MembersList.svelte:2335`, `MembersBook.svelte:1801`) opens `components/modals/CurrentViewPrintingModal.svelte:41-42` and POSTs with `format` `pdf` (default, `:31`) or `excel`. Django `subscriptions_views.py:1087` |
+| POST subscription/list (current-view export, `format` pdf; `excel` is ported) | POST with `format` `pdf` | `service/subscription_reads_export.go:45` | **A** | The "Vista corrente" button (`MembersList.svelte:2335`, `MembersBook.svelte:1801`) opens `components/modals/CurrentViewPrintingModal.svelte:41-42` and POSTs with `format` `pdf` (default, `:31`) or `excel`. Django `subscriptions_views.py:1087` |
 | GET subscription/<uid>/info | subscription without `document_pdf` | `:855` | **ported** (v2-subscriptions, Celery producer) | Member detail calls info (`Members/detail/Detail.svelte:95`, `EditSubscription.svelte:23`, `course-selection.svelte:17`, used by renewal). `document_pdf` is filled asynchronously by the `print_document_subscription` worker after create/renew, so it is empty until the print finishes or if it failed. Django prints it on demand at `:1787` |
 | same | course-subscription membership payments with an instructor or an invoice | `:994` | **A** (invoice) / B (instructor) (both ported in v2-documents) | Paying a membership installment with invoice generation (default `generate_invoice` True, `payment_views.py:1761`), or cancelling it, leaves an invoice on the payment. Instructor on a membership payment: legacy: yes, medium |
 | same | course-subscription membership payments with an instructor or an invoice | — | ported | Ported in v2-misc (nested invoice and instructor rendered). |
