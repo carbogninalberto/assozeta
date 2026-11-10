@@ -15,6 +15,10 @@ Entries carry the impersonation context of the request. New certificates are
 removed before the fixture cleanup compares the model state.
 """
 import json
+import os
+import time
+import uuid
+from contextlib import contextmanager
 from datetime import date, datetime
 
 from TESTS.contracts import test_subscription_medical_http as contract
@@ -30,7 +34,8 @@ SOURCES = ('TESTS/fixtures/subscription_medical_http.json', 'TESTS/contracts/tes
            'BE/application/models/subscriptions_models.py', 'BE/application/models/user_models.py', 'BE/docmanager/models.py',
            'BE/application/mixin.py', 'BE/application/utils/api_utils.py', 'BE/application/impersonation_scope.py',
            'BE/application/impersonation.py', 'BE/application/audit_resolvers.py', 'BE/application/signals.py',
-           'BE/application/printing_tasks.py') + harness.SOURCES
+           'BE/application/printing_tasks.py', 'BE/application/utils/api_utils.py', 'TESTS/adapters/django/instance_logo.py',
+           'TESTS/adapters/django/s3_objects.py') + harness.SOURCES
 APPOINTMENT, CERTIFICATE, SUBSCRIPTION = 'application.MedicalAppointments', 'application.MedicalCertificate', 'application.Subscription'
 DRAFT, DOCUMENT = 'application.AssociateImportDraft', 'docmanager.Document'
 MANAGED = (APPOINTMENT, CERTIFICATE, SUBSCRIPTION, DRAFT, DOCUMENT, harness.AUDIT, harness.INDEX)
@@ -39,6 +44,55 @@ TABLES = {'MedicalAppointments': (APPOINTMENT, 'medical_appointments_id', 'appoi
           'AssociateImportDraft': (DRAFT, 'associate_import_draft_id', 'drafts'), 'Document': (DOCUMENT, 'document_id', 'documents')}
 # The actor's own association (SportAssociation.objects.filter(user=actor).first()).
 ACTOR_ASSOCIATION = {'owner': 'own_association', 'admin': 'admin_association', 'foreign_owner': 'foreign_association'}
+
+
+STATE = {}
+BUCKET, LOCATION = 'subscription-medical-fixture', 'subscription-medical'
+SENTINEL = ('subscription-medical/sentinel/keep.txt', b'sentinel')
+STORAGE = {}
+
+
+@contextmanager
+def service_context(report, log):
+    """A private MinIO as both servers' default storage (the placeholder certificate image); PIL_PLACEHOLDER_ZLIB tells the
+    Go server which zlib this interpreter's Pillow compresses PNGs with. The bucket keeps only the sentinel at the end."""
+    import boto3
+    from botocore.config import Config
+    from django.test.utils import override_settings
+    from PIL import features
+    from TESTS.adapters.django.instance_logo import minio
+    with minio(log, dict(os.environ), report) as (endpoint, access, secret):
+        client = boto3.client('s3', endpoint_url=endpoint, aws_access_key_id=access, aws_secret_access_key=secret, region_name='us-east-1',
+                              config=Config(signature_version='s3v4', retries={'max_attempts': 0}, s3={'addressing_style': 'path'}))
+        client.create_bucket(Bucket=BUCKET)
+        client.put_object(Bucket=BUCKET, Key=SENTINEL[0], Body=SENTINEL[1], ContentType='text/plain')
+        storages = {'default': {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'},
+                    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}}
+        STORAGE.update(client=client)
+        saved = os.environ.get('GO_FIXTURE_ENVIRONMENT')
+        zlib = 'zlib-ng' if (features.version('zlib') or '').endswith('zlib-ng') else 'zlib'
+        os.environ['GO_FIXTURE_ENVIRONMENT'] = json.dumps({**json.loads(saved or '{}'), 'PIL_PLACEHOLDER_ZLIB': zlib})
+        try:
+            with override_settings(STORAGES=storages, AWS_ACCESS_KEY_ID=access, AWS_SECRET_ACCESS_KEY=secret,
+                                   AWS_STORAGE_BUCKET_NAME=BUCKET, AWS_S3_REGION_NAME='us-east-1', AWS_S3_ENDPOINT_URL=endpoint,
+                                   AWS_LOCATION=LOCATION, AWS_S3_ADDRESSING_STYLE='path'):
+                yield
+            contract.require(listing() == {SENTINEL[0]}, 'storage.objects-restored')
+        finally:
+            STORAGE.clear()
+            if saved is None:
+                os.environ.pop('GO_FIXTURE_ENVIRONMENT', None)
+            else:
+                os.environ['GO_FIXTURE_ENVIRONMENT'] = saved
+
+
+def listing():
+    pages = STORAGE['client'].get_paginator('list_objects_v2').paginate(Bucket=BUCKET)
+    return {item['Key'] for page in pages for item in page.get('Contents', [])}
+
+
+def document_model():
+    return models()[4]
 
 
 def models():
@@ -66,6 +120,10 @@ def seed_rows(source, created):
         model._base_manager.bulk_create([row])
         created.append((model, row.pk))
 
+    from application.models import Associate
+    for row in source['associates'].values():
+        insert(Associate, Associate(associate_id=row['id'], sport_association_id=row['association'], first_name=row['first'],
+                                    last_name=row['last']))
     for row in source['documents'].values():
         insert(document, document(document_id=row['id'], token=row['token'], filename=row['filename'], creation_date=moment(row['created'])))
     for row in source['certificates'].values():
@@ -76,6 +134,7 @@ def seed_rows(source, created):
     for row in source['subscriptions'].values():
         insert(subscription, subscription(subscription_id=row['id'], sport_association_id=row['association'], user_id=ids[row['user']],
                                           medical_id=source['certificates'][row['medical']]['id'] if row['medical'] else None,
+                                          associate_id=source['associates'][row['associate']]['id'] if row['associate'] else None,
                                           deleted=row['deleted'], group_id=ids[row['group']] if row['group'] else None,
                                           start_date=day(row['start']), end_date=day(row['end']), creation_date=moment(row['created']),
                                           status_flag=subscription.ACCEPTED))
@@ -147,6 +206,7 @@ def assert_effect(case, before, after, source, context):
     effect = case['effect']
     if effect is None:
         contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
+        contract.require(listing() == STATE['objects'], 'storage.no-effect')
         return
     ids = source['ids']
     own = ids['own_association']
@@ -158,6 +218,63 @@ def assert_effect(case, before, after, source, context):
     prepared = context['prepared']
     pk = lambda model, label: source[TABLES[model][2]][label]['id']
 
+    if effect['kind'] == 'placeholder':
+        contract.require(len(added) == 4, f'audit.count:{len(added)}')
+        new, doc = added[0]['object_pk'], added[1]['object_pk']
+        old_c, new_c = state['MedicalCertificate']
+        old_doc, new_doc = state['Document']
+        contract.require(set(new_c) == set(old_c) | {new} and new not in old_c and set(new_doc) == set(old_doc) | {doc}
+                         and doc not in old_doc, 'state.placeholder-rows')
+        row, stored_doc = new_c[new], new_doc[doc]
+        uuid4_text = lambda text: uuid.UUID(text).version == 4 and str(uuid.UUID(text)) == text
+        contract.require(uuid4_text(new) and uuid4_text(doc) and uuid4_text(str(stored_doc['token']))
+                         and len({new, doc, str(stored_doc['token'])}) == 3, 'state.placeholder-ids')
+        contract.require(all(new_c[k] == old_c[k] for k in old_c) and row == {
+            'medical_id': new, 'document_id': doc, 'user_id': ids[effect['user']], 'creation_date': row['creation_date'],
+            'expiration_date': day(effect['expiration']), 'competitive_medical_certificate': False, 'notes': None}, 'state.placeholder-certificate')
+        contract.require(all(new_doc[k] == old_doc[k] for k in old_doc) and stored_doc == {
+            'document_id': doc, 'token': stored_doc['token'], 'creation_date': stored_doc['creation_date'], 'filepath': None,
+            'filename': effect['filename'], 'file_size_bytes': None}, 'state.placeholder-document')
+        since, until = STATE['started'], time.time()
+        created = document_model()._base_manager.get(pk=doc).creation_date
+        for stamp in (certificate_model()._base_manager.get(pk=new).creation_date, created):
+            contract.require(since - 1 <= stamp.timestamp() <= until + 1, 'state.placeholder-created')
+        old_s, new_s = state['Subscription']
+        key = pk('Subscription', effect['subscription'])
+        contract.require(new_s == {**old_s, key: {**old_s[key], 'medical_id': new}}, 'state.subscriptions')
+        for name in ('AssociateImportDraft', 'MedicalAppointments'):
+            contract.require(state[name][0] == state[name][1], 'state.' + name)
+        # The stored image: Pillow's PNG of the view's text, under the upload layout.
+        from io import BytesIO
+        from application.utils.api_utils import generate_image_with_text
+        buffer = BytesIO()
+        generate_image_with_text(effect['text']).save(buffer, format='PNG')
+        name = f"{LOCATION}/{created.timestamp()}/{doc}/{effect['filename']}"
+        contract.require(listing() == STATE['objects'] | {name}, 'storage.placeholder-key')
+        stored = STORAGE['client'].get_object(Bucket=BUCKET, Key=name)
+        body = stored['Body'].read()
+        contract.require(body[:8] == b'\x89PNG\r\n\x1a\n' and body == buffer.getvalue(), f'storage.placeholder-bytes:{len(body)}')
+        contract.require(stored['ContentType'] == 'image/png' and stored.get('ContentEncoding') is None, 'storage.placeholder-metadata')
+        STATE['objects'] = STATE['objects'] | {name}
+        text = topup.auditlog_moment
+        association = actor_association
+        path = 'actor.sport_association'
+        expected = [
+            ('application', 'MedicalCertificate', new, 0, {
+                'medical_id': ['None', new], 'document': ['None', 'None'], 'user': ['None', ids[effect['user']]],
+                'creation_date': ['None', text(certificate_model()._base_manager.get(pk=new).creation_date)],
+                'competitive_medical_certificate': ['None', 'False']}, association, path),
+            ('docmanager', 'Document', doc, 0, {
+                'document_id': ['None', doc], 'token': ['None', str(stored_doc['token'])], 'filename': ['None', effect['filename']],
+                'creation_date': ['None', text(document_model()._base_manager.get(pk=doc).creation_date)],
+                'customer_invoice_pdf': ['None', 'application.CustomerInvoice.None']}, association, path),
+            ('application', 'Subscription', key, 1, {'medical': ['None', new]}, own, 'direct'),
+            ('application', 'MedicalCertificate', new, 1, {
+                'document': ['None', doc], 'expiration_date': ['None', effect['expiration'] + ' 00:00:00+00:00']}, association, path)]
+        check_entries(case, added, indexes, expected, before=before, ids=ids, actor=actor, context=context)
+        return
+
+    contract.require(listing() == STATE['objects'], 'storage.unchanged')
     if effect['kind'] == 'delete':
         old_a, new_a = state['MedicalAppointments']
         keys = {pk('MedicalAppointments', label) for label in effect['appointments']}
@@ -259,5 +376,24 @@ def assert_effect(case, before, after, source, context):
     check_entries(case, added, indexes, expected, before=before, ids=ids, actor=actor, context=context)
 
 
-fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(certificate_model,))
-run_workload = harness.run_workload_for(contract, assert_effect, prepare=deleted_rows)
+_base_context = harness.fixture_context_for(contract, seed_rows, purge=(certificate_model, document_model))
+
+
+@contextmanager
+def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
+    """The base fixture; the placeholder images the cases stored are removed with it."""
+    with _base_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
+        STATE['objects'] = listing()
+        try:
+            yield fixture
+        finally:
+            for item in listing() - {SENTINEL[0]}:
+                STORAGE['client'].delete_object(Bucket=BUCKET, Key=item)
+
+
+def prepared(source):
+    STATE['started'] = time.time()
+    return deleted_rows(source)
+
+
+run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepared)

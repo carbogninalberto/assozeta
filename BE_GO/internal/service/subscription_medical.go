@@ -16,13 +16,21 @@ import (
 // and delete and the medical-certificate edit and set-certificate-expiration
 // function views (subscriptions_views.py).
 type SubscriptionMedical struct {
-	store domain.SubscriptionMedicalStore
-	now   func() time.Time
-	ids   func() string
+	store        domain.SubscriptionMedicalStore
+	now          func() time.Time
+	ids          func() string
+	placeholders *SubscriptionPlaceholders
 }
 
 func NewSubscriptionMedical(store domain.SubscriptionMedicalStore, now func() time.Time, ids func() string) *SubscriptionMedical {
 	return &SubscriptionMedical{store: store, now: now, ids: ids}
+}
+
+// WithPlaceholders enables the placeholder certificate set-certificate-expiration
+// creates for a subscription without one.
+func (s *SubscriptionMedical) WithPlaceholders(placeholders *SubscriptionPlaceholders) *SubscriptionMedical {
+	s.placeholders = placeholders
+	return s
 }
 
 var (
@@ -387,7 +395,7 @@ func (s *SubscriptionMedical) SetExpiration(ctx context.Context, identity domain
 		return r.draftExpiration(ctx, *draft, expiration)
 	}
 	if subscription.Certificate == nil {
-		return "", ErrSubscriptionMedicalNotPorted
+		return r.placeholderExpiration(ctx, subscription, expiration)
 	}
 	certificate, err := r.certificateForUpdate(ctx, subscription)
 	if err != nil {
@@ -401,6 +409,64 @@ func (s *SubscriptionMedical) SetExpiration(ctx context.Context, identity domain
 		return "", r.fail() // strptime(value, '%d/%m/%Y')
 	}
 	if err = r.tx.SaveExpiration(ctx, *certificate, date, r.actorAssociation, r.audit, s.at()); err != nil {
+		return "", err
+	}
+	return "Medical certificate update with date " + date + " 00:00:00+00:00", r.tx.Commit()
+}
+
+// placeholderExpiration is the view's branch for a subscription without a
+// certificate: MedicalCertificate.objects.create(user=request.user), the
+// placeholder image and its Document, the stored PNG, subscription.save() with
+// the new certificate, then the certificate's save() with the document and the
+// date. The request is not atomic: a missing member, a value that is no
+// '%d/%m/%Y' date (None included) or a failed storage write answers 500 and
+// keeps the rows written before it.
+func (r *medicalRequest) placeholderExpiration(ctx context.Context, subscription *domain.MedicalSubscription, expiration any) (string, error) {
+	s := r.service
+	date, parsed := "", false
+	if expiration != nil {
+		date, parsed = dto.ParseSubscriptionMembershipDate(expiration)
+	}
+	first, last, found, err := r.tx.SubscriptionMemberNames(ctx, subscription.ID)
+	if err != nil {
+		return "", err
+	}
+	created := s.at()
+	document := domain.NewDocument{ID: s.ids(), Token: s.ids(), Created: created}
+	var image []byte
+	if found && parsed {
+		if first == nil || last == nil {
+			return "", ErrSubscriptionMedicalNotPorted // str(None) in the file name and the image
+		}
+		document.Filename = placeholderFilename(*first, *last)
+		planned, ok := s.placeholders.plan(placeholderExpirationText(*first, *last, date+" 00:00:00+00:00"), document.Filename, created,
+			document.ID)
+		if !ok {
+			return "", ErrSubscriptionMedicalNotPorted
+		}
+		image = planned
+	}
+	certificate := domain.MedicalCertificateRow{ID: s.ids()}
+	if err = r.tx.CreateCertificate(ctx, certificate.ID, r.identity.ScopeUser.ID, r.actorAssociation, r.audit, s.at()); err != nil {
+		return "", err
+	}
+	if !found || !parsed {
+		return "", r.fail() // None.first_name, or strptime(value, '%d/%m/%Y')
+	}
+	if err = r.tx.CreatePlaceholderDocument(ctx, document, r.actorAssociation, r.audit, created); err != nil {
+		return "", err
+	}
+	if err = s.placeholders.store(ctx, created, document.ID, document.Filename, image); err != nil {
+		return "", errors.Join(r.fail(), err)
+	}
+	dates, err := ResolveSubscriptionDates(ctx, subscription.Target.Created, subscription.Target.Rule, subscription.Target.Dates)
+	if err != nil {
+		return "", errors.Join(r.fail(), err)
+	}
+	if err = r.tx.AttachNewCertificate(ctx, *subscription, certificate.ID, dates, r.audit, s.at()); err != nil {
+		return "", err
+	}
+	if err = r.tx.SavePlaceholderCertificate(ctx, certificate.ID, document.ID, date, r.actorAssociation, r.audit, s.at()); err != nil {
 		return "", err
 	}
 	return "Medical certificate update with date " + date + " 00:00:00+00:00", r.tx.Commit()

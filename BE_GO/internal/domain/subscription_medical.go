@@ -90,6 +90,17 @@ type SubscriptionMedicalTransaction interface {
 		at time.Time) error
 	// CreateCertificate is MedicalCertificate.objects.create(user=user) with its create entry.
 	CreateCertificate(ctx context.Context, id, user string, actorAssociation *string, audit LoginAuditContext, at time.Time) error
+	// SubscriptionMemberNames is subscription.associate's first and last name (found is false without a member).
+	SubscriptionMemberNames(ctx context.Context, subscription string) (first, last *string, found bool, err error)
+	// CreatePlaceholderDocument is Document.objects.create(filename=...) with its create entry.
+	CreatePlaceholderDocument(ctx context.Context, document NewDocument, actorAssociation *string, audit LoginAuditContext, at time.Time) error
+	// AttachNewCertificate is Subscription.save() after medical = the new
+	// certificate: the certificate and the dates Subscription.save() filled.
+	AttachNewCertificate(ctx context.Context, subscription MedicalSubscription, certificate string, dates SubscriptionDates,
+		audit LoginAuditContext, at time.Time) error
+	// SavePlaceholderCertificate is the new certificate's save() with its document and expiration date.
+	SavePlaceholderCertificate(ctx context.Context, certificate, document, expiration string, actorAssociation *string,
+		audit LoginAuditContext, at time.Time) error
 	// SetSubscriptionMedical is Subscription.save(update_fields=['medical']).
 	SetSubscriptionMedical(ctx context.Context, subscription, association, old string, medical *string, audit LoginAuditContext, at time.Time) error
 	// DetachSubscription is Subscription.save() after medical = None: the

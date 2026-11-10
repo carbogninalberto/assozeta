@@ -104,8 +104,13 @@ field is moment's `Invalid date`). The date is parsed with `strptime('%d/%m/%Y')
 failure (non-strings included) is swallowed. With an existing `medical_id` the parsed datetime is assigned to the DateField and
 `medical.save()` writes it with the owner as user when it had none: auditlog compares `str(date)` with `str(datetime)`
 (`['None', '2027-03-31 00:00:00']`), one entry with both changes, indexed through the actor's association. Without `medical_id`
-the placeholder branch raises (no effect) for today's date and unparseable values. The same parse is shared by renewals and the
-draft approval (`subscription-renew`).
+the placeholder branch raises (no effect) for today's date and unparseable values; for any other date it draws the placeholder
+image (`generate_image_with_text`, saved as PNG), creates its `Document`, stores the PNG as
+`<timestamp>/<document id>/medical_certificate_<first>_<last>.png` (the names as sent), creates the association account's
+`MedicalCertificate` with the date and links it to the subscription. Go draws the same bytes with `internal/pilplaceholder`
+(Pillow's embedded font and PNG encoder; `PIL_PLACEHOLDER_ZLIB` names the zlib of the Django side's Pillow: classic `zlib` by
+default, as in the Django image, or `zlib-ng`). The same parse is shared by renewals and the draft approval
+(`subscription-renew`), which still refuse the placeholder.
 
 ## The quick re-subscription and the wizard in a modal
 
@@ -250,12 +255,13 @@ Refused with the 500 page before anything is committed:
   associations, a renewed subscription without an associate; preregistration in renewals and draft approvals;
 - new member info with a non-string e-mail, a numeric
   `new_member` flag; a signature upload whose generated key already exists;
-- a `medical_certificate` without `medical_id` whose `certificate_expring_date` parses to a date other than today (the placeholder
-  certificate image drawn with PIL and stored), and expiration dates with non-ASCII digits (accepted by `strptime`);
+- the placeholder certificate when the names sent are not strings, when the file name is not storable (over 255 characters,
+  control characters, a path the storage rejects), when the text is outside `pilplaceholder`'s subset, or when
+  `PIL_PLACEHOLDER_ZLIB` names an unknown zlib; expiration dates with non-ASCII digits (accepted by `strptime`);
 - a truthy `custom_data.type_of_associate` (its JSON `icontains` filter);
 - an unknown non-canonical `associate_id` spelling or one whose save would hit the unique tax-code index (the `associate_id` branch
-  itself is ported, see [subscription-renew](subscription-renew.md)), a born date that is not a string or not in the ported dateutil
-  formats, non-ASCII sex, born date or tax code, several tax-code matches with the same latest creation date, a tutor without
+  itself is ported, see [subscription-renew](subscription-renew.md)), a born date that is a float or a container, a year before 1000 or a text
+  `internal/pydateutil` refuses (over 64 KiB), non-ASCII sex, born date or tax code, several tax-code matches with the same latest creation date, a tutor without
   `born_date`, an associate that already has tutors when a tutor is added, a tutor that matches the associate itself;
 - plan fees whose `float()` text is not a plain decimal, float plan ids, a non-string membership plan name used as membership type,
   amounts whose third decimal is not zero, two reusable payments with the same newest creation date.
@@ -376,3 +382,17 @@ After merging `codex/go-backend-parity`: GREEN (`famwiz-versioned-r2`) 127/127 o
 `/api/v2`, covering the family wizard's answer, the renewing preregistration and the grouped wizard.
 Re-run green natively (`famwiz-rerun-r1`): `subscription-renew` 75/75, `subscription-memberships` 88/88, `subscription-sign`
 47/47, `subscription-approve` 27/27, `associates-draft` 128/128.
+
+## v2subs3
+
+- The placeholder certificate of a typed date without an upload is ported (see "medical_certificate" above): the `Document`
+  and `MedicalCertificate` rows with their create entries, the subscription's `medical`, and the stored PNG compared byte for
+  byte with the image Pillow draws in the harness.
+- The birth date is read by the whole dateutil parser (`internal/pydateutil`, with `dayfirst`; corpus regenerated from
+  python-dateutil 2.9.0.post0 in both modes: 276,620 calls): dashes, dots, month names, times, a year alone, `str()` of
+  `None`, booleans and integers. A text dateutil does not read is the 500 page (renewals answer `str(e)`); the serializer
+  then takes `DD/MM/YYYY` only, and answers the same format error for a number or a boolean.
+- Evidence: 163 cases. RED: documented refusals (v2-refusals.md, the placeholder row and the born-date formats row).
+  GREEN (`v2subs3-versioned-r1`, after merging the base): 163/163 on native Django, native Go, Caddy `/api/v1` and
+  `/api/v2`. Mutation (`v2subs3-mutation-r1`): drawing the placeholder for today's date too fails Go on
+  `subscription-create-wizard-certificate-date-today-skipped` (CAUGHT).
