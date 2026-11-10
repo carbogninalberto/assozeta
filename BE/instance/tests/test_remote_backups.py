@@ -69,8 +69,9 @@ class RemoteBackupTests(TestCase):
     def test_settings_are_relayed_and_audited_without_the_secret(self, runner):
         self.assertEqual(self.client.get('/instance/admin/backups/remote').data, PUBLIC)
         for bad in ({'retention': 0}, {'path_style': 'maybe'}, {'bucket': 'x' * 64}):
-            self.assertEqual(self.client.put('/instance/admin/backups/remote', {**SETTINGS, **bad}, format='json').status_code, 400)
-        response = self.client.put('/instance/admin/backups/remote', SETTINGS, format='json')
+            self.assertEqual(self.client.put('/instance/admin/backups/remote', {**SETTINGS, **bad, 'password': 'OwnerSecret'},
+                                             format='json').status_code, 400)
+        response = self.client.put('/instance/admin/backups/remote', {**SETTINGS, 'password': 'OwnerSecret'}, format='json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Cache-Control'], 'no-store')
         runner.assert_called_with('PUT', '/backups/remote', SETTINGS, timeout=5)
@@ -89,12 +90,12 @@ class RemoteBackupTests(TestCase):
     @patch('instance.remote_backups.call_runner')
     def test_key_generation_and_confirmation_audit_only_the_key_id(self, runner):
         runner.return_value = {'key_id': 'abcd1234', 'recovery_key': RECOVERY_KEY}
-        response = self.client.post('/instance/admin/backups/remote/key', {}, format='json')
+        response = self.client.post('/instance/admin/backups/remote/key', {'password': 'OwnerSecret'}, format='json')
         self.assertEqual((response.status_code, response.data['recovery_key']), (201, RECOVERY_KEY))
         self.assertEqual(response['Cache-Control'], 'no-store')
-        self.assertEqual(self.client.post('/instance/admin/backups/remote/key/confirm', {'key_id': 'abcd1234', 'tail': 'QQQ'}, format='json').status_code, 400)
+        self.assertEqual(self.client.post('/instance/admin/backups/remote/key/confirm', {'key_id': 'abcd1234', 'tail': 'QQQ', 'password': 'OwnerSecret'}, format='json').status_code, 400)
         runner.return_value = {**PUBLIC, 'enabled': True, 'key': {'id': 'abcd1234'}}
-        response = self.client.post('/instance/admin/backups/remote/key/confirm', {'key_id': 'abcd1234', 'tail': 'QQQQQQ'}, format='json')
+        response = self.client.post('/instance/admin/backups/remote/key/confirm', {'key_id': 'abcd1234', 'tail': 'QQQQQQ', 'password': 'OwnerSecret'}, format='json')
         self.assertEqual(response.status_code, 200)
         runner.assert_called_with('POST', '/backups/remote/key/confirm', {'key_id': 'abcd1234', 'tail': 'QQQQQQ'}, timeout=5)
         self.assertEqual(LogEntry.objects.filter(changes__icontains='backup_remote_key_generated').count(), 1)
@@ -126,7 +127,7 @@ class RemoteBackupTests(TestCase):
         runner.side_effect = UpdaterRejected('Unknown endpoint.', 404)
         self.assertIn('versione più recente', self.client.get('/instance/admin/backups/remote').data['error'])
         runner.side_effect = UpdaterRejected('Chiave non trovata: generane una nuova.', 404)
-        response = self.client.post('/instance/admin/backups/remote/key/confirm', {'key_id': 'abcd1234', 'tail': 'QQQQQQ'}, format='json')
+        response = self.client.post('/instance/admin/backups/remote/key/confirm', {'key_id': 'abcd1234', 'tail': 'QQQQQQ', 'password': 'OwnerSecret'}, format='json')
         self.assertEqual((response.status_code, response.data['error']), (404, 'Chiave non trovata: generane una nuova.'))
 
     @patch('instance.backups.data_sizes', return_value={'database': 1, 'objects': 2})
@@ -151,4 +152,5 @@ class RemoteBackupTests(TestCase):
             self.assertEqual(notify_failures(), 0)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, 'Copia remota non riuscita')
-        self.assertIn('Storage non raggiungibile', mail.outbox[0].body)
+        self.assertNotIn('Storage non raggiungibile', mail.outbox[0].body)
+        self.assertIn(f'La copia remota del backup {ARCHIVE} non è riuscita', mail.outbox[0].body)

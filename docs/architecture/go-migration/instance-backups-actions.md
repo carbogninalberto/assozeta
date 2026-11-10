@@ -61,15 +61,37 @@ other rejections keep a 4xx status, anything else is 503. `relay()` in `remote_b
 that 409 only when `str(message) == 'Unknown endpoint.'` and adds `Cache-Control: no-store` to successes.
 A runner body of `null` renders as no content without `Content-Type` (DRF `Response(None)`).
 
+## Owner password confirmation
+
+Deleting an archive, putting it back into the rotation (`keep: false`), saving the remote copy
+settings and generating or confirming the remote key ask for the owner's password again, exactly as a
+restore or a download token:
+
+- `password_confirmation(request)`: `PasswordSerializer(data=request.data)` (`password`
+  CharField max 256, untrimmed; field errors 400, `non_field_errors` for a list or `null` body), then
+  `password_refusal`. The remote settings and key confirmation serializers carry the same field last
+  (`RemoteSettingsChangeSerializer`, `KeyConfirmSerializer`); the password is popped before the relay
+  and is never relayed or audited.
+- `password_refusal(actor, password)` on the shared `instance:backup-download-attempts:<actor>` key:
+  `cache.get(key, 0) >= 5` is 429 `Troppi tentativi. Riprova tra qualche minuto.`; then the try is
+  counted before the check (`cache.add(key, 0, 900)` and `cache.incr(key)`, atomic in django-redis);
+  a counted value above 5 is 429 without checking; a wrong password is 400 `Password non corretta.`
+  (the count stays); a match (with check_password's upgrade of an outdated hash) deletes the key. Go:
+  `instanceBackupsPasswordRefusal` (`repository.InstanceBackups.CountAttempt`: `SET NX EX 900` and
+  django-redis' `EXISTS`/`INCRBY` script). Sequentially the cache states are the earlier ones; tries
+  sent at the same time can no longer all pass the limit check.
+
 ## BackupItemView
 
 `PATCH`: the URL name must fullmatch `ARCHIVE` (else 404 `Backup non trovato.`, before the body is
 read); `keep = request.data.get('keep')` (None for a non-dict body) must be a JSON boolean (a form value is
-a string): else 400 `Richiesta non valida.`. Relay `PATCH /backups/<name>` `{"keep": ...}`; on 200 the
-audit `backup_keep` or `backup_unkeep` with `backup=name`.
+a string): else 400 `Richiesta non valida.`. `keep: false` then needs the password confirmation. Relay
+`PATCH /backups/<name>` `{"keep": ...}`; on 200 the audit `backup_keep` or `backup_unkeep` with
+`backup=name`.
 
 `DELETE`: same name check; `confirm = request.data.get('confirm', False)` (False for a non-dict body) must
-be a boolean; relay `DELETE /backups/<name>` `{"confirm": ...}`; on 200 `backup_delete` with `backup=name`.
+be a boolean; then the password confirmation; relay `DELETE /backups/<name>` `{"confirm": ...}`; on 200
+`backup_delete` with `backup=name`.
 A non-ASCII name (Python's `\d` matches any Unicode digit) is refused by http.client: unavailable (503).
 
 ## BackupScheduleView
@@ -100,7 +122,12 @@ middleware, which skips `STREAMED_PATHS`) sees an empty body and the view reads 
 `body_chunks`. Go does the same: identity resolution sees an empty body, the handler never buffers it.
 
 - `length = int(CONTENT_LENGTH or 0)`; 0 (or a chunked body without a length) is 411
-  `Seleziona un file da caricare.`. There is no other size limit in the API.
+  `Seleziona un file da caricare.`. A length above `upload_max_bytes()` is 413
+  `{'error': 'Il file supera la dimensione massima consentita per il caricamento.', 'max_bytes': limit}`
+  before anything is read or relayed. The limit is the `ASSOZETA_BACKUP_UPLOAD_MAX_BYTES` setting, else
+  the environment variable (ASCII digits once spaces, tabs and line breaks are trimmed, above zero),
+  else 50 GiB; the runner then checks the free disk space for the archive. Go:
+  `config.InstanceAdminSettings.BackupUploadMaxBytes`.
 - The runner gets the bytes as they arrive. Unavailable 503; a decoded rejection keeps a 4xx status
   (default message `Caricamento non riuscito.`), a 404 is 409 (older runner), others 503; a body that ends
   early is 400 `Caricamento interrotto. Riprova.`.
@@ -110,28 +137,43 @@ middleware, which skips `STREAMED_PATHS`) sees an empty body and the view reads 
 
 ## Remote copy views
 
-- `GET remote`: relay `GET /backups/remote` without payload. `PUT remote`: `RemoteSettingsSerializer`
+- `GET remote`: relay `GET /backups/remote` without payload. `PUT remote`: `RemoteSettingsChangeSerializer`
   (optional CharFields with `allow_blank` and lengths 255/64/63/200/128/256, BooleanFields `path_style`
-  and `enabled`, IntegerField `retention` 1..30); relay with the provided fields in declared order; on 200
+  and `enabled`, IntegerField `retention` 1..30, `validate_endpoint`, then the required `password`);
+  the password confirmation; relay with the provided settings fields in declared order; on 200
   `backup_remote_settings` with `json.dumps(change, sort_keys=True)` where `change` holds the provided
   settings fields and `secret_key: 'changed'` when the secret is non-empty (the secret itself is never
   audited).
-- `POST remote/test`: `request.data or {}` (an empty list or body is `{}`), validated as above, relayed
-  without `enabled` (30 s); not audited.
-- `POST remote/key`: the request body is not read; relay `POST /backups/remote/key` `{}` with 201; on 201
+- `POST remote/test`: `request.data or {}` (an empty list or body is `{}`), validated by
+  `RemoteSettingsSerializer` (no password), relayed without `enabled` (30 s); not audited.
+- The endpoint (`validate_endpoint`, `remote_backups.endpoint_problem`, Go
+  `dto.BackupRemoteEndpointProblem`), checked before the runner is called: blank stays allowed (AWS);
+  otherwise it must fullmatch `(https?)://<authority>[/path]` without user information, query,
+  fragment or whitespace, the authority a host or a bracketed IPv6 address with an optional port 1..65535
+  (`Inserisci un indirizzo valido, ad esempio https://s3.example.com.`). A host whose last label is
+  numeric (decimal, or `0x` hex) must be a canonical dotted quad. Loopback, `0.0.0.0/8`, link-local,
+  multicast and reserved ranges, `fec0::/10`, the cloud instance addresses (`fd00:ec2::254`,
+  `100.100.100.200`, `168.63.129.16`), IPv4 embedded in `::ffff:0:0/96` or `64:ff9b::/96`, and the
+  names `localhost`, `*.localhost`, `metadata`, `metadata.google.internal`, `instance-data` (A-Z
+  lowered, trailing dots dropped) are refused with `Questo indirizzo non può essere usato per la copia
+  remota.`. Private network addresses and names stay allowed (a MinIO on the LAN). `http://` needs
+  `ASSOZETA_BACKUP_REMOTE_ALLOW_HTTP` (`1`, `true`, `yes`, `on`; setting or environment), else
+  `Usa un indirizzo https://.`. Names are not resolved by the API.
+- `POST remote/key`: the password confirmation on the request data; relay `POST /backups/remote/key` `{}` with 201; on 201
   `backup_remote_key_generated` with `str(response.data.get('key_id', ''))` (a non-object reply is the
   500 page).
 - `POST remote/key/confirm`: `key_id` RegexField `\A[0-9a-f]{8}\Z` (trimmed), `tail` CharField of exactly
-  6 characters (trimmed); relay; on 200 `backup_remote_key_confirmed` with the key id.
+  6 characters (trimmed), `password`; the password confirmation; relay `{key_id, tail}`; on 200
+  `backup_remote_key_confirmed` with the key id.
 - `POST remote/fetch`: `name` archive RegexField (trimmed), `recovery_key` CharField max 4096 untrimmed;
   relay `{"name", "recovery_key", "request_id", "actor_id"}` with 202 (30 s); on 202 `backup_remote_fetch`
   with `backup=name`. The recovery key is neither stored nor audited.
 
 ## Not ported (refused with the 500 page before any write)
 
-- Form and multipart bodies on the serializer views (schedule, restore, remote settings, test, confirm,
-  fetch) and multipart bodies on the item view (DRF parses them; the page sends JSON). Form bodies on the
-  item view are ported (their values are strings: 400).
+- Form and multipart bodies on the serializer views (schedule, restore, remote settings, test, key,
+  confirm, fetch) and multipart bodies on the item view (DRF parses them; the page sends JSON). Form
+  bodies on the item view are ported (their values are strings: 400).
 - Lone surrogate code points in a CharField; runner replies Python decodes but Go does not (as in
   instance-backups: UTF-16/32, surrogates, NaN/Infinity literals, deep nesting).
 
@@ -140,6 +182,21 @@ Content-Length (the client is gone), a broken pipe while streaming a large body,
 in the URL (the harness attributes requests by decoded path), a JSON `null` request body.
 
 ## Evidence
+
+Owner password confirmation, upload limit and endpoint rules (Django first:
+`instance.tests.test_backup_password_confirmation`, then the fixture regenerated with Django as the
+oracle, 247 cases; the run sets `upload_max_bytes` to the large upload's size, which passes exactly at
+the limit, and over-limit uploads are written while the early answer is read):
+
+- RED (`sec-red-r1`): Django 247/247; Go fails `keep-false-admin` (no password confirmation).
+- GREEN (`sec-versioned-r2`): 247/247 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`sec-mutation-r1`): deleting without the password confirmation is CAUGHT on Go.
+- `go test ./internal/dto -run 'BackupRemote|BackupActions'`, `./internal/service -run InstanceBackupsPassword`
+  (a try is counted before the check; simultaneous tries check at most five passwords),
+  `./internal/config -run InstanceAdminBackupSettings`.
+- Re-run: `instance-backups` (161, shared `password_refusal`), the backup failure consumer harness.
+
+Earlier port:
 
 `TESTS/fixtures/instance_backups_actions_http.json` (169 cases, from
 `TESTS/fixtures/generate_instance_backups_actions_http.py`). The adapter

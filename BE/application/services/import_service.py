@@ -97,7 +97,11 @@ from application.models.user_models import (
     UsersOnboarding,
 )
 from application.services.json_stream import iter_json_array
-from application.services.validators import is_restorable_password_hash
+from application.services.validators import (
+    is_restorable_password_hash,
+    unlinked_existing_user_ids,
+    unlinked_user_message,
+)
 from communications.models import (
     AutomationWorkflow,
     CommunicationConfiguration,
@@ -766,6 +770,14 @@ class AssociationImportService:
             "contain a supported usable password hash"
         )
 
+    def _may_reuse_existing_user(self, existing_user: User) -> bool:
+        """Only the archive owner's collaborators are reused by exact UUID."""
+        return str(existing_user.connected_user_id) == str(self.source_owner_user_id)
+
+    def _takes_archived_password(self, existing_user: User) -> bool:
+        """Existing accounts keep their own credentials on import."""
+        return False
+
     def _ensure_no_pk_collision(
         self,
         model_class: Type[models.Model],
@@ -866,18 +878,20 @@ class AssociationImportService:
                                 f"{conflicting_association.sport_association_id}"
                             )
 
+                    # An existing owner account keeps its own credentials.
                     password_is_available = (
                         is_restorable_password_hash(owner_data.get('password'))
-                        or (
-                            existing_owner is not None
-                            and is_restorable_password_hash(existing_owner.password)
-                        )
+                        or existing_owner is not None
                     )
                     if not password_is_available and not self.options.owner_password:
                         result.add_error(
                             "Owner recovery password is required because the archive does not "
                             "contain a supported usable password hash"
                         )
+                    for user_id in unlinked_existing_user_ids(
+                        self.source_pks_by_model.get('User', set()), self.source_owner_user_id,
+                    ):
+                        result.add_error(unlinked_user_message(user_id))
                 except ValueError as e:
                     result.add_error(str(e))
 
@@ -990,11 +1004,7 @@ class AssociationImportService:
                     "cannot import a second association for the same owner user"
                 )
 
-            if not is_restorable_password_hash(existing_user.password):
-                existing_user.password = self._owner_password_hash(original_owner)
-                if not self.options.dry_run:
-                    existing_user.save(update_fields=['password'])
-
+            # The existing account keeps its own credentials.
             user = existing_user
             self.reused_user_pks.add(old_user_id)
             logger.info(f"Reused owner user by UUID: {user.user_id}")
@@ -1281,11 +1291,11 @@ class AssociationImportService:
             if existing_user:
                 # Reuse by exact UUID only; do not merge by email/username and
                 # do not overwrite credentials, profile, security fields or M2M.
-                # Exception: an account without a usable password adopts the
-                # archived hash, like the owner, so users first imported from
-                # an archive without hashes can sign in after a later restore.
+                if not self._may_reuse_existing_user(existing_user):
+                    raise ValueError(unlinked_user_message(existing_user.pk))
                 archived_password = data.get('password')
-                if (not is_restorable_password_hash(existing_user.password)
+                if (self._takes_archived_password(existing_user)
+                        and not is_restorable_password_hash(existing_user.password)
                         and is_restorable_password_hash(archived_password)):
                     existing_user.password = archived_password
                     if not self.options.dry_run:

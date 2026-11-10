@@ -1,6 +1,7 @@
 package config
 
 import (
+	"math"
 	"math/big"
 	"strings"
 	"unicode"
@@ -18,6 +19,12 @@ type InstanceAdminSettings struct {
 	// UpdaterDirectory is ASSOZETA_UPDATER_DIRECTORY (env.str, default
 	// '/run/assozeta-updater'): the update runner's socket and token.
 	UpdaterDirectory string
+	// BackupUploadMaxBytes is ASSOZETA_BACKUP_UPLOAD_MAX_BYTES (backups.upload_max_bytes:
+	// os.environ, ASCII digits after trimming, else 50 GiB).
+	BackupUploadMaxBytes int64
+	// BackupRemoteAllowHTTP is ASSOZETA_BACKUP_REMOTE_ALLOW_HTTP (1, true, yes or on):
+	// plain http:// endpoints for the remote copy.
+	BackupRemoteAllowHTTP bool
 	// Environment email (email_configuration.effective_email).
 	EmailHost, EmailUsername string `json:"-"`
 	EmailPassword            string `json:"-"`
@@ -60,6 +67,11 @@ func parseInstanceAdmin(values map[string]string) (InstanceAdminSettings, error)
 	}
 	if s.UpdaterDirectory, err = environmentString(values, "ASSOZETA_UPDATER_DIRECTORY", "/run/assozeta-updater", false); err != nil {
 		return s, err
+	}
+	s.BackupUploadMaxBytes = backupUploadMaxBytes(values["ASSOZETA_BACKUP_UPLOAD_MAX_BYTES"])
+	switch strings.ToLower(strings.Trim(values["ASSOZETA_BACKUP_REMOTE_ALLOW_HTTP"], " \t\r\n")) {
+	case "1", "true", "yes", "on":
+		s.BackupRemoteAllowHTTP = true
 	}
 	// EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER and EMAIL_HOST_PASSWORD are
 	// os.environ.get values (no proxies); the TLS/SSL flags use env.bool.
@@ -118,6 +130,26 @@ func parseInstanceAdmin(values map[string]string) (InstanceAdminSettings, error)
 	}
 	s.BakneySSOAPIBase, s.BakneySSOUIOrigin = strings.TrimRight(s.BakneySSOAPIBase, "/"), strings.TrimRight(s.BakneySSOUIOrigin, "/")
 	return s, nil
+}
+
+// DefaultBackupUploadMaxBytes is backups.UPLOAD_MAX_BYTES.
+const DefaultBackupUploadMaxBytes = 50 << 30
+
+// backupUploadMaxBytes is backups.upload_max_bytes for an environment value:
+// ASCII digits once spaces, tabs and line breaks are trimmed, above zero.
+func backupUploadMaxBytes(value string) int64 {
+	value = strings.Trim(value, " \t\r\n")
+	if value == "" || strings.TrimLeft(value, "0123456789") != "" {
+		return DefaultBackupUploadMaxBytes
+	}
+	number, ok := new(big.Int).SetString(value, 10)
+	if !ok || number.Sign() <= 0 {
+		return DefaultBackupUploadMaxBytes
+	}
+	if !number.IsInt64() {
+		return math.MaxInt64 // Python's int has no ceiling; no Content-Length exceeds this
+	}
+	return number.Int64()
 }
 
 // pythonInt is int(text) for decimal text that fits an int64.

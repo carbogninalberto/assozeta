@@ -11,6 +11,7 @@ import base64
 import http.client
 import json
 import random
+import threading
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -66,6 +67,33 @@ def send(base_url, method, path, body, headers, *, chunked=False):
         connection.close()
 
 
+def send_early(base_url, method, path, body, headers):
+    """The body is written by a thread while the answer is read: a server may answer before reading it."""
+    parts = urlsplit(base_url)
+    connection = http.client.HTTPConnection(parts.hostname, parts.port, timeout=60)
+    try:
+        connection.putrequest(method, parts.path + path)
+        for name, value in {**headers, 'Content-Length': str(len(body))}.items():
+            connection.putheader(name, value)
+        connection.endheaders()
+
+        def write():
+            view = memoryview(body)
+            try:
+                for start in range(0, len(view), 65536):
+                    connection.sock.sendall(view[start:start + 65536])
+            except OSError:
+                pass  # the server answered and closed without reading the rest
+        writer = threading.Thread(target=write, daemon=True)
+        writer.start()
+        response = connection.getresponse()
+        result = response.status, response.read(), response.headers
+        writer.join(timeout=60)
+        return result
+    finally:
+        connection.close()
+
+
 def assert_case(case, base_url, *, token, sessions):
     headers = {'Accept-Language': 'en', 'Accept': 'application/json', 'X-Correlation-ID': case['name']}
     if token:
@@ -82,7 +110,10 @@ def assert_case(case, base_url, *, token, sessions):
         body = json.dumps(case['body']).encode()
         headers['Content-Type'] = 'application/json'
     headers.update(substitute(case['headers'], sessions))
-    status, raw, received = send(base_url, case['method'], case['path'], body, headers, chunked=chunked)
+    if case['send'] is not None and case['send'].get('early'):
+        status, raw, received = send_early(base_url, case['method'], case['path'], body, headers)
+    else:
+        status, raw, received = send(base_url, case['method'], case['path'], body, headers, chunked=chunked)
 
     def check(condition, code):
         if not condition:

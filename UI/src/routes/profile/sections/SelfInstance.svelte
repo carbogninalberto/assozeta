@@ -4,6 +4,7 @@
     import {apiFetch, originalFetch} from 'utils/ApiMiddleware.js';
     import {getApiHost, saveRuntimeConfig, clearInstanceCache} from 'store/instanceStore.js';
     import {readStoredStatus, applicationReady} from './independentStatus.js';
+    import {apiErrorMessage} from './backupPassword.js';
     import {createCompletionRefresh, mergeRunnerStatus, restartResult} from './updateStatus.js';
     import {v4 as uuidv4} from 'uuid';
     import {SquaresFour, Archive, ArrowsClockwise, GearSix, IdentificationCard, EnvelopeSimple, Plugs, Robot, LinkSimple, Power, Flask} from 'phosphor-svelte';
@@ -134,10 +135,7 @@
 
     async function request(path, options = {}) {
         const result = await apiFetch(`${endpoint}${path}`, {method: 'GET', skipForbidden: true, ...options});
-        if (result.error) {
-            const detail = result.response?.error || result.response?.detail || Object.values(result.response || {}).flat().filter(value => typeof value === 'string').join(' ');
-            throw new Error(typeof detail === 'string' && detail ? detail : 'Operazione non riuscita. Riprova.');
-        }
+        if (result.error) throw Object.assign(new Error(apiErrorMessage(result.response)), {status: result.status});
         return result.response;
     }
 

@@ -9,8 +9,10 @@ request body (or, 'early', without reading it), and records every request
 is read, which is then drained and recorded as 'unread'). Production mode with
 ASSOZETA_UPDATER_DIRECTORY on that directory is set for Django
 (override_settings) and Go (GO_FIXTURE_ENVIRONMENT), with Django's production
-password hashers. Django is served by core.asgi's application, so the upload
-reaches the view through the stream_uploads wrapper as in production.
+password hashers, and the fixture's upload limit as
+ASSOZETA_BACKUP_UPLOAD_MAX_BYTES (plain http:// endpoints stay off). Django is
+served by core.asgi's application, so the upload reaches the view through the
+stream_uploads wrapper as in production.
 
 seed_rows inserts the self-hosted InstanceConfiguration. Around each request:
 - the owner's and the administrator's stored hashes are set (the case's
@@ -122,6 +124,9 @@ def service_context(report, log):
     from django.conf.global_settings import PASSWORD_HASHERS
     from django.test.utils import override_settings
     source = base_contract.load_source()
+    limit = source['upload_max_bytes']
+    require(isinstance(limit, int) and limit > 0, 'fixture.upload-limit')
+    require('ASSOZETA_BACKUP_REMOTE_ALLOW_HTTP' not in os.environ, 'fixture.allow-http-unset')
     saved = os.environ.get('GO_FIXTURE_ENVIRONMENT')
     directory = Path(tempfile.mkdtemp(prefix='azba-', dir='/tmp'))
     stub = RunnerStub(directory)
@@ -130,10 +135,10 @@ def service_context(report, log):
         STATE.update(stub=stub, directory=directory)
         try:
             with override_settings(ASSOZETA_DEPLOYMENT_MODE='production', ASSOZETA_UPDATER_DIRECTORY=str(directory),
-                                   PASSWORD_HASHERS=PASSWORD_HASHERS):
+                                   PASSWORD_HASHERS=PASSWORD_HASHERS, ASSOZETA_BACKUP_UPLOAD_MAX_BYTES=str(limit)):
                 os.environ['GO_FIXTURE_ENVIRONMENT'] = json.dumps({
                     **json.loads(saved or '{}'), 'ASSOZETA_DEPLOYMENT_MODE': 'production',
-                    'ASSOZETA_UPDATER_DIRECTORY': str(directory)})
+                    'ASSOZETA_UPDATER_DIRECTORY': str(directory), 'ASSOZETA_BACKUP_UPLOAD_MAX_BYTES': str(limit)})
                 yield
         finally:
             if saved is None:
