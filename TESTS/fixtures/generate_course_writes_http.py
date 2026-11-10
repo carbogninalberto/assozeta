@@ -104,6 +104,8 @@ COURSES = {
     'u_blank': course(''),
     'u_null': {**course('Senza titolo'), 'title': None},
     'u_clear': course('Ginnastica'),
+    'u_forms': course('Atletica', one_fee='40.00', one_fee_payment=True),
+    'u_reject': course('Rifiuto', one_fee='40.00', one_fee_payment=True),
     'd_member': course('Sala pesi', course_type=3),
     # impersonation sessions (an owner acting as its full collaborator or as an athlete)
     'd_session': course('Sessione'),
@@ -550,6 +552,29 @@ rows[PAYMENT] = {pid('pm_clear'): change_row(PAYMENT, 'pm_clear', description='I
 add('update-title-to-empty', 'owner', f'/course/{cid("u_clear")}/update', 200, UPDATED, method='PATCH', body={'title': ''},
     result=effect('owner', rows=rows, audit=audit))
 
+# Raw assignments Python accepts in other spellings: decimals as exponent text or floats (rounded by the column),
+# booleans as letters or floats, integers as floats or text, dates without zero padding or with an offset.
+rows, audit = updated('u_forms', 'owner', {
+    'fee': ['50.00', '1e1'], 'one_fee': ['40.00', '12.345'], 'billed_duration_is_sport_season': ['False', 't'],
+    'billed_from_subscription_date': ['False', '1.0'], 'auto_renewal': ['False', '0'], 'billed_frequency': ['1', '2.9'],
+    'billed_from_day_of_month': ['1', '7'], 'start_date': ['None', '2026-09-01 00:00:00'],
+    'end_date': ['None', '2027-06-30 14:30:15.250000']},
+    fee='10.00', one_fee='12.35', billed_duration_is_sport_season=True, billed_from_subscription_date=True, billed_frequency=2,
+    billed_from_day_of_month=7, start_date='2026-09-01T00:00:00Z', end_date='2027-06-30T14:30:15.250000Z')
+add('update-raw-value-forms', 'owner', f'/course/{cid("u_forms")}/update', 200, UPDATED, method='PATCH', body={
+    'fee': '1e1', 'one_fee': 12.345, 'billed_duration_is_sport_season': 't', 'billed_from_subscription_date': 1.0, 'auto_renewal': '0',
+    'billed_frequency': 2.9, 'billed_from_day_of_month': '7', 'start_date': '2026-9-1', 'end_date': '2027-06-30T16:30:15.250000+02:00'},
+    result=effect('owner', rows=rows, audit=audit))
+# A value the column rejects: auditlog's entry is written, then the UPDATE fails.
+for name, body, changes in (
+        ('fee-text', {'fee': 'abc'}, {'fee': ['50.00', 'abc']}),
+        ('fee-too-large', {'fee': '12345678.9'}, {'fee': ['50.00', '12345678.9']}),
+        ('billed-frequency-range', {'billed_frequency': 40000}, {'billed_frequency': ['1', '40000']}),
+        ('boolean-text', {'auto_renewal': 'maybe'}, {'auto_renewal': ['False', 'maybe']}),
+        ('boolean-null', {'billed_from_subscription_date': None}, {'billed_from_subscription_date': ['False', 'None']})):
+    add(f'update-rejected-{name}', 'owner', f'/course/{cid("u_reject")}/update', 500, SERVER, method='PATCH', body=body,
+        result=effect('owner', audit=[entry(COURSE, COURSES['u_reject']['course_id'], 1, changes, [OWN, DIRECT])]))
+
 # --- course/<uid>/overview/<uid_subscription>/delete ----------------------------------
 
 OV_DELETED = {'data': {'msg': 'associate deleted.'}}
@@ -782,6 +807,11 @@ add('add-event-month-other-digits-invalid', 'owner', '/course/add', 400,
     {'payment_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.']},
     body={'new_course': course_body(fee='10', multi_payments_split=True, events=[ev(0, '5', '10/\u0660\u0661/2099'), ev(1, '5')]),
           'subscriptions': []})
+# Float amounts are compared by their binary value: 0.1 + 0.2 is not 0.3.
+add('add-event-float-amounts-sum', 'owner', '/course/add', 400, SUM,
+    body={'new_course': course_body(fee='0.3', multi_payments_split=True, events=[ev(0, 0.1), ev(1, 0.2)]), 'subscriptions': []})
+add('add-event-float-amount-not-exact', 'owner', '/course/add', 400, SUM,
+    body={'new_course': course_body(fee='10', multi_payments_split=True, events=[ev(0, 5), ev(1, 4.99)]), 'subscriptions': []})
 add('add-event-not-object', 'owner', '/course/add', 400, {'non_field_errors': ['Invalid data. Expected a dictionary, but got str.']},
     body={'new_course': course_body(fee='10', multi_payments_split=True, events=['a', 'b']), 'subscriptions': []})
 
@@ -851,6 +881,21 @@ add('add-unknown-subscription', actor, '/course/add', 500, SERVER,
 add('add-other-association-subscription', actor, '/course/add', 500, SERVER,
     body={'new_course': {'title': 'Estera', 'description': 'Note', 'fee': '5'}, 'subscriptions': [sid('hans')]},
     result=effect(actor, created={COURSE: [new_course('@nc6', 'Estera', 'Note', fee='5.00')]}, audit=course_entries('@nc6', actor, ('one_fee',))))
+
+# Float event amounts that are exact in binary (30.5) are stored as sent.
+actor = 'owner'
+events = [ev(0, 30.5), ev(1, 30.5, '10/01/2020')]
+audit = course_entries('@nc8', actor, ('one_fee',))
+created = {COURSE: [new_course('@nc8', 'Float', 'Nota', fee='61.00', multi_payments=True, events=events)], CSM: [], PAYMENT: [], CSI: []}
+created[CSM].append(new_cs('@cs81', '@nc8', sid('luisa'), True))
+created[PAYMENT].append(new_payment('@p81', '30.50', user=luisa[0], associate=luisa[1], created='2099-01-10T00:00:00Z'))
+created[CSI].append(new_installment('@i81', '@cs81', 0, '30.50', '@p81', '2099-01-10'))
+audit += [entry(CSM, '@cs81', 0, stored('create', membership_fee=['None', '0.0']), [OWN, COURSE_INDEX], new_cs_repr('@cs81', '@nc8', sid('luisa'), True)),
+          created_entries(PAYMENT, '@p81', [OWN, DIRECT]), created_entries(CSI, '@i81', [OWN, CSI_INDEX]),
+          entry(CSM, '@cs81', 1, {'membership_fee': ['0.00', '0.0']}, [OWN, COURSE_INDEX], new_cs_repr('@cs81', '@nc8', sid('luisa'), True))]
+add('add-installments-float-amounts', actor, '/course/add', 200, ADDED, body={
+    'new_course': {'title': 'Float', 'description': 'Nota', 'fee': 61, 'multi_payments_split': True, 'events': events},
+    'subscriptions': [sid('luisa')]}, result=effect(actor, created=created, audit=audit))
 
 # Impersonating a full collaborator: the course is created in the session's association.
 add('add-impersonated-collaborator', actor, '/course/add', 200, ADDED, headers=FULL_SESSION,

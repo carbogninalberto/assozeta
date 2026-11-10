@@ -103,13 +103,11 @@ carry the session context.
 ## Not ported (refused with a 500 before any write)
 
 - `course/<uid>/overview/<uid_subscription>/add` (not routed in Go).
-- course/add: a non-canonical `X-Group-Id` spelling (auditlog would record it as sent); event amounts given as floats that are
-  not exact to the cent (Python `Decimal(float)` arithmetic).
-- course/update: `fee`/`one_fee` other than plain decimals with up to seven whole digits and two places (a null `one_fee`),
-  booleans other than `true`/`false`, 0/1 and `'t'`/`'True'`/`'1'`/`'f'`/`'False'`/`'0'`, non-integer or out-of-range billing
-  integers (null `billed_from_day_of_month`), dates other than ISO `YYYY-MM-DD[THH:MM[:SS[.fff|.ffffff]]][Z|±HH:MM]` strings or
-  null, and events whose `course_subscription_installment_id` is valid (`dict(validated_data)` keeps the UUID object: the
-  save fails after auditlog has written its entry).
+- course/add: a non-canonical `X-Group-Id` spelling (auditlog records it as sent in every created row).
+- course/update: dates outside Python's parsers, exponents beyond 10000 in a decimal, and events whose
+  `course_subscription_installment_id` is valid (`dict(validated_data)` keeps the UUID object: the save fails after
+  auditlog has written its entry). Decimals, floats, booleans, billing integers and dates in other spellings, and values
+  the column rejects (entry, then 500), follow Django. Float event amounts are compared by their binary value.
 - course-overview update for an athlete whose subscription has no association, and a non-canonical `X-Group-Id`.
 
 ## Evidence

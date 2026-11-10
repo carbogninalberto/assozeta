@@ -270,6 +270,16 @@ add('sort-other-direction-is-desc', 'owner', {'sort[field]': 'title', 'sort[sort
 add('sort-minus-field-asc', 'owner', {'sort[field]': '-title', 'sort[sort]': 'asc'}, 200, page(['old', 'draft', 'internal', 'full', 'grouped']))
 add('sort-creation-asc', 'owner', {'sort[field]': 'creation_date', 'sort[sort]': 'asc'}, 200,
     page(['old', 'draft', 'internal', 'grouped', 'full']))
+# order_by('<datetime field>__<transform>'): the extract in UTC (values distinct across the five courses).
+for transform, direction, labels in (
+        ('month', 'asc', ['internal', 'old', 'grouped', 'full', 'draft']),
+        ('hour', 'desc', ['draft', 'old', 'grouped', 'full', 'internal']),
+        ('date', 'desc', ['full', 'grouped', 'internal', 'draft', 'old']),
+        ('time', 'asc', ['internal', 'full', 'grouped', 'old', 'draft'])):
+    add(f'sort-creation-{transform}-{direction}', 'owner', {'sort[field]': f'creation_date__{transform}', 'sort[sort]': direction}, 200,
+        page(labels))
+add('sort-creation-month-all', 'owner', {'sort[field]': 'creation_date__month', 'sort[sort]': 'desc', 'all': '1'}, 200,
+    listed(['draft', 'full', 'grouped', 'old', 'internal']))
 add('sort-pk-desc', 'owner', {'sort[field]': 'pk', 'sort[sort]': 'desc'}, 200, page(by_id[::-1]))
 add('sort-course-id-asc', 'owner', {'sort[field]': 'course_id', 'sort[sort]': 'asc'}, 200, page(by_id))
 add('sort-relation-attname', 'owner', {'sort[field]': 'sport_association_id', 'sort[sort]': 'asc', 'query[status_flag]': '1'}, 200,
@@ -405,6 +415,8 @@ add('excel-sort-title-asc', 'owner', {'sort[field]': 'title', 'sort[sort]': 'asc
     export(['grouped', 'full', 'internal', 'draft', 'old']), method='POST', body=EXCEL)
 add('excel-sort-creation-asc', 'owner', {'sort[field]': 'creation_date', 'sort[sort]': 'asc'}, 200,
     export(['old', 'draft', 'internal', 'grouped', 'full']), method='POST', body=EXCEL)
+add('excel-sort-creation-hour-asc', 'owner', {'sort[field]': 'creation_date__hour', 'sort[sort]': 'asc'}, 200,
+    export(['internal', 'full', 'grouped', 'old', 'draft']), method='POST', body=EXCEL)
 add('excel-sort-random-one-row', 'owner', {'sort[field]': '?', 'sort[sort]': 'asc', 'query[status_flag]': '3'}, 200,
     export(['internal']), method='POST', body=EXCEL)
 add('excel-sort-unknown-field', 'owner', {'sort[field]': 'nope', 'sort[sort]': 'asc'}, 500, SERVER, method='POST', body=EXCEL)

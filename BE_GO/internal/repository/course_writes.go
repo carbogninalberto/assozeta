@@ -316,6 +316,13 @@ func courseIndex(row domain.CourseWriteRow, audit domain.CourseSubscriptionAudit
 // written; auditlog's entry (if any) is indexed through the stored association.
 func (t *courseWritesTransaction) SaveCourse(ctx context.Context, save domain.CourseWriteCourseSave, audit domain.CourseSubscriptionAudit) error {
 	row := save.Row
+	if save.AuditOnly {
+		if len(save.Changes) == 0 {
+			return nil
+		}
+		association, path := courseIndex(row, audit)
+		return appendModelAudit(ctx, t.tx, courseSubscriptionEntry("course", "Course", row.ID, "", 1, save.Changes, association, path, audit))
+	}
 	if _, err := t.tx.ExecContext(ctx, `UPDATE application_course SET title=$2, description=$3, one_fee=$4::numeric, fee=$5::numeric,
  multiple_quotes=$6::jsonb, events=$7::jsonb, billed_duration_is_sport_season=$8, billed_frequency=$9, billed_from_subscription_date=$10,
  billed_from_day_of_month=$11, auto_renewal=$12, start_date=$13, end_date=$14 WHERE course_id=$1`, row.ID, row.Title, row.Description, row.OneFee,

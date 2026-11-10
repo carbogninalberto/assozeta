@@ -7536,6 +7536,1393 @@
    }
   },
   {
+   "name": "course-list-sort-creation-month-asc",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/list?sort%5Bfield%5D=creation_date__month&sort%5Bsort%5D=asc",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "course_id": "a1000000-0000-4000-8000-000000630009",
+      "athletes": {
+       "0": {
+        "paid": true,
+        "creation_date": "2026-02-05T09:00:00Z"
+       }
+      },
+      "tags": [],
+      "locations": [],
+      "status_flag": 3,
+      "course_type": 3,
+      "creation_date": "2026-01-01T00:00:00Z",
+      "title": "Tennis_base",
+      "description": "Corso di nuoto",
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "current_year": {
+       "$current_year": "2026-01-01"
+      }
+     },
+     "1": {
+      "course_id": "a1000000-0000-4000-8000-000000630011",
+      "athletes": {
+       "0": {
+        "paid": false,
+        "creation_date": "2000-03-02T09:00:00Z",
+        "subscription": {
+         "subscription_id": "a1000000-0000-4000-8000-000000630021",
+         "associate": {
+          "first_name": "Mario",
+          "last_name": "Rossi",
+          "born_date": "1990-05-04",
+          "sex": "M"
+         }
+        }
+       }
+      },
+      "tags": [],
+      "locations": [],
+      "status_flag": 2,
+      "course_type": 1,
+      "creation_date": "2000-03-01T12:00:00Z",
+      "title": null,
+      "description": null,
+      "multi_payments": false,
+      "fee": null,
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": null,
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "current_year": {
+       "$current_year": "2000-03-01"
+      }
+     },
+     "2": {
+      "course_id": "a1000000-0000-4000-8000-000000630008",
+      "athletes": {
+       "0": {
+        "paid": true,
+        "creation_date": "2026-08-05T09:00:00.000001Z",
+        "subscription": {
+         "subscription_id": "a1000000-0000-4000-8000-000000630023",
+         "associate": {
+          "first_name": "Anna",
+          "last_name": "Estera",
+          "born_date": "2001-02-03",
+          "sex": "A"
+         }
+        }
+       }
+      },
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [],
+      "status_flag": 2,
+      "course_type": 1,
+      "creation_date": "2026-08-01T10:00:00Z",
+      "title": "Gruppo",
+      "description": "Testo",
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": "a1000000-0000-4000-8000-000000714001",
+      "current_year": {
+       "$current_year": "2026-08-01"
+      }
+     },
+     "3": {
+      "course_id": "a1000000-0000-4000-8000-000000630007",
+      "athletes": {
+       "0": {
+        "paid": true,
+        "creation_date": "2026-09-02T10:00:00Z",
+        "subscription": {
+         "subscription_id": "a1000000-0000-4000-8000-000000630018",
+         "associate": {
+          "first_name": "Mario",
+          "last_name": "Rossi",
+          "born_date": "1990-05-04",
+          "sex": "M"
+         }
+        }
+       },
+       "1": {
+        "paid": false,
+        "creation_date": "2026-09-03T10:00:00.500000Z",
+        "subscription": {
+         "subscription_id": "a1000000-0000-4000-8000-000000630019",
+         "associate": {
+          "first_name": null,
+          "last_name": null,
+          "born_date": null,
+          "sex": "F"
+         }
+        }
+       }
+      },
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630001",
+        "tag_name": "Agonistico è"
+       },
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000630005",
+        "title": "Piscina",
+        "address": "Via 1"
+       },
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000630006",
+        "title": null,
+        "address": null
+       }
+      ],
+      "status_flag": 2,
+      "course_type": 2,
+      "creation_date": "2026-09-01T08:00:00.123456Z",
+      "title": "Nuoto è",
+      "description": "Lungo\ntesto",
+      "multi_payments": true,
+      "fee": "12.50",
+      "events": {
+       "days": [
+        1,
+        "lun"
+       ],
+       "note": null
+      },
+      "one_fee_payment": true,
+      "one_fee": "3.00",
+      "google_calendar_id": "cal-1",
+      "google_background_color": "#abcdef",
+      "multiple_quotes": [
+       {
+        "amount": 5,
+        "label": "Prima"
+       }
+      ],
+      "start_date": "2026-09-10T07:30:00Z",
+      "end_date": "2027-06-30T18:00:00.500000Z",
+      "pinned": true,
+      "billed_duration_is_sport_season": true,
+      "billed_frequency": null,
+      "billed_from_subscription_date": true,
+      "billed_from_day_of_month": 28,
+      "auto_renewal": true,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "current_year": {
+       "$current_year": "2026-09-01"
+      }
+     },
+     "4": {
+      "course_id": "a1000000-0000-4000-8000-000000630010",
+      "athletes": {
+       "0": {
+        "paid": false,
+        "creation_date": "2026-01-05T09:00:00Z"
+       }
+      },
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630001",
+        "tag_name": "Agonistico è"
+       }
+      ],
+      "locations": [],
+      "status_flag": 1,
+      "course_type": 1,
+      "creation_date": "2025-12-31T23:59:59Z",
+      "title": "Yoga 50%",
+      "description": null,
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "current_year": {
+       "$current_year": "2025-12-31"
+      }
+     }
+    },
+    "meta": {
+     "total": 5,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000630009",
+      "a1000000-0000-4000-8000-000000630011",
+      "a1000000-0000-4000-8000-000000630008",
+      "a1000000-0000-4000-8000-000000630007",
+      "a1000000-0000-4000-8000-000000630010"
+     ]
+    }
+   }
+  },
+  {
+   "name": "course-list-sort-creation-hour-desc",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/list?sort%5Bfield%5D=creation_date__hour&sort%5Bsort%5D=desc",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "course_id": "a1000000-0000-4000-8000-000000630010",
+      "athletes": {
+       "0": {
+        "paid": false,
+        "creation_date": "2026-01-05T09:00:00Z"
+       }
+      },
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630001",
+        "tag_name": "Agonistico è"
+       }
+      ],
+      "locations": [],
+      "status_flag": 1,
+      "course_type": 1,
+      "creation_date": "2025-12-31T23:59:59Z",
+      "title": "Yoga 50%",
+      "description": null,
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "current_year": {
+       "$current_year": "2025-12-31"
+      }
+     },
+     "1": {
+      "course_id": "a1000000-0000-4000-8000-000000630011",
+      "athletes": {
+       "0": {
+        "paid": false,
+        "creation_date": "2000-03-02T09:00:00Z",
+        "subscription": {
+         "subscription_id": "a1000000-0000-4000-8000-000000630021",
+         "associate": {
+          "first_name": "Mario",
+          "last_name": "Rossi",
+          "born_date": "1990-05-04",
+          "sex": "M"
+         }
+        }
+       }
+      },
+      "tags": [],
+      "locations": [],
+      "status_flag": 2,
+      "course_type": 1,
+      "creation_date": "2000-03-01T12:00:00Z",
+      "title": null,
+      "description": null,
+      "multi_payments": false,
+      "fee": null,
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": null,
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "current_year": {
+       "$current_year": "2000-03-01"
+      }
+     },
+     "2": {
+      "course_id": "a1000000-0000-4000-8000-000000630008",
+      "athletes": {
+       "0": {
+        "paid": true,
+        "creation_date": "2026-08-05T09:00:00.000001Z",
+        "subscription": {
+         "subscription_id": "a1000000-0000-4000-8000-000000630023",
+         "associate": {
+          "first_name": "Anna",
+          "last_name": "Estera",
+          "born_date": "2001-02-03",
+          "sex": "A"
+         }
+        }
+       }
+      },
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [],
+      "status_flag": 2,
+      "course_type": 1,
+      "creation_date": "2026-08-01T10:00:00Z",
+      "title": "Gruppo",
+      "description": "Testo",
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": "a1000000-0000-4000-8000-000000714001",
+      "current_year": {
+       "$current_year": "2026-08-01"
+      }
+     },
+     "3": {
+      "course_id": "a1000000-0000-4000-8000-000000630007",
+      "athletes": {
+       "0": {
+        "paid": true,
+        "creation_date": "2026-09-02T10:00:00Z",
+        "subscription": {
+         "subscription_id": "a1000000-0000-4000-8000-000000630018",
+         "associate": {
+          "first_name": "Mario",
+          "last_name": "Rossi",
+          "born_date": "1990-05-04",
+          "sex": "M"
+         }
+        }
+       },
+       "1": {
+        "paid": false,
+        "creation_date": "2026-09-03T10:00:00.500000Z",
+        "subscription": {
+         "subscription_id": "a1000000-0000-4000-8000-000000630019",
+         "associate": {
+          "first_name": null,
+          "last_name": null,
+          "born_date": null,
+          "sex": "F"
+         }
+        }
+       }
+      },
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630001",
+        "tag_name": "Agonistico è"
+       },
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000630005",
+        "title": "Piscina",
+        "address": "Via 1"
+       },
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000630006",
+        "title": null,
+        "address": null
+       }
+      ],
+      "status_flag": 2,
+      "course_type": 2,
+      "creation_date": "2026-09-01T08:00:00.123456Z",
+      "title": "Nuoto è",
+      "description": "Lungo\ntesto",
+      "multi_payments": true,
+      "fee": "12.50",
+      "events": {
+       "days": [
+        1,
+        "lun"
+       ],
+       "note": null
+      },
+      "one_fee_payment": true,
+      "one_fee": "3.00",
+      "google_calendar_id": "cal-1",
+      "google_background_color": "#abcdef",
+      "multiple_quotes": [
+       {
+        "amount": 5,
+        "label": "Prima"
+       }
+      ],
+      "start_date": "2026-09-10T07:30:00Z",
+      "end_date": "2027-06-30T18:00:00.500000Z",
+      "pinned": true,
+      "billed_duration_is_sport_season": true,
+      "billed_frequency": null,
+      "billed_from_subscription_date": true,
+      "billed_from_day_of_month": 28,
+      "auto_renewal": true,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "current_year": {
+       "$current_year": "2026-09-01"
+      }
+     },
+     "4": {
+      "course_id": "a1000000-0000-4000-8000-000000630009",
+      "athletes": {
+       "0": {
+        "paid": true,
+        "creation_date": "2026-02-05T09:00:00Z"
+       }
+      },
+      "tags": [],
+      "locations": [],
+      "status_flag": 3,
+      "course_type": 3,
+      "creation_date": "2026-01-01T00:00:00Z",
+      "title": "Tennis_base",
+      "description": "Corso di nuoto",
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "current_year": {
+       "$current_year": "2026-01-01"
+      }
+     }
+    },
+    "meta": {
+     "total": 5,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000630010",
+      "a1000000-0000-4000-8000-000000630011",
+      "a1000000-0000-4000-8000-000000630008",
+      "a1000000-0000-4000-8000-000000630007",
+      "a1000000-0000-4000-8000-000000630009"
+     ]
+    }
+   }
+  },
+  {
+   "name": "course-list-sort-creation-date-desc",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/list?sort%5Bfield%5D=creation_date__date&sort%5Bsort%5D=desc",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "course_id": "a1000000-0000-4000-8000-000000630007",
+      "athletes": {
+       "0": {
+        "paid": true,
+        "creation_date": "2026-09-02T10:00:00Z",
+        "subscription": {
+         "subscription_id": "a1000000-0000-4000-8000-000000630018",
+         "associate": {
+          "first_name": "Mario",
+          "last_name": "Rossi",
+          "born_date": "1990-05-04",
+          "sex": "M"
+         }
+        }
+       },
+       "1": {
+        "paid": false,
+        "creation_date": "2026-09-03T10:00:00.500000Z",
+        "subscription": {
+         "subscription_id": "a1000000-0000-4000-8000-000000630019",
+         "associate": {
+          "first_name": null,
+          "last_name": null,
+          "born_date": null,
+          "sex": "F"
+         }
+        }
+       }
+      },
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630001",
+        "tag_name": "Agonistico è"
+       },
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000630005",
+        "title": "Piscina",
+        "address": "Via 1"
+       },
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000630006",
+        "title": null,
+        "address": null
+       }
+      ],
+      "status_flag": 2,
+      "course_type": 2,
+      "creation_date": "2026-09-01T08:00:00.123456Z",
+      "title": "Nuoto è",
+      "description": "Lungo\ntesto",
+      "multi_payments": true,
+      "fee": "12.50",
+      "events": {
+       "days": [
+        1,
+        "lun"
+       ],
+       "note": null
+      },
+      "one_fee_payment": true,
+      "one_fee": "3.00",
+      "google_calendar_id": "cal-1",
+      "google_background_color": "#abcdef",
+      "multiple_quotes": [
+       {
+        "amount": 5,
+        "label": "Prima"
+       }
+      ],
+      "start_date": "2026-09-10T07:30:00Z",
+      "end_date": "2027-06-30T18:00:00.500000Z",
+      "pinned": true,
+      "billed_duration_is_sport_season": true,
+      "billed_frequency": null,
+      "billed_from_subscription_date": true,
+      "billed_from_day_of_month": 28,
+      "auto_renewal": true,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "current_year": {
+       "$current_year": "2026-09-01"
+      }
+     },
+     "1": {
+      "course_id": "a1000000-0000-4000-8000-000000630008",
+      "athletes": {
+       "0": {
+        "paid": true,
+        "creation_date": "2026-08-05T09:00:00.000001Z",
+        "subscription": {
+         "subscription_id": "a1000000-0000-4000-8000-000000630023",
+         "associate": {
+          "first_name": "Anna",
+          "last_name": "Estera",
+          "born_date": "2001-02-03",
+          "sex": "A"
+         }
+        }
+       }
+      },
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [],
+      "status_flag": 2,
+      "course_type": 1,
+      "creation_date": "2026-08-01T10:00:00Z",
+      "title": "Gruppo",
+      "description": "Testo",
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": "a1000000-0000-4000-8000-000000714001",
+      "current_year": {
+       "$current_year": "2026-08-01"
+      }
+     },
+     "2": {
+      "course_id": "a1000000-0000-4000-8000-000000630009",
+      "athletes": {
+       "0": {
+        "paid": true,
+        "creation_date": "2026-02-05T09:00:00Z"
+       }
+      },
+      "tags": [],
+      "locations": [],
+      "status_flag": 3,
+      "course_type": 3,
+      "creation_date": "2026-01-01T00:00:00Z",
+      "title": "Tennis_base",
+      "description": "Corso di nuoto",
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "current_year": {
+       "$current_year": "2026-01-01"
+      }
+     },
+     "3": {
+      "course_id": "a1000000-0000-4000-8000-000000630010",
+      "athletes": {
+       "0": {
+        "paid": false,
+        "creation_date": "2026-01-05T09:00:00Z"
+       }
+      },
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630001",
+        "tag_name": "Agonistico è"
+       }
+      ],
+      "locations": [],
+      "status_flag": 1,
+      "course_type": 1,
+      "creation_date": "2025-12-31T23:59:59Z",
+      "title": "Yoga 50%",
+      "description": null,
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "current_year": {
+       "$current_year": "2025-12-31"
+      }
+     },
+     "4": {
+      "course_id": "a1000000-0000-4000-8000-000000630011",
+      "athletes": {
+       "0": {
+        "paid": false,
+        "creation_date": "2000-03-02T09:00:00Z",
+        "subscription": {
+         "subscription_id": "a1000000-0000-4000-8000-000000630021",
+         "associate": {
+          "first_name": "Mario",
+          "last_name": "Rossi",
+          "born_date": "1990-05-04",
+          "sex": "M"
+         }
+        }
+       }
+      },
+      "tags": [],
+      "locations": [],
+      "status_flag": 2,
+      "course_type": 1,
+      "creation_date": "2000-03-01T12:00:00Z",
+      "title": null,
+      "description": null,
+      "multi_payments": false,
+      "fee": null,
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": null,
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "current_year": {
+       "$current_year": "2000-03-01"
+      }
+     }
+    },
+    "meta": {
+     "total": 5,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000630007",
+      "a1000000-0000-4000-8000-000000630008",
+      "a1000000-0000-4000-8000-000000630009",
+      "a1000000-0000-4000-8000-000000630010",
+      "a1000000-0000-4000-8000-000000630011"
+     ]
+    }
+   }
+  },
+  {
+   "name": "course-list-sort-creation-time-asc",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/list?sort%5Bfield%5D=creation_date__time&sort%5Bsort%5D=asc",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "course_id": "a1000000-0000-4000-8000-000000630009",
+      "athletes": {
+       "0": {
+        "paid": true,
+        "creation_date": "2026-02-05T09:00:00Z"
+       }
+      },
+      "tags": [],
+      "locations": [],
+      "status_flag": 3,
+      "course_type": 3,
+      "creation_date": "2026-01-01T00:00:00Z",
+      "title": "Tennis_base",
+      "description": "Corso di nuoto",
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "current_year": {
+       "$current_year": "2026-01-01"
+      }
+     },
+     "1": {
+      "course_id": "a1000000-0000-4000-8000-000000630007",
+      "athletes": {
+       "0": {
+        "paid": true,
+        "creation_date": "2026-09-02T10:00:00Z",
+        "subscription": {
+         "subscription_id": "a1000000-0000-4000-8000-000000630018",
+         "associate": {
+          "first_name": "Mario",
+          "last_name": "Rossi",
+          "born_date": "1990-05-04",
+          "sex": "M"
+         }
+        }
+       },
+       "1": {
+        "paid": false,
+        "creation_date": "2026-09-03T10:00:00.500000Z",
+        "subscription": {
+         "subscription_id": "a1000000-0000-4000-8000-000000630019",
+         "associate": {
+          "first_name": null,
+          "last_name": null,
+          "born_date": null,
+          "sex": "F"
+         }
+        }
+       }
+      },
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630001",
+        "tag_name": "Agonistico è"
+       },
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000630005",
+        "title": "Piscina",
+        "address": "Via 1"
+       },
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000630006",
+        "title": null,
+        "address": null
+       }
+      ],
+      "status_flag": 2,
+      "course_type": 2,
+      "creation_date": "2026-09-01T08:00:00.123456Z",
+      "title": "Nuoto è",
+      "description": "Lungo\ntesto",
+      "multi_payments": true,
+      "fee": "12.50",
+      "events": {
+       "days": [
+        1,
+        "lun"
+       ],
+       "note": null
+      },
+      "one_fee_payment": true,
+      "one_fee": "3.00",
+      "google_calendar_id": "cal-1",
+      "google_background_color": "#abcdef",
+      "multiple_quotes": [
+       {
+        "amount": 5,
+        "label": "Prima"
+       }
+      ],
+      "start_date": "2026-09-10T07:30:00Z",
+      "end_date": "2027-06-30T18:00:00.500000Z",
+      "pinned": true,
+      "billed_duration_is_sport_season": true,
+      "billed_frequency": null,
+      "billed_from_subscription_date": true,
+      "billed_from_day_of_month": 28,
+      "auto_renewal": true,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "current_year": {
+       "$current_year": "2026-09-01"
+      }
+     },
+     "2": {
+      "course_id": "a1000000-0000-4000-8000-000000630008",
+      "athletes": {
+       "0": {
+        "paid": true,
+        "creation_date": "2026-08-05T09:00:00.000001Z",
+        "subscription": {
+         "subscription_id": "a1000000-0000-4000-8000-000000630023",
+         "associate": {
+          "first_name": "Anna",
+          "last_name": "Estera",
+          "born_date": "2001-02-03",
+          "sex": "A"
+         }
+        }
+       }
+      },
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [],
+      "status_flag": 2,
+      "course_type": 1,
+      "creation_date": "2026-08-01T10:00:00Z",
+      "title": "Gruppo",
+      "description": "Testo",
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": "a1000000-0000-4000-8000-000000714001",
+      "current_year": {
+       "$current_year": "2026-08-01"
+      }
+     },
+     "3": {
+      "course_id": "a1000000-0000-4000-8000-000000630011",
+      "athletes": {
+       "0": {
+        "paid": false,
+        "creation_date": "2000-03-02T09:00:00Z",
+        "subscription": {
+         "subscription_id": "a1000000-0000-4000-8000-000000630021",
+         "associate": {
+          "first_name": "Mario",
+          "last_name": "Rossi",
+          "born_date": "1990-05-04",
+          "sex": "M"
+         }
+        }
+       }
+      },
+      "tags": [],
+      "locations": [],
+      "status_flag": 2,
+      "course_type": 1,
+      "creation_date": "2000-03-01T12:00:00Z",
+      "title": null,
+      "description": null,
+      "multi_payments": false,
+      "fee": null,
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": null,
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "current_year": {
+       "$current_year": "2000-03-01"
+      }
+     },
+     "4": {
+      "course_id": "a1000000-0000-4000-8000-000000630010",
+      "athletes": {
+       "0": {
+        "paid": false,
+        "creation_date": "2026-01-05T09:00:00Z"
+       }
+      },
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630001",
+        "tag_name": "Agonistico è"
+       }
+      ],
+      "locations": [],
+      "status_flag": 1,
+      "course_type": 1,
+      "creation_date": "2025-12-31T23:59:59Z",
+      "title": "Yoga 50%",
+      "description": null,
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "current_year": {
+       "$current_year": "2025-12-31"
+      }
+     }
+    },
+    "meta": {
+     "total": 5,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000630009",
+      "a1000000-0000-4000-8000-000000630007",
+      "a1000000-0000-4000-8000-000000630008",
+      "a1000000-0000-4000-8000-000000630011",
+      "a1000000-0000-4000-8000-000000630010"
+     ]
+    }
+   }
+  },
+  {
+   "name": "course-list-sort-creation-month-all",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/list?sort%5Bfield%5D=creation_date__month&sort%5Bsort%5D=desc&all=1",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000630010",
+      "athletes": null,
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630001",
+        "tag_name": "Agonistico è"
+       }
+      ],
+      "locations": [],
+      "status_flag": 1,
+      "course_type": 1,
+      "creation_date": "2025-12-31T23:59:59Z",
+      "title": "Yoga 50%",
+      "description": null,
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000630007",
+      "athletes": null,
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630001",
+        "tag_name": "Agonistico è"
+       },
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000630005",
+        "title": "Piscina",
+        "address": "Via 1"
+       },
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000630006",
+        "title": null,
+        "address": null
+       }
+      ],
+      "status_flag": 2,
+      "course_type": 2,
+      "creation_date": "2026-09-01T08:00:00.123456Z",
+      "title": "Nuoto è",
+      "description": "Lungo\ntesto",
+      "multi_payments": true,
+      "fee": "12.50",
+      "events": {
+       "days": [
+        1,
+        "lun"
+       ],
+       "note": null
+      },
+      "one_fee_payment": true,
+      "one_fee": "3.00",
+      "google_calendar_id": "cal-1",
+      "google_background_color": "#abcdef",
+      "multiple_quotes": [
+       {
+        "amount": 5,
+        "label": "Prima"
+       }
+      ],
+      "start_date": "2026-09-10T07:30:00Z",
+      "end_date": "2027-06-30T18:00:00.500000Z",
+      "pinned": true,
+      "billed_duration_is_sport_season": true,
+      "billed_frequency": null,
+      "billed_from_subscription_date": true,
+      "billed_from_day_of_month": 28,
+      "auto_renewal": true,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000630008",
+      "athletes": null,
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [],
+      "status_flag": 2,
+      "course_type": 1,
+      "creation_date": "2026-08-01T10:00:00Z",
+      "title": "Gruppo",
+      "description": "Testo",
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": "a1000000-0000-4000-8000-000000714001"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000630011",
+      "athletes": null,
+      "tags": [],
+      "locations": [],
+      "status_flag": 2,
+      "course_type": 1,
+      "creation_date": "2000-03-01T12:00:00Z",
+      "title": null,
+      "description": null,
+      "multi_payments": false,
+      "fee": null,
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": null,
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000630009",
+      "athletes": null,
+      "tags": [],
+      "locations": [],
+      "status_flag": 3,
+      "course_type": 3,
+      "creation_date": "2026-01-01T00:00:00Z",
+      "title": "Tennis_base",
+      "description": "Corso di nuoto",
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null
+     }
+    ]
+   }
+  },
+  {
    "name": "course-list-sort-pk-desc",
    "actor": "owner",
    "method": "GET",
@@ -14214,6 +15601,143 @@
         "",
         "assegnato",
         "assegnato"
+       ],
+       [
+        "",
+        "",
+        "",
+        "",
+        ""
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Corsi filtrati - Message reads own.xlsx"
+   },
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "course-list-excel-sort-creation-hour-asc",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/list?sort%5Bfield%5D=creation_date__hour&sort%5Bsort%5D=asc",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Nome",
+       "Tipologia",
+       "Visibilità",
+       "Data inizio",
+       "Data fine",
+       "Data creazione",
+       "In evidenza",
+       "Strutture",
+       "Iscritti",
+       "Tag",
+       "Agonistico è",
+       "Base",
+       "Inutilizzato"
+      ],
+      "data": [
+       [
+        "Tennis_base",
+        "Nuoto è",
+        "Gruppo",
+        null,
+        "Yoga 50%"
+       ],
+       [
+        "Abbonamento",
+        "Quote multiple",
+        "Default",
+        "Default",
+        "Default"
+       ],
+       [
+        "Sconosciuto",
+        "Visibile",
+        "Visibile",
+        "Visibile",
+        "Non visibile"
+       ],
+       [
+        "-",
+        "10/09/2026",
+        "-",
+        "-",
+        "-"
+       ],
+       [
+        "-",
+        "30/06/2027",
+        "-",
+        "-",
+        "-"
+       ],
+       [
+        "01/01/2026",
+        "01/09/2026",
+        "01/08/2026",
+        "01/03/2000",
+        "31/12/2025"
+       ],
+       [
+        "-",
+        "In evidenza",
+        "-",
+        "-",
+        "-"
+       ],
+       [
+        "",
+        "Piscina, None",
+        "",
+        "",
+        ""
+       ],
+       [
+        {
+         "int": "1"
+        },
+        {
+         "int": "2"
+        },
+        {
+         "int": "1"
+        },
+        {
+         "int": "1"
+        },
+        {
+         "int": "1"
+        }
+       ],
+       [
+        "",
+        "Agonistico è, Base",
+        "Base",
+        "",
+        "Agonistico è"
+       ],
+       [
+        "",
+        "assegnato",
+        "",
+        "",
+        "assegnato"
+       ],
+       [
+        "",
+        "assegnato",
+        "assegnato",
+        "",
+        ""
        ],
        [
         "",

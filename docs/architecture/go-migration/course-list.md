@@ -71,8 +71,8 @@ names: pandas keeps them, skips the numeric coercion for those columns and sizes
 
 - **Exports:** workbook inputs `xlsxexport` does not reproduce (formula-like text and the other cases in
   `xlsx-exports.md`) and an export (either format) whose ordering is one of the lazy names below.
-- **Lazy orderings:** names Django resolves only when compiling the rows — transforms of a field (`title__lower`,
-  `creation_date__year`, JSON keys), M2M/reverse relations (`tags`, `locations`, `coursesubscription`,
+- **Lazy orderings:** names Django resolves only when compiling the rows — transforms of a field (`title__lower`, JSON keys,
+  chains; the single extracts `year`, `month`, `hour`, `date`, `time`... of `creation_date`, `start_date` and `end_date` are ported), M2M/reverse relations (`tags`, `locations`, `coursesubscription`,
   `attendanceregistry`) and relation paths (`sport_association__...`). Go refuses them where Django compiles: after
   the count and page checks (an invalid page is still the 404) or on `all=1`. Django answers a valid one with rows
   and an invalid one with a 500.
