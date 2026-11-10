@@ -260,6 +260,16 @@ func (r *OAuthAccounts) DeleteInvite(ctx context.Context, id string, at time.Tim
 // CreateUser is User.objects.create_user(...) with every other field at its
 // model default, and its create entry (the new user has no association: the
 // index follows the actor).
+// SecondFactor reads the stored second-factor settings of a live account.
+func (r *OAuthAccounts) SecondFactor(ctx context.Context, id string) (bool, *string, error) {
+	var row struct {
+		Enabled bool    `db:"two_fa"`
+		Secret  *string `db:"two_fa_secret"`
+	}
+	err := r.db.GetContext(ctx, &row, `SELECT two_fa,two_fa_secret FROM bakney_user WHERE user_id=$1 AND NOT deleted`, id)
+	return row.Enabled, row.Secret, err
+}
+
 func (r *OAuthAccounts) CreateUser(ctx context.Context, user domain.OAuthNewUser, audit domain.LoginAuditContext) error {
 	tx, err := r.begin(ctx)
 	if err != nil {

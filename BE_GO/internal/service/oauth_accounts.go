@@ -50,9 +50,6 @@ type OAuthAccountSettings struct {
 type OAuthPasswordEncoder interface {
 	Encode(context.Context, string) (string, error)
 }
-type OAuthSocialClients interface {
-	ClientID(context.Context, string) (any, error)
-}
 
 type OAuthAccounts struct {
 	store        domain.OAuthAccountsStore
@@ -62,7 +59,9 @@ type OAuthAccounts struct {
 	tokens       LoginTokenIssuer
 	responses    LoginResponseBuilder
 	associations LoginResponseAssociations
-	social       OAuthSocialClients
+	social       SocialTokenVerifier
+	candidates   SocialLoginCandidates
+	secondFactor LoginSecondFactor
 	settings     OAuthAccountSettings
 	now          func() time.Time
 	random       func([]byte) (int, error)
@@ -70,9 +69,11 @@ type OAuthAccounts struct {
 
 func NewOAuthAccounts(store domain.OAuthAccountsStore, resetTokens domain.OAuthResetTokens, publisher celery.Publisher,
 	hashes OAuthPasswordEncoder, tokens LoginTokenIssuer, responses LoginResponseBuilder, associations LoginResponseAssociations,
-	social OAuthSocialClients, settings OAuthAccountSettings, now func() time.Time) *OAuthAccounts {
+	social SocialTokenVerifier, candidates SocialLoginCandidates, secondFactor LoginSecondFactor, settings OAuthAccountSettings,
+	now func() time.Time) *OAuthAccounts {
 	return &OAuthAccounts{store: store, resetTokens: resetTokens, publisher: publisher, hashes: hashes, tokens: tokens,
-		responses: responses, associations: associations, social: social, settings: settings, now: now, random: rand.Read}
+		responses: responses, associations: associations, social: social, candidates: candidates, secondFactor: secondFactor,
+		settings: settings, now: now, random: rand.Read}
 }
 
 var oauthInvalid = map[string]string{"msg": "Invalid request."}
@@ -438,16 +439,8 @@ func (s *OAuthAccounts) Signup(ctx context.Context, identity domain.ResolvedIden
 		default:
 			return OAuthAnswer{400, map[string]string{"error": "Unsupported backend: " + dto.PythonStr(backend)}}, nil
 		}
-		client, err := s.social.ClientID(ctx, provider)
-		if err != nil {
-			return nil, err
-		}
-		if !pythonFalsy(client) {
-			// Verifying the token needs the provider (Google certificates,
-			// Apple keys): outbound calls are not ported.
-			return nil, ErrOAuthNotPorted
-		}
-		return OAuthAnswer{401, map[string]string{"error": "Invalid social token"}}, nil
+		token, _ := object.Lookup("token")
+		return s.socialSignup(ctx, identity, object, provider, token, rawEmail, collaborator, transfer, audit, language)
 	}
 	fields, validation, unported := dto.ParseOAuthSignup(object)
 	if unported {
@@ -476,39 +469,11 @@ func (s *OAuthAccounts) Signup(ctx context.Context, identity domain.ResolvedIden
 	if err = s.store.DeletePartial(ctx, rawEmail, s.now().UTC(), audit); err != nil {
 		return nil, err
 	}
-	role, collaboratorRole := domain.RoleAthlete, 1
-	var connected *string
-	var permissions json.RawMessage
-	if collaborator {
-		var token *string
-		if value, _ := object.Lookup("collaboratorToken"); value != nil {
-			text := dto.PythonStr(value)
-			if oauthTextUnsupported(text) {
-				return nil, ErrOAuthServer
-			}
-			token = &text
-		}
-		invite, err := s.store.Invite(ctx, token)
-		if err != nil {
-			return nil, err
-		}
-		if invite == nil {
-			return OAuthAnswer{400, map[string]string{"msg": "Collaboration invite not found."}}, nil
-		}
-		if err = s.store.DeleteInvite(ctx, invite.ID, s.now().UTC(), audit); err != nil {
-			return nil, err
-		}
-		if invite.ExpirationDate == nil {
-			return nil, ErrOAuthServer // None < datetime: TypeError
-		}
-		if invite.ExpirationDate.Before(s.now()) {
-			return OAuthAnswer{400, map[string]string{"msg": "Collaboration invite expired."}}, nil
-		}
-		role, collaboratorRole, connected = domain.RoleCollaborator, invite.Role, &invite.UserID
-		if invite.Permissions != nil && *invite.Permissions != "null" {
-			permissions = json.RawMessage(*invite.Permissions)
-		}
+	membership, refusal, err := s.signupMembership(ctx, object, collaborator, audit)
+	if err != nil || refusal != nil {
+		return refusal, err
 	}
+	role, collaboratorRole, connected, permissions := membership.role, membership.collaboratorRole, membership.connected, membership.permissions
 	if fields.FirstName == nil || fields.LastName == nil {
 		return nil, ErrOAuthServer // validated_data[...]: KeyError
 	}
@@ -532,13 +497,188 @@ func (s *OAuthAccounts) Signup(ctx context.Context, identity domain.ResolvedIden
 	if transfer {
 		return nil, ErrOAuthServer // QuerySet.save: AttributeError
 	}
-	account := domain.Account{ID: user.ID, Username: user.Username, Email: user.Email, Role: role, Active: true,
-		ConnectedUserID: connected, CollaboratorRole: collaboratorRole}
-	pair, err := s.tokens.Issue(account.ID, account.Role, account.Email)
+	return s.welcomeNewUser(ctx, user, audit, language)
+}
+
+// oauthMembership is what create_user receives about the collaboration.
+type oauthMembership struct {
+	role, collaboratorRole int
+	connected              *string
+	permissions            json.RawMessage
+}
+
+// signupMembership is the role of a new account: an athlete, or a collaborator
+// whose invite (CollaborationInvites .first() by token) is looked up, deleted
+// and then checked for expiry. A non-nil answer refuses the signup.
+func (s *OAuthAccounts) signupMembership(ctx context.Context, object domain.RequestObject, collaborator bool,
+	audit domain.LoginAuditContext) (oauthMembership, any, error) {
+	membership := oauthMembership{role: domain.RoleAthlete, collaboratorRole: 1}
+	if !collaborator {
+		return membership, nil, nil
+	}
+	var token *string
+	if value, _ := object.Lookup("collaboratorToken"); value != nil {
+		text := dto.PythonStr(value)
+		if oauthTextUnsupported(text) {
+			return membership, nil, ErrOAuthServer
+		}
+		token = &text
+	}
+	invite, err := s.store.Invite(ctx, token)
+	if err != nil {
+		return membership, nil, err
+	}
+	if invite == nil {
+		return membership, OAuthAnswer{400, map[string]string{"msg": "Collaboration invite not found."}}, nil
+	}
+	if err = s.store.DeleteInvite(ctx, invite.ID, s.now().UTC(), audit); err != nil {
+		return membership, nil, err
+	}
+	if invite.ExpirationDate == nil {
+		return membership, nil, ErrOAuthServer // None < datetime: TypeError
+	}
+	if invite.ExpirationDate.Before(s.now()) {
+		return membership, OAuthAnswer{400, map[string]string{"msg": "Collaboration invite expired."}}, nil
+	}
+	membership.role, membership.collaboratorRole, membership.connected = domain.RoleCollaborator, invite.Role, &invite.UserID
+	if invite.Permissions != nil && *invite.Permissions != "null" {
+		membership.permissions = json.RawMessage(*invite.Permissions)
+	}
+	return membership, nil, nil
+}
+
+// oauthUnusablePassword is make_password(None): '!' and 40 random letters and digits.
+func (s *OAuthAccounts) oauthUnusablePassword() (string, error) {
+	const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	value := []byte("!")
+	for len(value) < 41 {
+		index, err := rand.Int(rand.Reader, big.NewInt(int64(len(alphabet))))
+		if err != nil {
+			return "", err
+		}
+		value = append(value, alphabet[index.Int64()])
+	}
+	return string(value), nil
+}
+
+// socialSignup is oauth2_signup's token + username + backend path: the
+// provider verifies the token and must state a verified e-mail. An account
+// with that e-mail signs in under the login rules and is not modified;
+// otherwise the account is created from the identity.
+func (s *OAuthAccounts) socialSignup(ctx context.Context, identity domain.ResolvedIdentity, object domain.RequestObject, provider string,
+	token any, rawEmail string, collaborator, transfer bool, audit domain.LoginAuditContext, language string) (any, error) {
+	invalid := OAuthAnswer{401, map[string]string{"error": "Invalid social token"}}
+	social, valid, err := s.social.Verify(ctx, provider, token)
 	if err != nil {
 		return nil, err
 	}
-	response, err := s.responses.Build(ctx, account, pair, audit)
+	if !valid {
+		return invalid, nil
+	}
+	email, verified := social.VerifiedEmail()
+	if !verified {
+		return invalid, nil
+	}
+	audit = oauthAudit(identity, audit)
+	var existing domain.Account
+	count := 0
+	err = s.candidates.VisitLoginCandidates(ctx, true, email, func(account domain.Account) error {
+		if count++; count == 1 {
+			existing = account
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	if count > 0 {
+		return s.existingAccountSignin(ctx, existing, count, object, audit)
+	}
+	// Values Python would convert differently are refused before any write.
+	names := [2]string{}
+	for index, pair := range [2][2]any{{social.FirstName, "first_name"}, {social.LastName, "last_name"}} {
+		value := pair[0]
+		if pythonFalsy(value) {
+			value = ""
+			if sent, present := object.Lookup(pair[1].(string)); present {
+				value = sent
+			}
+		}
+		text, ok := value.(string)
+		if !ok || oauthTextUnsupported(text) {
+			return nil, ErrOAuthNotPorted
+		}
+		names[index] = text
+	}
+	usernameValue, _ := object.Lookup("username")
+	username, usernameText := usernameValue.(string)
+	if !dto.IsASCII(email) || (usernameText && !dto.IsASCII(username)) {
+		return nil, ErrOAuthNotPorted // Python's Unicode lower()/upper()
+	}
+	membership, refusal, err := s.signupMembership(ctx, object, collaborator, audit)
+	if err != nil || refusal != nil {
+		return refusal, err
+	}
+	if !usernameText || username == "" {
+		return nil, ErrOAuthServer // data['username'].upper() / "The given username must be set"
+	}
+	hash, err := s.oauthUnusablePassword()
+	if err != nil {
+		return nil, err
+	}
+	user := domain.OAuthNewUser{ID: uuid.NewString(), Username: strings.ToUpper(username), Email: normalizeEmail(email),
+		PasswordHash: hash, FirstName: names[0], LastName: names[1], Role: membership.role, CollaboratorRole: membership.collaboratorRole,
+		ConnectedUserID: membership.connected, Permissions: membership.permissions, Joined: s.now().UTC()}
+	if err = s.store.CreateUser(ctx, user, audit); errors.Is(err, domain.ErrOAuthUsernameConflict) {
+		return nil, ErrOAuthServer // IntegrityError
+	} else if err != nil {
+		return nil, err
+	}
+	// The shared tail of the view: the partial user of the body's e-mail, the transfer.
+	if err = s.store.DeletePartial(ctx, rawEmail, s.now().UTC(), audit); err != nil {
+		return nil, err
+	}
+	if transfer {
+		return nil, ErrOAuthServer // QuerySet.save: AttributeError
+	}
+	return s.welcomeNewUser(ctx, user, audit, language)
+}
+
+// existingAccountSignin is _existing_account_signin: one active account, its
+// second factor, then the login response. Nothing is written or sent.
+func (s *OAuthAccounts) existingAccountSignin(ctx context.Context, account domain.Account, count int, object domain.RequestObject,
+	audit domain.LoginAuditContext) (any, error) {
+	if count != 1 || !account.Active || account.Deleted {
+		return OAuthAnswer{401, map[string]string{"error": "invalid credentials"}}, nil
+	}
+	enabled, secret, err := s.store.SecondFactor(ctx, account.ID)
+	if err != nil {
+		return nil, err
+	}
+	otp, present := object.Lookup("otp")
+	switch err = s.secondFactor.Check(ctx, enabled, secret, otp, present); {
+	case errors.Is(err, ErrOTPRequired):
+		return OAuthAnswer{401, map[string]string{"msg": "OTP code required."}}, nil
+	case errors.Is(err, ErrOTPInvalid):
+		return OAuthAnswer{401, map[string]string{"msg": "OTP code not valid."}}, nil
+	case err != nil:
+		return nil, err
+	}
+	account.Password = ""
+	result, err := s.signupSession(ctx, account, audit)
+	if err != nil {
+		return nil, err
+	}
+	return s.signupContent(ctx, account, result)
+}
+
+// welcomeNewUser is the end of oauth2_signup for a created account: tokens,
+// build_login_response, the welcome e-mail and the signup-specific data.
+func (s *OAuthAccounts) welcomeNewUser(ctx context.Context, user domain.OAuthNewUser, audit domain.LoginAuditContext,
+	language string) (any, error) {
+	account := domain.Account{ID: user.ID, Username: user.Username, Email: user.Email, Role: user.Role, Active: true,
+		ConnectedUserID: user.ConnectedUserID, CollaboratorRole: user.CollaboratorRole}
+	result, err := s.signupSession(ctx, account, audit)
 	if err != nil {
 		return nil, err
 	}
@@ -548,6 +688,19 @@ func (s *OAuthAccounts) Signup(ctx context.Context, identity domain.ResolvedIden
 		return nil, err
 	}
 	if err = s.sendMail(ctx, s.settings.WhitelabelName+" | Benvenuto", message, strings.ToLower(user.Email)); err != nil {
+		return nil, err
+	}
+	return s.signupContent(ctx, account, result)
+}
+
+// signupSession issues the tokens and composes build_login_response as a JSON object.
+func (s *OAuthAccounts) signupSession(ctx context.Context, account domain.Account, audit domain.LoginAuditContext) (map[string]any, error) {
+	pair, err := s.tokens.Issue(account.ID, account.Role, account.Email)
+	if err != nil {
+		return nil, err
+	}
+	response, err := s.responses.Build(ctx, account, pair, audit)
+	if err != nil {
 		return nil, err
 	}
 	encoded, err := json.Marshal(response)
@@ -560,21 +713,29 @@ func (s *OAuthAccounts) Signup(ctx context.Context, identity domain.ResolvedIden
 	if err = decoder.Decode(&result); err != nil {
 		return nil, err
 	}
-	if role == domain.RoleCollaborator {
-		// The view replaces the composed association block with
-		// SportAssociationSerializer(...).data and sets requires_welcome.
-		profile, err := s.associations.Read(ctx, *connected)
+	return result, nil
+}
+
+// signupContent is _signup_content: for a collaborator the view replaces the
+// composed association block with SportAssociationSerializer(...).data and
+// sets requires_welcome.
+func (s *OAuthAccounts) signupContent(ctx context.Context, account domain.Account, result map[string]any) (any, error) {
+	if account.Role == domain.RoleCollaborator {
+		if account.ConnectedUserID == nil {
+			return nil, ErrOAuthServer // user.connected_user is None
+		}
+		profile, err := s.associations.Read(ctx, *account.ConnectedUserID)
 		if err != nil {
 			return nil, err
 		}
 		if profile == nil {
 			return nil, domain.ErrAssociationNotFound
 		}
-		encoded, err = json.Marshal(profile)
+		encoded, err := json.Marshal(profile)
 		if err != nil {
 			return nil, err
 		}
-		decoder = json.NewDecoder(bytes.NewReader(encoded))
+		decoder := json.NewDecoder(bytes.NewReader(encoded))
 		decoder.UseNumber()
 		var block map[string]any
 		if err = decoder.Decode(&block); err != nil {
