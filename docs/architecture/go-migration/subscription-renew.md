@@ -152,3 +152,12 @@ v2-sub-create: renewals by athletes. Cases `subscription-renew-renew-athlete*` (
 - RED (`v2create-red-r2`): Django 62/62; Go 500 on `subscription-renew-renew-athlete`.
 - GREEN (`v2create-versioned-r1`): 62/62 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`v2create-mutation-r1`): keeping the athlete as `request.user` fails `subscription-renew-renew-athlete` with 403 (CAUGHT).
+
+A member account renews its own subscriptions (74 cases). Cases `subscription-renew-renew-athlete-*`.
+
+- RED (`secsub2-red-r3`): Django 74/74; Go 200 on `subscription-renew-renew-athlete-in-another-association`.
+- GREEN (`secsub2-versioned-r1`, after merging `codex/go-backend-parity`): 74/74 on native Django, native Go, Caddy `/api/v1` and
+  `/api/v2`.
+- Mutation (`secsub2-mutation-r1`): skipping the member check fails `subscription-renew-renew-athlete-in-another-association`
+  (CAUGHT); (`secsub2-mutation-r2`): setting the account from the body's e-mail for every requester fails
+  `subscription-renew-renew-athlete-keeps-the-account` (CAUGHT).

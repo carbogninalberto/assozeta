@@ -283,3 +283,19 @@ v2-public-forms: the anonymous form, the athlete form and preregistration (84 ca
   `subscription-create-preregistration` (CAUGHT).
 - Re-run green (`v2forms-rerun-r1`): `subscription-renew`, `subscription-memberships`, `subscription-sign`,
   `subscription-approve`.
+
+The certificate a registration links (92 cases).
+
+- RED (`secsub2-red-r2`): Django 92/92; Go fails `subscription-create-certificate-of-another-account-not-linked` (state.certificate).
+- Mutation (`secsub2-mutation-r1`): the certificate looked up by id alone fails the same case (CAUGHT).
+
+v2-wizard: the family wizard and the quick mode from a member account (113 cases).
+
+- RED (`v2wiz-red-r1`, the Go code of the previous commit): Django 113/113; Go 500 on `subscription-create-athlete-quick-not-allowed`
+  (`secsub2-red-r3` is the same result with the quick-mode cases only, 100 cases).
+- GREEN (`v2wiz-versioned-r1`, after merging `codex/go-backend-parity`): 113/113 on native Django, native Go, Caddy `/api/v1` and
+  `/api/v2`, with the family cases' rows, entries, tasks, notifications and serialized payments.
+- Mutation (`v2wiz-mutation-r1`): serializing a payment created by the request as stored (200 instead of the 500 page) fails
+  `subscription-create-family-wizard` (CAUGHT).
+- Re-run green: `subscription-renew` 74/74 on four transports (`secsub2-versioned-r1`); `subscription-memberships`,
+  `subscription-sign` and `subscription-approve` (`secsub2-rerun-r1`).
