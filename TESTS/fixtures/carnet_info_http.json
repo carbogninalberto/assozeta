@@ -120,7 +120,7 @@
   "abroad": {
    "id": "a1000000-0000-4000-8000-000000880006",
    "association": "a1000000-0000-4000-8000-000000701002",
-   "user": "athlete",
+   "user": "foreign_owner",
    "first_name": "Atleta",
    "last_name": "Estero",
    "born_date": "1991-01-01",
@@ -176,7 +176,7 @@
   "abroad_past": {
    "id": "a1000000-0000-4000-8000-000000880010",
    "association": "a1000000-0000-4000-8000-000000701002",
-   "user": "athlete",
+   "user": "foreign_owner",
    "associate": "abroad",
    "start": "2000-01-01",
    "end": "2001-01-01",
@@ -664,7 +664,7 @@
          "is_minor": false,
          "sport_association": "a1000000-0000-4000-8000-000000701002",
          "tax_code": null,
-         "user": "a1000000-0000-4000-8000-000000700004",
+         "user": "a1000000-0000-4000-8000-000000700007",
          "phone": null,
          "family": null,
          "family_role": null

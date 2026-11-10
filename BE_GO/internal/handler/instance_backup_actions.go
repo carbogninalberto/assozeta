@@ -250,8 +250,8 @@ func (h *InstanceBackupActionsHandler) RemoteTest(c echo.Context) error {
 	case http.MethodOptions:
 		return supplierOptions(c, "Remote Backup Test", "")
 	case http.MethodPost:
-		return h.serializerWrite(c, actor, func(_ service.BackupActionsRequest, body any) (*service.BackupActionsReply, error) {
-			return h.actions.TestRemote(c.Request().Context(), body)
+		return h.serializerWrite(c, actor, func(request service.BackupActionsRequest, body any) (*service.BackupActionsReply, error) {
+			return h.actions.TestRemote(c.Request().Context(), request, body)
 		})
 	}
 	return h.notAllowed(c)

@@ -120,7 +120,8 @@ SUBSCRIPTIONS = {
     'sub_a1': sub(status=5, start=day(-10), end=day(10), created=OLD, associate='as_a1', user=ATHLETE),
     'sub_a2': sub(status=5, start=day(20), end=day(40), created=OLD, associate='as_a2'),
     'sub_a3': sub(status=5, created=OLD, associate='as_a3', archived=True),
-    'sub_a4': sub(FOREIGN, status=5, start=day(-10), end=day(10), created=OLD, associate='as_f', user=ATHLETE),
+    # The foreign association registered this subscription under its own account.
+    'sub_a4': sub(FOREIGN, status=5, start=day(-10), end=day(10), created=OLD, associate='as_f', user=IDS['foreign_owner']),
     'sub_b1': sub(status=5, created=OLD, associate='as_b', user='athlete_broken'),
     # Foreign association.
     'sf1': sub(FOREIGN, status=2, start=day(-1), end=day(1), created=MIDNIGHT, associate='as_f', user=IDS['foreign_owner']),

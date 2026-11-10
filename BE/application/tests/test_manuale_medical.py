@@ -246,10 +246,9 @@ class ManualMedicalTests(BaseTestCase):
         self.subscription.associate.save(update_fields=['user'])
         self.subscription.user = athlete
         self.subscription.save(update_fields=['user'])
-        _, association, person = self.foreign_association()
-        person.user = athlete
-        person.save(update_fields=['user'])
-        foreign = Subscription.objects.create(user=athlete, sport_association=association, associate=person)
+        # The other association registered the same person under its own account.
+        foreign_owner, association, person = self.foreign_association()
+        foreign = Subscription.objects.create(user=foreign_owner, sport_association=association, associate=person)
         session = self.client.post('/association/impersonation', {'target_user_id': str(athlete.pk)}, format='json')
         self.assertEqual(session.status_code, 201, session.content)
         headers = {'HTTP_X_IMPERSONATION_ID': session.data['session_id'], 'HTTP_USER_ID': str(athlete.pk)}

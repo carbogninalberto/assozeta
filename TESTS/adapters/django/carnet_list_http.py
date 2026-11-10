@@ -36,12 +36,30 @@ def state_unchanged(before, after):
     contract.require(before == after, 'state.changed')
 
 
+def add_extra_tokens(source, fixture):
+    """Access tokens for the source's family-specific athletes."""
+    if not source.get('extra_users'):
+        return
+    from rest_framework_simplejwt.tokens import AccessToken
+    fixture['tokens'] = dict(fixture['tokens'])
+    for label, row in source['extra_users'].items():
+        token = AccessToken()
+        token['user_id'] = row['id']
+        fixture['tokens'][label] = str(token)
+
+
 def seed_rows(source, created):
     """Insert the source's carnet rows in dependency order, recording each for cleanup."""
     from application.models import Associate, Course, CourseSubscription, Payment, Subscription
     from application.models.carnet_models import Carnet, CarnetSubscription
+    from application.models import User
     ids = source['ids']
     user = lambda label: ids[label] if label else None
+    # Family-specific athletes (an athlete linked to both associations).
+    for label, row in source.get('extra_users', {}).items():
+        User._base_manager.bulk_create([User(user_id=row['id'], username=row['username'], email=row['email'],
+                                             role=User.ATHLETE, password='!synthetic')])
+        created.append((User, row['id']))
     for row in source['carnets'].values():
         Carnet._base_manager.bulk_create([Carnet(carnet_id=row['id'], sport_association_id=row['association'], title=row['title'],
             description=row['description'], lessons_number=row['lessons'], fee=Decimal(row['fee']), public=row['public'], meta=row['meta'])])
