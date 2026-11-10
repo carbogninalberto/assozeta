@@ -1,0 +1,7593 @@
+{
+"year": 2026,
+"cases": [
+{
+"code": "",
+"name": null
+},
+{
+"code": "x",
+"name": null
+},
+{
+"code": "RSSMRA80A01H501U",
+"name": "Roma"
+},
+{
+"code": "rssmra80a01h501u",
+"name": "Roma"
+},
+{
+"code": " RSSMRA80A01H501U ",
+"name": "Roma"
+},
+{
+"code": "RSSMRA80A01H501X",
+"name": "Roma"
+},
+{
+"code": "RSSMRA80A01H501X ",
+"name": null
+},
+{
+"code": "RSS MRA 80A01 H501U",
+"name": "Roma"
+},
+{
+"code": "RSSMRA80A01H501",
+"name": null
+},
+{
+"code": "RSSMRA80A01H501UU",
+"name": null
+},
+{
+"code": "RSSMRA80A41H501Y",
+"name": "Roma"
+},
+{
+"code": "RSSMRA80A71H501U",
+"name": "Roma"
+},
+{
+"code": "RSSMRA80A00H501U",
+"name": null
+},
+{
+"code": "RSSMRA80B31H501U",
+"name": null
+},
+{
+"code": "RSSMRA80A01Z999U",
+"name": null
+},
+{
+"code": "RSSMRA80A01H5O1U",
+"name": null
+},
+{
+"code": "RSSMRAU0A01H501U",
+"name": "Roma"
+},
+{
+"code": "1234567890123456",
+"name": null
+},
+{
+"code": "RSSMRA80A01H501Ù",
+"name": "Roma"
+},
+{
+"code": "DLCFNC76S46E423W",
+"name": "La Loggia"
+},
+{
+"code": "DLCFNC76S46E423K",
+"name": "La Loggia"
+},
+{
+"code": "DLCJOX58H18E813Z",
+"name": "Magliano Romano"
+},
+{
+"code": "DLCJOX58H18H747Z",
+"name": null
+},
+{
+"code": "SPSNNA41D09E246I",
+"name": "Guardia Perticara"
+},
+{
+"code": "SPSJOX13B06G496J",
+"name": "Pescopagano"
+},
+{
+"code": "DLCFNC46B47I378X",
+"name": "San Valentino Al Brennero"
+},
+{
+"code": "DLCFNC46B47B821X",
+"name": null
+},
+{
+"code": "VRDLCU07B09L833J",
+"name": "Viareggio"
+},
+{
+"code": "FOXLCU63S55C719V",
+"name": "Circello"
+},
+{
+"code": "FOXLCU 63S55 C719V",
+"name": "Circello"
+},
+{
+"code": "FOXLCU00E51A778Q",
+"name": "Bene Lario"
+},
+{
+"code": "FOXLCU00E51A778O",
+"name": "Bene Lario"
+},
+{
+"code": "SPSMRA39R53H591U",
+"name": "Rotondella"
+},
+{
+"code": "SPSMRA39R53B233U",
+"name": null
+},
+{
+"code": "RCCNNA84T53B094N",
+"name": "Bottidda"
+},
+{
+"code": "RCCNNA84T53B094R",
+"name": "Bottidda"
+},
+{
+"code": "SPSGLI02S25I495W",
+"name": "Scandeluzza"
+},
+{
+"code": "SPSGLI02SN5IQ95E",
+"name": "Scandeluzza"
+},
+{
+"code": "BNCJOX97R22D014O",
+"name": "Cormons"
+},
+{
+"code": "DLCGLI18P16F895K",
+"name": "Niella Tanaro"
+},
+{
+"code": "VRDFNC93B52F756H",
+"name": "Mortegliano"
+},
+{
+"code": "VRDFNC93B52H258H",
+"name": "Rezzoaglio"
+},
+{
+"code": "DLCLCU08A50E735I",
+"name": "Luisago"
+},
+{
+"code": "DLCLCU08AR0ET35R",
+"name": "Luisago"
+},
+{
+"code": "FOXNNA28E18A013G",
+"name": "Abriola"
+},
+{
+"code": "FOXNNA 28E18 A013G",
+"name": "Abriola"
+},
+{
+"code": "SPSMRA99D52F420T",
+"name": "Montalto Dora"
+},
+{
+"code": "SPSMRA99D52F420T",
+"name": "Montalto Dora"
+},
+{
+"code": "BNCJOX12D07H236N",
+"name": "Renon"
+},
+{
+"code": "RCCJOX65C67L012U",
+"name": "Susà"
+},
+{
+"code": "BNCGLI40B59I107S",
+"name": "San Pietro In Gu"
+},
+{
+"code": "BNCGLI4LBR9IMLTP",
+"name": "San Pietro In Gu"
+},
+{
+"code": "SPSGUO71B17A778Y",
+"name": "Bene Lario"
+},
+{
+"code": "SPSGUO 71B17 A778Y",
+"name": "Bene Lario"
+},
+{
+"code": "RSSGLI72D28A496G",
+"name": "Aulla"
+},
+{
+"code": "RSSGLI72B28A496G",
+"name": "Aulla"
+},
+{
+"code": "SPSGLI92M24F820G",
+"name": "Muscoline"
+},
+{
+"code": "SPSGLI92M24F82",
+"name": null
+},
+{
+"code": "BNCMCH35R06E625H",
+"name": "Livorno"
+},
+{
+"code": "BNCMCH35R06E625G",
+"name": "Livorno"
+},
+{
+"code": "DLCNNA10H23C321P",
+"name": "Castignano"
+},
+{
+"code": "SPSMCH63H50G916R",
+"name": "Portomaggiore"
+},
+{
+"code": "SPSMCH63H50G916E",
+"name": "Portomaggiore"
+},
+{
+"code": "FOXLCU30S45I655J",
+"name": "Serrastretta"
+},
+{
+"code": "FOXLCUPLS45I65RL",
+"name": "Serrastretta"
+},
+{
+"code": "FOXFNC35E51L945Y",
+"name": "Villafranca D'Asti"
+},
+{
+"code": "FOXFNCPRERML945K",
+"name": "Villafranca D'Asti"
+},
+{
+"code": "FOXNNA39B46I328A",
+"name": "San Teodoro"
+},
+{
+"code": "FOXNNA39B46I328E",
+"name": "San Teodoro"
+},
+{
+"code": "VRDMRA91E62I163N",
+"name": "San Sossio Baronia"
+},
+{
+"code": "VRDMRAVME6NIM6PQ",
+"name": "San Sossio Baronia"
+},
+{
+"code": "FOXMCH27R59F934E",
+"name": "Norbello"
+},
+{
+"code": "FOXMCH27R59F934F",
+"name": "Norbello"
+},
+{
+"code": "VRDFNC16H51G237Q",
+"name": "Paglieta"
+},
+{
+"code": "RCCLCU90B17B056I",
+"name": "Borore"
+},
+{
+"code": "RCCNNA20C51G622N",
+"name": "Pietrapaola"
+},
+{
+"code": "RCCNNA2LCR1G62NZ",
+"name": "Pietrapaola"
+},
+{
+"code": "RSSMRA65D55A016Q",
+"name": "Acceglio"
+},
+{
+"code": "RSSMRA65DRRA01SU",
+"name": "Acceglio"
+},
+{
+"code": "FOXGUO20D53A373D",
+"name": "Arcola"
+},
+{
+"code": "FOXGUO20D53A373D",
+"name": "Arcola"
+},
+{
+"code": "RSSMCH10M44A905X",
+"name": "Blevio"
+},
+{
+"code": "RSSMCH 10M44 A905X",
+"name": "Blevio"
+},
+{
+"code": "BNCLCU22D26A228H",
+"name": "Altavilla Irpina"
+},
+{
+"code": "SPSNNA19M66A523M",
+"name": "Avolasca"
+},
+{
+"code": "SPSNNA19M66A523R",
+"name": "Avolasca"
+},
+{
+"code": "BNCLCU24H15G685G",
+"name": "Piode"
+},
+{
+"code": "BNCLCU2QH1RG68RI",
+"name": "Piode"
+},
+{
+"code": "VRDMCH89R07I676A",
+"name": "Sessa Aurunca"
+},
+{
+"code": "VRDMCHU9R0TI6T6G",
+"name": "Sessa Aurunca"
+},
+{
+"code": "BNCFNC13C24G894D",
+"name": "Portacomaro"
+},
+{
+"code": "BNCFNC13C2",
+"name": null
+},
+{
+"code": "VRDNNA20P12L197O",
+"name": "Tolve"
+},
+{
+"code": "VRDNNA94A03E590X",
+"name": "Limbadi"
+},
+{
+"code": "DLCGUO76D11E752R",
+"name": "Luras"
+},
+{
+"code": "DLCGUO7SDM1ET5NA",
+"name": "Luras"
+},
+{
+"code": "BNCNNA43R47H475Y",
+"name": "Rodengo"
+},
+{
+"code": "bncnna43r47h475y",
+"name": "Rodengo"
+},
+{
+"code": "FOXGLI12C10D156Y",
+"name": "Crespadoro"
+},
+{
+"code": "RSSGUO88A24I319U",
+"name": "Sant'Elena"
+},
+{
+"code": "RSSGUO88A24L395U",
+"name": null
+},
+{
+"code": "BNCGUO09E44H049P",
+"name": "Presson"
+},
+{
+"code": "BNCGUO09M44H049P",
+"name": "Presson"
+},
+{
+"code": "VRDGLI31S41H165Y",
+"name": "Ruviano"
+},
+{
+"code": "VRDGLI31M41H165Y",
+"name": "Ruviano"
+},
+{
+"code": "DLCGUO67B55F514X",
+"name": "Montegalda"
+},
+{
+"code": "DLCGUO67B55F514",
+"name": null
+},
+{
+"code": "SPSGLI04R64M142C",
+"name": "Zambana"
+},
+{
+"code": "SPSGLI04R64M142E",
+"name": "Zambana"
+},
+{
+"code": "DLCNNA00A45D032J",
+"name": "Corona Alla Muta"
+},
+{
+"code": "DLCNNA00A45D032T",
+"name": "Corona Alla Muta"
+},
+{
+"code": "VRDJOX75P47C918K",
+"name": "Comeglians"
+},
+{
+"code": "VRDJOX75P47C918H",
+"name": "Comeglians"
+},
+{
+"code": "RSSNNA87S67D861E",
+"name": "Galati Mamertino"
+},
+{
+"code": "RSSNNAU7S67DU61Y",
+"name": "Galati Mamertino"
+},
+{
+"code": "VRDGLI06R49F930S",
+"name": "Nonantola"
+},
+{
+"code": "VRDJOX19D04E979Z",
+"name": "Martano"
+},
+{
+"code": "BNCNNA47M14D227S",
+"name": "Curtatone"
+},
+{
+"code": "BNCNNA47M14D227W",
+"name": "Curtatone"
+},
+{
+"code": "SPSGLI40L04I958C",
+"name": "Stilves"
+},
+{
+"code": "SPSGLI40L04I958S",
+"name": "Stilves"
+},
+{
+"code": "RCCFNC13M15A915I",
+"name": "Boccolo De' Tassi"
+},
+{
+"code": "VRDLCU06S45H811D",
+"name": "San Damiano D'Asti"
+},
+{
+"code": "VRDLCU0SS4RH8MMN",
+"name": "San Damiano D'Asti"
+},
+{
+"code": "FOXMCH77C20D442Z",
+"name": "Este"
+},
+{
+"code": "FOXMCH77C20A296Z",
+"name": "Anguillara Veneta"
+},
+{
+"code": "RCCJOX32T48D084V",
+"name": "Cosbana"
+},
+{
+"code": "RCCJOX32A48D084V",
+"name": "Cosbana"
+},
+{
+"code": "RSSGLI09H07C080I",
+"name": "Casteldelci"
+},
+{
+"code": "RSSGLI09H07C080U",
+"name": "Casteldelci"
+},
+{
+"code": "VRDGLI21D51A571M",
+"name": "Bagnolo Piemonte"
+},
+{
+"code": "VRDGLIN1D5MAR71O",
+"name": "Bagnolo Piemonte"
+},
+{
+"code": "RCCGLI58L50H324L",
+"name": "Ripi"
+},
+{
+"code": "RCCGLI58L50H324M",
+"name": "Ripi"
+},
+{
+"code": "FOXLCU85R62E962L",
+"name": "Marmirolo"
+},
+{
+"code": "FOXLCU85R62E962G",
+"name": "Marmirolo"
+},
+{
+"code": "FOXMRA42B12B692P",
+"name": "Caprauna"
+},
+{
+"code": "FOXMRA4NBMNB6VNB",
+"name": "Caprauna"
+},
+{
+"code": "RSSGUO56R13F419P",
+"name": "Montalto Di Castro"
+},
+{
+"code": "RSSGUO56R13F419K",
+"name": "Montalto Di Castro"
+},
+{
+"code": "SPSFNC86H16I424W",
+"name": "Saracinesco"
+},
+{
+"code": "SPSFNC86H16I4N4H",
+"name": "Saracinesco"
+},
+{
+"code": "DLCJOX37H52C061M",
+"name": "Castelbello"
+},
+{
+"code": "DLCLCU56S53E988Y",
+"name": "Martiniana Po"
+},
+{
+"code": "BNCFNC77B64E658X",
+"name": "Lomaso"
+},
+{
+"code": "BNCFNC 77B64 E658X",
+"name": "Lomaso"
+},
+{
+"code": "RCCFNC94E03H298T",
+"name": "Rio Saliceto"
+},
+{
+"code": "BNCMCH70L65L553O",
+"name": "Susgnevizza"
+},
+{
+"code": "BNCMCH70L65L553M",
+"name": "Susgnevizza"
+},
+{
+"code": "FOXGUO28R28B328D",
+"name": "Cadelbosco Di Sopra"
+},
+{
+"code": "FOXGUO28R28B328M",
+"name": "Cadelbosco Di Sopra"
+},
+{
+"code": "DLCNNA04L64C711W",
+"name": "Cintano"
+},
+{
+"code": "DLCNNA04L64C711T",
+"name": "Cintano"
+},
+{
+"code": "RSSJOX08M48A588P",
+"name": "Baldichieri D'Asti"
+},
+{
+"code": "FOXJOX18M23F621W",
+"name": "Monte San Giusto"
+},
+{
+"code": "FOXJOX18MN3F62MZ",
+"name": "Monte San Giusto"
+},
+{
+"code": "VRDFNC39C07G285B",
+"name": "Palmariggi"
+},
+{
+"code": "VRDFNC3VC0TGNU5L",
+"name": "Palmariggi"
+},
+{
+"code": "VRDMCH22C63F797B",
+"name": "Muggiò"
+},
+{
+"code": "VRDMCH22C63F797C",
+"name": "Muggiò"
+},
+{
+"code": "DLCFNC90M43B943D",
+"name": "Casatenovo"
+},
+{
+"code": "DLCFNC90M43F588D",
+"name": "Monteponente"
+},
+{
+"code": "FOXGLI61B44I545H",
+"name": "Scopello"
+},
+{
+"code": "FOXGLISMB4QI545M",
+"name": "Scopello"
+},
+{
+"code": "BNCMCH96A59I799V",
+"name": "Solesino"
+},
+{
+"code": "BNCMCH96A59I799L",
+"name": "Solesino"
+},
+{
+"code": "RCCJOX44P50I199O",
+"name": "Sant'Agata Di Militello"
+},
+{
+"code": "RSSMCH75H48I877T",
+"name": "Sovicille"
+},
+{
+"code": "RSSMCH75H48B147T",
+"name": null
+},
+{
+"code": "SPSMRA27P03L185J",
+"name": "Tocco Caudio"
+},
+{
+"code": "SPSMRA27P03L185V",
+"name": "Tocco Caudio"
+},
+{
+"code": "SPSGLI27D61E959D",
+"name": "Marlengo"
+},
+{
+"code": "SPSGLI27D61E959O",
+"name": "Marlengo"
+},
+{
+"code": "DLCFNC58P46D551K",
+"name": "Ferrera Di Varese"
+},
+{
+"code": "DLCFNC58P4SDR5MU",
+"name": "Ferrera Di Varese"
+},
+{
+"code": "RSSMRA47H63I927W",
+"name": "Spresiano"
+},
+{
+"code": "SPSMRA59T43L605P",
+"name": "Vallemaio"
+},
+{
+"code": "SPSMRA59T43L605Z",
+"name": "Vallemaio"
+},
+{
+"code": "BNCLCU56H41F498G",
+"name": "Monteferrante"
+},
+{
+"code": "BNCLCU56H41B027G",
+"name": null
+},
+{
+"code": "SPSLCU30B24C532M",
+"name": "Cerrione"
+},
+{
+"code": "SPSLCU30B24C532Z",
+"name": "Cerrione"
+},
+{
+"code": "BNCNNA29T18D511M",
+"name": "Faule"
+},
+{
+"code": "BNCNNA 29T18 D511M",
+"name": "Faule"
+},
+{
+"code": "DLCJOX32S04Z522L",
+"name": "Barbados"
+},
+{
+"code": "DLCJOX 32S04 Z522L",
+"name": "Barbados"
+},
+{
+"code": "SPSMCH11T50H625R",
+"name": "Rubano"
+},
+{
+"code": "FOXGUO08E68G344B",
+"name": "Parrano"
+},
+{
+"code": "FOXGUO0UES8GPQQE",
+"name": "Parrano"
+},
+{
+"code": "FOXNNA31M53F943E",
+"name": "Noto"
+},
+{
+"code": "FOXNNA31M53F943S",
+"name": "Noto"
+},
+{
+"code": "RCCNNA80E12C190Q",
+"name": "Castello Di Godego"
+},
+{
+"code": "rccnna80e12c190q",
+"name": "Castello Di Godego"
+},
+{
+"code": "FOXGLI13L43I105F",
+"name": "San Pietro Di Morubio"
+},
+{
+"code": "FOXGLI13LQPIM0RA",
+"name": "San Pietro Di Morubio"
+},
+{
+"code": "FOXGLI65R07H257T",
+"name": "Rezzo"
+},
+{
+"code": "BNCMRA51S54I619T",
+"name": "Seppiana"
+},
+{
+"code": "SPSLCU73A55B672M",
+"name": "Caporciano"
+},
+{
+"code": "BNCGUO10E24A794F",
+"name": "Bergamo"
+},
+{
+"code": "BNCGUO10E24ATVQL",
+"name": "Bergamo"
+},
+{
+"code": "BNCJOX67E17F393I",
+"name": "Montagna In Valtellina"
+},
+{
+"code": "VRDGLI24C67D925Y",
+"name": "Garlasco"
+},
+{
+"code": "VRDGLI24C67D925G",
+"name": "Garlasco"
+},
+{
+"code": "FOXMRA45A68I549C",
+"name": "Scorrano"
+},
+{
+"code": "FOXMRA45A6UIR4VJ",
+"name": "Scorrano"
+},
+{
+"code": "RCCMRA12R08E243G",
+"name": "Guardiagrele"
+},
+{
+"code": "RCCMRA12T08E243G",
+"name": "Guardiagrele"
+},
+{
+"code": "DLCFNC55D21H156A",
+"name": "Radicofani"
+},
+{
+"code": "DLCFNC55DNMHM5SS",
+"name": "Radicofani"
+},
+{
+"code": "SPSMRA20H51H057M",
+"name": "Prezzo"
+},
+{
+"code": "RCCNNA21A68G144V",
+"name": "Ortovero"
+},
+{
+"code": "BNCGLI24S01C610Y",
+"name": "Chianocco"
+},
+{
+"code": "BNCGLI24S01H962Y",
+"name": "San Lorenzo Del Vallo"
+},
+{
+"code": "SPSGLI14T02L576W",
+"name": "Valfurva"
+},
+{
+"code": "SPSGLI14T02L576K",
+"name": "Valfurva"
+},
+{
+"code": "BNCNNA12S61C629H",
+"name": "Chiesanuova"
+},
+{
+"code": "BNCNNA12S61C629O",
+"name": "Chiesanuova"
+},
+{
+"code": "FOXGUO54L58E814K",
+"name": "Magliano Vetere"
+},
+{
+"code": "FOXGUO5QL58E81QT",
+"name": "Magliano Vetere"
+},
+{
+"code": "RCCGUO48H41M255U",
+"name": "Molina Aterno"
+},
+{
+"code": "RCCGUO 48H41 M255U",
+"name": "Molina Aterno"
+},
+{
+"code": "BNCLCU63A24D652I",
+"name": "Folignano"
+},
+{
+"code": "BNCLCU63A2",
+"name": null
+},
+{
+"code": "RCCLCU71H65L466Q",
+"name": "Tuoro Sul Trasimeno"
+},
+{
+"code": "BNCGLI25C17D268Y",
+"name": "Delianuova"
+},
+{
+"code": "BNCGLI25L17D268Y",
+"name": "Delianuova"
+},
+{
+"code": "BNCLCU88L68H666X",
+"name": "Sagron Mis"
+},
+{
+"code": "BNCLCU88L68H666A",
+"name": "Sagron Mis"
+},
+{
+"code": "VRDGUO99H24F074U",
+"name": "Meana Di Susa"
+},
+{
+"code": "VRDGUO9VHNQF0T4A",
+"name": "Meana Di Susa"
+},
+{
+"code": "RSSLCU85R20E906T",
+"name": "Marano Di Napoli"
+},
+{
+"code": "RSSLCU 85R20 E906T",
+"name": "Marano Di Napoli"
+},
+{
+"code": "RCCGLI53B14E954U",
+"name": "Mariglianella"
+},
+{
+"code": "RCCGLI 53B14 E954U",
+"name": "Mariglianella"
+},
+{
+"code": "RCCMCH05S48I310T",
+"name": "Santa Sofia"
+},
+{
+"code": "RCCMCHLRS48I31LL",
+"name": "Santa Sofia"
+},
+{
+"code": "VRDFNC10B27G950J",
+"name": "Pozza Di Fassa"
+},
+{
+"code": "VRDFNC10M27G950J",
+"name": "Pozza Di Fassa"
+},
+{
+"code": "SPSGUO99E61L830Y",
+"name": "Vialfrè"
+},
+{
+"code": "SPSGUO99E61L830M",
+"name": "Vialfrè"
+},
+{
+"code": "RCCLCU75S53I262R",
+"name": "Sant'Anastasia"
+},
+{
+"code": "rcclcu75s53i262r",
+"name": "Sant'Anastasia"
+},
+{
+"code": "RCCFNC35S65A421S",
+"name": "Arnara"
+},
+{
+"code": "RCCGLI10B57G210Q",
+"name": "Pacentro"
+},
+{
+"code": "RCCGUO61M65G481X",
+"name": "Pescantina"
+},
+{
+"code": "RCCMCH38P22L448D",
+"name": "Troina"
+},
+{
+"code": "RCCMCH38PNNLQ48A",
+"name": "Troina"
+},
+{
+"code": "RSSMRA03D46A531A",
+"name": "Azzate"
+},
+{
+"code": "RSSMRA03D46F764A",
+"name": "Mosciano Sant'Angelo"
+},
+{
+"code": "RCCJOX23L51G328F",
+"name": "Parcines"
+},
+{
+"code": "RCCJOX23L51G328S",
+"name": "Parcines"
+},
+{
+"code": "RSSJOX28L01H550U",
+"name": "Ronzina"
+},
+{
+"code": "RSSJOX28L01B834U",
+"name": "Carrara Santo Stefano"
+},
+{
+"code": "VRDGUO75H23E170A",
+"name": "Grezzago"
+},
+{
+"code": "VRDGUO75H23E170Q",
+"name": "Grezzago"
+},
+{
+"code": "RCCGLI33T41L280I",
+"name": "Torre Santa Susanna"
+},
+{
+"code": "RCCGLI33T41L280S",
+"name": "Torre Santa Susanna"
+},
+{
+"code": "RSSGLI34H59B885V",
+"name": "Casale Monferrato"
+},
+{
+"code": "RSSGLI34H59B885F",
+"name": "Casale Monferrato"
+},
+{
+"code": "VRDJOX84M58C741J",
+"name": "Cisternino"
+},
+{
+"code": "VRDJOX84M58C741S",
+"name": "Cisternino"
+},
+{
+"code": "VRDGLI12S05A215U",
+"name": "Villa D'Almè"
+},
+{
+"code": "VRDGLI12S05AN1RE",
+"name": "Villa D'Almè"
+},
+{
+"code": "RCCNNA19H13B131I",
+"name": "Bregano"
+},
+{
+"code": "FOXGUO31M23D896N",
+"name": "Gambatesa"
+},
+{
+"code": "FOXGUO31M23L557N",
+"name": "Valdidentro"
+},
+{
+"code": "VRDMRA05H45G442O",
+"name": "Perarolo Di Cadore"
+},
+{
+"code": "VRDMRA 05H45 G442O",
+"name": "Perarolo Di Cadore"
+},
+{
+"code": "DLCFNC16C07C870D",
+"name": "Colle San Magno"
+},
+{
+"code": "DLCFNCMSCLTC8T0B",
+"name": "Colle San Magno"
+},
+{
+"code": "RSSGLI56E10H313E",
+"name": "Ripalimosano"
+},
+{
+"code": "RSSGLI5SE10HP13M",
+"name": "Ripalimosano"
+},
+{
+"code": "BNCGLI96E20D871A",
+"name": "Galliate Lombardo"
+},
+{
+"code": "BNCGLI96E20D871",
+"name": null
+},
+{
+"code": "RSSJOX54L63D496V",
+"name": "Fara Vicentino"
+},
+{
+"code": "RCCFNC07E43F333O",
+"name": "Monastir"
+},
+{
+"code": "RCCFNC 07E43 F333O",
+"name": "Monastir"
+},
+{
+"code": "RSSGUO11B59F424W",
+"name": "Montanera"
+},
+{
+"code": "RSSGUO1MBR9F4N4E",
+"name": "Montanera"
+},
+{
+"code": "DLCJOX73A08D585N",
+"name": "Gonnosnò"
+},
+{
+"code": "DLCJOX 73A08 D585N",
+"name": "Gonnosnò"
+},
+{
+"code": "RCCLCU42S58D079A",
+"name": "Corvara In Badia"
+},
+{
+"code": "rcclcu42s58d079a",
+"name": "Corvara In Badia"
+},
+{
+"code": "BNCFNC03D60F590N",
+"name": "Monte Porzio Catone"
+},
+{
+"code": "BNCFNC03D60F590B",
+"name": "Monte Porzio Catone"
+},
+{
+"code": "BNCMRA05D12D122P",
+"name": "Crotone"
+},
+{
+"code": "BNCMRA 05D12 D122P",
+"name": "Crotone"
+},
+{
+"code": "SPSFNC38P18A142J",
+"name": "Albate"
+},
+{
+"code": "SPSFNC38P18",
+"name": null
+},
+{
+"code": "VRDFNC03S48L532C",
+"name": "Vaglio Basilicata"
+},
+{
+"code": "VRDFNC03R48L532C",
+"name": "Vaglio Basilicata"
+},
+{
+"code": "RCCMCH12S28L607N",
+"name": "Vallelonga"
+},
+{
+"code": "RCCMCH12S28L607P",
+"name": "Vallelonga"
+},
+{
+"code": "RSSGUO07T02C275Y",
+"name": "Casteltermini"
+},
+{
+"code": "BNCMRA93R62F956X",
+"name": "Novate Mezzola"
+},
+{
+"code": "BNCMRA93R62F956L",
+"name": "Novate Mezzola"
+},
+{
+"code": "VRDMCH05B04D259D",
+"name": "Decimomannu"
+},
+{
+"code": "VRDMCH05B04D259W",
+"name": "Decimomannu"
+},
+{
+"code": "VRDMCH06T09B088Z",
+"name": "Bottanuco"
+},
+{
+"code": "VRDMCH06T09BL8UZ",
+"name": "Bottanuco"
+},
+{
+"code": "FOXJOX18C19A118U",
+"name": "Alagna"
+},
+{
+"code": "VRDLCU41S56H036I",
+"name": "Premolo"
+},
+{
+"code": "vrdlcu41s56h036i",
+"name": "Premolo"
+},
+{
+"code": "VRDGUO75S09A565B",
+"name": "Bagno Di Romagna"
+},
+{
+"code": "VRDGUO75S09A635B",
+"name": "Barbiano"
+},
+{
+"code": "RSSMRA12L60H257B",
+"name": "Rezzo"
+},
+{
+"code": "RSSMRA12T60H257B",
+"name": "Rezzo"
+},
+{
+"code": "SPSMRA11E04A350N",
+"name": "Aradeo"
+},
+{
+"code": "SPSMRA11E04A350J",
+"name": "Aradeo"
+},
+{
+"code": "RSSMRA08S62E225K",
+"name": "Grumo"
+},
+{
+"code": "RSSMRA08S6NE2NRF",
+"name": "Grumo"
+},
+{
+"code": "RCCMCH57R53L450B",
+"name": "Trontano"
+},
+{
+"code": "FOXLCU11S09D588J",
+"name": "Filago"
+},
+{
+"code": "FOXLCU11S09D588A",
+"name": "Filago"
+},
+{
+"code": "SPSFNC72T15E458U",
+"name": "La Salle"
+},
+{
+"code": "spsfnc72t15e458u",
+"name": "La Salle"
+},
+{
+"code": "RSSJOX88L14D709H",
+"name": "Formicola"
+},
+{
+"code": "VRDLCU61R24H460Y",
+"name": "Rocchetta Nervina"
+},
+{
+"code": "VRDLCUSMR2QHQ6LD",
+"name": "Rocchetta Nervina"
+},
+{
+"code": "RCCGLI12M21Z258F",
+"name": "Turkmenistan"
+},
+{
+"code": "RCCGLI12M21Z258S",
+"name": "Turkmenistan"
+},
+{
+"code": "VRDGUO48L63G949A",
+"name": "Povoletto"
+},
+{
+"code": "VRDGUO 48L63 G949A",
+"name": "Povoletto"
+},
+{
+"code": "BNCMCH19R45L368P",
+"name": "Tremenico"
+},
+{
+"code": "VRDMRA91T16E993R",
+"name": "Martone"
+},
+{
+"code": "BNCNNA74B63C285J",
+"name": "Caulonia"
+},
+{
+"code": "BNCNNA7QBS3CN8RR",
+"name": "Caulonia"
+},
+{
+"code": "BNCLCU22A06C515C",
+"name": "Cerisano"
+},
+{
+"code": "SPSNNA44C27B201L",
+"name": "Broni"
+},
+{
+"code": "RCCMRA48P46B284T",
+"name": "Busano"
+},
+{
+"code": "RCCMRA48E46B284T",
+"name": "Busano"
+},
+{
+"code": "BNCGLI79T43F947E",
+"name": "Novaledo"
+},
+{
+"code": "bncgli79t43f947e",
+"name": "Novaledo"
+},
+{
+"code": "SPSJOX66L50C884V",
+"name": "Collobiano"
+},
+{
+"code": "SPSJOX66L50C884Y",
+"name": "Collobiano"
+},
+{
+"code": "DLCGUO08M61E900O",
+"name": "Manziana"
+},
+{
+"code": "DLCGUOLUMSME90LK",
+"name": "Manziana"
+},
+{
+"code": "VRDFNC38T16F912I",
+"name": "Nocera Inferiore"
+},
+{
+"code": "VRDFNCPUT16FV12F",
+"name": "Nocera Inferiore"
+},
+{
+"code": "RSSMCH13E55D480J",
+"name": "Fallo"
+},
+{
+"code": "RSSMCH13E55D480Y",
+"name": "Fallo"
+},
+{
+"code": "DLCGLI80P24H378K",
+"name": "Roburent"
+},
+{
+"code": "DLCGLI80P24A427K",
+"name": "Arola"
+},
+{
+"code": "SPSJOX72M54A225X",
+"name": "Altamura"
+},
+{
+"code": "spsjox72m54a225x",
+"name": "Altamura"
+},
+{
+"code": "RCCJOX02E49H608G",
+"name": "Roverè Veronese"
+},
+{
+"code": "BNCLCU29E16E859M",
+"name": "Malito"
+},
+{
+"code": "SPSMRA57B08E718J",
+"name": "Lucignano"
+},
+{
+"code": "SPSMRA57B08E718O",
+"name": "Lucignano"
+},
+{
+"code": "RSSMRA04H42I108M",
+"name": "San Pietro In Amantea"
+},
+{
+"code": "RSSMRA04H42I108M",
+"name": "San Pietro In Amantea"
+},
+{
+"code": "FOXMRA59B28L323M",
+"name": "Tramonti"
+},
+{
+"code": "BNCJOX30B17F718Y",
+"name": "Mordano"
+},
+{
+"code": "SPSMRA18S05G234L",
+"name": "Pagliara"
+},
+{
+"code": "VRDGLI25T20A056W",
+"name": "Adrano"
+},
+{
+"code": "VRDGLI 25T20 A056W",
+"name": "Adrano"
+},
+{
+"code": "RCCMRA20C57C370G",
+"name": "Cavaion Veronese"
+},
+{
+"code": "RCCMRA20C57C370V",
+"name": "Cavaion Veronese"
+},
+{
+"code": "SPSGLI72E24I742A",
+"name": "Simala"
+},
+{
+"code": "SPSGLI72E24I742S",
+"name": "Simala"
+},
+{
+"code": "VRDFNC73S63C176A",
+"name": "Castellino Tanaro"
+},
+{
+"code": "VRDFNC7PSSPCM76M",
+"name": "Castellino Tanaro"
+},
+{
+"code": "SPSGLI05H45L956T",
+"name": "Villa Guardia"
+},
+{
+"code": "SPSGLI47H21I767K",
+"name": "Sizzano"
+},
+{
+"code": "SPSGLI47H21I767D",
+"name": "Sizzano"
+},
+{
+"code": "FOXMCH98B02E743M",
+"name": "Lunano"
+},
+{
+"code": "FOXMCH98B02E743L",
+"name": "Lunano"
+},
+{
+"code": "FOXMCH75S62H855J",
+"name": "Sangano"
+},
+{
+"code": "FOXMCH75S62A346J",
+"name": "Aquileia"
+},
+{
+"code": "SPSMRA39E64A965J",
+"name": "Bondeno"
+},
+{
+"code": "DLCMRA40C50L418Z",
+"name": "Tricarico"
+},
+{
+"code": "DLCMRA40C50L418H",
+"name": "Tricarico"
+},
+{
+"code": "RCCNNA67B23B047Y",
+"name": "Berie"
+},
+{
+"code": "RCCNNA67B23B047A",
+"name": "Berie"
+},
+{
+"code": "FOXGUO10H55F689Q",
+"name": "Montorio Nei Frentani"
+},
+{
+"code": "FOXGUO10HRRFSUVV",
+"name": "Montorio Nei Frentani"
+},
+{
+"code": "RCCJOX61T03F944E",
+"name": "Nova Milanese"
+},
+{
+"code": "RCCJOX61T03F944J",
+"name": "Nova Milanese"
+},
+{
+"code": "SPSMRA02M19I280U",
+"name": "Sant'Angelo A Scala"
+},
+{
+"code": "SPSMRA02M19L092U",
+"name": "Temenizza"
+},
+{
+"code": "VRDMRA89T43I525N",
+"name": "Schianno"
+},
+{
+"code": "vrdmra89t43i525n",
+"name": "Schianno"
+},
+{
+"code": "SPSNNA15C59F660F",
+"name": "Monteverde"
+},
+{
+"code": "SPSNNA57S45C701K",
+"name": "Cinaglio"
+},
+{
+"code": "SPSNNA57S45H486K",
+"name": "Rogeno"
+},
+{
+"code": "VRDMRA13M22D458O",
+"name": "Faenza"
+},
+{
+"code": "VRDMRA 13M22 D458O",
+"name": "Faenza"
+},
+{
+"code": "BNCMCH96A42B514Z",
+"name": "Campitello Di Fassa"
+},
+{
+"code": "FOXMRA51L04A704V",
+"name": "Bassano Di Sutri"
+},
+{
+"code": "FOXMRA51L04A",
+"name": null
+},
+{
+"code": "RSSMRA81E67B609R",
+"name": "Cannara"
+},
+{
+"code": "RSSMRA81E67H993R",
+"name": null
+},
+{
+"code": "DLCMRA34H55I404L",
+"name": "San Vito Al Torre"
+},
+{
+"code": "FOXMCH46S04E896D",
+"name": "Mantello"
+},
+{
+"code": "FOXMRA88L20E139E",
+"name": "Grandate"
+},
+{
+"code": "RCCGUO03E06F585O",
+"name": "Roseto Degli Abruzzi"
+},
+{
+"code": "RSSNNA94C48D926J",
+"name": "Garlate"
+},
+{
+"code": "RSSNNA94C48D926J",
+"name": "Garlate"
+},
+{
+"code": "RCCMCH28B43E535S",
+"name": "Leonessa"
+},
+{
+"code": "RCCMCHNUBQ3E53RA",
+"name": "Leonessa"
+},
+{
+"code": "DLCNNA00H53G082C",
+"name": "Oppido Mamertina"
+},
+{
+"code": "FOXMCH40S53C143S",
+"name": "Castellaro"
+},
+{
+"code": "FOXMCH40S53C143D",
+"name": "Castellaro"
+},
+{
+"code": "SPSMCH60S25E460V",
+"name": "Lase"
+},
+{
+"code": "RCCNNA31H26B769F",
+"name": "Carezzano"
+},
+{
+"code": "RCCNNA 31H26 B769F",
+"name": "Carezzano"
+},
+{
+"code": "DLCMRA16P20D653H",
+"name": "Foligno"
+},
+{
+"code": "DLCMRA16P20D653L",
+"name": "Foligno"
+},
+{
+"code": "RCCGLI57T54A452W",
+"name": "Arvier"
+},
+{
+"code": "RCCGLI57TR4A452I",
+"name": "Arvier"
+},
+{
+"code": "BNCGUO66L42L171C",
+"name": "Tina"
+},
+{
+"code": "BNCGUO66L42L171T",
+"name": "Tina"
+},
+{
+"code": "RCCNNA17P25G759S",
+"name": "Poggio Fidoni"
+},
+{
+"code": "RCCNNA17P25G759M",
+"name": "Poggio Fidoni"
+},
+{
+"code": "SPSNNA13A24B216F",
+"name": "Bruino"
+},
+{
+"code": "SPSNNA13A24B216U",
+"name": "Bruino"
+},
+{
+"code": "RSSGUO68R58H327G",
+"name": "Rivamonte Agordino"
+},
+{
+"code": "RSSGUO68R58H327I",
+"name": "Rivamonte Agordino"
+},
+{
+"code": "RCCMRA38L48I898C",
+"name": "Spezzano Piccolo"
+},
+{
+"code": "BNCJOX04C49E407W",
+"name": "Lago"
+},
+{
+"code": "BNCJOX 04C49 E407W",
+"name": "Lago"
+},
+{
+"code": "DLCMCH25S18F904U",
+"name": "Noale"
+},
+{
+"code": "DLCMCH25SM8F9L4Q",
+"name": "Noale"
+},
+{
+"code": "RSSMRA26H62D124H",
+"name": "Cottanello"
+},
+{
+"code": "RSSMRA 26H62 D124H",
+"name": "Cottanello"
+},
+{
+"code": "BNCMCH86M48I584Q",
+"name": "Sella Delle Trincee"
+},
+{
+"code": "BNCMCH86P48I584Q",
+"name": "Sella Delle Trincee"
+},
+{
+"code": "SPSFNC15R12I802N",
+"name": "Soliera"
+},
+{
+"code": "SPSFNC15M12I802N",
+"name": "Soliera"
+},
+{
+"code": "SPSFNC04M46G515L",
+"name": "Petriolo"
+},
+{
+"code": "SPSFNC04M46GRMRM",
+"name": "Petriolo"
+},
+{
+"code": "SPSMCH99C55D251Z",
+"name": "Darfo Boario Terme"
+},
+{
+"code": "SPSMCH99C55D251W",
+"name": "Darfo Boario Terme"
+},
+{
+"code": "RSSGUO85B63E873S",
+"name": "Mammola"
+},
+{
+"code": "RSSGUO8RBSPEU7PF",
+"name": "Mammola"
+},
+{
+"code": "SPSFNC41B12D319K",
+"name": "Dolcedo"
+},
+{
+"code": "SPSFNC41B12D319B",
+"name": "Dolcedo"
+},
+{
+"code": "BNCMCH72B47C550Z",
+"name": "Cervere"
+},
+{
+"code": "DLCGLI45S43B629N",
+"name": "Cantalupo Ligure"
+},
+{
+"code": "RSSNNA35M22F260V",
+"name": "Villavesco"
+},
+{
+"code": "FOXGUO89E08G807E",
+"name": "Pomaro Monferrato"
+},
+{
+"code": "FOXGUO89H08G807E",
+"name": "Pomaro Monferrato"
+},
+{
+"code": "FOXFNC17T16H147O",
+"name": "Racale"
+},
+{
+"code": "FOXFNC 17T16 H147O",
+"name": "Racale"
+},
+{
+"code": "SPSLCU47B02G305S",
+"name": "Panchià"
+},
+{
+"code": "SPSLCU47B02G305Y",
+"name": "Panchià"
+},
+{
+"code": "RSSNNA17D63I370R",
+"name": "Santo Stefano Di Camastra"
+},
+{
+"code": "RSSNNA17D63B323R",
+"name": null
+},
+{
+"code": "BNCMCH38M27F742V",
+"name": "Morosolo"
+},
+{
+"code": "BNCMCHP8MN7F7QND",
+"name": "Morosolo"
+},
+{
+"code": "VRDGLI79R64B954H",
+"name": "Casei Gerola"
+},
+{
+"code": "VRDGLI 79R64 B954H",
+"name": "Casei Gerola"
+},
+{
+"code": "VRDGLI14C47E038F",
+"name": "Gioia Del Colle"
+},
+{
+"code": "VRDGLI14C47F560F",
+"name": "Montemarciano"
+},
+{
+"code": "RCCNNA29R61I927U",
+"name": "Spresiano"
+},
+{
+"code": "RCCNNA29C61I927U",
+"name": "Spresiano"
+},
+{
+"code": "VRDGLI25B64L779D",
+"name": "Verolengo"
+},
+{
+"code": "VRDGLI 25B64 L779D",
+"name": "Verolengo"
+},
+{
+"code": "VRDGLI30A16L250U",
+"name": "Torre Beretti E Castellaro"
+},
+{
+"code": "vrdgli30a16l250u",
+"name": "Torre Beretti E Castellaro"
+},
+{
+"code": "VRDNNA80L09B269O",
+"name": "Buonconvento"
+},
+{
+"code": "VRDNNA80L09B269L",
+"name": "Buonconvento"
+},
+{
+"code": "RSSGLI89P57E202T",
+"name": "Grosseto"
+},
+{
+"code": "RSSGLIUVPRTE2L2W",
+"name": "Grosseto"
+},
+{
+"code": "RCCFNC14B61L286N",
+"name": "Torri In Sabina"
+},
+{
+"code": "FOXFNC90M50A597H",
+"name": "Ballao"
+},
+{
+"code": "FOXJOX63R50L178I",
+"name": "Tirolo"
+},
+{
+"code": "FOXJOX6PRR0L17UD",
+"name": "Tirolo"
+},
+{
+"code": "RCCGLI37H25B501P",
+"name": "Camparada"
+},
+{
+"code": "rccgli37h25b501p",
+"name": "Camparada"
+},
+{
+"code": "VRDLCU10T14L937Q",
+"name": "Villa Estense"
+},
+{
+"code": "SPSMRA08B51G904F",
+"name": "Portico E San Benedetto"
+},
+{
+"code": "SPSMRA24H17H276H",
+"name": "Ricengo"
+},
+{
+"code": "spsmra24h17h276h",
+"name": "Ricengo"
+},
+{
+"code": "FOXFNC22E64M188T",
+"name": "Zone"
+},
+{
+"code": "FOXFNC 22E64 M188T",
+"name": "Zone"
+},
+{
+"code": "SPSGUO52L68F396Z",
+"name": "Montagne"
+},
+{
+"code": "FOXMCH12S41L992K",
+"name": "Villanova Tulo"
+},
+{
+"code": "RCCLCU98A17C653Y",
+"name": "Chiusa Di Pesio"
+},
+{
+"code": "RSSNNA82B14C916L",
+"name": "Comasine"
+},
+{
+"code": "RSSNNAU2BM4C916T",
+"name": "Comasine"
+},
+{
+"code": "DLCFNC26C22E655G",
+"name": "Loiano"
+},
+{
+"code": "DLCFNC26C22L205G",
+"name": "Tora E Piccilli"
+},
+{
+"code": "FOXJOX58L52L065F",
+"name": "Tavagnacco"
+},
+{
+"code": "RCCMCH39B15F459F",
+"name": "Montecatini Di Val Di Nievole"
+},
+{
+"code": "BNCGLI13D48D112A",
+"name": "Costa Masnaga"
+},
+{
+"code": "BNCGLI13D48D112U",
+"name": "Costa Masnaga"
+},
+{
+"code": "RSSGLI23T64A477W",
+"name": "Assolo"
+},
+{
+"code": "RSSGLI23T64A4TTF",
+"name": "Assolo"
+},
+{
+"code": "SPSFNC51R27G371X",
+"name": "Paternò"
+},
+{
+"code": "SPSFNC51S27G371X",
+"name": "Paternò"
+},
+{
+"code": "RCCGUO74C09A460K",
+"name": "Ascea"
+},
+{
+"code": "SPSFNC16B55L429D",
+"name": "Trino"
+},
+{
+"code": "SPSFNC16B55L429Y",
+"name": "Trino"
+},
+{
+"code": "RCCGLI11A65A637L",
+"name": "Barbona"
+},
+{
+"code": "RCCGLI11A65A195L",
+"name": "Alia"
+},
+{
+"code": "VRDMCH27P11G875P",
+"name": "Ponzano Veneto"
+},
+{
+"code": "VRDMCHNTP11GU75N",
+"name": "Ponzano Veneto"
+},
+{
+"code": "SPSJOX19H21L114B",
+"name": "Termon"
+},
+{
+"code": "SPSJOX19R21L114B",
+"name": "Termon"
+},
+{
+"code": "FOXFNC66R58A597P",
+"name": "Ballao"
+},
+{
+"code": "RCCMCH95E61E901B",
+"name": "Mapello"
+},
+{
+"code": "rccmch95e61e901b",
+"name": "Mapello"
+},
+{
+"code": "DLCFNC19P27G644L",
+"name": "Pieve Di Ledro"
+},
+{
+"code": "BNCLCU26T50D321T",
+"name": "Dolegna Del Collio"
+},
+{
+"code": "BNCLCU 26T50 D321T",
+"name": "Dolegna Del Collio"
+},
+{
+"code": "RCCGLI81E60I364V",
+"name": "Villa Santo Stefano"
+},
+{
+"code": "RCCGLI81E60I364Z",
+"name": "Villa Santo Stefano"
+},
+{
+"code": "RCCNNA81S26H380Q",
+"name": "Roccavaldina"
+},
+{
+"code": "FOXMRA30D18L152X",
+"name": "Testico"
+},
+{
+"code": "FOXMRA30R18L152X",
+"name": "Testico"
+},
+{
+"code": "SPSFNC01C15D655T",
+"name": "Follo"
+},
+{
+"code": "SPSFNC01C1RDSRRS",
+"name": "Follo"
+},
+{
+"code": "RSSNNA76B24L757Z",
+"name": "Verdesina"
+},
+{
+"code": "VRDNNA25P27M294E",
+"name": "Bellizzi"
+},
+{
+"code": "VRDNNANRP27MNVQD",
+"name": "Bellizzi"
+},
+{
+"code": "DLCMCH88L18F150F",
+"name": "Merna"
+},
+{
+"code": "RCCMCH13D56H186V",
+"name": "Rapolla"
+},
+{
+"code": "RCCMCHM3DRSHM8SL",
+"name": "Rapolla"
+},
+{
+"code": "SPSGLI63E61B631F",
+"name": "Cantalupo In Sabina"
+},
+{
+"code": "RSSJOX18L43F858W",
+"name": "Ne"
+},
+{
+"code": "RSSJOX18L43B300W",
+"name": "Busto Arsizio"
+},
+{
+"code": "VRDFNC05R56Z225K",
+"name": "Iraq"
+},
+{
+"code": "BNCMRA67B45L671G",
+"name": "Varano Borghi"
+},
+{
+"code": "BNCMRA67B45F379G",
+"name": "Monsampietro Morico"
+},
+{
+"code": "RSSMCH42E07G286D",
+"name": "Palmas Arborea"
+},
+{
+"code": "RSSMCHQNEL7GNU6X",
+"name": "Palmas Arborea"
+},
+{
+"code": "VRDMCH52L01G673I",
+"name": "Pincara"
+},
+{
+"code": "VRDMCH52L01G673K",
+"name": "Pincara"
+},
+{
+"code": "SPSNNA64D14C282Y",
+"name": "Verrès"
+},
+{
+"code": "SPSNNA64D14L248Y",
+"name": "Torrebelvicino"
+},
+{
+"code": "BNCMRA16L25G421C",
+"name": "Pella"
+},
+{
+"code": "BNCMRA16L25B685C",
+"name": "Capraia Isola"
+},
+{
+"code": "SPSFNC09M67I315Q",
+"name": "Santa Vittoria In Matenano"
+},
+{
+"code": "SPSFNC09M6TIP15J",
+"name": "Santa Vittoria In Matenano"
+},
+{
+"code": "VRDMCH12S23E241Q",
+"name": "Guardea"
+},
+{
+"code": "VRDMCH 12S23 E241Q",
+"name": "Guardea"
+},
+{
+"code": "BNCJOX03L05C283A",
+"name": "Castelvetere Sul Calore"
+},
+{
+"code": "RSSLCU56T66B088B",
+"name": "Bottanuco"
+},
+{
+"code": "RSSLCU56T66",
+"name": null
+},
+{
+"code": "VRDLCU57S10H590E",
+"name": "Rotonda"
+},
+{
+"code": "VRDLCU5TSMLHR9LC",
+"name": "Rotonda"
+},
+{
+"code": "SPSGLI34A02A751S",
+"name": "Bellinzago Lombardo"
+},
+{
+"code": "SPSGLI 34A02 A751S",
+"name": "Bellinzago Lombardo"
+},
+{
+"code": "FOXGUO73M01B056S",
+"name": "Borore"
+},
+{
+"code": "FOXGUO73M01B056E",
+"name": "Borore"
+},
+{
+"code": "DLCMRA00S04L991C",
+"name": "Villanova Truschedu"
+},
+{
+"code": "DLCMRA00S04L991W",
+"name": "Villanova Truschedu"
+},
+{
+"code": "FOXGUO35A16H688K",
+"name": "Salaparuta"
+},
+{
+"code": "FOXGUOPRAM6H6UUM",
+"name": "Salaparuta"
+},
+{
+"code": "DLCMCH18R50I375A",
+"name": "Sant'Urbano"
+},
+{
+"code": "BNCGLI05M58D399U",
+"name": "Elmas"
+},
+{
+"code": "DLCGLI05B45F537Y",
+"name": "Vibo Valentia"
+},
+{
+"code": "DLCGLI05B45F537P",
+"name": "Vibo Valentia"
+},
+{
+"code": "BNCGLI67B23H736F",
+"name": "Samarate"
+},
+{
+"code": "bncgli67b23h736f",
+"name": "Samarate"
+},
+{
+"code": "DLCMRA74A62L748X",
+"name": "Vercana"
+},
+{
+"code": "FOXJOX48E08C864U",
+"name": "Collepardo"
+},
+{
+"code": "FOXJOX48E08C864G",
+"name": "Collepardo"
+},
+{
+"code": "RCCLCU79D63F347A",
+"name": "Mondavio"
+},
+{
+"code": "RCCLCU7VDS3FP47U",
+"name": "Mondavio"
+},
+{
+"code": "SPSMCH64S66L677J",
+"name": "Varedo"
+},
+{
+"code": "SPSMCH64S66L677Q",
+"name": "Varedo"
+},
+{
+"code": "SPSGUO12A04D487U",
+"name": "Fanna"
+},
+{
+"code": "SPSGUOM2A04DQUTS",
+"name": "Fanna"
+},
+{
+"code": "SPSFNC58P19L573U",
+"name": "Valfabbrica"
+},
+{
+"code": "SPSFNC58P19L5",
+"name": null
+},
+{
+"code": "FOXGUO04C43F512D",
+"name": "Montefusco"
+},
+{
+"code": "FOXMRA99S41A517T",
+"name": "Aviatico"
+},
+{
+"code": "VRDGUO54E02I285F",
+"name": "Sant'Angelo In Lizzola"
+},
+{
+"code": "VRDGUO54E02B392F",
+"name": "Calcinaia"
+},
+{
+"code": "RCCMRA08A61H656P",
+"name": "Sacconago"
+},
+{
+"code": "rccmra08a61h656p",
+"name": "Sacconago"
+},
+{
+"code": "RCCLCU63D45I452Q",
+"name": "Sassari"
+},
+{
+"code": "RCCLCU 63D45 I452Q",
+"name": "Sassari"
+},
+{
+"code": "SPSGUO08T61G229I",
+"name": "Paese"
+},
+{
+"code": "SPSGUO08T61",
+"name": null
+},
+{
+"code": "RCCGLI02T22I582N",
+"name": "Selegas"
+},
+{
+"code": "RCCGLILNTNNIR8NL",
+"name": "Selegas"
+},
+{
+"code": "SPSGLI36L41C392X",
+"name": "Cavedago"
+},
+{
+"code": "SPSGLI36L4MCP9NA",
+"name": "Cavedago"
+},
+{
+"code": "FOXFNC22A19A515G",
+"name": "Avezzano"
+},
+{
+"code": "FOXFNC2NA19ARMRS",
+"name": "Avezzano"
+},
+{
+"code": "SPSJOX15A18A487M",
+"name": "Atrani"
+},
+{
+"code": "SPSNNA24T47E133A",
+"name": "Grammichele"
+},
+{
+"code": "SPSNNA24T47A586A",
+"name": "Baiso"
+},
+{
+"code": "DLCLCU93B16L106V",
+"name": "Terento"
+},
+{
+"code": "DLCLCU93B16A095V",
+"name": "Aiba"
+},
+{
+"code": "FOXGLI53T52A855R",
+"name": "Bicinicco"
+},
+{
+"code": "FOXGLI53T52Z202R",
+"name": "Protettorato dell'Arabia Meridionale"
+},
+{
+"code": "RSSFNC50A53H212F",
+"name": "Recco"
+},
+{
+"code": "RSSFNC50A53L235F",
+"name": "Torralba"
+},
+{
+"code": "RCCGUO01P57C790D",
+"name": "Claut"
+},
+{
+"code": "RCCGUO01P57C7",
+"name": null
+},
+{
+"code": "FOXFNC29H04D680Q",
+"name": "Fonte"
+},
+{
+"code": "FOXFNC2VH04D68LF",
+"name": "Fonte"
+},
+{
+"code": "FOXFNC47T49E405E",
+"name": "Laglio-Brienno"
+},
+{
+"code": "FOXFNC47TQVE40RA",
+"name": "Laglio-Brienno"
+},
+{
+"code": "SPSMRA10D05H243Y",
+"name": "Ercolano"
+},
+{
+"code": "SPSGUO17D64A583C",
+"name": "Baio Dora"
+},
+{
+"code": "SPSGUOM7D6QARUPU",
+"name": "Baio Dora"
+},
+{
+"code": "RCCFNC99S52A964A",
+"name": "Bonavigo"
+},
+{
+"code": "RCCFNCVVSRNA9SQL",
+"name": "Bonavigo"
+},
+{
+"code": "RCCFNC60D05F998B",
+"name": "Odalengo Piccolo"
+},
+{
+"code": "RCCFNC 60D05 F998B",
+"name": "Odalengo Piccolo"
+},
+{
+"code": "VRDMRA69H51B771V",
+"name": "Carfizzi"
+},
+{
+"code": "VRDMRA69H51B771B",
+"name": "Carfizzi"
+},
+{
+"code": "VRDGLI78S17E994U",
+"name": "Marudo"
+},
+{
+"code": "SPSMCH66E03H330O",
+"name": "Riva"
+},
+{
+"code": "SPSMCH6SE0PHPP0E",
+"name": "Riva"
+},
+{
+"code": "BNCGLI21T66B689S",
+"name": "Marzabotto"
+},
+{
+"code": "bncgli21t66b689s",
+"name": "Marzabotto"
+},
+{
+"code": "BNCGUO40C55C999J",
+"name": "Corfinio"
+},
+{
+"code": "BNCGUO40C55C999J",
+"name": "Corfinio"
+},
+{
+"code": "RCCLCU96B22I746Z",
+"name": "Senadole"
+},
+{
+"code": "rcclcu96b22i746z",
+"name": "Senadole"
+},
+{
+"code": "RCCJOX56D53A688I",
+"name": "Barzola"
+},
+{
+"code": "RCCJOX56D53A688M",
+"name": "Barzola"
+},
+{
+"code": "VRDGLI01L27C590Y",
+"name": "Ceves"
+},
+{
+"code": "VRDGLI0MLN7CR9LS",
+"name": "Ceves"
+},
+{
+"code": "DLCMRA84L26C437O",
+"name": "Cellara"
+},
+{
+"code": "DLCMRAUQL2SCQPTA",
+"name": "Cellara"
+},
+{
+"code": "RSSJOX23C53I581F",
+"name": "Selci"
+},
+{
+"code": "RSSJOXNPCR3IRUMR",
+"name": "Selci"
+},
+{
+"code": "VRDFNC04C04B756O",
+"name": "Cardeto"
+},
+{
+"code": "FOXLCU87M07I662B",
+"name": "Serravalle A Po"
+},
+{
+"code": "RCCMCH94S56G798R",
+"name": "Pollone"
+},
+{
+"code": "RCCMCH94SRSG79UX",
+"name": "Pollone"
+},
+{
+"code": "VRDNNA11M03E760R",
+"name": "Lusevera"
+},
+{
+"code": "VRDNNA11MLPE76LB",
+"name": "Lusevera"
+},
+{
+"code": "SPSMRA19M44D997T",
+"name": "Gesturi"
+},
+{
+"code": "SPSMRA19M44D997",
+"name": null
+},
+{
+"code": "VRDGUO92M44H282T",
+"name": "Rieti"
+},
+{
+"code": "VRDGUO9NMQQHN82C",
+"name": "Rieti"
+},
+{
+"code": "VRDNNA07A13I907A",
+"name": "Spinazzola"
+},
+{
+"code": "VRDNNA0TAM3IV07M",
+"name": "Spinazzola"
+},
+{
+"code": "VRDNNA87S07E876L",
+"name": "Mandanici"
+},
+{
+"code": "vrdnna87s07e876l",
+"name": "Mandanici"
+},
+{
+"code": "RSSJOX68T13F952G",
+"name": "Novara"
+},
+{
+"code": "RSSJOX68T13F952H",
+"name": "Novara"
+},
+{
+"code": "BNCLCU03A10D682O",
+"name": "Fontechiari"
+},
+{
+"code": "BNCLCU03A1",
+"name": null
+},
+{
+"code": "VRDGUO27S65Z259N",
+"name": "Uzbekistan"
+},
+{
+"code": "VRDGUON7S65Z2R9O",
+"name": "Uzbekistan"
+},
+{
+"code": "SPSFNC46B67F989D",
+"name": "Nuvolento"
+},
+{
+"code": "SPSFNC4SBSTFVUVO",
+"name": "Nuvolento"
+},
+{
+"code": "SPSJOX07L64G534K",
+"name": "Piacenza D'Adige"
+},
+{
+"code": "SPSJOX07L64L926K",
+"name": "Villa Collemandina"
+},
+{
+"code": "RSSNNA81S13E724N",
+"name": "Lucoli"
+},
+{
+"code": "RSSLCU60B56C345F",
+"name": "Castronuovo Di Sant'Andrea"
+},
+{
+"code": "RSSLCU 60B56 C345F",
+"name": "Castronuovo Di Sant'Andrea"
+},
+{
+"code": "BNCGUO34A65G432E",
+"name": "Penna In Teverina"
+},
+{
+"code": "BNCGUOPQAS5G43NN",
+"name": "Penna In Teverina"
+},
+{
+"code": "SPSMRA95D41B383P",
+"name": "Calasetta"
+},
+{
+"code": "SPSMRA95D41B383R",
+"name": "Calasetta"
+},
+{
+"code": "DLCJOX07T45C037Y",
+"name": "Cassola"
+},
+{
+"code": "dlcjox07t45c037y",
+"name": "Cassola"
+},
+{
+"code": "SPSNNA65S44D504M",
+"name": "Farra D'Isonzo"
+},
+{
+"code": "SPSNNA65P44D504M",
+"name": "Farra D'Isonzo"
+},
+{
+"code": "DLCMCH17C42D269Z",
+"name": "Deliceto"
+},
+{
+"code": "DLCMCH17C42D269Y",
+"name": "Deliceto"
+},
+{
+"code": "SPSMRA19C01L566O",
+"name": "Valduggia"
+},
+{
+"code": "SPSMRA19C01L566J",
+"name": "Valduggia"
+},
+{
+"code": "BNCGUO78A23A251V",
+"name": "Amalfi"
+},
+{
+"code": "DLCJOX34E57D265F",
+"name": "Deiva"
+},
+{
+"code": "DLCJOX34E57D265S",
+"name": "Deiva"
+},
+{
+"code": "FOXJOX22A59B839R",
+"name": "Carrodano"
+},
+{
+"code": "FOXJOX22A59",
+"name": null
+},
+{
+"code": "DLCMCH92S08H763I",
+"name": "San Bartolomeo Al Mare"
+},
+{
+"code": "DLCMCH92S08H7",
+"name": null
+},
+{
+"code": "BNCFNC45S20F579Q",
+"name": "Montenero Sabino"
+},
+{
+"code": "BNCMRA13M28C452X",
+"name": "Cembra"
+},
+{
+"code": "BNCMRA13M28C452S",
+"name": "Cembra"
+},
+{
+"code": "FOXJOX74S18F214M",
+"name": "Milo"
+},
+{
+"code": "SPSGUO29T08F606B",
+"name": "Monterosi"
+},
+{
+"code": "RCCNNA26E43C272U",
+"name": "Castelsardo"
+},
+{
+"code": "RCCNNA26E43C272E",
+"name": "Castelsardo"
+},
+{
+"code": "RSSJOX96T67F342K",
+"name": "Moncrivello"
+},
+{
+"code": "VRDMRA66S25D252Q",
+"name": "Darzo"
+},
+{
+"code": "VRDMRA66P25D252Q",
+"name": "Darzo"
+},
+{
+"code": "SPSNNA25S42C689T",
+"name": "Cimadolmo"
+},
+{
+"code": "SPSNNA25S42F889T",
+"name": "Nichelino"
+},
+{
+"code": "RCCMRA90T12D784J",
+"name": "Frasso Telesino"
+},
+{
+"code": "RCCMRA90T12D7U4V",
+"name": "Frasso Telesino"
+},
+{
+"code": "VRDLCU16B44F608Y",
+"name": "Monterosso Grana"
+},
+{
+"code": "DLCNNA24C59A101S",
+"name": "Aiello Del Sabato"
+},
+{
+"code": "SPSJOX06R53F381Z",
+"name": "Monsano"
+},
+{
+"code": "VRDGUO78H56B077C",
+"name": "Boscotrecase"
+},
+{
+"code": "VRDGUOT8H56B0TTI",
+"name": "Boscotrecase"
+},
+{
+"code": "SPSMRA45R20H379W",
+"name": "Rocca Pietore"
+},
+{
+"code": "SPSMRA45B20H379W",
+"name": "Rocca Pietore"
+},
+{
+"code": "BNCMCH20T50B055J",
+"name": "Boroneddu"
+},
+{
+"code": "BNCMCHNLTR0BL5RT",
+"name": "Boroneddu"
+},
+{
+"code": "SPSMCH55E42B862A",
+"name": "Casalattico"
+},
+{
+"code": "SPSMCH55E42",
+"name": null
+},
+{
+"code": "VRDMCH88P68D859F",
+"name": "Gairo"
+},
+{
+"code": "VRDMCH88M68D859F",
+"name": "Gairo"
+},
+{
+"code": "RCCFNC61P10D562M",
+"name": "Fiano"
+},
+{
+"code": "FOXNNA40D51A978X",
+"name": "Bonorva"
+},
+{
+"code": "RSSMRA67R07E832G",
+"name": "Maia Bassa"
+},
+{
+"code": "RSSMRA67R07B718G",
+"name": "Caraffa Del Bianco"
+},
+{
+"code": "SPSJOX75P16L136W",
+"name": "Terrazzo"
+},
+{
+"code": "DLCJOX24R47H188I",
+"name": "Rassa"
+},
+{
+"code": "DLCJOX24R47",
+"name": null
+},
+{
+"code": "DLCGUO85P03E031X",
+"name": "Gimigliano"
+},
+{
+"code": "BNCGUO61C20H400R",
+"name": "Rocca Di Cambio"
+},
+{
+"code": "BNCMCH29S56E826Y",
+"name": "Magras"
+},
+{
+"code": "BNCMCH29A56E826Y",
+"name": "Magras"
+},
+{
+"code": "DLCMCH78T19I324E",
+"name": "Sant'Elpidio A Mare"
+},
+{
+"code": "DLCMCH78T19I324T",
+"name": "Sant'Elpidio A Mare"
+},
+{
+"code": "RCCMRA15R67C404N",
+"name": "Cavour"
+},
+{
+"code": "RCCMRA15R67C404G",
+"name": "Cavour"
+},
+{
+"code": "RCCGLI16T59B057Z",
+"name": "Borrello"
+},
+{
+"code": "SPSMCH19P62B888D",
+"name": "Casaletto Spartano"
+},
+{
+"code": "SPSMCH19P62L739D",
+"name": "Venticano"
+},
+{
+"code": "VRDJOX69E06H219D",
+"name": "Refrancore"
+},
+{
+"code": "VRDJOX69E0SHNM9A",
+"name": "Refrancore"
+},
+{
+"code": "FOXJOX05A65A154F",
+"name": "Albettone"
+},
+{
+"code": "FOXJOX0RASRA154Y",
+"name": "Albettone"
+},
+{
+"code": "RCCGLI60E64C347Y",
+"name": "Castroreale"
+},
+{
+"code": "RCCGLI60E64C347R",
+"name": "Castroreale"
+},
+{
+"code": "BNCGUO41H50M078W",
+"name": "Visso"
+},
+{
+"code": "BNCGUO41H50M078P",
+"name": "Visso"
+},
+{
+"code": "SPSFNC68R26F914U",
+"name": "Noceto"
+},
+{
+"code": "SPSFNC6URN6FVM4R",
+"name": "Noceto"
+},
+{
+"code": "RCCMCH67E18B591J",
+"name": "Candidoni"
+},
+{
+"code": "RCCMCH67L18B591J",
+"name": "Candidoni"
+},
+{
+"code": "SPSFNC25S04C040B",
+"name": "Castel Castagna"
+},
+{
+"code": "SPSFNC25S04C040O",
+"name": "Castel Castagna"
+},
+{
+"code": "DLCGUO47T61G491P",
+"name": "Pescia"
+},
+{
+"code": "DLCGUOQTT61G491Y",
+"name": "Pescia"
+},
+{
+"code": "BNCGLI85D61A192J",
+"name": "Alghero"
+},
+{
+"code": "FOXMRA29C25F916S",
+"name": "Nociglia"
+},
+{
+"code": "foxmra29c25f916s",
+"name": "Nociglia"
+},
+{
+"code": "DLCGLI51D13H152J",
+"name": "Racines"
+},
+{
+"code": "DLCJOX83T17D524R",
+"name": "Feletto"
+},
+{
+"code": "DLCJOX83T17A395R",
+"name": null
+},
+{
+"code": "SPSGLI45S46L456M",
+"name": "Tuenetto"
+},
+{
+"code": "spsgli45s46l456m",
+"name": "Tuenetto"
+},
+{
+"code": "BNCGUO30L02F556E",
+"name": "Montemagno"
+},
+{
+"code": "VRDGLI30D59E806A",
+"name": "Magisano"
+},
+{
+"code": "VRDGLI3LD5VE8L6L",
+"name": "Magisano"
+},
+{
+"code": "SPSNNA02S63D522T",
+"name": "Orco Feglino"
+},
+{
+"code": "VRDFNC12H09E583D",
+"name": "Lignana"
+},
+{
+"code": "SPSMCH65E21L383X",
+"name": "Trepuzzi"
+},
+{
+"code": "SPSMCH65EN1L3U3U",
+"name": "Trepuzzi"
+},
+{
+"code": "VRDJOX10S22Z342H",
+"name": "Seychelles"
+},
+{
+"code": "RSSFNC45A66I473C",
+"name": "Savignano Sul Panaro"
+},
+{
+"code": "DLCGLI14M58F932R",
+"name": "Nonio"
+},
+{
+"code": "DLCGLIM4M5UF9P2S",
+"name": "Nonio"
+},
+{
+"code": "RSSGLI96P25A950Y",
+"name": "Boltiere"
+},
+{
+"code": "FOXGUO24L56F161C",
+"name": "Mestrino"
+},
+{
+"code": "FOXGUO24L56F161W",
+"name": "Mestrino"
+},
+{
+"code": "VRDNNA18C02G115B",
+"name": "Ormelle"
+},
+{
+"code": "VRDNNA18C02G115",
+"name": null
+},
+{
+"code": "RCCGUO85T04E798R",
+"name": "Maenza"
+},
+{
+"code": "RSSGUO73S51C100K",
+"name": "Castelfidardo"
+},
+{
+"code": "rssguo73s51c100k",
+"name": "Castelfidardo"
+},
+{
+"code": "BNCGUO12M60G320T",
+"name": "Papasidero"
+},
+{
+"code": "BNCGUOMNM60G3NLK",
+"name": "Papasidero"
+},
+{
+"code": "FOXGUO44B56H085U",
+"name": "Prunetto"
+},
+{
+"code": "FOXGUOQQBR6HL8RN",
+"name": "Prunetto"
+},
+{
+"code": "BNCJOX16D10H440T",
+"name": "Rocca Santa Maria"
+},
+{
+"code": "BNCNNA98R14I215V",
+"name": "Sant'Alessio Siculo"
+},
+{
+"code": "BNCNNAVURM4INMRC",
+"name": "Sant'Alessio Siculo"
+},
+{
+"code": "FOXNNA70D45I342U",
+"name": "Sant'Ilario D'Enza"
+},
+{
+"code": "FOXNNA70D45I342S",
+"name": "Sant'Ilario D'Enza"
+},
+{
+"code": "RCCMCH44C26L935S",
+"name": "Villa Del Nevoso"
+},
+{
+"code": "RCCMCH44C2",
+"name": null
+},
+{
+"code": "RSSFNC41B28F336W",
+"name": "Moncalvo"
+},
+{
+"code": "RCCGLI06A02G253R",
+"name": "Palagonia"
+},
+{
+"code": "DLCMRA54D21C055M",
+"name": "Castegnato"
+},
+{
+"code": "DLCMRA 54D21 C055M",
+"name": "Castegnato"
+},
+{
+"code": "RSSMRA47B06G741M",
+"name": "Plodio"
+},
+{
+"code": "rssmra47b06g741m",
+"name": "Plodio"
+},
+{
+"code": "RCCNNA82L48E821R",
+"name": "Magnano"
+},
+{
+"code": "RCCNNA82LQUE8NMD",
+"name": "Magnano"
+},
+{
+"code": "DLCLCU47R22D015E",
+"name": "Corna Imagna"
+},
+{
+"code": "DLCLCU47S22D015E",
+"name": "Corna Imagna"
+},
+{
+"code": "FOXFNC56P64D464N",
+"name": "Fagnano Castello"
+},
+{
+"code": "FOXFNC56E64D464N",
+"name": "Fagnano Castello"
+},
+{
+"code": "DLCGUO12H08I865N",
+"name": "Sospiro"
+},
+{
+"code": "DLCGUO1NHL8I86RE",
+"name": "Sospiro"
+},
+{
+"code": "SPSMCH08A60I868C",
+"name": "Sostegno"
+},
+{
+"code": "SPSMCH08B60I868C",
+"name": "Sostegno"
+},
+{
+"code": "DLCNNA15H21I611A",
+"name": "Senna Comasco"
+},
+{
+"code": "DLCNNA15H21I611O",
+"name": "Senna Comasco"
+},
+{
+"code": "DLCJOX58M43I760S",
+"name": "Siror"
+},
+{
+"code": "DLCJOX58M4PIT6LO",
+"name": "Siror"
+},
+{
+"code": "DLCJOX41R27D768S",
+"name": "Francofonte"
+},
+{
+"code": "DLCJOX41R27D768O",
+"name": "Francofonte"
+},
+{
+"code": "SPSMCH64P26C149Z",
+"name": "Castellazzo Novarese"
+},
+{
+"code": "SPSMCH64P26C149K",
+"name": "Castellazzo Novarese"
+},
+{
+"code": "DLCGUO29D25D925E",
+"name": "Garlasco"
+},
+{
+"code": "DLCGUON9DN5DVNRZ",
+"name": "Garlasco"
+},
+{
+"code": "BNCLCU25T17B126K",
+"name": "Brebbia"
+},
+{
+"code": "BNCLCU25T17B126V",
+"name": "Brebbia"
+},
+{
+"code": "BNCGLI09M61B511H",
+"name": "Campiglia Dei Berici"
+},
+{
+"code": "BNCGLI09C61B511H",
+"name": "Campiglia Dei Berici"
+},
+{
+"code": "FOXFNC60A03G384C",
+"name": "Paulilatino"
+},
+{
+"code": "SPSFNC26S28G421X",
+"name": "Pella"
+},
+{
+"code": "SPSFNC 26S28 G421X",
+"name": "Pella"
+},
+{
+"code": "SPSGUO86S12L692C",
+"name": "Vas"
+},
+{
+"code": "SPSGUO86S12L692E",
+"name": "Vas"
+},
+{
+"code": "DLCGLI13B54F171S",
+"name": "Mezzana Rabattone"
+},
+{
+"code": "DLCGLI13B54F171D",
+"name": "Mezzana Rabattone"
+},
+{
+"code": "RSSGUO75M64C432S",
+"name": "Cella Monte"
+},
+{
+"code": "RSSGUO 75M64 C432S",
+"name": "Cella Monte"
+},
+{
+"code": "VRDJOX71B25C891K",
+"name": "Cologna-Gavazzo"
+},
+{
+"code": "VRDJOX71B25C891L",
+"name": "Cologna-Gavazzo"
+},
+{
+"code": "SPSMCH86R47G201Y",
+"name": "Ovodda"
+},
+{
+"code": "FOXGLI02B43A130K",
+"name": "Albano Vercellese"
+},
+{
+"code": "FOXGLI02B43A130D",
+"name": "Albano Vercellese"
+},
+{
+"code": "RSSLCU86A05G056K",
+"name": "Oltrona Di San Mamette"
+},
+{
+"code": "RSSLCU86A05A064K",
+"name": "Afragola"
+},
+{
+"code": "BNCMCH30S25A482U",
+"name": "Atella"
+},
+{
+"code": "BNCJOX78R55D456O",
+"name": "Faedo Valtellino"
+},
+{
+"code": "bncjox78r55d456o",
+"name": "Faedo Valtellino"
+},
+{
+"code": "BNCNNA28L61I832F",
+"name": "Sonnino"
+},
+{
+"code": "BNCNNA28L61I832F",
+"name": "Sonnino"
+},
+{
+"code": "DLCGUO99C12B823Z",
+"name": "Carpignano Sesia"
+},
+{
+"code": "DLCGUO99C12H333Z",
+"name": "Rivalba"
+},
+{
+"code": "BNCLCU29D13I891P",
+"name": "Sperlinga"
+},
+{
+"code": "RCCNNA14T22A986N",
+"name": "Bordolano"
+},
+{
+"code": "RCCNNA14T22B938N",
+"name": "Casarile"
+},
+{
+"code": "BNCJOX04T64D253L",
+"name": "Dasà"
+},
+{
+"code": "BNCJOX0QTSQDN5PR",
+"name": "Dasà"
+},
+{
+"code": "RCCMRA60M57E615T",
+"name": "Lisio"
+},
+{
+"code": "RCCMRA60M57E615W",
+"name": "Lisio"
+},
+{
+"code": "RCCMCH06C07I580U",
+"name": "Selargius"
+},
+{
+"code": "RCCMCH06C07Z705U",
+"name": null
+},
+{
+"code": "FOXNNA53M12L769Y",
+"name": "Vermiglio"
+},
+{
+"code": "FOXNNA53M12A521Y",
+"name": "Avise"
+},
+{
+"code": "VRDGLI97H64D022T",
+"name": "Corneliano D'Alba"
+},
+{
+"code": "SPSMCH27S52H712X",
+"name": "San Mauro Di Saline"
+},
+{
+"code": "SPSMCHNTS52H71NN",
+"name": "San Mauro Di Saline"
+},
+{
+"code": "SPSJOX12R58I232H",
+"name": "Santa Maria A Monte"
+},
+{
+"code": "SPSJOX1NRRUI23NQ",
+"name": "Santa Maria A Monte"
+},
+{
+"code": "FOXMCH09M19H299M",
+"name": "Rio Di Pusteria"
+},
+{
+"code": "FOXMCH09M19B110M",
+"name": "Bozzolo"
+},
+{
+"code": "SPSJOX83M65D993Z",
+"name": "Gerre De' Caprioli"
+},
+{
+"code": "SPSJOX83M65A840Z",
+"name": "Biacesa"
+},
+{
+"code": "BNCFNC17M66D725W",
+"name": "Forno Canavese"
+},
+{
+"code": "BNCFNC17M66H568W",
+"name": "Roseto Valfortore"
+},
+{
+"code": "FOXFNC02P21F464M",
+"name": "Montecchio Maggiore"
+},
+{
+"code": "FOXFNC02P21A414M",
+"name": "Armeno"
+},
+{
+"code": "VRDGLI48R26E817F",
+"name": "Maglione"
+},
+{
+"code": "VRDGLI48R26E",
+"name": null
+},
+{
+"code": "RSSFNC23M57G307N",
+"name": "Panettieri"
+},
+{
+"code": "RSSFNC 23M57 G307N",
+"name": "Panettieri"
+},
+{
+"code": "RCCFNC07T19H941O",
+"name": "San Gregorio D'Ippona"
+},
+{
+"code": "RCCFNCLTT1VHVQML",
+"name": "San Gregorio D'Ippona"
+},
+{
+"code": "RCCMRA96E10I203P",
+"name": "Santa Giuletta"
+},
+{
+"code": "RCCGLI97S25I469C",
+"name": "Saviano"
+},
+{
+"code": "RCCGLI 97S25 I469C",
+"name": "Saviano"
+},
+{
+"code": "BNCGUO12B21E337L",
+"name": "Isnello"
+},
+{
+"code": "BNCGUO12B21E337Q",
+"name": "Isnello"
+},
+{
+"code": "BNCFNC85M51D133B",
+"name": "Cravanzana"
+},
+{
+"code": "BNCFNCURM51DMP3O",
+"name": "Cravanzana"
+},
+{
+"code": "SPSGUO25E42E594I",
+"name": "Limina"
+},
+{
+"code": "SPSGUO25E42E594X",
+"name": "Limina"
+},
+{
+"code": "FOXGUO88M10L087Q",
+"name": "Telgate"
+},
+{
+"code": "FOXFNC27L18L171D",
+"name": "Tina"
+},
+{
+"code": "FOXFNCN7L1UL1TMT",
+"name": "Tina"
+},
+{
+"code": "SPSMCH53E27G474I",
+"name": "Pertica Alta"
+},
+{
+"code": "SPSMCH53S27G474I",
+"name": "Pertica Alta"
+},
+{
+"code": "VRDMRA96S43A150G",
+"name": "Alberona"
+},
+{
+"code": "VRDMRA96S43A150N",
+"name": "Alberona"
+},
+{
+"code": "BNCNNA41M21D563G",
+"name": "Fianona"
+},
+{
+"code": "BNCNNA41M21L731G",
+"name": "Vendrogno"
+},
+{
+"code": "RCCFNC33M63G959G",
+"name": "Pozzolengo"
+},
+{
+"code": "RCCFNC33A63G959G",
+"name": "Pozzolengo"
+},
+{
+"code": "RCCGUO99H61G325C",
+"name": "Parabita"
+},
+{
+"code": "RCCGUO9VHSMGPN5Z",
+"name": "Parabita"
+},
+{
+"code": "RSSNNA76S46B555B",
+"name": "Campora"
+},
+{
+"code": "SPSLCU68M44C911X",
+"name": "Comabbio"
+},
+{
+"code": "SPSLCU6UMQ4C911V",
+"name": "Comabbio"
+},
+{
+"code": "DLCMCH26T14B681C",
+"name": "Cappelle Sul Tavo"
+},
+{
+"code": "DLCMCH26T14B940C",
+"name": "Casarsa Della Delizia"
+},
+{
+"code": "RCCLCU07R23I779Z",
+"name": "Sogliano Al Rubicone"
+},
+{
+"code": "RSSGUO05E42G845K",
+"name": "Ponte Di Nossa"
+},
+{
+"code": "RSSGUO05E42B552K",
+"name": null
+},
+{
+"code": "VRDMCH62T50B600I",
+"name": "Canezza"
+},
+{
+"code": "VRDMCH62T50Z145I",
+"name": "Lettonia"
+},
+{
+"code": "VRDFNC22C43C120L",
+"name": "Castelgrande"
+},
+{
+"code": "BNCMRA04S22F538Y",
+"name": "Monteleone Di Puglia"
+},
+{
+"code": "BNCMRAL4S2NF53UN",
+"name": "Monteleone Di Puglia"
+},
+{
+"code": "RSSGUO08R50I275A",
+"name": "Sant'Angelo Di Piove Di Sacco"
+},
+{
+"code": "RCCMCH93H08A790W",
+"name": "Berdo San Giovanni"
+},
+{
+"code": "RCCMCH93H08A79LZ",
+"name": "Berdo San Giovanni"
+},
+{
+"code": "VRDMRA36C64B429Q",
+"name": "Caltanissetta"
+},
+{
+"code": "VRDMRA36C64H527Q",
+"name": "Roncaro"
+},
+{
+"code": "RSSNNA61R61A585F",
+"name": "Bairo Torre"
+},
+{
+"code": "RSSLCU76L61D952L",
+"name": "Gazzaniga"
+},
+{
+"code": "RSSLCU76L61D952L",
+"name": "Gazzaniga"
+},
+{
+"code": "DLCMCH27A65L663O",
+"name": "Vanga"
+},
+{
+"code": "DLCMCH27L65L663O",
+"name": "Vanga"
+},
+{
+"code": "FOXMCH10A13G150T",
+"name": "Orzivecchi"
+},
+{
+"code": "BNCMCH05E23C759H",
+"name": "Cividate Al Piano"
+},
+{
+"code": "VRDNNA12M03L125Q",
+"name": "Terranova Dei Passerini"
+},
+{
+"code": "VRDNNA12M03L125T",
+"name": "Terranova Dei Passerini"
+},
+{
+"code": "RCCFNC32P57A781X",
+"name": "Benetutti"
+},
+{
+"code": "RCCFNC32P57A781C",
+"name": "Benetutti"
+},
+{
+"code": "VRDGUO16S52F855K",
+"name": "Naz"
+},
+{
+"code": "VRDGUO16S52F855R",
+"name": "Naz"
+},
+{
+"code": "RSSLCU27R24F307E",
+"name": "Molveno"
+},
+{
+"code": "BNCGUO37B46F006E",
+"name": "Maschito"
+},
+{
+"code": "BNCFNC32E10A146G",
+"name": "Albera Ligure"
+},
+{
+"code": "VRDFNC32B04F989E",
+"name": "Nuvolento"
+},
+{
+"code": "VRDFNC32D04F989E",
+"name": "Nuvolento"
+},
+{
+"code": "DLCJOX06M14B684E",
+"name": "Capraia E Limite"
+},
+{
+"code": "DLCJOXL6MMQB684P",
+"name": "Capraia E Limite"
+},
+{
+"code": "VRDLCU28E68A857C",
+"name": "Bieda"
+},
+{
+"code": "VRDMCH98S44D048J",
+"name": "Cortaccia Sulla Strada Del Vino"
+},
+{
+"code": "VRDMCH98S44A758J",
+"name": null
+},
+{
+"code": "BNCLCU19R12E784L",
+"name": "Macerata Campania"
+},
+{
+"code": "BNCLCU19R12E784O",
+"name": "Macerata Campania"
+},
+{
+"code": "BNCMRA90C02H249C",
+"name": "Reviano Folas"
+},
+{
+"code": "BNCMRA90C02H249T",
+"name": "Reviano Folas"
+},
+{
+"code": "DLCGUO31E18A839J",
+"name": "Bezzecca"
+},
+{
+"code": "BNCLCU22M05E642Q",
+"name": "Locavizza Di Canale"
+},
+{
+"code": "BNCLCU22M05E642Q",
+"name": "Locavizza Di Canale"
+},
+{
+"code": "VRDMCH58P65E457G",
+"name": "Lasa"
+},
+{
+"code": "BNCGLI34M52E062N",
+"name": "Giussago"
+},
+{
+"code": "BNCGLI34D52E062N",
+"name": "Giussago"
+},
+{
+"code": "SPSLCU20M57E086S",
+"name": "Gonnesa"
+},
+{
+"code": "SPSLCU20M57E086O",
+"name": "Gonnesa"
+},
+{
+"code": "FOXNNA14L62A891C",
+"name": "Bisuschio"
+},
+{
+"code": "FOXNNA14L62A891T",
+"name": "Bisuschio"
+},
+{
+"code": "VRDJOX01M46M093P",
+"name": "Vitulano"
+},
+{
+"code": "vrdjox01m46m093p",
+"name": "Vitulano"
+},
+{
+"code": "SPSMRA41P43D821D",
+"name": "Funes"
+},
+{
+"code": "SPSMRAQ1P43DUN1I",
+"name": "Funes"
+},
+{
+"code": "RCCJOX84D43F631S",
+"name": "Monte Sant'Angelo"
+},
+{
+"code": "rccjox84d43f631s",
+"name": "Monte Sant'Angelo"
+},
+{
+"code": "DLCLCU94A06C677L",
+"name": "Ciciliano"
+},
+{
+"code": "DLCLCU94A06A554L",
+"name": null
+},
+{
+"code": "DLCGLI51C22C248T",
+"name": "Castelplanio"
+},
+{
+"code": "DLCGLI51L22C248T",
+"name": "Castelplanio"
+},
+{
+"code": "BNCMCH16E47L663N",
+"name": "Vanga"
+},
+{
+"code": "BNCMCH1SE4TLSSPB",
+"name": "Vanga"
+},
+{
+"code": "DLCLCU05H53G119S",
+"name": "Orosei"
+},
+{
+"code": "DLCLCU05H53F856S",
+"name": "Naz-Sciaves"
+},
+{
+"code": "RSSMRA29D12G407N",
+"name": "Pedergnaga Oriano"
+},
+{
+"code": "RSSMRA29D12G4",
+"name": null
+},
+{
+"code": "SPSLCU07D44H808S",
+"name": "San Costantino Albanese"
+},
+{
+"code": "RSSMRA60H26E960J",
+"name": "Marliana"
+},
+{
+"code": "RSSLCU56S09M165B",
+"name": "Zerba"
+},
+{
+"code": "VRDGLI02C45M009H",
+"name": "Villaromagnano"
+},
+{
+"code": "VRDGLI02C45M009R",
+"name": "Villaromagnano"
+},
+{
+"code": "FOXFNC33C19F158P",
+"name": "Messina"
+},
+{
+"code": "FOXFNC33C19F158M",
+"name": "Messina"
+},
+{
+"code": "SPSFNC39S66G463N",
+"name": "Perosa Argentina"
+},
+{
+"code": "SPSGLI45P61L506P",
+"name": "Urzulei"
+},
+{
+"code": "SPSGLI45P61L506G",
+"name": "Urzulei"
+},
+{
+"code": "DLCLCU98C16H249Q",
+"name": "Reviano Folas"
+},
+{
+"code": "DLCLCU98C16H249J",
+"name": "Reviano Folas"
+},
+{
+"code": "VRDLCU98R13I929L",
+"name": "Squillace"
+},
+{
+"code": "VRDLCU9URM3I9NVI",
+"name": "Squillace"
+},
+{
+"code": "FOXNNA20E01F380Q",
+"name": "Monsampolo Del Tronto"
+},
+{
+"code": "FOXNNANLELMFP8LS",
+"name": "Monsampolo Del Tronto"
+},
+{
+"code": "VRDJOX11E19D112O",
+"name": "Costa Masnaga"
+},
+{
+"code": "vrdjox11e19d112o",
+"name": "Costa Masnaga"
+},
+{
+"code": "RSSGUO70P06C289P",
+"name": "Castel Viscardo"
+},
+{
+"code": "RSSGUO70B06C289P",
+"name": "Castel Viscardo"
+},
+{
+"code": "SPSLCU11M42Z101Y",
+"name": "Andorra"
+},
+{
+"code": "SPSLCU11R42Z101Y",
+"name": "Andorra"
+},
+{
+"code": "SPSJOX40L41B383S",
+"name": "Calasetta"
+},
+{
+"code": "RCCNNA19S44L973Y",
+"name": "Villanova Del Battista"
+},
+{
+"code": "RCCNNA19L44L973Y",
+"name": "Villanova Del Battista"
+},
+{
+"code": "DLCMRA15D16H516D",
+"name": "Rombiolo"
+},
+{
+"code": "BNCGLI89A43F964N",
+"name": "Noventa Vicentina"
+},
+{
+"code": "BNCGLI89A43F964X",
+"name": "Noventa Vicentina"
+},
+{
+"code": "RCCFNC20H56E671G",
+"name": "Longare"
+},
+{
+"code": "RCCFNC20H56L060G",
+"name": "Tassullo"
+},
+{
+"code": "VRDJOX21H04H523I",
+"name": "Roncade"
+},
+{
+"code": "vrdjox21h04h523i",
+"name": "Roncade"
+},
+{
+"code": "FOXGLI32R22E614T",
+"name": "Lisignago"
+},
+{
+"code": "FOXGLIP2RN2E6MQI",
+"name": "Lisignago"
+},
+{
+"code": "FOXJOX43T19E939K",
+"name": "Marene"
+},
+{
+"code": "foxjox43t19e939k",
+"name": "Marene"
+},
+{
+"code": "BNCMCH22P59A837N",
+"name": "Bevilacqua"
+},
+{
+"code": "BNCMCH22A59A837N",
+"name": "Bevilacqua"
+},
+{
+"code": "DLCMRA39M64I223K",
+"name": "Santa Maddalena In Casies"
+},
+{
+"code": "RSSMRA66A24B662O",
+"name": "Ponte Nelle Alpi"
+},
+{
+"code": "RSSMRA 66A24 B662O",
+"name": "Ponte Nelle Alpi"
+},
+{
+"code": "RCCGUO03B59H575R",
+"name": "Rosora"
+},
+{
+"code": "rccguo03b59h575r",
+"name": "Rosora"
+},
+{
+"code": "RCCMCH84H59I285J",
+"name": "Sant'Angelo In Lizzola"
+},
+{
+"code": "RCCMCH84H59I285Q",
+"name": "Sant'Angelo In Lizzola"
+},
+{
+"code": "RSSLCU27R54C892N",
+"name": "Cologna In Giudicarie"
+},
+{
+"code": "RSSLCUN7RRQC892L",
+"name": "Cologna In Giudicarie"
+},
+{
+"code": "FOXGUO38T07H944T",
+"name": "Sanguinetto"
+},
+{
+"code": "FOXGUO38T07H944H",
+"name": "Sanguinetto"
+},
+{
+"code": "DLCMRA40E23A359Z",
+"name": "Arbus"
+},
+{
+"code": "RSSNNA82E26G755D",
+"name": "Poggio Berni"
+},
+{
+"code": "SPSGLI19T56D109U",
+"name": "Costa De' Nobili"
+},
+{
+"code": "VRDJOX70T48E954O",
+"name": "Mariglianella"
+},
+{
+"code": "VRDJOXTLTQ8E9RQR",
+"name": "Mariglianella"
+},
+{
+"code": "RSSMCH14M17E114M",
+"name": "Gossolengo"
+},
+{
+"code": "rssmch14m17e114m",
+"name": "Gossolengo"
+},
+{
+"code": "SPSMCH24B45B021P",
+"name": "Borgomasino"
+},
+{
+"code": "SPSMCH24B45F765P",
+"name": "Moscufo"
+},
+{
+"code": "RSSGLI22D44I937C",
+"name": "Stalettì"
+},
+{
+"code": "RCCGLI62M01D009P",
+"name": "Corleone"
+},
+{
+"code": "RCCGLIS2MLMDL0VH",
+"name": "Corleone"
+},
+{
+"code": "RSSNNA30T07C194Z",
+"name": "Castello Tesino"
+},
+{
+"code": "rssnna30t07c194z",
+"name": "Castello Tesino"
+},
+{
+"code": "RCCGUO29E54D317M",
+"name": "Dolcè"
+},
+{
+"code": "RCCGUO 29E54 D317M",
+"name": "Dolcè"
+},
+{
+"code": "SPSNNA41P57E691F",
+"name": "Loreto Aprutino"
+},
+{
+"code": "SPSNNA 41P57 E691F",
+"name": "Loreto Aprutino"
+},
+{
+"code": "BNCGUO95R63E934I",
+"name": "Marcignago"
+},
+{
+"code": "BNCGUO95R63E934G",
+"name": "Marcignago"
+},
+{
+"code": "RSSGLI05B20D237P",
+"name": "Cutrofiano"
+},
+{
+"code": "rssgli05b20d237p",
+"name": "Cutrofiano"
+},
+{
+"code": "DLCMRA18D68C360V",
+"name": "Cava Manara"
+},
+{
+"code": "RCCJOX36P27H547E",
+"name": "Rondissone"
+},
+{
+"code": "SPSMRA57P06F392T",
+"name": "Montagna"
+},
+{
+"code": "RSSLCU58D05I068T",
+"name": "San Pancrazio Parmense"
+},
+{
+"code": "SPSFNC61H46I283Q",
+"name": "Sant'Angelo Di Brolo"
+},
+{
+"code": "SPSFNC6MHQ6IN83C",
+"name": "Sant'Angelo Di Brolo"
+},
+{
+"code": "DLCMCH37S60F263Z",
+"name": "Moena"
+},
+{
+"code": "BNCGLI71B28I388N",
+"name": "San Vincenzo La Costa"
+},
+{
+"code": "BNCGLI71B2",
+"name": null
+},
+{
+"code": "RSSGLI28M51I673Z",
+"name": "Sovramonte"
+},
+{
+"code": "RSSGLI2UM5MI6T3P",
+"name": "Sovramonte"
+},
+{
+"code": "RCCLCU63E24H074J",
+"name": "Proserpio"
+},
+{
+"code": "RCCLCU63H24H074J",
+"name": "Proserpio"
+},
+{
+"code": "VRDMRA40B01I732S",
+"name": "Siligo"
+},
+{
+"code": "VRDLCU01M44H533D",
+"name": "Ronchis"
+},
+{
+"code": "VRDLCU0MM44HR33J",
+"name": "Ronchis"
+},
+{
+"code": "RCCJOX07H17B398H",
+"name": "Caldarola"
+},
+{
+"code": "RCCJOX0TH17BPV8B",
+"name": "Caldarola"
+},
+{
+"code": "FOXFNC44M47F347I",
+"name": "Mondavio"
+},
+{
+"code": "FOXFNC44M47F3",
+"name": null
+},
+{
+"code": "DLCGUO21D20I745N",
+"name": "Simeri Crichi"
+},
+{
+"code": "DLCGUO 21D20 I745N",
+"name": "Simeri Crichi"
+},
+{
+"code": "BNCGUO00A63M018Y",
+"name": "Villa San Giovanni"
+},
+{
+"code": "BNCGUO00A63M018R",
+"name": "Villa San Giovanni"
+},
+{
+"code": "VRDMRA36M14G661S",
+"name": "Pignataro Maggiore"
+},
+{
+"code": "VRDMRA3SM14GSSMF",
+"name": "Pignataro Maggiore"
+},
+{
+"code": "RCCNNA55B51G623X",
+"name": "Pietrapertosa"
+},
+{
+"code": "RCCNNA55BRMG6NPI",
+"name": "Pietrapertosa"
+},
+{
+"code": "VRDNNA56B60L557J",
+"name": "Valdidentro"
+},
+{
+"code": "VRDFNC31S11I976D",
+"name": "Stresa Borromeo"
+},
+{
+"code": "SPSGLI27E66F609K",
+"name": "Monterosso Al Mare"
+},
+{
+"code": "SPSGLI27ESSF6LVT",
+"name": "Monterosso Al Mare"
+},
+{
+"code": "FOXLCU04H51A553K",
+"name": "Bagnaria Arsa"
+},
+{
+"code": "FOXLCU04HRMAR53J",
+"name": "Bagnaria Arsa"
+},
+{
+"code": "BNCJOX28B03G802H",
+"name": "Polverara"
+},
+{
+"code": "BNCJOXN8BL3GULNE",
+"name": "Polverara"
+},
+{
+"code": "SPSGLI36B12F640X",
+"name": "Montescudaio"
+},
+{
+"code": "SPSGLI36B12F640A",
+"name": "Montescudaio"
+},
+{
+"code": "RCCFNC14S63I056W",
+"name": "San Nicola La Strada"
+},
+{
+"code": "RSSFNC05E02D567U",
+"name": "Ficarazzi"
+},
+{
+"code": "RSSFNC05E02H678U",
+"name": "Sala Bolognese"
+},
+{
+"code": "RSSNNA25D65E817S",
+"name": "Maglione"
+},
+{
+"code": "RSSNNA25D65E817P",
+"name": "Maglione"
+},
+{
+"code": "RSSMCH82C51C593U",
+"name": "Challand-Saint-Anselme"
+},
+{
+"code": "RSSMCH82C51C593I",
+"name": "Challand-Saint-Anselme"
+},
+{
+"code": "BNCLCU93M64H952T",
+"name": "San Leonardo In Passiria"
+},
+{
+"code": "BNCLCU93C64H952T",
+"name": "San Leonardo In Passiria"
+},
+{
+"code": "DLCLCU19M17F071N",
+"name": "Mazzoleni E Falghera"
+},
+{
+"code": "RCCLCU49H43A973C",
+"name": "Bonifati"
+},
+{
+"code": "RCCLCU49H43A973J",
+"name": "Bonifati"
+},
+{
+"code": "DLCMCH61S67H424V",
+"name": "Roccamontepiano"
+},
+{
+"code": "DLCMCH61S67H424H",
+"name": "Roccamontepiano"
+},
+{
+"code": "RCCFNC72D48A429T",
+"name": "Arona"
+},
+{
+"code": "RCCFNC72DQ8AQ29C",
+"name": "Arona"
+},
+{
+"code": "SPSNNA22A56G608K",
+"name": "Pietracamela"
+},
+{
+"code": "spsnna22a56g608k",
+"name": "Pietracamela"
+},
+{
+"code": "DLCJOX82M50D653L",
+"name": "Foligno"
+},
+{
+"code": "DLCJOX82M50D653T",
+"name": "Foligno"
+},
+{
+"code": "FOXMRA13H41H869T",
+"name": "San Giacomo"
+},
+{
+"code": "FOXMRA13H41H86",
+"name": null
+},
+{
+"code": "SPSLCU74B25C978E",
+"name": "Copertino"
+},
+{
+"code": "SPSLCU74M25C978E",
+"name": "Copertino"
+},
+{
+"code": "RCCFNC11S45B182I",
+"name": "Brinzio"
+},
+{
+"code": "FOXFNC97L15G057Y",
+"name": "Oltrona Al Lago"
+},
+{
+"code": "FOXFNC97R15G057Y",
+"name": "Oltrona Al Lago"
+},
+{
+"code": "DLCLCU75R43E895P",
+"name": "Mantana"
+},
+{
+"code": "dlclcu75r43e895p",
+"name": "Mantana"
+},
+{
+"code": "VRDGUO10D45E829K",
+"name": "Magrè Sulla Strada Del Vino"
+},
+{
+"code": "VRDGUO10D45L614K",
+"name": "Vallerotonda"
+},
+{
+"code": "VRDNNA89S63H546D",
+"name": "Rondanina"
+},
+{
+"code": "VRDLCU46H05C230W",
+"name": "Castelnuovo Calcea"
+},
+{
+"code": "VRDLCU46H05C230U",
+"name": "Castelnuovo Calcea"
+},
+{
+"code": "DLCJOX52M22L094G",
+"name": "Temù"
+},
+{
+"code": "DLCJOX52E22L094G",
+"name": "Temù"
+},
+{
+"code": "FOXMCH60C60G115T",
+"name": "Ormelle"
+},
+{
+"code": "foxmch60c60g115t",
+"name": "Ormelle"
+},
+{
+"code": "FOXMCH13R56C388N",
+"name": "Jesolo"
+},
+{
+"code": "FOXMCH13E56C388N",
+"name": "Jesolo"
+},
+{
+"code": "VRDNNA08R19I495P",
+"name": "Scandeluzza"
+},
+{
+"code": "VRDNNA08R19I49RK",
+"name": "Scandeluzza"
+},
+{
+"code": "RSSMRA70S47G176G",
+"name": "Ossegliano San Michele"
+},
+{
+"code": "RCCMCH97A17G887G",
+"name": "Stella Cilento"
+},
+{
+"code": "RCCMCH97A17G887O",
+"name": "Stella Cilento"
+},
+{
+"code": "DLCMCH23B51E860M",
+"name": "Mallare"
+},
+{
+"code": "DLCMCH23B51Z745M",
+"name": null
+},
+{
+"code": "DLCGUO07E63C558Y",
+"name": "Cervino"
+},
+{
+"code": "DLCGUOLTES3C55UW",
+"name": "Cervino"
+},
+{
+"code": "DLCGLI44B28A366Z",
+"name": "Arcevia"
+},
+{
+"code": "DLCGLI44B28A366U",
+"name": "Arcevia"
+},
+{
+"code": "VRDLCU18M66G307R",
+"name": "Panettieri"
+},
+{
+"code": "VRDLCU18E66G307R",
+"name": "Panettieri"
+},
+{
+"code": "DLCGLI65C41E283Q",
+"name": "Ilbono"
+},
+{
+"code": "dlcgli65c41e283q",
+"name": "Ilbono"
+},
+{
+"code": "BNCGUO11C27F884Q",
+"name": "Niardo"
+},
+{
+"code": "BNCGUO11CNTF884Y",
+"name": "Niardo"
+},
+{
+"code": "RCCLCU85E20H775B",
+"name": "San Benigno Canavese"
+},
+{
+"code": "RCCLCU 85E20 H775B",
+"name": "San Benigno Canavese"
+},
+{
+"code": "SPSMCH22M26Z519J",
+"name": "Isole Turks E Caicos"
+},
+{
+"code": "FOXMCH86P56A273N",
+"name": "Andalo Valtellino"
+},
+{
+"code": "FOXMCH86P5SANTPH",
+"name": "Andalo Valtellino"
+},
+{
+"code": "RSSMRA68R09B999G",
+"name": "Cassano Valcuvia"
+},
+{
+"code": "RSSMRA68R09B999J",
+"name": "Cassano Valcuvia"
+},
+{
+"code": "RCCJOX54C18I868W",
+"name": "Sostegno"
+},
+{
+"code": "RCCJOX54P18I868W",
+"name": "Sostegno"
+},
+{
+"code": "RCCMRA19D21A779U",
+"name": "Bene Vagienna"
+},
+{
+"code": "RCCMRA19H21A779U",
+"name": "Bene Vagienna"
+},
+{
+"code": "RCCGLI12H65C113D",
+"name": "Castelfranco Di Sotto"
+},
+{
+"code": "RCCGLI12H65C113M",
+"name": "Castelfranco Di Sotto"
+},
+{
+"code": "FOXNNA51S52I682B",
+"name": "Sesto Campano"
+},
+{
+"code": "FOXNNA5MS5NI682B",
+"name": "Sesto Campano"
+},
+{
+"code": "DLCNNA32A04D927O",
+"name": "Garlenda"
+},
+{
+"code": "DLCNNA3NAL4DVN7K",
+"name": "Garlenda"
+},
+{
+"code": "FOXMCH29M49B479P",
+"name": "Caminata"
+},
+{
+"code": "FOXMCH29M49Z942P",
+"name": null
+},
+{
+"code": "FOXMRA59R20G383D",
+"name": "San Nicolò Gerrei"
+},
+{
+"code": "foxmra59r20g383d",
+"name": "San Nicolò Gerrei"
+},
+{
+"code": "SPSLCU32C08D495M",
+"name": "Fara San Martino"
+},
+{
+"code": "SPSLCUPNCLUDQ9RT",
+"name": "Fara San Martino"
+},
+{
+"code": "RSSGLI06L44L175H",
+"name": "Tirano"
+},
+{
+"code": "SPSMRA80H41D736H",
+"name": "Fossa"
+},
+{
+"code": "spsmra80h41d736h",
+"name": "Fossa"
+},
+{
+"code": "FOXLCU05R12A389O",
+"name": "Arese"
+},
+{
+"code": "SPSLCU50C04C157W",
+"name": "Castelletto Di Branduzzo"
+},
+{
+"code": "SPSLCU50C04C157H",
+"name": "Castelletto Di Branduzzo"
+},
+{
+"code": "FOXNNA81S14L239L",
+"name": "Torrazzo"
+},
+{
+"code": "FOXNNA81S14L949L",
+"name": "Villafranca Di Verona"
+},
+{
+"code": "SPSGUO81M07C346C",
+"name": "Castropignano"
+},
+{
+"code": "SPSGUO81M07C34",
+"name": null
+},
+{
+"code": "SPSFNC01H05F514W",
+"name": "Montegalda"
+},
+{
+"code": "SPSFNC01H05F514G",
+"name": "Montegalda"
+},
+{
+"code": "RCCFNC59D02D836M",
+"name": "Gabicce Mare"
+},
+{
+"code": "RCCFNC59D02D836N",
+"name": "Gabicce Mare"
+},
+{
+"code": "DLCNNA69T43A255Y",
+"name": "Amaroni"
+},
+{
+"code": "DLCNNA69S43A255Y",
+"name": "Amaroni"
+},
+{
+"code": "SPSLCU69H09I012W",
+"name": "San Martino In Strada"
+},
+{
+"code": "FOXGLI85T45L417H",
+"name": "Tribussa"
+},
+{
+"code": "FOXGLI85T45L417D",
+"name": "Tribussa"
+},
+{
+"code": "FOXNNA76M59G137W",
+"name": "Ortezzano"
+},
+{
+"code": "FOXNNA76M59F475W",
+"name": "Montecilfone"
+},
+{
+"code": "RCCLCU56L24C125Y",
+"name": "Castellabate"
+},
+{
+"code": "VRDGLI26B68A473H",
+"name": "Assago"
+},
+{
+"code": "VRDGLI26B68B047H",
+"name": "Berie"
+},
+{
+"code": "BNCGLI10L05A614A",
+"name": "Baradili"
+},
+{
+"code": "DLCMRA07T53I457M",
+"name": "Sasso Di Castalda"
+},
+{
+"code": "DLCMRA07T53H214M",
+"name": "Recoaro Terme"
+},
+{
+"code": "VRDFNC14E25C296Q",
+"name": "Castiglione Dei Pepoli"
+},
+{
+"code": "VRDFNCMQEN5C2VSO",
+"name": "Castiglione Dei Pepoli"
+},
+{
+"code": "BNCJOX18C27F131X",
+"name": "Merana"
+},
+{
+"code": "BNCJOX18L27F131X",
+"name": "Merana"
+},
+{
+"code": "RSSFNC93D06H664S",
+"name": "Sagoria San Martino"
+},
+{
+"code": "RSSFNC 93D06 H664S",
+"name": "Sagoria San Martino"
+},
+{
+"code": "RCCGLI84M04G955Y",
+"name": "Pozzo D'Adda"
+},
+{
+"code": "RCCGLI84M04G955R",
+"name": "Pozzo D'Adda"
+},
+{
+"code": "SPSGUO07A22Z128H",
+"name": "Portogallo"
+},
+{
+"code": "BNCLCU01T04B101C",
+"name": "Boves"
+},
+{
+"code": "RSSJOX21E15C376L",
+"name": "Cavallermaggiore"
+},
+{
+"code": "RSSJOX21E15C376H",
+"name": "Cavallermaggiore"
+},
+{
+"code": "FOXFNC93A64E606X",
+"name": "Lipari"
+},
+{
+"code": "FOXFNC93A64E606K",
+"name": "Lipari"
+},
+{
+"code": "FOXLCU23M11Z246I",
+"name": "Yemen"
+},
+{
+"code": "FOXLCU23D11Z246I",
+"name": "Yemen"
+},
+{
+"code": "RSSGLI03P52F438F",
+"name": "Monte A Tramontana"
+},
+{
+"code": "RSSGLI03P52F438U",
+"name": "Monte A Tramontana"
+},
+{
+"code": "DLCLCU76R63C266B",
+"name": "Castel San Pietro Romano"
+},
+{
+"code": "DLCLCU7SRS3C26SW",
+"name": "Castel San Pietro Romano"
+},
+{
+"code": "SPSFNC30B52B859Z",
+"name": "Casacanditella"
+},
+{
+"code": "RSSLCU38S21Z733Z",
+"name": "Vanuatu"
+},
+{
+"code": "RSSLCU38S21Z733B",
+"name": "Vanuatu"
+},
+{
+"code": "RSSGUO58D64D424K",
+"name": "Erli"
+},
+{
+"code": "RSSGUO58D64D424D",
+"name": "Erli"
+},
+{
+"code": "SPSLCU30A49H479W",
+"name": "Rodi"
+},
+{
+"code": "SPSLCU30A49",
+"name": null
+},
+{
+"code": "VRDLCU59D67E596H",
+"name": "Limone Sul Garda"
+},
+{
+"code": "VRDLCU59D67E596C",
+"name": "Limone Sul Garda"
+},
+{
+"code": "RSSNNA01R02G830L",
+"name": "Ponte Gardena"
+},
+{
+"code": "RSSNNALMR0NGU30L",
+"name": "Ponte Gardena"
+},
+{
+"code": "RSSMCH09C06I507A",
+"name": "Scapoli"
+},
+{
+"code": "RSSJOX25S41M201U",
+"name": "Zumaglia"
+},
+{
+"code": "RSSJOX25S41F172U",
+"name": "Mezzane Di Sotto"
+},
+{
+"code": "RSSGUO87M57B014W",
+"name": "Suardi"
+},
+{
+"code": "RSSGUO 87M57 B014W",
+"name": "Suardi"
+},
+{
+"code": "RCCGLI15B50E221D",
+"name": "Grumento Nova"
+},
+{
+"code": "RCCGLI15E50E221D",
+"name": "Grumento Nova"
+},
+{
+"code": "FOXGUO25T26G469P",
+"name": "Persico Dosimo"
+},
+{
+"code": "foxguo25t26g469p",
+"name": "Persico Dosimo"
+},
+{
+"code": "RCCLCU29L17G571J",
+"name": "Piansano"
+},
+{
+"code": "RCCLCU29L17G571R",
+"name": "Piansano"
+},
+{
+"code": "BNCGLI58M57C081E",
+"name": "Casteldelfino"
+},
+{
+"code": "SPSGLI89R23L783P",
+"name": "Verrayes"
+},
+{
+"code": "SPSGLI89R23L419P",
+"name": "Tricase"
+},
+{
+"code": "DLCGLI14A05F772P",
+"name": "Motta Camastra"
+},
+{
+"code": "DLCGLI14A05H505P",
+"name": "Romagnese"
+},
+{
+"code": "DLCGUO08S43C763T",
+"name": "Civita"
+},
+{
+"code": "DLCGUO08D43C763T",
+"name": "Civita"
+},
+{
+"code": "SPSFNC34P03D347O",
+"name": "Dormelletto"
+},
+{
+"code": "BNCJOX50C21E734K",
+"name": "Luino"
+},
+{
+"code": "BNCJOX50C21F869K",
+"name": null
+},
+{
+"code": "RCCGLI18B44G368O",
+"name": "Pasturo"
+},
+{
+"code": "RCCGLI18B44G368O",
+"name": "Pasturo"
+},
+{
+"code": "RSSNNA81B48F669F",
+"name": "Monticello D'Alba"
+},
+{
+"code": "RSSNNA81B48F669X",
+"name": "Monticello D'Alba"
+},
+{
+"code": "BNCMCH62E22B570T",
+"name": "Campo Tures"
+},
+{
+"code": "BNCMCH62E22B570T",
+"name": "Campo Tures"
+},
+{
+"code": "DLCGLI97T12D192C",
+"name": "Cuasso Al Monte"
+},
+{
+"code": "DLCGLI97T12DM92U",
+"name": "Cuasso Al Monte"
+},
+{
+"code": "DLCNNA39A27L063N",
+"name": "Taurianova"
+},
+{
+"code": "DLCNNA39A27L667N",
+"name": "Vaprio D'Adda"
+},
+{
+"code": "RCCGUO13B48A865L",
+"name": "Biestro"
+},
+{
+"code": "DLCGLI28M46E896I",
+"name": "Mantello"
+},
+{
+"code": "DLCGLIN8MQSEUVSM",
+"name": "Mantello"
+},
+{
+"code": "RSSGLI63P66G065U",
+"name": "Onano"
+},
+{
+"code": "RSSGLISPP66G0S5P",
+"name": "Onano"
+},
+{
+"code": "SPSMRA19E01H388O",
+"name": "Roccacaramanico"
+},
+{
+"code": "FOXGLI23R21I627A",
+"name": "Sergnano"
+},
+{
+"code": "DLCNNA14D59G519E",
+"name": "Petruro Irpino"
+},
+{
+"code": "DLCNNA14A59G519E",
+"name": "Petruro Irpino"
+},
+{
+"code": "RCCMCH92L19F249T",
+"name": "Missanello"
+},
+{
+"code": "RCCMCH92LMVFN4VX",
+"name": "Missanello"
+},
+{
+"code": "RSSMCH92T04A702A",
+"name": "Bassano Bresciano"
+},
+{
+"code": "RSSMCH92T04A702C",
+"name": "Bassano Bresciano"
+},
+{
+"code": "RSSMCH65E06H967B",
+"name": "San Lorenzo Maggiore"
+},
+{
+"code": "RSSMCH65E06H967",
+"name": null
+},
+{
+"code": "BNCMCH89A56F565Y",
+"name": "Montemignaio"
+},
+{
+"code": "BNCMCH89A56F565P",
+"name": "Montemignaio"
+},
+{
+"code": "FOXGLI30P46D431K",
+"name": "Escolca"
+},
+{
+"code": "FOXGLI30P46F256K",
+"name": "Moconesi"
+},
+{
+"code": "SPSGLI17S01F599U",
+"name": "Monte Rinaldo"
+},
+{
+"code": "SPSGLI 17S01 F599U",
+"name": "Monte Rinaldo"
+},
+{
+"code": "SPSGLI52S06I353W",
+"name": "Santorso"
+},
+{
+"code": "SPSGLI52H06I353W",
+"name": "Santorso"
+},
+{
+"code": "RSSLCU17H58L977W",
+"name": "Villanova Del Sillaro"
+},
+{
+"code": "RSSLCUMTHRUL9T7V",
+"name": "Villanova Del Sillaro"
+},
+{
+"code": "FOXNNA27P04H877D",
+"name": "Sangineto"
+},
+{
+"code": "FOXNNA27P04H285D",
+"name": "Rifreddo"
+},
+{
+"code": "VRDMCH12P25F058E",
+"name": "Mattie"
+},
+{
+"code": "FOXLCU69P67Z525J",
+"name": "Isole Vergini Britanniche"
+},
+{
+"code": "BNCNNA40E05C360U",
+"name": "Cava Manara"
+},
+{
+"code": "DLCNNA69L60L565E",
+"name": "Valdobbiadene"
+},
+{
+"code": "DLCNNA69E60L565E",
+"name": "Valdobbiadene"
+},
+{
+"code": "RSSLCU21B59H528R",
+"name": "Roncegno Terme"
+},
+{
+"code": "RSSLCUN1B5VHR2UN",
+"name": "Roncegno Terme"
+},
+{
+"code": "DLCNNA11M60B703D",
+"name": "Capriate San Gervasio"
+},
+{
+"code": "VRDMRA01M14A025W",
+"name": "Aci Bonaccorsi"
+},
+{
+"code": "VRDMRA01D14A025W",
+"name": "Aci Bonaccorsi"
+},
+{
+"code": "VRDLCU97B55H004D",
+"name": "Prato Allo Stelvio"
+},
+{
+"code": "BNCNNA58T52H787P",
+"name": "San Canzian D'Isonzo"
+},
+{
+"code": "BNCNNA58T52L032P",
+"name": "Taino"
+},
+{
+"code": "FOXFNC84B59E968W",
+"name": "Maropati"
+},
+{
+"code": "FOXFNC84P59E968W",
+"name": "Maropati"
+},
+{
+"code": "DLCNNA19B21L747M",
+"name": "Verbicaro"
+},
+{
+"code": "DLCNNA19B21L747T",
+"name": "Verbicaro"
+},
+{
+"code": "SPSJOX94A61F138L",
+"name": "Mercato San Severino"
+},
+{
+"code": "SPSJOXV4AS1F13UJ",
+"name": "Mercato San Severino"
+},
+{
+"code": "RCCMCH24P01B175U",
+"name": "Briga Alta"
+},
+{
+"code": "BNCJOX45C04B033X",
+"name": "Borgo San Dalmazzo"
+},
+{
+"code": "DLCFNC71R68A819M",
+"name": "Besano"
+},
+{
+"code": "DLCFNC71R68B513M",
+"name": "Campione D'Italia"
+},
+{
+"code": "RSSLCU77P02D801Y",
+"name": "Villa Di Briano"
+},
+{
+"code": "DLCJOX34T59H961V",
+"name": "San Lorenzo Bellizzi"
+},
+{
+"code": "VRDNNA72S12B346B",
+"name": "Cadorago"
+},
+{
+"code": "VRDNNA7NS12BPQSR",
+"name": "Cadorago"
+},
+{
+"code": "SPSFNC21T05I221K",
+"name": "Santa Lucia Di Piave"
+},
+{
+"code": "SPSFNC21T05I221L",
+"name": "Santa Lucia Di Piave"
+},
+{
+"code": "RCCNNA90E65G431L",
+"name": "Poggiridenti"
+},
+{
+"code": "rccnna90e65g431l",
+"name": "Poggiridenti"
+},
+{
+"code": "DLCLCU98A63B247Z",
+"name": "Budoia"
+},
+{
+"code": "DLCLCU9UA63B2QTU",
+"name": "Budoia"
+},
+{
+"code": "BNCLCU94T64C417H",
+"name": "Cedegolo"
+},
+{
+"code": "BNCLCU94T64L971H",
+"name": "Villandro"
+},
+{
+"code": "BNCFNC02H55D978D",
+"name": "Gerano"
+},
+{
+"code": "BNCFNCLNH55D978R",
+"name": "Gerano"
+},
+{
+"code": "FOXNNA07P14I734N",
+"name": "Siliqua"
+},
+{
+"code": "RCCMCH90B45E578Q",
+"name": "Licodia Eubea"
+},
+{
+"code": "RCCMCH90B45E578D",
+"name": "Licodia Eubea"
+},
+{
+"code": "VRDNNA48E08F064D",
+"name": "Mazzano Romano"
+},
+{
+"code": "BNCGUO16A27F549T",
+"name": "Montelparo"
+},
+{
+"code": "bncguo16a27f549t",
+"name": "Montelparo"
+},
+{
+"code": "RSSFNC83D50E882G",
+"name": "Manduria"
+},
+{
+"code": "RSSLCU32C60H591U",
+"name": "Rotondella"
+},
+{
+"code": "SPSNNA92S66H970I",
+"name": "San Luca"
+},
+{
+"code": "SPSNNA92H66H970I",
+"name": "San Luca"
+},
+{
+"code": "RSSNNA27S43A952H",
+"name": "Bolzano"
+},
+{
+"code": "RSSNNA27S43A952T",
+"name": "Bolzano"
+},
+{
+"code": "DLCGLI24C46C611O",
+"name": "Chiapovano"
+},
+{
+"code": "DLCGLI24C46C611J",
+"name": "Chiapovano"
+},
+{
+"code": "RCCFNC49D06G192Y",
+"name": "Ottati"
+},
+{
+"code": "rccfnc49d06g192y",
+"name": "Ottati"
+},
+{
+"code": "FOXFNC10T56B774R",
+"name": "Cariati"
+},
+{
+"code": "FOXFNC10T56B7",
+"name": null
+},
+{
+"code": "VRDGUO99H61E986P",
+"name": "Martina Franca"
+},
+{
+"code": "VRDGUO99H61E986P",
+"name": "Martina Franca"
+},
+{
+"code": "RSSJOX34C24E852L",
+"name": "Maleo"
+},
+{
+"code": "RSSMRA27P46E380I",
+"name": "Izano"
+},
+{
+"code": "RSSMRA27P46F712I",
+"name": "Morbegno"
+},
+{
+"code": "DLCFNC41P58H364M",
+"name": "Rovasenda"
+},
+{
+"code": "dlcfnc41p58h364m",
+"name": "Rovasenda"
+},
+{
+"code": "RCCNNA76P53D799G",
+"name": "Frignano"
+},
+{
+"code": "RCCNNA76P53Z899G",
+"name": null
+},
+{
+"code": "BNCLCU64H43I733G",
+"name": "Slum"
+},
+{
+"code": "BNCLCU64P43I733G",
+"name": "Slum"
+},
+{
+"code": "BNCGUO16S12B684H",
+"name": "Capraia E Limite"
+},
+{
+"code": "FOXNNA42A19B686C",
+"name": "Capralba"
+},
+{
+"code": "FOXNNA42A19H096C",
+"name": "Putignano"
+},
+{
+"code": "FOXNNA13L53I305C",
+"name": "Sant'Arcangelo"
+},
+{
+"code": "foxnna13l53i305c",
+"name": "Sant'Arcangelo"
+},
+{
+"code": "SPSJOX63E04C346Q",
+"name": "Castropignano"
+},
+{
+"code": "VRDNNA56M04Z114S",
+"name": "Regno Unito"
+},
+{
+"code": "VRDNNA56M04Z114V",
+"name": "Regno Unito"
+},
+{
+"code": "BNCGUO10S59E071A",
+"name": "Godega Di Sant'Urbano"
+},
+{
+"code": "BNCGUO10S59F051A",
+"name": "Matelica"
+},
+{
+"code": "VRDMRA73T05E228B",
+"name": "Gualdo"
+},
+{
+"code": "VRDMRA73T05H995B",
+"name": "San Martino Al Cimino"
+},
+{
+"code": "SPSLCU08B61Z132T",
+"name": "Svezia"
+},
+{
+"code": "SPSLCU08S61Z132T",
+"name": "Svezia"
+},
+{
+"code": "RSSGUO90P21L509P",
+"name": "Usini"
+},
+{
+"code": "RSSGUO90P21L5",
+"name": null
+},
+{
+"code": "VRDNNA79M48B245B",
+"name": "Budagne"
+},
+{
+"code": "VRDNNA79M48L111B",
+"name": "Termeno Sulla Strada Del Vino"
+},
+{
+"code": "DLCNNA24S04G328Q",
+"name": "Parcines"
+},
+{
+"code": "DLCNNA24S04B673Q",
+"name": "Caporetto"
+},
+{
+"code": "RSSLCU38R24I562K",
+"name": "Sedegliano"
+},
+{
+"code": "RSSLCU38R24I562T",
+"name": "Sedegliano"
+},
+{
+"code": "RCCFNC38D53C476F",
+"name": "Ceppaloni"
+},
+{
+"code": "RCCFNC38D53C476L",
+"name": "Ceppaloni"
+},
+{
+"code": "DLCNNA44R57B430J",
+"name": "Caltavuturo"
+},
+{
+"code": "VRDMRA95A63E563U",
+"name": "Leverano"
+},
+{
+"code": "RSSJOX09A42G307B",
+"name": "Panettieri"
+},
+{
+"code": "RSSJOXLVAQNG3L7C",
+"name": "Panettieri"
+},
+{
+"code": "SPSJOX27T43H845G",
+"name": "San Floriano Del Collio"
+},
+{
+"code": "SPSJOX27P43H845G",
+"name": "San Floriano Del Collio"
+},
+{
+"code": "FOXGLI87B68B742S",
+"name": "Carbonate"
+},
+{
+"code": "VRDMCH56C53C341D",
+"name": "Castrofilippo"
+},
+{
+"code": "VRDMCHRSC53CPQMK",
+"name": "Castrofilippo"
+},
+{
+"code": "BNCNNA80A43I757Z",
+"name": "Siris"
+},
+{
+"code": "RSSFNC05L49D579O",
+"name": "Figino Serenza"
+},
+{
+"code": "DLCNNA26L01L911A",
+"name": "Villa Banale"
+},
+{
+"code": "DLCNNA26L01L911W",
+"name": "Villa Banale"
+},
+{
+"code": "BNCLCU24B61A782V",
+"name": "Benevello"
+},
+{
+"code": "BNCLCU24B61A782D",
+"name": "Benevello"
+},
+{
+"code": "VRDMCH03B10Z253C",
+"name": "Azerbaigian"
+},
+{
+"code": "SPSGUO09P04I801U",
+"name": "Solferino"
+},
+{
+"code": "RSSLCU08D06F175A",
+"name": "Mezzanino"
+},
+{
+"code": "RSSLCU08D0",
+"name": null
+},
+{
+"code": "RSSMCH52S28B302T",
+"name": "Butera"
+},
+{
+"code": "RSSMCH52S28B302Z",
+"name": "Butera"
+},
+{
+"code": "DLCNNA30L05D646N",
+"name": "Foglizzo"
+},
+{
+"code": "RSSMCH81L11C819A",
+"name": "Coggiola"
+},
+{
+"code": "RSSMCH81M11C819A",
+"name": "Coggiola"
+},
+{
+"code": "VRDFNC04B27L826C",
+"name": "Viadana"
+},
+{
+"code": "vrdfnc04b27l826c",
+"name": "Viadana"
+},
+{
+"code": "FOXJOX38R46I926B",
+"name": "Spotorno"
+},
+{
+"code": "VRDFNC20R47B377X",
+"name": "Calamonaci"
+},
+{
+"code": "VRDFNCN0R47B3T7Y",
+"name": "Calamonaci"
+},
+{
+"code": "DLCFNC75H61G705B",
+"name": "Piscina"
+},
+{
+"code": "DLCFNCTRH6MGT0RU",
+"name": "Piscina"
+},
+{
+"code": "RSSMCH09A09F773A",
+"name": "Motta D'Affermo"
+},
+{
+"code": "RSSMCH 09A09 F773A",
+"name": "Motta D'Affermo"
+},
+{
+"code": "DLCFNC92D13L464T",
+"name": "Tula"
+},
+{
+"code": "dlcfnc92d13l464t",
+"name": "Tula"
+},
+{
+"code": "DLCJOX84D66H589K",
+"name": "Rotello"
+},
+{
+"code": "DLCJOX84D66H589M",
+"name": "Rotello"
+},
+{
+"code": "VRDNNA65C68I247V",
+"name": "Santa Maria La Fossa"
+},
+{
+"code": "VRDNNA 65C68 I247V",
+"name": "Santa Maria La Fossa"
+},
+{
+"code": "RSSJOX08M55M262Y",
+"name": "Cellole"
+},
+{
+"code": "RSSJOX08M55M262K",
+"name": "Cellole"
+},
+{
+"code": "DLCMCH67D62L251E",
+"name": "Torre Boldone"
+},
+{
+"code": "DLCMCH67A62L251E",
+"name": "Torre Boldone"
+},
+{
+"code": "SPSFNC18A47D180E",
+"name": "Cropalati"
+},
+{
+"code": "SPSFNC18A47D180X",
+"name": "Cropalati"
+},
+{
+"code": "RSSJOX27H27L881L",
+"name": "Vignale Monferrato"
+},
+{
+"code": "rssjox27h27l881l",
+"name": "Vignale Monferrato"
+},
+{
+"code": "DLCMCH15H62L753Q",
+"name": "Verdello"
+},
+{
+"code": "DLCMCH15E62L753Q",
+"name": "Verdello"
+},
+{
+"code": "RCCFNC48B12F281F",
+"name": "Molare"
+},
+{
+"code": "RCCFNC48B12F281S",
+"name": "Molare"
+},
+{
+"code": "VRDMCH18M66A454Y",
+"name": "Arzana"
+},
+{
+"code": "VRDMCHMUMSSAQ5QF",
+"name": "Arzana"
+},
+{
+"code": "VRDGUO05M65C784T",
+"name": "Civitella San Paolo"
+},
+{
+"code": "VRDGUO0RMSRC7U4Y",
+"name": "Civitella San Paolo"
+},
+{
+"code": "DLCFNC17D03L051K",
+"name": "Tarces"
+},
+{
+"code": "DLCFNC17D03L051K",
+"name": "Tarces"
+},
+{
+"code": "SPSGUO58D55B587E",
+"name": "Candia Lomellina"
+},
+{
+"code": "SPSGUO5UDRRB5UTG",
+"name": "Candia Lomellina"
+},
+{
+"code": "RCCJOX88R19H648E",
+"name": "Sabbia"
+},
+{
+"code": "VRDLCU48C05G658U",
+"name": "Pieve Vergonte"
+},
+{
+"code": "VRDGUO08T28F025F",
+"name": "Massa E Cozzile"
+},
+{
+"code": "VRDMCH03H02L851P",
+"name": "Vicovaro"
+},
+{
+"code": "VRDMCH03H02L189P",
+"name": "Toffia"
+},
+{
+"code": "BNCGLI98M24A239T",
+"name": "Altofonte"
+},
+{
+"code": "RCCMRA00S44L505U",
+"name": "Ururi"
+},
+{
+"code": "RCCMRA00S44L505B",
+"name": "Ururi"
+},
+{
+"code": "FOXJOX26A13G047N",
+"name": "Olmeneta"
+},
+{
+"code": "FOXJOX2SAM3G04TH",
+"name": "Olmeneta"
+},
+{
+"code": "VRDJOX31A64I687T",
+"name": "Sesto"
+},
+{
+"code": "VRDJOX31A64I687V",
+"name": "Sesto"
+},
+{
+"code": "BNCMCH52E63L452F",
+"name": "Tropea"
+},
+{
+"code": "BNCMCH52E63L452C",
+"name": "Tropea"
+},
+{
+"code": "BNCJOX92H10G727P",
+"name": "Pizzone"
+},
+{
+"code": "SPSGUO32L14E193O",
+"name": "Grontardo"
+},
+{
+"code": "FOXNNA96B48G618U",
+"name": "Pietralunga"
+},
+{
+"code": "FOXNNA96B48G618S",
+"name": "Pietralunga"
+},
+{
+"code": "DLCNNA00E03C077W",
+"name": "Casteldarne"
+},
+{
+"code": "RCCJOX74L51I386W",
+"name": "Sanvincenti"
+},
+{
+"code": "RCCJOX74L51I386L",
+"name": "Sanvincenti"
+},
+{
+"code": "RCCLCU92A19H049A",
+"name": "Presson"
+},
+{
+"code": "rcclcu92a19h049a",
+"name": "Presson"
+},
+{
+"code": "RCCMCH25D55D948R",
+"name": "Gavorrano"
+},
+{
+"code": "RCCMCH 25D55 D948R",
+"name": "Gavorrano"
+},
+{
+"code": "FOXFNC86H02I636L",
+"name": "Sernio"
+},
+{
+"code": "FOXFNC86H02F217L",
+"name": "Mineo"
+},
+{
+"code": "DLCFNC92M01A868F",
+"name": "Bigliana"
+},
+{
+"code": "DLCFNCVNM0MAU6UR",
+"name": "Bigliana"
+},
+{
+"code": "VRDMCH95T47F219V",
+"name": "Minerbio"
+},
+{
+"code": "vrdmch95t47f219v",
+"name": "Minerbio"
+},
+{
+"code": "FOXMRA66E19E167V",
+"name": "Gressoney La Trinitè"
+},
+{
+"code": "FOXMRA27E65L908H",
+"name": "Villa Di Tirano"
+},
+{
+"code": "FOXMRA27E65L908B",
+"name": "Villa Di Tirano"
+},
+{
+"code": "VRDMRA98C64E906N",
+"name": "Marano Di Napoli"
+},
+{
+"code": "VRDMRAV8C64E9L6N",
+"name": "Marano Di Napoli"
+},
+{
+"code": "RSSMRA08L53A049F",
+"name": "Acquaviva Platani"
+},
+{
+"code": "RSSMRA08L53A049G",
+"name": "Acquaviva Platani"
+},
+{
+"code": "SPSLCU53P65I937G",
+"name": "Stalettì"
+},
+{
+"code": "SPSLCU53P65I93TD",
+"name": "Stalettì"
+},
+{
+"code": "DLCMCH20R26M064B",
+"name": "Vion"
+},
+{
+"code": "DLCMCH20R26M0SQK",
+"name": "Vion"
+},
+{
+"code": "FOXLCU27L23C061S",
+"name": "Castelbello"
+},
+{
+"code": "RCCLCU00R07F535H",
+"name": "Montelapiano"
+},
+{
+"code": "RCCLCU00R07H785H",
+"name": "San Calogero"
+},
+{
+"code": "BNCFNC14M50I632A",
+"name": "Sermide"
+},
+{
+"code": "BNCFNC14M50I632H",
+"name": "Sermide"
+},
+{
+"code": "RSSMCH91E09A706Q",
+"name": "Bassano In Teverina"
+},
+{
+"code": "RSSMCHVME0VATLSK",
+"name": "Bassano In Teverina"
+},
+{
+"code": "SPSFNC23A04E977D",
+"name": "Marsicovetere"
+},
+{
+"code": "SPSFNC23T04E977D",
+"name": "Marsicovetere"
+},
+{
+"code": "RCCGUO05H64H964C",
+"name": "San Lorenzo Isontino"
+},
+{
+"code": "FOXJOX10B10Z326Q",
+"name": "Libia"
+},
+{
+"code": "FOXJOX10B10Z326F",
+"name": "Libia"
+},
+{
+"code": "FOXMCH67T46B410N",
+"name": "Calice Al Cornoviglio"
+},
+{
+"code": "FOXLCU12E03I961L",
+"name": "Storie"
+},
+{
+"code": "SPSGUO87D42B067M",
+"name": "Borzonasca"
+},
+{
+"code": "SPSGLI09T51E343E",
+"name": "Isola Del Gran Sasso D'Italia"
+},
+{
+"code": "DLCNNA98R41G949T",
+"name": "Povoletto"
+},
+{
+"code": "DLCNNA98R41F367T",
+"name": "Montjovet"
+},
+{
+"code": "FOXLCU46P02A412W",
+"name": "Arlena Di Castro"
+},
+{
+"code": "FOXLCU46M02A412W",
+"name": "Arlena Di Castro"
+},
+{
+"code": "SPSFNC29R03E515W",
+"name": "Legnaro"
+},
+{
+"code": "SPSFNC29R03E515W",
+"name": "Legnaro"
+},
+{
+"code": "RCCGUO26H06I485C",
+"name": "Scala Coeli"
+},
+{
+"code": "RSSGUO17M42E213V",
+"name": "Grottole"
+},
+{
+"code": "RSSGUO17M42E21PR",
+"name": "Grottole"
+},
+{
+"code": "DLCJOX29M21C594D",
+"name": "Challant Saint Victor"
+},
+{
+"code": "DLCJOX 29M21 C594D",
+"name": "Challant Saint Victor"
+},
+{
+"code": "VRDNNA30T61G879R",
+"name": "Poppi"
+},
+{
+"code": "BNCMRA84A21C859H",
+"name": "Collegiove"
+},
+{
+"code": "BNCFNC23H50A687M",
+"name": "Barzio"
+},
+{
+"code": "BNCFNC23H50A687",
+"name": null
+},
+{
+"code": "FOXNNA02D57C864X",
+"name": "Collepardo"
+},
+{
+"code": "FOXGLI15L54B535T",
+"name": "Campofiorito"
+},
+{
+"code": "DLCGLI50C27D826N",
+"name": "Furore"
+},
+{
+"code": "DLCGLI 50C27 D826N",
+"name": "Furore"
+},
+{
+"code": "FOXMRA02D21I600E",
+"name": "Seminara"
+},
+{
+"code": "FOXMRALND21I6L0D",
+"name": "Seminara"
+},
+{
+"code": "SPSGUO12H48H458B",
+"name": "Rocchetta A Volturno"
+},
+{
+"code": "SPSGUO1NHQ8HQR8H",
+"name": "Rocchetta A Volturno"
+},
+{
+"code": "BNCMCH10B64H213Z",
+"name": "Recetto"
+},
+{
+"code": "BNCMCH10B6QH2M3H",
+"name": "Recetto"
+},
+{
+"code": "DLCGUO81E60G968R",
+"name": "Pradalunga"
+},
+{
+"code": "DLCGUO81C60G968R",
+"name": "Pradalunga"
+},
+{
+"code": "DLCMRA78D09I981D",
+"name": "Stroncone"
+},
+{
+"code": "dlcmra78d09i981d",
+"name": "Stroncone"
+},
+{
+"code": "SPSLCU71T45D391N",
+"name": "Edolo"
+},
+{
+"code": "SPSLCU71P45D391N",
+"name": "Edolo"
+},
+{
+"code": "RSSLCU00P11Z730V",
+"name": "Papua Nuova Guinea"
+},
+{
+"code": "RSSLCU00S11Z730V",
+"name": "Papua Nuova Guinea"
+},
+{
+"code": "RCCJOX12A20B649B",
+"name": "Capena"
+},
+{
+"code": "rccjox12a20b649b",
+"name": "Capena"
+},
+{
+"code": "RSSNNA60A19E940J",
+"name": "Mareno Di Piave"
+},
+{
+"code": "RSSNNA6LA19E940U",
+"name": "Mareno Di Piave"
+},
+{
+"code": "FOXGUO02R63G619Z",
+"name": "Pietra Marazzi"
+},
+{
+"code": "FOXGUO0NR6PGS19D",
+"name": "Pietra Marazzi"
+},
+{
+"code": "FOXJOX08S12C764A",
+"name": "Civitacampomarano"
+},
+{
+"code": "FOXJOX08S12H735A",
+"name": "Salzano"
+},
+{
+"code": "RCCGLI82E04I459L",
+"name": "Sassocorvaro"
+},
+{
+"code": "RCCGLI82P04I459L",
+"name": "Sassocorvaro"
+},
+{
+"code": "SPSGUO02L16A878N",
+"name": "Bione"
+},
+{
+"code": "SPSGUO02L16A878H",
+"name": "Bione"
+},
+{
+"code": "SPSGUO26B20D884Y",
+"name": "Gallo Matese"
+},
+{
+"code": "SPSGUO2SB2LD884N",
+"name": "Gallo Matese"
+},
+{
+"code": "VRDFNC13T65C672W",
+"name": "Cibiana Di Cadore"
+},
+{
+"code": "VRDFNC13S65C672W",
+"name": "Cibiana Di Cadore"
+},
+{
+"code": "SPSNNA27B67G306F",
+"name": "Pandino"
+},
+{
+"code": "SPSNNA27B67G306Q",
+"name": "Pandino"
+},
+{
+"code": "FOXLCU00D24E372A",
+"name": "Vasto"
+},
+{
+"code": "FOXLCU00D24L173A",
+"name": "Tione Degli Abruzzi"
+},
+{
+"code": "FOXJOX42B62D318R",
+"name": "Dolceacqua"
+},
+{
+"code": "FOXGUO22M04E495B",
+"name": "Laveno"
+},
+{
+"code": "VRDLCU31S20E148Q",
+"name": "Grassobbio"
+},
+{
+"code": "VRDLCU31S20B000Q",
+"name": null
+},
+{
+"code": "BNCGUO07S20E869X",
+"name": "Malvagna"
+},
+{
+"code": "BNCGUO07S20E869G",
+"name": "Malvagna"
+},
+{
+"code": "SPSGUO37B60I464Y",
+"name": "Sauris"
+},
+{
+"code": "SPSGUO 37B60 I464Y",
+"name": "Sauris"
+},
+{
+"code": "DLCFNC24R26I262E",
+"name": "Sant'Anastasia"
+},
+{
+"code": "DLCFNCNQRNSINSND",
+"name": "Sant'Anastasia"
+},
+{
+"code": "VRDMCH66L42H653W",
+"name": "Sable Grande"
+},
+{
+"code": "VRDMCH66L42F310W",
+"name": "Mombaroccio"
+},
+{
+"code": "BNCGLI83A20E803O",
+"name": "Maggiora"
+},
+{
+"code": "BNCGLI 83A20 E803O",
+"name": "Maggiora"
+},
+{
+"code": "FOXFNC20S12A024K",
+"name": "Acerra"
+},
+{
+"code": "RSSJOX06P55F315F",
+"name": "Mombello Di Torino"
+},
+{
+"code": "RSSJOX0SP55F31RM",
+"name": "Mombello Di Torino"
+},
+{
+"code": "DLCFNC91D15H506Y",
+"name": "Romallo"
+},
+{
+"code": "FOXLCU02C47C207L",
+"name": "Castelmassa"
+},
+{
+"code": "FOXLCULNC47CN07O",
+"name": "Castelmassa"
+},
+{
+"code": "DLCGUO34S57F522Z",
+"name": "Montegranaro"
+},
+{
+"code": "DLCGLI18L51L215K",
+"name": "Torella Del Sannio"
+},
+{
+"code": "DLCGLI18L51L215N",
+"name": "Torella Del Sannio"
+},
+{
+"code": "FOXMCH40D64E144U",
+"name": "Grantola"
+},
+{
+"code": "DLCMRA95S05F680T",
+"name": "Montirone"
+},
+{
+"code": "DLCMRA95S05F680D",
+"name": "Montirone"
+},
+{
+"code": "VRDLCU57B46H453H",
+"name": "Roccavione"
+},
+{
+"code": "VRDLCU57B46H",
+"name": null
+},
+{
+"code": "VRDGUO74E67G748N",
+"name": "Podraga"
+},
+{
+"code": "VRDGUO35T63A149E",
+"name": "Alberobello"
+},
+{
+"code": "VRDGUO35T63A149Y",
+"name": "Alberobello"
+},
+{
+"code": "VRDMRA10P67F378O",
+"name": "Monrupino-Repentabor"
+},
+{
+"code": "VRDMRA10P67F378A",
+"name": "Monrupino-Repentabor"
+},
+{
+"code": "VRDJOX62T20E678A",
+"name": "Longobucco"
+},
+{
+"code": "FOXNNA02E18H183J",
+"name": "Rapallo"
+},
+{
+"code": "FOXNNA02E18L316J",
+"name": "Tovo Di Sant'Agata"
+},
+{
+"code": "SPSGLI76M57E476Z",
+"name": "Lauco"
+},
+{
+"code": "SPSGLI76M57E476R",
+"name": "Lauco"
+},
+{
+"code": "BNCFNC87R55A034G",
+"name": "Acquafredda"
+},
+{
+"code": "BNCFNC8TRRRA03QW",
+"name": "Acquafredda"
+},
+{
+"code": "FOXLCU73D65D026Z",
+"name": "Corniglio"
+},
+{
+"code": "FOXLCU73D65H490Z",
+"name": "Rogliano"
+},
+{
+"code": "SPSGUO06M53A530Z",
+"name": "Azzano Decimo"
+},
+{
+"code": "SPSGUOL6MRPA530K",
+"name": "Azzano Decimo"
+},
+{
+"code": "RCCMRA78H55H330J",
+"name": "Riva Del Garda"
+},
+{
+"code": "RCCMRA78H55A732J",
+"name": "Bedulita"
+},
+{
+"code": "RCCMRA20M11B355H",
+"name": "Caglio"
+},
+{
+"code": "RCCMRA20M11B355P",
+"name": "Caglio"
+},
+{
+"code": "DLCGLI08A55D660Q",
+"name": "Fombio"
+},
+{
+"code": "DLCGLI08A55D660P",
+"name": "Fombio"
+},
+{
+"code": "RCCJOX29A52E525L",
+"name": "Lenno"
+},
+{
+"code": "FOXFNC57R04D341A",
+"name": "Dongo"
+},
+{
+"code": "FOXFNC5TR04D341M",
+"name": "Dongo"
+},
+{
+"code": "DLCJOX15S18H643G",
+"name": "Rutigliano"
+},
+{
+"code": "dlcjox15s18h643g",
+"name": "Rutigliano"
+},
+{
+"code": "DLCFNC41A49M136M",
+"name": "Vottignasco"
+},
+{
+"code": "DLCFNC41A49M136G",
+"name": "Vottignasco"
+},
+{
+"code": "VRDGUO09R61B796G",
+"name": "Carnago"
+},
+{
+"code": "VRDGUO0VRS1B79SB",
+"name": "Carnago"
+},
+{
+"code": "FOXNNA86E01D864A",
+"name": "Galatro"
+},
+{
+"code": "foxnna86e01d864a",
+"name": "Galatro"
+},
+{
+"code": "RSSNNA34R23B617D",
+"name": "Canolo"
+},
+{
+"code": "RSSNNA34R23B617S",
+"name": "Canolo"
+},
+{
+"code": "BNCLCU01S15B693K",
+"name": "Caprese Michelangelo"
+},
+{
+"code": "BNCLCU01S15Z646K",
+"name": null
+},
+{
+"code": "RSSNNA27S52C075Y",
+"name": "Castel D'Aiano"
+},
+{
+"code": "RSSNNAN7SR2C0TRG",
+"name": "Castel D'Aiano"
+},
+{
+"code": "VRDGUO92R46C062E",
+"name": "Castelbello-Ciardes"
+},
+{
+"code": "VRDGUO92R46",
+"name": null
+},
+{
+"code": "BNCJOX54R58M141W",
+"name": "Zagarolo"
+},
+{
+"code": "BNCGUO18H66H820Z",
+"name": "San Didero"
+},
+{
+"code": "BNCGUOMUHSSHU20J",
+"name": "San Didero"
+},
+{
+"code": "DLCLCU25E41L379Y",
+"name": "Trentola Ducenta"
+},
+{
+"code": "DLCLCUN5E4ML37VU",
+"name": "Trentola Ducenta"
+},
+{
+"code": "SPSGLI17M11H907Y",
+"name": "San Giovanni A Piro"
+},
+{
+"code": "SPSGLI 17M11 H907Y",
+"name": "San Giovanni A Piro"
+},
+{
+"code": "FOXJOX04H25B398M",
+"name": "Caldarola"
+},
+{
+"code": "FOXJOX04H25L797M",
+"name": "Verucchio"
+},
+{
+"code": "BNCMCH23E05L097G",
+"name": "Tenno"
+},
+{
+"code": "RSSNNA11M65L196O",
+"name": "Tolmino"
+},
+{
+"code": "VRDNNA28E24B203J",
+"name": "Bronzolo"
+},
+{
+"code": "VRDNNA28E24B203S",
+"name": "Bronzolo"
+},
+{
+"code": "RSSFNC58E65A660G",
+"name": "Barge"
+},
+{
+"code": "rssfnc58e65a660g",
+"name": "Barge"
+},
+{
+"code": "DLCNNA53H67L176P",
+"name": "Tires"
+},
+{
+"code": "BNCLCU17C21L568N",
+"name": "Valeggio"
+},
+{
+"code": "VRDFNC36S05L762I",
+"name": "Vergato"
+},
+{
+"code": "VRDFNC36S05L371I",
+"name": "Tremezzo"
+},
+{
+"code": "FOXLCU87T43G249T",
+"name": "Paladina"
+},
+{
+"code": "SPSMCH32P66L468L",
+"name": "Valvestino"
+},
+{
+"code": "SPSMCH32P66A592L",
+"name": "Balestrate"
+},
+{
+"code": "RCCFNC02T28E587S",
+"name": "Lillianes"
+},
+{
+"code": "RCCFNC02S28E587S",
+"name": "Lillianes"
+},
+{
+"code": "DLCMCH87A26B297T",
+"name": "Bussoleno"
+},
+{
+"code": "DLCMCH87A26B297L",
+"name": "Bussoleno"
+},
+{
+"code": "VRDJOX94H02B099A",
+"name": "Bova Marina"
+},
+{
+"code": "RCCFNC13R05G740Q",
+"name": "Ploaghe"
+},
+{
+"code": "RCCFNC13R05G740Q",
+"name": "Ploaghe"
+},
+{
+"code": "RCCFNC88A43E858Y",
+"name": "Malgrate"
+},
+{
+"code": "RCCFNC88A43F703Y",
+"name": "Monvalle"
+},
+{
+"code": "RCCGLI99M59H940K",
+"name": "San Gregorio Di Catania"
+},
+{
+"code": "RCCGLI99M59HV40Z",
+"name": "San Gregorio Di Catania"
+},
+{
+"code": "VRDMRA00B26A472P",
+"name": "Casperia"
+},
+{
+"code": "VRDMRA 00B26 A472P",
+"name": "Casperia"
+},
+{
+"code": "SPSMCH13S43B507Q",
+"name": "Campi Bisenzio"
+},
+{
+"code": "SPSMCH 13S43 B507Q",
+"name": "Campi Bisenzio"
+},
+{
+"code": "SPSMCH36R61H719G",
+"name": "Salorno"
+},
+{
+"code": "SPSMCH 36R61 H719G",
+"name": "Salorno"
+},
+{
+"code": "VRDNNA24M63B365E",
+"name": "Caino"
+},
+{
+"code": "VRDNNA24M63L118E",
+"name": "Terno D'Isola"
+},
+{
+"code": "FOXLCU27B56A894B",
+"name": "Bitritto"
+},
+{
+"code": "SPSLCU57A54L180A",
+"name": "Tissi"
+},
+{
+"code": "SPSLCU57C54L180A",
+"name": "Tissi"
+},
+{
+"code": "RSSGLI42P44G594Q",
+"name": "Piedicavallo"
+},
+{
+"code": "RCCNNA78C26I301G",
+"name": "Santa Paolina"
+},
+{
+"code": "RCCGUO15C02A074F",
+"name": "Agliè"
+},
+{
+"code": "RCCGUO15C02A074P",
+"name": "Agliè"
+},
+{
+"code": "SPSJOX25R26I304L",
+"name": "Santarcangelo Di Romagna"
+},
+{
+"code": "SPSJOXN5RN6IPL4S",
+"name": "Santarcangelo Di Romagna"
+},
+{
+"code": "BNCLCU00B11L844V",
+"name": "Villa Literno"
+},
+{
+"code": "BNCLCU00P11L844V",
+"name": "Villa Literno"
+},
+{
+"code": "SPSMRA35L28B808F",
+"name": "Carosino"
+},
+{
+"code": "SPSMRA35L28B808H",
+"name": "Carosino"
+},
+{
+"code": "FOXNNA53C55E770X",
+"name": "Luzzana"
+},
+{
+"code": "foxnna53c55e770x",
+"name": "Luzzana"
+},
+{
+"code": "FOXGLI91D27M105N",
+"name": "Vobbia"
+},
+{
+"code": "FOXGLI91D27M105Z",
+"name": "Vobbia"
+},
+{
+"code": "RSSGUO24D60H883I",
+"name": "San Giorgio Bigarello"
+},
+{
+"code": "RSSMRA08H08A634A",
+"name": "Barbianello"
+},
+{
+"code": "RSSMRA08H08A634",
+"name": null
+},
+{
+"code": "SPSMCH65L06L229L",
+"name": "Tornolo"
+},
+{
+"code": "spsmch65l06l229l",
+"name": "Tornolo"
+},
+{
+"code": "BNCLCU10R05G849V",
+"name": "Pontelatone"
+},
+{
+"code": "BNCLCUMLRLRGU4VQ",
+"name": "Pontelatone"
+},
+{
+"code": "DLCJOX17A03G311R",
+"name": "Pannarano"
+},
+{
+"code": "dlcjox17a03g311r",
+"name": "Pannarano"
+},
+{
+"code": "BNCMCH51R46I700F",
+"name": "Settimo Milanese"
+},
+{
+"code": "RSSGLI17R10H941B",
+"name": "San Gregorio D'Ippona"
+},
+{
+"code": "RSSGLI17R10H941V",
+"name": "San Gregorio D'Ippona"
+},
+{
+"code": "VRDNNA00E01H394F",
+"name": "Roccadaspide"
+},
+{
+"code": "VRDNNA00E01H394Y",
+"name": "Roccadaspide"
+},
+{
+"code": "VRDNNA22S27D923I",
+"name": "Gargazzone"
+},
+{
+"code": "DLCGLI94E44G337R",
+"name": "Parma"
+},
+{
+"code": "RCCNNA14L65D279H",
+"name": "Deruta"
+},
+{
+"code": "RCCNNA14L6",
+"name": null
+},
+{
+"code": "RCCLCU42C52H422W",
+"name": "Roccamena"
+},
+{
+"code": "RCCLCU42CR2HQ2NU",
+"name": "Roccamena"
+},
+{
+"code": "VRDGLI00M27L589N",
+"name": "Vallata"
+},
+{
+"code": "VRDGLI00T27L589N",
+"name": "Vallata"
+},
+{
+"code": "BNCNNA25M51E462E",
+"name": "Lasnigo"
+},
+{
+"code": "BNCNNA25M51E462J",
+"name": "Lasnigo"
+},
+{
+"code": "BNCLCU13R54B019Z",
+"name": "Borgomanero"
+},
+{
+"code": "BNCLCU13R54B01",
+"name": null
+},
+{
+"code": "RCCLCU93P62C034A",
+"name": "Cassino"
+},
+{
+"code": "RCCLCUVPP6NCL3QQ",
+"name": "Cassino"
+},
+{
+"code": "VRDNNA02D22L074I",
+"name": "Taviano"
+},
+{
+"code": "VRDNNA02B22L074I",
+"name": "Taviano"
+},
+{
+"code": "RSSNNA62E21A981Y",
+"name": "Borbona"
+},
+{
+"code": "RSSNNA62E21A030Y",
+"name": null
+},
+{
+"code": "DLCNNA10B67C983N",
+"name": "Corato"
+},
+{
+"code": "DLCNNA10B67C983K",
+"name": "Corato"
+},
+{
+"code": "SPSJOX13L04E711Q",
+"name": "Lozzolo"
+},
+{
+"code": "SPSJOXMPLLQET1MR",
+"name": "Lozzolo"
+},
+{
+"code": "RCCMCH01H20C620D",
+"name": "Chiauci"
+},
+{
+"code": "RCCMCH01T20C620D",
+"name": "Chiauci"
+},
+{
+"code": "FOXMCH54M18H919Z",
+"name": "San Giovanni In Fiore"
+},
+{
+"code": "DLCMRA22T61B685D",
+"name": "Capraia Isola"
+},
+{
+"code": "DLCMRAN2T61B68RN",
+"name": "Capraia Isola"
+},
+{
+"code": "BNCLCU85C57I668X",
+"name": "Serri"
+},
+{
+"code": "RSSLCU45H08D700P",
+"name": "Forgaria Nel Friuli"
+},
+{
+"code": "RSSLCUQRHL8DT0LJ",
+"name": "Forgaria Nel Friuli"
+},
+{
+"code": "RSSLCU23C22C120V",
+"name": "Castelgrande"
+},
+{
+"code": "RSSLCU23C22B608V",
+"name": "Cannalonga"
+},
+{
+"code": "RCCMRA81D51H124H",
+"name": "Quero"
+},
+{
+"code": "RCCMRA81D5MH1NQH",
+"name": "Quero"
+},
+{
+"code": "DLCMCH24B53E491M",
+"name": "La Valle"
+},
+{
+"code": "DLCMCHN4BR3E491N",
+"name": "La Valle"
+},
+{
+"code": "FOXMRA51R13H836Q",
+"name": "San Felice Circeo"
+},
+{
+"code": "FOXMRA51R13H836H",
+"name": "San Felice Circeo"
+},
+{
+"code": "SPSNNA28S63I256N",
+"name": "Sant'Ambrogio Sul Garigliano"
+},
+{
+"code": "SPSNNA 28S63 I256N",
+"name": "Sant'Ambrogio Sul Garigliano"
+},
+{
+"code": "RCCNNA69A60F453C",
+"name": "Montecarotto"
+},
+{
+"code": "RCCNNA69A60F453R",
+"name": "Montecarotto"
+},
+{
+"code": "RCCFNC28C55E768U",
+"name": "Lutago"
+},
+{
+"code": "RCCFNC28H55E768U",
+"name": "Lutago"
+},
+{
+"code": "DLCFNC02E04E061E",
+"name": "Giurdignano"
+},
+{
+"code": "VRDNNA14B07A449S",
+"name": "Artena"
+},
+{
+"code": "VRDNNA14B07Z309S",
+"name": "Ciad"
+},
+{
+"code": "RCCLCU46M06L756R",
+"name": "Verderio Superiore"
+},
+{
+"code": "rcclcu46m06l756r",
+"name": "Verderio Superiore"
+},
+{
+"code": "VRDNNA65T53L278Z",
+"name": "Torre San Giorgio"
+},
+{
+"code": "VRDNNA65T53L278S",
+"name": "Torre San Giorgio"
+},
+{
+"code": "DLCNNA42B54F681F",
+"name": "Montodine"
+},
+{
+"code": "DLCNNA42B54L640F",
+"name": "Valmorea"
+},
+{
+"code": "SPSFNC50H08Z735R",
+"name": "Stati Federati Di Micronesia"
+},
+{
+"code": "SPSFNC 50H08 Z735R",
+"name": "Stati Federati Di Micronesia"
+},
+{
+"code": "RCCMRA84R28H068Q",
+"name": "Priocca"
+},
+{
+"code": "RCCMRA84R28H068Z",
+"name": "Priocca"
+},
+{
+"code": "SPSNNA49P22A532R",
+"name": "Azzio"
+},
+{
+"code": "SPSNNA49P22A",
+"name": null
+},
+{
+"code": "VRDMRA80M43D774I",
+"name": "Frascineto"
+},
+{
+"code": "VRDMRAULM43DTT4Z",
+"name": "Frascineto"
+},
+{
+"code": "RCCFNC04S56M011P",
+"name": "Villarosa"
+},
+{
+"code": "RCCJOX60C14L331F",
+"name": "Trapani"
+},
+{
+"code": "RCCJOX60A14L331F",
+"name": "Trapani"
+},
+{
+"code": "VRDGUO54D44L702K",
+"name": "Vecchiano"
+},
+{
+"code": "VRDGUO54P44L702K",
+"name": "Vecchiano"
+},
+{
+"code": "FOXNNA09H43F239B",
+"name": "Miranda"
+},
+{
+"code": "SPSJOX76E16B545F",
+"name": "Campolongo Al Torre"
+},
+{
+"code": "SPSJOX76E16B545I",
+"name": "Campolongo Al Torre"
+},
+{
+"code": "BNCLCU23E55G941Q",
+"name": "Postumia"
+},
+{
+"code": "BNCLCU23E55H278Q",
+"name": null
+},
+{
+"code": "FOXNNA92H06L085R",
+"name": "Teglio Veneto"
+},
+{
+"code": "RSSGLI01S62H398T",
+"name": "Rocca D'Evandro"
+},
+{
+"code": "RSSGLI01S62A060T",
+"name": "Adro"
+},
+{
+"code": "BNCJOX01C52D781C",
+"name": "Frassinetto"
+},
+{
+"code": "BNCJOXLMCR2DTUMD",
+"name": "Frassinetto"
+},
+{
+"code": "DLCNNA06S24H716W",
+"name": "Salmour"
+},
+{
+"code": "DLCNNA06S24H716U",
+"name": "Salmour"
+},
+{
+"code": "RSSFNC08B61G348M",
+"name": "Partinico"
+},
+{
+"code": "BNCGUO14A02H225N",
+"name": "Reggiolo"
+},
+{
+"code": "BNCGUO1QA02H225Z",
+"name": "Reggiolo"
+},
+{
+"code": "RSSLCU08R55I702J",
+"name": "Settimo Vittone"
+},
+{
+"code": "RSSLCU08R55I702Z",
+"name": "Settimo Vittone"
+},
+{
+"code": "DLCMCH05D58I030T",
+"name": "San Mauro Torinese"
+},
+{
+"code": "DLCMCHL5D5UILPLL",
+"name": "San Mauro Torinese"
+},
+{
+"code": "BNCGUO59P58E471T",
+"name": "Latiano"
+},
+{
+"code": "BNCGUO59P58A835T",
+"name": "Bevagna"
+},
+{
+"code": "RSSFNC12R10A357C",
+"name": "Arborea"
+},
+{
+"code": "RSSFNC12C10A357C",
+"name": "Arborea"
+},
+{
+"code": "BNCGUO09E51A257B",
+"name": "Amato"
+},
+{
+"code": "bncguo09e51a257b",
+"name": "Amato"
+},
+{
+"code": "SPSNNA72R21E036U",
+"name": "Ginosa"
+},
+{
+"code": "SPSNNATNR21EL3SC",
+"name": "Ginosa"
+},
+{
+"code": "SPSGLI14L09A209I",
+"name": "Alliz"
+},
+{
+"code": "SPSGLI1QL09AN0VY",
+"name": "Alliz"
+},
+{
+"code": "RCCLCU63L58H796P",
+"name": "San Chirico Raparo"
+},
+{
+"code": "RCCLCUS3L5UHT96G",
+"name": "San Chirico Raparo"
+},
+{
+"code": "RSSFNC74M07A440F",
+"name": "Arzago D'Adda"
+},
+{
+"code": "RSSFNC74M07Z705F",
+"name": null
+},
+{
+"code": "SPSFNC26A17D131Y",
+"name": "Crandola Valsassina"
+},
+{
+"code": "SPSFNC26A17H467Y",
+"name": "Rocchetta Sant'Antonio"
+},
+{
+"code": "SPSGLI23B04B925H",
+"name": "Casandrino"
+},
+{
+"code": "SPSGLI23B04B925L",
+"name": "Casandrino"
+},
+{
+"code": "FOXJOX90T57D358E",
+"name": "Dovera"
+},
+{
+"code": "foxjox90t57d358e",
+"name": "Dovera"
+},
+{
+"code": "FOXJOX22L05L239D",
+"name": "Torrazzo"
+},
+{
+"code": "FOXJOXN2L05LN3VW",
+"name": "Torrazzo"
+},
+{
+"code": "SPSFNC85S45L178A",
+"name": "Tirolo"
+},
+{
+"code": "spsfnc85s45l178a",
+"name": "Tirolo"
+},
+{
+"code": "BNCMRA08S51H455U",
+"name": "Roccella Valdemone"
+},
+{
+"code": "FOXMRA88C52A841H",
+"name": "Biancavilla"
+},
+{
+"code": "FOXMRA88C52A841R",
+"name": "Biancavilla"
+},
+{
+"code": "RSSLCU69B46A957E",
+"name": "Bompensiere"
+},
+{
+"code": "RSSLCU 69B46 A957E",
+"name": "Bompensiere"
+},
+{
+"code": "SPSJOX20A41C662Q",
+"name": "Chiusi"
+},
+{
+"code": "SPSJOX20A41C6",
+"name": null
+},
+{
+"code": "BNCJOX73L49B459Q",
+"name": "Camasco"
+},
+{
+"code": "BNCJOX73H49B459Q",
+"name": "Camasco"
+},
+{
+"code": "FOXJOX90M68D691E",
+"name": "Force"
+},
+{
+"code": "FOXJOX90M68Z901E",
+"name": null
+},
+{
+"code": "RCCGUO17H02E015V",
+"name": "Giarole"
+},
+{
+"code": "RCCGUO17H02E015V",
+"name": "Giarole"
+},
+{
+"code": "FOXJOX05B08D636A",
+"name": "Floridia"
+},
+{
+"code": "FOXJOX05B08D636T",
+"name": "Floridia"
+},
+{
+"code": "SPSGLI81A22Z604E",
+"name": "Colombia"
+},
+{
+"code": "SPSGLI81B22Z604E",
+"name": "Colombia"
+},
+{
+"code": "SPSFNC74C41D299E",
+"name": "Dicomano"
+},
+{
+"code": "SPSFNC 74C41 D299E",
+"name": "Dicomano"
+},
+{
+"code": "SPSMCH22A21G759S",
+"name": "Poggio Fidoni"
+},
+{
+"code": "SPSMCH22A21G759B",
+"name": "Poggio Fidoni"
+},
+{
+"code": "FOXGUO99L02D579P",
+"name": "Figino Serenza"
+},
+{
+"code": "FOXGUO99L0ND57VT",
+"name": "Figino Serenza"
+},
+{
+"code": "BNCGLI74T08F037M",
+"name": "Massazza"
+},
+{
+"code": "DLCLCU85D20D913V",
+"name": "Garbagnate Monastero"
+},
+{
+"code": "DLCLCU85D20D913Z",
+"name": "Garbagnate Monastero"
+},
+{
+"code": "FOXNNA18S56B680U",
+"name": "Cappella De' Picenardi"
+},
+{
+"code": "FOXNNA18T56B680U",
+"name": "Cappella De' Picenardi"
+},
+{
+"code": "VRDMCH86B60E505Q",
+"name": "Lecce Nei Marsi"
+},
+{
+"code": "VRDMCHU6BS0E505Z",
+"name": "Lecce Nei Marsi"
+},
+{
+"code": "RSSNNA79P10F420P",
+"name": "Montalto Dora"
+},
+{
+"code": "rssnna79p10f420p",
+"name": "Montalto Dora"
+},
+{
+"code": "VRDJOX53D11F718N",
+"name": "Mordano"
+},
+{
+"code": "VRDJOX02B05A050W",
+"name": "Acquaviva Collecroce"
+},
+{
+"code": "VRDJOX02B05A050Y",
+"name": "Acquaviva Collecroce"
+},
+{
+"code": "RCCLCU69B13D799D",
+"name": "Frignano"
+},
+{
+"code": "RCCLCU69B13B460D",
+"name": "Camastra"
+},
+{
+"code": "RSSJOX99L47F726T",
+"name": "Morgex"
+},
+{
+"code": "RSSJOXVVL4TFTN6Z",
+"name": "Morgex"
+},
+{
+"code": "SPSMCH94A57A050O",
+"name": "Acquaviva Collecroce"
+},
+{
+"code": "SPSMCH94A57A0",
+"name": null
+},
+{
+"code": "RCCNNA88S61F323K",
+"name": "Monale"
+},
+{
+"code": "BNCMRA56D58L624V",
+"name": "Valli Del Pasubio"
+},
+{
+"code": "VRDLCU71H05G483S",
+"name": "Pescarolo Ed Uniti"
+},
+{
+"code": "DLCJOX22A50F707P",
+"name": "Morano Sul Po"
+},
+{
+"code": "DLCJOX22A50F707D",
+"name": "Morano Sul Po"
+},
+{
+"code": "DLCGLI02E48L580F",
+"name": "Valgrana"
+},
+{
+"code": "RSSLCU92A67F416V",
+"name": "Montalto Uffugo"
+},
+{
+"code": "RSSLCU92A67F4",
+"name": null
+},
+{
+"code": "RCCJOX70B68I040K",
+"name": "San Michele Al Tagliamento"
+},
+{
+"code": "RCCJOX70B68Z981K",
+"name": null
+},
+{
+"code": "VRDJOX18P67I923T",
+"name": "Spongano"
+},
+{
+"code": "VRDJOXMUPSTIV2PR",
+"name": "Spongano"
+},
+{
+"code": "SPSMCH03M22I535Z",
+"name": "Scicli"
+},
+{
+"code": "SPSGLI22A19H344K",
+"name": "Rivarossa"
+},
+{
+"code": "SPSGLI2NAMVH3QQE",
+"name": "Rivarossa"
+},
+{
+"code": "RCCLCU65B20E814D",
+"name": "Magliano Vetere"
+},
+{
+"code": "FOXLCU06A54D228J",
+"name": "Curti"
+},
+{
+"code": "FOXLCU06A5QD228G",
+"name": "Curti"
+},
+{
+"code": "DLCFNC02R61H275V",
+"name": "Riccò Del Golfo Di Spezia"
+},
+{
+"code": "DLCFNC02R61B183V",
+"name": "Briona"
+},
+{
+"code": "RSSGLI42P47C188Q",
+"name": "Castello Di Cisterna"
+},
+{
+"code": "RSSGLIQNPQTC1UUQ",
+"name": "Castello Di Cisterna"
+},
+{
+"code": "FOXGLI61C54G083X",
+"name": "Ora"
+},
+{
+"code": "FOXGLI61C54B055X",
+"name": "Boroneddu"
+},
+{
+"code": "BNCGLI38A27B162F",
+"name": "Bresso"
+},
+{
+"code": "BNCGLIP8AN7B1SNN",
+"name": "Bresso"
+},
+{
+"code": "BNCGLI07T08H911C",
+"name": "San Giovanni D'Asso"
+},
+{
+"code": "BNCGLIL7T0UHV1MJ",
+"name": "San Giovanni D'Asso"
+},
+{
+"code": "RSSFNC18S59H182B",
+"name": "Rapagnano"
+},
+{
+"code": "rssfnc18s59h182b",
+"name": "Rapagnano"
+},
+{
+"code": "RSSGUO67E11E954P",
+"name": "Mariglianella"
+},
+{
+"code": "RSSGUOS7EMME954P",
+"name": "Mariglianella"
+},
+{
+"code": "RCCGLI78E64B332U",
+"name": "Cadeo"
+},
+{
+"code": "RCCGLI78E64B332H",
+"name": "Cadeo"
+},
+{
+"code": "SPSMCH75T13H275J",
+"name": "Riccò Del Golfo Di Spezia"
+},
+{
+"code": "SPSMCH75T13H275X",
+"name": "Riccò Del Golfo Di Spezia"
+},
+{
+"code": "FOXLCU08L65I531O",
+"name": "Schio"
+},
+{
+"code": "DLCGLI17A47C818H",
+"name": "Codrongianos"
+},
+{
+"code": "DLCGLI17A47C818O",
+"name": "Codrongianos"
+},
+{
+"code": "DLCLCU52E58I335I",
+"name": "Sant'Eusanio Del Sangro"
+},
+{
+"code": "DLCLCU52E58A455I",
+"name": "Arzano"
+},
+{
+"code": "VRDGUO23S54L078M",
+"name": "Tavoleto"
+},
+{
+"code": "VRDGUO23S54L078B",
+"name": "Tavoleto"
+},
+{
+"code": "FOXJOX55P68F342G",
+"name": "Moncrivello"
+},
+{
+"code": "FOXJOX 55P68 F342G",
+"name": "Moncrivello"
+},
+{
+"code": "RCCJOX12T64G338U",
+"name": "Parodi Ligure"
+},
+{
+"code": "RCCJOX12T64GP3UN",
+"name": "Parodi Ligure"
+},
+{
+"code": "SPSGLI23A60A208T",
+"name": "Alliste"
+},
+{
+"code": "SPSGLI23A60Z696T",
+"name": null
+},
+{
+"code": "BNCMRA91D59E146M",
+"name": "Granze"
+},
+{
+"code": "SPSMRA89P12I190K",
+"name": "Sant'Agata Fossili"
+},
+{
+"code": "RSSFNC24C47G123L",
+"name": "Orsago"
+},
+{
+"code": "DLCJOX70E23I728R",
+"name": "Signa"
+},
+{
+"code": "VRDJOX58S49H119I",
+"name": "Quartucciu"
+},
+{
+"code": "VRDJOX58S49H119W",
+"name": "Quartucciu"
+},
+{
+"code": "BNCMRA14P58F781V",
+"name": "Motta Sant'Anastasia"
+},
+{
+"code": "FOXLCU20M09G196G",
+"name": "Oulx"
+},
+{
+"code": "FOXLCU 20M09 G196G",
+"name": "Oulx"
+},
+{
+"code": "RSSLCU27A50F776H",
+"name": "Mottalciata"
+},
+{
+"code": "DLCNNA09D58L488O",
+"name": "Ulà Tirso"
+},
+{
+"code": "DLCNNA09D58L488V",
+"name": "Ulà Tirso"
+},
+{
+"code": "DLCGLI02A06H311X",
+"name": "Ripabottoni"
+},
+{
+"code": "DLCGLI02A06H311B",
+"name": "Ripabottoni"
+},
+{
+"code": "RCCFNC91A58A263D",
+"name": "Amendolara"
+},
+{
+"code": "RCCFNC 91A58 A263D",
+"name": "Amendolara"
+},
+{
+"code": "BNCJOX96P45M278V",
+"name": "Villaperuccio"
+},
+{
+"code": "BNCJOX96S45M278V",
+"name": "Villaperuccio"
+},
+{
+"code": "FOXLCU17R11B593E",
+"name": "Canegrate"
+},
+{
+"code": "FOXLCU17B11B593E",
+"name": "Canegrate"
+},
+{
+"code": "VRDGUO24D23L753F",
+"name": "Verdello"
+},
+{
+"code": "VRDGUO24B23L753F",
+"name": "Verdello"
+},
+{
+"code": "FOXMCH31T64D905U",
+"name": "Gandino"
+},
+{
+"code": "VRDFNC17T09H332V",
+"name": "Riva Di Tures"
+},
+{
+"code": "DLCNNA36C56H686J",
+"name": "Salento"
+},
+{
+"code": "DLCNNA3SC5SHSU6B",
+"name": "Salento"
+},
+{
+"code": "VRDGUO09D49A852L",
+"name": "Bibbona"
+},
+{
+"code": "VRDGUO09D49A8",
+"name": null
+},
+{
+"code": "DLCLCU20S63A863R",
+"name": "Bieno"
+},
+{
+"code": "SPSMRA01A27C850E",
+"name": "Collebeato"
+},
+{
+"code": "SPSMRA01A27CU50B",
+"name": "Collebeato"
+},
+{
+"code": "SPSLCU68L15E439X",
+"name": "Langosco"
+},
+{
+"code": "SPSLCU68L15F129X",
+"name": null
+},
+{
+"code": "SPSNNA20R67E770H",
+"name": "Luzzana"
+},
+{
+"code": "SPSNNA20R67E770T",
+"name": "Luzzana"
+},
+{
+"code": "RSSMRA89P18D449Q",
+"name": "Fabbriche Di Vallico"
+},
+{
+"code": "RSSMRA89P18D449",
+"name": null
+},
+{
+"code": "RSSGUO11C60L382O",
+"name": "Treppo Grande"
+},
+{
+"code": "RSSGUO11C60B984O",
+"name": "Casole D'Elsa"
+},
+{
+"code": "VRDJOX44S13H888H",
+"name": "San Giorgio Lucano"
+},
+{
+"code": "DLCFNC35D54B401P",
+"name": "Cal Di Canale"
+},
+{
+"code": "RCCGLI30T63D346S",
+"name": "Dorio"
+},
+{
+"code": "RCCGLI30T63B544S",
+"name": "Campolieto"
+},
+{
+"code": "FOXJOX65L49A640I",
+"name": "Barcis"
+},
+{
+"code": "FOXJOX65L49F843I",
+"name": "Nardodipace"
+},
+{
+"code": "DLCLCU94P02D717A",
+"name": "Tonezza Del Cimone"
+},
+{
+"code": "DLCLCU94P0ND7M7A",
+"name": "Tonezza Del Cimone"
+}
+]
+}
