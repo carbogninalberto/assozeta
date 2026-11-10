@@ -60,6 +60,11 @@ ASSOCIATIONS = {
     'wide': {'user': uid(3), 'association': uid(4), 'denomination': 'Club – Roma'},
     # Owner season settings that make Subscription.save() raise (31 April is not a date).
     'season': {'user': uid(5), 'association': uid(6), 'denomination': 'Render stagione', 'start_day': 31, 'start_month': 4},
+    # The association of the regional PDF form: 'form' holds further SportAssociation columns (a stamp, no signature).
+    'form': {'user': uid(7), 'association': uid(8), 'denomination': 'Polisportiva Città (Biella)',
+             'form': {'federation': 'fidal', 'address': 'Via Roma 1', 'address_cap': '13900', 'address_city': 'Biella',
+                      'whatsapp': '+39 333 1234567', 'president_first_name': 'Élise', 'president_last_name': 'Łukasz',
+                      'stamp': 'data:image/png;base64,AAAA'}},
 }
 ASSOCIATION_IDS = {'own': OWN, 'foreign': FOREIGN, **{k: v['association'] for k, v in ASSOCIATIONS.items()}}
 DENOMINATIONS = {'own': 'Message reads own', 'foreign': 'Message reads foreign',
@@ -70,8 +75,17 @@ ASSOCIATES = {
     'noemail': {'id': uid(11), 'association': 'own', 'first': 'Anna', 'last': 'Verdi', 'email': '', 'user': None},
     'greek': {'id': uid(12), 'association': 'wide', 'first': 'Δημήτρης', 'last': 'Παπαδόπουλος', 'email': None, 'user': None},
     'odd': {'id': uid(13), 'association': 'own', 'first': None, 'last': ' Neri　', 'email': None, 'user': None},
+    # Members of the form's association: 'form' holds further Associate columns.
+    'formfull': {'id': uid(53), 'association': 'form', 'first': 'Maria Chiara', 'last': "D'Angelò", 'email': None, 'user': None,
+                 'form': {'born_city': 'Ωmega straße', 'born_date': '2012-05-09', 'address': 'Via Garibaldi, 23 B int. 4',
+                          'address_city': 'Biella', 'id_number': 'ca1234567', 'tax_code': 'rssmra12e49a859x'}},
+    'formtutor': {'id': uid(54), 'association': 'form', 'first': 'Paola', 'last': 'Tutrice', 'email': 'tutor@example.test', 'user': None,
+                  'form': {'phone': '+39 0151234567'}},
+    'formbare': {'id': uid(55), 'association': 'form', 'first': 'Zoe', 'last': 'None', 'email': None, 'user': None},
 }
-FULL_NAMES = {'mario': 'Mario Rossi', 'noemail': 'Anna Verdi', 'greek': 'Δημήτρης Παπαδόπουλος', 'odd': 'None  Neri',
+# Tutor relations (associate, tutor, primary).
+TUTORS = [{'associate': 'formfull', 'tutor': 'formtutor', 'primary': True}]
+FULL_NAMES = {'formfull': "Maria Chiara D'Angelò", 'formtutor': 'Paola Tutrice', 'formbare': 'Zoe None', 'mario': 'Mario Rossi', 'noemail': 'Anna Verdi', 'greek': 'Δημήτρης Παπαδόπουλος', 'odd': 'None  Neri',
               'athlete': 'Athlete Fixture'}
 ASSOCIATE_IDS = {**{k: v['id'] for k, v in ASSOCIATES.items()}, 'athlete': BASE_ATHLETE_ASSOCIATE}
 
@@ -105,6 +119,9 @@ SUBSCRIPTIONS = {
     'season': {'id': uid(29), 'association': 'season', 'associate': 'mario', 'user': 'owner', 'group': None, 'document': None},
     # A later subscription of the athlete's associate, entered by the association.
     'renewal': {'id': uid(28), 'association': 'own', 'associate': 'athlete', 'user': 'owner', 'group': None, 'document': None},
+    'formfull': {'id': uid(56), 'association': 'form', 'associate': 'formfull', 'user': 'owner', 'group': None, 'document': None},
+    'formbare': {'id': uid(57), 'association': 'form', 'associate': 'formbare', 'user': 'owner', 'group': None, 'document': None},
+    'formnone': {'id': uid(58), 'association': 'form', 'associate': None, 'user': 'owner', 'group': None, 'document': None},
 }
 # Another member of the association (an athlete account without records).
 EXTRA_USERS = {'member': {'id': uid(27), 'username': 'document-render-member', 'email': 'document-render-member@example.test'},
@@ -201,6 +218,13 @@ MEDICAL = {
     'previous': {'id': uid(114), 'subscription': 'foreign', 'region': 'non-agonistica', 'date': '2026-05-09', 'document': 'old_medical'},
     'athlete': {'id': uid(115), 'subscription': 'athlete', 'region': 'agonistica', 'date': '2026-05-10', 'document': None},
     'tokened': {'id': uid(116), 'subscription': 'plain', 'region': 'agonistica', 'date': '2026-05-11', 'document': 'tok_medical'},
+    # Regions whose document is a PDF form (Piemonte Biella) or has no template.
+    'biella': {'id': uid(117), 'subscription': 'formfull', 'region': 'agonistica-piemonte-biella', 'date': '2026-05-12', 'document': None,
+               'sport': 'Atletica leggera', 'address': 'Centro medico, Via Dante 5'},
+    'biella_bare': {'id': uid(118), 'subscription': 'formbare', 'region': 'agonistica-piemonte-biella', 'date': None, 'document': None},
+    'biella_noassociate': {'id': uid(119), 'subscription': 'formnone', 'region': 'agonistica-piemonte-biella', 'date': '2026-05-13',
+                           'document': None},
+    'lombardia': {'id': uid(109), 'subscription': 'plain', 'region': 'agonistica-lombardia', 'date': '2026-05-14', 'document': None},
 }
 
 cases = []
@@ -244,11 +268,11 @@ def add(name, actor, path, status, response, *, method='GET', headers=None, body
     cases.append(case)
 
 
-def effect(filename, *, actor, celery=True, links=(), creates=(), mail=None):
+def effect(filename, *, actor, celery=True, links=(), creates=(), mail=None, stored=False):
     """filename: the new Document; links: (model, label) rows whose FK becomes it;
-    creates: archive/subscriptionfile rows; mail: the receipt e-mail spec."""
+    creates: archive/subscriptionfile rows; mail: the receipt e-mail spec; stored: the view saved the PDF itself."""
     return {'document': filename, 'actor': actor, 'storage_task': celery, 'links': [list(item) for item in links],
-            'creates': [dict(item) for item in creates], 'mail': mail}
+            'creates': [dict(item) for item in creates], 'mail': mail, 'stored': stored}
 
 
 def common(route, name, key):
@@ -604,7 +628,8 @@ add('template-document-token', 'anonymous', f"/document/template/{T('plain')}?to
 add('template-bypass-header', 'anonymous', f"/document/template/{T('plain')}", 401, ANONYMOUS, headers={'Authorization': '$bypass'})
 
 # --- document/medical-appointment/<uid> (IsAuthenticated | HasDocumentToken) ------------------------
-REGIONS = {'agonistica': 'Visita Agonistica', 'non-agonistica': 'Visita Non Agonistica'}
+REGIONS = {'agonistica': 'Visita Agonistica', 'non-agonistica': 'Visita Non Agonistica',
+           'agonistica-piemonte-biella': 'Visita Agonistica Piemonte Biella', 'agonistica-lombardia': 'Visita Agonistica Lombardia'}
 
 
 def medical_name(key):
@@ -645,12 +670,51 @@ add('medical-renderer-error', 'owner', f"/document/medical-appointment/{M('agoni
     renders=[render('medical-appointment', M('agonistica'), answer=reply(404, 'text/plain', ''))],
     effect=effect(medical_name('agonistica'), actor='owner', celery=False))
 
+# Regional PDF forms: the view fills the form itself, saves it in the default storage and answers the saved bytes
+# ('<form-pdf>': fill_pdf_fields over the authored 'form' values; nothing reaches the renderer or the broker).
+# The values are the stored texts with two leading spaces, upper-cased unless they contain 'base64'; a value
+# that strips to YYYY-MM-DD reads DD/MM/YYYY; empty values and the text 'None' are left out.
+FORM_PDF = '<form-pdf>'
+FORM_ASSOCIATION = {
+    'sport_association.denomination': '  POLISPORTIVA CITTÀ (BIELLA)', 'sport_association.federation': '  FIDAL',
+    'sport_association.address': '  VIA ROMA 1', 'sport_association.address_cap': '  13900',
+    'sport_association.address_city': '  BIELLA', 'sport_association.whatsapp': '  +39 333 1234567',
+    'sport_association.user.email': '  DOCUMENT-RENDER-FORM@EXAMPLE.TEST', 'sport_association.president_first_name': '  ÉLISE',
+    'sport_association.president_last_name': '  ŁUKASZ', 'sport_association.stamp': '  data:image/png;base64,AAAA',
+    'other.today_datetime': '  02/01/2026 03:04'}
+FORM_FULL = {**FORM_ASSOCIATION, 'associate.last_name': "  D'ANGELÒ", 'associate.first_name': '  MARIA CHIARA',
+             'associate.born_city': '  ΩMEGA STRASSE', 'associate.born_date': '09/05/2012', 'associate.address_city': '  BIELLA',
+             'associate.address_no_number': '  VIA GARIBALDI  INT.', 'associate.address_number': '  23 B',
+             'associate.id_number': '  CA1234567', 'associate.tax_code': '  RSSMRA12E49A859X',
+             'main_tutor.phone': '  +39 0151234567', 'main_tutor.email': '  TUTOR@EXAMPLE.TEST',
+             'medical_appointment.sport': '  ATLETICA LEGGERA', 'other.address': '  CENTRO MEDICO, VIA DANTE 5'}
+FORM_BARE = {**FORM_ASSOCIATION, 'associate.first_name': '  ZOE'}
+
+
+def form(name, key, values, query='', disposition='inline'):
+    add(name, 'owner', f"/document/medical-appointment/{M(key)}{query}", 200, FORM_PDF,
+        effect=effect(medical_name(key), actor='owner', celery=False, links=[('medicalappointments', key)], stored=True),
+        disposition=f'{disposition}; filename=' + medical_name(key))
+    cases[-1]['form'] = values
+
+
+form('medical-form-biella', 'biella', FORM_FULL)
+form('medical-form-biella-again-download', 'biella', FORM_FULL, '?download=1', 'attachment')
+form('medical-form-biella-bare', 'biella_bare', FORM_BARE)
+add('medical-form-without-associate', 'owner', f"/document/medical-appointment/{M('biella_noassociate')}", 500,
+    exception("'NoneType' object has no attribute 'main_tutor'"),
+    effect=effect(medical_name('biella_noassociate'), actor='owner', celery=False))
+add('medical-region-without-form', 'owner', f"/document/medical-appointment/{M('lombardia')}", 500,
+    exception("[Errno 2] No such file or directory: 'document/medical-appointments/non-agonistica.html'"),
+    effect=effect(medical_name('lombardia'), actor='owner', celery=False))
+add('medical-form-athlete-other', 'athlete', f"/document/medical-appointment/{M('biella')}", 403, SCOPED_HIDDEN)
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'document PDF routes through the renderer service',
     'ids': IDS, 'associations': ASSOCIATIONS, 'association_ids': ASSOCIATION_IDS, 'associates': ASSOCIATES, 'documents': DOCUMENTS,
     'subscriptions': SUBSCRIPTIONS, 'invoices': INVOICES, 'payments': PAYMENTS, 'instructors': INSTRUCTORS, 'hours': HOURS,
-    'customer_invoices': CUSTOMER_INVOICES, 'templates': TEMPLATES, 'folders': FOLDERS, 'medical': MEDICAL,
+    'customer_invoices': CUSTOMER_INVOICES, 'templates': TEMPLATES, 'folders': FOLDERS, 'medical': MEDICAL, 'tutors': TUTORS, 'location': 'document-render',
     'extra_users': EXTRA_USERS, 'cases': cases},
     ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

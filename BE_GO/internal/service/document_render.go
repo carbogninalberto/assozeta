@@ -8,13 +8,16 @@ import (
 	"errors"
 	"log/slog"
 	"math"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/djangoauth"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/medicalform"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfrender"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
@@ -64,6 +67,20 @@ type DocumentRender struct {
 	settings  DocumentRenderSettings
 	now       func() time.Time
 	newID     func() string
+	forms     RenderFormStorage
+}
+
+// RenderFormStorage is default_storage for the PDF forms a view fills itself
+// (PrintingService.fill_pdf_and_store): service.DocumentUploads.
+type RenderFormStorage interface {
+	GeneratedName(created time.Time, id, filename string) error
+	SaveGenerated(ctx context.Context, created time.Time, id, filename string, content []byte) error
+}
+
+// WithFormStorage sets the storage of the filled PDF forms; without it they are refused.
+func (s *DocumentRender) WithFormStorage(forms RenderFormStorage) *DocumentRender {
+	s.forms = forms
+	return s
 }
 
 func NewDocumentRender(store domain.DocumentRenderStore, renderer PDFRenderer, publisher celery.Publisher, settings DocumentRenderSettings,
@@ -205,6 +222,10 @@ type renderJob struct {
 	after    func(ctx context.Context, document domain.NewRenderDocument) error
 	// ignore: the template route answers 200 whatever print_and_store_pdf returned.
 	ignore bool
+	// failed is the view's answer to an exception raised after the Document was created.
+	failed *DocumentRenderReply
+	// fill is fill_pdf_and_store: the PDF the view builds and saves itself instead of asking the renderer.
+	fill func() []byte
 }
 
 // Render follows the route's view: lookups, the filename, then the shared
@@ -233,7 +254,7 @@ func (s *DocumentRender) Render(ctx context.Context, identity domain.ResolvedIde
 	if err != nil || reply != nil {
 		return reply, err
 	}
-	if !job.ignore && !pdfrender.HeaderSafe(job.filename) {
+	if !job.ignore && job.failed == nil && !pdfrender.HeaderSafe(job.filename) {
 		// BadHeaderError (or an ASGI header refusal) after the storage task: not ported.
 		return nil, ErrDocumentRenderNotPorted
 	}
@@ -255,6 +276,12 @@ func (s *DocumentRender) print(ctx context.Context, identity domain.ResolvedIden
 	if err != nil {
 		return nil, err
 	}
+	if job.fill != nil {
+		// A name default_storage.save would reject answers an exception text after the Document: not ported.
+		if s.forms == nil || s.forms.GeneratedName(created, document.ID, document.Filename) != nil {
+			return nil, ErrDocumentRenderNotPorted
+		}
+	}
 	if err := s.store.CreateDocument(ctx, document, actorAssociation, audit, s.now()); err != nil {
 		return nil, err
 	}
@@ -263,26 +290,38 @@ func (s *DocumentRender) print(ctx context.Context, identity domain.ResolvedIden
 			return nil, err
 		}
 	}
-	pdf, err := s.renderer.Render(ctx, job.view, request.Authorization)
-	var failure *pdfrender.Failure
-	if errors.As(err, &failure) {
-		if job.ignore {
-			return &DocumentRenderReply{Status: 200, JSON: map[string]string{"msg": "Generato con successo."}}, nil
-		}
-		return renderException(500, "PDF rendering failed: "+failure.Text), nil
+	if job.failed != nil {
+		return job.failed, nil
 	}
-	if err != nil {
-		return nil, err
-	}
-	publish, cancel := context.WithTimeout(context.WithoutCancel(ctx), documentRenderPublishWait)
-	_, err = s.publisher.Publish(publish, celery.Task{Name: saveToStorageTask, Args: []any{file, base64.StdEncoding.EncodeToString(pdf)}})
-	cancel()
-	if err != nil {
-		if job.ignore {
-			slog.Error("document render: storage task not published", "error", err)
-			return &DocumentRenderReply{Status: 200, JSON: map[string]string{"msg": "Generato con successo."}}, nil
+	var pdf []byte
+	if job.fill != nil {
+		pdf = job.fill()
+		// The view reads the saved file back for its answer: the same bytes.
+		if err := s.forms.SaveGenerated(ctx, created, document.ID, document.Filename, pdf); err != nil {
+			return nil, err
 		}
-		return renderException(500, err.Error()), nil
+	} else {
+		pdf, err = s.renderer.Render(ctx, job.view, request.Authorization)
+		var failure *pdfrender.Failure
+		if errors.As(err, &failure) {
+			if job.ignore {
+				return &DocumentRenderReply{Status: 200, JSON: map[string]string{"msg": "Generato con successo."}}, nil
+			}
+			return renderException(500, "PDF rendering failed: "+failure.Text), nil
+		}
+		if err != nil {
+			return nil, err
+		}
+		publish, cancel := context.WithTimeout(context.WithoutCancel(ctx), documentRenderPublishWait)
+		_, err = s.publisher.Publish(publish, celery.Task{Name: saveToStorageTask, Args: []any{file, base64.StdEncoding.EncodeToString(pdf)}})
+		cancel()
+		if err != nil {
+			if job.ignore {
+				slog.Error("document render: storage task not published", "error", err)
+				return &DocumentRenderReply{Status: 200, JSON: map[string]string{"msg": "Generato con successo."}}, nil
+			}
+			return renderException(500, err.Error()), nil
+		}
 	}
 	if job.ignore {
 		return &DocumentRenderReply{Status: 200, JSON: map[string]string{"msg": "Generato con successo."}}, nil
@@ -726,15 +765,96 @@ func (s *DocumentRender) medicalJob(ctx context.Context, identity domain.Resolve
 	if !known {
 		return nil, renderException(500, paymentInfoPythonQuote(appointment.Region)), nil
 	}
-	if appointment.Region != "agonistica" && appointment.Region != "non-agonistica" {
-		// fill_pdf_and_store fills a PDF form in-process (pypdf/PyMuPDF): not ported.
-		return nil, nil, ErrDocumentRenderNotPorted
-	}
-	return &renderJob{
+	job := &renderJob{
 		filename: "[" + renderOptional(appointment.Denomination) + "] " + region + " del " + renderOptional(appointment.Date) + ".pdf",
 		view:     "document/medical-appointment/" + request.UID + "/view",
 		links: []domain.RenderLink{{Table: "application_medicalappointments", KeyColumn: "medical_appointments_id", Column: "document_id",
 			Field: "document", Model: "medicalappointments", Representation: "MedicalAppointments", ID: appointment.ID, Old: appointment.Document,
 			IndexAssociation: &appointment.Association, IndexPath: "subscription.sport_association"}},
-	}, nil, nil
+	}
+	switch appointment.Region {
+	case "agonistica", "non-agonistica":
+		return job, nil, nil
+	case medicalFormRegion:
+	default:
+		// MODELS_TEMPLATE_MAP has no form for the region: get_template() answers the default page, which
+		// get_pdf_fields opens as a PDF file after the Document was created.
+		job.failed = renderException(500, "[Errno 2] No such file or directory: 'document/medical-appointments/non-agonistica.html'")
+		return job, nil, nil
+	}
+	form, err := s.store.AppointmentForm(ctx, id)
+	if err != nil {
+		reply, err := lookupFailure(err, renderException(500, "'NoneType' object has no attribute 'subscription'"))
+		return nil, reply, err
+	}
+	if form.Associate == nil {
+		job.failed = renderException(500, "'NoneType' object has no attribute 'main_tutor'")
+		return job, nil, nil
+	}
+	tutor, err := s.store.AppointmentFormTutor(ctx, *form.Associate)
+	if errors.Is(err, domain.ErrViewTutorWrite) {
+		// get_main_tutor() would promote a tutor relation (a write).
+		return nil, nil, ErrDocumentRenderNotPorted
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	values := medicalFormValues(form, tutor)
+	if _, signed := values[medicalform.SignatureKey]; signed {
+		// fill_pdf_fields draws the stored signature (and stamp) on the first page with PyMuPDF: image processing, not ported.
+		return nil, nil, ErrDocumentRenderNotPorted
+	}
+	job.fill = func() []byte { return medicalform.FillBiella(values) }
+	return job, nil, nil
+}
+
+// medicalFormRegion is the region of MODELS_TEMPLATE_MAP whose template is a PDF form.
+const medicalFormRegion = "agonistica-piemonte-biella"
+
+var (
+	// Associate.address_number / address_no_number: r'\d+\s*[A-Za-z]?' on a str (Unicode digits and whitespace).
+	medicalFormNumber = regexp.MustCompile(`\p{Nd}+[\t\n\v\f\r\x1c-\x1f \x{85}\x{a0}\x{1680}\x{2000}-\x{200a}\x{2028}\x{2029}\x{202f}\x{205f}\x{3000}]*[A-Za-z]?`)
+)
+
+// medicalFormValues is document_medical_appointment's mapped_fields for a PDF
+// form: extract_values over the form's keys (a value is kept when it is not
+// empty and its text is not 'None'), each prefixed with two spaces and
+// upper-cased unless it contains 'base64', then a value that strips to
+// YYYY-MM-DD rewritten as DD/MM/YYYY.
+func medicalFormValues(form *domain.RenderAppointmentForm, tutor *domain.RenderFormTutor) map[string]string {
+	source := map[string]*string{}
+	for key, value := range form.Text {
+		source[key] = value
+	}
+	if form.Address != nil {
+		number := medicalFormNumber.FindString(*form.Address)
+		rest := dto.PythonStrip(strings.ReplaceAll(medicalFormNumber.ReplaceAllString(*form.Address, ""), ",", ""))
+		source["associate.address_number"], source["associate.address_no_number"] = &number, &rest
+	} else {
+		empty := ""
+		source["associate.address_number"] = &empty
+	}
+	if tutor != nil {
+		source["main_tutor.phone"], source["main_tutor.email"] = tutor.Phone, tutor.Email
+	}
+	// other.today is not a field the writer fills; today_datetime is the appointment's creation date in UTC.
+	stamp := form.Created.UTC().Format("02/01/2006 15:04")
+	source["other.today_datetime"] = &stamp
+	values := map[string]string{}
+	for _, key := range medicalform.BiellaKeys() {
+		value := source[key]
+		if value == nil || *value == "" || *value == "None" {
+			continue
+		}
+		text := *value
+		if !strings.Contains(text, "base64") {
+			text = djangoauth.PythonUpper(text)
+		}
+		text = "  " + text
+		if stripped := []rune(dto.PythonStrip(text)); len(stripped) == 10 && stripped[4] == '-' && stripped[7] == '-' {
+			text = string(stripped[8:10]) + "/" + string(stripped[5:7]) + "/" + string(stripped[0:4])
+		}
+		values[key] = text
+	}
+	return values
 }

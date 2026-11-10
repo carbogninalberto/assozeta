@@ -102,7 +102,7 @@ def service_context(report, log):
             with override_settings(STORAGES=storages, AWS_ACCESS_KEY_ID=access, AWS_SECRET_ACCESS_KEY=secret,
                                    AWS_STORAGE_BUCKET_NAME=BUCKET, AWS_S3_REGION_NAME='us-east-1', AWS_S3_ENDPOINT_URL=endpoint,
                                    AWS_LOCATION=source['location'], AWS_S3_ADDRESSING_STYLE='path'), \
-                    renderer.service_context(report, log):
+                    renderer.renderer_context(report, log):
                 yield
             listed = sorted(item['Key'] for item in client.list_objects_v2(Bucket=BUCKET).get('Contents', []))
             contract.require(listed == authored_keys(source), 'storage.objects-unchanged')

@@ -1,0 +1,49 @@
+[
+ {
+  "values": {},
+  "length": 456391,
+  "sha256": "38d371e85b906e604e7d87d6ec3c4c649eab8f690bf954e164846912ed72b919"
+ },
+ {
+  "values": {
+   "associate.first_name": "  MARIA",
+   "associate.last_name": "  ROSSI",
+   "associate.born_date": "09/05/2012",
+   "other.today": "  10/11/2026",
+   "other.today_datetime": "  02/01/2026 03:04"
+  },
+  "length": 456448,
+  "sha256": "40f4ee2c8b94cc859be399f4f8ad0a3e7fc9f0cc60765125f78744ce205c828a"
+ },
+ {
+  "values": {
+   "sport_association.denomination": "  A.S.D. (POLISPORTIVA) \\ D'AURORA",
+   "associate.address_no_number": "  VIA ROMA /",
+   "main_tutor.email": "  TUTOR+ONE@EXAMPLE.TEST",
+   "sport_association.stamp": "  data:image/png;base64,AAAA"
+  },
+  "length": 456534,
+  "sha256": "d049be304ee31fb2ef3bb27a4af2a3e8effe2e920773911913215fda6020a905"
+ },
+ {
+  "values": {
+   "associate.first_name": "  ÀÈÌÒÙ ÇÑ ŒŠŽ €",
+   "associate.last_name": "  ŁÓDŹ",
+   "associate.born_city": "  ΑΘΗΝΑ",
+   "medical_appointment.sport": "  КАРАТЭ 空手 😀",
+   "other.address": "  LINE\nTWO\tTAB"
+  },
+  "length": 456652,
+  "sha256": "10e4d3d5231b125962958d5095e9d8f78d054fdc69ccd2034c16ae5401d2ea1f"
+ },
+ {
+  "values": {
+   "associate.tax_code": "",
+   "associate.id_number": " ",
+   "associate.address_number": "  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+   "sport_association.president_signature": "  IGNORED BY THE WRITER"
+  },
+  "length": 456694,
+  "sha256": "053bdb15864869062dccea3f77b3f193dc11a135d2faa293022ac313578e0921"
+ }
+]

@@ -310,6 +310,8 @@ func run() (runErr error) {
 	documentRenders := service.NewDocumentRender(repository.NewDocumentRender(db),
 		pdfrender.New(os.Getenv("PUPPETEER_HOST"), os.Getenv("PUPPETEER_PORT"), os.Getenv("CURRENT_HOST_PUPPETEER")), tasks,
 		documentRenderSettings(cfg), time.Now, uuid.NewString)
+	// document/medical-appointment fills the regional PDF forms itself and saves them in the default storage.
+	documentRenders.WithFormStorage(composeDocumentStorage(cfg, db, sessions))
 	// A stored PDF whose object is missing is printed again by document/retrieve.
 	docmanagerReads.WithReprinter(documentRenders)
 	documentRenderHandler := handler.NewDocumentRenderHandler(documentRenders,

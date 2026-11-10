@@ -305,6 +305,95 @@ func (r *DocumentRender) Appointment(ctx context.Context, id string) (*domain.Re
 		Date: row.Date, Document: row.Document}, nil
 }
 
+// AppointmentForm reads the rows document_medical_appointment hands
+// extract_values for a PDF form: the appointment, its subscription's
+// association with the owner's e-mail, and the subscription's associate.
+func (r *DocumentRender) AppointmentForm(ctx context.Context, id string) (*domain.RenderAppointmentForm, error) {
+	var row struct {
+		Associate          *string   `db:"associate"`
+		Created            time.Time `db:"created"`
+		Address            *string   `db:"associate_address"`
+		Denomination       *string   `db:"sa_denomination"`
+		Federation         *string   `db:"sa_federation"`
+		AssociationAddress *string   `db:"sa_address"`
+		AddressCap         *string   `db:"sa_address_cap"`
+		AddressCity        *string   `db:"sa_address_city"`
+		Whatsapp           *string   `db:"sa_whatsapp"`
+		PresidentFirst     *string   `db:"sa_president_first_name"`
+		PresidentLast      *string   `db:"sa_president_last_name"`
+		Signature          *string   `db:"sa_president_signature"`
+		Stamp              *string   `db:"sa_stamp"`
+		Email              *string   `db:"user_email"`
+		LastName           *string   `db:"a_last_name"`
+		FirstName          *string   `db:"a_first_name"`
+		BornCity           *string   `db:"a_born_city"`
+		BornDate           *string   `db:"a_born_date"`
+		City               *string   `db:"a_address_city"`
+		IDNumber           *string   `db:"a_id_number"`
+		TaxCode            *string   `db:"a_tax_code"`
+		Sport              *string   `db:"m_sport"`
+		Place              *string   `db:"m_address"`
+	}
+	err := r.db.GetContext(ctx, &row, `SELECT s.associate_id::text AS associate, m.creation_date AS created, a.address AS associate_address,
+ sa.denomination AS sa_denomination, sa.federation AS sa_federation, sa.address AS sa_address, sa.address_cap AS sa_address_cap,
+ sa.address_city AS sa_address_city, sa.whatsapp AS sa_whatsapp, sa.president_first_name AS sa_president_first_name,
+ sa.president_last_name AS sa_president_last_name, sa.president_signature AS sa_president_signature, sa.stamp AS sa_stamp,
+ u.email AS user_email, a.last_name AS a_last_name, a.first_name AS a_first_name, a.born_city AS a_born_city,
+ to_char(a.born_date, 'YYYY-MM-DD') AS a_born_date, a.address_city AS a_address_city, a.id_number AS a_id_number,
+ a.tax_code AS a_tax_code, m.sport AS m_sport, m.address AS m_address
+ FROM application_medicalappointments m JOIN application_subscription s ON s.subscription_id=m.subscription_id
+ JOIN application_sportassociation sa ON sa.sport_association_id=s.sport_association_id
+ LEFT JOIN bakney_user u ON u.user_id=sa.user_id
+ LEFT JOIN application_associate a ON a.associate_id=s.associate_id
+ WHERE m.medical_appointments_id=$1::uuid ORDER BY m.medical_appointments_id LIMIT 1`, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, domain.ErrRenderNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &domain.RenderAppointmentForm{Associate: row.Associate, Address: row.Address, Created: row.Created, Text: map[string]*string{
+		"sport_association.denomination": row.Denomination, "sport_association.federation": row.Federation,
+		"sport_association.address": row.AssociationAddress, "sport_association.address_cap": row.AddressCap,
+		"sport_association.address_city": row.AddressCity, "sport_association.whatsapp": row.Whatsapp,
+		"sport_association.president_first_name": row.PresidentFirst, "sport_association.president_last_name": row.PresidentLast,
+		"sport_association.president_signature": row.Signature, "sport_association.stamp": row.Stamp,
+		"sport_association.user.email": row.Email, "associate.last_name": row.LastName, "associate.first_name": row.FirstName,
+		"associate.born_city": row.BornCity, "associate.born_date": row.BornDate, "associate.address_city": row.City,
+		"associate.id_number": row.IDNumber, "associate.tax_code": row.TaxCode, "medical_appointment.sport": row.Sport,
+		"other.address": row.Place}}, nil
+}
+
+// AppointmentFormTutor: tutor_relations.filter(is_primary=True).first().tutor;
+// without a primary relation, tutor_relations.first() would be promoted and
+// saved (ErrViewTutorWrite).
+func (r *DocumentRender) AppointmentFormTutor(ctx context.Context, associate string) (*domain.RenderFormTutor, error) {
+	var tutor domain.RenderFormTutor
+	var row struct {
+		Phone *string `db:"phone"`
+		Email *string `db:"email"`
+	}
+	err := r.db.GetContext(ctx, &row, `SELECT t.phone, t.email FROM application_associatetutorrelation r
+ JOIN application_associate t ON t.associate_id=r.tutor_id
+ WHERE r.associate_id=$1::uuid AND r.is_primary ORDER BY r.id LIMIT 1`, associate)
+	if errors.Is(err, sql.ErrNoRows) {
+		var related bool
+		if err := r.db.GetContext(ctx, &related, `SELECT EXISTS(SELECT 1 FROM application_associatetutorrelation WHERE associate_id=$1::uuid)`,
+			associate); err != nil {
+			return nil, err
+		}
+		if related {
+			return nil, domain.ErrViewTutorWrite
+		}
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	tutor.Phone, tutor.Email = row.Phone, row.Email
+	return &tutor, nil
+}
+
 func (r *DocumentRender) write(ctx context.Context, apply func(tx *sqlx.Tx) error) error {
 	owned, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {

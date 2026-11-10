@@ -16,7 +16,7 @@ below describe what Go itself does not serve; with the handoff on, an A or B ite
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 69** (about 63 distinct after duplicates; 1 ported in v2-documents-rest; 5 ported in v2-pdf (the reportlab documents); 2 ported in v2-deletes; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard, 3 in v2-misc-3 (which also narrows the smtp/verify row to connect timeouts) and 1 in the famwiz change (the preregistration that renews a subscription; also the excel half of the course-subscriptions export row), below), **B 218** (54 with
+Counts (table rows, appendix): **A 69** (about 63 distinct after duplicates; 1 ported and 1 narrowed (the Biella form, to associations with a stored signature) in v2-documents-rest; 5 ported in v2-pdf (the reportlab documents); 2 ported in v2-deletes; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard, 3 in v2-misc-3 (which also narrows the smtp/verify row to connect timeouts) and 1 in the famwiz change (the preregistration that renews a subscription; also the excel half of the course-subscriptions export row), below), **B 218** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -252,6 +252,7 @@ Receipts are `quality-reports/go-migration/<family>-http-v2doc2-*`; each family 
 |---|---|---|---|
 | balance-sheet | `DELETE balance-sheet/accounts/<uid>/delete` | not a refusal: the route now answers 403 for an account with transfers or payments (the rule of the list's `deletable` flag), in Django and Go | Django tests first; 84 cases; RED `v2doc2-red-r1` Django 84/84, Go 200; GREEN `v2doc2-versioned-r2` 4 transports; mutation `v2doc2-mutation-r2` (rule needing both a transfer and a payment) CAUGHT; balance-accounts 25/25, balance-account-writes 29/29, balance-transfer-writes 30/30 re-run (`v2doc2-rerun-r1`) |
 | docmanager-reads | `GET document/retrieve/<uid>` | a stored PDF whose object is missing and that one subscription or invoice references (A): the renderer prints the view again, `save_to_storage` is published, and the stream answers the missing-key text until the worker has stored the file | 170 cases; RED `v2doc2-red-r1` Django 170/170, Go 500 page; GREEN `v2doc2-versioned-r1` 4 transports; mutation `v2doc2-mutation-r1` (stored under the document's filepath) CAUGHT; document-render and documents-writes re-run (`v2doc2-rerun-r1`) |
+| document-render | `GET document/medical-appointment/<uid>` | region `agonistica-piemonte-biella` for an association without a stored signature (A): the view fills the PDF form itself (pypdf), saves it in the default storage and answers it. Also the regions without a form (B): the Document is created and the answer is the missing-template 500 | 199 cases with a private MinIO; RED `v2doc2-red-r3` Django 199/199, Go 500 page; GREEN `v2doc2-versioned-r1` 4 transports; mutation `v2doc2-mutation-r1` (no date rewrite) CAUGHT; docmanager-reads, documents-writes, document-views and payment-reads re-run (`v2doc2-rerun-r2`) |
 
 ## Remaining A items, per family
 
@@ -293,7 +294,7 @@ attempt saw came from the harness storing the re-seeded rows in another physical
 ### documents / docmanager / document-views
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| GET document/medical-appointment/<uid> | region `agonistica-piemonte-biella` (server-side call to `CURRENT_HOST`) | `AddMedicalAppointment.svelte:30` | `service/document_render.go:657` | expensive |
+| GET document/medical-appointment/<uid> | region `agonistica-piemonte-biella` when the association has a stored president signature: Django draws it (and the stamp) on the form with PyMuPDF (image processing, refused by the porting rules). Without a signature the form is ported (v2-documents-rest) | `AddMedicalAppointment.svelte:30` | `service/document_render.go` (`medicalJob`) | expensive (image) |
 
 ### invoices / instructors
 | Route | Condition | UI call | Go site | Cost |
@@ -529,7 +530,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### document-render.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| GET document/medical-appointment/<uid> | region other than `agonistica`/`non-agonistica` (PDF form fill) | service/document_render.go:657 (`ErrDocumentRenderNotPorted`) | A | The add-appointment form offers `agonistica-piemonte-biella` (`association/Members/detail/sections/modals/AddMedicalAppointment.svelte:30`, select :160-167). The route is requested by the printing call to `CURRENT_HOST` (`application/printing_tasks.py:47`), not by the browser, so it hits Go only when `CURRENT_HOST` points at the Go API. |
+| GET document/medical-appointment/<uid> | region `agonistica-piemonte-biella` with a stored president signature (PyMuPDF draws it on the form); the form without a signature and the regions without a form are ported (v2-documents-rest) | service/document_render.go, `medicalJob` (`ErrDocumentRenderNotPorted`) | A | The add-appointment form offers `agonistica-piemonte-biella` (`association/Members/detail/sections/modals/AddMedicalAppointment.svelte:30`, select :160-167). The route is requested by the printing call to `CURRENT_HOST` (`application/printing_tasks.py:47`), not by the browser, so it hits Go only when `CURRENT_HOST` points at the Go API. |
 | document/* | filename with CR/LF/C0/DEL or `email.header` splitting chars | service/document_render.go:230 | B (legacy: yes) | Filenames derive from member/association names; control characters need pasted or imported data. Cost: cheap-medium. |
 | POST document/template/<uid> | body not none/JSON object/urlencoded, malformed JSON, non-object `additionalData`, `subscription` not str/int/bool/null | handler/document_render.go:124; service/document_render.go:553,562,567,584 | B | UI sends `{template, additionalData: <object>}` as JSON (`association/archive/modals/GenerateFromTemplateModal.svelte:31-36`). Cost: cheap. |
 | GET document/invoice/<uid> | multipart/other body with falsy query flag | handler/document_render.go:124 | B | Called by the printing task with GET and no body (`application/printing_tasks.py:12`). |
