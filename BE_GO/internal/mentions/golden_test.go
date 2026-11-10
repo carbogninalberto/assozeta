@@ -136,7 +136,7 @@ func TestFilterMatchesDjango(t *testing.T) {
 
 func TestRefusesUnsupportedMarkup(t *testing.T) {
 	for _, html := range []string{
-		"<!-- c -->", "<!DOCTYPE html>", "<?xml?>", "<script>x</script>", "<style>p{}</style>", "<pre> x </pre>",
+		"<!-- c -->", "<!DOCTYPE html>", "<?xml?>", "<script>x</script>", "<style>p{}</style>",
 		"<textarea>x</textarea>", "a < b", "<p>x</b>", "<p>x</p></p>", "</br>", "&copy;", "&foo;", "&#150;", "&#0;", "x &",
 		"&amp", `<a href="?a=1&b=2">x</a>`, `<p class=x>`, `<p class="a" class="b">`, "<p", `<a title="x>y">`, "\ufeffx",
 		"<p>@nome \u212a</p>", "<p>a<br>b<br/>c</p>",

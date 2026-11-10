@@ -665,6 +665,72 @@
    "payment_condition": "TP02",
    "payment_modality": "MP05",
    "xml": "xm20"
+  },
+  "pending": {
+   "customer_invoice_id": "a1000000-0000-4000-8000-000000846134",
+   "prefix": "FPR",
+   "number": 4,
+   "fiscal_year": 2026,
+   "assignor_prefix_vat_number": "IT",
+   "assignor_fiscal_regime": "RF01",
+   "assignor_country": "IT",
+   "assignor_fax": null,
+   "transferor_prefix_vat_number": "IT",
+   "transferor_fiscal_regime": "RF01",
+   "transferor_country": "IT",
+   "transferor_contact_phone": "",
+   "transferor_fax": null,
+   "e_invoice": true,
+   "country_transmitter_prefix": "IT",
+   "id_transmitter": "ABC1234",
+   "transmitting_format": "FPR12",
+   "document_type": "TD01",
+   "currency": "EUR",
+   "transmitting_date": "2026-10-02",
+   "lines": [
+    {
+     "description": "Quota annuale",
+     "quantity": 1,
+     "unit_of_measure": "unita",
+     "unit_price": 100.0,
+     "vat": 22.0
+    }
+   ],
+   "payment_total_amount": "122.61",
+   "payment_expiry_date": "2026-12-31",
+   "pdf": null,
+   "json": {
+    "b": [
+     true
+    ],
+    "a": "x"
+   },
+   "sport_association": "a1000000-0000-4000-8000-000000701002",
+   "payment": null,
+   "creation_date": "2026-10-08T09:00:00Z",
+   "paid": false,
+   "transmitted": false,
+   "assignor_vat_number": "01234567890",
+   "assignor_tax_code": "01234567890",
+   "assignor_denomination": "ASD Estero & Co",
+   "assignor_address": "Via Roma 1",
+   "assignor_postal_code": "10100",
+   "assignor_city": "Torino",
+   "assignor_province": "TO",
+   "assignor_contact_email": "estero@example.test",
+   "assignor_contact_phone": "0111234567",
+   "transferor_vat_number": null,
+   "transferor_tax_code": "RSSMRA80A01L219X",
+   "transferor_denomination": "Mario Rossi",
+   "transferor_address": "Via Po 2",
+   "transferor_postal_code": "10123",
+   "transferor_city": "Torino",
+   "transferor_province": "TO",
+   "transferor_contact_email": "mario.pec@example.test",
+   "causal": "Quota & servizi",
+   "payment_condition": "TP02",
+   "payment_modality": "MP05",
+   "xml": null
   }
  },
  "cases": [
@@ -678,7 +744,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-customer-list-admin-without-session",
@@ -690,7 +757,8 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-customer-list-restricted-missing-permission",
@@ -702,7 +770,8 @@
    "response": {
     "detail": "Missing permission: bookeeping.documents.clientinvoices.read"
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-customer-list-owner-scoped-athlete-denied",
@@ -717,7 +786,8 @@
    "response": {
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-customer-list-wrong-method",
@@ -729,7 +799,8 @@
    "response": {
     "detail": "Method \"POST\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-customer-list-options",
@@ -750,7 +821,8 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-customer-list-athlete-not-association",
@@ -762,7 +834,41 @@
    "response": {
     "detail": "User is not a sport association"
    },
-   "effect": null
+   "effect": {
+    "actor": "athlete",
+    "rows": {
+     "customerinvoice": {
+      "a1000000-0000-4000-8000-000000846134": {
+       "xml": "$xml"
+      }
+     }
+    },
+    "new": {},
+    "audits": [
+     {
+      "model": "customerinvoice",
+      "key": "a1000000-0000-4000-8000-000000846134",
+      "action": 1,
+      "changes": {
+       "xml": [
+        "$before-text",
+        "$xml"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701002",
+      "path": "direct"
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/einvoice/a1000000-0000-4000-8000-000000846134",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "invoice-parties-customer-list-owner-without-association-server-error",
@@ -772,7 +878,41 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": {
+    "actor": "owner_without_association",
+    "rows": {
+     "customerinvoice": {
+      "a1000000-0000-4000-8000-000000846134": {
+       "xml": "$xml"
+      }
+     }
+    },
+    "new": {},
+    "audits": [
+     {
+      "model": "customerinvoice",
+      "key": "a1000000-0000-4000-8000-000000846134",
+      "action": 1,
+      "changes": {
+       "xml": [
+        "$before-text",
+        "$xml"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701002",
+      "path": "direct"
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/einvoice/a1000000-0000-4000-8000-000000846134",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "invoice-parties-customer-list-owner",
@@ -917,7 +1057,41 @@
      }
     ]
    },
-   "effect": null
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "customerinvoice": {
+      "a1000000-0000-4000-8000-000000846134": {
+       "xml": "$xml"
+      }
+     }
+    },
+    "new": {},
+    "audits": [
+     {
+      "model": "customerinvoice",
+      "key": "a1000000-0000-4000-8000-000000846134",
+      "action": 1,
+      "changes": {
+       "xml": [
+        "$before-text",
+        "$xml"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701002",
+      "path": "direct"
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/einvoice/a1000000-0000-4000-8000-000000846134",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "invoice-parties-customer-list-full-collaborator",
@@ -1062,7 +1236,41 @@
      }
     ]
    },
-   "effect": null
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {
+     "customerinvoice": {
+      "a1000000-0000-4000-8000-000000846134": {
+       "xml": "$xml"
+      }
+     }
+    },
+    "new": {},
+    "audits": [
+     {
+      "model": "customerinvoice",
+      "key": "a1000000-0000-4000-8000-000000846134",
+      "action": 1,
+      "changes": {
+       "xml": [
+        "$before-text",
+        "$xml"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701002",
+      "path": "direct"
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/einvoice/a1000000-0000-4000-8000-000000846134",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "invoice-parties-supplier-list-anonymous",
@@ -1074,7 +1282,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-admin-without-session",
@@ -1086,7 +1295,8 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-restricted-missing-permission",
@@ -1098,7 +1308,8 @@
    "response": {
     "detail": "Missing permission: bookeeping.documents.supplierinvoices.read"
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-owner-scoped-athlete-denied",
@@ -1113,7 +1324,8 @@
    "response": {
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-wrong-method",
@@ -1125,7 +1337,8 @@
    "response": {
     "detail": "Method \"POST\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-options",
@@ -1146,7 +1359,8 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-athlete-server-error",
@@ -1156,7 +1370,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-owner-without-association-server-error",
@@ -1166,7 +1381,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-owner-default-order",
@@ -1402,7 +1618,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-collaborator-second-page",
@@ -1517,7 +1734,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-invalid-page",
@@ -1529,7 +1747,8 @@
    "response": {
     "detail": "Invalid page."
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-search-supplier-name",
@@ -1655,7 +1874,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-search-notes",
@@ -1781,7 +2001,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-search-accent",
@@ -1818,7 +2039,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-search-comma-amount",
@@ -1944,7 +2166,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-search-amount-text",
@@ -2059,7 +2282,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-search-amount-fraction",
@@ -2096,7 +2320,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-search-nan-text",
@@ -2211,7 +2436,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-search-infinity-text",
@@ -2230,7 +2456,8 @@
      "rowIds": []
     }
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-search-date",
@@ -2356,7 +2583,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-search-payment-date",
@@ -2471,7 +2699,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-search-percent-literal",
@@ -2490,7 +2719,8 @@
      "rowIds": []
     }
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-sort-amount",
@@ -2726,7 +2956,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-sort-identifier-desc",
@@ -2962,7 +3193,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-sort-attname",
@@ -3198,7 +3430,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-list-sort-unknown-server-error",
@@ -3208,7 +3441,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-customer-add-anonymous",
@@ -3221,6 +3455,7 @@
     "detail": "Authentication credentials were not provided."
    },
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -3234,6 +3469,7 @@
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -3247,6 +3483,7 @@
     "detail": "Missing permission: bookeeping.documents.clientinvoices.create"
    },
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -3263,6 +3500,7 @@
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -3275,7 +3513,8 @@
    "response": {
     "detail": "Method \"GET\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-customer-add-options",
@@ -3296,7 +3535,8 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-customer-add-athlete-not-association",
@@ -3309,6 +3549,7 @@
     "detail": "User is not a sport association"
    },
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -3320,6 +3561,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -3331,6 +3573,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": []
   },
   {
@@ -3342,6 +3585,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": "invoice"
   },
   {
@@ -3353,6 +3597,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "raw_body": "number=4",
    "content_type": "application/x-www-form-urlencoded"
   },
@@ -3365,6 +3610,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {
     "transmitting_date": "02/10/2026"
    }
@@ -3378,6 +3624,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {
     "transmitting_date": 20261002
    }
@@ -3391,6 +3638,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {
     "transmitting_date": "2026-1-5",
     "payment_expiry_date": "2026-02-30"
@@ -3448,6 +3696,7 @@
     ]
    },
    "effect": null,
+   "prints": [],
    "body": {
     "customer_invoice_id": "abc",
     "prefix": " ",
@@ -3493,6 +3742,7 @@
     ]
    },
    "effect": null,
+   "prints": [],
    "body": {
     "payment": "a1000000-0000-4000-8000-000000846999",
     "pdf": "abc",
@@ -3511,6 +3761,7 @@
     "detail": "You do not have permission to perform this action."
    },
    "effect": null,
+   "prints": [],
    "body": {
     "prefix": "",
     "payment": "a1000000-0000-4000-8000-000000846122"
@@ -3529,6 +3780,7 @@
     ]
    },
    "effect": null,
+   "prints": [],
    "body": {
     "customer_invoice_id": "a1000000-0000-4000-8000-000000846133",
     "number": 40,
@@ -3548,6 +3800,7 @@
     ]
    },
    "effect": null,
+   "prints": [],
    "body": {
     "number": 1,
     "fiscal_year": "2026",
@@ -3567,6 +3820,7 @@
     ]
    },
    "effect": null,
+   "prints": [],
    "body": {
     "number": 41,
     "fiscal_year": 2026,
@@ -3587,6 +3841,7 @@
     ]
    },
    "effect": null,
+   "prints": [],
    "body": {
     "number": 3,
     "fiscal_year": 2026,
@@ -3605,6 +3860,7 @@
     "detail": "Authentication credentials were not provided."
    },
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -3618,6 +3874,7 @@
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -3631,6 +3888,7 @@
     "detail": "Missing permission: bookeeping.documents.clientinvoices.update"
    },
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -3647,6 +3905,7 @@
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -3659,7 +3918,8 @@
    "response": {
     "detail": "Method \"POST\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-customer-update-options",
@@ -3680,7 +3940,8 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-customer-update-malformed",
@@ -3693,6 +3954,7 @@
     "badly formed hexadecimal UUID string"
    ],
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -3704,6 +3966,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {
     "paid": true
    }
@@ -3717,6 +3980,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -3728,6 +3992,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {
     "paid": true
    }
@@ -3741,6 +4006,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {
     "paid": true
    }
@@ -3782,6 +4048,7 @@
      }
     ]
    },
+   "prints": [],
    "body": {
     "paid": true,
     "other": "ignored"
@@ -3824,6 +4091,7 @@
      }
     ]
    },
+   "prints": [],
    "body": {
     "paid": "True",
     "transmitted": "True"
@@ -3866,6 +4134,7 @@
      }
     ]
    },
+   "prints": [],
    "body": {
     "paid": 1
    }
@@ -3905,6 +4174,7 @@
      }
     ]
    },
+   "prints": [],
    "body": {
     "paid": "yes"
    }
@@ -3944,6 +4214,7 @@
      }
     ]
    },
+   "prints": [],
    "body": {
     "transmitted": null
    }
@@ -3957,6 +4228,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": [
     "paid"
    ]
@@ -3984,6 +4256,7 @@
     "new": {},
     "audits": []
    },
+   "prints": [],
    "body": [
     "transmit",
     1
@@ -4012,6 +4285,7 @@
     "new": {},
     "audits": []
    },
+   "prints": [],
    "body": "transmit"
   },
   {
@@ -4023,6 +4297,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": "unpaid"
   },
   {
@@ -4034,6 +4309,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": 5
   },
   {
@@ -4077,6 +4353,7 @@
      }
     ]
    },
+   "prints": [],
    "raw_body": "paid=False&transmitted=0",
    "content_type": "application/x-www-form-urlencoded"
   },
@@ -4103,6 +4380,7 @@
     "new": {},
     "audits": []
    },
+   "prints": [],
    "body": {}
   },
   {
@@ -4116,6 +4394,7 @@
     "detail": "Authentication credentials were not provided."
    },
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -4129,6 +4408,7 @@
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -4142,6 +4422,7 @@
     "detail": "Missing permission: bookeeping.documents.supplierinvoices.create"
    },
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -4158,6 +4439,7 @@
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -4170,7 +4452,8 @@
    "response": {
     "detail": "Method \"GET\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-add-options",
@@ -4191,7 +4474,8 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-add-athlete-not-association",
@@ -4204,6 +4488,7 @@
     "detail": "User is not a sport association"
    },
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4224,6 +4509,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4244,6 +4530,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": [
     {
      "custom_accounts": null,
@@ -4266,6 +4553,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "raw_body": "custom_accounts=&amount=1",
    "content_type": "application/x-www-form-urlencoded"
   },
@@ -4278,6 +4566,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {
     "supplier_id": "a1000000-0000-4000-8000-000000846110"
    }
@@ -4293,6 +4582,7 @@
     "error": "Nessun conto bancario attivo trovato."
    },
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": "a1000000-0000-4000-8000-000000846999",
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4315,6 +4605,7 @@
     "error": "Nessun conto bancario attivo trovato."
    },
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": "a1000000-0000-4000-8000-000000846116",
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4337,6 +4628,7 @@
     "error": "Nessun conto bancario attivo trovato."
    },
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": 7,
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4357,6 +4649,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": "abc",
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4379,6 +4672,7 @@
     "error": "Fornitore non trovato."
    },
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846999",
@@ -4401,6 +4695,7 @@
     "error": "Fornitore non trovato."
    },
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846112",
@@ -4423,6 +4718,7 @@
     "error": "Fornitore non trovato."
    },
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846113",
@@ -4447,6 +4743,7 @@
     "error": "Fornitore non trovato."
    },
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4467,6 +4764,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": null
    }
@@ -4480,6 +4778,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4499,6 +4798,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4518,6 +4818,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4550,6 +4851,7 @@
     ]
    },
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4577,6 +4879,7 @@
     ]
    },
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4618,6 +4921,7 @@
     ]
    },
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4648,6 +4952,7 @@
     ]
    },
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4671,6 +4976,7 @@
     ]
    },
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4692,6 +4998,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4714,6 +5021,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4849,6 +5157,7 @@
      }
     ]
    },
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -4984,6 +5293,7 @@
      }
     ]
    },
+   "prints": [],
    "body": {
     "custom_accounts": "a1000000-0000-4000-8000-000000846115",
     "supplier_id": "a1000000-0000-4000-8000-000000846111",
@@ -5078,6 +5388,7 @@
      }
     ]
    },
+   "prints": [],
    "body": {
     "custom_accounts": null,
     "supplier_id": "a1000000-0000-4000-8000-000000846110",
@@ -5100,6 +5411,7 @@
     "detail": "Authentication credentials were not provided."
    },
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -5113,6 +5425,7 @@
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -5126,6 +5439,7 @@
     "detail": "Missing permission: bookeeping.documents.supplierinvoices.update"
    },
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -5142,6 +5456,7 @@
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -5154,7 +5469,8 @@
    "response": {
     "detail": "Method \"POST\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-update-options",
@@ -5175,7 +5491,8 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "prints": []
   },
   {
    "name": "invoice-parties-supplier-update-malformed",
@@ -5188,6 +5505,7 @@
     "badly formed hexadecimal UUID string"
    ],
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -5199,6 +5517,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -5210,6 +5529,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -5221,6 +5541,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {}
   },
   {
@@ -5232,6 +5553,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "prints": [],
    "body": {
     "paid": true
    }
@@ -5267,6 +5589,7 @@
     ]
    },
    "effect": null,
+   "prints": [],
    "body": {
     "amount": "x",
     "invoice_identifier": "",
@@ -5288,6 +5611,7 @@
     "detail": "You do not have permission to perform this action."
    },
    "effect": null,
+   "prints": [],
    "body": {
     "sport_association": "a1000000-0000-4000-8000-000000701002",
     "amount": "x"
@@ -5311,6 +5635,7 @@
     }
    },
    "effect": null,
+   "prints": [],
    "body": {
     "document_pdf": "a1000000-0000-4000-8000-000000846999",
     "payment": []
@@ -5372,6 +5697,7 @@
      }
     ]
    },
+   "prints": [],
    "body": {
     "invoice_identifier": " FC-003 bis ",
     "amount": 2,
@@ -5411,6 +5737,7 @@
     "new": {},
     "audits": []
    },
+   "prints": [],
    "body": {
     "amount": "2.0",
     "notes": "prima nota"
@@ -5483,6 +5810,7 @@
      }
     ]
    },
+   "prints": [],
    "body": {
     "paid": true
    }
@@ -5550,6 +5878,7 @@
      }
     ]
    },
+   "prints": [],
    "body": {
     "paid": "True",
     "document_pdf": null
@@ -5597,6 +5926,7 @@
      }
     ]
    },
+   "prints": [],
    "body": {
     "notes": "cambio"
    }
@@ -5666,6 +5996,7 @@
      }
     ]
    },
+   "prints": [],
    "body": {
     "paid": "no"
    }
@@ -5714,6 +6045,7 @@
      }
     ]
    },
+   "prints": [],
    "body": {
     "payment": null,
     "payment_id": null
@@ -5790,6 +6122,7 @@
      }
     ]
    },
+   "prints": [],
    "body": {
     "paid": true
    }
@@ -5865,6 +6198,7 @@
      }
     ]
    },
+   "prints": [],
    "body": {
     "paid": true
    }
@@ -5917,6 +6251,7 @@
      }
     ]
    },
+   "prints": [],
    "raw_body": "invoice_identifier=Modulo&paid=on",
    "content_type": "application/x-www-form-urlencoded"
   },
@@ -5962,6 +6297,7 @@
      }
     ]
    },
+   "prints": [],
    "body": {
     "notes": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"
    }

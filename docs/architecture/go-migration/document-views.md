@@ -20,15 +20,16 @@ are not in this family (see the end).
   their context values, the legacy `@alias` words in the text nodes, and `str(soup)`. The parse covers well-formed markup only:
   lowercased tags and attributes, void elements, a missing end tag at the end, quoted or bare attributes, and the `&amp; &lt; &gt;
   &quot; &apos; &nbsp;` and numeric references (C1 and other windows-1252 code points excluded). The output follows bs4: attributes
-  sorted by name, whitespace-split multi-valued attributes, quote choice, whitespace-only text runs collapsed to `\n` or ` `, void
-  elements as `<br/>`. Comments, declarations, processing instructions, raw-text and whitespace-preserving elements, mismatched end
+  sorted by name, whitespace-split multi-valued attributes, quote choice, whitespace-only text runs collapsed to `\n` or ` ` (kept as
+  they are inside an open `<pre>`, bs4's `preserve_whitespace_tags`), void elements as `<br/>`. Comments, declarations, processing
+  instructions, raw-text elements and `<textarea>`, mismatched end
   tags, unknown references, a `<br/>` after a `<br>` (bs4's already-closed bookkeeping) and runes that Python's case-insensitive alias
   match folds to ASCII are refused.
 - `emailrender/shared.go` exports the existing number formatting (`floatformat`, `localize`) for `djtemplate`.
 - `pdfrender.Client.RenderWithoutHeaders` is `Puppeteer.pdf_from_url(url, headers={})`: the same request with `"headers": {}`.
 
 Golden tests: `TESTS/adapters/go/document_template_golden.py` renders all eight document templates for 320 seeded contexts with
-`render_to_string` (both languages; 6 raise in Django and must fail in Go) and runs `filter_mentions` on 492 inputs; the Go tests
+`render_to_string` (both languages; 6 raise in Django and must fail in Go) and runs `filter_mentions` on 516 inputs; the Go tests
 (`go test ./internal/djtemplate ./internal/mentions`) require identical bytes (`testdata/*.json`) and check the refusals.
 
 ## Views
@@ -94,3 +95,14 @@ state unchanged.
 - Mutation (`mutation-r1`): dropping the payment soft-delete filter of the compensation lookup fails Go on
   `document-views-compensation-deleted` (200 instead of the 500 page).
 - Families re-run for shared code: `document-render` (pdfrender), `email-render-routes` (emailrender).
+
+`<pre>` blocks in headers and footers (TipTap's CodeBlock; API v2 gap): the golden generator adds eight `<pre>` inputs (code blocks,
+whitespace-only runs inside and outside, nesting, an unclosed block, uppercase tags) and the fallback association's footer is a code
+block, rendered by the subscription view and the preview.
+
+- RED (`v2doc-red-r1`, with the Go change reverted): Django 114/114; Go 500 on `document-views-subscription-fallback-template`.
+- GREEN (`v2doc-versioned-r1`): 114/114 on native Django, native Go, Caddy `/api/v1` and `/api/v2`; `go test ./internal/mentions` green
+  on the regenerated golden file (the djtemplate renders file is unchanged).
+- Mutation (`v2doc-mutation-r1`): preserving whitespace only for direct children of `<pre>` fails
+  `document-views-subscription-fallback-template` (`html.body`, CAUGHT).
+- Re-run for shared code: `invoice-views` (`v2doc-rerun-r1`, 76/76; it also uses `mentions`).

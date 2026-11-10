@@ -40,6 +40,14 @@ type InstructorHoursService struct {
 	store domain.InstructorHoursStore
 	now   func() time.Time
 	newID func() string
+	// printer runs print_document_compensation eagerly (instructor_hours_list).
+	printer *InvoiceSyncPrint
+}
+
+// WithCompensationPrint enables the list's eager compensation prints.
+func (s *InstructorHoursService) WithCompensationPrint(printer *InvoiceSyncPrint) *InstructorHoursService {
+	s.printer = printer
+	return s
 }
 
 func NewInstructorHoursService(store domain.InstructorHoursStore, now func() time.Time, newID func() string) *InstructorHoursService {
@@ -85,7 +93,7 @@ func (s *InstructorHoursService) actorAssociation(ctx context.Context, tx domain
 
 // List follows instructor_hours_list.
 func (s *InstructorHoursService) List(ctx context.Context, identity domain.ResolvedIdentity, raw string, parameters domain.RequestObject,
-	audit domain.LoginAuditContext) (map[string]any, error) {
+	audit domain.LoginAuditContext, authorization *string) (map[string]any, error) {
 	audit = paymentCategoryAuditContext(identity, audit)
 	id, err := messageReadsParseUUID(raw)
 	if err != nil {
@@ -124,14 +132,16 @@ func (s *InstructorHoursService) List(ctx context.Context, identity domain.Resol
 	if err != nil {
 		return nil, err
 	}
-	// Refuse, before any write, the rows whose loop would print a
-	// compensation document or delete a document Django's collector would
-	// cascade from.
+	// Refuse, before any write, the rows whose loop would delete a document
+	// Django's collector would cascade from (and compensation prints when no
+	// printer is configured).
 	orphans := map[string]bool{}
 	for _, row := range rows {
 		switch {
 		case row.PaymentID != nil && row.DocumentID == nil:
-			return nil, domain.ErrInstructorHoursNotPorted
+			if s.printer == nil {
+				return nil, domain.ErrInstructorHoursNotPorted
+			}
 		case row.PaymentID == nil && row.DocumentID != nil:
 			if orphans[*row.DocumentID] {
 				return nil, domain.ErrInstructorHoursNotPorted
@@ -152,6 +162,7 @@ func (s *InstructorHoursService) List(ctx context.Context, identity domain.Resol
 	}
 	data := make([]map[string]any, 0, len(rows))
 	ids := make([]string, 0, len(rows))
+	prints := []string{}
 	for index := range rows {
 		row := &rows[index]
 		switch {
@@ -179,6 +190,9 @@ func (s *InstructorHoursService) List(ctx context.Context, identity domain.Resol
 				return nil, err
 			}
 		}
+		if row.PaymentID != nil && row.DocumentID == nil {
+			prints = append(prints, *row.PaymentID)
+		}
 		item, err := instructorHourItem(*row)
 		if err != nil {
 			return nil, err
@@ -188,6 +202,15 @@ func (s *InstructorHoursService) List(ctx context.Context, identity domain.Resol
 	}
 	if err := tx.Commit(); err != nil {
 		return nil, err
+	}
+	// print_document_compensation.apply(args=[payment_id, authorization]) for
+	// each page row with a payment and no document, in loop order, after the
+	// loop's saves are committed. The response keeps the in-memory rows (no
+	// document), as Django's serializer does.
+	for _, payment := range prints {
+		if err := s.printer.Compensation(ctx, payment, authorization); err != nil {
+			return nil, err
+		}
 	}
 	return map[string]any{"data": data, "meta": map[string]any{"total": count, "page": page.Number, "pages": page.Pages,
 		"perpage": page.Size, "rowIds": ids}}, nil

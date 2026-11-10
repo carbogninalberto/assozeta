@@ -189,3 +189,51 @@ func (r *InvoiceSyncPrint) SaveCustomerInvoice(ctx context.Context, id, associat
 		return err
 	})
 }
+
+// PendingCustomerInvoices reads every customer invoice without a PDF (no
+// ORDER BY, like the unordered queryset) with invoice-views' row loader.
+func (r *InvoiceSyncPrint) PendingCustomerInvoices(ctx context.Context) ([]domain.PendingCustomerInvoice, error) {
+	var keys []struct {
+		ID          string `db:"customer_invoice_id"`
+		Association string `db:"sport_association_id"`
+	}
+	if err := r.db.SelectContext(ctx, &keys, `SELECT customer_invoice_id::text, sport_association_id::text
+ FROM application_customerinvoice WHERE pdf_id IS NULL`); err != nil {
+		return nil, err
+	}
+	views := NewInvoiceViews(r.db)
+	pending := make([]domain.PendingCustomerInvoice, 0, len(keys))
+	for _, key := range keys {
+		row, err := views.CustomerInvoice(ctx, key.ID)
+		if err != nil {
+			return nil, err
+		}
+		pending = append(pending, domain.PendingCustomerInvoice{ID: key.ID, Association: key.Association, Row: *row})
+	}
+	return pending, nil
+}
+
+func (r *InvoiceSyncPrint) SaveCustomerInvoiceXML(ctx context.Context, id, association, xml string, audit domain.LoginAuditContext,
+	at time.Time) error {
+	return r.invoiceSyncWrite(ctx, func(tx *sqlx.Tx) error {
+		var stored *string
+		if err := tx.GetContext(ctx, &stored, `SELECT xml FROM application_customerinvoice WHERE customer_invoice_id=$1::uuid FOR UPDATE`,
+			id); err != nil {
+			return err
+		}
+		old := "None"
+		if stored != nil {
+			old = *stored
+		}
+		if old != xml {
+			path := "direct"
+			if err := appendModelAudit(ctx, tx, modelAuditEntry{Model: "customerinvoice", Key: id,
+				Representation: "CustomerInvoice object (" + id + ")", Action: 1, Changes: map[string][2]string{"xml": {old, xml}},
+				Context: audit, AssociationID: &association, ResolutionPath: &path, At: at}); err != nil {
+				return err
+			}
+		}
+		_, err := tx.ExecContext(ctx, `UPDATE application_customerinvoice SET xml=$2 WHERE customer_invoice_id=$1::uuid`, id, xml)
+		return err
+	})
+}

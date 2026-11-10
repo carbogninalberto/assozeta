@@ -792,6 +792,64 @@
    "deleted": true,
    "group": null,
    "course": null
+  },
+  "archived_plain_a": {
+   "payment_id": "a1000000-0000-4000-8000-000000433042",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2024-01-01T09:00:00Z",
+   "payment_date": "2019-02-01T00:00:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "payment_category": "a1000000-0000-4000-8000-000000433012",
+   "meta_payment_categories": null,
+   "invoice": "a1000000-0000-4000-8000-000000433023",
+   "user": null,
+   "associate": null,
+   "supplier": null,
+   "instructor": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts": null,
+   "signature": null,
+   "deleted": true,
+   "group": null,
+   "course": null
+  },
+  "archived_plain_b": {
+   "payment_id": "a1000000-0000-4000-8000-000000433043",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2024-01-01T09:00:00Z",
+   "payment_date": "2019-03-01T00:00:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "payment_category": "a1000000-0000-4000-8000-000000433012",
+   "meta_payment_categories": null,
+   "invoice": "a1000000-0000-4000-8000-000000433023",
+   "user": null,
+   "associate": null,
+   "supplier": null,
+   "instructor": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts": null,
+   "signature": null,
+   "deleted": true,
+   "group": null,
+   "course": null
   }
  },
  "attachments": [
@@ -811,7 +869,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-admin-without-session",
@@ -823,7 +882,8 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-restricted-missing-permission",
@@ -835,7 +895,8 @@
    "response": {
     "detail": "Missing permission: bookeeping.documents.invoices.read"
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-owner-scoped-athlete-denied",
@@ -850,7 +911,8 @@
    "response": {
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-wrong-method",
@@ -862,7 +924,8 @@
    "response": {
     "detail": "Method \"POST\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-options",
@@ -883,7 +946,8 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-athlete-server-error",
@@ -893,7 +957,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-owner-without-association-server-error",
@@ -903,7 +968,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-owner-default",
@@ -1217,7 +1283,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-collaborator-default",
@@ -1531,7 +1598,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-admin-impersonating-owner",
@@ -1848,7 +1916,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-group-header",
@@ -1896,7 +1965,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-rejected-group-header-ignored",
@@ -2212,13 +2282,571 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-archived-true",
    "actor": "owner",
    "method": "GET",
    "path": "/invoice/list?query%5Barchived%5D=True",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "invoice_id": "a1000000-0000-4000-8000-000000433023",
+      "document_pdf": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2026-03-01T09:00:00Z",
+      "membership_fee": "10.00",
+      "activity_fee": "5.00",
+      "meta_payment_categories": null,
+      "description": null,
+      "number": 11,
+      "archived": true,
+      "cancelled": true,
+      "selected_tutor": null,
+      "imported_from_associami": false,
+      "group": null,
+      "deleted": false,
+      "document_token": null,
+      "attached_documents": [],
+      "payment": null,
+      "no_payment": true
+     },
+     "1": {
+      "invoice_id": "a1000000-0000-4000-8000-000000433023",
+      "document_pdf": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2026-03-01T09:00:00Z",
+      "membership_fee": "10.00",
+      "activity_fee": "5.00",
+      "meta_payment_categories": null,
+      "description": null,
+      "number": 11,
+      "archived": true,
+      "cancelled": true,
+      "selected_tutor": null,
+      "imported_from_associami": false,
+      "group": null,
+      "deleted": false,
+      "document_token": null,
+      "attached_documents": [],
+      "payment": null,
+      "no_payment": true
+     },
+     "2": {
+      "invoice_id": "a1000000-0000-4000-8000-000000433022",
+      "document_pdf": "a1000000-0000-4000-8000-000000433003",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2025-12-01T09:00:00Z",
+      "membership_fee": "10.00",
+      "activity_fee": "5.00",
+      "meta_payment_categories": null,
+      "description": null,
+      "number": 5,
+      "archived": true,
+      "cancelled": false,
+      "selected_tutor": "a1000000-0000-4000-8000-000000433010",
+      "imported_from_associami": false,
+      "group": null,
+      "deleted": false,
+      "document_token": "a1000000-0000-4000-8000-000000433004",
+      "attached_documents": [],
+      "payment": {
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "email": "message-reads-700001@example.test",
+        "phone": null,
+        "username": "message-reads-700001",
+        "role": 1
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000433009",
+        "first_name": "Mario",
+        "last_name": "Rossi",
+        "is_minor": false,
+        "available_tutors": []
+       },
+       "supplier": null,
+       "subscription_id": null,
+       "payment_date": "2024-11-20T10:00:00Z",
+       "course": null
+      },
+      "no_payment": false
+     },
+     "3": {
+      "invoice_id": "a1000000-0000-4000-8000-000000433022",
+      "document_pdf": "a1000000-0000-4000-8000-000000433003",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2025-12-01T09:00:00Z",
+      "membership_fee": "10.00",
+      "activity_fee": "5.00",
+      "meta_payment_categories": null,
+      "description": null,
+      "number": 5,
+      "archived": true,
+      "cancelled": false,
+      "selected_tutor": "a1000000-0000-4000-8000-000000433010",
+      "imported_from_associami": false,
+      "group": null,
+      "deleted": false,
+      "document_token": "a1000000-0000-4000-8000-000000433004",
+      "attached_documents": [],
+      "payment": {
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "email": "message-reads-700001@example.test",
+        "phone": null,
+        "username": "message-reads-700001",
+        "role": 1
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000433009",
+        "first_name": "Mario",
+        "last_name": "Rossi",
+        "is_minor": false,
+        "available_tutors": []
+       },
+       "supplier": null,
+       "subscription_id": null,
+       "payment_date": "2024-11-20T10:00:00Z",
+       "course": null
+      },
+      "no_payment": false
+     }
+    },
+    "meta": {
+     "total": 4,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000433023",
+      "a1000000-0000-4000-8000-000000433023",
+      "a1000000-0000-4000-8000-000000433022",
+      "a1000000-0000-4000-8000-000000433022"
+     ]
+    }
+   },
+   "effect": null,
+   "celery": [
+    {
+     "task": "print_document_invoice",
+     "args": [
+      "a1000000-0000-4000-8000-000000433023",
+      "$authorization"
+     ],
+     "kwargs": []
+    },
+    {
+     "task": "print_document_invoice",
+     "args": [
+      "a1000000-0000-4000-8000-000000433023",
+      "$authorization"
+     ],
+     "kwargs": []
+    }
+   ]
+  },
+  {
+   "name": "invoice-core-list-archived-true-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/invoice/list?query%5Barchived%5D=True",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "invoice_id": "a1000000-0000-4000-8000-000000433023",
+      "document_pdf": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2026-03-01T09:00:00Z",
+      "membership_fee": "10.00",
+      "activity_fee": "5.00",
+      "meta_payment_categories": null,
+      "description": null,
+      "number": 11,
+      "archived": true,
+      "cancelled": true,
+      "selected_tutor": null,
+      "imported_from_associami": false,
+      "group": null,
+      "deleted": false,
+      "document_token": null,
+      "attached_documents": [],
+      "payment": null,
+      "no_payment": true
+     },
+     "1": {
+      "invoice_id": "a1000000-0000-4000-8000-000000433023",
+      "document_pdf": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2026-03-01T09:00:00Z",
+      "membership_fee": "10.00",
+      "activity_fee": "5.00",
+      "meta_payment_categories": null,
+      "description": null,
+      "number": 11,
+      "archived": true,
+      "cancelled": true,
+      "selected_tutor": null,
+      "imported_from_associami": false,
+      "group": null,
+      "deleted": false,
+      "document_token": null,
+      "attached_documents": [],
+      "payment": null,
+      "no_payment": true
+     },
+     "2": {
+      "invoice_id": "a1000000-0000-4000-8000-000000433022",
+      "document_pdf": "a1000000-0000-4000-8000-000000433003",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2025-12-01T09:00:00Z",
+      "membership_fee": "10.00",
+      "activity_fee": "5.00",
+      "meta_payment_categories": null,
+      "description": null,
+      "number": 5,
+      "archived": true,
+      "cancelled": false,
+      "selected_tutor": "a1000000-0000-4000-8000-000000433010",
+      "imported_from_associami": false,
+      "group": null,
+      "deleted": false,
+      "document_token": "a1000000-0000-4000-8000-000000433004",
+      "attached_documents": [],
+      "payment": {
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "email": "message-reads-700001@example.test",
+        "phone": null,
+        "username": "message-reads-700001",
+        "role": 1
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000433009",
+        "first_name": "Mario",
+        "last_name": "Rossi",
+        "is_minor": false,
+        "available_tutors": []
+       },
+       "supplier": null,
+       "subscription_id": null,
+       "payment_date": "2024-11-20T10:00:00Z",
+       "course": null
+      },
+      "no_payment": false
+     },
+     "3": {
+      "invoice_id": "a1000000-0000-4000-8000-000000433022",
+      "document_pdf": "a1000000-0000-4000-8000-000000433003",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2025-12-01T09:00:00Z",
+      "membership_fee": "10.00",
+      "activity_fee": "5.00",
+      "meta_payment_categories": null,
+      "description": null,
+      "number": 5,
+      "archived": true,
+      "cancelled": false,
+      "selected_tutor": "a1000000-0000-4000-8000-000000433010",
+      "imported_from_associami": false,
+      "group": null,
+      "deleted": false,
+      "document_token": "a1000000-0000-4000-8000-000000433004",
+      "attached_documents": [],
+      "payment": {
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "email": "message-reads-700001@example.test",
+        "phone": null,
+        "username": "message-reads-700001",
+        "role": 1
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000433009",
+        "first_name": "Mario",
+        "last_name": "Rossi",
+        "is_minor": false,
+        "available_tutors": []
+       },
+       "supplier": null,
+       "subscription_id": null,
+       "payment_date": "2024-11-20T10:00:00Z",
+       "course": null
+      },
+      "no_payment": false
+     }
+    },
+    "meta": {
+     "total": 4,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000433023",
+      "a1000000-0000-4000-8000-000000433023",
+      "a1000000-0000-4000-8000-000000433022",
+      "a1000000-0000-4000-8000-000000433022"
+     ]
+    }
+   },
+   "effect": null,
+   "celery": [
+    {
+     "task": "print_document_invoice",
+     "args": [
+      "a1000000-0000-4000-8000-000000433023",
+      "$authorization"
+     ],
+     "kwargs": []
+    },
+    {
+     "task": "print_document_invoice",
+     "args": [
+      "a1000000-0000-4000-8000-000000433023",
+      "$authorization"
+     ],
+     "kwargs": []
+    }
+   ]
+  },
+  {
+   "name": "invoice-core-list-archived-true-admin-impersonating",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/invoice/list?query%5Barchived%5D=True",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "invoice_id": "a1000000-0000-4000-8000-000000433023",
+      "document_pdf": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2026-03-01T09:00:00Z",
+      "membership_fee": "10.00",
+      "activity_fee": "5.00",
+      "meta_payment_categories": null,
+      "description": null,
+      "number": 11,
+      "archived": true,
+      "cancelled": true,
+      "selected_tutor": null,
+      "imported_from_associami": false,
+      "group": null,
+      "deleted": false,
+      "document_token": null,
+      "attached_documents": [],
+      "payment": null,
+      "no_payment": true
+     },
+     "1": {
+      "invoice_id": "a1000000-0000-4000-8000-000000433023",
+      "document_pdf": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2026-03-01T09:00:00Z",
+      "membership_fee": "10.00",
+      "activity_fee": "5.00",
+      "meta_payment_categories": null,
+      "description": null,
+      "number": 11,
+      "archived": true,
+      "cancelled": true,
+      "selected_tutor": null,
+      "imported_from_associami": false,
+      "group": null,
+      "deleted": false,
+      "document_token": null,
+      "attached_documents": [],
+      "payment": null,
+      "no_payment": true
+     },
+     "2": {
+      "invoice_id": "a1000000-0000-4000-8000-000000433022",
+      "document_pdf": "a1000000-0000-4000-8000-000000433003",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2025-12-01T09:00:00Z",
+      "membership_fee": "10.00",
+      "activity_fee": "5.00",
+      "meta_payment_categories": null,
+      "description": null,
+      "number": 5,
+      "archived": true,
+      "cancelled": false,
+      "selected_tutor": "a1000000-0000-4000-8000-000000433010",
+      "imported_from_associami": false,
+      "group": null,
+      "deleted": false,
+      "document_token": "a1000000-0000-4000-8000-000000433004",
+      "attached_documents": [],
+      "payment": {
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "email": "message-reads-700001@example.test",
+        "phone": null,
+        "username": "message-reads-700001",
+        "role": 1
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000433009",
+        "first_name": "Mario",
+        "last_name": "Rossi",
+        "is_minor": false,
+        "available_tutors": []
+       },
+       "supplier": null,
+       "subscription_id": null,
+       "payment_date": "2024-11-20T10:00:00Z",
+       "course": null
+      },
+      "no_payment": false
+     },
+     "3": {
+      "invoice_id": "a1000000-0000-4000-8000-000000433022",
+      "document_pdf": "a1000000-0000-4000-8000-000000433003",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2025-12-01T09:00:00Z",
+      "membership_fee": "10.00",
+      "activity_fee": "5.00",
+      "meta_payment_categories": null,
+      "description": null,
+      "number": 5,
+      "archived": true,
+      "cancelled": false,
+      "selected_tutor": "a1000000-0000-4000-8000-000000433010",
+      "imported_from_associami": false,
+      "group": null,
+      "deleted": false,
+      "document_token": "a1000000-0000-4000-8000-000000433004",
+      "attached_documents": [],
+      "payment": {
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "email": "message-reads-700001@example.test",
+        "phone": null,
+        "username": "message-reads-700001",
+        "role": 1
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000433009",
+        "first_name": "Mario",
+        "last_name": "Rossi",
+        "is_minor": false,
+        "available_tutors": []
+       },
+       "supplier": null,
+       "subscription_id": null,
+       "payment_date": "2024-11-20T10:00:00Z",
+       "course": null
+      },
+      "no_payment": false
+     }
+    },
+    "meta": {
+     "total": 4,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000433023",
+      "a1000000-0000-4000-8000-000000433023",
+      "a1000000-0000-4000-8000-000000433022",
+      "a1000000-0000-4000-8000-000000433022"
+     ]
+    }
+   },
+   "effect": null,
+   "celery": [
+    {
+     "task": "print_document_invoice",
+     "args": [
+      "a1000000-0000-4000-8000-000000433023",
+      "$authorization"
+     ],
+     "kwargs": []
+    },
+    {
+     "task": "print_document_invoice",
+     "args": [
+      "a1000000-0000-4000-8000-000000433023",
+      "$authorization"
+     ],
+     "kwargs": []
+    }
+   ]
+  },
+  {
+   "name": "invoice-core-list-archived-true-second-row",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list?query%5Barchived%5D=True&pagination%5Bperpage%5D=1&pagination%5Bpage%5D=2",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "invoice_id": "a1000000-0000-4000-8000-000000433023",
+      "document_pdf": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2026-03-01T09:00:00Z",
+      "membership_fee": "10.00",
+      "activity_fee": "5.00",
+      "meta_payment_categories": null,
+      "description": null,
+      "number": 11,
+      "archived": true,
+      "cancelled": true,
+      "selected_tutor": null,
+      "imported_from_associami": false,
+      "group": null,
+      "deleted": false,
+      "document_token": null,
+      "attached_documents": [],
+      "payment": null,
+      "no_payment": true
+     }
+    },
+    "meta": {
+     "total": 4,
+     "page": 2,
+     "pages": 4,
+     "perpage": 1,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000433023"
+     ]
+    }
+   },
+   "effect": null,
+   "celery": [
+    {
+     "task": "print_document_invoice",
+     "args": [
+      "a1000000-0000-4000-8000-000000433023",
+      "$authorization"
+     ],
+     "kwargs": []
+    }
+   ]
+  },
+  {
+   "name": "invoice-core-list-archived-true-last-page",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list?query%5Barchived%5D=True&pagination%5Bperpage%5D=2&pagination%5Bpage%5D=2",
    "headers": {},
    "status": 200,
    "response": {
@@ -2307,17 +2935,18 @@
      }
     },
     "meta": {
-     "total": 2,
-     "page": 1,
-     "pages": 1,
-     "perpage": 10,
+     "total": 4,
+     "page": 2,
+     "pages": 2,
+     "perpage": 2,
      "rowIds": [
       "a1000000-0000-4000-8000-000000433022",
       "a1000000-0000-4000-8000-000000433022"
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-archived-zero",
@@ -2631,7 +3260,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-archived-lowercase-server-error",
@@ -2641,7 +3271,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-second-page",
@@ -2779,7 +3410,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-last-page",
@@ -2875,7 +3507,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-invalid-page",
@@ -2887,7 +3520,8 @@
    "response": {
     "detail": "Invalid page."
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-sort-number-asc",
@@ -3201,7 +3835,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-sort-creation-desc",
@@ -3515,7 +4150,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-sort-unknown-server-error",
@@ -3525,7 +4161,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-sort-double-minus-server-error",
@@ -3535,7 +4172,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-search-number",
@@ -3694,7 +4332,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-search-comma-fee",
@@ -3803,7 +4442,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-search-nan-server-error",
@@ -3813,7 +4453,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-search-associate",
@@ -3878,7 +4519,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-search-two-words",
@@ -3943,7 +4585,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-search-selected-tutor",
@@ -4014,7 +4657,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-search-description",
@@ -4060,7 +4704,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-search-supplier",
@@ -4131,7 +4776,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-search-no-words-distinct",
@@ -4363,7 +5009,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-search-nothing",
@@ -4382,7 +5029,8 @@
      "rowIds": []
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-current-year",
@@ -4428,7 +5076,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-previous-years",
@@ -4856,7 +5505,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-current-year-other-ignored",
@@ -5170,7 +5820,8 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-invoice-id-mario",
@@ -5205,7 +5856,8 @@
      }
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-invoice-id-abroad",
@@ -5240,7 +5892,8 @@
      }
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-invoice-id-archived",
@@ -5273,7 +5926,8 @@
      }
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-invoice-id-athlete",
@@ -5309,7 +5963,8 @@
      }
     }
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-invoice-id-deleted",
@@ -5321,7 +5976,8 @@
    "response": {
     "error": "Invoice not found"
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-invoice-id-unknown",
@@ -5333,7 +5989,8 @@
    "response": {
     "error": "Invoice not found"
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-invoice-id-group-hidden",
@@ -5347,7 +6004,8 @@
    "response": {
     "error": "Invoice not found"
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-list-invoice-id-malformed-server-error",
@@ -5357,7 +6015,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-archived-anonymous",
@@ -5369,7 +6028,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-archived-admin-without-session",
@@ -5381,7 +6041,8 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-archived-restricted-missing-permission",
@@ -5393,7 +6054,8 @@
    "response": {
     "detail": "Missing permission: bookeeping.documents.invoices.archive.read"
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-archived-owner-scoped-athlete-denied",
@@ -5408,7 +6070,8 @@
    "response": {
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-archived-wrong-method",
@@ -5420,7 +6083,8 @@
    "response": {
     "detail": "Method \"POST\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-archived-options",
@@ -5441,7 +6105,8 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-archived-athlete-forbidden",
@@ -5453,7 +6118,8 @@
    "response": {
     "detail": "You do not have permission to perform this action."
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-archived-owner-without-association-server-error",
@@ -5463,7 +6129,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-archived-owner",
@@ -5607,7 +6274,8 @@
      }
     ]
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-archived-collaborator",
@@ -5751,7 +6419,8 @@
      }
     ]
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-archived-group-header",
@@ -5765,7 +6434,8 @@
    "response": {
     "data": []
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-bulk-archive-anonymous",
@@ -5778,6 +6448,7 @@
     "detail": "Authentication credentials were not provided."
    },
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": []
    }
@@ -5793,6 +6464,7 @@
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": []
    }
@@ -5808,6 +6480,7 @@
     "detail": "Missing permission: bookeeping.documents.invoices.archive.update"
    },
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": []
    }
@@ -5826,6 +6499,7 @@
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": []
    }
@@ -5840,7 +6514,8 @@
    "response": {
     "detail": "Method \"GET\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-bulk-archive-options",
@@ -5861,7 +6536,8 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-bulk-archive-missing-key-server-error",
@@ -5872,6 +6548,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "celery": [],
    "body": {
     "ids": []
    }
@@ -5885,6 +6562,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "celery": [],
    "body": [
     "a1000000-0000-4000-8000-000000433019"
    ]
@@ -5898,6 +6576,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": []
    }
@@ -5911,6 +6590,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": []
    }
@@ -5924,6 +6604,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": [
      "a1000000-0000-4000-8000-000000433019",
@@ -5940,6 +6621,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": "abc"
    }
@@ -5960,6 +6642,7 @@
     "deleted": {},
     "audit": []
    },
+   "celery": [],
    "body": {
     "invoice_ids": ""
    }
@@ -5980,6 +6663,7 @@
     "deleted": {},
     "audit": []
    },
+   "celery": [],
    "raw_body": "invoice_ids=x&invoice_ids=",
    "content_type": "application/x-www-form-urlencoded"
   },
@@ -5992,6 +6676,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "celery": [],
    "raw_body": "invoice_ids=a1000000-0000-4000-8000-000000433019",
    "content_type": "application/x-www-form-urlencoded"
   },
@@ -6011,6 +6696,7 @@
     "deleted": {},
     "audit": []
    },
+   "celery": [],
    "body": {
     "invoice_ids": [
      null
@@ -6035,6 +6721,7 @@
     "deleted": {},
     "audit": []
    },
+   "celery": [],
    "body": {
     "invoice_ids": [
      "a1000000-0000-4000-8000-000000433019"
@@ -6063,6 +6750,7 @@
     "deleted": {},
     "audit": []
    },
+   "celery": [],
    "body": {
     "invoice_ids": [
      "a1000000-0000-4000-8000-000000433019",
@@ -6097,6 +6785,7 @@
     "deleted": {},
     "audit": []
    },
+   "celery": [],
    "body": {
     "invoice_ids": {
      "a1000000-0000-4000-8000-000000433024": "key"
@@ -6114,6 +6803,7 @@
     "detail": "Authentication credentials were not provided."
    },
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": []
    }
@@ -6129,6 +6819,7 @@
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": []
    }
@@ -6144,6 +6835,7 @@
     "detail": "Missing permission: bookeeping.documents.invoices.delete"
    },
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": []
    }
@@ -6162,6 +6854,7 @@
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": []
    }
@@ -6176,7 +6869,8 @@
    "response": {
     "detail": "Method \"GET\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-bulk-delete-options",
@@ -6197,7 +6891,8 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-bulk-delete-missing-key-server-error",
@@ -6208,6 +6903,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "celery": [],
    "body": {}
   },
   {
@@ -6219,6 +6915,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": []
    }
@@ -6232,6 +6929,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": [
      "x"
@@ -6254,6 +6952,7 @@
     "deleted": {},
     "audit": []
    },
+   "celery": [],
    "body": {
     "invoice_ids": [
      "a1000000-0000-4000-8000-000000433026",
@@ -6319,6 +7018,7 @@
      }
     ]
    },
+   "celery": [],
    "body": {
     "invoice_ids": [
      "a1000000-0000-4000-8000-000000433025",
@@ -6338,6 +7038,7 @@
     "detail": "Authentication credentials were not provided."
    },
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": []
    }
@@ -6353,6 +7054,7 @@
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": []
    }
@@ -6368,6 +7070,7 @@
     "detail": "Missing permission: bookeeping.documents.invoices.delete"
    },
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": []
    }
@@ -6386,6 +7089,7 @@
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
    "effect": null,
+   "celery": [],
    "body": {
     "invoice_ids": []
    }
@@ -6400,7 +7104,8 @@
    "response": {
     "detail": "Method \"GET\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-delete-options",
@@ -6421,7 +7126,8 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "celery": []
   },
   {
    "name": "invoice-core-delete-malformed",
@@ -6434,6 +7140,7 @@
     "badly formed hexadecimal UUID string"
    ],
    "effect": null,
+   "celery": [],
    "body": {}
   },
   {
@@ -6445,6 +7152,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "celery": [],
    "body": {}
   },
   {
@@ -6456,6 +7164,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "celery": [],
    "body": {}
   },
   {
@@ -6467,6 +7176,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "celery": [],
    "body": {}
   },
   {
@@ -6478,6 +7188,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "celery": [],
    "body": {}
   },
   {
@@ -6489,6 +7200,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "celery": [],
    "body": {}
   },
   {
@@ -6502,6 +7214,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "celery": [],
    "body": {}
   },
   {
@@ -6593,6 +7306,7 @@
      }
     ]
    },
+   "celery": [],
    "body": {}
   },
   {
@@ -6626,6 +7340,7 @@
      }
     ]
    },
+   "celery": [],
    "body": {}
   },
   {
@@ -6661,6 +7376,7 @@
      }
     ]
    },
+   "celery": [],
    "body": {}
   },
   {
@@ -6672,6 +7388,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "celery": [],
    "body": {}
   }
  ]

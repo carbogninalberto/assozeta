@@ -30,9 +30,20 @@ var voidElements = map[string]bool{"area": true, "base": true, "br": true, "col"
 	"wbr": true, "basefont": true, "bgsound": true, "command": true, "frame": true, "image": true, "isindex": true,
 	"nextid": true, "spacer": true}
 
-// Elements html.parser reads as raw text, and bs4's whitespace-preserving ones.
+// Elements html.parser reads as raw text (textarea is also whitespace-preserving).
 var refusedElements = map[string]bool{"script": true, "style": true, "textarea": true, "title": true, "xmp": true,
-	"iframe": true, "noembed": true, "noframes": true, "noscript": true, "plaintext": true, "pre": true, "template": true}
+	"iframe": true, "noembed": true, "noframes": true, "noscript": true, "plaintext": true, "template": true}
+
+// preservesWhitespace is bs4's preserve_whitespace_tag_stack test: an open
+// <pre> (HTMLTreeBuilder.preserve_whitespace_tags) on the way to the root.
+func (n *node) preservesWhitespace() bool {
+	for tag := n; tag != nil; tag = tag.parent {
+		if tag.name == "pre" {
+			return true
+		}
+	}
+	return false
+}
 
 // bs4 HTMLTreeBuilder.DEFAULT_CDATA_LIST_ATTRIBUTES.
 func listAttribute(tag, name string) bool {

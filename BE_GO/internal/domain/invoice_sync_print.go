@@ -97,3 +97,19 @@ type CustomerInvoiceSyncStore interface {
 	SaveCustomerInvoice(ctx context.Context, id, association string, memory map[string]string, xml, json *string,
 		audit LoginAuditContext, at time.Time) error
 }
+
+// PendingCustomerInvoice is a CustomerInvoice without a PDF, as
+// invoice_customers_list's first loop reads it.
+type PendingCustomerInvoice struct {
+	ID, Association string
+	Row             InvoiceViewCustomerInvoice
+}
+
+// CustomerInvoicePendingStore backs invoice_customers_list's first loop.
+type CustomerInvoicePendingStore interface {
+	// PendingCustomerInvoices is CustomerInvoice.objects.filter(pdf__isnull=True), in the database's order.
+	PendingCustomerInvoices(ctx context.Context) ([]PendingCustomerInvoice, error)
+	// SaveCustomerInvoiceXML is invoice.save() after the XML changed: the
+	// update entry of xml (when it differs) and the column.
+	SaveCustomerInvoiceXML(ctx context.Context, id, association, xml string, audit LoginAuditContext, at time.Time) error
+}

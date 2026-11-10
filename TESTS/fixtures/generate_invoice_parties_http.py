@@ -1,9 +1,10 @@
 """Author the customer and supplier invoice list, add and update HTTP sequence (invoice-parties.md).
 
 Django semantics pinned here, in each view's order:
-- invoice-customers/list: first every CustomerInvoice without a PDF gets its
-  XML and a synchronous print task; the seed has none, so that loop is idle
-  (Go refuses it, see the doc). Then
+- invoice-customers/list: first every CustomerInvoice without a PDF (of any
+  association) gets its XML regenerated and saved (an auditlog update of
+  `xml`) and a synchronous print task (GET CURRENT_HOST/document/einvoice/<id>);
+  the seed has one, of the foreign association. Then
   request.user.sport_association (athletes 403 "User is not a sport
   association", owners without one 500) and every invoice of the association
   by -creation_date with CustomerInvoiceSerializer (fields '__all__' plus the
@@ -164,6 +165,16 @@ CUSTOMER_INVOICES = {'one': customer_invoice(OWN, 1, '2026-10-05T09:00:00Z', 'pd
                      'two': customer_invoice(OWN, 2, '2026-10-07T10:15:30.500000Z', 'pdf_two'),
                      'abroad': customer_invoice(FOREIGN, 3, '2026-10-06T09:00:00Z', 'pdf_foreign')}
 CUSTOMER_INVOICES['two'].update(paid=True, payment=PAYMENTS['a']['payment_id'])
+# Printing pending (no PDF): every list request regenerates its XML and prints it.
+CUSTOMER_INVOICES['pending'] = customer_invoice(FOREIGN, 4, '2026-10-08T09:00:00Z', 'pdf_one')
+CUSTOMER_INVOICES['pending'].update(
+    pdf=None, xml=None, assignor_vat_number='01234567890', assignor_tax_code='01234567890', assignor_denomination='ASD Estero & Co',
+    assignor_address='Via Roma 1', assignor_postal_code='10100', assignor_city='Torino', assignor_province='TO',
+    assignor_contact_email='estero@example.test', assignor_contact_phone='0111234567', transferor_vat_number=None,
+    transferor_tax_code='RSSMRA80A01L219X', transferor_denomination='Mario Rossi', transferor_address='Via Po 2',
+    transferor_postal_code='10123', transferor_city='Torino', transferor_province='TO', transferor_contact_email='mario.pec@example.test',
+    causal='Quota & servizi', lines=[{'description': 'Quota annuale', 'quantity': 1, 'unit_of_measure': 'unita', 'unit_price': 100.0,
+                                      'vat': 22.0}])
 SEED_PAYMENTS, SEED_SUPPLIER_INVOICES, SEED_CUSTOMER_INVOICES = (copy.deepcopy(PAYMENTS), copy.deepcopy(SUPPLIER_INVOICES),
                                                                  copy.deepcopy(CUSTOMER_INVOICES))
 
@@ -223,9 +234,13 @@ def render_customer_invoice(label):
 cases = []
 
 
-def add(name, actor, method, path, status, response, *, body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, method, path, status, response, *, body=None, raw_body=None, content_type=None, headers=None, effect=None,
+        prints=()):
+    """prints: the customer invoices whose eager print_document_customer_invoice request the case makes, in order."""
     case = {'name': f'invoice-parties-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'effect': effect}
+            'status': status, 'response': response, 'effect': effect,
+            'prints': [{'path': f'/document/einvoice/{CUSTOMER_INVOICES[label]["customer_invoice_id"]}',
+                        'reply': {'status': 200, 'body': 'printed'}} for label in prints]}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -300,11 +315,26 @@ def audit_str(key, value):
 
 CL = '/invoice-customers/list'
 access('customer-list', CL, 'GET', 'clientinvoices', 'read', 'Invoice Customers List', 'POST')
-add('customer-list-athlete-not-association', 'athlete', 'GET', CL, 403, NOT_ASSOCIATION)
-add('customer-list-owner-without-association-server-error', 'owner_without_association', 'GET', CL, 500, SERVER)
-add('customer-list-owner', 'owner', 'GET', CL, 200, {'data': [render_customer_invoice('two'), render_customer_invoice('one')]})
+
+
+def regenerated(actor):
+    """The loop's effect on the pending invoice: the XML of the stored row saved ('$xml', ProgressivoInvio from the request time),
+    one auditlog update of xml (indexed directly to its association), then its print request."""
+    return effect(actor, rows={'customerinvoice': {CUSTOMER_INVOICES['pending']['customer_invoice_id']: {'xml': '$xml'}}},
+                  audits=[{'model': 'customerinvoice', 'key': CUSTOMER_INVOICES['pending']['customer_invoice_id'], 'action': 1,
+                           'changes': {'xml': ['$before-text', '$xml']}, 'association': FOREIGN, 'path': 'direct'}])
+
+
+# The loop runs before request.user.sport_association: athletes and owners without one still regenerate and print.
+add('customer-list-athlete-not-association', 'athlete', 'GET', CL, 403, NOT_ASSOCIATION, effect=regenerated('athlete'),
+    prints=['pending'])
+add('customer-list-owner-without-association-server-error', 'owner_without_association', 'GET', CL, 500, SERVER,
+    effect=regenerated('owner_without_association'), prints=['pending'])
+add('customer-list-owner', 'owner', 'GET', CL, 200, {'data': [render_customer_invoice('two'), render_customer_invoice('one')]},
+    effect=regenerated('owner'), prints=['pending'])
 add('customer-list-full-collaborator', 'full_collaborator', 'GET', CL, 200,
-    {'data': [render_customer_invoice('two'), render_customer_invoice('one')]})
+    {'data': [render_customer_invoice('two'), render_customer_invoice('one')]}, effect=regenerated('full_collaborator'),
+    prints=['pending'])
 
 # ------------------------------------------------------- supplier list ---
 

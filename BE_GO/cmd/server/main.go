@@ -634,7 +634,7 @@ func run() (runErr error) {
 	e.Any("/modules/response/:module_response_id/add-attachment", modulesResponsesHandler.Attachment, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/info", instructorListHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	instructorHoursHandler := handler.NewInstructorHoursHandler(service.NewInstructorHoursService(repository.NewInstructorHours(db), time.Now,
-		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+		uuid.NewString).WithCompensationPrint(paymentInvoicePrinter), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/instructor/:uid/hours/list", instructorHoursHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/hours/add", instructorHoursHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/hours/calculate", instructorHoursHandler.Calculate, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -745,7 +745,7 @@ func run() (runErr error) {
 	invoiceSyncPrinter := service.NewInvoiceSyncPrint(service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
 		repository.NewRestoreStates(db), cfg.RestoreLockPath != ""), os.Getenv("CURRENT_HOST"))
 	invoicePartiesHandler := handler.NewInvoicePartiesHandler(service.NewInvoiceParties(repository.NewInvoiceParties(db), time.Now, uuid.NewString).
-		WithCustomerInvoiceSync(invoiceSyncStore, invoiceSyncPrinter),
+		WithCustomerInvoiceSync(invoiceSyncStore, invoiceSyncPrinter).WithPendingCustomerInvoices(invoiceSyncStore),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	invoiceSyncHandler := handler.NewInvoiceSyncPrintHandler(paymentStatesHandler,
 		service.NewInvoiceSyncUpdates(invoiceSyncStore, invoiceSyncPrinter, time.Now))
@@ -758,7 +758,7 @@ func run() (runErr error) {
 	e.Any("/invoice-suppliers/list", invoicePartiesHandler.SupplierList, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-suppliers/add", invoicePartiesHandler.SupplierAdd, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-suppliers/:uid/update", invoicePartiesHandler.SupplierUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
-	invoiceCoreHandler := handler.NewInvoiceCoreHandler(service.NewInvoiceCore(repository.NewInvoiceCore(db), time.Now),
+	invoiceCoreHandler := handler.NewInvoiceCoreHandler(service.NewInvoiceCore(repository.NewInvoiceCore(db), tasks, time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/invoice/list", invoiceCoreHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice/list/archived", invoiceCoreHandler.Archived, middleware.DjangoSessionAudit(sessionAuthentication))
