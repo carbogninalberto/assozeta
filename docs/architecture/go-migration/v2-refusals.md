@@ -1034,7 +1034,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | PATCH modules/<id>/update | `module_id` differs from the row | `service/modules_writes.go` (`Update`) | ported (v2-rest-b3) | The copy under the new key is inserted as `Model.save()` does (`modules-writes.md`). |
-| PATCH modules/<id>/update | nested `sport_association` dict with keys | `service/modules_writes.go:204` | B | Not sent by the composer. |
+| PATCH modules/<id>/update | nested `sport_association` dict with keys | `dto/modules_nested.go` (`ParseModuleNested`) | ported (rest-prof) | Fields validated in order, errors nested, then the nested-write assertion (`modules-writes.md`). |
+| PATCH modules/<id>/update | nested association as `sport_association.<field>` form keys | `service/modules_writes.go` (`Update`) | B | The nested serializer's HTML input parsing is not ported; the composer sends JSON. |
 | PATCH update | DB exception text | handler | C | Only on infrastructure errors. |
 
 ### payment-misc.md
@@ -1067,9 +1068,11 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | PATCH onboarding/update | `onboarding_data` with a `users_onboarding_id` or `user` other than the row's own | `dto/profile_misc.go` (`ParseOnboardingFlags`) | ported | Both keys are read-only serializer fields in Django; Go reads only the checklist flags (`profile-misc.md`, `seconb-green-r2`). |
-| PATCH onboarding/update | multipart | `service/profile_misc.go:298` | B | The UI sends JSON. |
-| same | soft-deleted owner association | `service/profile_misc.go:350` | B | legacy: low. |
-| same | season/fiscal not int 0..32767; fee repr with exponent; lead containers/too long | `service/profile_misc.go:521,556,588,592` | B | The UI sends ints from selects and `parseFloat` fees (`routes/onboarding/partials/step1.svelte:59-75`). An exponent needs an extreme fee. Lead values are select strings. |
+| PATCH onboarding/update | multipart file parts | `handler/profile_misc.go` (`Onboarding`) | ported (rest-prof) | The file is the QueryDict value: serializer branches answer `Expected a dictionary, but got InMemoryUploadedFile.`, `lead_data` the subscript 500. Bodies over 2621440 bytes with a file part stay refused (another file class, B). |
+| same | soft-deleted owner association | `service/profile_misc.go` (`association`) | ported (rest-prof) | The saves work; the audit entries have no index row (`profile-misc.md`). |
+| same | lead containers / values over the column length | `service/profile_misc.go` (`onboardingLead`) | ported (rest-prof) | Containers are stored as their `str()`; an over-long value leaves the audit entry and answers the varchar error text. A NUL character stays refused (the error text quotes the audit row, B). |
+| same | fee repr with exponent | `dto/profile_misc.go` (`PythonFloatRepr`) | ported (rest-prof) | Python repr incl. exponent form; unit-tested, a serializer-valid fee never needs it. A blank nullable fee is `None` (serializer) and `float('')` raises in `membership_data` (ported). Non-ASCII-digit fee strings stay refused (B). |
+| same | season/fiscal not int 0..32767 (floats, bools, null, containers, out of range) | `service/profile_misc.go` (`onboardingMembership`) | B | The database error text quotes the row, so it cannot be matched without copying the data. The UI sends ints from selects (`routes/onboarding/partials/step1.svelte:59-75`). |
 
 ### payment-export.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1131,7 +1134,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST personas/add, PATCH personas/<pk>/update | `picture_path` containing `base64` | `service/personas_picture.go` | ported | Ported in v2-misc-3 and reworked with Django (`personas-writes.md`, `secoauth-versioned-r1`): the object goes under the persona's own id after validation. A list or object value and storage failures other than a refused ACL stay refused (B). |
-| same | tutor `is_primary` not bool, numeric tutor ids, non-ASCII-digit born_date, non-canonical X-Group-Id | `service/personas_writes.go:313-334,445,657,713,751` | B | The UI sends booleans and string ids (`associate-form.svelte:222-230,708-724`). |
+| same | tutor `is_primary` not bool, numeric tutor ids | `service/personas_writes.go` (`personaPrimary`, `handleTutors`) | ported (rest-prof) | Accepted flags keep the raw audit text, others are the 500 after the earlier writes; integers and booleans read as `UUID(int=n)` (`personas-writes.md`). |
+| same | non-ASCII-digit born_date, non-canonical X-Group-Id | `service/personas_writes.go` | B | The UI sends canonical group ids and ASCII dates (`associate-form.svelte:222-230,708-724`). |
 | DELETE personas-subscriptions/<pk>/list | found subscription | `service/personas_writes.go:224-228` | B | Route method not called by the UI (GET list only). |
 
 ### profile-template.md

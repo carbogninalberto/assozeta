@@ -297,9 +297,8 @@ func pictureUnported(body domain.RequestObject) error {
 }
 
 // planTutors refuses tutors_data the port does not handle, before any write:
-// is_primary values other than booleans (auditlog renders the raw value),
-// tutor ids that are not strings or None, born dates with Unicode digits, and
-// a tutor create under an X-Group-Id the manager would store raw.
+// born dates with Unicode digits and a tutor create under an X-Group-Id the
+// manager would store raw.
 func planTutors(tutors any, header string, group *string) error {
 	items, ok := tutors.([]any)
 	if !ok {
@@ -311,24 +310,12 @@ func planTutors(tutors any, header string, group *string) error {
 		if !ok {
 			continue
 		}
-		if value, present := data.Lookup("is_primary"); present {
-			if _, ok := value.(bool); !ok {
-				return ErrPersonaNotPorted
-			}
-		}
 		info, ok := data.Lookup("tutor")
 		object, isObject := info.(domain.RequestObject)
 		if !ok || !isObject || !dto.PersonaTruthy(info) {
 			continue
 		}
 		creates = true
-		if value, present := object.Lookup("associate_id"); present {
-			switch value.(type) {
-			case nil, string, []any, domain.RequestObject:
-			default:
-				return ErrPersonaNotPorted
-			}
-		}
 		if value, present := object.Lookup("born_date"); present && dto.PersonaDMYUnported(value) {
 			return ErrPersonaNotPorted
 		}
@@ -385,12 +372,14 @@ func (r *personaWriteRun) handleTutors(ctx context.Context, associate domain.Per
 		if !present {
 			return ErrPersonaUnhandled // KeyError
 		}
-		switch v := id.(type) {
+		switch id.(type) {
 		case nil:
-		case string:
-			parsed, ok := dto.PersonaUUIDValue(v)
+		case string, bool, json.Number:
+			// An integer (or bool) reads as UUID(int=n); floats and out-of-range
+			// integers are the UUIDField ValidationError in the exclude().
+			parsed, ok := dto.PersonaUUIDValue(id)
 			if !ok {
-				return ErrPersonaUnhandled // UUIDField ValidationError in the exclude()
+				return ErrPersonaUnhandled
 			}
 			listed[parsed] = true
 		default:
@@ -427,8 +416,8 @@ func (r *personaWriteRun) handleTutors(ctx context.Context, associate domain.Per
 		object := info.(domain.RequestObject)
 		id, _ := object.Lookup("associate_id")
 		var tutor *domain.PersonaAssociate
-		if text, ok := id.(string); ok {
-			parsed, _ := dto.PersonaUUIDValue(text)
+		if id != nil {
+			parsed, _ := dto.PersonaUUIDValue(id)
 			if tutor, err = r.tx.Associate(ctx, parsed, true, r.group); err != nil {
 				return err
 			}
@@ -472,9 +461,13 @@ func (r *personaWriteRun) handleTutors(ctx context.Context, associate domain.Per
 				return err
 			}
 		}
-		primary := false
+		primary, primaryText := false, "False"
 		if value, present := data.Lookup("is_primary"); present {
-			primary = value.(bool)
+			var valid bool
+			if primary, primaryText, valid = personaPrimary(value); !valid {
+				// BooleanField.get_prep_value raises ValidationError inside update_or_create's atomic block.
+				return ErrPersonaUnhandled
+			}
 		}
 		relations, err := r.tx.Relations(ctx, associate.ID)
 		if err != nil {
@@ -492,15 +485,23 @@ func (r *personaWriteRun) handleTutors(ctx context.Context, associate domain.Per
 			_, err = r.tx.InsertRelation(ctx, associate.ID, tutorRow.ID, primary, func(id int64) error {
 				key := strconv.FormatInt(id, 10)
 				return r.record(ctx, "associatetutorrelation", key, 0, map[string][2]string{"id": {"None", key},
-					"associate": {"None", associate.ID}, "tutor": {"None", tutorRow.ID}, "is_primary": {"None", personaFlag(primary)}},
+					"associate": {"None", associate.ID}, "tutor": {"None", tutorRow.ID}, "is_primary": {"None", primaryText}},
 					false, association, path)
 			})
 		case 1:
+			// auditlog compares str() of the stored value with str() of the raw one; the
+			// column keeps the value the BooleanField prepares.
+			recordChange := func() error {
+				if personaFlag(matches[0].IsPrimary) == primaryText {
+					return nil
+				}
+				return r.record(ctx, "associatetutorrelation", strconv.FormatInt(matches[0].ID, 10), 1,
+					map[string][2]string{"is_primary": {personaFlag(matches[0].IsPrimary), primaryText}}, false, association, path)
+			}
 			if matches[0].IsPrimary != primary {
-				err = r.tx.SetRelationPrimary(ctx, matches[0].ID, primary, func() error {
-					return r.record(ctx, "associatetutorrelation", strconv.FormatInt(matches[0].ID, 10), 1,
-						map[string][2]string{"is_primary": {personaFlag(matches[0].IsPrimary), personaFlag(primary)}}, false, association, path)
-				})
+				err = r.tx.SetRelationPrimary(ctx, matches[0].ID, primary, recordChange)
+			} else {
+				err = recordChange()
 			}
 		default:
 			return ErrPersonaUnhandled // MultipleObjectsReturned
@@ -529,6 +530,30 @@ func (r *personaWriteRun) handleTutors(ctx context.Context, associate domain.Per
 		return r.record(ctx, "associatetutorrelation", strconv.FormatInt(first.ID, 10), 1,
 			map[string][2]string{"is_primary": {"False", "True"}}, false, association, path)
 	})
+}
+
+// personaPrimary is BooleanField.to_python for AssociateTutorRelation.is_primary
+// (not null): booleans, the numbers equal to 0 or 1, and the strings
+// t/True/1 and f/False/0. text is str() of the raw value, which auditlog
+// renders; ok is false for every value the column refuses.
+func personaPrimary(value any) (stored bool, text string, ok bool) {
+	switch v := value.(type) {
+	case bool:
+		return v, personaFlag(v), true
+	case json.Number:
+		number, err := strconv.ParseFloat(string(v), 64)
+		if err == nil && (number == 0 || number == 1) {
+			return number == 1, dto.PythonStr(v), true
+		}
+	case string:
+		switch v {
+		case "t", "True", "1":
+			return true, v, true
+		case "f", "False", "0":
+			return false, v, true
+		}
+	}
+	return false, "", false
 }
 
 func personaFlag(value bool) string {

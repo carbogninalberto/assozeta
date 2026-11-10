@@ -60,6 +60,7 @@ import base64
 import copy
 import json
 import urllib.parse
+import uuid
 from pathlib import Path
 
 OUTPUT = Path(__file__).with_name('personas_writes_http.json')
@@ -159,6 +160,18 @@ SEED = {
     'pic_denied': person('Fermo', 'Fotonegata', picture_path='https://cdn.example.test/fermo.jpg'),
     'pic_other': person('Fedra', 'Fotoaltrui', picture_path='https://cdn.example.test/fedra.jpg'),
     'pic_text': person('Folco', 'Fototesto'),
+    # numeric tutor ids: DRF and Django read an integer as UUID(int=n)
+    'int_tutor': {**person('Ivo', 'Intero', born_date='1971-01-01'), 'id': '00000000-0000-0000-0000-000000001092'},
+    'one_tutor': {**person('Ugo', 'Uno', born_date='1972-01-01'), 'id': '00000000-0000-0000-0000-000000000001'},
+    # tutor flags and numeric ids on update
+    'prim': person('Prima', 'Flag', born_date='2010-01-01'),
+    'prim_t1': person('Pino', 'Primo', born_date='1980-01-01'),
+    'prim_t2': person('Pina', 'Seconda', born_date='1981-01-01'),
+    'idu': person('Ida', 'Intera', born_date='2011-01-01'),
+    'idu2': person('Ines', 'Intera', born_date='2011-02-01'),
+    'idu3': person('Ivana', 'Intera', born_date='2011-03-01'),
+    'idu4': person('Irma', 'Intera', born_date='2011-04-01'),
+    'idu_t': person('Iris', 'Vecchia', born_date='1982-01-01'),
 }
 A = {label: row['id'] for label, row in SEED.items()}
 ACL_DENIED = A['pic_denied']  # the storage stub refuses the object ACL of keys with this id
@@ -177,6 +190,11 @@ RELATIONS = {
     'clash_r1': relation('clash', 'clash_t1', True),
     'clash_r2': relation('clash', 'clash_t2', False),
     'promote_r': relation('promote', 'promote_t', False),
+    'prim_r1': relation('prim', 'prim_t1', True),
+    'prim_r2': relation('prim', 'prim_t2', False),
+    'idu_r': relation('idu', 'idu_t', True),
+    'idu_r2': relation('idu2', 'idu_t', True),
+    'idu_r3': relation('idu3', 'idu_t', True),
 }
 MEDICAL = {'id': next(_ids), 'expiration': '2030-01-31'}
 TAG = {'id': next(_ids), 'name': 'Agonisti'}
@@ -376,26 +394,28 @@ class Effect:
         row_of(ref).update(values)
         self._changed(ref, before)
 
-    def relate(self, associate, tutor, primary):
+    def relate(self, associate, tutor, primary, text=None):
         ref = f'$r{next(SERIAL)}'
         rel = {'id': ref, 'associate': associate, 'tutor': tutor, 'primary': primary}
         WORLD['rel'][ref] = rel
         self.rel_created.append(ref)
         self.audit.append({'model': 'associatetutorrelation', 'ref': ref, 'action': 0, 'changes': {
             'id': ['None', ref], 'associate': ['None', row_of(associate)['id']], 'tutor': ['None', row_of(tutor)['id']],
-            'is_primary': ['None', audit_text(primary)]}, 'index': relation_index(rel, self.actor)})
+            'is_primary': ['None', audit_text(primary) if text is None else text]}, 'index': relation_index(rel, self.actor)})
         return ref
 
-    def set_primary(self, ref, primary):
+    def set_primary(self, ref, primary, text=None):
+        """The relation is saved with the raw flag: auditlog compares str() of the stored value with str() of it,
+        the column keeps what the BooleanField prepares (text: str() of the raw value)."""
         rel = WORLD['rel'][ref]
-        if rel['primary'] == primary:
+        text = audit_text(primary) if text is None else text
+        if audit_text(rel['primary']) == text:
             return
-        changes = {'is_primary': [audit_text(rel['primary']), audit_text(primary)]}
-        rel['primary'] = primary
-        if ref in self.rel_created:
-            pass
-        else:
-            self.rel_changed[ref] = {'is_primary': primary}
+        changes = {'is_primary': [audit_text(rel['primary']), text]}
+        if rel['primary'] != primary:
+            rel['primary'] = primary
+            if ref not in self.rel_created:
+                self.rel_changed[ref] = {'is_primary': primary}
         self.audit.append({'model': 'associatetutorrelation', 'ref': ref, 'action': 1, 'changes': changes,
                            'index': relation_index(rel, self.actor)})
 
@@ -413,16 +433,34 @@ class Effect:
                 'relations_deleted': self.rel_deleted, 'relations_changed': self.rel_changed}
 
 
+def uuid_of(value):
+    """UUIDField.to_python of a tutor id: an integer (a bool too) is UUID(int=n)."""
+    if isinstance(value, int):
+        return str(uuid.UUID(int=value))
+    return value
+
+
+def prepare_primary(raw):
+    """BooleanField.to_python for the not-null is_primary column: (stored value, str() of the raw value)."""
+    if raw in (True, False):
+        return bool(raw), audit_text(raw)
+    if isinstance(raw, str) and raw in ('t', 'True', '1'):
+        return True, raw
+    if isinstance(raw, str) and raw in ('f', 'False', '0'):
+        return False, raw
+    raise ValueError(raw)
+
+
 def handle_tutors(effect, associate, tutors_data):
     """AssociateSerializer._handle_tutors for authored, well-formed tutors_data."""
-    listed = {data['tutor']['associate_id'] for data in tutors_data if data.get('tutor')}
+    listed = {uuid_of(data['tutor']['associate_id']) for data in tutors_data if data.get('tutor')}
     listed_refs = {ref for ref, row in WORLD['assoc'].items() if row['id'] in listed}
     effect.unrelate([ref for ref, r in WORLD['rel'].items() if r['associate'] == associate and r['tutor'] not in listed_refs])
     for data in tutors_data:
         info_ = data.get('tutor')
         if not info_:
             continue
-        found = [ref for ref, row in WORLD['assoc'].items() if row['id'] == info_.get('associate_id') and visible(ref, effect.group)]
+        found = [ref for ref, row in WORLD['assoc'].items() if row['id'] == uuid_of(info_.get('associate_id')) and visible(ref, effect.group)]
         values = {k: v for k, v in info_.items() if k not in ('associate_id', 'creation_date', 'tutors', 'full_name')}
         values = {('association' if k == 'sport_association' else k): v for k, v in values.items()}
         if 'born_date' in values and values['born_date']:
@@ -433,12 +471,12 @@ def handle_tutors(effect, associate, tutors_data):
             effect.save(tutor, **values)
         else:
             tutor = effect.create(**{**values, 'association': values.get('association'), 'group': effect.group})
-        primary = data.get('is_primary', False)
+        primary, text = prepare_primary(data['is_primary']) if 'is_primary' in data else (False, 'False')
         existing = [ref for ref, r in WORLD['rel'].items() if r['associate'] == associate and r['tutor'] == tutor]
         if existing:
-            effect.set_primary(existing[0], primary)
+            effect.set_primary(existing[0], primary, text)
         else:
-            effect.relate(associate, tutor, primary)
+            effect.relate(associate, tutor, primary, text)
     mine = sorted((ref for ref, r in WORLD['rel'].items() if r['associate'] == associate),
                   key=lambda ref: (isinstance(WORLD['rel'][ref]['id'], str), str(WORLD['rel'][ref]['id']).zfill(12)))
     if mine and not any(WORLD['rel'][ref]['primary'] for ref in mine):
@@ -1144,6 +1182,106 @@ effect.save('pic_keep', picture_path=None)
 handle_tutors(effect, 'pic_keep', [])
 add('update-picture-null', 'owner', 'PATCH', update_path('pic_keep'), 200, info('pic_keep'), body={'picture_path': None},
     allow=ALLOW_UPDATE, effect=effect)
+
+# === tutor flags and numeric tutor ids (_handle_tutors on the raw JSON values)
+# is_primary reaches AssociateTutorRelation.is_primary (a not-null BooleanField) unconverted: auditlog renders str() of the
+# raw value, the column keeps what BooleanField.to_python prepares (True/False, 1/0 and equal floats, t/True/1 and f/False/0)
+# and anything else is a ValidationError inside update_or_create's atomic block (the 500 page; earlier writes stay).
+_flag = iter(range(1, 100))
+
+
+def add_flag(label, value):
+    n = next(_flag)
+    effect = Effect('owner')
+    ref = effect.create(user=OWNER, first_name=f'Flag{n}')
+    tutor_data = [{'tutor': {'associate_id': None, 'first_name': f'Tut{n}'}, 'is_primary': value}]
+    try:
+        prepare_primary(value)
+    except ValueError:
+        effect.create(first_name=f'Tut{n}', association=None, group=None)
+        add(f'add-primary-{label}-saved-then-fails', 'owner', 'POST', ADD, 500, SERVER,
+            body={'first_name': f'Flag{n}', 'tutors_data': tutor_data}, allow=ALLOW_ADD, effect=effect)
+        return
+    handle_tutors(effect, ref, tutor_data)
+    add(f'add-primary-{label}', 'owner', 'POST', ADD, 201, info(ref), body={'first_name': f'Flag{n}', 'tutors_data': tutor_data},
+        allow=ALLOW_ADD, effect=effect)
+
+
+for label, value in (('int-one', 1), ('int-zero', 0), ('float-one', 1.0), ('float-zero', 0.0), ('text-t', 't'), ('text-true', 'True'),
+                     ('text-one', '1'), ('text-f', 'f'), ('text-false', 'False'), ('text-zero', '0'), ('int-two', 2),
+                     ('float-fraction', 1.5), ('text-lower-true', 'true'), ('text-yes', 'yes'), ('text-empty', ''), ('null', None),
+                     ('list', []), ('dict', {}), ('huge-int', 10 ** 30), ('negative', -1)):
+    add_flag(label, value)
+
+
+def update_flags(label, first, second, status=200, saved=()):
+    """PATCH prim with the two tutors flagged `first` and `second`."""
+    tutor_data = [{'tutor': {'associate_id': A['prim_t1']}, 'is_primary': first},
+                  {'tutor': {'associate_id': A['prim_t2']}, 'is_primary': second}]
+    effect = Effect('owner')
+    effect.save('prim')
+    if status == 200:
+        handle_tutors(effect, 'prim', tutor_data)
+        add(f'update-primary-{label}', 'owner', 'PATCH', update_path('prim'), 200, info('prim'), body={'tutors_data': tutor_data},
+            allow=ALLOW_UPDATE, effect=effect)
+        return
+    for ref, value in saved:
+        effect.set_primary(ref, *prepare_primary(value))
+    add(f'update-primary-{label}', 'owner', 'PATCH', update_path('prim'), 500, SERVER, body={'tutors_data': tutor_data},
+        allow=ALLOW_UPDATE, effect=effect)
+
+
+# The unchanged column value still gets an entry when str() of the raw value differs.
+update_flags('int-text-pair', 1, '0')
+update_flags('t-and-false', 't', 'False')
+update_flags('floats', 1.0, 0.0)
+update_flags('same-text', 'True', 'False')
+update_flags('invalid-first-changes-nothing', 2, False, status=500)
+_first = [ref for ref, r in WORLD['rel'].items() if r['associate'] == 'prim' and r['tutor'] == 'prim_t1'][0]
+update_flags('invalid-second-keeps-first', '1', 'yes', status=500, saved=[(_first, '1')])
+# A cleared primary: the first relation (lowest key) is promoted.
+update_flags('zero-promotes-first', 0, 'f')
+
+# Tutor ids: an integer (a bool too) is UUID(int=n); one no row has creates a new tutor, one a row has updates it.
+_ids_n = iter(range(1, 100))
+
+
+def tutor_id_reads(value):
+    """Whether the exclude() accepts the id: UUIDField.to_python takes an int below 2**128 (a bool too), not a float or a list."""
+    return isinstance(value, int) and 0 <= value < 2 ** 128
+
+
+def add_tutor_id(label, value, **info_fields):
+    n = next(_ids_n)
+    effect = Effect('owner')
+    ref = effect.create(user=OWNER, first_name=f'Pid{n}')
+    tutor_data = [{'tutor': {'associate_id': value, 'first_name': f'Nt{n}', 'phone': '3331112222', **info_fields}}]
+    body = {'first_name': f'Pid{n}', 'tutors_data': tutor_data}
+    if not tutor_id_reads(value):
+        add(f'add-tutor-id-{label}-saved-then-fails', 'owner', 'POST', ADD, 500, SERVER, body=body, allow=ALLOW_ADD, effect=effect)
+        return
+    handle_tutors(effect, ref, tutor_data)
+    add(f'add-tutor-id-{label}', 'owner', 'POST', ADD, 201, info(ref), body=body, allow=ALLOW_ADD, effect=effect)
+
+
+for label, value in (('int-new', 5), ('bool-true-existing', True), ('bool-false-new', False), ('zero-new', 0), ('int-existing', 4242),
+                     ('int-one-existing', 1), ('int-large-new', 2 ** 127 + 7), ('negative', -1), ('float', 1.5), ('float-whole', 4242.0),
+                     ('float-exponent', 1e3), ('int-too-large', 2 ** 128), ('text-number', '4242'), ('list', [1]), ('dict', {'a': 1})):
+    add_tutor_id(label, value)
+
+# On update the old relations are dropped and the tutor an integer names is updated through BasicAssociateSerializer.
+for seed, label, value in (('idu', 'int-existing', 4242), ('idu2', 'bool-existing', True), ('idu3', 'int-new', 77)):
+    tutor_data = [{'tutor': {'associate_id': value, 'phone': '3334445555'}, 'is_primary': True}]
+    effect = Effect('owner')
+    effect.save(seed)
+    handle_tutors(effect, seed, tutor_data)
+    add(f'update-tutor-id-{label}', 'owner', 'PATCH', update_path(seed), 200, info(seed), body={'tutors_data': tutor_data},
+        allow=ALLOW_UPDATE, effect=effect)
+effect = Effect('owner')
+effect.save('idu4')
+add('update-tutor-id-float-fails-after-save', 'owner', 'PATCH', update_path('idu4'), 500, SERVER,
+    body={'tutors_data': [{'tutor': {'associate_id': 1.5, 'phone': '3330000000'}}]}, allow=ALLOW_UPDATE, effect=effect)
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'personas writes authored sequence with associate, tutor relation and audit effects',

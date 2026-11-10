@@ -233,6 +233,22 @@ ONBOARD = '/onboarding/update'
 UPDATED = {'message': 'Updated successfully'}
 NOT_ASSOCIATION = {'error': 'You are not a sport association.'}
 
+MULTI = 'multipart/form-data; boundary=profilo'
+UPLOAD_DICT = 'Invalid data. Expected a dictionary, but got InMemoryUploadedFile.'
+
+
+def multipart(*parts):
+    """A multipart body: (name, value) text parts and (name, filename, content) file parts."""
+    out = ''
+    for part in parts:
+        if len(part) == 2:
+            out += f'--profilo\r\nContent-Disposition: form-data; name="{part[0]}"\r\n\r\n{part[1]}\r\n'
+        else:
+            out += (f'--profilo\r\nContent-Disposition: form-data; name="{part[0]}"; filename="{part[1]}"\r\n'
+                    f'Content-Type: application/octet-stream\r\n\r\n{part[2]}\r\n')
+    return out + '--profilo--\r\n'
+
+
 # Stored state the effects are authored against (model defaults of the base fixture rows).
 ASSOC = {'own': {'denomination': 'Message reads own', 'tax_code': '70000000001', 'logo': None, 'sport': None,
                  'subscription_fee': '0.00', 'membership_fee': None},
@@ -242,6 +258,9 @@ USERS = {'owner': {'balance_sheet_year': 1, 'subscription_start_day': 1, 'subscr
                    'balance_sheet_start_month': 1, 'lead_sport_association_role': None, 'lead_sport_association_size': None,
                    'lead_sport_market_channel': None, 'phone': None}}
 USERS['foreign_owner'] = dict(USERS['owner'])
+USERS['deleted_association_owner'] = dict(USERS['owner'])
+ASSOC['deleted'] = {'denomination': 'Message reads deleted', 'tax_code': '70000000003', 'logo': None, 'sport': None,
+                    'subscription_fee': '0.00', 'membership_fee': None}
 FLAGS = {'show': True, 'create_membership': False, 'view_membership': False, 'approve_payment': False, 'download_invoice': False,
          'view_collaborators': False, 'view_settings': False}
 
@@ -256,16 +275,23 @@ def association_save(label, values, actor, *, audit_values=None):
     shown = audit_values or values
     changes = {k: [text(ASSOC[label][k]), text(v)] for k, v in shown.items() if text(ASSOC[label][k]) != text(v)}
     ASSOC[label].update(values)
-    return {'model': 'sportassociation', 'key': label, 'actor': actor, 'changes': changes} if changes else None
+    if not changes:
+        return None
+    # A soft-deleted association is not resolved by the audit index: its entries have no index row.
+    return {'model': 'sportassociation', 'key': label, 'actor': actor, 'changes': changes, **({'index': False} if label == 'deleted' else {})}
 
 
-def user_save(label, values, actor):
+def user_save(label, values, actor, *, store=True):
+    """store=False: the entry auditlog wrote before an UPDATE that failed (the row keeps its values)."""
     changes = {k: [text(USERS[label][k]), text(v)] for k, v in values.items() if text(USERS[label][k]) != text(v)}
     stored = {k: (int(v) if k in ('subscription_start_day', 'subscription_start_month', 'balance_sheet_start_day',
                                   'balance_sheet_start_month', 'balance_sheet_year') else (None if v is None else str(v)))
               for k, v in values.items()}
-    USERS[label].update(stored)
-    return {'model': 'user', 'key': label, 'actor': actor, 'changes': changes} if changes else None
+    if store:
+        USERS[label].update(stored)
+    if not changes:
+        return None
+    return {'model': 'user', 'key': label, 'actor': actor, 'changes': changes, **({'index': False} if label == 'deleted_association_owner' else {})}
 
 
 def flags_save(values, actor):
@@ -386,6 +412,9 @@ add('onboarding-fresh-missing-sections', 'foreign_owner', ONBOARD, 400, {'error'
     body={'membership_data': {'season': 'x', 'fiscal': {'day': None, 'month': ''}, 'membership_fee': None}}, effect=effect())
 add('onboarding-fresh-not-object', 'foreign_owner', ONBOARD, 400, {'error': FRESH, 'details': {
     'membership_data': 'This field must be an object.'}}, method='PATCH', body={'membership_data': 'x'}, effect=effect())
+add('onboarding-fresh-file-part', 'foreign_owner', ONBOARD, 400, {'error': FRESH, 'details': {
+    'membership_data': 'This field must be an object.'}}, method='PATCH',
+    raw_body=multipart(('membership_data', 'a.txt', 'ciao')), content_type=MULTI, effect=effect())
 # The fresh validator accepts a decimal comma; the serializer does not.
 add('onboarding-fresh-comma-fee-serializer', 'foreign_owner', ONBOARD, 400, {'error': repr_errors({
     'subscription_fee': [('A valid number is required.', 'invalid')]})}, method='PATCH',
@@ -473,6 +502,109 @@ add('onboarding-flags-invalid', 'owner', ONBOARD, 400, {'error': repr_errors({
     method='PATCH', body={'onboarding_data': {'approve_payment': None, 'show': 'maybe'}}, effect=effect())
 add('onboarding-flags-missing-row', 'foreign_owner', ONBOARD, 500, {'error': 'UsersOnboarding matching query does not exist.'},
     method='PATCH', body={'onboarding_data': {'show': True}}, effect=effect())
+
+# --- file parts in a multipart body (QueryDict values are uploaded files) -------------------------
+UPLOAD_ERRORS = {'error': repr_errors({'non_field_errors': [(UPLOAD_DICT, 'invalid')]})}
+for branch in ('sport_association', 'membership_data', 'onboarding_data'):
+    add('multipart-file-' + branch, 'owner', ONBOARD, 400, UPLOAD_ERRORS, method='PATCH',
+        raw_body=multipart((branch, 'a.txt', 'ciao')), content_type=MULTI, effect=effect())
+add('multipart-file-lead-data', 'owner', ONBOARD, 500, {'error': "'InMemoryUploadedFile' object is not subscriptable"}, method='PATCH',
+    raw_body=multipart(('lead_data', 'a.txt', 'ciao')), content_type=MULTI, effect=effect())
+add('multipart-file-after-text-branch', 'owner', ONBOARD, 500, {'error': "string indices must be integers, not 'str'"}, method='PATCH',
+    raw_body=multipart(('lead_data', 'x'), ('doc', 'a.txt', 'ciao')), content_type=MULTI, effect=effect())
+add('multipart-file-without-branch', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
+    raw_body=multipart(('doc', 'a.txt', 'ciao')), content_type=MULTI, effect=effect())
+add('multipart-file-collaborator-association', 'full_collaborator', ONBOARD, 400, UPLOAD_ERRORS, method='PATCH',
+    raw_body=multipart(('sport_association', 'a.txt', 'ciao')), content_type=MULTI, effect=effect())
+
+# --- an owner whose association is soft-deleted: the saves work, the audit has no index row --------
+DELETED = 'deleted_association_owner'
+add('deleted-association-saved', DELETED, ONBOARD, 200, UPDATED, method='PATCH', body={'sport_association': {'sport': 'Calcio'}},
+    effect=effect(association_save('deleted', {'sport': 'Calcio'}, DELETED)))
+first = association_save('deleted', {'membership_fee': '5.00'}, DELETED)
+second = association_save('deleted', {}, DELETED, audit_values={'membership_fee': '5.0'})
+user = user_save(DELETED, {'balance_sheet_year': 4}, DELETED)
+add('deleted-association-membership', DELETED, ONBOARD, 200, UPDATED, method='PATCH', body={'membership_data': {'membership_fee': '5'}},
+    effect=effect(first, second, user))
+LEAD = {'lead_sport_association_role': 'a', 'lead_sport_association_size': 'b', 'lead_sport_market_channel': 'c'}
+add('deleted-association-lead', DELETED, ONBOARD, 200, UPDATED, method='PATCH', body={'lead_data': LEAD},
+    effect=effect(user_save(DELETED, LEAD, DELETED)))
+add('deleted-association-flags-missing-row', DELETED, ONBOARD, 500, {'error': 'UsersOnboarding matching query does not exist.'},
+    method='PATCH', body={'onboarding_data': {'show': True}}, effect=effect())
+
+# --- lead values: containers are stored as their Python repr; a value too long for the column ------
+# fails the UPDATE after auditlog wrote its entry (autocommit), so the entry stays and the row does not change.
+LEAD_REST = {'lead_sport_association_size': 's', 'lead_sport_market_channel': 'c'}
+TOO_LONG = lambda n: {'error': f'value too long for type character varying({n})\n'}
+long_role = 'x' * 151
+add('lead-too-long-role', 'owner', ONBOARD, 500, TOO_LONG(150), method='PATCH',
+    body={'lead_data': dict(LEAD_REST, lead_sport_association_role=long_role)},
+    effect=effect(user_save('owner', dict(LEAD_REST, lead_sport_association_role=long_role), 'owner', store=False)))
+add('lead-too-long-phone', 'full_collaborator', ONBOARD, 500, TOO_LONG(20), method='PATCH',
+    body={'lead_data': dict(LEAD_REST, lead_sport_association_role='r', phone='1' * 21)},
+    effect=effect(user_save('owner', dict(LEAD_REST, lead_sport_association_role='r', phone='1' * 21), 'full_collaborator', store=False)))
+add('lead-too-long-phone-before-role', 'owner', ONBOARD, 500, TOO_LONG(20), method='PATCH',
+    body={'lead_data': dict(LEAD_REST, lead_sport_association_role=long_role, phone='2' * 25)},
+    effect=effect(user_save('owner', dict(LEAD_REST, lead_sport_association_role=long_role, phone='2' * 25), 'owner', store=False)))
+add('lead-too-long-size-unicode', 'owner', ONBOARD, 500, TOO_LONG(150), method='PATCH',
+    body={'lead_data': {'lead_sport_association_role': 'r', 'lead_sport_association_size': 'è' * 151, 'lead_sport_market_channel': 'c'}},
+    effect=effect(user_save('owner', {'lead_sport_association_role': 'r', 'lead_sport_association_size': 'è' * 151,
+                                      'lead_sport_market_channel': 'c'}, 'owner', store=False)))
+add('lead-exactly-fits', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'lead_data': {'lead_sport_association_role': 'x' * 150, 'lead_sport_association_size': 'è' * 150, 'lead_sport_market_channel': 'c',
+                        'phone': '3' * 20}},
+    effect=effect(user_save('owner', {'lead_sport_association_role': 'x' * 150, 'lead_sport_association_size': 'è' * 150,
+                                      'lead_sport_market_channel': 'c', 'phone': '3' * 20}, 'owner')))
+MIXED = ['a', 1, None, True, {'k': 'v'}, "d'q", 'é\n', 2.5, [], {}]
+add('lead-list-stored-as-repr', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'lead_data': {'lead_sport_association_role': MIXED, 'lead_sport_association_size': [], 'lead_sport_market_channel': {}}},
+    effect=effect(user_save('owner', {'lead_sport_association_role': repr(MIXED), 'lead_sport_association_size': '[]',
+                                      'lead_sport_market_channel': '{}'}, 'owner')))
+NESTED = {'a': 1.5, 'b': "it's", 'c': [True, None], 'd': {'e': 'f'}}
+add('lead-dict-stored-as-repr', 'full_collaborator', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'lead_data': {'lead_sport_association_role': NESTED, 'lead_sport_association_size': 's', 'lead_sport_market_channel': 'c',
+                        'phone': ['1', 2]}},
+    effect=effect(user_save('owner', {'lead_sport_association_role': repr(NESTED), 'lead_sport_association_size': 's',
+                                      'lead_sport_market_channel': 'c', 'phone': "['1', 2]"}, 'full_collaborator')))
+add('lead-float-stored-as-str', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'lead_data': {'lead_sport_association_role': 1.5e20, 'lead_sport_association_size': 1e-05, 'lead_sport_market_channel': 100.0}},
+    effect=effect(user_save('owner', {'lead_sport_association_role': '1.5e+20', 'lead_sport_association_size': '1e-05',
+                                      'lead_sport_market_channel': '100.0'}, 'owner')))
+
+# --- fees: the second save audits str(float(value)) against the stored decimal -----------------------
+first = association_save('own', {'membership_fee': '1234567.89'}, 'owner')
+add('membership-fee-large', 'owner', ONBOARD, 200, UPDATED, method='PATCH', body={'membership_data': {'membership_fee': '1234567.89'}},
+    effect=effect(first))
+first = association_save('own', {'membership_fee': '0.00'}, 'owner', audit_values={'membership_fee': '-0.00'})
+second = association_save('own', {}, 'owner', audit_values={'membership_fee': '-0.0'})
+add('membership-fee-negative-zero', 'owner', ONBOARD, 200, UPDATED, method='PATCH', body={'membership_data': {'membership_fee': '-0'}},
+    effect=effect(first, second))
+first = association_save('own', {'subscription_fee': '0.00'}, 'owner', audit_values={'subscription_fee': '-0.00'})
+second = association_save('own', {}, 'owner', audit_values={'subscription_fee': '-0.0'})
+add('subscription-fee-negative-zero', 'owner', ONBOARD, 200, UPDATED, method='PATCH', body={'membership_data': {'subscription_fee': '-0.00'}},
+    effect=effect(first, second))
+first = association_save('own', {'membership_fee': '100.00'}, 'owner')
+second = association_save('own', {}, 'owner', audit_values={'membership_fee': '100.0'})
+add('membership-fee-exponent-text', 'owner', ONBOARD, 200, UPDATED, method='PATCH', body={'membership_data': {'membership_fee': '1E+2'}},
+    effect=effect(first, second))
+
+# --- a blank nullable fee: the serializer reads it as None (DecimalField.validate_empty_values) -------
+add('association-fee-set', 'owner', ONBOARD, 200, UPDATED, method='PATCH', body={'sport_association': {'membership_fee': '3.5'}},
+    effect=effect(association_save('own', {'membership_fee': '3.50'}, 'owner')))
+add('association-fee-blank-is-none', 'owner', ONBOARD, 200, UPDATED, method='PATCH', body={'sport_association': {'membership_fee': ''}},
+    effect=effect(association_save('own', {'membership_fee': None}, 'owner')))
+add('association-fee-set-again', 'owner', ONBOARD, 200, UPDATED, method='PATCH', body={'sport_association': {'membership_fee': 4}},
+    effect=effect(association_save('own', {'membership_fee': '4.00'}, 'owner')))
+add('association-fee-spaces-is-none', 'full_collaborator', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'sport_association': {'membership_fee': '  \t'}}, effect=effect(association_save('own', {'membership_fee': None}, 'full_collaborator')))
+add('association-subscription-fee-blank', 'owner', ONBOARD, 400, {'error': repr_errors({
+    'subscription_fee': [('A valid number is required.', 'invalid')]})}, method='PATCH', body={'sport_association': {'subscription_fee': ''}},
+    effect=effect())
+# float('') raises after the serializer saved: the atomic block rolls the association save back.
+add('membership-fee-blank-float-error', 'owner', ONBOARD, 500, {'error': "could not convert string to float: ''"}, method='PATCH',
+    body={'membership_data': {'membership_fee': ''}}, effect=effect())
+add('membership-fee-spaces-float-error', 'owner', ONBOARD, 500, {'error': "could not convert string to float: '  '"}, method='PATCH',
+    body={'membership_data': {'membership_fee': '  ', 'subscription_fee': '9'}}, effect=effect())
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

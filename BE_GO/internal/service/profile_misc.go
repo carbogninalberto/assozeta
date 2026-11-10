@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -282,6 +283,9 @@ func pythonTypeNameOf(value any) string {
 		return "str"
 	case []any:
 		return "list"
+	case domain.RequestUpload:
+		// A multipart file part of a size the in-memory upload handler keeps.
+		return "InMemoryUploadedFile"
 	}
 	return "dict"
 }
@@ -295,9 +299,6 @@ func onboardingText(value *string) string {
 
 // Onboarding is onboarding_update after authorization and method dispatch.
 func (s *ProfileMisc) Onboarding(ctx context.Context, identity domain.ResolvedIdentity, body any, audit domain.LoginAuditContext) error {
-	if dto.ProfileSettingsHasUpload(body) {
-		return ErrOnboardingNotPorted
-	}
 	// The logging statement's membership tests precede the view's try.
 	branch := ""
 	for _, key := range onboardingBranches {
@@ -346,10 +347,6 @@ func (s *ProfileMisc) association(ctx context.Context, tx domain.OnboardingTrans
 	if association == nil {
 		return nil, &OnboardingServerError{Message: "User has no sportassociation."}
 	}
-	if association.Deleted {
-		// auditlog's default manager cannot load a deleted association's old row.
-		return nil, ErrOnboardingNotPorted
-	}
 	return association, nil
 }
 
@@ -395,12 +392,19 @@ func onboardingAssociationChanges(stored domain.OnboardingAssociation, denominat
 	return changes
 }
 
-func (s *ProfileMisc) associationAudit(ctx context.Context, tx domain.OnboardingTransaction, id string, changes map[string][2]string, auditContext domain.LoginAuditContext) error {
+// associationAudit logs a SportAssociation save; a soft-deleted association has
+// no index row (the resolver finds no active association).
+func (s *ProfileMisc) associationAudit(ctx context.Context, tx domain.OnboardingTransaction, stored *domain.OnboardingAssociation, changes map[string][2]string, auditContext domain.LoginAuditContext) error {
 	if len(changes) == 0 {
 		return nil
 	}
+	id := stored.ID
+	indexed := &id
+	if stored.Deleted {
+		indexed = nil
+	}
 	return tx.AppendAudit(ctx, domain.ProfileMiscAudit{Model: "sportassociation", Key: id, Representation: "SportAssociation object (" + id + ")",
-		Changes: changes, Context: auditContext, AssociationID: &id, ResolutionPath: "self", At: s.now()})
+		Changes: changes, Context: auditContext, AssociationID: indexed, ResolutionPath: "self", At: s.now()})
 }
 
 func (s *ProfileMisc) onboardingAssociation(ctx context.Context, user string, data any, auditContext domain.LoginAuditContext) error {
@@ -418,7 +422,7 @@ func (s *ProfileMisc) onboardingAssociation(ctx context.Context, user string, da
 		return &OnboardingValidationError{Fields: invalid}
 	}
 	next, changes := applyOnboardingAssociation(*stored, input)
-	if err = s.associationAudit(ctx, tx, stored.ID, changes, auditContext); err != nil {
+	if err = s.associationAudit(ctx, tx, stored, changes, auditContext); err != nil {
 		return err
 	}
 	if err = tx.SaveAssociation(ctx, next); err != nil {
@@ -475,7 +479,7 @@ func (s *ProfileMisc) onboardingMembership(ctx context.Context, user string, dat
 		return &OnboardingValidationError{Fields: invalid}
 	}
 	next, changes := applyOnboardingAssociation(*stored, input)
-	if err = s.associationAudit(ctx, tx, stored.ID, changes, auditContext); err != nil {
+	if err = s.associationAudit(ctx, tx, stored, changes, auditContext); err != nil {
 		return err
 	}
 	if err = tx.SaveAssociation(ctx, next); err != nil {
@@ -518,13 +522,23 @@ func (s *ProfileMisc) onboardingMembership(ctx context.Context, user string, dat
 			continue
 		}
 		repr, ok := dto.PythonFloatRepr(raw)
-		if !ok {
+		if text, isText := raw.(string); !ok && isText && strings.TrimFunc(text, unicode.IsSpace) == "" {
+			// The serializer read a blank nullable fee as None; float() of the raw text raises.
+			return &OnboardingServerError{Message: "could not convert string to float: " + dto.PythonStringRepr(text)}
+		} else if !ok {
 			return ErrOnboardingNotPorted
 		}
 		*fee.target = repr
 	}
-	floatChanges := onboardingAssociationChanges(next, next.Denomination, next.TaxCode, next.Logo, next.Sport, subscription, membershipFee)
-	if err = s.associationAudit(ctx, tx, stored.ID, floatChanges, auditContext); err != nil {
+	// The column stores a negative zero as 0.00: the second save compares against that.
+	stored2 := next
+	stored2.SubscriptionFee = onboardingStoredDecimal(next.SubscriptionFee)
+	if next.MembershipFee != nil {
+		normalized := onboardingStoredDecimal(*next.MembershipFee)
+		stored2.MembershipFee = &normalized
+	}
+	floatChanges := onboardingAssociationChanges(stored2, next.Denomination, next.TaxCode, next.Logo, next.Sport, subscription, membershipFee)
+	if err = s.associationAudit(ctx, tx, stored, floatChanges, auditContext); err != nil {
 		return err
 	}
 	// user.save(): auditlog compares str() of the assigned values, then the
@@ -576,20 +590,26 @@ func (s *ProfileMisc) onboardingMembership(ctx context.Context, user string, dat
 	return tx.Commit()
 }
 
+// onboardingStoredDecimal is the numeric column's text for a quantized decimal:
+// a negative zero is stored without its sign.
+func onboardingStoredDecimal(text string) string {
+	if strings.HasPrefix(text, "-") && strings.Trim(text, "-0.") == "" {
+		return text[1:]
+	}
+	return text
+}
+
 func pythonIntText(value int64) string { return strconv.FormatInt(value, 10) }
 
-// onboardingLeadValue is CharField.to_python (str()) for the stored lead
-// values; containers and values the column rejects are refused.
-func onboardingLeadValue(value any, maximum int) (*string, error) {
-	switch value.(type) {
-	case nil:
+// onboardingLeadValue is CharField.get_prep_value (str()) for the stored lead
+// values: containers are stored as their Python repr. A NUL character is
+// refused: the database error text quotes the audit row it failed to insert.
+func onboardingLeadValue(value any) (*string, error) {
+	if value == nil {
 		return nil, nil
-	case string, bool, json.Number:
-	default:
-		return nil, ErrOnboardingNotPorted
 	}
 	text := dto.PythonStr(value)
-	if utf8.RuneCountInString(text) > maximum || strings.ContainsRune(text, 0) || !utf8.ValidString(text) {
+	if strings.ContainsRune(text, 0) {
 		return nil, ErrOnboardingNotPorted
 	}
 	return &text, nil
@@ -626,19 +646,35 @@ func (s *ProfileMisc) onboardingLead(ctx context.Context, user string, data any,
 	}{"lead_sport_association_role": {&saved.Role, person.Role, 150}, "lead_sport_association_size": {&saved.Size, person.Size, 150},
 		"lead_sport_market_channel": {&saved.Channel, person.Channel, 150}, "phone": {&saved.Phone, person.Phone, 20}}
 	changes := map[string][2]string{}
-	for name, value := range values {
+	tooLong := 0
+	// The UPDATE reports the first column (table order) whose value does not fit.
+	for _, name := range []string{"phone", "lead_sport_association_role", "lead_sport_association_size", "lead_sport_market_channel"} {
+		value, present := values[name]
+		if !present {
+			continue
+		}
 		field := fields[name]
-		stored, err := onboardingLeadValue(value, field.maximum)
+		stored, err := onboardingLeadValue(value)
 		if err != nil {
 			return err
 		}
 		if old, new := onboardingText(field.old), dto.PythonStr(value); old != new {
 			changes[name] = [2]string{old, new}
 		}
+		if stored != nil && tooLong == 0 && utf8.RuneCountInString(*stored) > field.maximum {
+			tooLong = field.maximum
+		}
 		*field.target = stored
 	}
+	// auditlog writes the entry before the UPDATE: it stays when the UPDATE fails.
 	if err = s.onboardingUserAudit(ctx, tx, person, changes, auditContext); err != nil {
 		return err
+	}
+	if tooLong > 0 {
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+		return &OnboardingServerError{Message: "value too long for type character varying(" + strconv.Itoa(tooLong) + ")\n"}
 	}
 	if err = tx.SaveUser(ctx, saved); err != nil {
 		return err

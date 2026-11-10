@@ -24,7 +24,11 @@ func NewModulesWrites(store domain.ModulesWriteStore, profiles modulesReadsProfi
 
 // ModuleValidationError is the serializer's field errors: add renders DRF's
 // 400 map, update the {'error': str(ValidationError)} text.
-type ModuleValidationError struct{ Errors dto.ModuleWriteErrors }
+type ModuleValidationError struct {
+	Errors dto.ModuleWriteErrors
+	// Nested are the nested association serializer's field errors, in its field order.
+	Nested []dto.DRFFieldError
+}
 
 func (e *ModuleValidationError) Error() string { return "invalid module input" }
 
@@ -186,15 +190,26 @@ func (s *ModulesWrites) Update(ctx context.Context, identity domain.ResolvedIden
 		return nil, &domain.PermissionDenied{Detail: "You are not allowed to update this camp or retreat"}
 	}
 	write, invalid := dto.ParseModuleWrite(body, form, true)
-	if write.Nested == dto.ModuleNestedFields {
-		// SportAssociationSerializer validation of nested fields is not ported.
+	if write.Nested == dto.ModuleNestedForm {
+		// The nested serializer's HTML input parsing is not ported.
 		return nil, domain.ErrModuleWriteNotPorted
+	}
+	var nested []dto.DRFFieldError
+	if write.Nested == dto.ModuleNestedFields {
+		if nested, err = dto.ParseModuleNested(write.NestedObject, func(id string) (bool, error) {
+			return tx.Taken(ctx, "sport_association_id", id, nil)
+		}); err != nil {
+			return nil, err
+		}
 	}
 	if invalid, err = s.unique(ctx, tx, write, invalid, &row.ID); err != nil {
 		return nil, err
 	}
-	if invalid != nil {
-		return nil, &ModuleValidationError{Errors: invalid}
+	if invalid != nil || nested != nil {
+		return nil, &ModuleValidationError{Errors: invalid, Nested: nested}
+	}
+	if write.Nested == dto.ModuleNestedFields {
+		return nil, errModuleNested
 	}
 	if write.Nested == dto.ModuleNestedEmpty {
 		return nil, errModuleNested

@@ -1341,6 +1341,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -1356,6 +1364,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -1408,6 +1427,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -1423,6 +1450,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -1477,6 +1515,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -1492,6 +1538,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -1543,6 +1600,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -1558,6 +1623,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -1628,6 +1704,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -1643,6 +1727,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -1704,6 +1799,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -1719,6 +1822,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -1778,6 +1892,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -1793,6 +1915,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -1847,6 +1980,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -1862,6 +2003,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -1916,6 +2068,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -1931,6 +2091,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -2012,6 +2183,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -2027,6 +2206,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -2108,6 +2298,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -2123,6 +2321,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -2180,6 +2389,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -2195,6 +2412,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -2252,6 +2480,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -2267,6 +2503,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -2327,6 +2574,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -2342,6 +2597,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -2396,6 +2662,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -2411,6 +2685,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -2470,6 +2755,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -2485,6 +2778,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -2595,6 +2899,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -2610,6 +2922,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -2688,6 +3011,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -2703,6 +3034,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -2775,6 +3117,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -2790,6 +3140,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -2857,6 +3218,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -2872,6 +3241,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -2944,6 +3324,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -2959,6 +3347,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -3023,6 +3422,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -3038,6 +3445,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -3063,6 +3481,96 @@
    "body": {
     "membership_data": "x"
    }
+  },
+  {
+   "name": "profile-misc-onboarding-fresh-file-part",
+   "actor": "foreign_owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Fresh self-host onboarding requires a complete membership payload.",
+    "details": {
+     "membership_data": "This field must be an object."
+    }
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "raw_body": "--profilo\r\nContent-Disposition: form-data; name=\"membership_data\"; filename=\"a.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nciao\r\n--profilo--\r\n",
+   "content_type": "multipart/form-data; boundary=profilo"
   },
   {
    "name": "profile-misc-onboarding-fresh-comma-fee-serializer",
@@ -3092,6 +3600,14 @@
       "sport": null,
       "subscription_fee": "0.00",
       "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -3107,6 +3623,17 @@
       "phone": null
      },
      "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
       "balance_sheet_year": 1,
       "subscription_start_day": 1,
       "subscription_start_month": 1,
@@ -3222,6 +3749,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -3242,6 +3777,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -3302,6 +3848,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -3322,6 +3876,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -3395,6 +3960,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -3415,6 +3988,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -3489,6 +4073,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -3509,6 +4101,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -3562,6 +4165,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -3582,6 +4193,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -3633,6 +4255,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -3653,6 +4283,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -3702,6 +4343,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -3722,6 +4371,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -3771,6 +4431,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -3791,6 +4459,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -3856,6 +4535,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -3876,6 +4563,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -3942,6 +4640,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -3962,6 +4668,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -4025,6 +4742,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -4045,6 +4770,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -4120,6 +4856,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -4140,6 +4884,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -4199,6 +4954,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -4219,6 +4982,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -4290,6 +5064,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -4310,6 +5092,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -4369,6 +5162,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -4389,6 +5190,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -4448,6 +5260,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -4468,6 +5288,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -4539,6 +5370,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -4559,6 +5398,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -4630,6 +5480,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -4650,6 +5508,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -4703,6 +5572,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -4723,6 +5600,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -4794,6 +5682,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -4814,6 +5710,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -4881,6 +5788,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -4901,6 +5816,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -4954,6 +5880,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -4974,6 +5908,17 @@
       "subscription_start_month": 9,
       "balance_sheet_start_day": 1,
       "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
       "lead_sport_association_role": null,
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
@@ -5026,6 +5971,14 @@
       "sport": null,
       "subscription_fee": "25.00",
       "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
      }
     },
     "users": {
@@ -5050,6 +6003,17 @@
       "lead_sport_association_size": null,
       "lead_sport_market_channel": null,
       "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
      }
     },
     "onboarding": {
@@ -5066,6 +6030,3110 @@
    "body": {
     "onboarding_data": {
      "show": true
+    }
+   }
+  },
+  {
+   "name": "profile-misc-multipart-file-sport_association",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'non_field_errors': [ErrorDetail(string='Invalid data. Expected a dictionary, but got InMemoryUploadedFile.', code='invalid')]}"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "raw_body": "--profilo\r\nContent-Disposition: form-data; name=\"sport_association\"; filename=\"a.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nciao\r\n--profilo--\r\n",
+   "content_type": "multipart/form-data; boundary=profilo"
+  },
+  {
+   "name": "profile-misc-multipart-file-membership_data",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'non_field_errors': [ErrorDetail(string='Invalid data. Expected a dictionary, but got InMemoryUploadedFile.', code='invalid')]}"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "raw_body": "--profilo\r\nContent-Disposition: form-data; name=\"membership_data\"; filename=\"a.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nciao\r\n--profilo--\r\n",
+   "content_type": "multipart/form-data; boundary=profilo"
+  },
+  {
+   "name": "profile-misc-multipart-file-onboarding_data",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'non_field_errors': [ErrorDetail(string='Invalid data. Expected a dictionary, but got InMemoryUploadedFile.', code='invalid')]}"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "raw_body": "--profilo\r\nContent-Disposition: form-data; name=\"onboarding_data\"; filename=\"a.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nciao\r\n--profilo--\r\n",
+   "content_type": "multipart/form-data; boundary=profilo"
+  },
+  {
+   "name": "profile-misc-multipart-file-lead-data",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'InMemoryUploadedFile' object is not subscriptable"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "raw_body": "--profilo\r\nContent-Disposition: form-data; name=\"lead_data\"; filename=\"a.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nciao\r\n--profilo--\r\n",
+   "content_type": "multipart/form-data; boundary=profilo"
+  },
+  {
+   "name": "profile-misc-multipart-file-after-text-branch",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "string indices must be integers, not 'str'"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "raw_body": "--profilo\r\nContent-Disposition: form-data; name=\"lead_data\"\r\n\r\nx\r\n--profilo\r\nContent-Disposition: form-data; name=\"doc\"; filename=\"a.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nciao\r\n--profilo--\r\n",
+   "content_type": "multipart/form-data; boundary=profilo"
+  },
+  {
+   "name": "profile-misc-multipart-file-without-branch",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "raw_body": "--profilo\r\nContent-Disposition: form-data; name=\"doc\"; filename=\"a.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nciao\r\n--profilo--\r\n",
+   "content_type": "multipart/form-data; boundary=profilo"
+  },
+  {
+   "name": "profile-misc-multipart-file-collaborator-association",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'non_field_errors': [ErrorDetail(string='Invalid data. Expected a dictionary, but got InMemoryUploadedFile.', code='invalid')]}"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "raw_body": "--profilo\r\nContent-Disposition: form-data; name=\"sport_association\"; filename=\"a.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nciao\r\n--profilo--\r\n",
+   "content_type": "multipart/form-data; boundary=profilo"
+  },
+  {
+   "name": "profile-misc-deleted-association-saved",
+   "actor": "deleted_association_owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "sportassociation",
+      "key": "deleted",
+      "actor": "deleted_association_owner",
+      "changes": {
+       "sport": [
+        "None",
+        "Calcio"
+       ]
+      },
+      "index": false
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "sport_association": {
+     "sport": "Calcio"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-deleted-association-membership",
+   "actor": "deleted_association_owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "sportassociation",
+      "key": "deleted",
+      "actor": "deleted_association_owner",
+      "changes": {
+       "membership_fee": [
+        "None",
+        "5.00"
+       ]
+      },
+      "index": false
+     },
+     {
+      "model": "sportassociation",
+      "key": "deleted",
+      "actor": "deleted_association_owner",
+      "changes": {
+       "membership_fee": [
+        "5.00",
+        "5.0"
+       ]
+      },
+      "index": false
+     },
+     {
+      "model": "user",
+      "key": "deleted_association_owner",
+      "actor": "deleted_association_owner",
+      "changes": {
+       "balance_sheet_year": [
+        "1",
+        "4"
+       ]
+      },
+      "index": false
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "membership_fee": "5"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-deleted-association-lead",
+   "actor": "deleted_association_owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "deleted_association_owner",
+      "actor": "deleted_association_owner",
+      "changes": {
+       "lead_sport_association_role": [
+        "None",
+        "a"
+       ],
+       "lead_sport_association_size": [
+        "None",
+        "b"
+       ],
+       "lead_sport_market_channel": [
+        "None",
+        "c"
+       ]
+      },
+      "index": false
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "lead_data": {
+     "lead_sport_association_role": "a",
+     "lead_sport_association_size": "b",
+     "lead_sport_market_channel": "c"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-deleted-association-flags-missing-row",
+   "actor": "deleted_association_owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "UsersOnboarding matching query does not exist."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "onboarding_data": {
+     "show": true
+    }
+   }
+  },
+  {
+   "name": "profile-misc-lead-too-long-role",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "value too long for type character varying(150)\n"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "lead_sport_association_size": [
+        "True",
+        "s"
+       ],
+       "lead_sport_market_channel": [
+        "None",
+        "c"
+       ],
+       "lead_sport_association_role": [
+        "5",
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "lead_data": {
+     "lead_sport_association_size": "s",
+     "lead_sport_market_channel": "c",
+     "lead_sport_association_role": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-lead-too-long-phone",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "value too long for type character varying(20)\n"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "full_collaborator",
+      "changes": {
+       "lead_sport_association_size": [
+        "True",
+        "s"
+       ],
+       "lead_sport_market_channel": [
+        "None",
+        "c"
+       ],
+       "lead_sport_association_role": [
+        "5",
+        "r"
+       ],
+       "phone": [
+        "+39 333 0000000",
+        "111111111111111111111"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "lead_data": {
+     "lead_sport_association_size": "s",
+     "lead_sport_market_channel": "c",
+     "lead_sport_association_role": "r",
+     "phone": "111111111111111111111"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-lead-too-long-phone-before-role",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "value too long for type character varying(20)\n"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "lead_sport_association_size": [
+        "True",
+        "s"
+       ],
+       "lead_sport_market_channel": [
+        "None",
+        "c"
+       ],
+       "lead_sport_association_role": [
+        "5",
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+       ],
+       "phone": [
+        "+39 333 0000000",
+        "2222222222222222222222222"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "lead_data": {
+     "lead_sport_association_size": "s",
+     "lead_sport_market_channel": "c",
+     "lead_sport_association_role": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+     "phone": "2222222222222222222222222"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-lead-too-long-size-unicode",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "value too long for type character varying(150)\n"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "lead_sport_association_role": [
+        "5",
+        "r"
+       ],
+       "lead_sport_association_size": [
+        "True",
+        "èèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèè"
+       ],
+       "lead_sport_market_channel": [
+        "None",
+        "c"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "lead_data": {
+     "lead_sport_association_role": "r",
+     "lead_sport_association_size": "èèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèè",
+     "lead_sport_market_channel": "c"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-lead-exactly-fits",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "lead_sport_association_role": [
+        "5",
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+       ],
+       "lead_sport_association_size": [
+        "True",
+        "èèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèè"
+       ],
+       "lead_sport_market_channel": [
+        "None",
+        "c"
+       ],
+       "phone": [
+        "+39 333 0000000",
+        "33333333333333333333"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "lead_sport_association_size": "èèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèè",
+      "lead_sport_market_channel": "c",
+      "phone": "33333333333333333333"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "lead_data": {
+     "lead_sport_association_role": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+     "lead_sport_association_size": "èèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèè",
+     "lead_sport_market_channel": "c",
+     "phone": "33333333333333333333"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-lead-list-stored-as-repr",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "lead_sport_association_role": [
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "['a', 1, None, True, {'k': 'v'}, \"d'q\", 'é\\n', 2.5, [], {}]"
+       ],
+       "lead_sport_association_size": [
+        "èèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèè",
+        "[]"
+       ],
+       "lead_sport_market_channel": [
+        "c",
+        "{}"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "['a', 1, None, True, {'k': 'v'}, \"d'q\", 'é\\n', 2.5, [], {}]",
+      "lead_sport_association_size": "[]",
+      "lead_sport_market_channel": "{}",
+      "phone": "33333333333333333333"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "lead_data": {
+     "lead_sport_association_role": [
+      "a",
+      1,
+      null,
+      true,
+      {
+       "k": "v"
+      },
+      "d'q",
+      "é\n",
+      2.5,
+      [],
+      {}
+     ],
+     "lead_sport_association_size": [],
+     "lead_sport_market_channel": {}
+    }
+   }
+  },
+  {
+   "name": "profile-misc-lead-dict-stored-as-repr",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "full_collaborator",
+      "changes": {
+       "lead_sport_association_role": [
+        "['a', 1, None, True, {'k': 'v'}, \"d'q\", 'é\\n', 2.5, [], {}]",
+        "{'a': 1.5, 'b': \"it's\", 'c': [True, None], 'd': {'e': 'f'}}"
+       ],
+       "lead_sport_association_size": [
+        "[]",
+        "s"
+       ],
+       "lead_sport_market_channel": [
+        "{}",
+        "c"
+       ],
+       "phone": [
+        "33333333333333333333",
+        "['1', 2]"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "{'a': 1.5, 'b': \"it's\", 'c': [True, None], 'd': {'e': 'f'}}",
+      "lead_sport_association_size": "s",
+      "lead_sport_market_channel": "c",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "lead_data": {
+     "lead_sport_association_role": {
+      "a": 1.5,
+      "b": "it's",
+      "c": [
+       true,
+       null
+      ],
+      "d": {
+       "e": "f"
+      }
+     },
+     "lead_sport_association_size": "s",
+     "lead_sport_market_channel": "c",
+     "phone": [
+      "1",
+      2
+     ]
+    }
+   }
+  },
+  {
+   "name": "profile-misc-lead-float-stored-as-str",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "lead_sport_association_role": [
+        "{'a': 1.5, 'b': \"it's\", 'c': [True, None], 'd': {'e': 'f'}}",
+        "1.5e+20"
+       ],
+       "lead_sport_association_size": [
+        "s",
+        "1e-05"
+       ],
+       "lead_sport_market_channel": [
+        "c",
+        "100.0"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "lead_data": {
+     "lead_sport_association_role": 1.5e+20,
+     "lead_sport_association_size": 1e-05,
+     "lead_sport_market_channel": 100.0
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-fee-large",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "sportassociation",
+      "key": "own",
+      "actor": "owner",
+      "changes": {
+       "membership_fee": [
+        "None",
+        "1234567.89"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": "1234567.89"
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "membership_fee": "1234567.89"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-fee-negative-zero",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "sportassociation",
+      "key": "own",
+      "actor": "owner",
+      "changes": {
+       "membership_fee": [
+        "1234567.89",
+        "-0.00"
+       ]
+      }
+     },
+     {
+      "model": "sportassociation",
+      "key": "own",
+      "actor": "owner",
+      "changes": {
+       "membership_fee": [
+        "0.00",
+        "-0.0"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": "0.00"
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "membership_fee": "-0"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-subscription-fee-negative-zero",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "sportassociation",
+      "key": "own",
+      "actor": "owner",
+      "changes": {
+       "subscription_fee": [
+        "20.00",
+        "-0.00"
+       ]
+      }
+     },
+     {
+      "model": "sportassociation",
+      "key": "own",
+      "actor": "owner",
+      "changes": {
+       "subscription_fee": [
+        "0.00",
+        "-0.0"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": "0.00"
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "subscription_fee": "-0.00"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-fee-exponent-text",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "sportassociation",
+      "key": "own",
+      "actor": "owner",
+      "changes": {
+       "membership_fee": [
+        "0.00",
+        "100.00"
+       ]
+      }
+     },
+     {
+      "model": "sportassociation",
+      "key": "own",
+      "actor": "owner",
+      "changes": {
+       "membership_fee": [
+        "100.00",
+        "100.0"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": "100.00"
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "membership_fee": "1E+2"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-association-fee-set",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "sportassociation",
+      "key": "own",
+      "actor": "owner",
+      "changes": {
+       "membership_fee": [
+        "100.00",
+        "3.50"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": "3.50"
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "sport_association": {
+     "membership_fee": "3.5"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-association-fee-blank-is-none",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "sportassociation",
+      "key": "own",
+      "actor": "owner",
+      "changes": {
+       "membership_fee": [
+        "3.50",
+        "None"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "sport_association": {
+     "membership_fee": ""
+    }
+   }
+  },
+  {
+   "name": "profile-misc-association-fee-set-again",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "sportassociation",
+      "key": "own",
+      "actor": "owner",
+      "changes": {
+       "membership_fee": [
+        "None",
+        "4.00"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": "4.00"
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "sport_association": {
+     "membership_fee": 4
+    }
+   }
+  },
+  {
+   "name": "profile-misc-association-fee-spaces-is-none",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "sportassociation",
+      "key": "own",
+      "actor": "full_collaborator",
+      "changes": {
+       "membership_fee": [
+        "4.00",
+        "None"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "sport_association": {
+     "membership_fee": "  \t"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-association-subscription-fee-blank",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'subscription_fee': [ErrorDetail(string='A valid number is required.', code='invalid')]}"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "sport_association": {
+     "subscription_fee": ""
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-fee-blank-float-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "could not convert string to float: ''"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "membership_fee": ""
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-fee-spaces-float-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "could not convert string to float: '  '"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "membership_fee": "  ",
+     "subscription_fee": "9"
     }
    }
   }

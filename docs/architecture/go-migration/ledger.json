@@ -17103,7 +17103,8 @@
         "BE_GO/internal/repository/modules_writes.go",
         "BE_GO/internal/service/modules_writes.go",
         "BE_GO/internal/handler/modules_writes.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/dto/modules_nested.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
@@ -17142,25 +17143,25 @@
         "docs/architecture/go-migration/modules-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 102/102; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/modules-writes-http-native-r2/results.json",
-          "receipt_sha256": "22ea292178bd7594a79e3647d9b6496b28aeccf24d05d7d483428f2fa0bc25f1"
+          "result": "RED: Django 135/135; Go 400 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "1dfcfda944058823e511f3bbc9eedc6be45e463c471e53ec371ba71c8bc2ef2d"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-writes-http-sweep-restb3-3/results.json",
-          "receipt_sha256": "2188156eb34e954d7bd07efdaa8891be7a59b0ce89a7e6041f68666cf6c82d38"
+          "result": "GREEN: 135/135 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-sweep-restprof-1/results.json",
+          "receipt_sha256": "057fcf4e2e86ab700913e03376dd541bef1f3699aa92ce1857a6c0d27b987259"
         },
         {
-          "revision": "committing change with the new-key branch disabled so the update saves in place",
-          "result": "Mutation control: fails Go on modules-writes-update-new-key-copies (response.status).",
-          "artifact": "quality-reports/go-migration/modules-writes-http-restb3-mutation-1/results.json",
-          "receipt_sha256": "795be56ae19685d574406da3ce84b82ccc4caccaf8e23335ad449e9a92db51c0"
+          "revision": "dropping the boolean validation of the nested association fields",
+          "result": "Mutation control: fails Go on modules-writes-update-nested-number-boolean-errors.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "1dfcfda944058823e511f3bbc9eedc6be45e463c471e53ec371ba71c8bc2ef2d"
         }
       ],
       "notes": [
-        "Implementing: Module writes. API v2 (v2-rest-b3): an update with a module_id no module has inserts the copy Model.save() inserts with the validated values and leaves the named module; a database conflict on the copy answers its text as 500 {'error': ...}. Still refused: update with a nested sport_association dict that has keys. 102 cases. RED: documented refusal, see v2-refusals.md modules-writes row (earlier native RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
+        "Implementing: Module writes. An update with a module_id no module has inserts the copy Model.save() inserts with the validated values and leaves the named module; a database conflict on the copy answers its text as 500 {'error': ...}. Rest-prof: a nested sport_association dict with keys is validated in the nested serializer's field order (text lengths, address_cap pattern, decimal fees, booleans, JSON nulls, primary key uniqueness) and reported nested; a valid dict ends in the nested-write assertion. Still refused: the nested association as 'sport_association.<field>' form keys (500 page). RED: documented refusal, see the v2-refusals.md row; the mutation receipt (Django passes, Go fails) doubles as the RED receipt."
       ]
     },
     {
@@ -17185,7 +17186,8 @@
         "BE_GO/internal/repository/modules_writes.go",
         "BE_GO/internal/service/modules_writes.go",
         "BE_GO/internal/handler/modules_writes.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/dto/modules_nested.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
@@ -17224,25 +17226,25 @@
         "docs/architecture/go-migration/modules-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 102/102; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/modules-writes-http-native-r2/results.json",
-          "receipt_sha256": "22ea292178bd7594a79e3647d9b6496b28aeccf24d05d7d483428f2fa0bc25f1"
+          "result": "RED: Django 135/135; Go 400 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "1dfcfda944058823e511f3bbc9eedc6be45e463c471e53ec371ba71c8bc2ef2d"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-writes-http-sweep-restb3-3/results.json",
-          "receipt_sha256": "2188156eb34e954d7bd07efdaa8891be7a59b0ce89a7e6041f68666cf6c82d38"
+          "result": "GREEN: 135/135 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-sweep-restprof-1/results.json",
+          "receipt_sha256": "057fcf4e2e86ab700913e03376dd541bef1f3699aa92ce1857a6c0d27b987259"
         },
         {
-          "revision": "committing change with the new-key branch disabled so the update saves in place",
-          "result": "Mutation control: fails Go on modules-writes-update-new-key-copies (response.status).",
-          "artifact": "quality-reports/go-migration/modules-writes-http-restb3-mutation-1/results.json",
-          "receipt_sha256": "795be56ae19685d574406da3ce84b82ccc4caccaf8e23335ad449e9a92db51c0"
+          "revision": "dropping the boolean validation of the nested association fields",
+          "result": "Mutation control: fails Go on modules-writes-update-nested-number-boolean-errors.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "1dfcfda944058823e511f3bbc9eedc6be45e463c471e53ec371ba71c8bc2ef2d"
         }
       ],
       "notes": [
-        "Implementing: Module writes. API v2 (v2-rest-b3): an update with a module_id no module has inserts the copy Model.save() inserts with the validated values and leaves the named module; a database conflict on the copy answers its text as 500 {'error': ...}. Still refused: update with a nested sport_association dict that has keys. 102 cases. RED: documented refusal, see v2-refusals.md modules-writes row (earlier native RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
+        "Implementing: Module writes. An update with a module_id no module has inserts the copy Model.save() inserts with the validated values and leaves the named module; a database conflict on the copy answers its text as 500 {'error': ...}. Rest-prof: a nested sport_association dict with keys is validated in the nested serializer's field order (text lengths, address_cap pattern, decimal fees, booleans, JSON nulls, primary key uniqueness) and reported nested; a valid dict ends in the nested-write assertion. Still refused: the nested association as 'sport_association.<field>' form keys (500 page). RED: documented refusal, see the v2-refusals.md row; the mutation receipt (Django passes, Go fails) doubles as the RED receipt."
       ]
     },
     {
@@ -17536,7 +17538,8 @@
         "BE_GO/internal/repository/modules_writes.go",
         "BE_GO/internal/service/modules_writes.go",
         "BE_GO/internal/handler/modules_writes.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/dto/modules_nested.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
@@ -17555,9 +17558,9 @@
           "/api/v2/modules/<module_id>/update",
           "/api/modules/<module_id>/update"
         ],
-        "request": "JSON or form partial ModulesSerializer fields; the nested sport_association.",
+        "request": "JSON or form partial ModulesSerializer fields; the nested sport_association (JSON dict) is validated field by field by the nested SportAssociationSerializer before the nested-write assertion; 'sport_association.<field>' form keys are refused (500 page).",
         "response": "200 {'message': 'Camp or retreat updated successfully', 'camp_and_retreat': ModulesSerializer(module)}.",
-        "errors": "400 ['badly formed hexadecimal UUID string'] and {'error': str(ValidationError)}; 401; 403 registry / scoped session / athletes / another association; 404 {'error': 'Camp or retreat not found'}; 500 {'error': ...} for a module without association, an owner without association and the nested-write assertion.",
+        "errors": "400 ['badly formed hexadecimal UUID string'] and {'error': str(ValidationError)} (nested association errors as {'sport_association': {field: [ErrorDetail]}} in its field order, before the module's own fields); 401; 403 registry / scoped session / athletes / another association; 404 {'error': 'Camp or retreat not found'}; 500 {'error': ...} for a module without association, an owner without association and the nested-write assertion.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.modules.update.",
         "resource_scope": "Module.objects.get by id, then compared with request.user.sport_association.",
@@ -17575,25 +17578,25 @@
         "docs/architecture/go-migration/modules-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 102/102; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/modules-writes-http-native-r2/results.json",
-          "receipt_sha256": "22ea292178bd7594a79e3647d9b6496b28aeccf24d05d7d483428f2fa0bc25f1"
+          "result": "RED: Django 135/135; Go 400 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "1dfcfda944058823e511f3bbc9eedc6be45e463c471e53ec371ba71c8bc2ef2d"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-writes-http-sweep-restb3-3/results.json",
-          "receipt_sha256": "2188156eb34e954d7bd07efdaa8891be7a59b0ce89a7e6041f68666cf6c82d38"
+          "result": "GREEN: 135/135 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-sweep-restprof-1/results.json",
+          "receipt_sha256": "057fcf4e2e86ab700913e03376dd541bef1f3699aa92ce1857a6c0d27b987259"
         },
         {
-          "revision": "committing change with the new-key branch disabled so the update saves in place",
-          "result": "Mutation control: fails Go on modules-writes-update-new-key-copies (response.status).",
-          "artifact": "quality-reports/go-migration/modules-writes-http-restb3-mutation-1/results.json",
-          "receipt_sha256": "795be56ae19685d574406da3ce84b82ccc4caccaf8e23335ad449e9a92db51c0"
+          "revision": "dropping the boolean validation of the nested association fields",
+          "result": "Mutation control: fails Go on modules-writes-update-nested-number-boolean-errors.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "1dfcfda944058823e511f3bbc9eedc6be45e463c471e53ec371ba71c8bc2ef2d"
         }
       ],
       "notes": [
-        "Implementing: Module writes. API v2 (v2-rest-b3): an update with a module_id no module has inserts the copy Model.save() inserts with the validated values and leaves the named module; a database conflict on the copy answers its text as 500 {'error': ...}. Still refused: update with a nested sport_association dict that has keys. 102 cases. RED: documented refusal, see v2-refusals.md modules-writes row (earlier native RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
+        "Implementing: Module writes. An update with a module_id no module has inserts the copy Model.save() inserts with the validated values and leaves the named module; a database conflict on the copy answers its text as 500 {'error': ...}. Rest-prof: a nested sport_association dict with keys is validated in the nested serializer's field order (text lengths, address_cap pattern, decimal fees, booleans, JSON nulls, primary key uniqueness) and reported nested; a valid dict ends in the nested-write assertion. Still refused: the nested association as 'sport_association.<field>' form keys (500 page). RED: documented refusal, see the v2-refusals.md row; the mutation receipt (Django passes, Go fails) doubles as the RED receipt."
       ]
     },
     {
@@ -17618,7 +17621,8 @@
         "BE_GO/internal/repository/modules_writes.go",
         "BE_GO/internal/service/modules_writes.go",
         "BE_GO/internal/handler/modules_writes.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/dto/modules_nested.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
@@ -17657,25 +17661,25 @@
         "docs/architecture/go-migration/modules-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 102/102; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/modules-writes-http-native-r2/results.json",
-          "receipt_sha256": "22ea292178bd7594a79e3647d9b6496b28aeccf24d05d7d483428f2fa0bc25f1"
+          "result": "RED: Django 135/135; Go 400 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "1dfcfda944058823e511f3bbc9eedc6be45e463c471e53ec371ba71c8bc2ef2d"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-writes-http-sweep-restb3-3/results.json",
-          "receipt_sha256": "2188156eb34e954d7bd07efdaa8891be7a59b0ce89a7e6041f68666cf6c82d38"
+          "result": "GREEN: 135/135 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-sweep-restprof-1/results.json",
+          "receipt_sha256": "057fcf4e2e86ab700913e03376dd541bef1f3699aa92ce1857a6c0d27b987259"
         },
         {
-          "revision": "committing change with the new-key branch disabled so the update saves in place",
-          "result": "Mutation control: fails Go on modules-writes-update-new-key-copies (response.status).",
-          "artifact": "quality-reports/go-migration/modules-writes-http-restb3-mutation-1/results.json",
-          "receipt_sha256": "795be56ae19685d574406da3ce84b82ccc4caccaf8e23335ad449e9a92db51c0"
+          "revision": "dropping the boolean validation of the nested association fields",
+          "result": "Mutation control: fails Go on modules-writes-update-nested-number-boolean-errors.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "1dfcfda944058823e511f3bbc9eedc6be45e463c471e53ec371ba71c8bc2ef2d"
         }
       ],
       "notes": [
-        "Implementing: Module writes. API v2 (v2-rest-b3): an update with a module_id no module has inserts the copy Model.save() inserts with the validated values and leaves the named module; a database conflict on the copy answers its text as 500 {'error': ...}. Still refused: update with a nested sport_association dict that has keys. 102 cases. RED: documented refusal, see v2-refusals.md modules-writes row (earlier native RED receipt reused). GREEN sweep-restb3-3 from CI run 42906500237."
+        "Implementing: Module writes. An update with a module_id no module has inserts the copy Model.save() inserts with the validated values and leaves the named module; a database conflict on the copy answers its text as 500 {'error': ...}. Rest-prof: a nested sport_association dict with keys is validated in the nested serializer's field order (text lengths, address_cap pattern, decimal fees, booleans, JSON nulls, primary key uniqueness) and reported nested; a valid dict ends in the nested-write assertion. Still refused: the nested association as 'sport_association.<field>' form keys (500 page). RED: documented refusal, see the v2-refusals.md row; the mutation receipt (Django passes, Go fails) doubles as the RED receipt."
       ]
     },
     {
@@ -19519,13 +19523,13 @@
           "/api/v2/onboarding/update",
           "/api/onboarding/update"
         ],
-        "request": "JSON/form body with one of sport_association, membership_data, lead_data, onboarding_data (first present wins).",
+        "request": "JSON, form or multipart body with one of sport_association, membership_data, lead_data, onboarding_data (first present wins); a multipart file part is the QueryDict value (InMemoryUploadedFile).",
         "response": "200 {message: 'Updated successfully'}.",
-        "errors": "403 {error: 'You are not a sport association.'}; 400 {error: str(ValidationError)}; 400 fresh self-host {error, details}; 500 {error: str(exception)}; 500 page for number/null bodies and not-ported inputs; 401/403; 405.",
+        "errors": "403 {error: 'You are not a sport association.'}; 400 {error: str(ValidationError)}; 400 fresh self-host {error, details}; 500 {error: str(exception)} (including the varchar length text of an over-long lead value, which also leaves its audit entry, and float('') of a blank membership_data fee); 500 page for number/null bodies and the inputs still refused (out-of-range season/fiscal, NUL in a lead value, non-ASCII-digit fees, file parts in bodies over 2621440 bytes); 401/403; 405.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated; registry other.settings.update; not an athlete view.",
         "resource_scope": "request.user's association, user row, UsersOnboarding row and the fresh InstanceConfiguration whose primary association it is.",
-        "side_effects": "SportAssociation onboarding fields (audited, self), user balance/season/lead fields (audited, user.sport_association), UsersOnboarding flags (audited, actor.sport_association), InstanceConfiguration onboarding_completed_at.",
+        "side_effects": "SportAssociation onboarding fields (audited, self; a soft-deleted association is saved too, its entries have no index row), user balance/season/lead fields (audited, user.sport_association; containers stored as their Python str()), UsersOnboarding flags (audited, actor.sport_association), InstanceConfiguration onboarding_completed_at.",
         "transaction": "membership_data in one atomic block (rolls back on later exceptions); other branches autocommit.",
         "execution_owner": "django"
       },
@@ -19539,25 +19543,25 @@
         "docs/architecture/go-migration/profile-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 107/107; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-red-r1/results.json",
-          "receipt_sha256": "a139caf3c0c14956382e6a38355988b8b72bfde18fc8808af7758bf6a5b7b284"
+          "result": "RED: Django 138/138; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-restprof-mutation-2/results.json",
+          "receipt_sha256": "41a38f2350a6fc4b6dab2b732c0a9ac2603e3981a19d539c9a3a1ceb0492e1b4"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-green-r2/results.json",
-          "receipt_sha256": "11a272052e88a0c8d4f98cc906c1d246ba50c7b8d6a66d2c24fd5718b296f902"
+          "result": "GREEN: 138/138 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-sweep-restprof-1/results.json",
+          "receipt_sha256": "16954cc5ca796b6caced742f633f574aeed0bc2a730fc4760a7863205cd04d93"
         },
         {
-          "revision": "committing change taking the row id from the body",
-          "result": "Mutation control: fails Go on profile-misc-onboarding-flags-ui-row-uppercase-ids (audit.identity).",
-          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-mutation-r1/results.json",
-          "receipt_sha256": "d1adbf717ab9ffaed161816903d6f5bb8dfcde3ee59c2a3bd1c264f771d2d1c0"
+          "revision": "letting an over-long lead value (one character past the column) through to the UPDATE",
+          "result": "Mutation control: fails Go on profile-misc-lead-too-long-role.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-restprof-mutation-2/results.json",
+          "receipt_sha256": "41a38f2350a6fc4b6dab2b732c0a9ac2603e3981a19d539c9a3a1ceb0492e1b4"
         }
       ],
       "notes": [
-        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values. onboarding_data: users_onboarding_id and user are read-only serializer fields; the update only changes the checklist fields of the caller's own row and Go reads only the flags."
+        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family. Rest-prof: onboarding/update now ports soft-deleted associations (no index row), container and over-length lead values (str() storage; varchar error after the audit entry), blank nullable fees, Python float repr and multipart file parts. Still refused with the 500 page before any committed write: season/fiscal values outside integers 0..32767 (the database error text quotes the row), NUL characters in lead values (the error text quotes the audit row), non-ASCII-digit fee strings, file parts in bodies over 2621440 bytes (another upload class). onboarding_data: users_onboarding_id and user are read-only serializer fields. RED: documented refusal, see the v2-refusals.md row; the mutation receipt (Django passes, Go fails) doubles as the RED receipt."
       ]
     },
     {
@@ -21739,25 +21743,25 @@
         "docs/architecture/go-migration/personas-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 194/194; Go 201 on the first case.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-red-r3/results.json",
-          "receipt_sha256": "26f3c96cce5b2be6f052d1f34028866d217000a47357c25dd43f2373bf4a1b90"
+          "result": "RED: Django 240/240; Go fails audit.count on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "bc86f4f67525a71a1d525e325de708a0d2e786ab7a57173f88dfde89b318443b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and storage effects.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-versioned-r1/results.json",
-          "receipt_sha256": "5fd4739483f9a9b50f3a0d1d4a15a71de0f72d4aac3e065217021dbf7a2c2ff2"
+          "result": "GREEN: 240/240 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-sweep-restprof-1/results.json",
+          "receipt_sha256": "79fe149119d15aa34a52ab16d6349a08607c65d9ac7b59af363e51d1d85cf15c"
         },
         {
-          "revision": "committing change with update's picture folder read from the body's associate_id",
-          "result": "Mutation control: fails Go on personas-writes-update-picture-full-collaborator (response.picture-url) — CAUGHT.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-mutation-r1/results.json",
-          "receipt_sha256": "e852083b0dfd76278a010da583d5f98c48c4eb39b685d68df4745a1509f6da84"
+          "revision": "writing the tutor relation entry only when the stored flag changes instead of comparing str() of the raw value",
+          "result": "Mutation control: fails Go on personas-writes-update-primary-int-text-pair (audit.count).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "bc86f4f67525a71a1d525e325de708a0d2e786ab7a57173f88dfde89b318443b"
         }
       ],
       "notes": [
-        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2: the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma before the field validation; once the fields are valid, default storage save as associates/<associate id>/picture_<timestamp>.jpg, put_object_acl public-read when AWS_S3_USE_OBJECT_ACL is on, and the URL under the storage's public base URL or its endpoint and bucket; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. The picture_path upload of add and update is ported (see the doc). Rest-prof: tutors_data is_primary values the BooleanField accepts (booleans, 0/1 numbers, t/True/1, f/False/0) keep the raw str() in the audit entry and the others fail after the earlier writes like Django; integer and boolean tutor ids read as UUID(int=n). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it. RED: documented refusal, see the v2-refusals.md row; the mutation receipt (Django passes, Go fails) doubles as the RED receipt."
       ]
     },
     {
@@ -21833,25 +21837,25 @@
         "docs/architecture/go-migration/personas-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 194/194; Go 201 on the first case.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-red-r3/results.json",
-          "receipt_sha256": "26f3c96cce5b2be6f052d1f34028866d217000a47357c25dd43f2373bf4a1b90"
+          "result": "RED: Django 240/240; Go fails audit.count on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "bc86f4f67525a71a1d525e325de708a0d2e786ab7a57173f88dfde89b318443b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and storage effects.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-versioned-r1/results.json",
-          "receipt_sha256": "5fd4739483f9a9b50f3a0d1d4a15a71de0f72d4aac3e065217021dbf7a2c2ff2"
+          "result": "GREEN: 240/240 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-sweep-restprof-1/results.json",
+          "receipt_sha256": "79fe149119d15aa34a52ab16d6349a08607c65d9ac7b59af363e51d1d85cf15c"
         },
         {
-          "revision": "committing change with update's picture folder read from the body's associate_id",
-          "result": "Mutation control: fails Go on personas-writes-update-picture-full-collaborator (response.picture-url) — CAUGHT.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-mutation-r1/results.json",
-          "receipt_sha256": "e852083b0dfd76278a010da583d5f98c48c4eb39b685d68df4745a1509f6da84"
+          "revision": "writing the tutor relation entry only when the stored flag changes instead of comparing str() of the raw value",
+          "result": "Mutation control: fails Go on personas-writes-update-primary-int-text-pair (audit.count).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "bc86f4f67525a71a1d525e325de708a0d2e786ab7a57173f88dfde89b318443b"
         }
       ],
       "notes": [
-        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2: the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma before the field validation; once the fields are valid, default storage save as associates/<associate id>/picture_<timestamp>.jpg, put_object_acl public-read when AWS_S3_USE_OBJECT_ACL is on, and the URL under the storage's public base URL or its endpoint and bucket; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. The picture_path upload of add and update is ported (see the doc). Rest-prof: tutors_data is_primary values the BooleanField accepts (booleans, 0/1 numbers, t/True/1, f/False/0) keep the raw str() in the audit entry and the others fail after the earlier writes like Django; integer and boolean tutor ids read as UUID(int=n). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it. RED: documented refusal, see the v2-refusals.md row; the mutation receipt (Django passes, Go fails) doubles as the RED receipt."
       ]
     },
     {
@@ -22003,25 +22007,25 @@
         "docs/architecture/go-migration/personas-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 194/194; Go 201 on the first case.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-red-r3/results.json",
-          "receipt_sha256": "26f3c96cce5b2be6f052d1f34028866d217000a47357c25dd43f2373bf4a1b90"
+          "result": "RED: Django 240/240; Go fails audit.count on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "bc86f4f67525a71a1d525e325de708a0d2e786ab7a57173f88dfde89b318443b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and storage effects.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-versioned-r1/results.json",
-          "receipt_sha256": "5fd4739483f9a9b50f3a0d1d4a15a71de0f72d4aac3e065217021dbf7a2c2ff2"
+          "result": "GREEN: 240/240 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-sweep-restprof-1/results.json",
+          "receipt_sha256": "79fe149119d15aa34a52ab16d6349a08607c65d9ac7b59af363e51d1d85cf15c"
         },
         {
-          "revision": "committing change with update's picture folder read from the body's associate_id",
-          "result": "Mutation control: fails Go on personas-writes-update-picture-full-collaborator (response.picture-url) — CAUGHT.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-mutation-r1/results.json",
-          "receipt_sha256": "e852083b0dfd76278a010da583d5f98c48c4eb39b685d68df4745a1509f6da84"
+          "revision": "writing the tutor relation entry only when the stored flag changes instead of comparing str() of the raw value",
+          "result": "Mutation control: fails Go on personas-writes-update-primary-int-text-pair (audit.count).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "bc86f4f67525a71a1d525e325de708a0d2e786ab7a57173f88dfde89b318443b"
         }
       ],
       "notes": [
-        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2: the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma before the field validation; once the fields are valid, default storage save as associates/<associate id>/picture_<timestamp>.jpg, put_object_acl public-read when AWS_S3_USE_OBJECT_ACL is on, and the URL under the storage's public base URL or its endpoint and bucket; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. The picture_path upload of add and update is ported (see the doc). Rest-prof: tutors_data is_primary values the BooleanField accepts (booleans, 0/1 numbers, t/True/1, f/False/0) keep the raw str() in the audit entry and the others fail after the earlier writes like Django; integer and boolean tutor ids read as UUID(int=n). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it. RED: documented refusal, see the v2-refusals.md row; the mutation receipt (Django passes, Go fails) doubles as the RED receipt."
       ]
     },
     {
@@ -22080,7 +22084,7 @@
         ],
         "request": "Path pk; JSON or form body with partial AssociateSerializer fields and optional tutors_data (a missing one deletes every relation); X-Group-Id and get_queryset query parameters.",
         "response": "200 AssociateSerializer of the row re-read through get_object(); DELETE 204 (soft delete).",
-        "errors": "404 Not found. / No Associate matches the given query. (before the body; and after the writes when the row left the filters); 400 JSON parse error; 400 serializer.errors; 400 {'picture_path': 'Error processing image: ...'} for an undecodable picture or a refused object ACL; 403 User is not a sport association; 403 generic tenant_scope denial; 500 page for non-dict bodies, a duplicate live tax code (its audit entry stays), malformed tutors_data and a second primary relation after the save.",
+        "errors": "404 Not found. / No Associate matches the given query. (before the body; and after the writes when the row left the filters); 400 JSON parse error; 400 serializer.errors; 400 {'picture_path': 'Error processing image: ...'} for an undecodable picture or a refused object ACL; 403 User is not a sport association; 403 generic tenant_scope denial; 500 page for non-dict bodies, a duplicate live tax code (its audit entry stays), malformed tutors_data, a tutor is_primary the BooleanField refuses, an unreadable numeric tutor id and a second primary relation after the save.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.personas.update.",
         "resource_scope": "get_queryset: the association's live, group-aware associates with the query filters.",
@@ -22098,25 +22102,25 @@
         "docs/architecture/go-migration/personas-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 194/194; Go 201 on the first case.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-red-r3/results.json",
-          "receipt_sha256": "26f3c96cce5b2be6f052d1f34028866d217000a47357c25dd43f2373bf4a1b90"
+          "result": "RED: Django 240/240; Go fails audit.count on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "bc86f4f67525a71a1d525e325de708a0d2e786ab7a57173f88dfde89b318443b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and storage effects.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-versioned-r1/results.json",
-          "receipt_sha256": "5fd4739483f9a9b50f3a0d1d4a15a71de0f72d4aac3e065217021dbf7a2c2ff2"
+          "result": "GREEN: 240/240 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-sweep-restprof-1/results.json",
+          "receipt_sha256": "79fe149119d15aa34a52ab16d6349a08607c65d9ac7b59af363e51d1d85cf15c"
         },
         {
-          "revision": "committing change with update's picture folder read from the body's associate_id",
-          "result": "Mutation control: fails Go on personas-writes-update-picture-full-collaborator (response.picture-url) — CAUGHT.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-mutation-r1/results.json",
-          "receipt_sha256": "e852083b0dfd76278a010da583d5f98c48c4eb39b685d68df4745a1509f6da84"
+          "revision": "writing the tutor relation entry only when the stored flag changes instead of comparing str() of the raw value",
+          "result": "Mutation control: fails Go on personas-writes-update-primary-int-text-pair (audit.count).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "bc86f4f67525a71a1d525e325de708a0d2e786ab7a57173f88dfde89b318443b"
         }
       ],
       "notes": [
-        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2: the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma before the field validation; once the fields are valid, default storage save as associates/<associate id>/picture_<timestamp>.jpg, put_object_acl public-read when AWS_S3_USE_OBJECT_ACL is on, and the URL under the storage's public base URL or its endpoint and bucket; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. The picture_path upload of add and update is ported (see the doc). Rest-prof: tutors_data is_primary values the BooleanField accepts (booleans, 0/1 numbers, t/True/1, f/False/0) keep the raw str() in the audit entry and the others fail after the earlier writes like Django; integer and boolean tutor ids read as UUID(int=n). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it. RED: documented refusal, see the v2-refusals.md row; the mutation receipt (Django passes, Go fails) doubles as the RED receipt."
       ]
     },
     {
@@ -22175,7 +22179,7 @@
         ],
         "request": "JSON object body: AssociateSerializer fields (born_date DD/MM/YYYY, user/sport_association/group/family primary keys; picture_path as a URL or a base64 data URL to upload; associate_id is read-only and not used) and optional tutors_data list of {tutor: BasicAssociateSerializer fields, is_primary}; X-Group-Id optional.",
         "response": "201 AssociateSerializer of the created associate; OPTIONS with actions.POST metadata.",
-        "errors": "400 JSON parse error (after the association check); 400 serializer.errors (also a tutor's errors after the associate was saved); 400 {'picture_path': 'Error processing image: ...'} for an undecodable picture or a refused object ACL; 403 User is not a sport association; 403 generic tenant_scope denial; 500 page for form or non-dict bodies, a duplicate live tax code, malformed tutors_data after the save, a second primary relation; DELETE: 500 (no pk), athletes 403.",
+        "errors": "400 JSON parse error (after the association check); 400 serializer.errors (also a tutor's errors after the associate was saved); 400 {'picture_path': 'Error processing image: ...'} for an undecodable picture or a refused object ACL; 403 User is not a sport association; 403 generic tenant_scope denial; 500 page for form or non-dict bodies, a duplicate live tax code, malformed tutors_data, a tutor is_primary the BooleanField refuses, an unreadable numeric tutor id after the save, a second primary relation; DELETE: 500 (no pk), athletes 403.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.personas.create.",
         "resource_scope": "request.user.sport_association; related fields through tenant_scope; existing tutors by id through Associate.objects (live, group-aware).",
@@ -22193,25 +22197,25 @@
         "docs/architecture/go-migration/personas-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 194/194; Go 201 on the first case.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-red-r3/results.json",
-          "receipt_sha256": "26f3c96cce5b2be6f052d1f34028866d217000a47357c25dd43f2373bf4a1b90"
+          "result": "RED: Django 240/240; Go fails audit.count on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "bc86f4f67525a71a1d525e325de708a0d2e786ab7a57173f88dfde89b318443b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and storage effects.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-versioned-r1/results.json",
-          "receipt_sha256": "5fd4739483f9a9b50f3a0d1d4a15a71de0f72d4aac3e065217021dbf7a2c2ff2"
+          "result": "GREEN: 240/240 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-sweep-restprof-1/results.json",
+          "receipt_sha256": "79fe149119d15aa34a52ab16d6349a08607c65d9ac7b59af363e51d1d85cf15c"
         },
         {
-          "revision": "committing change with update's picture folder read from the body's associate_id",
-          "result": "Mutation control: fails Go on personas-writes-update-picture-full-collaborator (response.picture-url) — CAUGHT.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-mutation-r1/results.json",
-          "receipt_sha256": "e852083b0dfd76278a010da583d5f98c48c4eb39b685d68df4745a1509f6da84"
+          "revision": "writing the tutor relation entry only when the stored flag changes instead of comparing str() of the raw value",
+          "result": "Mutation control: fails Go on personas-writes-update-primary-int-text-pair (audit.count).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "bc86f4f67525a71a1d525e325de708a0d2e786ab7a57173f88dfde89b318443b"
         }
       ],
       "notes": [
-        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2: the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma before the field validation; once the fields are valid, default storage save as associates/<associate id>/picture_<timestamp>.jpg, put_object_acl public-read when AWS_S3_USE_OBJECT_ACL is on, and the URL under the storage's public base URL or its endpoint and bucket; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. The picture_path upload of add and update is ported (see the doc). Rest-prof: tutors_data is_primary values the BooleanField accepts (booleans, 0/1 numbers, t/True/1, f/False/0) keep the raw str() in the audit entry and the others fail after the earlier writes like Django; integer and boolean tutor ids read as UUID(int=n). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it. RED: documented refusal, see the v2-refusals.md row; the mutation receipt (Django passes, Go fails) doubles as the RED receipt."
       ]
     },
     {
@@ -22512,25 +22516,25 @@
         "docs/architecture/go-migration/personas-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 194/194; Go 201 on the first case.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-red-r3/results.json",
-          "receipt_sha256": "26f3c96cce5b2be6f052d1f34028866d217000a47357c25dd43f2373bf4a1b90"
+          "result": "RED: Django 240/240; Go fails audit.count on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "bc86f4f67525a71a1d525e325de708a0d2e786ab7a57173f88dfde89b318443b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and storage effects.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-versioned-r1/results.json",
-          "receipt_sha256": "5fd4739483f9a9b50f3a0d1d4a15a71de0f72d4aac3e065217021dbf7a2c2ff2"
+          "result": "GREEN: 240/240 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-sweep-restprof-1/results.json",
+          "receipt_sha256": "79fe149119d15aa34a52ab16d6349a08607c65d9ac7b59af363e51d1d85cf15c"
         },
         {
-          "revision": "committing change with update's picture folder read from the body's associate_id",
-          "result": "Mutation control: fails Go on personas-writes-update-picture-full-collaborator (response.picture-url) — CAUGHT.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-mutation-r1/results.json",
-          "receipt_sha256": "e852083b0dfd76278a010da583d5f98c48c4eb39b685d68df4745a1509f6da84"
+          "revision": "writing the tutor relation entry only when the stored flag changes instead of comparing str() of the raw value",
+          "result": "Mutation control: fails Go on personas-writes-update-primary-int-text-pair (audit.count).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-restprof-mutation-1/results.json",
+          "receipt_sha256": "bc86f4f67525a71a1d525e325de708a0d2e786ab7a57173f88dfde89b318443b"
         }
       ],
       "notes": [
-        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2: the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma before the field validation; once the fields are valid, default storage save as associates/<associate id>/picture_<timestamp>.jpg, put_object_acl public-read when AWS_S3_USE_OBJECT_ACL is on, and the URL under the storage's public base URL or its endpoint and bucket; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. The picture_path upload of add and update is ported (see the doc). Rest-prof: tutors_data is_primary values the BooleanField accepts (booleans, 0/1 numbers, t/True/1, f/False/0) keep the raw str() in the audit entry and the others fail after the earlier writes like Django; integer and boolean tutor ids read as UUID(int=n). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it. RED: documented refusal, see the v2-refusals.md row; the mutation receipt (Django passes, Go fails) doubles as the RED receipt."
       ]
     },
     {
@@ -22759,25 +22763,25 @@
         "docs/architecture/go-migration/profile-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 107/107; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-red-r1/results.json",
-          "receipt_sha256": "a139caf3c0c14956382e6a38355988b8b72bfde18fc8808af7758bf6a5b7b284"
+          "result": "RED: Django 138/138; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-restprof-mutation-2/results.json",
+          "receipt_sha256": "41a38f2350a6fc4b6dab2b732c0a9ac2603e3981a19d539c9a3a1ceb0492e1b4"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-green-r2/results.json",
-          "receipt_sha256": "11a272052e88a0c8d4f98cc906c1d246ba50c7b8d6a66d2c24fd5718b296f902"
+          "result": "GREEN: 138/138 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-sweep-restprof-1/results.json",
+          "receipt_sha256": "16954cc5ca796b6caced742f633f574aeed0bc2a730fc4760a7863205cd04d93"
         },
         {
-          "revision": "committing change taking the row id from the body",
-          "result": "Mutation control: fails Go on profile-misc-onboarding-flags-ui-row-uppercase-ids (audit.identity).",
-          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-mutation-r1/results.json",
-          "receipt_sha256": "d1adbf717ab9ffaed161816903d6f5bb8dfcde3ee59c2a3bd1c264f771d2d1c0"
+          "revision": "letting an over-long lead value (one character past the column) through to the UPDATE",
+          "result": "Mutation control: fails Go on profile-misc-lead-too-long-role.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-restprof-mutation-2/results.json",
+          "receipt_sha256": "41a38f2350a6fc4b6dab2b732c0a9ac2603e3981a19d539c9a3a1ceb0492e1b4"
         }
       ],
       "notes": [
-        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values. onboarding_data: users_onboarding_id and user are read-only serializer fields; the update only changes the checklist fields of the caller's own row and Go reads only the flags."
+        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family. Rest-prof: onboarding/update now ports soft-deleted associations (no index row), container and over-length lead values (str() storage; varchar error after the audit entry), blank nullable fees, Python float repr and multipart file parts. Still refused with the 500 page before any committed write: season/fiscal values outside integers 0..32767 (the database error text quotes the row), NUL characters in lead values (the error text quotes the audit row), non-ASCII-digit fee strings, file parts in bodies over 2621440 bytes (another upload class). onboarding_data: users_onboarding_id and user are read-only serializer fields. RED: documented refusal, see the v2-refusals.md row; the mutation receipt (Django passes, Go fails) doubles as the RED receipt."
       ]
     },
     {
@@ -22842,25 +22846,25 @@
         "docs/architecture/go-migration/profile-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 107/107; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-red-r1/results.json",
-          "receipt_sha256": "a139caf3c0c14956382e6a38355988b8b72bfde18fc8808af7758bf6a5b7b284"
+          "result": "RED: Django 138/138; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-restprof-mutation-2/results.json",
+          "receipt_sha256": "41a38f2350a6fc4b6dab2b732c0a9ac2603e3981a19d539c9a3a1ceb0492e1b4"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-green-r2/results.json",
-          "receipt_sha256": "11a272052e88a0c8d4f98cc906c1d246ba50c7b8d6a66d2c24fd5718b296f902"
+          "result": "GREEN: 138/138 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-sweep-restprof-1/results.json",
+          "receipt_sha256": "16954cc5ca796b6caced742f633f574aeed0bc2a730fc4760a7863205cd04d93"
         },
         {
-          "revision": "committing change taking the row id from the body",
-          "result": "Mutation control: fails Go on profile-misc-onboarding-flags-ui-row-uppercase-ids (audit.identity).",
-          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-mutation-r1/results.json",
-          "receipt_sha256": "d1adbf717ab9ffaed161816903d6f5bb8dfcde3ee59c2a3bd1c264f771d2d1c0"
+          "revision": "letting an over-long lead value (one character past the column) through to the UPDATE",
+          "result": "Mutation control: fails Go on profile-misc-lead-too-long-role.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-restprof-mutation-2/results.json",
+          "receipt_sha256": "41a38f2350a6fc4b6dab2b732c0a9ac2603e3981a19d539c9a3a1ceb0492e1b4"
         }
       ],
       "notes": [
-        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values. onboarding_data: users_onboarding_id and user are read-only serializer fields; the update only changes the checklist fields of the caller's own row and Go reads only the flags."
+        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family. Rest-prof: onboarding/update now ports soft-deleted associations (no index row), container and over-length lead values (str() storage; varchar error after the audit entry), blank nullable fees, Python float repr and multipart file parts. Still refused with the 500 page before any committed write: season/fiscal values outside integers 0..32767 (the database error text quotes the row), NUL characters in lead values (the error text quotes the audit row), non-ASCII-digit fee strings, file parts in bodies over 2621440 bytes (another upload class). onboarding_data: users_onboarding_id and user are read-only serializer fields. RED: documented refusal, see the v2-refusals.md row; the mutation receipt (Django passes, Go fails) doubles as the RED receipt."
       ]
     },
     {
@@ -22925,25 +22929,25 @@
         "docs/architecture/go-migration/profile-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 107/107; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-red-r1/results.json",
-          "receipt_sha256": "a139caf3c0c14956382e6a38355988b8b72bfde18fc8808af7758bf6a5b7b284"
+          "result": "RED: Django 138/138; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-restprof-mutation-2/results.json",
+          "receipt_sha256": "41a38f2350a6fc4b6dab2b732c0a9ac2603e3981a19d539c9a3a1ceb0492e1b4"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-green-r2/results.json",
-          "receipt_sha256": "11a272052e88a0c8d4f98cc906c1d246ba50c7b8d6a66d2c24fd5718b296f902"
+          "result": "GREEN: 138/138 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-sweep-restprof-1/results.json",
+          "receipt_sha256": "16954cc5ca796b6caced742f633f574aeed0bc2a730fc4760a7863205cd04d93"
         },
         {
-          "revision": "committing change taking the row id from the body",
-          "result": "Mutation control: fails Go on profile-misc-onboarding-flags-ui-row-uppercase-ids (audit.identity).",
-          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-mutation-r1/results.json",
-          "receipt_sha256": "d1adbf717ab9ffaed161816903d6f5bb8dfcde3ee59c2a3bd1c264f771d2d1c0"
+          "revision": "letting an over-long lead value (one character past the column) through to the UPDATE",
+          "result": "Mutation control: fails Go on profile-misc-lead-too-long-role.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-restprof-mutation-2/results.json",
+          "receipt_sha256": "41a38f2350a6fc4b6dab2b732c0a9ac2603e3981a19d539c9a3a1ceb0492e1b4"
         }
       ],
       "notes": [
-        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values. onboarding_data: users_onboarding_id and user are read-only serializer fields; the update only changes the checklist fields of the caller's own row and Go reads only the flags."
+        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family. Rest-prof: onboarding/update now ports soft-deleted associations (no index row), container and over-length lead values (str() storage; varchar error after the audit entry), blank nullable fees, Python float repr and multipart file parts. Still refused with the 500 page before any committed write: season/fiscal values outside integers 0..32767 (the database error text quotes the row), NUL characters in lead values (the error text quotes the audit row), non-ASCII-digit fee strings, file parts in bodies over 2621440 bytes (another upload class). onboarding_data: users_onboarding_id and user are read-only serializer fields. RED: documented refusal, see the v2-refusals.md row; the mutation receipt (Django passes, Go fails) doubles as the RED receipt."
       ]
     },
     {
