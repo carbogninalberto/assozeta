@@ -2342,111 +2342,10 @@
    "response": {
     "data": {
      "module_id": "a1000000-0000-4000-8000-000000643001",
-     "enabled": true,
-     "sport_association": {
-      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-      "denomination": "Message reads own",
-      "tax_code": "70000000001",
-      "address": null,
-      "address_cap": null,
-      "address_city": null,
-      "regulation": null,
-      "demand": null,
-      "logo": null,
-      "subscription_fee": "0.00",
-      "multiple_subscription_fee": false,
-      "subscription_fee_plans": [],
-      "membership_fee": null,
-      "multiple_membership_fee": false,
-      "membership_fee_plans": [],
-      "custom_subscription_form_data": null,
-      "document_header": null,
-      "invoice_footer": null,
-      "enable_quotes_management": true,
-      "configuration": {
-       "mandatory_phone": false,
-       "mandatory_email": false,
-       "mandatory_signature": false
-      },
-      "reviewed": true,
-      "affiliate_code": null,
-      "additional_sections": [
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
-        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
-        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
-        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
-       }
-      ],
-      "president_signature": null,
-      "stamp": null,
-      "president_first_name": null,
-      "president_last_name": null,
-      "federation": null,
-      "enroll_number": null,
-      "sport": null,
-      "enabled_for": [
-       "associate",
-       "associate-membership",
-       "membership"
-      ],
-      "checkout_info": null,
-      "additional_fields": null,
-      "stripe_available_methods": [
-       "card",
-       "sepa_debit"
-      ],
-      "iban": null,
-      "website": null,
-      "abbreviated": null,
-      "vat_number": null,
-      "whatsapp": null,
-      "invoice_template": "invoice.html",
-      "subscription_template": "subscription.html",
-      "extra_text_invoices": null,
-      "imported_from_associami": false,
-      "groups": [
-       {
-        "label": "Scope own group",
-        "value": "a1000000-0000-4000-8000-000000714001"
-       }
-      ],
-      "show_regulation_to_members": true,
-      "show_regulation_to_both": true,
-      "show_regulation_to_athletes": true,
-      "show_demand_to_members": true,
-      "show_demand_to_both": true,
-      "show_demand_to_athletes": true
-     },
-     "custom_link": "risposte-aperto",
-     "creation_date": "2026-08-01T10:00:00.250000Z",
      "title": "Aperto è",
-     "require_approval": false,
-     "start_date": null,
-     "end_date": null,
-     "always_active": true,
-     "max_responses": null,
-     "queue_mode": false,
-     "only_users": false,
-     "payment_required": false,
-     "payment_data": {},
      "response_message": "Grazie",
      "allow_attachments": true,
+     "only_users": false,
      "elements": [
       {
        "type": "heading",
@@ -2461,7 +2360,10 @@
         "name": "nome"
        }
       }
-     ]
+     ],
+     "sport_association": {
+      "denomination": "Message reads own"
+     }
     },
     "response_data": null
    },
@@ -2646,111 +2548,10 @@
    "response": {
     "data": {
      "module_id": "a1000000-0000-4000-8000-000000643001",
-     "enabled": true,
-     "sport_association": {
-      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-      "denomination": "Message reads own",
-      "tax_code": "70000000001",
-      "address": null,
-      "address_cap": null,
-      "address_city": null,
-      "regulation": null,
-      "demand": null,
-      "logo": null,
-      "subscription_fee": "0.00",
-      "multiple_subscription_fee": false,
-      "subscription_fee_plans": [],
-      "membership_fee": null,
-      "multiple_membership_fee": false,
-      "membership_fee_plans": [],
-      "custom_subscription_form_data": null,
-      "document_header": null,
-      "invoice_footer": null,
-      "enable_quotes_management": true,
-      "configuration": {
-       "mandatory_phone": false,
-       "mandatory_email": false,
-       "mandatory_signature": false
-      },
-      "reviewed": true,
-      "affiliate_code": null,
-      "additional_sections": [
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
-        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
-        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
-        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
-       }
-      ],
-      "president_signature": null,
-      "stamp": null,
-      "president_first_name": null,
-      "president_last_name": null,
-      "federation": null,
-      "enroll_number": null,
-      "sport": null,
-      "enabled_for": [
-       "associate",
-       "associate-membership",
-       "membership"
-      ],
-      "checkout_info": null,
-      "additional_fields": null,
-      "stripe_available_methods": [
-       "card",
-       "sepa_debit"
-      ],
-      "iban": null,
-      "website": null,
-      "abbreviated": null,
-      "vat_number": null,
-      "whatsapp": null,
-      "invoice_template": "invoice.html",
-      "subscription_template": "subscription.html",
-      "extra_text_invoices": null,
-      "imported_from_associami": false,
-      "groups": [
-       {
-        "label": "Scope own group",
-        "value": "a1000000-0000-4000-8000-000000714001"
-       }
-      ],
-      "show_regulation_to_members": true,
-      "show_regulation_to_both": true,
-      "show_regulation_to_athletes": true,
-      "show_demand_to_members": true,
-      "show_demand_to_both": true,
-      "show_demand_to_athletes": true
-     },
-     "custom_link": "risposte-aperto",
-     "creation_date": "2026-08-01T10:00:00.250000Z",
      "title": "Aperto è",
-     "require_approval": false,
-     "start_date": null,
-     "end_date": null,
-     "always_active": true,
-     "max_responses": null,
-     "queue_mode": false,
-     "only_users": false,
-     "payment_required": false,
-     "payment_data": {},
      "response_message": "Grazie",
      "allow_attachments": true,
+     "only_users": false,
      "elements": [
       {
        "type": "heading",
@@ -2765,7 +2566,10 @@
         "name": "nome"
        }
       }
-     ]
+     ],
+     "sport_association": {
+      "denomination": "Message reads own"
+     }
     },
     "response_data": null
    },
@@ -2781,111 +2585,10 @@
    "response": {
     "data": {
      "module_id": "a1000000-0000-4000-8000-000000643001",
-     "enabled": true,
-     "sport_association": {
-      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-      "denomination": "Message reads own",
-      "tax_code": "70000000001",
-      "address": null,
-      "address_cap": null,
-      "address_city": null,
-      "regulation": null,
-      "demand": null,
-      "logo": null,
-      "subscription_fee": "0.00",
-      "multiple_subscription_fee": false,
-      "subscription_fee_plans": [],
-      "membership_fee": null,
-      "multiple_membership_fee": false,
-      "membership_fee_plans": [],
-      "custom_subscription_form_data": null,
-      "document_header": null,
-      "invoice_footer": null,
-      "enable_quotes_management": true,
-      "configuration": {
-       "mandatory_phone": false,
-       "mandatory_email": false,
-       "mandatory_signature": false
-      },
-      "reviewed": true,
-      "affiliate_code": null,
-      "additional_sections": [
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
-        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
-        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
-        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
-       }
-      ],
-      "president_signature": null,
-      "stamp": null,
-      "president_first_name": null,
-      "president_last_name": null,
-      "federation": null,
-      "enroll_number": null,
-      "sport": null,
-      "enabled_for": [
-       "associate",
-       "associate-membership",
-       "membership"
-      ],
-      "checkout_info": null,
-      "additional_fields": null,
-      "stripe_available_methods": [
-       "card",
-       "sepa_debit"
-      ],
-      "iban": null,
-      "website": null,
-      "abbreviated": null,
-      "vat_number": null,
-      "whatsapp": null,
-      "invoice_template": "invoice.html",
-      "subscription_template": "subscription.html",
-      "extra_text_invoices": null,
-      "imported_from_associami": false,
-      "groups": [
-       {
-        "label": "Scope own group",
-        "value": "a1000000-0000-4000-8000-000000714001"
-       }
-      ],
-      "show_regulation_to_members": true,
-      "show_regulation_to_both": true,
-      "show_regulation_to_athletes": true,
-      "show_demand_to_members": true,
-      "show_demand_to_both": true,
-      "show_demand_to_athletes": true
-     },
-     "custom_link": "risposte-aperto",
-     "creation_date": "2026-08-01T10:00:00.250000Z",
      "title": "Aperto è",
-     "require_approval": false,
-     "start_date": null,
-     "end_date": null,
-     "always_active": true,
-     "max_responses": null,
-     "queue_mode": false,
-     "only_users": false,
-     "payment_required": false,
-     "payment_data": {},
      "response_message": "Grazie",
      "allow_attachments": true,
+     "only_users": false,
      "elements": [
       {
        "type": "heading",
@@ -2900,7 +2603,10 @@
         "name": "nome"
        }
       }
-     ]
+     ],
+     "sport_association": {
+      "denomination": "Message reads own"
+     }
     },
     "response_data": null
    },
@@ -2916,111 +2622,10 @@
    "response": {
     "data": {
      "module_id": "a1000000-0000-4000-8000-000000643001",
-     "enabled": true,
-     "sport_association": {
-      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-      "denomination": "Message reads own",
-      "tax_code": "70000000001",
-      "address": null,
-      "address_cap": null,
-      "address_city": null,
-      "regulation": null,
-      "demand": null,
-      "logo": null,
-      "subscription_fee": "0.00",
-      "multiple_subscription_fee": false,
-      "subscription_fee_plans": [],
-      "membership_fee": null,
-      "multiple_membership_fee": false,
-      "membership_fee_plans": [],
-      "custom_subscription_form_data": null,
-      "document_header": null,
-      "invoice_footer": null,
-      "enable_quotes_management": true,
-      "configuration": {
-       "mandatory_phone": false,
-       "mandatory_email": false,
-       "mandatory_signature": false
-      },
-      "reviewed": true,
-      "affiliate_code": null,
-      "additional_sections": [
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
-        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
-        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
-        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
-       }
-      ],
-      "president_signature": null,
-      "stamp": null,
-      "president_first_name": null,
-      "president_last_name": null,
-      "federation": null,
-      "enroll_number": null,
-      "sport": null,
-      "enabled_for": [
-       "associate",
-       "associate-membership",
-       "membership"
-      ],
-      "checkout_info": null,
-      "additional_fields": null,
-      "stripe_available_methods": [
-       "card",
-       "sepa_debit"
-      ],
-      "iban": null,
-      "website": null,
-      "abbreviated": null,
-      "vat_number": null,
-      "whatsapp": null,
-      "invoice_template": "invoice.html",
-      "subscription_template": "subscription.html",
-      "extra_text_invoices": null,
-      "imported_from_associami": false,
-      "groups": [
-       {
-        "label": "Scope own group",
-        "value": "a1000000-0000-4000-8000-000000714001"
-       }
-      ],
-      "show_regulation_to_members": true,
-      "show_regulation_to_both": true,
-      "show_regulation_to_athletes": true,
-      "show_demand_to_members": true,
-      "show_demand_to_both": true,
-      "show_demand_to_athletes": true
-     },
-     "custom_link": "risposte-aperto",
-     "creation_date": "2026-08-01T10:00:00.250000Z",
      "title": "Aperto è",
-     "require_approval": false,
-     "start_date": null,
-     "end_date": null,
-     "always_active": true,
-     "max_responses": null,
-     "queue_mode": false,
-     "only_users": false,
-     "payment_required": false,
-     "payment_data": {},
      "response_message": "Grazie",
      "allow_attachments": true,
+     "only_users": false,
      "elements": [
       {
        "type": "heading",
@@ -3035,7 +2640,10 @@
         "name": "nome"
        }
       }
-     ]
+     ],
+     "sport_association": {
+      "denomination": "Message reads own"
+     }
     },
     "response_data": null
    },
@@ -3051,111 +2659,10 @@
    "response": {
     "data": {
      "module_id": "a1000000-0000-4000-8000-000000643001",
-     "enabled": true,
-     "sport_association": {
-      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-      "denomination": "Message reads own",
-      "tax_code": "70000000001",
-      "address": null,
-      "address_cap": null,
-      "address_city": null,
-      "regulation": null,
-      "demand": null,
-      "logo": null,
-      "subscription_fee": "0.00",
-      "multiple_subscription_fee": false,
-      "subscription_fee_plans": [],
-      "membership_fee": null,
-      "multiple_membership_fee": false,
-      "membership_fee_plans": [],
-      "custom_subscription_form_data": null,
-      "document_header": null,
-      "invoice_footer": null,
-      "enable_quotes_management": true,
-      "configuration": {
-       "mandatory_phone": false,
-       "mandatory_email": false,
-       "mandatory_signature": false
-      },
-      "reviewed": true,
-      "affiliate_code": null,
-      "additional_sections": [
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
-        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
-        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
-        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
-       }
-      ],
-      "president_signature": null,
-      "stamp": null,
-      "president_first_name": null,
-      "president_last_name": null,
-      "federation": null,
-      "enroll_number": null,
-      "sport": null,
-      "enabled_for": [
-       "associate",
-       "associate-membership",
-       "membership"
-      ],
-      "checkout_info": null,
-      "additional_fields": null,
-      "stripe_available_methods": [
-       "card",
-       "sepa_debit"
-      ],
-      "iban": null,
-      "website": null,
-      "abbreviated": null,
-      "vat_number": null,
-      "whatsapp": null,
-      "invoice_template": "invoice.html",
-      "subscription_template": "subscription.html",
-      "extra_text_invoices": null,
-      "imported_from_associami": false,
-      "groups": [
-       {
-        "label": "Scope own group",
-        "value": "a1000000-0000-4000-8000-000000714001"
-       }
-      ],
-      "show_regulation_to_members": true,
-      "show_regulation_to_both": true,
-      "show_regulation_to_athletes": true,
-      "show_demand_to_members": true,
-      "show_demand_to_both": true,
-      "show_demand_to_athletes": true
-     },
-     "custom_link": "risposte-aperto",
-     "creation_date": "2026-08-01T10:00:00.250000Z",
      "title": "Aperto è",
-     "require_approval": false,
-     "start_date": null,
-     "end_date": null,
-     "always_active": true,
-     "max_responses": null,
-     "queue_mode": false,
-     "only_users": false,
-     "payment_required": false,
-     "payment_data": {},
      "response_message": "Grazie",
      "allow_attachments": true,
+     "only_users": false,
      "elements": [
       {
        "type": "heading",
@@ -3170,29 +2677,16 @@
         "name": "nome"
        }
       }
-     ]
+     ],
+     "sport_association": {
+      "denomination": "Message reads own"
+     }
     },
     "response_data": {
-     "module_response_id": "a1000000-0000-4000-8000-000000643022",
-     "module": "a1000000-0000-4000-8000-000000643001",
-     "creation_date": "2026-09-02T10:00:00.500000Z",
-     "progressive_response_number": 0,
-     "queue_position": null,
-     "response": {
-      "nome": "Anna è",
-      "eta": 12
-     },
-     "approved": true,
-     "user": "a1000000-0000-4000-8000-000000700004",
-     "payment": null,
-     "attachments": [
-      "a1000000-0000-4000-8000-000000643012"
-     ],
      "attachments_docs": [
       {
        "document_id": "a1000000-0000-4000-8000-000000643012",
-       "filename": "certificato è.pdf",
-       "token": "a1000000-0000-4000-8000-000000643013"
+       "filename": "certificato è.pdf"
       }
      ]
     }
@@ -3209,111 +2703,10 @@
    "response": {
     "data": {
      "module_id": "a1000000-0000-4000-8000-000000643001",
-     "enabled": true,
-     "sport_association": {
-      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-      "denomination": "Message reads own",
-      "tax_code": "70000000001",
-      "address": null,
-      "address_cap": null,
-      "address_city": null,
-      "regulation": null,
-      "demand": null,
-      "logo": null,
-      "subscription_fee": "0.00",
-      "multiple_subscription_fee": false,
-      "subscription_fee_plans": [],
-      "membership_fee": null,
-      "multiple_membership_fee": false,
-      "membership_fee_plans": [],
-      "custom_subscription_form_data": null,
-      "document_header": null,
-      "invoice_footer": null,
-      "enable_quotes_management": true,
-      "configuration": {
-       "mandatory_phone": false,
-       "mandatory_email": false,
-       "mandatory_signature": false
-      },
-      "reviewed": true,
-      "affiliate_code": null,
-      "additional_sections": [
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
-        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
-        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
-        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
-       }
-      ],
-      "president_signature": null,
-      "stamp": null,
-      "president_first_name": null,
-      "president_last_name": null,
-      "federation": null,
-      "enroll_number": null,
-      "sport": null,
-      "enabled_for": [
-       "associate",
-       "associate-membership",
-       "membership"
-      ],
-      "checkout_info": null,
-      "additional_fields": null,
-      "stripe_available_methods": [
-       "card",
-       "sepa_debit"
-      ],
-      "iban": null,
-      "website": null,
-      "abbreviated": null,
-      "vat_number": null,
-      "whatsapp": null,
-      "invoice_template": "invoice.html",
-      "subscription_template": "subscription.html",
-      "extra_text_invoices": null,
-      "imported_from_associami": false,
-      "groups": [
-       {
-        "label": "Scope own group",
-        "value": "a1000000-0000-4000-8000-000000714001"
-       }
-      ],
-      "show_regulation_to_members": true,
-      "show_regulation_to_both": true,
-      "show_regulation_to_athletes": true,
-      "show_demand_to_members": true,
-      "show_demand_to_both": true,
-      "show_demand_to_athletes": true
-     },
-     "custom_link": "risposte-aperto",
-     "creation_date": "2026-08-01T10:00:00.250000Z",
      "title": "Aperto è",
-     "require_approval": false,
-     "start_date": null,
-     "end_date": null,
-     "always_active": true,
-     "max_responses": null,
-     "queue_mode": false,
-     "only_users": false,
-     "payment_required": false,
-     "payment_data": {},
      "response_message": "Grazie",
      "allow_attachments": true,
+     "only_users": false,
      "elements": [
       {
        "type": "heading",
@@ -3328,21 +2721,12 @@
         "name": "nome"
        }
       }
-     ]
+     ],
+     "sport_association": {
+      "denomination": "Message reads own"
+     }
     },
     "response_data": {
-     "module_response_id": "a1000000-0000-4000-8000-000000643030",
-     "module": "a1000000-0000-4000-8000-000000643007",
-     "creation_date": "2026-09-02T10:00:00Z",
-     "progressive_response_number": 0,
-     "queue_position": null,
-     "response": {
-      "nome": "Estero"
-     },
-     "approved": false,
-     "user": null,
-     "payment": null,
-     "attachments": [],
      "attachments_docs": []
     }
    },
@@ -3358,111 +2742,10 @@
    "response": {
     "data": {
      "module_id": "a1000000-0000-4000-8000-000000643001",
-     "enabled": true,
-     "sport_association": {
-      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-      "denomination": "Message reads own",
-      "tax_code": "70000000001",
-      "address": null,
-      "address_cap": null,
-      "address_city": null,
-      "regulation": null,
-      "demand": null,
-      "logo": null,
-      "subscription_fee": "0.00",
-      "multiple_subscription_fee": false,
-      "subscription_fee_plans": [],
-      "membership_fee": null,
-      "multiple_membership_fee": false,
-      "membership_fee_plans": [],
-      "custom_subscription_form_data": null,
-      "document_header": null,
-      "invoice_footer": null,
-      "enable_quotes_management": true,
-      "configuration": {
-       "mandatory_phone": false,
-       "mandatory_email": false,
-       "mandatory_signature": false
-      },
-      "reviewed": true,
-      "affiliate_code": null,
-      "additional_sections": [
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
-        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
-        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
-        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
-       }
-      ],
-      "president_signature": null,
-      "stamp": null,
-      "president_first_name": null,
-      "president_last_name": null,
-      "federation": null,
-      "enroll_number": null,
-      "sport": null,
-      "enabled_for": [
-       "associate",
-       "associate-membership",
-       "membership"
-      ],
-      "checkout_info": null,
-      "additional_fields": null,
-      "stripe_available_methods": [
-       "card",
-       "sepa_debit"
-      ],
-      "iban": null,
-      "website": null,
-      "abbreviated": null,
-      "vat_number": null,
-      "whatsapp": null,
-      "invoice_template": "invoice.html",
-      "subscription_template": "subscription.html",
-      "extra_text_invoices": null,
-      "imported_from_associami": false,
-      "groups": [
-       {
-        "label": "Scope own group",
-        "value": "a1000000-0000-4000-8000-000000714001"
-       }
-      ],
-      "show_regulation_to_members": true,
-      "show_regulation_to_both": true,
-      "show_regulation_to_athletes": true,
-      "show_demand_to_members": true,
-      "show_demand_to_both": true,
-      "show_demand_to_athletes": true
-     },
-     "custom_link": "risposte-aperto",
-     "creation_date": "2026-08-01T10:00:00.250000Z",
      "title": "Aperto è",
-     "require_approval": false,
-     "start_date": null,
-     "end_date": null,
-     "always_active": true,
-     "max_responses": null,
-     "queue_mode": false,
-     "only_users": false,
-     "payment_required": false,
-     "payment_data": {},
      "response_message": "Grazie",
      "allow_attachments": true,
+     "only_users": false,
      "elements": [
       {
        "type": "heading",
@@ -3477,26 +2760,16 @@
         "name": "nome"
        }
       }
-     ]
+     ],
+     "sport_association": {
+      "denomination": "Message reads own"
+     }
     },
     "response_data": {
-     "module_response_id": "a1000000-0000-4000-8000-000000643024",
-     "module": "a1000000-0000-4000-8000-000000643001",
-     "creation_date": "2026-09-02T10:00:00Z",
-     "progressive_response_number": 2,
-     "queue_position": null,
-     "response": {},
-     "approved": true,
-     "user": null,
-     "payment": null,
-     "attachments": [
-      "a1000000-0000-4000-8000-000000643018"
-     ],
      "attachments_docs": [
       {
        "document_id": "a1000000-0000-4000-8000-000000643018",
-       "filename": "condiviso.pdf",
-       "token": "a1000000-0000-4000-8000-000000643019"
+       "filename": "condiviso.pdf"
       }
      ]
     }
@@ -3513,111 +2786,10 @@
    "response": {
     "data": {
      "module_id": "a1000000-0000-4000-8000-000000643001",
-     "enabled": true,
-     "sport_association": {
-      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-      "denomination": "Message reads own",
-      "tax_code": "70000000001",
-      "address": null,
-      "address_cap": null,
-      "address_city": null,
-      "regulation": null,
-      "demand": null,
-      "logo": null,
-      "subscription_fee": "0.00",
-      "multiple_subscription_fee": false,
-      "subscription_fee_plans": [],
-      "membership_fee": null,
-      "multiple_membership_fee": false,
-      "membership_fee_plans": [],
-      "custom_subscription_form_data": null,
-      "document_header": null,
-      "invoice_footer": null,
-      "enable_quotes_management": true,
-      "configuration": {
-       "mandatory_phone": false,
-       "mandatory_email": false,
-       "mandatory_signature": false
-      },
-      "reviewed": true,
-      "affiliate_code": null,
-      "additional_sections": [
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
-        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
-        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
-        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
-       }
-      ],
-      "president_signature": null,
-      "stamp": null,
-      "president_first_name": null,
-      "president_last_name": null,
-      "federation": null,
-      "enroll_number": null,
-      "sport": null,
-      "enabled_for": [
-       "associate",
-       "associate-membership",
-       "membership"
-      ],
-      "checkout_info": null,
-      "additional_fields": null,
-      "stripe_available_methods": [
-       "card",
-       "sepa_debit"
-      ],
-      "iban": null,
-      "website": null,
-      "abbreviated": null,
-      "vat_number": null,
-      "whatsapp": null,
-      "invoice_template": "invoice.html",
-      "subscription_template": "subscription.html",
-      "extra_text_invoices": null,
-      "imported_from_associami": false,
-      "groups": [
-       {
-        "label": "Scope own group",
-        "value": "a1000000-0000-4000-8000-000000714001"
-       }
-      ],
-      "show_regulation_to_members": true,
-      "show_regulation_to_both": true,
-      "show_regulation_to_athletes": true,
-      "show_demand_to_members": true,
-      "show_demand_to_both": true,
-      "show_demand_to_athletes": true
-     },
-     "custom_link": "risposte-aperto",
-     "creation_date": "2026-08-01T10:00:00.250000Z",
      "title": "Aperto è",
-     "require_approval": false,
-     "start_date": null,
-     "end_date": null,
-     "always_active": true,
-     "max_responses": null,
-     "queue_mode": false,
-     "only_users": false,
-     "payment_required": false,
-     "payment_data": {},
      "response_message": "Grazie",
      "allow_attachments": true,
+     "only_users": false,
      "elements": [
       {
        "type": "heading",
@@ -3632,20 +2804,12 @@
         "name": "nome"
        }
       }
-     ]
+     ],
+     "sport_association": {
+      "denomination": "Message reads own"
+     }
     },
-    "response_data": {
-     "module_response_id": null,
-     "module": null,
-     "creation_date": null,
-     "progressive_response_number": null,
-     "queue_position": null,
-     "response": null,
-     "approved": false,
-     "user": null,
-     "payment": null,
-     "attachments": []
-    }
+    "response_data": null
    },
    "effect": null
   },
@@ -3659,111 +2823,10 @@
    "response": {
     "data": {
      "module_id": "a1000000-0000-4000-8000-000000643001",
-     "enabled": true,
-     "sport_association": {
-      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-      "denomination": "Message reads own",
-      "tax_code": "70000000001",
-      "address": null,
-      "address_cap": null,
-      "address_city": null,
-      "regulation": null,
-      "demand": null,
-      "logo": null,
-      "subscription_fee": "0.00",
-      "multiple_subscription_fee": false,
-      "subscription_fee_plans": [],
-      "membership_fee": null,
-      "multiple_membership_fee": false,
-      "membership_fee_plans": [],
-      "custom_subscription_form_data": null,
-      "document_header": null,
-      "invoice_footer": null,
-      "enable_quotes_management": true,
-      "configuration": {
-       "mandatory_phone": false,
-       "mandatory_email": false,
-       "mandatory_signature": false
-      },
-      "reviewed": true,
-      "affiliate_code": null,
-      "additional_sections": [
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
-        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
-        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
-        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
-       }
-      ],
-      "president_signature": null,
-      "stamp": null,
-      "president_first_name": null,
-      "president_last_name": null,
-      "federation": null,
-      "enroll_number": null,
-      "sport": null,
-      "enabled_for": [
-       "associate",
-       "associate-membership",
-       "membership"
-      ],
-      "checkout_info": null,
-      "additional_fields": null,
-      "stripe_available_methods": [
-       "card",
-       "sepa_debit"
-      ],
-      "iban": null,
-      "website": null,
-      "abbreviated": null,
-      "vat_number": null,
-      "whatsapp": null,
-      "invoice_template": "invoice.html",
-      "subscription_template": "subscription.html",
-      "extra_text_invoices": null,
-      "imported_from_associami": false,
-      "groups": [
-       {
-        "label": "Scope own group",
-        "value": "a1000000-0000-4000-8000-000000714001"
-       }
-      ],
-      "show_regulation_to_members": true,
-      "show_regulation_to_both": true,
-      "show_regulation_to_athletes": true,
-      "show_demand_to_members": true,
-      "show_demand_to_both": true,
-      "show_demand_to_athletes": true
-     },
-     "custom_link": "risposte-aperto",
-     "creation_date": "2026-08-01T10:00:00.250000Z",
      "title": "Aperto è",
-     "require_approval": false,
-     "start_date": null,
-     "end_date": null,
-     "always_active": true,
-     "max_responses": null,
-     "queue_mode": false,
-     "only_users": false,
-     "payment_required": false,
-     "payment_data": {},
      "response_message": "Grazie",
      "allow_attachments": true,
+     "only_users": false,
      "elements": [
       {
        "type": "heading",
@@ -3778,29 +2841,16 @@
         "name": "nome"
        }
       }
-     ]
+     ],
+     "sport_association": {
+      "denomination": "Message reads own"
+     }
     },
     "response_data": {
-     "module_response_id": "a1000000-0000-4000-8000-000000643023",
-     "module": "a1000000-0000-4000-8000-000000643001",
-     "creation_date": "2026-09-02T10:00:00Z",
-     "progressive_response_number": 1,
-     "queue_position": null,
-     "response": [
-      1,
-      "due"
-     ],
-     "approved": false,
-     "user": null,
-     "payment": null,
-     "attachments": [
-      "a1000000-0000-4000-8000-000000643014"
-     ],
      "attachments_docs": [
       {
        "document_id": "a1000000-0000-4000-8000-000000643014",
-       "filename": "foto.png",
-       "token": "a1000000-0000-4000-8000-000000643015"
+       "filename": "foto.png"
       }
      ]
     }
@@ -3817,113 +2867,10 @@
    "response": {
     "data": {
      "module_id": "a1000000-0000-4000-8000-000000643003",
-     "enabled": true,
-     "sport_association": {
-      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-      "denomination": "Message reads own",
-      "tax_code": "70000000001",
-      "address": null,
-      "address_cap": null,
-      "address_city": null,
-      "regulation": null,
-      "demand": null,
-      "logo": null,
-      "subscription_fee": "0.00",
-      "multiple_subscription_fee": false,
-      "subscription_fee_plans": [],
-      "membership_fee": null,
-      "multiple_membership_fee": false,
-      "membership_fee_plans": [],
-      "custom_subscription_form_data": null,
-      "document_header": null,
-      "invoice_footer": null,
-      "enable_quotes_management": true,
-      "configuration": {
-       "mandatory_phone": false,
-       "mandatory_email": false,
-       "mandatory_signature": false
-      },
-      "reviewed": true,
-      "affiliate_code": null,
-      "additional_sections": [
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
-        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
-        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
-        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
-       }
-      ],
-      "president_signature": null,
-      "stamp": null,
-      "president_first_name": null,
-      "president_last_name": null,
-      "federation": null,
-      "enroll_number": null,
-      "sport": null,
-      "enabled_for": [
-       "associate",
-       "associate-membership",
-       "membership"
-      ],
-      "checkout_info": null,
-      "additional_fields": null,
-      "stripe_available_methods": [
-       "card",
-       "sepa_debit"
-      ],
-      "iban": null,
-      "website": null,
-      "abbreviated": null,
-      "vat_number": null,
-      "whatsapp": null,
-      "invoice_template": "invoice.html",
-      "subscription_template": "subscription.html",
-      "extra_text_invoices": null,
-      "imported_from_associami": false,
-      "groups": [
-       {
-        "label": "Scope own group",
-        "value": "a1000000-0000-4000-8000-000000714001"
-       }
-      ],
-      "show_regulation_to_members": true,
-      "show_regulation_to_both": true,
-      "show_regulation_to_athletes": true,
-      "show_demand_to_members": true,
-      "show_demand_to_both": true,
-      "show_demand_to_athletes": true
-     },
-     "custom_link": "risposte-approvazione",
-     "creation_date": "2026-09-01T08:00:00Z",
      "title": "Modulo",
-     "require_approval": true,
-     "start_date": "2000-01-01",
-     "end_date": "2999-12-31",
-     "always_active": false,
-     "max_responses": 0,
-     "queue_mode": false,
-     "only_users": false,
-     "payment_required": false,
-     "payment_data": {
-      "amount": 5
-     },
      "response_message": null,
      "allow_attachments": false,
+     "only_users": false,
      "elements": [
       {
        "type": "heading",
@@ -3938,7 +2885,10 @@
         "name": "nome"
        }
       }
-     ]
+     ],
+     "sport_association": {
+      "denomination": "Message reads own"
+     }
     },
     "response_data": null
    },
@@ -3954,23 +2904,12 @@
    "response": {
     "data": {
      "module_id": "a1000000-0000-4000-8000-000000643009",
-     "enabled": true,
-     "sport_association": null,
-     "custom_link": "risposte-orfano",
-     "creation_date": "2026-09-01T08:00:00Z",
      "title": null,
-     "require_approval": false,
-     "start_date": null,
-     "end_date": null,
-     "always_active": true,
-     "max_responses": null,
-     "queue_mode": false,
-     "only_users": false,
-     "payment_required": false,
-     "payment_data": {},
      "response_message": null,
      "allow_attachments": false,
-     "elements": {}
+     "only_users": false,
+     "elements": {},
+     "sport_association": null
     },
     "response_data": null
    },
@@ -3986,111 +2925,10 @@
    "response": {
     "data": {
      "module_id": "a1000000-0000-4000-8000-000000643007",
-     "enabled": true,
-     "sport_association": {
-      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
-      "denomination": "Message reads foreign",
-      "tax_code": "70000000002",
-      "address": null,
-      "address_cap": null,
-      "address_city": null,
-      "regulation": null,
-      "demand": null,
-      "logo": null,
-      "subscription_fee": "0.00",
-      "multiple_subscription_fee": false,
-      "subscription_fee_plans": [],
-      "membership_fee": null,
-      "multiple_membership_fee": false,
-      "membership_fee_plans": [],
-      "custom_subscription_form_data": null,
-      "document_header": null,
-      "invoice_footer": null,
-      "enable_quotes_management": true,
-      "configuration": {
-       "mandatory_phone": false,
-       "mandatory_email": false,
-       "mandatory_signature": false
-      },
-      "reviewed": true,
-      "affiliate_code": null,
-      "additional_sections": [
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
-        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
-        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
-        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
-       }
-      ],
-      "president_signature": null,
-      "stamp": null,
-      "president_first_name": null,
-      "president_last_name": null,
-      "federation": null,
-      "enroll_number": null,
-      "sport": null,
-      "enabled_for": [
-       "associate",
-       "associate-membership",
-       "membership"
-      ],
-      "checkout_info": null,
-      "additional_fields": null,
-      "stripe_available_methods": [
-       "card",
-       "sepa_debit"
-      ],
-      "iban": null,
-      "website": null,
-      "abbreviated": null,
-      "vat_number": null,
-      "whatsapp": null,
-      "invoice_template": "invoice.html",
-      "subscription_template": "subscription.html",
-      "extra_text_invoices": null,
-      "imported_from_associami": false,
-      "groups": [
-       {
-        "label": "Scope foreign group",
-        "value": "a1000000-0000-4000-8000-000000714002"
-       }
-      ],
-      "show_regulation_to_members": true,
-      "show_regulation_to_both": true,
-      "show_regulation_to_athletes": true,
-      "show_demand_to_members": true,
-      "show_demand_to_both": true,
-      "show_demand_to_athletes": true
-     },
-     "custom_link": "risposte-estero",
-     "creation_date": "2026-09-01T08:00:00Z",
      "title": "Modulo",
-     "require_approval": false,
-     "start_date": null,
-     "end_date": null,
-     "always_active": true,
-     "max_responses": null,
-     "queue_mode": false,
-     "only_users": false,
-     "payment_required": false,
-     "payment_data": {},
      "response_message": null,
      "allow_attachments": false,
+     "only_users": false,
      "elements": [
       {
        "type": "heading",
@@ -4105,292 +2943,48 @@
         "name": "nome"
        }
       }
-     ]
+     ],
+     "sport_association": {
+      "denomination": "Message reads foreign"
+     }
     },
     "response_data": null
    },
    "effect": null
   },
   {
-   "name": "modules-responses-info-inactive-association",
+   "name": "modules-responses-info-deleted-association",
    "actor": "anonymous",
    "method": "GET",
    "path": "/modules/risposte-eliminata/info",
    "headers": {},
-   "status": 200,
+   "status": 404,
    "response": {
-    "data": {
-     "module_id": "a1000000-0000-4000-8000-000000643010",
-     "enabled": true,
-     "sport_association": {
-      "sport_association_id": "a1000000-0000-4000-8000-000000701003",
-      "denomination": "Message reads deleted",
-      "tax_code": "70000000003",
-      "address": null,
-      "address_cap": null,
-      "address_city": null,
-      "regulation": null,
-      "demand": null,
-      "logo": null,
-      "subscription_fee": "0.00",
-      "multiple_subscription_fee": false,
-      "subscription_fee_plans": [],
-      "membership_fee": null,
-      "multiple_membership_fee": false,
-      "membership_fee_plans": [],
-      "custom_subscription_form_data": null,
-      "document_header": null,
-      "invoice_footer": null,
-      "enable_quotes_management": true,
-      "configuration": {
-       "mandatory_phone": false,
-       "mandatory_email": false,
-       "mandatory_signature": false
-      },
-      "reviewed": true,
-      "affiliate_code": null,
-      "additional_sections": [
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
-        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
-        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
-        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
-       }
-      ],
-      "president_signature": null,
-      "stamp": null,
-      "president_first_name": null,
-      "president_last_name": null,
-      "federation": null,
-      "enroll_number": null,
-      "sport": null,
-      "enabled_for": [
-       "associate",
-       "associate-membership",
-       "membership"
-      ],
-      "checkout_info": null,
-      "additional_fields": null,
-      "stripe_available_methods": [
-       "card",
-       "sepa_debit"
-      ],
-      "iban": null,
-      "website": null,
-      "abbreviated": null,
-      "vat_number": null,
-      "whatsapp": null,
-      "invoice_template": "invoice.html",
-      "subscription_template": "subscription.html",
-      "extra_text_invoices": null,
-      "imported_from_associami": false,
-      "groups": [],
-      "show_regulation_to_members": true,
-      "show_regulation_to_both": true,
-      "show_regulation_to_athletes": true,
-      "show_demand_to_members": true,
-      "show_demand_to_both": true,
-      "show_demand_to_athletes": true
-     },
-     "custom_link": "risposte-eliminata",
-     "creation_date": "2026-09-01T08:00:00Z",
-     "title": "Modulo",
-     "require_approval": false,
-     "start_date": null,
-     "end_date": null,
-     "always_active": true,
-     "max_responses": null,
-     "queue_mode": false,
-     "only_users": false,
-     "payment_required": false,
-     "payment_data": {},
-     "response_message": null,
-     "allow_attachments": false,
-     "elements": [
-      {
-       "type": "heading",
-       "props": {
-        "label": "Titolo"
-       }
-      },
-      {
-       "type": "text",
-       "props": {
-        "label": "Nome",
-        "name": "nome"
-       }
-      }
-     ]
-    },
-    "response_data": null
+    "error": "module not found"
    },
    "effect": null
   },
   {
-   "name": "modules-responses-info-inactive-association-response",
+   "name": "modules-responses-info-deleted-association-response",
    "actor": "owner",
    "method": "GET",
    "path": "/modules/risposte-eliminata/info?response_id=a1000000-0000-4000-8000-000000643022",
    "headers": {},
-   "status": 200,
+   "status": 404,
    "response": {
-    "data": {
-     "module_id": "a1000000-0000-4000-8000-000000643010",
-     "enabled": true,
-     "sport_association": {
-      "sport_association_id": "a1000000-0000-4000-8000-000000701003",
-      "denomination": "Message reads deleted",
-      "tax_code": "70000000003",
-      "address": null,
-      "address_cap": null,
-      "address_city": null,
-      "regulation": null,
-      "demand": null,
-      "logo": null,
-      "subscription_fee": "0.00",
-      "multiple_subscription_fee": false,
-      "subscription_fee_plans": [],
-      "membership_fee": null,
-      "multiple_membership_fee": false,
-      "membership_fee_plans": [],
-      "custom_subscription_form_data": null,
-      "document_header": null,
-      "invoice_footer": null,
-      "enable_quotes_management": true,
-      "configuration": {
-       "mandatory_phone": false,
-       "mandatory_email": false,
-       "mandatory_signature": false
-      },
-      "reviewed": true,
-      "affiliate_code": null,
-      "additional_sections": [
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
-        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
-        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
-       },
-       {
-        "show_to_members": true,
-        "show_to_both": true,
-        "show_to_athletes": true,
-        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
-        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
-       }
-      ],
-      "president_signature": null,
-      "stamp": null,
-      "president_first_name": null,
-      "president_last_name": null,
-      "federation": null,
-      "enroll_number": null,
-      "sport": null,
-      "enabled_for": [
-       "associate",
-       "associate-membership",
-       "membership"
-      ],
-      "checkout_info": null,
-      "additional_fields": null,
-      "stripe_available_methods": [
-       "card",
-       "sepa_debit"
-      ],
-      "iban": null,
-      "website": null,
-      "abbreviated": null,
-      "vat_number": null,
-      "whatsapp": null,
-      "invoice_template": "invoice.html",
-      "subscription_template": "subscription.html",
-      "extra_text_invoices": null,
-      "imported_from_associami": false,
-      "groups": [],
-      "show_regulation_to_members": true,
-      "show_regulation_to_both": true,
-      "show_regulation_to_athletes": true,
-      "show_demand_to_members": true,
-      "show_demand_to_both": true,
-      "show_demand_to_athletes": true
-     },
-     "custom_link": "risposte-eliminata",
-     "creation_date": "2026-09-01T08:00:00Z",
-     "title": "Modulo",
-     "require_approval": false,
-     "start_date": null,
-     "end_date": null,
-     "always_active": true,
-     "max_responses": null,
-     "queue_mode": false,
-     "only_users": false,
-     "payment_required": false,
-     "payment_data": {},
-     "response_message": null,
-     "allow_attachments": false,
-     "elements": [
-      {
-       "type": "heading",
-       "props": {
-        "label": "Titolo"
-       }
-      },
-      {
-       "type": "text",
-       "props": {
-        "label": "Nome",
-        "name": "nome"
-       }
-      }
-     ]
-    },
-    "response_data": {
-     "module_response_id": "a1000000-0000-4000-8000-000000643022",
-     "module": "a1000000-0000-4000-8000-000000643001",
-     "creation_date": "2026-09-02T10:00:00.500000Z",
-     "progressive_response_number": 0,
-     "queue_position": null,
-     "response": {
-      "nome": "Anna è",
-      "eta": 12
-     },
-     "approved": true,
-     "user": "a1000000-0000-4000-8000-000000700004",
-     "payment": null,
-     "attachments": [
-      "a1000000-0000-4000-8000-000000643012"
-     ],
-     "attachments_docs": [
-      {
-       "document_id": "a1000000-0000-4000-8000-000000643012",
-       "filename": "certificato è.pdf",
-       "token": "a1000000-0000-4000-8000-000000643013"
-      }
-     ]
-    }
+    "error": "module not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-deleted-association-bad-response-id",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/risposte-eliminata/info?response_id=abc",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "module not found"
    },
    "effect": null
   },

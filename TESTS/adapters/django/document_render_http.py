@@ -472,7 +472,12 @@ def assert_effect(case, before, after, source, context):
         old = keyed(before[label], pk)[row_id][column]
         if model == 'instructorhours':
             owner = source['instructors'][table[key]['instructor']]['user']
-            index = ({'owner': ids['own_association'], 'foreign_owner': ids['foreign_association']}[owner], 'instructor.user.sport_association')
+            if owner == 'owner_without_association':
+                # No association resolves from the row: the actor's, or no index row.
+                index = (own_actor, 'actor.sport_association') if own_actor else None
+            else:
+                index = ({'owner': ids['own_association'], 'foreign_owner': ids['foreign_association']}[owner],
+                         'instructor.user.sport_association')
         elif model == 'medicalappointments':
             subscription = source['subscriptions'][table[key]['subscription']]
             index = (source['association_ids'][subscription['association']], 'subscription.sport_association')

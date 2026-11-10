@@ -1,0 +1,195 @@
+name: Go family sweep
+
+# Runs every HTTP family (native Django, native Go, Caddy /api/v1 and /api/v2) and every process
+# harness as a shard matrix. See docs/architecture/go-migration/sweep.md.
+
+on:
+  workflow_dispatch:
+    inputs:
+      families:
+        description: Comma-separated HTTP families; empty runs every family and process harness
+        required: false
+        default: ''
+      shards:
+        description: Number of parallel shards
+        required: false
+        default: '16'
+      label:
+        description: Sweep label; empty uses ci-<short sha>
+        required: false
+        default: ''
+  # Manual dispatch needs this file on the default branch. Until then these branches run it on push:
+  # three small families on two shards, or the whole suite when the head commit message holds [full-sweep].
+  push:
+    branches: ['go/ci-family-matrix', 'go-ci/**']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: go-family-sweep-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  plan:
+    name: Plan shards
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      label: ${{ steps.plan.outputs.label }}
+      families: ${{ steps.plan.outputs.families }}
+      shards: ${{ steps.plan.outputs.shards }}
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Resolve label, families and shard matrix
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          INPUT_FAMILIES: ${{ inputs.families }}
+          INPUT_SHARDS: ${{ inputs.shards }}
+          INPUT_LABEL: ${{ inputs.label }}
+          HEAD_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          families="$(printf '%s' "$INPUT_FAMILIES" | tr -d '[:space:]')"
+          shards="${INPUT_SHARDS:-16}"
+          label="${INPUT_LABEL:-ci-${GITHUB_SHA::7}}"
+          if [ "$EVENT" = push ]; then
+            case "$HEAD_MESSAGE" in
+              *'[full-sweep]'*) ;;
+              *) families=association-list,audit-log-summary,balance-archived; shards=2 ;;
+            esac
+          fi
+          printf '%s' "$label" | grep -Eqx '[A-Za-z0-9][A-Za-z0-9._-]*' || { echo "Invalid label: $label" >&2; exit 1; }
+          printf '%s' "$shards" | grep -Eqx '[1-9][0-9]?' || { echo "Shards must be 1..99: $shards" >&2; exit 1; }
+          if [ -n "$families" ]; then
+            printf '%s' "$families" | grep -Eqx '[a-z0-9-]+(,[a-z0-9-]+)*' || { echo "Invalid family list: $families" >&2; exit 1; }
+            plan="$(python3 tools/go-migration/sweep.py --plan "$shards" --families "$families")"
+          else
+            plan="$(python3 tools/go-migration/sweep.py --plan "$shards")"
+          fi
+          echo "$plan"
+          {
+            echo "label=$label"
+            echo "families=$families"
+            echo "shards=$(printf '%s' "$plan" | python3 -c 'import json, sys; print(json.load(sys.stdin)["shards"])')"
+            echo "matrix=$(printf '%s' "$plan" | python3 -c 'import json, sys; print(json.dumps(json.load(sys.stdin)["matrix"]))')"
+          } >> "$GITHUB_OUTPUT"
+
+  sweep:
+    name: Shard ${{ matrix.shard }}/${{ needs.plan.outputs.shards }}
+    needs: plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    env:
+      LC_ALL: C
+      LANG: C
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE_GO/go.mod
+          cache-dependency-path: BE_GO/go.sum
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PYVERSION'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PYVERSION
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+            docs/manuale/requirements-offline.txt
+      - name: Install disposable parity dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python -m pip install -r docs/manuale/requirements-offline.txt
+          python TESTS/adapters/django/production_runtime.py
+          docker pull postgres:16-alpine
+          docker pull redis:7-alpine
+          python - <<'PYIMAGE'
+          from pathlib import Path
+          import re
+          import subprocess
+          from TESTS.adapters.django.s3_objects import IMAGE
+          image = re.search(r'^FROM (caddy:\S+) AS production$', Path('UI/Dockerfile').read_text(), re.M).group(1)
+          for name in (image, IMAGE):
+              subprocess.run(['docker', 'pull', name], check=True)
+          PYIMAGE
+          echo "GO_MIGRATION_PYTHON=$(python -c 'import sys; print(sys.executable)')" >> "$GITHUB_ENV"
+          echo "GO_MIGRATION_GO_BIN=$(dirname "$(command -v go)")" >> "$GITHUB_ENV"
+      - name: Fetch Go modules and warm the build cache
+        # The harnesses build with the module proxy disabled.
+        working-directory: BE_GO
+        run: |
+          go mod download all
+          go build ./...
+      - name: Run shard ${{ matrix.shard }}/${{ needs.plan.outputs.shards }}
+        env:
+          SWEEP_LABEL: ${{ needs.plan.outputs.label }}
+          SWEEP_FAMILIES: ${{ needs.plan.outputs.families }}
+          SWEEP_SHARD: ${{ matrix.shard }}/${{ needs.plan.outputs.shards }}
+        run: |
+          set -- --label "$SWEEP_LABEL" --shard "$SWEEP_SHARD" --jobs 2 --timeout 2400
+          if [ -n "$SWEEP_FAMILIES" ]; then set -- "$@" --families "$SWEEP_FAMILIES"; fi
+          python tools/go-migration/sweep.py "$@"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: family-sweep-shard-${{ needs.plan.outputs.label }}-${{ matrix.shard }}
+          # runtime.json keeps quality-reports/go-migration as the artifact root for every shard.
+          path: |
+            quality-reports/go-migration/runtime.json
+            quality-reports/go-migration/sweep-*/
+            quality-reports/go-migration/*-http-sweep-*/
+            quality-reports/go-migration/*-http-sweep-*.log
+          if-no-files-found: error
+          retention-days: 7
+
+  summary:
+    name: Merge shards
+    needs: [plan, sweep]
+    if: always() && needs.plan.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: family-sweep-shard-${{ needs.plan.outputs.label }}-*
+          path: quality-reports/go-migration
+          merge-multiple: true
+      - name: Merge shard summaries
+        env:
+          SWEEP_LABEL: ${{ needs.plan.outputs.label }}
+        run: python3 tools/go-migration/merge_sweeps.py --label "$SWEEP_LABEL" --markdown "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: family-sweep-${{ needs.plan.outputs.label }}
+          path: quality-reports/go-migration/
+          if-no-files-found: error
+          retention-days: 30

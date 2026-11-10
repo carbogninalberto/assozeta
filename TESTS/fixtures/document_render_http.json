@@ -148,6 +148,22 @@
    "last": "None",
    "email": null,
    "user": null
+  },
+  "newline": {
+   "id": "a1000000-0000-4000-8000-000000984094",
+   "association": "own",
+   "first": "Lia",
+   "last": "Bian\nchi",
+   "email": null,
+   "user": null
+  },
+  "separators": {
+   "id": "a1000000-0000-4000-8000-000000984095",
+   "association": "own",
+   "first": "Ωmega",
+   "last": "Ne\r\nri x",
+   "email": null,
+   "user": null
   }
  },
  "documents": {
@@ -329,6 +345,22 @@
    "id": "a1000000-0000-4000-8000-000000984058",
    "association": "form",
    "associate": null,
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "newline": {
+   "id": "a1000000-0000-4000-8000-000000984096",
+   "association": "own",
+   "associate": "newline",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "separators": {
+   "id": "a1000000-0000-4000-8000-000000984097",
+   "association": "own",
+   "associate": "separators",
    "user": "owner",
    "group": null,
    "document": null
@@ -667,6 +699,18 @@
    "instructor": "luca",
    "deleted": false,
    "group": null
+  },
+  "comp_orphan": {
+   "id": "a1000000-0000-4000-8000-000000984083",
+   "invoice": null,
+   "association": "own",
+   "amount": "30.00",
+   "date": "2026-04-11T09:00:00+00:00",
+   "associate": null,
+   "user": null,
+   "instructor": "nina",
+   "deleted": false,
+   "group": null
   }
  },
  "instructors": {
@@ -682,6 +726,13 @@
    "user": "foreign_owner",
    "first": "Paolo",
    "last": "Gialli",
+   "account": null
+  },
+  "nina": {
+   "id": "a1000000-0000-4000-8000-000000984082",
+   "user": "owner_without_association",
+   "first": "Nina",
+   "last": "Blu",
    "account": null
   }
  },
@@ -720,6 +771,20 @@
    "payment": "comp_tokened",
    "date": "2026-04-05",
    "document": "tok_hours"
+  },
+  "h_orphan1": {
+   "id": "a1000000-0000-4000-8000-000000984098",
+   "instructor": "nina",
+   "payment": "comp_orphan",
+   "date": "2026-04-06",
+   "document": null
+  },
+  "h_orphan2": {
+   "id": "a1000000-0000-4000-8000-000000984099",
+   "instructor": "nina",
+   "payment": "comp_orphan",
+   "date": "2026-04-07",
+   "document": null
   }
  },
  "customer_invoices": {
@@ -5348,6 +5413,1124 @@
    },
    "renders": [],
    "effect": null
+  },
+  {
+   "name": "document-render-subscription-name-with-line-break",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984096",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Header values can't contain newlines (got 'inline; filename=[Message reads own] Modulo di Iscrizione Lia Bian\\nchi.pdf')"
+   },
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984096/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Lia Bian\nchi.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   }
+  },
+  {
+   "name": "document-render-subscription-name-with-line-break-download",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984096?download=1",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Header values can't contain newlines (got 'attachment; filename=[Message reads own] Modulo di Iscrizione Lia Bian\\nchi.pdf')"
+   },
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984096/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Lia Bian\nchi.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   }
+  },
+  {
+   "name": "document-render-subscription-name-with-separators",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984097",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Header values can't contain newlines (got 'inline; filename=[Message reads own] Modulo di Iscrizione Ωmega Ne\\r\\nri\\u2028x.pdf')"
+   },
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984097/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Ωmega Ne\r\nri x.pdf",
+    "actor": "full_collaborator",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   }
+  },
+  {
+   "name": "document-render-subscription-name-with-line-break-renderer-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984096",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "PDF rendering failed: Renderer returned HTTP 500: down"
+   },
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984096/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 500,
+      "content_type": "text/plain",
+      "body": "down"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Lia Bian\nchi.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   }
+  },
+  {
+   "name": "document-render-compensation-instructor-owner-without-association",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984083",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/compensation/a1000000-0000-4000-8000-000000984083/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Compenso per Nina Blu del 2026-04-11.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "instructorhours",
+      "h_orphan1"
+     ],
+     [
+      "instructorhours",
+      "h_orphan2"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "disposition": "inline; filename=[Message reads own] Compenso per Nina Blu del 2026-04-11.pdf"
+  },
+  {
+   "name": "document-render-compensation-instructor-owner-without-association-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984083?download=1",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/compensation/a1000000-0000-4000-8000-000000984083/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Compenso per Nina Blu del 2026-04-11.pdf",
+    "actor": "full_collaborator",
+    "storage_task": true,
+    "links": [
+     [
+      "instructorhours",
+      "h_orphan1"
+     ],
+     [
+      "instructorhours",
+      "h_orphan2"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "disposition": "attachment; filename=[Message reads own] Compenso per Nina Blu del 2026-04-11.pdf"
+  },
+  {
+   "name": "document-render-template-body-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "[1, \"parent\", {\"additionalData\": 1}]",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-list-with-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'list' object has no attribute 'get'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "[\"x\", \"additionalData\"]",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "\"additional data\"",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-text-with-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'str' object has no attribute 'get'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "\"the additionalData key\"",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "argument of type 'NoneType' is not iterable"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-integer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "argument of type 'int' is not iterable"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "7",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "argument of type 'float' is not iterable"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "1.5",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-boolean",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "argument of type 'bool' is not iterable"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "true",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-malformed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "JSON parse error - Expecting value: line 1 column 20 (char 19)"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "{\"additionalData\": ",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-plain-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Unsupported media type \"text/plain\" in request."
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "additionalData=1",
+   "content_type": "text/plain"
+  },
+  {
+   "name": "document-render-template-additional-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "argument of type 'NoneType' is not iterable"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "{\"additionalData\": null}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-integer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "argument of type 'int' is not iterable"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "{\"additionalData\": 3}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-boolean",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "argument of type 'bool' is not iterable"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "{\"additionalData\": false}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "argument of type 'float' is not iterable"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "{\"additionalData\": 2.50}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "{\"additionalData\": \"nothing\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-text-with-parent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'str' object has no attribute 'get'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "{\"additionalData\": \"a parent b\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-text-with-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "string indices must be integers, not 'str'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "{\"additionalData\": \"subscriptions\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "{\"additionalData\": [1, \"x\", [\"parent\"]]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-list-with-parent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'list' object has no attribute 'get'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "{\"additionalData\": [\"subscription\", \"parent\"]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-list-with-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "list indices must be integers or slices, not str"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "{\"additionalData\": [\"subscription\"]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-subscription-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?subscription_id=1.5&",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "{\"additionalData\": {\"subscription\": 1.50}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-subscription-exponent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?subscription_id=1000.0&",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "{\"additionalData\": {\"subscription\": 1e3}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-subscription-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?subscription_id=[1, 'a', None, True, 2.0]&",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "{\"additionalData\": {\"subscription\": [1, \"a\", null, true, 2.0]}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-subscription-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?subscription_id={'a': 'b c'}&",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "{\"additionalData\": {\"subscription\": {\"a\": \"b c\"}}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-form-additional-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "additionalData=nothing&other=1",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "document-render-template-form-additional-with-parent",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'str' object has no attribute 'get'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "full_collaborator",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "additionalData=parent",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "document-render-template-multipart-without-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"\r\n\r\nparent\r\n--fixture-boundary--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture-boundary"
+  },
+  {
+   "name": "document-render-template-multipart-additional-with-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "string indices must be integers, not 'str'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"additionalData\"\r\n\r\nsubscription\r\n--fixture-boundary--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture-boundary"
+  },
+  {
+   "name": "document-render-template-multipart-without-boundary",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Multipart form parse error - Invalid boundary in multipart: None"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"additionalData\"\r\n\r\nx\r\n--fixture-boundary--\r\n",
+   "content_type": "multipart/form-data"
+  },
+  {
+   "name": "document-render-invoice-receipt-email-multipart",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": {
+     "subject": "Ricevuta di pagamento 04/03/26",
+     "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
+     "recipient": "mario.rossi@example.test"
+    },
+    "stored": false
+   },
+   "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"send_receipt_email\"\r\n\r\ntrue\r\n--fixture-boundary--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture-boundary",
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+  },
+  {
+   "name": "document-render-invoice-receipt-email-multipart-other-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false
+   },
+   "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"\r\n\r\ntrue\r\n--fixture-boundary--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture-boundary",
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+  },
+  {
+   "name": "document-render-invoice-receipt-email-query-with-plain-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?send_receipt_email=1",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": {
+     "subject": "Ricevuta di pagamento 04/03/26",
+     "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
+     "recipient": "mario.rossi@example.test"
+    },
+    "stored": false
+   },
+   "raw_body": "send_receipt_email=1",
+   "content_type": "text/plain",
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+  },
+  {
+   "name": "document-render-invoice-plain-text-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {},
+   "status": 415,
+   "response": {
+    "detail": "Unsupported media type \"text/plain\" in request."
+   },
+   "renders": [],
+   "effect": null,
+   "raw_body": "send_receipt_email=1",
+   "content_type": "text/plain"
+  },
+  {
+   "name": "document-render-invoice-multipart-without-boundary",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?send_receipt_email=",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "Multipart form parse error - Invalid boundary in multipart: None"
+   },
+   "renders": [],
+   "effect": null,
+   "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"send_receipt_email\"\r\n\r\ntrue\r\n--fixture-boundary--\r\n",
+   "content_type": "multipart/form-data"
   }
  ]
 }

@@ -369,6 +369,22 @@ updated_camp('owner', 'update-own-association-unchanged', 'autumn', {}, body={'s
 updated_camp('owner', 'update-hex-uid', 'winter', {'title': '12'}, body={'title': 12},
              path_id=CAMPS['winter']['id'].replace('-', '').upper())
 
+# A camps_and_retreats_id no row has: Model.save() inserts a copy with the validated values under that key and the
+# camp the path names stays. auditlog's pre_save finds no row under the new key (an update against nothing, indexed
+# from its changes), then post_save logs the create (indexed directly). A key another camp has is the unique error.
+COPY_CAMP = 'a1000000-0000-4000-8000-0000007a9901'
+COPY_CHANGES = {'camps_and_retreats_id': ['None', COPY_CAMP], 'sport_association': ['None', OWN], 'title': ['None', 'Copia'],
+                'description': ['None', 'Dal modulo']}
+add('update-new-id-inserts-copy', 'owner', camp_path('spring', 'update'), 200,
+    {'message': 'Camp or retreat updated successfully',
+     'camp_and_retreat': {'camps_and_retreats_id': COPY_CAMP, 'title': 'Copia', 'description': 'Dal modulo', 'sport_association': OWN}},
+    method='PATCH', body={'camps_and_retreats_id': COPY_CAMP, 'title': 'Copia'},
+    effect={'actor': 'owner', 'rows': {CAMP: {COPY_CAMP: {'title': 'Copia', 'description': 'Dal modulo', 'sport_association_id': OWN}}},
+            'audit': [audit('CampsAndRetreats', COPY_CAMP, 1, COPY_CHANGES, OWN, 'changes_json.sport_association'),
+                      audit('CampsAndRetreats', COPY_CAMP, 0, COPY_CHANGES, OWN, 'direct')]})
+add('update-new-id-taken', 'owner', camp_path('spring', 'update'), 400, {'error': repr_detail([('camps_and_retreats_id', [UNIQUE])])},
+    method='PATCH', body={'camps_and_retreats_id': COPY_CAMP, 'title': 'Altra'})
+
 # ---------------------------------------------------------------------------
 # <uid>/delete
 # ---------------------------------------------------------------------------

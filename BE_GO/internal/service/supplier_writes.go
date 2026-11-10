@@ -142,9 +142,9 @@ func NewSupplierWrites(store domain.SupplierWriteStore, now func() time.Time, id
 	return &SupplierWrites{store: store, now: now, ids: ids}
 }
 
-// ErrSupplierPrimaryKeyChange refuses an update naming a new supplier_id:
-// Model.save() would insert a copy under the new key (not ported).
-var ErrSupplierPrimaryKeyChange = refusal.New("supplier primary key change is not ported")
+// ErrSupplierPrimaryKeyChange refuses an update that names a new supplier_id
+// and clears the association in the same body (not ported).
+var ErrSupplierPrimaryKeyChange = refusal.New("supplier primary key change without association is not ported")
 
 func supplierTextFields(row *domain.Supplier) map[string]**string {
 	return map[string]**string{"address": &row.Address, "tax_code": &row.TaxCode, "vat_number": &row.VATNumber, "type": &row.Type,
@@ -352,7 +352,30 @@ func (s *SupplierWrites) Update(ctx context.Context, identity domain.ResolvedIde
 		return nil, ErrSupplierUpdateInvalid
 	}
 	if write.SupplierID != nil && *write.SupplierID != row.ID {
-		return nil, ErrSupplierPrimaryKeyChange
+		// Model.save() under a key no row has inserts a copy with the validated
+		// values; the row the request names stays as it was.
+		applySupplierWrite(row, write)
+		if row.AssociationID == nil {
+			return nil, ErrSupplierPrimaryKeyChange
+		}
+		row.ID = *write.SupplierID
+		if err = tx.InsertSupplier(ctx, *row); err != nil {
+			return nil, err
+		}
+		// auditlog's pre_save finds no row under the new key and logs the whole
+		// row as an update (indexed from its changes), then post_save logs the
+		// create (indexed from the stored row).
+		copied := domain.SupplierAudit{ID: row.ID, Action: 1, FullDiff: true, Association: row.AssociationID,
+			Path: "changes_json.sport_association", Context: paymentCategoryAuditContext(identity, audit),
+			At: s.now().UTC().Truncate(time.Microsecond)}
+		if err = tx.AuditSupplier(ctx, copied); err != nil {
+			return nil, err
+		}
+		copied.Action, copied.Path = 0, "direct"
+		if err = tx.AuditSupplier(ctx, copied); err != nil {
+			return nil, err
+		}
+		return row, tx.Commit()
 	}
 	old := *row
 	applySupplierWrite(row, write)

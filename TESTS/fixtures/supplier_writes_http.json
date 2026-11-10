@@ -1022,6 +1022,101 @@
     "address": null,
     "note": "Nuova"
    }
+  },
+  {
+   "name": "supplier-writes-update-new-id-inserts-copy",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900002/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "supplier_id": "a1000000-0000-4000-8000-00000064a901",
+    "name": "Beta è Figli",
+    "address": null,
+    "tax_code": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "vat_number": null,
+    "type": "customer",
+    "email": null,
+    "phone_number": null,
+    "city": "Bari",
+    "cap": null,
+    "state": null,
+    "country": "Italia",
+    "nationality": "Italiana",
+    "note": "Nuova",
+    "group": null,
+    "deleted": false
+   },
+   "effect": {
+    "kind": "copy",
+    "actor": "owner",
+    "supplier": "beta",
+    "id": "a1000000-0000-4000-8000-00000064a901"
+   },
+   "body": {
+    "supplier_id": "a1000000-0000-4000-8000-00000064a901",
+    "city": "Bari"
+   }
+  },
+  {
+   "name": "supplier-writes-update-new-id-taken",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900002/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "validation errors."
+   },
+   "effect": null,
+   "body": {
+    "supplier_id": "a1000000-0000-4000-8000-00000064a901",
+    "city": "Lecce"
+   }
+  },
+  {
+   "name": "supplier-writes-update-own-id-kept",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900002/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "supplier_id": "a1000000-0000-4000-8000-000000900002",
+    "name": "Beta è Figli",
+    "address": null,
+    "tax_code": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "vat_number": null,
+    "type": "customer",
+    "email": null,
+    "phone_number": null,
+    "city": "Lecce",
+    "cap": null,
+    "state": null,
+    "country": "Italia",
+    "nationality": "Italiana",
+    "note": "Nuova",
+    "group": null,
+    "deleted": false
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "supplier": "beta",
+    "changes": {
+     "city": [
+      "Milano",
+      "Lecce"
+     ]
+    }
+   },
+   "body": {
+    "supplier_id": "a1000000-0000-4000-8000-000000900002",
+    "city": "Lecce"
+   }
   }
  ]
 }

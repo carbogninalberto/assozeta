@@ -158,7 +158,7 @@ course subscription by key (`all_objects()`), else the first installment's (`all
 - Orderings Django resolves only when compiling the rows (relations other than `user`, relation paths and transforms, the
   `full_name` annotation of the subscription search), refused after the count and page checks; random ordering together with
   the payment/list text search (DISTINCT with `RANDOM()` in the select list); reverse relation names are refused as unknown.
-- Infinite float search terms (`inf`) and smart-search terms with characters Python lower-cases differently (personas-reads).
+- Smart-search terms with characters Python lower-cases differently (personas-reads).
 
 Instructor payments in payment/list: the hours rows of the page's instructor payments are mapped by payment in database
 order (a later row replaces an earlier one); a row with a document sets `instructor_document` and its token; for each
@@ -228,3 +228,10 @@ subscriptions in both directions, an administrator's impersonation, and the unkn
 `secath-red-r1`: Django 276/276, Go 500 on `payment-reads-list-athlete-unknown-course-subscription`. GREEN
 `secath-versioned-r1`: 276/276 on the four transports. Mutation `secath-mutation-r1` (the course subscription lookup without
 the athlete's condition) CAUGHT. payment-writes, payment-misc and payment-state re-run green natively (`secath-rerun-r1`).
+
+v2-rest-b: an infinite search term (`inf`, `-Infinity`) follows NaN: the amount lookup refuses it when the filter is built, so
+`payment/list` and `payment/stats` answer the 500 page and `subscription/<uid>/payments` falls back to the text search. Four
+cases (280 in all); RED is the documented refusal (v2-refusals.md, payment-reads "search" row). GREEN `v2restb-green-r3`:
+280/280 on the four transports. Mutation `v2restb-mutation-r1` (infinity searched as an amount) CAUGHT. Still refused: random
+ordering with the text search (the rows repeat in random order, nothing to compare) and an athlete receipt whose filename
+is not a valid header value.

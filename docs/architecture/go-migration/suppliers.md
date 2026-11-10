@@ -103,7 +103,13 @@ generic 403, which escapes before the other field errors).
   association, is a 500), another association's supplier is `403 User not
   allowed.`, invalid input is `400 {"msg": "validation errors."}`; changed
   fields only are audited (indexed directly) and the serialized supplier is
-  returned. A new `supplier_id` would make `Model.save()` insert a copy under
-  the new key; Go refuses it with a 500 instead (not ported).
+  returned. A new `supplier_id` makes `Model.save()` insert a copy under the new
+  key with the validated values, and the row the path names stays as it was;
+  auditlog writes two entries for the copy: the pre-save update against nothing
+  (indexed from its changes) and the create (indexed directly). A key another row
+  has is the serializer's unique error (400). Ported in v2-rest-b; only a body that
+  also clears `sport_association` stays refused (500).
 
-`TESTS/fixtures/supplier_writes_http.json` authors 31 cases.
+`TESTS/fixtures/supplier_writes_http.json` authors 34 cases. v2-rest-b: RED is the documented refusal (v2-refusals.md,
+suppliers row); GREEN `v2restb-green-r3` 34/34 on the four transports; mutation `v2restb-mutation-r1` (the create entry
+indexed from its changes) CAUGHT.

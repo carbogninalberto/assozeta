@@ -69,14 +69,7 @@ ids = iter(f'a1000000-0000-4000-8000-{643001 + n:012d}' for n in range(80))
 SERVER = '<stable-server-error-page>'
 UNKNOWN = 'a1000000-0000-4000-8000-000000643999'
 LOCATION = 'modules-responses-fixture'
-READS = json.loads((HERE / 'modules_reads_http.json').read_text())
-PROFILE = next(c for c in READS['cases'] if c['name'] == 'modules-reads-list-owner')['response']['data'][0]['sport_association']
-assert PROFILE['sport_association_id'] == OWN
-# The base seed gives the three associations the same defaults; only the id, the name and the tax code differ.
-PROFILE_FOREIGN = {**PROFILE, 'sport_association_id': FOREIGN, 'denomination': 'Message reads foreign', 'tax_code': '70000000002',
-                   'groups': [{'label': 'Scope foreign group', 'value': IDS['foreign_group']}]}
-PROFILE_DELETED = {**PROFILE, 'sport_association_id': DELETED, 'denomination': 'Message reads deleted', 'tax_code': '70000000003',
-                   'groups': []}
+DENOMINATIONS = {OWN: 'Message reads own', FOREIGN: 'Message reads foreign'}
 
 ELEMENTS = [{'type': 'heading', 'props': {'label': 'Titolo'}}, {'type': 'text', 'props': {'label': 'Nome', 'name': 'nome'}}]
 BASE = {'association': OWN, 'link': None, 'created': '2026-09-01T08:00:00Z', 'title': 'Modulo', 'require_approval': False,
@@ -202,33 +195,20 @@ mid = lambda label: MODULES[label]['id'] if label in MODULES else label
 rid = lambda label: RESPONSES[label]['id'] if label in RESPONSES else label
 
 
-def serialized(label, *, enabled=True):
-    """ModulesSerializer(module): every field, the nested association (None without one)."""
+def serialized(label):
+    """PublicModuleSerializer(module): the fields the form reads; the association's name (None without one)."""
     row = MODULES[label]
-    profile = {OWN: PROFILE, FOREIGN: PROFILE_FOREIGN, DELETED: PROFILE_DELETED, None: None}[row['association']]
-    return {'module_id': row['id'], 'enabled': enabled, 'sport_association': profile, 'custom_link': row['link'],
-            'creation_date': row['created'], 'title': row['title'], 'require_approval': row['require_approval'],
-            'start_date': row['start'], 'end_date': row['end'], 'always_active': row['always_active'],
-            'max_responses': row['max_responses'], 'queue_mode': row['queue_mode'], 'only_users': row['only_users'],
-            'payment_required': row['payment_required'], 'payment_data': row['payment_data'],
-            'response_message': row['response_message'], 'allow_attachments': row['allow_attachments'], 'elements': row['elements']}
+    association = None if row['association'] is None else {'denomination': DENOMINATIONS[row['association']]}
+    return {'module_id': row['id'], 'title': row['title'], 'response_message': row['response_message'],
+            'allow_attachments': row['allow_attachments'], 'only_users': row['only_users'], 'elements': row['elements'],
+            'sport_association': association}
 
 
 def response_data(label):
-    """ModuleResponseSerializer(response): every field, attachment pks and attachments_docs."""
+    """PublicModuleResponseSerializer(response): the attachment list."""
     row = STATE[label]
-    return {'module_response_id': row['id'], 'module': MODULES[row['module']]['id'], 'creation_date': row['created'],
-            'progressive_response_number': row['number'], 'queue_position': row['queue'], 'response': row['response'],
-            'approved': row['approved'], 'user': IDS[row['user']] if row['user'] else None, 'payment': None,
-            'attachments': [DOCUMENTS[d]['id'] for d in row['attachments']],
-            'attachments_docs': [{'document_id': DOCUMENTS[d]['id'], 'filename': DOCUMENTS[d]['filename'],
-                                  'token': DOCUMENTS[d]['token']} for d in row['attachments']]}
-
-
-# ModuleResponseSerializer(None).data: get_initial() of the writable fields
-# (BooleanField False, the many related field [], every other field None).
-INITIAL = {'module_response_id': None, 'module': None, 'creation_date': None, 'progressive_response_number': None,
-           'queue_position': None, 'response': None, 'approved': False, 'user': None, 'payment': None, 'attachments': []}
+    return {'attachments_docs': [{'document_id': DOCUMENTS[d]['id'], 'filename': DOCUMENTS[d]['filename']}
+                                 for d in row['attachments']]}
 
 
 def entry(model, key, action, changes, index, path):
@@ -469,17 +449,17 @@ add('info-response-of-another-module', 'anonymous', 'GET', info('risposte-aperto
 add('info-response-hex-upper', 'athlete', 'GET', info('risposte-aperto', '?response_id=' + rid('att_r').replace('-', '').upper()), 200,
     {'data': serialized('open'), 'response_data': response_data('att_r')})
 add('info-response-unknown', 'anonymous', 'GET', info('risposte-aperto', '?response_id=' + UNKNOWN), 200,
-    {'data': serialized('open'), 'response_data': INITIAL})
+    {'data': serialized('open'), 'response_data': None})
 add('info-response-last-value', 'anonymous', 'GET', info('risposte-aperto', '?response_id=abc&response_id=' + rid('del_r')), 200,
     {'data': serialized('open'), 'response_data': response_data('del_r')})
 add('info-dated', 'anonymous', 'GET', info('risposte-approvazione'), 200,
     {'data': serialized('approval'), 'response_data': None})
 add('info-orphan', 'owner', 'GET', info('risposte-orfano'), 200, {'data': serialized('orphan'), 'response_data': None})
 add('info-foreign-association', 'anonymous', 'GET', info('risposte-estero'), 200, {'data': serialized('foreign'), 'response_data': None})
-add('info-inactive-association', 'anonymous', 'GET', info('risposte-eliminata'), 200,
-    {'data': serialized('deleted_association'), 'response_data': None})
-add('info-inactive-association-response', 'owner', 'GET', info('risposte-eliminata', '?response_id=' + rid('open_r1')), 200,
-    {'data': serialized('deleted_association'), 'response_data': response_data('open_r1')})
+# The page of a module whose association is marked deleted answers as an unknown link, before the response id is read.
+add('info-deleted-association', 'anonymous', 'GET', info('risposte-eliminata'), 404, NOT_FOUND)
+add('info-deleted-association-response', 'owner', 'GET', info('risposte-eliminata', '?response_id=' + rid('open_r1')), 404, NOT_FOUND)
+add('info-deleted-association-bad-response-id', 'anonymous', 'GET', info('risposte-eliminata', '?response_id=abc'), 404, NOT_FOUND)
 
 # ------------------------------------------- modules/<id>/response/add
 respond = lambda label: f'/modules/{mid(label)}/response/add'
