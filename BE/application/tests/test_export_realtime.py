@@ -80,9 +80,7 @@ class ExportRealtimeApiTests(TestCase):
         self.assertIsNone(cache.get(export_active_cache_key(self.association.pk)))
         apply_async.assert_not_called()
 
-    @patch('application.views.export_views.AsyncResult')
-    def test_active_endpoint_restores_association_snapshot(self, async_result):
-        async_result.return_value.ready.return_value = False
+    def test_active_endpoint_restores_association_snapshot(self):
         snapshot = build_export_snapshot(
             task_id='task-123',
             sport_association_id=str(self.association.pk),
@@ -139,9 +137,8 @@ class ExportRealtimeApiTests(TestCase):
         self.assertEqual(response.data['terminal']['task_id'], 'task-done')
         self.assertEqual(response.data['terminal']['progress']['percent'], 100)
 
-    @patch('application.views.export_views.AsyncResult')
-    def test_active_endpoint_reconciles_completed_task_with_terminal_snapshot(self, async_result):
-        async_result.return_value.ready.return_value = True
+    @patch('application.views.export_views.stored_task', return_value={'status': 'SUCCESS'})
+    def test_active_endpoint_reconciles_completed_task_with_terminal_snapshot(self, _stored_task):
         active = build_export_snapshot(
             task_id='task-raced',
             sport_association_id=str(self.association.pk),

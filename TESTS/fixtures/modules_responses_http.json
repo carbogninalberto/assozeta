@@ -795,6 +795,140 @@
     }
    ],
    "id": "a1000000-0000-4000-8000-000000643107"
+  },
+  "export_props_text": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-export-props-testo",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "text",
+     "props": "testo"
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643800"
+  },
+  "export_props_list": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-export-props-lista",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "text",
+     "props": [
+      "label",
+      "name"
+     ]
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643801"
+  },
+  "export_props_number": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-export-props-numero",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "text",
+     "props": 5
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643802"
+  },
+  "export_label_list": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-export-etichetta-lista",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "text",
+     "props": {
+      "label": [
+       "a",
+       "b"
+      ],
+      "name": "x"
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643803"
+  },
+  "export_label_dict": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-export-etichetta-oggetto",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "text",
+     "props": {
+      "label": {
+       "a": 1
+      },
+      "name": "x"
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643804"
   }
  },
  "documents": {
@@ -832,6 +966,21 @@
    "id": "a1000000-0000-4000-8000-000000643110",
    "filename": "secondo.png",
    "token": "a1000000-0000-4000-8000-000000643111"
+  },
+  "d8": {
+   "id": "a1000000-0000-4000-8000-000000643805",
+   "filename": "ricevuta.pdf",
+   "token": "a1000000-0000-4000-8000-000000643806"
+  },
+  "d9": {
+   "id": "a1000000-0000-4000-8000-000000643807",
+   "filename": "da form.txt",
+   "token": "a1000000-0000-4000-8000-000000643808"
+  },
+  "d42": {
+   "id": "00000000-0000-0000-0000-00000000002a",
+   "filename": "numerato.txt",
+   "token": "a1000000-0000-4000-8000-000000643809"
   }
  },
  "responses": {
@@ -892,7 +1041,9 @@
    "response": {},
    "approved": true,
    "user": null,
-   "attachments": [],
+   "attachments": [
+    "d8"
+   ],
    "id": "a1000000-0000-4000-8000-000000643025",
    "module": "full",
    "number": 0,
@@ -1166,6 +1317,71 @@
    "number": 0,
    "export_user": null,
    "payment": null
+  },
+  "props_text_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {},
+   "approved": true,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643810",
+   "module": "export_props_text",
+   "number": 0,
+   "export_user": null,
+   "payment": null
+  },
+  "props_list_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {},
+   "approved": true,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643811",
+   "module": "export_props_list",
+   "number": 0,
+   "export_user": null,
+   "payment": null
+  },
+  "props_number_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {},
+   "approved": true,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643812",
+   "module": "export_props_number",
+   "number": 0,
+   "export_user": null,
+   "payment": null
+  },
+  "label_list_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {},
+   "approved": true,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643813",
+   "module": "export_label_list",
+   "number": 0,
+   "export_user": null,
+   "payment": null
+  },
+  "label_dict_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {},
+   "approved": true,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643814",
+   "module": "export_label_dict",
+   "number": 0,
+   "export_user": null,
+   "payment": null
   }
  },
  "export_users": {
@@ -1199,6 +1415,12 @@
    "deleted": true
   }
  },
+ "payment_attachments": [
+  [
+   "paid",
+   "d8"
+  ]
+ ],
  "cases": [
   {
    "name": "modules-responses-export-anonymous",
@@ -2333,6 +2555,148 @@
    "effect": null
   },
   {
+   "name": "modules-responses-export-props-text",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643800/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-props-list",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643801/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-props-number",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643802/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-label-list",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643803/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Risposte",
+       "columns": [
+        "['a', 'b']",
+        "Data creazione",
+        "Progressivo risposta",
+        "Posizione in coda",
+        "Utente",
+        "Pagamento",
+        "Approvato",
+        "Allegati"
+       ],
+       "rows": [
+        [
+         "-",
+         "02/09/2026 10:00",
+         {
+          "int": "0"
+         },
+         "-",
+         "-",
+         "-",
+         "Approvata",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        12,
+        24,
+        30,
+        27,
+        16,
+        19,
+        19,
+        18
+       ]
+      }
+     },
+     "filename": "[$today] Risposte al modulo (Modulo).xls",
+     "type": "xlsx"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-label-dict",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643804/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Risposte",
+       "columns": [
+        "{'a': 1}",
+        "Data creazione",
+        "Progressivo risposta",
+        "Posizione in coda",
+        "Utente",
+        "Pagamento",
+        "Approvato",
+        "Allegati"
+       ],
+       "rows": [
+        [
+         "-",
+         "02/09/2026 10:00",
+         {
+          "int": "0"
+         },
+         "-",
+         "-",
+         "-",
+         "Approvata",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        11,
+        24,
+        30,
+        27,
+        16,
+        19,
+        19,
+        18
+       ]
+      }
+     },
+     "filename": "[$today] Risposte al modulo (Modulo).xls",
+     "type": "xlsx"
+    }
+   },
+   "effect": null
+  },
+  {
    "name": "modules-responses-info-anonymous",
    "actor": "anonymous",
    "method": "GET",
@@ -2724,6 +3088,43 @@
      ],
      "sport_association": {
       "denomination": "Message reads own"
+     }
+    },
+    "response_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-response-of-its-module",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/risposte-estero/info?response_id=a1000000-0000-4000-8000-000000643030",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643007",
+     "title": "Modulo",
+     "response_message": null,
+     "allow_attachments": false,
+     "only_users": false,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ],
+     "sport_association": {
+      "denomination": "Message reads foreign"
      }
     },
     "response_data": {
@@ -3911,6 +4312,261 @@
     ],
     "label": "$new9"
    }
+  },
+  {
+   "name": "modules-responses-add-form",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643001/response/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "response added",
+    "module_response_id": "$new"
+   },
+   "effect": {
+    "kind": "response",
+    "actor": null,
+    "created": {
+     "module": "open",
+     "number": 5,
+     "queue": null,
+     "response": {
+      "nome": "Bea è",
+      "eta": "12",
+      "vuoto": ""
+     },
+     "approved": true,
+     "user": null
+    },
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "module_response_id": [
+        "None",
+        "$id"
+       ],
+       "module": [
+        "None",
+        "a1000000-0000-4000-8000-000000643001"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "progressive_response_number": [
+        "None",
+        "5"
+       ],
+       "response": [
+        "None",
+        "{\"eta\": \"12\", \"nome\": \"Bea \\u00e8\", \"vuoto\": \"\"}"
+       ],
+       "approved": [
+        "None",
+        "True"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     }
+    ],
+    "label": "$new10"
+   },
+   "raw_body": "nome=Anna&eta=12&nome=Bea+%C3%A8&vuoto=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "modules-responses-add-form-empty-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643001/response/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "response added",
+    "module_response_id": "$new"
+   },
+   "effect": {
+    "kind": "response",
+    "actor": "owner",
+    "created": {
+     "module": "open",
+     "number": 6,
+     "queue": null,
+     "response": {},
+     "approved": true,
+     "user": "owner"
+    },
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "module_response_id": [
+        "None",
+        "$id"
+       ],
+       "module": [
+        "None",
+        "a1000000-0000-4000-8000-000000643001"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "progressive_response_number": [
+        "None",
+        "6"
+       ],
+       "response": [
+        "None",
+        "{}"
+       ],
+       "approved": [
+        "None",
+        "True"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     },
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     }
+    ],
+    "label": "$new11"
+   },
+   "raw_body": "",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "modules-responses-add-multipart",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643001/response/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "response added",
+    "module_response_id": "$new"
+   },
+   "effect": {
+    "kind": "response",
+    "actor": "athlete",
+    "created": {
+     "module": "open",
+     "number": 7,
+     "queue": null,
+     "response": {
+      "nome": "Carla",
+      "corso": "nuoto"
+     },
+     "approved": true,
+     "user": "athlete"
+    },
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "module_response_id": [
+        "None",
+        "$id"
+       ],
+       "module": [
+        "None",
+        "a1000000-0000-4000-8000-000000643001"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "progressive_response_number": [
+        "None",
+        "7"
+       ],
+       "response": [
+        "None",
+        "{\"corso\": \"nuoto\", \"nome\": \"Carla\"}"
+       ],
+       "approved": [
+        "None",
+        "True"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     },
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700004"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     }
+    ],
+    "label": "$new12"
+   },
+   "raw_body": "--moduli\r\nContent-Disposition: form-data; name=\"nome\"\r\n\r\nCarla\r\n--moduli\r\nContent-Disposition: form-data; name=\"corso\"\r\n\r\nnuoto\r\n--moduli--\r\n",
+   "content_type": "multipart/form-data; boundary=moduli"
+  },
+  {
+   "name": "modules-responses-add-multipart-file-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643001/response/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "--moduli\r\nContent-Disposition: form-data; name=\"nome\"\r\n\r\nDario\r\n--moduli\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nciao\r\n--moduli--\r\n",
+   "content_type": "multipart/form-data; boundary=moduli"
   },
   {
    "name": "modules-responses-approve-anonymous",
@@ -5431,64 +6087,6 @@
    }
   },
   {
-   "name": "modules-responses-attach-compressed-upper-gz",
-   "actor": "anonymous",
-   "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
-   "headers": {},
-   "status": 200,
-   "response": {
-    "msg": "attachment added"
-   },
-   "effect": {
-    "kind": "document",
-    "actor": null,
-    "filename": "ARCHIVIO.GZ",
-    "link": "att_r",
-    "audit": [
-     {
-      "model": "Document",
-      "key": "$new",
-      "action": 0,
-      "changes": {
-       "document_id": [
-        "None",
-        "$id"
-       ],
-       "creation_date": [
-        "None",
-        "$created"
-       ],
-       "filename": [
-        "None",
-        "ARCHIVIO.GZ"
-       ],
-       "token": [
-        "None",
-        "$token"
-       ],
-       "customer_invoice_pdf": [
-        "None",
-        "application.CustomerInvoice.None"
-       ]
-      },
-      "index": "$actor",
-      "path": "actor.sport_association"
-     }
-    ],
-    "object": {
-     "size": 17,
-     "sha256": "4243e3bdaad46e0a0ba85fb6c0ff84f7ab4dd1824c6d83490f0e75479acf2ff7",
-     "content_type": "application/octet-stream",
-     "cache_control": "max-age=86400"
-    }
-   },
-   "body": {
-    "filename": "ARCHIVIO.GZ",
-    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
-   }
-  },
-  {
    "name": "modules-responses-attach-unknown-response-server-error",
    "actor": "athlete",
    "method": "POST",
@@ -5645,6 +6243,1332 @@
     "filename": "accento.txt",
     "base64": "çiao"
    }
+  },
+  {
+   "name": "modules-responses-attach-name-subdirectory",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "cartella/nota.txt",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "cartella/nota.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 4,
+     "sha256": "b133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+     "content_type": "text/plain",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "filename": "cartella/nota.txt",
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-name-backslash",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": "owner",
+    "filename": "cartella\\foto.png",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "cartella\\foto.png"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 4,
+     "sha256": "b133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+     "content_type": "image/png",
+     "cache_control": "max-age=86400"
+    },
+    "object_name": "cartella/foto.png"
+   },
+   "body": {
+    "filename": "cartella\\foto.png",
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-name-normalized",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "./doppia//barra.txt",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "./doppia//barra.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 4,
+     "sha256": "b133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+     "content_type": "text/plain",
+     "cache_control": "max-age=86400"
+    },
+    "object_name": "doppia/barra.txt"
+   },
+   "body": {
+    "filename": "./doppia//barra.txt",
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-name-255-characters",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy.txt",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 4,
+     "sha256": "b133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+     "content_type": "text/plain",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "filename": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy.txt",
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-name-256-characters-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "filename": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-name-nul-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "filename": "nul\u0000.txt",
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-name-null-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "filename": null,
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-name-empty-bad-request",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 400,
+   "response": "<bad-request-page>",
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        ""
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": "",
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-name-dot-dot-bad-request",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 400,
+   "response": "<bad-request-page>",
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "..",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        ".."
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": "..",
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-name-traversal-bad-request",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 400,
+   "response": "<bad-request-page>",
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "a/../b.txt",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "a/../b.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": "a/../b.txt",
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-name-backslash-traversal-bad-request",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 400,
+   "response": "<bad-request-page>",
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "a\\..\\b.txt",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "a\\..\\b.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": "a\\..\\b.txt",
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-name-absolute-bad-request",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 400,
+   "response": "<bad-request-page>",
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "/assoluto.txt",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "/assoluto.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": "/assoluto.txt",
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-name-trailing-slash-bad-request",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 400,
+   "response": "<bad-request-page>",
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "cartella/",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "cartella/"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": "cartella/",
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-name-empty-bad-padding-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        ""
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": "",
+    "base64": "abcde"
+   }
+  },
+  {
+   "name": "modules-responses-attach-filename-integer-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "document",
+    "actor": "owner",
+    "filename": "5",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "5"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": 5,
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-filename-boolean-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "document",
+    "actor": "owner",
+    "filename": "True",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "True"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": true,
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-filename-list-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "document",
+    "actor": "owner",
+    "filename": "['a', 1, None]",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "['a', 1, None]"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": [
+     "a",
+     1,
+     null
+    ],
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-filename-object-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "document",
+    "actor": "owner",
+    "filename": "{'a': 'b'}",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "{'a': 'b'}"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": {
+     "a": "b"
+    },
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-filename-float-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "document",
+    "actor": "owner",
+    "filename": "1.5",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "1.5"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": 1.5,
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-base64-integer-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "dati-integer.txt",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "dati-integer.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": "dati-integer.txt",
+    "base64": 5
+   }
+  },
+  {
+   "name": "modules-responses-attach-base64-null-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "dati-null.txt",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "dati-null.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": "dati-null.txt",
+    "base64": null
+   }
+  },
+  {
+   "name": "modules-responses-attach-base64-list-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "dati-list.txt",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "dati-list.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": "dati-list.txt",
+    "base64": [
+     "Y2lh"
+    ]
+   }
+  },
+  {
+   "name": "modules-responses-attach-base64-object-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "dati-object.txt",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "dati-object.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": "dati-object.txt",
+    "base64": {}
+   }
+  },
+  {
+   "name": "modules-responses-attach-base64-boolean-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "dati-boolean.txt",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "dati-boolean.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": "dati-boolean.txt",
+    "base64": false
+   }
+  },
+  {
+   "name": "modules-responses-attach-form",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "ultimo.txt",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "ultimo.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 4,
+     "sha256": "b133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+     "content_type": "text/plain",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "raw_body": "filename=modulo.txt&base64=Y2lhbw%3D%3D&filename=ultimo.txt",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "modules-responses-attach-form-nothing-sent",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": null,
+   "raw_body": "filename=modulo.txt",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "modules-responses-attach-multipart",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": "owner",
+    "filename": "parti.txt",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "parti.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 4,
+     "sha256": "b133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+     "content_type": "text/plain",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "raw_body": "--moduli\r\nContent-Disposition: form-data; name=\"filename\"\r\n\r\nparti.txt\r\n--moduli\r\nContent-Disposition: form-data; name=\"base64\"\r\n\r\ndata:text/plain;base64,Y2lhbw\r\n--moduli--\r\n",
+   "content_type": "multipart/form-data; boundary=moduli"
+  },
+  {
+   "name": "modules-responses-attach-multipart-file-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "caricato.txt",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "caricato.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "raw_body": "--moduli\r\nContent-Disposition: form-data; name=\"filename\"\r\n\r\ncaricato.txt\r\n--moduli\r\nContent-Disposition: form-data; name=\"base64\"; filename=\"a.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nY2lhbw==\r\n--moduli--\r\n",
+   "content_type": "multipart/form-data; boundary=moduli"
   },
   {
    "name": "modules-responses-attach-delete-missing-key",
@@ -5876,6 +7800,175 @@
    },
    "body": {
     "document_id": "a1000000-0000-4000-8000-000000643020"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-boolean-unknown",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "document not found"
+   },
+   "effect": null,
+   "body": {
+    "document_id": true
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-negative-server-error",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document_id": -1
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-huge-server-error",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document_id": 340282366920938463463374607431768211456
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-float-server-error",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document_id": 42.0
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-list-value-server-error",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document_id": [
+     "00000000-0000-0000-0000-00000000002a"
+    ]
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-integer",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment deleted"
+   },
+   "effect": {
+    "kind": "rows",
+    "actor": "owner",
+    "deleted_documents": [
+     "d42"
+    ],
+    "removed_links": [],
+    "audit": [
+     {
+      "model": "Document",
+      "key": "d42",
+      "action": 2,
+      "changes": "$prepared",
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "document_id": 42
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-form",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment deleted"
+   },
+   "effect": {
+    "kind": "rows",
+    "actor": null,
+    "deleted_documents": [
+     "d9"
+    ],
+    "removed_links": [],
+    "audit": [
+     {
+      "model": "Document",
+      "key": "d9",
+      "action": 2,
+      "changes": "$prepared",
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ]
+   },
+   "raw_body": "document_id=a1000000-0000-4000-8000-000000643807",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "modules-responses-attach-delete-referenced-by-payment",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment deleted"
+   },
+   "effect": {
+    "kind": "rows",
+    "actor": "owner",
+    "deleted_documents": [
+     "d8"
+    ],
+    "removed_links": [
+     [
+      "full_r",
+      "d8"
+     ]
+    ],
+    "audit": [
+     {
+      "model": "Document",
+      "key": "d8",
+      "action": 2,
+      "changes": "$prepared",
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643805"
    }
   }
  ]

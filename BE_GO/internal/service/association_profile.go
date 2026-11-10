@@ -33,31 +33,6 @@ func (s *AssociationProfiles) Read(ctx context.Context, owner string) (*dto.Asso
 	return s.profile(ctx, row)
 }
 
-// associationProfileByID is the optional reader of an association by its id.
-type associationProfileByID interface {
-	AssociationProfileByID(ctx context.Context, association string) (domain.AssociationProfileSnapshot, error)
-}
-
-// ReadAssociation is SportAssociationSerializer over the association a
-// foreign key points to, resolved by id.
-func (s *AssociationProfiles) ReadAssociation(ctx context.Context, association string) (*dto.AssociationProfile, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-	reader, ok := s.reader.(associationProfileByID)
-	if !ok {
-		return nil, domain.ErrAssociationNotFound
-	}
-	row, err := reader.AssociationProfileByID(ctx, association)
-	if err != nil {
-		return nil, err
-	}
-	if row.ID != association {
-		return nil, domain.ErrAssociationNotFound
-	}
-	return s.profile(ctx, row)
-}
-
 func (s *AssociationProfiles) profile(ctx context.Context, row domain.AssociationProfileSnapshot) (*dto.AssociationProfile, error) {
 	profile := &dto.AssociationProfile{
 		ID:                         row.ID,

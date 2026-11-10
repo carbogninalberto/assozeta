@@ -2868,6 +2868,23 @@ def subscription_upload_document(request, uid):
 
 
 
+def _document_used_elsewhere(subscription_file):
+    """True when a row other than this file references its document."""
+    document = subscription_file.document
+    for relation in document._meta.related_objects:
+        if relation.many_to_many:
+            rows = relation.through._base_manager.filter(
+                **{relation.field.m2m_reverse_field_name(): document},
+            )
+        else:
+            rows = relation.related_model._base_manager.filter(**{relation.field.name: document})
+            if relation.related_model is SubscriptionFile:
+                rows = rows.exclude(pk=subscription_file.pk)
+        if rows.exists():
+            return True
+    return False
+
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def subscription_delete_document(request, uid, subscription_file_id):
@@ -2899,7 +2916,9 @@ def subscription_delete_document(request, uid, subscription_file_id):
         raise TypeError("subscription file not found!")
 
     # delete document
-    if not getattr(request, 'impersonation_association', None):
+    # A document other rows still reference stays with them: only this link goes.
+    if not getattr(request, 'impersonation_association', None) \
+            and not _document_used_elsewhere(subscription_file):
         subscription_file.document.delete()
     subscription_file.delete()
 

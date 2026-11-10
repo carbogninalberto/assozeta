@@ -485,6 +485,24 @@
    "status": "SUCCESS",
    "result": "{not json"
   },
+  "success_named": {
+   "task_id": "a1000000-0000-4000-8000-000000976805",
+   "status": "SUCCESS",
+   "result": "{\"success\": true}",
+   "task_name": "import_association_data"
+  },
+  "other_task": {
+   "task_id": "a1000000-0000-4000-8000-000000976806",
+   "status": "SUCCESS",
+   "result": "{\"removed\": 2}",
+   "task_name": "cleanup_old_exports"
+  },
+  "other_task_failed": {
+   "task_id": "a1000000-0000-4000-8000-000000976807",
+   "status": "FAILURE",
+   "task_name": "export_association_data",
+   "result": "{\"exc_type\": \"ValueError\", \"exc_message\": [\"altro task\"], \"exc_module\": \"builtins\"}"
+  },
   "failed_value": {
    "task_id": "a1000000-0000-4000-8000-000000976840",
    "status": "FAILURE",
@@ -3550,7 +3568,11 @@
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976800": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3571,7 +3593,11 @@
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:import-progress-task": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3611,7 +3637,11 @@
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976801": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3633,7 +3663,11 @@
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976802": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3655,7 +3689,11 @@
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976803": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3672,7 +3710,11 @@
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976804": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3693,7 +3735,11 @@
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976800": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3724,6 +3770,219 @@
    "objects_after": null
   },
   {
+   "name": "association-transfer-import-status-owner-not-registered-success",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976801",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976801",
+    "status": "PENDING",
+    "ready": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-not-registered-started",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976800",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976800",
+    "status": "PENDING",
+    "ready": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-not-registered-success-broken",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976804",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976804",
+    "status": "PENDING",
+    "ready": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-not-registered-other-task-failed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976807",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976807",
+    "status": "PENDING",
+    "ready": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-registered-without-row",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976999",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976999",
+    "status": "PENDING",
+    "ready": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976999": {
+      "task": "import_association_data"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-export-registration-only",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976801",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976801",
+    "status": "PENDING",
+    "ready": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976801": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-named-import-row",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976805",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976805",
+    "status": "SUCCESS",
+    "ready": true,
+    "result": {
+     "success": true
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976805": {
+      "task": "import_association_data"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-row-of-other-task",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976806",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976806",
+    "status": "PENDING",
+    "ready": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976806": {
+      "task": "import_association_data"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-row-of-other-task-failed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976807",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976807",
+    "status": "PENDING",
+    "ready": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976807": {
+      "task": "import_association_data"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
    "name": "association-transfer-import-status-owner-failed-value",
    "actor": "owner",
    "method": "GET",
@@ -3734,12 +3993,16 @@
     "task_id": "a1000000-0000-4000-8000-000000976840",
     "status": "FAILURE",
     "ready": true,
-    "error": "Archivio non valido: manca manifest.json"
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
    },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976840": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3756,12 +4019,16 @@
     "task_id": "a1000000-0000-4000-8000-000000976841",
     "status": "FAILURE",
     "ready": true,
-    "error": "('Import fallito', 3)"
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
    },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976841": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3778,12 +4045,16 @@
     "task_id": "a1000000-0000-4000-8000-000000976842",
     "status": "FAILURE",
     "ready": true,
-    "error": ""
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
    },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976842": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3800,12 +4071,16 @@
     "task_id": "a1000000-0000-4000-8000-000000976843",
     "status": "FAILURE",
     "ready": true,
-    "error": "'users'"
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
    },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976843": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3822,12 +4097,16 @@
     "task_id": "a1000000-0000-4000-8000-000000976844",
     "status": "FAILURE",
     "ready": true,
-    "error": "('users', None)"
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
    },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976844": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3844,12 +4123,16 @@
     "task_id": "a1000000-0000-4000-8000-000000976845",
     "status": "FAILURE",
     "ready": true,
-    "error": "duplicate key value violates unique constraint \"application_user_pkey\"\nDETAIL:  Key (user_id) already exists.\n"
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
    },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976845": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3866,12 +4149,16 @@
     "task_id": "a1000000-0000-4000-8000-000000976846",
     "status": "FAILURE",
     "ready": true,
-    "error": "(True, \"l'archivio\", 7)"
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
    },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976846": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3888,12 +4175,16 @@
     "task_id": "a1000000-0000-4000-8000-000000976847",
     "status": "FAILURE",
     "ready": true,
-    "error": "None"
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
    },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976847": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3910,12 +4201,16 @@
     "task_id": "a1000000-0000-4000-8000-000000976848",
     "status": "FAILURE",
     "ready": true,
-    "error": "testo, non lista"
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
    },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976848": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3932,12 +4227,16 @@
     "task_id": "a1000000-0000-4000-8000-000000976849",
     "status": "FAILURE",
     "ready": true,
-    "error": "è rotto"
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
    },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976849": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3954,12 +4253,16 @@
     "task_id": "a1000000-0000-4000-8000-000000976850",
     "status": "FAILURE",
     "ready": true,
-    "error": ""
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
    },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976850": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3976,12 +4279,16 @@
     "task_id": "a1000000-0000-4000-8000-000000976851",
     "status": "FAILURE",
     "ready": true,
-    "error": "None"
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
    },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976851": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -3998,12 +4305,16 @@
     "task_id": "a1000000-0000-4000-8000-000000976852",
     "status": "FAILURE",
     "ready": true,
-    "error": "None"
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
    },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976852": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -4015,12 +4326,21 @@
    "method": "GET",
    "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976853",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976853",
+    "status": "FAILURE",
+    "ready": true,
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
+   },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976853": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -4032,12 +4352,21 @@
    "method": "GET",
    "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976854",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976854",
+    "status": "FAILURE",
+    "ready": true,
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
+   },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976854": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -4049,12 +4378,21 @@
    "method": "GET",
    "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976855",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976855",
+    "status": "FAILURE",
+    "ready": true,
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
+   },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976855": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -4075,7 +4413,11 @@
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976856": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -4087,12 +4429,20 @@
    "method": "GET",
    "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976857",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976857",
+    "status": "RETRY",
+    "ready": false
+   },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976857": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -4109,12 +4459,16 @@
     "task_id": "a1000000-0000-4000-8000-000000976812",
     "status": "REVOKED",
     "ready": true,
-    "error": "revoked"
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
    },
    "effect": null,
    "setup": {
     "instance": true,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976812": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -5757,6 +6111,80 @@
    "objects_after": null
   },
   {
+   "name": "association-transfer-active-owner-failed-without-type-row",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976853",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": {},
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-success-broken-row",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976804",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": {},
+   "objects_after": null
+  },
+  {
    "name": "association-transfer-active-owner-retry-row",
    "actor": "owner",
    "method": "GET",
@@ -5809,19 +6237,36 @@
    "objects_after": null
   },
   {
-   "name": "association-transfer-active-owner-failed-row-without-type",
+   "name": "association-transfer-active-owner-retry-row-without-type",
    "actor": "owner",
    "method": "GET",
    "path": "/association/export/active",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 200,
+   "response": {
+    "active": true,
+    "task_id": "a1000000-0000-4000-8000-000000976857",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "user_id": "a1000000-0000-4000-8000-000000700001",
+    "status": "PROGRESS",
+    "ready": false,
+    "estimate": "40%",
+    "progress": {
+     "percent": 40,
+     "phase": "files",
+     "label": "Copia file",
+     "completed": 4,
+     "total": 10,
+     "files_failed": 0
+    },
+    "updated_at": "2026-02-01T10:00:00.123456+00:00"
+   },
    "effect": null,
    "setup": {
     "instance": true,
     "cache": {
      "association-export-active:a1000000-0000-4000-8000-000000701001": {
-      "task_id": "a1000000-0000-4000-8000-000000976853",
+      "task_id": "a1000000-0000-4000-8000-000000976857",
       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
       "user_id": "a1000000-0000-4000-8000-000000700001",
       "status": "PROGRESS",
@@ -6735,7 +7180,11 @@
    "effect": null,
    "setup": {
     "instance": false,
-    "cache": {},
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976803": {
+      "task": "import_association_data"
+     }
+    },
     "objects": {}
    },
    "cache_after": null,
@@ -7695,7 +8144,14 @@
     "cache": {},
     "objects": {}
    },
-   "cache_after": null,
+   "cache_after": {
+    "association-import-task:$task": {
+     "value": {
+      "task": "import_association_data"
+     },
+     "ttl": 86400
+    }
+   },
    "objects_after": {
     "$upload": {
      "body_b64": "UEsDBBQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAbWFuaWZlc3QuanNvbmVPwUrEMBD9lZKrtk6Ku7p7E8Gjl9WTSBjbWYhuEknSRSn9F//FHzOTdrFLQxiY9+a9edOLI/mgnRXbQsgKKhCXhaCvT+ej2jtvMDLzhh+WvlXI8MQe5Wy0xUg8WEO9LkGWcvUkYQv8L3LlWQzBNRrjuK4Xo90MVbplE5SQX5nLNZfbUwuwuVlvVtmvJeuMtidDsUs+FH9/Cm3YGSOOCaPHRMshNca1dAjTCcTbXnph0eTwOwbvZiGTYK8PmUsH4hVItchcvYdxsnGdjdOef8/nQH7uA7XqEhQWsvpMdu86H2gRQIJqMrPUw5n+0T2wbngd/gBQSwMEFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb26LrlYqLsgvKolPLC7OT85MLMnMz4vPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLUwMlHQWl0uLUIuK1GIK0pKTm5edm5oFtA+kLBlqdWnJ4gUJmLsgxiSWJIFUliRXxyfkpqSAVBoZGxiamZuYWlgZKtbEAUEsDBBQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAZGF0YS8wMl91c2Vycy5qc29ui65WKi1OLYrPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLU0MlHQWwlrzE3FSQnszcgvyiktQU3fzyvNQikGxqbmJmDkgKLOIAU6CXWpGYW5CTqleSWlwCUleQWFxcnl8EtrkgKTslzSi+OCPRyNRMxQxsn4pjknOKa5p7hmeWd45vnn9BYFFwSWiZiqOjq7NjeaCbU3qyp3Ngvo+Lo4G/S4VjkGuGb6hbUGSEu1N2ontFeYpHhoWtUq2OAqleNMLpxdzU3CQ0P0KEiPOkolJtLABQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAAAAAAAAAAAAgAHOAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAM8CAAAAAA==",
@@ -7741,7 +8197,14 @@
     "cache": {},
     "objects": {}
    },
-   "cache_after": null,
+   "cache_after": {
+    "association-import-task:$task": {
+     "value": {
+      "task": "import_association_data"
+     },
+     "ttl": 86400
+    }
+   },
    "objects_after": {
     "$upload": {
      "body_b64": "UEsDBBQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAbWFuaWZlc3QuanNvbmVPwUrEMBD9lZKrtk6Ku7p7E8Gjl9WTSBjbWYhuEknSRSn9F//FHzOTdrFLQxiY9+a9edOLI/mgnRXbQsgKKhCXhaCvT+ej2jtvMDLzhh+WvlXI8MQe5Wy0xUg8WEO9LkGWcvUkYQv8L3LlWQzBNRrjuK4Xo90MVbplE5SQX5nLNZfbUwuwuVlvVtmvJeuMtidDsUs+FH9/Cm3YGSOOCaPHRMshNca1dAjTCcTbXnph0eTwOwbvZiGTYK8PmUsH4hVItchcvYdxsnGdjdOef8/nQH7uA7XqEhQWsvpMdu86H2gRQIJqMrPUw5n+0T2wbngd/gBQSwMEFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb26LrlYqLsgvKolPLC7OT85MLMnMz4vPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLUwMlHQWl0uLUIuK1GIK0pKTm5edm5oFtA+kLBlqdWnJ4gUJmLsgxiSWJIFUliRXxyfkpqSAVBoZGxiamZuYWlgZKtbEAUEsDBBQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAZGF0YS8wMl91c2Vycy5qc29ui65WKi1OLYrPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLU0MlHQWwlrzE3FSQnszcgvyiktQU3fzyvNQikGxqbmJmDkgKLOIAU6CXWpGYW5CTqleSWlwCUleQWFxcnl8EtrkgKTslzSi+OCPRyNRMxQxsn4pjknOKa5p7hmeWd45vnn9BYFFwSWiZiqOjq7NjeaCbU3qyp3Ngvo+Lo4G/S4VjkGuGb6hbUGSEu1N2ontFeYpHhoWtUq2OAqleNMLpxdzU3CQ0P0KEiPOkolJtLABQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAAAAAAAAAAAAgAHOAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAM8CAAAAAA==",
@@ -7789,7 +8252,14 @@
     "cache": {},
     "objects": {}
    },
-   "cache_after": null,
+   "cache_after": {
+    "association-import-task:$task": {
+     "value": {
+      "task": "import_association_data"
+     },
+     "ttl": 86400
+    }
+   },
    "objects_after": {
     "$upload": {
      "body_b64": "UEsDBBQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAbWFuaWZlc3QuanNvbmVPwUrEMBD9lZKrtk6Ku7p7E8Gjl9WTSBjbWYhuEknSRSn9F//FHzOTdrFLQxiY9+a9edOLI/mgnRXbQsgKKhCXhaCvT+ej2jtvMDLzhh+WvlXI8MQe5Wy0xUg8WEO9LkGWcvUkYQv8L3LlWQzBNRrjuK4Xo90MVbplE5SQX5nLNZfbUwuwuVlvVtmvJeuMtidDsUs+FH9/Cm3YGSOOCaPHRMshNca1dAjTCcTbXnph0eTwOwbvZiGTYK8PmUsH4hVItchcvYdxsnGdjdOef8/nQH7uA7XqEhQWsvpMdu86H2gRQIJqMrPUw5n+0T2wbngd/gBQSwMEFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb26LrlYqLsgvKolPLC7OT85MLMnMz4vPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLUwMlHQWl0uLUIuK1GIK0pKTm5edm5oFtA+kLBlqdWnJ4gUJmLsgxiSWJIFUliRXxyfkpqSAVBoZGxiamZuYWlgZKtbEAUEsDBBQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAZGF0YS8wMl91c2Vycy5qc29ui65WKi1OLYrPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLU0MlHQWwlrzE3FSQnszcgvyiktQU3fzyvNQikGxqbmJmDkgKLOIAU6CXWpGYW5CTqleSWlwCUleQWFxcnl8EtrkgKTslzSi+OCPRyNRMxQxsn4pjknOKa5p7hmeWd45vnn9BYFFwSWiZiqOjq7NjeaCbU3qyp3Ngvo+Lo4G/S4VjkGuGb6hbUGSEu1N2ontFeYpHhoWtUq2OAqleNMLpxdzU3CQ0P0KEiPOkolJtLABQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAAAAAAAAAAAAgAHOAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAM8CAAAAAA==",
@@ -7835,7 +8305,14 @@
     "cache": {},
     "objects": {}
    },
-   "cache_after": null,
+   "cache_after": {
+    "association-import-task:$task": {
+     "value": {
+      "task": "import_association_data"
+     },
+     "ttl": 86400
+    }
+   },
    "objects_after": {
     "$upload": {
      "body_b64": "VGhpcyBpcyBub3QgYSBaSVAgYXJjaGl2ZS4=",
@@ -7881,7 +8358,14 @@
     "cache": {},
     "objects": {}
    },
-   "cache_after": null,
+   "cache_after": {
+    "association-import-task:$task": {
+     "value": {
+      "task": "import_association_data"
+     },
+     "ttl": 86400
+    }
+   },
    "objects_after": {
     "$upload": {
      "body_b64": "UEsDBBQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAbWFuaWZlc3QuanNvbmVPwUrEMBD9lZKrtk6Ku7p7E8Gjl9WTSBjbWYhuEknSRSn9F//FHzOTdrFLQxiY9+a9edOLI/mgnRXbQsgKKhCXhaCvT+ej2jtvMDLzhh+WvlXI8MQe5Wy0xUg8WEO9LkGWcvUkYQv8L3LlWQzBNRrjuK4Xo90MVbplE5SQX5nLNZfbUwuwuVlvVtmvJeuMtidDsUs+FH9/Cm3YGSOOCaPHRMshNca1dAjTCcTbXnph0eTwOwbvZiGTYK8PmUsH4hVItchcvYdxsnGdjdOef8/nQH7uA7XqEhQWsvpMdu86H2gRQIJqMrPUw5n+0T2wbngd/gBQSwMEFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb26LrlYqLsgvKolPLC7OT85MLMnMz4vPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLUwMlHQWl0uLUIuK1GIK0pKTm5edm5oFtA+kLBlqdWnJ4gUJmLsgxiSWJIFUliRXxyfkpqSAVBoZGxiamZuYWlgZKtbEAUEsDBBQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAZGF0YS8wMl91c2Vycy5qc29ui65WKi1OLYrPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLU0MlHQWwlrzE3FSQnszcgvyiktQU3fzyvNQikGxqbmJmDkgKLOIAU6CXWpGYW5CTqleSWlwCUleQWFxcnl8EtrkgKTslzSi+OCPRyNRMxQxsn4pjknOKa5p7hmeWd45vnn9BYFFwSWiZiqOjq7NjeaCbU3qyp3Ngvo+Lo4G/S4VjkGuGb6hbUGSEu1N2ontFeYpHhoWtUq2OAqleNMLpxdzU3CQ0P0KEiPOkolJtLABQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAAAAAAAAAAAAgAHOAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAM8CAAAAAA==",
@@ -7930,7 +8414,14 @@
     "cache": {},
     "objects": {}
    },
-   "cache_after": null,
+   "cache_after": {
+    "association-import-task:$task": {
+     "value": {
+      "task": "import_association_data"
+     },
+     "ttl": 86400
+    }
+   },
    "objects_after": {
     "$upload": {
      "body_b64": "UEsDBBQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAbWFuaWZlc3QuanNvbmVPwUrEMBD9lZKrtk6Ku7p7E8Gjl9WTSBjbWYhuEknSRSn9F//FHzOTdrFLQxiY9+a9edOLI/mgnRXbQsgKKhCXhaCvT+ej2jtvMDLzhh+WvlXI8MQe5Wy0xUg8WEO9LkGWcvUkYQv8L3LlWQzBNRrjuK4Xo90MVbplE5SQX5nLNZfbUwuwuVlvVtmvJeuMtidDsUs+FH9/Cm3YGSOOCaPHRMshNca1dAjTCcTbXnph0eTwOwbvZiGTYK8PmUsH4hVItchcvYdxsnGdjdOef8/nQH7uA7XqEhQWsvpMdu86H2gRQIJqMrPUw5n+0T2wbngd/gBQSwMEFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb26LrlYqLsgvKolPLC7OT85MLMnMz4vPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLUwMlHQWl0uLUIuK1GIK0pKTm5edm5oFtA+kLBlqdWnJ4gUJmLsgxiSWJIFUliRXxyfkpqSAVBoZGxiamZuYWlgZKtbEAUEsDBBQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAZGF0YS8wMl91c2Vycy5qc29ui65WKi1OLYrPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLU0MlHQWwlrzE3FSQnszcgvyiktQU3fzyvNQikGxqbmJmDkgKLOIAU6CXWpGYW5CTqleSWlwCUleQWFxcnl8EtrkgKTslzSi+OCPRyNRMxQxsn4pjknOKa5p7hmeWd45vnn9BYFFwSWiZiqOjq7NjeaCbU3qyp3Ngvo+Lo4G/S4VjkGuGb6hbUGSEu1N2ontFeYpHhoWtUq2OAqleNMLpxdzU3CQ0P0KEiPOkolJtLABQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAAAAAAAAAAAAgAHOAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAM8CAAAAAA==",

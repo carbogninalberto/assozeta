@@ -17,7 +17,7 @@ Around each request:
 - setup.instance false removes the InstanceConfiguration for the request (the
   first-run setup wizard state) and restores the identical row afterwards;
 - setup.cache entries are stored through Django's cache (pickled by
-  django-redis); afterwards the association-export-* keys must be exactly
+  django-redis); afterwards the association-export-* and association-import-* keys must be exactly
   cache_after (None: the stored entries unchanged; 'unchanged': the same
   bytes; otherwise the unpickled value, '$task' being the response's task
   id and '$updated' its updated_at, with a TTL within a minute of 'ttl'),
@@ -58,7 +58,7 @@ SOURCES = ('TESTS/fixtures/association_transfer_http.json', 'TESTS/contracts/tes
            'BE/application/permissions_registry.py', 'BE/core/middleware.py', 'BE/core/settings.py') + harness.SOURCES
 BUCKET = 'association-transfer-fixture'
 LOCATION = 'tenant-transfer'
-EXPORT_KEYS = ':1:association-export-*'
+EXPORT_KEYS = ':1:association-[ei][xm]port-*'
 UPLOAD = re.compile(LOCATION + r'/temp/imports/import_[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.zip\Z')
 ARCHIVE, DOCUMENT, AUDIT, INDEX = ('application.SportAssociationDocumentsArchive', 'docmanager.Document', 'auditlog.LogEntry',
                                    'application.AuditLogIndex')
@@ -145,7 +145,7 @@ def seed_rows(source, created):
     for row in source['tasks'].values():
         insert(TaskResult, TaskResult(task_id=row['task_id'], status=row['status'], result=row['result'],
                                       content_type='application/json', content_encoding='utf-8', meta='{"children": []}',
-                                      task_name='application.tasks.import_association_data'))
+                                      task_name=row.get('task_name')))
     require(not InstanceConfiguration._base_manager.exists(), 'fixture.instance-exists')
     spec = dict(source['instance'])
     spec['primary_association_id'] = ids[spec.pop('primary_association')]

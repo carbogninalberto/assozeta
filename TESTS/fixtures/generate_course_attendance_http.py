@@ -532,19 +532,19 @@ old_course('p', 'Storico', [('p0', week(0), None, None)] + [(f'p{n + 1}', week(n
 # The view replaces a missing expected_absences with [] before the save.
 EMPTIED = {'expected_absences': ['null', '[]']}
 old_saved = lambda n: OLD[n][4] is not None or OLD[n][0] is None
-old_audit = lambda first: [change('attendanceday', f'p{n + 1}', {**({'associated_event': ['None', text]} if text is not None else {}), **EMPTIED})
-                           for n, (_, _, _, text, _) in enumerate(OLD) if first or not old_saved(n)]
-# The listing links each unlinked day to its event: the UUID field takes integers, and a value it rejects fails the
-# save after the audit entry of its diff.
+OLD_AUDIT = [change('attendanceday', f'p{n + 1}', {**({'associated_event': ['None', text]} if text is not None else {}), **EMPTIED})
+             for n, (_, _, _, text, _) in enumerate(OLD) if old_saved(n)]
+# The listing links each unlinked day to its event: the UUID field takes integers; a day whose event id the field
+# rejects stays as stored, without a save or an audit entry.
 add('attendees-old-event-ids', 'owner', list_path('p'), 200,
     {'data': {'events': [old_listed('p0')] + [old_listed(f'p{n + 1}', OLD_EVENTS[n], OLD[n][2]) for n in range(len(OLD))]}},
     effect=effect(days={f'p{n + 1}': {'associated_event': OLD[n][4], 'expected_absences': []} for n in range(len(OLD)) if old_saved(n)},
-                  audit=old_audit(True)))
-# A day linked to an integer id no longer matches its event (str(uuid) != id); the rejected ids are logged again.
+                  audit=OLD_AUDIT))
+# A day linked to an integer id no longer matches its event (str(uuid) != id); the days with rejected ids are listed
+# with their event again and nothing is written.
 add('attendees-old-event-ids-again', 'owner', list_path('p'), 200,
     {'data': {'events': [old_listed('p0')] + [old_listed(f'p{n + 1}') if OLD[n][4] else old_listed(f'p{n + 1}', OLD_EVENTS[n], OLD[n][2])
-                                              for n in range(len(OLD))]}},
-    effect=effect(audit=old_audit(False)))
+                                              for n in range(len(OLD))]}})
 # map_unlinked_attendance links through an integer id.
 old_course('q', 'Storico intero', [('q1', week(0), old_event(9, week(0)), None)])
 add('attendees-old-integer-id-mapped', 'owner', list_path('q'), 200, {'data': {'events': [old_listed('q1')]}},
