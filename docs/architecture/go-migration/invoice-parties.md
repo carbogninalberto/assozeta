@@ -24,14 +24,14 @@ remains the production execution owner.
   `.filter().first()` and raise a bare `Exception` (500) when the association
   or the association's invoice is missing. Updates validate the UUID first
   (`400 ["badly formed hexadecimal UUID string"]`).
-- **Customer list:** first, for every customer invoice without a PDF (any association, the database's order),
+- **Customer list:** first `request.user.sport_association` (athletes 403, owners without an association a 500, both before
+  anything is regenerated). Then, for each of the association's invoices without a PDF (`-creation_date`, then id),
   `generate_invoice_xml` of the stored row (`internal/fatturapa`, ProgressivoInvio from invoice-sync-print's counter) and
-  `invoice.save()`: one auditlog update of `xml` indexed `direct` to the invoice's association (an exception in the XML is only
-  logged: no save), then `print_document_customer_invoice.apply` (invoice-sync-print's eager runner,
-  `GET CURRENT_HOST/document/einvoice/<id>`). This runs before `request.user.sport_association`, so athletes and owners without
-  an association regenerate and print too. Then every invoice of the association by `-creation_date`
-  with `CustomerInvoiceSerializer` (all fields, `pdf_token` from the PDF). Go admits the list like a write (operation
-  lifecycle, audit context).
+  `invoice.save()`: one auditlog update of `xml` indexed `direct` to the association (an exception in the XML is only
+  logged: no save), then `print_document_customer_invoice.apply` with the caller's Authorization header (invoice-sync-print's
+  eager runner, `GET CURRENT_HOST/document/einvoice/<id>`), the same token the customer add's eager print uses. Then every
+  invoice of the association by `-creation_date` with `CustomerInvoiceSerializer` (all fields, `pdf_token` from the PDF). Go
+  admits the list like a write (operation lifecycle, audit context).
 - **Customer add:** the view writes into `request.data` (a list, scalar,
   `null` or form body is a 500), defaults missing or null
   `transmitting_date`/`payment_expiry_date` to today and converts both with
@@ -137,8 +137,8 @@ Model hooks ([model-hooks](model-hooks.md)): `supplier-update-payment-descriptio
 association (its owner updates them, so the own lists stay as authored). Native 138/138; mutation (`model-hooks-mutation`:
 the description hook skipped) fails Go on the first (audit fields; CAUGHT).
 
-Customer-list loop over invoices without a PDF (API v2 gap): a printing-pending customer invoice of the foreign association
-(every list request regenerates and prints it); the adapter runs invoice-sync-print's CURRENT_HOST stub, checks each case's
+Customer-list loop over invoices without a PDF (API v2 gap): printing-pending customer invoices of both associations; the
+adapter runs invoice-sync-print's CURRENT_HOST stub, checks each case's
 outbound requests and requires the stored XML to equal `generate_invoice_xml` of the stored row with a ProgressivoInvio drawn
 during the request.
 
@@ -147,3 +147,14 @@ during the request.
 - Mutation (`v2doc-mutation-r1`): saving the XML without its auditlog entry fails
   `invoice-parties-customer-list-athlete-not-association` (`audit.count`, CAUGHT).
 - Re-run for shared code: invoice-sync-print (`v2doc-rerun-r1`, 70/70).
+
+Customer-list regeneration scoped to the caller's association (the own association's two invoices without a PDF are
+regenerated and printed newest first and listed with their new XML; the other association's stays as seeded; athletes and
+owners without an association regenerate nothing). Django: the view resolves the association first and filters the loop by
+it (`CustomerInvoiceListRegenerationTests` in `BE/application/tests/test_invoice_views.py`).
+
+- RED (`secinv-red-r1`): Django 138/138; Go fails `invoice-parties-customer-list-athlete-not-association` (`print.request-count`).
+- GREEN (`secinv-green-r1`): 138/138 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact effects.
+- Mutation (`secinv-mutation-r1`): the pending query without its association filter fails
+  `invoice-parties-customer-list-owner` (`print.request-count`, CAUGHT).
+- Re-run for shared code: invoice-sync-print (`secinv-rerun-r1`, 70/70).
