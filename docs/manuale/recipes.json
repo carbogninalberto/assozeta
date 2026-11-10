@@ -51,6 +51,7 @@
     "BE/application/serializers/subscriptions_serializers.py",
     "BE/application/serializers/user_serializers.py",
     "BE/application/services/export_service.py",
+    "BE/application/services/import_service.py",
     "BE/application/services/invoice_service.py",
     "BE/application/services/subscription_service.py",
     "BE/application/signals.py",
@@ -96,8 +97,10 @@
     "BE/docmanager/tasks.py",
     "BE/docmanager/views/document_view.py",
     "BE/docmanager/views/printing_views.py",
+    "BE/instance/backups.py",
     "BE/instance/integrations.py",
     "BE/instance/permissions.py",
+    "BE/instance/remote_backups.py",
     "BE/instance/restore/views.py",
     "BE/templates/document/application/invoice.html",
     "UI/src/App.svelte",
@@ -265,6 +268,7 @@
     "UI/src/routes/profile/ProfileMenu.svelte",
     "UI/src/routes/profile/sections/Account.svelte",
     "UI/src/routes/profile/sections/DataExports.svelte",
+    "UI/src/routes/profile/sections/InstanceApiVersion.svelte",
     "UI/src/routes/profile/sections/InstanceIntegration.svelte",
     "UI/src/routes/profile/sections/InstanceIntegrations.svelte",
     "UI/src/routes/profile/sections/Integrations.svelte",
@@ -284,6 +288,7 @@
     "UI/src/utils/Functions.js",
     "UI/src/utils/Permissions.js",
     "UI/src/utils/TaxCode.js",
+    "UI/src/utils/apiVersion.js",
     "UI/src/utils/enumUtils.js",
     "UI/src/utils/eventCalendar.js"
   ],
@@ -4366,7 +4371,10 @@
       "BE/application/permissions_registry.py",
       "UI/src/routes/profile/ProfileMenu.svelte",
       "UI/src/routes/profile/sections/Account.svelte",
-      "UI/src/routes/profile/sections/Settings.svelte"
+      "UI/src/routes/profile/sections/InstanceApiVersion.svelte",
+      "UI/src/routes/profile/sections/SelfInstance.svelte",
+      "UI/src/routes/profile/sections/Settings.svelte",
+      "UI/src/utils/apiVersion.js"
     ],
     "docs/impostazioni.mdx#modalita-scura": [
       "BE/application/views/profile_views.py",
@@ -7317,7 +7325,9 @@
       "BE/instance/restore/views.py"
     ],
     "faq/i-miei-dati-sono-al-sicuro.mdx#robusta-politica-di-backup": [
+      "BE/instance/backups.py",
       "BE/instance/permissions.py",
+      "BE/instance/remote_backups.py",
       "BE/instance/restore/views.py"
     ],
     "faq/quali-sono-piani-abbonamento.mdx#come-cambiare-piano": [
@@ -7978,6 +7988,7 @@
     ],
     "tutorials/come-esportare-dati-associazione.mdx#esportare-tutti-i-dati-dell-associazione": [
       "BE/application/services/export_service.py",
+      "BE/application/services/import_service.py",
       "BE/application/tasks.py",
       "BE/application/views/export_views.py",
       "UI/src/routes/profile/ProfileMenu.svelte",

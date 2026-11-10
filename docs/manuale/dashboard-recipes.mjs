@@ -3,6 +3,8 @@
 // concurrent changes. Successful settings and registration workflows remain unchanged.
 // Implementation contracts only. User-facing prose is maintained in Bakney/manuale MDX.
 import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.mjs';
+// Reviewed: request identity resolution is unchanged; the list of accounts an owner
+// can impersonate is limited to the members and subscribers of the own association.
 const reviewed = {
   "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
   "UI/src/routes/dashboard/Dashboard.svelte": "d5cd8e48b8fb6f07c310735ae87169911c145daae237a5e84ec21d1876e41f9a",
@@ -19,7 +21,7 @@ const reviewed = {
   "BE/application/models/carnet_models.py": "3e3cb2cfb3d2be09cc5db6b97b43e2a2f391d91ccb61dfb38c99bf0ec7913713",
   "BE/application/utils/api_utils.py": "5db286fc73e92356b476514f4d6561a3300b36668ee99831ca1b197835a5cabf",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
-  "BE/application/impersonation.py": "85e8a9e4d7daf129cb51d6f009a6d597b79e98b5dccbf6bac28bf0d77e0cd0d1",
+  "BE/application/impersonation.py": "6c011159998ceff71dc6bbccfad9faed5451c819d7f31f93b7c0bc62371c9610",
   "UI/src/components/widgets/Associates.svelte": "5bb400b1d4716eaa0a8fb48186f328ecedddf2b0ab2aab66893ba426acf2eeab",
   "UI/src/components/widgets/Payments.svelte": "4e3e6fe698b9208613e9a2ee270294b601ab5a5b89abb7ba3a48c7eec86328b5",
   "UI/src/components/widgets/BestCourses.svelte": "345edb15c8c27c746c2bb2d88da65293d257d59f12a2761ea19d4549c2e0cdb0",

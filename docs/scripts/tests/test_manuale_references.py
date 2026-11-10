@@ -12,7 +12,8 @@ ROOT = Path(__file__).resolve().parents[3]
 FILES = ['BE/application/management/commands/seed_selfhost.py', 'BE/application/views/billing_views.py',
          'BE/core/authentication.py', 'BE/application/views/two_fa_views.py', 'BE/application/views/auth_views.py',
          'BE/instance/restore/views.py', 'BE/instance/permissions.py', 'BE/application/views/payment_views.py',
-         'BE/application/audit_context.py', 'BE/application/signals.py']
+         'BE/application/audit_context.py', 'BE/application/signals.py', 'BE/instance/backups.py',
+         'BE/instance/remote_backups.py']
 SCRIPT = r'''
 import fs from 'node:fs';
 import path from 'node:path';
