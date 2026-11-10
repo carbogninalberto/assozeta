@@ -4,7 +4,8 @@
   promote_verified.py --sweep SUMMARY.json [--components SUMMARY.json ...] [--patch PATCH.json] [--apply]
 
 Inputs (all required to exist and be non-empty):
-  --sweep       summary.json of a full sweep (sweep.py): results keyed http:<family> / process:<module>
+  --sweep       summary.json of a full sweep (sweep.py): results keyed http:<family> / process:<module>;
+                a hand-written summary for one family re-run adds "family_label" (the family.py run label)
   --components  summary.json of run_components.py: results keyed component:<name>, each listing its entries
   --patch       docs/architecture/go-migration/ledger-verified-patch.json: null contract fields to fill,
                 source_removed entries to drop (with the covering entry), entries held back with a reason
@@ -87,6 +88,8 @@ def sweep_results(summary, root):
     head, label, results = summary.get('head'), summary.get('label'), summary.get('results') or {}
     if not head or not label or not results:
         raise PromotionError('sweep summary lacks head, label or results')
+    # A full sweep labels family runs sweep-<label>; a single family re-run names its own run label.
+    run_label = summary.get('family_label') or f'sweep-{label}'
     out = {}
     for key, result in results.items():
         kind, name = key.split(':', 1)
@@ -94,8 +97,8 @@ def sweep_results(summary, root):
             out[key] = f'sweep {key} failed: {result.get("last", "")[:200]}'
             continue
         if kind == 'http':
-            artifact = Path(f'quality-reports/go-migration/{name}-http-sweep-{label}/results.json')
-            command = f'python tools/go-migration/family.py run {name} --versioned --label sweep-{label}'
+            artifact = Path(f'quality-reports/go-migration/{name}-http-{run_label}/results.json')
+            command = f'python tools/go-migration/family.py run {name} --versioned --label {run_label}'
             path = root / artifact
             if not path.is_file() or not path.stat().st_size:
                 out[key] = f'sweep {key} receipt missing: {artifact}'

@@ -147,6 +147,17 @@ class PromoteVerifiedTests(unittest.TestCase):
         with self.assertRaisesRegex(promote_verified.PromotionError, 'declaring something else'):
             self.run_promote()
 
+    def test_single_family_rerun_summary_uses_its_run_label(self):
+        self.write('quality-reports/go-migration/foo-bar-http-verified-x/results.json',
+                   {'success': True, 'workloads': [{'label': t, 'cases': [{'case': 'a'}, {'case': 'b'}]} for t in TRANSPORTS]})
+        sweep = {'head': self.head, 'label': 'rerun', 'family_label': 'verified-x', 'total': 1,
+                 'results': {'http:foo-bar': {'ok': True}}}
+        document = {'format': 1, 'entries': [entry('route:BE/x.py:foo', ['TESTS/fixtures/foo_bar_http.json'])]}
+        report = self.run_promote(document=document, sweep=sweep, components=[])
+        self.assertEqual(report['promoted'], ['route:BE/x.py:foo'])
+        self.assertEqual(document['entries'][0]['evidence'][0]['command'],
+                         'python tools/go-migration/family.py run foo-bar --versioned --label verified-x')
+
     def test_cli_refuses_empty_inputs_dry_runs_and_requires_a_complete_sweep(self):
         ledger = self.write('ledger.json', self.document)
         patch = self.write('patch.json', {'hold': {'x': 'y'}})
