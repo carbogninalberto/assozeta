@@ -6782,25 +6782,25 @@
         "docs/architecture/go-migration/course-calendar.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 164/164; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-red/results.json",
-          "receipt_sha256": "c5e3ca242d692f71efa6b0d56be0c3141be9dd8c28372d58d4264b894ebab7f2"
+          "result": "RED: Django 164/164; Go fails state.registries-values on the first case.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-restc2-mut-calendar/results.json",
+          "receipt_sha256": "28e282a0341b4a57691f6a5f3dd70536f77eb692ac105999c5bfda5825286160"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 164/164 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-green/results.json",
-          "receipt_sha256": "4dd052b22c84360205a6f4f3552371239a83c8e19b76d7fe88afdfc213680111"
+          "result": "GREEN: 164/164 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-sweep-restc2-1/results.json",
+          "receipt_sha256": "bf6417e1d3856b4d1174bee66381624547e92910e0e773043fce3f129ae64355"
         },
         {
-          "revision": "committing change with the lesson read without the registry events",
-          "result": "Mutation control: fails Go on course-calendar-events-lesson (lesson extended_props).",
-          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-mutation-lesson/results.json",
-          "receipt_sha256": "455a0fa00f8848769494e565761fa0ea4663c96dc17d767359511f8aa4109a59"
+          "revision": "delete-group 'before/after' start comparison inverted in service/course_calendar.go",
+          "result": "Mutation control: fails Go on course-calendar-delete-group-before (state.registries-values): CAUGHT.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-restc2-mut-calendar/results.json",
+          "receipt_sha256": "28e282a0341b4a57691f6a5f3dd70536f77eb692ac105999c5bfda5825286160"
         }
       ],
       "notes": [
-        "Implementing: API v2: get_lesson (the default) on calendar/events renders get_extended_prop_for_attendance_day of the matched day in the view's transaction. Still refused: stored shapes the attendance port refuses."
+        "Implementing: Re-run for the merged base (no calendar code change in rest-c2; datetimes outside years 1..9999 stay refused, see v2-refusals.md). RED: n/a, no new cases."
       ]
     },
     {
@@ -6969,25 +6969,25 @@
         "docs/architecture/go-migration/course-calendar.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 164/164; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-red/results.json",
-          "receipt_sha256": "c5e3ca242d692f71efa6b0d56be0c3141be9dd8c28372d58d4264b894ebab7f2"
+          "result": "RED: Django 164/164; Go fails state.registries-values on the first case.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-restc2-mut-calendar/results.json",
+          "receipt_sha256": "28e282a0341b4a57691f6a5f3dd70536f77eb692ac105999c5bfda5825286160"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 164/164 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-green/results.json",
-          "receipt_sha256": "4dd052b22c84360205a6f4f3552371239a83c8e19b76d7fe88afdfc213680111"
+          "result": "GREEN: 164/164 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-sweep-restc2-1/results.json",
+          "receipt_sha256": "bf6417e1d3856b4d1174bee66381624547e92910e0e773043fce3f129ae64355"
         },
         {
-          "revision": "committing change with the lesson read without the registry events",
-          "result": "Mutation control: fails Go on course-calendar-events-lesson (lesson extended_props).",
-          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-mutation-lesson/results.json",
-          "receipt_sha256": "455a0fa00f8848769494e565761fa0ea4663c96dc17d767359511f8aa4109a59"
+          "revision": "delete-group 'before/after' start comparison inverted in service/course_calendar.go",
+          "result": "Mutation control: fails Go on course-calendar-delete-group-before (state.registries-values): CAUGHT.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-restc2-mut-calendar/results.json",
+          "receipt_sha256": "28e282a0341b4a57691f6a5f3dd70536f77eb692ac105999c5bfda5825286160"
         }
       ],
       "notes": [
-        "Implementing: API v2: get_lesson (the default) on calendar/events renders get_extended_prop_for_attendance_day of the matched day in the view's transaction. Still refused: stored shapes the attendance port refuses."
+        "Implementing: Re-run for the merged base (no calendar code change in rest-c2; datetimes outside years 1..9999 stay refused, see v2-refusals.md). RED: n/a, no new cases."
       ]
     },
     {
@@ -9901,25 +9901,25 @@
         "docs/architecture/go-migration/course-enrolment.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 113/113; Go 200 on the first case.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-red/results.json",
-          "receipt_sha256": "a1d6f679734f0557109bef900ebc8aa96ff73b2fb2d082c91febd7987da5ffd9"
+          "result": "RED: Django 113/113; Go 400 on the first case.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-restc2-mut-enrolment/results.json",
+          "receipt_sha256": "7e0447e6b95d9f51aeb41ff2a519e33e2f260a7f61f91bd2fd2ef318acbb3875"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 113/113 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-green/results.json",
-          "receipt_sha256": "3a8a2456760671dd3ccdfa2192d1b2ce80c8f35e6046646e9dbbc3b066928e11"
+          "result": "GREEN: 113/113 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-sweep-restc2-1/results.json",
+          "receipt_sha256": "b3ecf2f63e423d1abffee41fa0ee20df0e2816b1f7f329457e6aa925eb3bccf5"
         },
         {
-          "revision": "committing change without the athlete check of the installment payment (the subscription of the caller's user)",
-          "result": "Mutation control: fails Go on course-enrolment-make-payment-athlete-other-subscription (200 instead of 403); a second control (secaw-mutation-add) without the athlete check of course-overview add fails course-enrolment-overview-add-athlete-other-subscription.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-mutation/results.json",
-          "receipt_sha256": "fdb967848cd6faaca27e1513096bcd355ad95234a47671561ed09057fdb87363"
+          "revision": "billed_until end-before-start check inverted in service/course_enrolment.go",
+          "result": "Mutation control: fails Go on course-enrolment-add-membership-other-association (response.body:keys): CAUGHT.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-restc2-mut-enrolment/results.json",
+          "receipt_sha256": "7e0447e6b95d9f51aeb41ff2a519e33e2f260a7f61f91bd2fd2ef318acbb3875"
         }
       ],
       "notes": [
-        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add. secaw: course-overview add applies the owner check of course_overview_update (athletes enrol subscriptions of their own user, other callers need the association of the course) and the installment payment answers to the course's association or to the athlete of the course subscription; otherwise 403 User not allowed."
+        "Implementing: Re-run for the merged base (no enrolment code change in rest-c2). RED: n/a, no new cases."
       ]
     },
     {
@@ -10212,25 +10212,25 @@
         "docs/architecture/go-migration/course-enrolment.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 113/113; Go 200 on the first case.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-red/results.json",
-          "receipt_sha256": "a1d6f679734f0557109bef900ebc8aa96ff73b2fb2d082c91febd7987da5ffd9"
+          "result": "RED: Django 113/113; Go 400 on the first case.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-restc2-mut-enrolment/results.json",
+          "receipt_sha256": "7e0447e6b95d9f51aeb41ff2a519e33e2f260a7f61f91bd2fd2ef318acbb3875"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 113/113 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-green/results.json",
-          "receipt_sha256": "3a8a2456760671dd3ccdfa2192d1b2ce80c8f35e6046646e9dbbc3b066928e11"
+          "result": "GREEN: 113/113 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-sweep-restc2-1/results.json",
+          "receipt_sha256": "b3ecf2f63e423d1abffee41fa0ee20df0e2816b1f7f329457e6aa925eb3bccf5"
         },
         {
-          "revision": "committing change without the athlete check of the installment payment (the subscription of the caller's user)",
-          "result": "Mutation control: fails Go on course-enrolment-make-payment-athlete-other-subscription (200 instead of 403); a second control (secaw-mutation-add) without the athlete check of course-overview add fails course-enrolment-overview-add-athlete-other-subscription.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-mutation/results.json",
-          "receipt_sha256": "fdb967848cd6faaca27e1513096bcd355ad95234a47671561ed09057fdb87363"
+          "revision": "billed_until end-before-start check inverted in service/course_enrolment.go",
+          "result": "Mutation control: fails Go on course-enrolment-add-membership-other-association (response.body:keys): CAUGHT.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-restc2-mut-enrolment/results.json",
+          "receipt_sha256": "7e0447e6b95d9f51aeb41ff2a519e33e2f260a7f61f91bd2fd2ef318acbb3875"
         }
       ],
       "notes": [
-        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add. secaw: course-overview add applies the owner check of course_overview_update (athletes enrol subscriptions of their own user, other callers need the association of the course) and the installment payment answers to the course's association or to the athlete of the course subscription; otherwise 403 User not allowed."
+        "Implementing: Re-run for the merged base (no enrolment code change in rest-c2). RED: n/a, no new cases."
       ]
     },
     {
@@ -10706,25 +10706,25 @@
         "docs/architecture/go-migration/course-calendar.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 164/164; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-red/results.json",
-          "receipt_sha256": "c5e3ca242d692f71efa6b0d56be0c3141be9dd8c28372d58d4264b894ebab7f2"
+          "result": "RED: Django 164/164; Go fails state.registries-values on the first case.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-restc2-mut-calendar/results.json",
+          "receipt_sha256": "28e282a0341b4a57691f6a5f3dd70536f77eb692ac105999c5bfda5825286160"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 164/164 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-green/results.json",
-          "receipt_sha256": "4dd052b22c84360205a6f4f3552371239a83c8e19b76d7fe88afdfc213680111"
+          "result": "GREEN: 164/164 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-sweep-restc2-1/results.json",
+          "receipt_sha256": "bf6417e1d3856b4d1174bee66381624547e92910e0e773043fce3f129ae64355"
         },
         {
-          "revision": "committing change with the lesson read without the registry events",
-          "result": "Mutation control: fails Go on course-calendar-events-lesson (lesson extended_props).",
-          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-mutation-lesson/results.json",
-          "receipt_sha256": "455a0fa00f8848769494e565761fa0ea4663c96dc17d767359511f8aa4109a59"
+          "revision": "delete-group 'before/after' start comparison inverted in service/course_calendar.go",
+          "result": "Mutation control: fails Go on course-calendar-delete-group-before (state.registries-values): CAUGHT.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-restc2-mut-calendar/results.json",
+          "receipt_sha256": "28e282a0341b4a57691f6a5f3dd70536f77eb692ac105999c5bfda5825286160"
         }
       ],
       "notes": [
-        "Implementing: API v2: get_lesson (the default) on calendar/events renders get_extended_prop_for_attendance_day of the matched day in the view's transaction. Still refused: stored shapes the attendance port refuses."
+        "Implementing: Re-run for the merged base (no calendar code change in rest-c2; datetimes outside years 1..9999 stay refused, see v2-refusals.md). RED: n/a, no new cases."
       ]
     },
     {
@@ -10796,25 +10796,25 @@
         "docs/architecture/go-migration/course-calendar.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 164/164; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-red/results.json",
-          "receipt_sha256": "c5e3ca242d692f71efa6b0d56be0c3141be9dd8c28372d58d4264b894ebab7f2"
+          "result": "RED: Django 164/164; Go fails state.registries-values on the first case.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-restc2-mut-calendar/results.json",
+          "receipt_sha256": "28e282a0341b4a57691f6a5f3dd70536f77eb692ac105999c5bfda5825286160"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 164/164 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-green/results.json",
-          "receipt_sha256": "4dd052b22c84360205a6f4f3552371239a83c8e19b76d7fe88afdfc213680111"
+          "result": "GREEN: 164/164 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-sweep-restc2-1/results.json",
+          "receipt_sha256": "bf6417e1d3856b4d1174bee66381624547e92910e0e773043fce3f129ae64355"
         },
         {
-          "revision": "committing change with the lesson read without the registry events",
-          "result": "Mutation control: fails Go on course-calendar-events-lesson (lesson extended_props).",
-          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-mutation-lesson/results.json",
-          "receipt_sha256": "455a0fa00f8848769494e565761fa0ea4663c96dc17d767359511f8aa4109a59"
+          "revision": "delete-group 'before/after' start comparison inverted in service/course_calendar.go",
+          "result": "Mutation control: fails Go on course-calendar-delete-group-before (state.registries-values): CAUGHT.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-restc2-mut-calendar/results.json",
+          "receipt_sha256": "28e282a0341b4a57691f6a5f3dd70536f77eb692ac105999c5bfda5825286160"
         }
       ],
       "notes": [
-        "Implementing: API v2: get_lesson (the default) on calendar/events renders get_extended_prop_for_attendance_day of the matched day in the view's transaction. Still refused: stored shapes the attendance port refuses."
+        "Implementing: Re-run for the merged base (no calendar code change in rest-c2; datetimes outside years 1..9999 stay refused, see v2-refusals.md). RED: n/a, no new cases."
       ]
     },
     {
@@ -10883,25 +10883,25 @@
         "docs/architecture/go-migration/course-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 137/137; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-writes-http-sweep-restcourses-red-r1/results.json",
-          "receipt_sha256": "a86ab0c775fd1a9f89d96b1b50802f3d37783df777116143ba7a5ffcc946a11f"
+          "result": "RED: Django 146/146; Go fails state.updated:application.Course on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-restc2-mut-writes/results.json",
+          "receipt_sha256": "04a69354f18d04135a45327edcf9a954bc9f1f6aabc32a7a69b1240f9c1190ba"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 137/137 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/course-writes-http-sweep-restcourses-green-r2/results.json",
-          "receipt_sha256": "085cacd08d5613c3899d188e2371bbd91c8d3e49b1290839df66223a41d727be"
+          "result": "GREEN: 146/146 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/course-writes-http-sweep-restc2-1/results.json",
+          "receipt_sha256": "f17ae01386c0c72a9a630af29719b9f0bd7da4735ab390eff85492a7d8d1e915"
         },
         {
-          "revision": "ignoring the result of the installment id lookup (dto.CourseEventTaken) in the course writes transaction",
-          "result": "Mutation control: fails Go on course-writes-update-event-installment-id-taken (response.body:keys): CAUGHT.",
-          "artifact": "quality-reports/go-migration/course-writes-http-restcourses-mutation-r1/results.json",
-          "receipt_sha256": "995c5d0a815f4f3de06f6177702e1fe6e2a0d93bbe84ae468a3e2943c71b53fa"
+          "revision": "numeric(9,2) rounding in dto.CourseNumeric92 changed from half-up to half-down",
+          "result": "Mutation control: fails Go on course-writes-update-raw-value-forms (state.updated:application.Course): CAUGHT.",
+          "artifact": "quality-reports/go-migration/course-writes-http-restc2-mut-writes/results.json",
+          "receipt_sha256": "04a69354f18d04135a45327edcf9a954bc9f1f6aabc32a7a69b1240f9c1190ba"
         }
       ],
       "notes": [
-        "Implementing: API v2 (rest-courses): installment-key events, other-script date digits and non-object overview bodies. RED: documented refusal, see v2-refusals.md (course-writes rows); sweep-restcourses-red-r1 is the previous Go tree against the new cases. Event installment keys are validated like the serializer does; event dates accept decimal digits of any script in the day's second digit and the year; overview update and delete read a list or text body without the keys as an empty object."
+        "Implementing: API v2 (rest-c2): course update raw value forms (exponent/float decimals, boolean letters and floats, float/text integers, unpadded and offset dates) and values the column rejects (auditlog entry, then the 500); float event amounts in course/add. RED: documented refusal, see v2-refusals.md (course-writes rows). X-Group-Id non-canonical spellings stay refused."
       ]
     },
     {
@@ -11187,25 +11187,25 @@
         "docs/architecture/go-migration/course-enrolment.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 113/113; Go 200 on the first case.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-red/results.json",
-          "receipt_sha256": "a1d6f679734f0557109bef900ebc8aa96ff73b2fb2d082c91febd7987da5ffd9"
+          "result": "RED: Django 113/113; Go 400 on the first case.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-restc2-mut-enrolment/results.json",
+          "receipt_sha256": "7e0447e6b95d9f51aeb41ff2a519e33e2f260a7f61f91bd2fd2ef318acbb3875"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 113/113 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-green/results.json",
-          "receipt_sha256": "3a8a2456760671dd3ccdfa2192d1b2ce80c8f35e6046646e9dbbc3b066928e11"
+          "result": "GREEN: 113/113 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-sweep-restc2-1/results.json",
+          "receipt_sha256": "b3ecf2f63e423d1abffee41fa0ee20df0e2816b1f7f329457e6aa925eb3bccf5"
         },
         {
-          "revision": "committing change without the athlete check of the installment payment (the subscription of the caller's user)",
-          "result": "Mutation control: fails Go on course-enrolment-make-payment-athlete-other-subscription (200 instead of 403); a second control (secaw-mutation-add) without the athlete check of course-overview add fails course-enrolment-overview-add-athlete-other-subscription.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-mutation/results.json",
-          "receipt_sha256": "fdb967848cd6faaca27e1513096bcd355ad95234a47671561ed09057fdb87363"
+          "revision": "billed_until end-before-start check inverted in service/course_enrolment.go",
+          "result": "Mutation control: fails Go on course-enrolment-add-membership-other-association (response.body:keys): CAUGHT.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-restc2-mut-enrolment/results.json",
+          "receipt_sha256": "7e0447e6b95d9f51aeb41ff2a519e33e2f260a7f61f91bd2fd2ef318acbb3875"
         }
       ],
       "notes": [
-        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add. secaw: course-overview add applies the owner check of course_overview_update (athletes enrol subscriptions of their own user, other callers need the association of the course) and the installment payment answers to the course's association or to the athlete of the course subscription; otherwise 403 User not allowed."
+        "Implementing: Re-run for the merged base (no enrolment code change in rest-c2). RED: n/a, no new cases."
       ]
     },
     {
@@ -11274,25 +11274,25 @@
         "docs/architecture/go-migration/course-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 137/137; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-writes-http-sweep-restcourses-red-r1/results.json",
-          "receipt_sha256": "a86ab0c775fd1a9f89d96b1b50802f3d37783df777116143ba7a5ffcc946a11f"
+          "result": "RED: Django 146/146; Go fails state.updated:application.Course on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-restc2-mut-writes/results.json",
+          "receipt_sha256": "04a69354f18d04135a45327edcf9a954bc9f1f6aabc32a7a69b1240f9c1190ba"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 137/137 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/course-writes-http-sweep-restcourses-green-r2/results.json",
-          "receipt_sha256": "085cacd08d5613c3899d188e2371bbd91c8d3e49b1290839df66223a41d727be"
+          "result": "GREEN: 146/146 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/course-writes-http-sweep-restc2-1/results.json",
+          "receipt_sha256": "f17ae01386c0c72a9a630af29719b9f0bd7da4735ab390eff85492a7d8d1e915"
         },
         {
-          "revision": "ignoring the result of the installment id lookup (dto.CourseEventTaken) in the course writes transaction",
-          "result": "Mutation control: fails Go on course-writes-update-event-installment-id-taken (response.body:keys): CAUGHT.",
-          "artifact": "quality-reports/go-migration/course-writes-http-restcourses-mutation-r1/results.json",
-          "receipt_sha256": "995c5d0a815f4f3de06f6177702e1fe6e2a0d93bbe84ae468a3e2943c71b53fa"
+          "revision": "numeric(9,2) rounding in dto.CourseNumeric92 changed from half-up to half-down",
+          "result": "Mutation control: fails Go on course-writes-update-raw-value-forms (state.updated:application.Course): CAUGHT.",
+          "artifact": "quality-reports/go-migration/course-writes-http-restc2-mut-writes/results.json",
+          "receipt_sha256": "04a69354f18d04135a45327edcf9a954bc9f1f6aabc32a7a69b1240f9c1190ba"
         }
       ],
       "notes": [
-        "Implementing: API v2 (rest-courses): installment-key events, other-script date digits and non-object overview bodies. RED: documented refusal, see v2-refusals.md (course-writes rows); sweep-restcourses-red-r1 is the previous Go tree against the new cases. Event installment keys are validated like the serializer does; event dates accept decimal digits of any script in the day's second digit and the year; overview update and delete read a list or text body without the keys as an empty object."
+        "Implementing: API v2 (rest-c2): course update raw value forms (exponent/float decimals, boolean letters and floats, float/text integers, unpadded and offset dates) and values the column rejects (auditlog entry, then the 500); float event amounts in course/add. RED: documented refusal, see v2-refusals.md (course-writes rows). X-Group-Id non-canonical spellings stay refused."
       ]
     },
     {
@@ -11361,25 +11361,25 @@
         "docs/architecture/go-migration/course-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 137/137; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-writes-http-sweep-restcourses-red-r1/results.json",
-          "receipt_sha256": "a86ab0c775fd1a9f89d96b1b50802f3d37783df777116143ba7a5ffcc946a11f"
+          "result": "RED: Django 146/146; Go fails state.updated:application.Course on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-restc2-mut-writes/results.json",
+          "receipt_sha256": "04a69354f18d04135a45327edcf9a954bc9f1f6aabc32a7a69b1240f9c1190ba"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 137/137 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/course-writes-http-sweep-restcourses-green-r2/results.json",
-          "receipt_sha256": "085cacd08d5613c3899d188e2371bbd91c8d3e49b1290839df66223a41d727be"
+          "result": "GREEN: 146/146 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/course-writes-http-sweep-restc2-1/results.json",
+          "receipt_sha256": "f17ae01386c0c72a9a630af29719b9f0bd7da4735ab390eff85492a7d8d1e915"
         },
         {
-          "revision": "ignoring the result of the installment id lookup (dto.CourseEventTaken) in the course writes transaction",
-          "result": "Mutation control: fails Go on course-writes-update-event-installment-id-taken (response.body:keys): CAUGHT.",
-          "artifact": "quality-reports/go-migration/course-writes-http-restcourses-mutation-r1/results.json",
-          "receipt_sha256": "995c5d0a815f4f3de06f6177702e1fe6e2a0d93bbe84ae468a3e2943c71b53fa"
+          "revision": "numeric(9,2) rounding in dto.CourseNumeric92 changed from half-up to half-down",
+          "result": "Mutation control: fails Go on course-writes-update-raw-value-forms (state.updated:application.Course): CAUGHT.",
+          "artifact": "quality-reports/go-migration/course-writes-http-restc2-mut-writes/results.json",
+          "receipt_sha256": "04a69354f18d04135a45327edcf9a954bc9f1f6aabc32a7a69b1240f9c1190ba"
         }
       ],
       "notes": [
-        "Implementing: API v2 (rest-courses): installment-key events, other-script date digits and non-object overview bodies. RED: documented refusal, see v2-refusals.md (course-writes rows); sweep-restcourses-red-r1 is the previous Go tree against the new cases. Event installment keys are validated like the serializer does; event dates accept decimal digits of any script in the day's second digit and the year; overview update and delete read a list or text body without the keys as an empty object."
+        "Implementing: API v2 (rest-c2): course update raw value forms (exponent/float decimals, boolean letters and floats, float/text integers, unpadded and offset dates) and values the column rejects (auditlog entry, then the 500); float event amounts in course/add. RED: documented refusal, see v2-refusals.md (course-writes rows). X-Group-Id non-canonical spellings stay refused."
       ]
     },
     {
@@ -11519,25 +11519,25 @@
         "docs/architecture/go-migration/course-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 137/137; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-writes-http-sweep-restcourses-red-r1/results.json",
-          "receipt_sha256": "a86ab0c775fd1a9f89d96b1b50802f3d37783df777116143ba7a5ffcc946a11f"
+          "result": "RED: Django 146/146; Go fails state.updated:application.Course on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-restc2-mut-writes/results.json",
+          "receipt_sha256": "04a69354f18d04135a45327edcf9a954bc9f1f6aabc32a7a69b1240f9c1190ba"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 137/137 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/course-writes-http-sweep-restcourses-green-r2/results.json",
-          "receipt_sha256": "085cacd08d5613c3899d188e2371bbd91c8d3e49b1290839df66223a41d727be"
+          "result": "GREEN: 146/146 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/course-writes-http-sweep-restc2-1/results.json",
+          "receipt_sha256": "f17ae01386c0c72a9a630af29719b9f0bd7da4735ab390eff85492a7d8d1e915"
         },
         {
-          "revision": "ignoring the result of the installment id lookup (dto.CourseEventTaken) in the course writes transaction",
-          "result": "Mutation control: fails Go on course-writes-update-event-installment-id-taken (response.body:keys): CAUGHT.",
-          "artifact": "quality-reports/go-migration/course-writes-http-restcourses-mutation-r1/results.json",
-          "receipt_sha256": "995c5d0a815f4f3de06f6177702e1fe6e2a0d93bbe84ae468a3e2943c71b53fa"
+          "revision": "numeric(9,2) rounding in dto.CourseNumeric92 changed from half-up to half-down",
+          "result": "Mutation control: fails Go on course-writes-update-raw-value-forms (state.updated:application.Course): CAUGHT.",
+          "artifact": "quality-reports/go-migration/course-writes-http-restc2-mut-writes/results.json",
+          "receipt_sha256": "04a69354f18d04135a45327edcf9a954bc9f1f6aabc32a7a69b1240f9c1190ba"
         }
       ],
       "notes": [
-        "Implementing: API v2 (rest-courses): installment-key events, other-script date digits and non-object overview bodies. RED: documented refusal, see v2-refusals.md (course-writes rows); sweep-restcourses-red-r1 is the previous Go tree against the new cases. Event installment keys are validated like the serializer does; event dates accept decimal digits of any script in the day's second digit and the year; overview update and delete read a list or text body without the keys as an empty object."
+        "Implementing: API v2 (rest-c2): course update raw value forms (exponent/float decimals, boolean letters and floats, float/text integers, unpadded and offset dates) and values the column rejects (auditlog entry, then the 500); float event amounts in course/add. RED: documented refusal, see v2-refusals.md (course-writes rows). X-Group-Id non-canonical spellings stay refused."
       ]
     },
     {
@@ -11606,25 +11606,25 @@
         "docs/architecture/go-migration/course-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 137/137; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-writes-http-sweep-restcourses-red-r1/results.json",
-          "receipt_sha256": "a86ab0c775fd1a9f89d96b1b50802f3d37783df777116143ba7a5ffcc946a11f"
+          "result": "RED: Django 146/146; Go fails state.updated:application.Course on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-restc2-mut-writes/results.json",
+          "receipt_sha256": "04a69354f18d04135a45327edcf9a954bc9f1f6aabc32a7a69b1240f9c1190ba"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 137/137 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/course-writes-http-sweep-restcourses-green-r2/results.json",
-          "receipt_sha256": "085cacd08d5613c3899d188e2371bbd91c8d3e49b1290839df66223a41d727be"
+          "result": "GREEN: 146/146 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/course-writes-http-sweep-restc2-1/results.json",
+          "receipt_sha256": "f17ae01386c0c72a9a630af29719b9f0bd7da4735ab390eff85492a7d8d1e915"
         },
         {
-          "revision": "ignoring the result of the installment id lookup (dto.CourseEventTaken) in the course writes transaction",
-          "result": "Mutation control: fails Go on course-writes-update-event-installment-id-taken (response.body:keys): CAUGHT.",
-          "artifact": "quality-reports/go-migration/course-writes-http-restcourses-mutation-r1/results.json",
-          "receipt_sha256": "995c5d0a815f4f3de06f6177702e1fe6e2a0d93bbe84ae468a3e2943c71b53fa"
+          "revision": "numeric(9,2) rounding in dto.CourseNumeric92 changed from half-up to half-down",
+          "result": "Mutation control: fails Go on course-writes-update-raw-value-forms (state.updated:application.Course): CAUGHT.",
+          "artifact": "quality-reports/go-migration/course-writes-http-restc2-mut-writes/results.json",
+          "receipt_sha256": "04a69354f18d04135a45327edcf9a954bc9f1f6aabc32a7a69b1240f9c1190ba"
         }
       ],
       "notes": [
-        "Implementing: API v2 (rest-courses): installment-key events, other-script date digits and non-object overview bodies. RED: documented refusal, see v2-refusals.md (course-writes rows); sweep-restcourses-red-r1 is the previous Go tree against the new cases. Event installment keys are validated like the serializer does; event dates accept decimal digits of any script in the day's second digit and the year; overview update and delete read a list or text body without the keys as an empty object."
+        "Implementing: API v2 (rest-c2): course update raw value forms (exponent/float decimals, boolean letters and floats, float/text integers, unpadded and offset dates) and values the column rejects (auditlog entry, then the 500); float event amounts in course/add. RED: documented refusal, see v2-refusals.md (course-writes rows). X-Group-Id non-canonical spellings stay refused."
       ]
     },
     {
@@ -11702,25 +11702,25 @@
         "docs/architecture/go-migration/course-list.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 159/159; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-list-http-v2pdf-red-r2/results.json",
-          "receipt_sha256": "4bd5d854284b4f8289b7e8e8e6239160e135a061e43a0d7ff4bef42326eab053"
+          "result": "RED: Django 165/165; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/course-list-http-restc2-mut-list/results.json",
+          "receipt_sha256": "87ebfdb3a58266d0e46380b0c976b32af2609641b9d4ee32c45404e0e70f8d2b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/course-list-http-v2pdf-versioned-r2/results.json",
-          "receipt_sha256": "58cb59ace62d51b282ee71189cce9d92942369a6c9aa29dcc10965676b884599"
+          "result": "GREEN: 165/165 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/course-list-http-sweep-restc2-1/results.json",
+          "receipt_sha256": "bc19833a971b267ff926b13aab5f6ecb8ec7cbb552bc245fd8fa64ffa202cbf4"
         },
         {
-          "revision": "document without the Tag column",
-          "result": "Mutation control: fails Go on course-list-pdf-owner (page size and content stream differ)",
-          "artifact": "quality-reports/go-migration/course-list-http-v2pdf-mutation-r1/results.json",
-          "receipt_sha256": "823e98a9071a450fc246d93b89f0b3aaa9783028e78b883e8efd9e96f860ffde"
+          "revision": "date extract in repository.courseListOrderExpression cast to time instead of date",
+          "result": "Mutation control: fails Go on course-list-sort-creation-date-desc (response.body:data:0:course_id): CAUGHT.",
+          "artifact": "quality-reports/go-migration/course-list-http-restc2-mut-list/results.json",
+          "receipt_sha256": "87ebfdb3a58266d0e46380b0c976b32af2609641b9d4ee32c45404e0e70f8d2b"
         }
       ],
       "notes": [
-        "Implementing: POST format excel (current_view_course, get_excel_base64 workbook with part-by-part XLSX parity, duplicate tag column names included) and POST format pdf (generate_pdf_from_data of the ten fixed columns as rows, without the per-tag columns). The PDF is a reportlab table document reproduced by BE_GO/internal/pdfexport and compared in decoded form (pdf-exports.md): the same objects and content streams byte for byte, dates within the request window. Refused: lazy orderings, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/course-list.md."
+        "Implementing: API v2 (rest-c2): datetime-extract orderings (creation_date/start_date/end_date __year, month, hour, date, time ...) for the page, all=1 and excel export. RED: documented refusal, see v2-refusals.md (course-list lazy orderings row)."
       ]
     },
     {
