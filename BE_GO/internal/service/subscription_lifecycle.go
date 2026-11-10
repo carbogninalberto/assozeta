@@ -8,6 +8,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 )
 
 var (
@@ -17,6 +18,10 @@ var (
 	ErrSubscriptionLifecycleForeign = errors.New("subscription lifecycle user not allowed")
 	// ErrSubscriptionLifecycleRejected is reject's PermissionDenied on an already rejected row.
 	ErrSubscriptionLifecycleRejected = errors.New("subscription already rejected")
+	// errSubscriptionLifecycleUnsavedRelated is Model.save()'s ValueError for a
+	// payment whose cached invoice was just deleted (the HTML 500 page; the
+	// invoice delete is kept).
+	errSubscriptionLifecycleUnsavedRelated = errors.New("save() prohibited to prevent data loss due to unsaved related object 'invoice'")
 )
 
 // SubscriptionLifecycleLookupError is the UUIDField ValidationError of a
@@ -28,10 +33,49 @@ func (e *SubscriptionLifecycleLookupError) Error() string { return e.Message }
 type SubscriptionLifecycles struct {
 	store domain.SubscriptionLifecycleStore
 	now   func() time.Time
+	// signatures is the default storage delete's
+	// on_commit Subscription.delete_signature_key_if_unreferenced runs.
+	signatures SubscriptionLifecycleSignatures
+}
+
+// SubscriptionLifecycleSignatures is what delete_signature_key_if_unreferenced
+// reads and deletes: the base-manager reference check and the default storage.
+type SubscriptionLifecycleSignatures interface {
+	KeyReferenced(ctx context.Context, key string) (bool, error)
+	Location() string
+	Delete(ctx context.Context, key string) error
 }
 
 func NewSubscriptionLifecycles(store domain.SubscriptionLifecycleStore, now func() time.Time) *SubscriptionLifecycles {
 	return &SubscriptionLifecycles{store: store, now: now}
+}
+
+// WithSignatureObjects sets the storage the delete's signature clean-up uses.
+func (s *SubscriptionLifecycles) WithSignatureObjects(signatures SubscriptionLifecycleSignatures) *SubscriptionLifecycles {
+	s.signatures = signatures
+	return s
+}
+
+const subscriptionLifecycleSignatureTimeout = 30 * time.Second
+
+// deleteSignature is the robust on_commit
+// Subscription.delete_signature_key_if_unreferenced: failures are logged by
+// Django and change nothing else; without storage configured the object stays.
+func (s *SubscriptionLifecycles) deleteSignature(ctx context.Context, name string) {
+	if s.signatures == nil {
+		return
+	}
+	work, cancel := context.WithTimeout(context.WithoutCancel(ctx), subscriptionLifecycleSignatureTimeout)
+	defer cancel()
+	referenced, err := s.signatures.KeyReferenced(work, name)
+	if err != nil || referenced {
+		return
+	}
+	key, err := documentkey.S3Key(name, s.signatures.Location())
+	if err != nil {
+		return
+	}
+	_ = s.signatures.Delete(work, key)
 }
 
 type subscriptionLifecycleRequest struct {
@@ -175,15 +219,14 @@ func lifecycleMidnight(value *domain.CalendarDate) time.Time {
 	return time.Date(value.Year, time.Month(value.Month), value.Day, 0, 0, 0, 0, time.UTC)
 }
 
-// hiddenPayment: the payment is not visible to Payment.objects (live,
-// group-aware), whose auditlog diff and index the port does not reproduce.
-func hiddenPayment(payment *domain.SubscriptionLifecyclePayment, group *string) bool {
-	return payment.Deleted || (group != nil && (payment.GroupID == nil || *payment.GroupID != *group))
+// groupHiddenPayment: X-Group-Id hides the payment from Payment.objects, whose
+// auditlog diff the port does not reproduce for that case.
+func groupHiddenPayment(payment *domain.SubscriptionLifecyclePayment, group *string) bool {
+	return group != nil && (payment.GroupID == nil || *payment.GroupID != *group)
 }
 
 // archivable checks, before any write, the payments archive saves: an
-// unpaid payment with an invoice (the invoice delete is not ported), one
-// hidden from the default manager, one without an association or whose
+// unpaid payment hidden by X-Group-Id, one without an association or whose
 // Payment.save() fails is refused.
 func (s *SubscriptionLifecycles) archivable(ctx context.Context, request *subscriptionLifecycleRequest, id *string) error {
 	if id == nil {
@@ -199,7 +242,7 @@ func (s *SubscriptionLifecycles) archivable(ctx context.Context, request *subscr
 	if payment.Paid {
 		return nil
 	}
-	if payment.InvoiceID != nil || hiddenPayment(payment, request.group) || payment.AssociationID == "" {
+	if groupHiddenPayment(payment, request.group) || payment.AssociationID == "" {
 		return domain.ErrSubscriptionLifecycleNotPorted
 	}
 	row := payment.PaymentSaveRow
@@ -209,8 +252,11 @@ func (s *SubscriptionLifecycles) archivable(ctx context.Context, request *subscr
 	return nil
 }
 
-// archivePayment is payment.archived = True; payment.save() for an unpaid payment.
-func (s *SubscriptionLifecycles) archivePayment(ctx context.Context, request *subscriptionLifecycleRequest, id *string) error {
+// archivePayment is payment.archived = True; payment.save() for an unpaid
+// payment. invoiceFirst is the course-subscription and subscription order
+// (payment.invoice.delete() before the save, which then raises ValueError);
+// otherwise (installments) the invoice is deleted after the save.
+func (s *SubscriptionLifecycles) archivePayment(ctx context.Context, request *subscriptionLifecycleRequest, id *string, invoiceFirst bool) error {
 	if id == nil {
 		return nil
 	}
@@ -224,7 +270,36 @@ func (s *SubscriptionLifecycles) archivePayment(ctx context.Context, request *su
 	if payment.Paid {
 		return nil
 	}
-	return s.savePaymentArchived(ctx, request, payment.PaymentSaveRow)
+	if payment.InvoiceID != nil && invoiceFirst {
+		// The request is not atomic: the invoice delete stays.
+		if err = request.tx.DeleteInvoice(ctx, *payment.InvoiceID, request.audit); err != nil {
+			return err
+		}
+		if err = request.tx.Commit(); err != nil {
+			return err
+		}
+		return errSubscriptionLifecycleUnsavedRelated
+	}
+	if payment.Deleted {
+		// auditlog's Payment.objects lookup misses the soft-deleted row: the
+		// entry diffs the saved instance against None.
+		row := payment.PaymentSaveRow
+		if err = paymentSaveDefaults(ctx, request.tx.PaymentSaves(), &row, map[string][2]string{}); err != nil {
+			return err
+		}
+		if err = request.tx.PaymentSaves().SavePaymentArchive(ctx, row.ID, true, row.CategoryID, row.Description); err != nil {
+			return err
+		}
+		if err = request.tx.AppendHiddenPaymentUpdate(ctx, row.ID, row.AssociationID, request.audit); err != nil {
+			return err
+		}
+	} else if err = s.savePaymentArchived(ctx, request, payment.PaymentSaveRow); err != nil {
+		return err
+	}
+	if payment.InvoiceID != nil {
+		return request.tx.DeleteInvoice(ctx, *payment.InvoiceID, request.audit)
+	}
+	return nil
 }
 
 func (s *SubscriptionLifecycles) savePaymentArchived(ctx context.Context, request *subscriptionLifecycleRequest, row domain.PaymentSaveRow) error {
@@ -300,11 +375,11 @@ func (s *SubscriptionLifecycles) Archive(ctx context.Context, identity domain.Re
 		return domain.ErrSubscriptionLifecycleNotPorted
 	}
 	for index, cs := range rows {
-		if err = s.archivePayment(ctx, request, cs.PaymentID); err != nil {
+		if err = s.archivePayment(ctx, request, cs.PaymentID, true); err != nil {
 			return err
 		}
 		for _, installment := range installments[index] {
-			if err = s.archivePayment(ctx, request, installment.PaymentID); err != nil {
+			if err = s.archivePayment(ctx, request, installment.PaymentID, false); err != nil {
 				return err
 			}
 			if err = tx.ArchiveInstallment(ctx, installment.ID, cs.CourseAssociationID, request.audit); err != nil {
@@ -322,7 +397,7 @@ func (s *SubscriptionLifecycles) Archive(ctx context.Context, identity domain.Re
 			return err
 		}
 	}
-	if err = s.archivePayment(ctx, request, row.PaymentID); err != nil {
+	if err = s.archivePayment(ctx, request, row.PaymentID, true); err != nil {
 		return err
 	}
 	if err = tx.SaveSubscription(ctx, save, request.audit); err != nil {
@@ -371,25 +446,14 @@ func (s *SubscriptionLifecycles) Delete(ctx context.Context, identity domain.Res
 	tx := request.tx
 	defer tx.Rollback()
 	row := request.row
-	// Checked before any write: the on-commit signature object cleanup, the
-	// cascades to other models, invoices of deleted payments and unpaid
-	// payments reached twice are not ported.
-	if row.SignatureKey != nil && *row.SignatureKey != "" {
-		return domain.ErrSubscriptionLifecycleNotPorted
-	}
-	referenced, err := tx.SubscriptionReferenced(ctx, row.ID)
-	if err != nil {
-		return err
-	}
-	if referenced {
-		return domain.ErrSubscriptionLifecycleNotPorted
-	}
+	// Checked before any write: unpaid payments reached twice are not ported.
 	rows, err := tx.LiveCourseSubscriptions(ctx, row.ID, nil)
 	if err != nil {
 		return err
 	}
 	installments := make([][]domain.SubscriptionLifecycleInstallment, len(rows))
 	unpaid := map[string]bool{}
+	invoices := map[string]*string{}
 	reached := func(id *string) (bool, error) {
 		if id == nil {
 			return false, nil
@@ -404,10 +468,11 @@ func (s *SubscriptionLifecycles) Delete(ctx context.Context, identity domain.Res
 		if payment.Paid {
 			return false, nil
 		}
-		if payment.InvoiceID != nil || unpaid[*id] {
+		if unpaid[*id] {
 			return false, domain.ErrSubscriptionLifecycleNotPorted
 		}
 		unpaid[*id] = true
+		invoices[*id] = payment.InvoiceID
 		return true, nil
 	}
 	for index, cs := range rows {
@@ -439,16 +504,33 @@ func (s *SubscriptionLifecycles) Delete(ctx context.Context, identity domain.Res
 	}
 
 	audit := request.audit
+	// payment.invoice.delete() then payment.delete(): auditlog renders the
+	// invoice_id the instance still holds.
+	deletePayment := func(id string) error {
+		if invoice := invoices[id]; invoice != nil {
+			if err := tx.DeleteInvoice(ctx, *invoice, audit); err != nil {
+				return err
+			}
+			return tx.DeleteInvoicedPayment(ctx, id, *invoice, audit)
+		}
+		return tx.DeletePayments(ctx, []string{id}, audit)
+	}
 	for index, cs := range rows {
 		if cs.PaymentID != nil && unpaid[*cs.PaymentID] {
-			if err = tx.DeletePayments(ctx, []string{*cs.PaymentID}, audit); err != nil {
+			if err = deletePayment(*cs.PaymentID); err != nil {
 				return err
 			}
 			cs.PaymentID = nil
 		}
 		for _, installment := range installments[index] {
 			if installment.PaymentID != nil && unpaid[*installment.PaymentID] {
-				if err = tx.DeleteLoopInstallment(ctx, installment, audit); err != nil {
+				invoice := invoices[*installment.PaymentID]
+				if invoice != nil {
+					if err = tx.DeleteInvoice(ctx, *invoice, audit); err != nil {
+						return err
+					}
+				}
+				if err = tx.DeleteLoopInstallment(ctx, installment, invoice, audit); err != nil {
 					return err
 				}
 				continue
@@ -472,7 +554,7 @@ func (s *SubscriptionLifecycles) Delete(ctx context.Context, identity domain.Res
 	}
 	payment := row.PaymentID
 	if subscriptionPayment {
-		if err = tx.DeletePayments(ctx, []string{*row.PaymentID}, audit); err != nil {
+		if err = deletePayment(*row.PaymentID); err != nil {
 			return err
 		}
 		payment = nil
@@ -498,5 +580,11 @@ func (s *SubscriptionLifecycles) Delete(ctx context.Context, identity domain.Res
 	if err = tx.DeleteSubscription(ctx, row.ID, audit); err != nil {
 		return err
 	}
-	return tx.Commit()
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+	if row.SignatureKey != nil && *row.SignatureKey != "" {
+		s.deleteSignature(ctx, *row.SignatureKey)
+	}
+	return nil
 }

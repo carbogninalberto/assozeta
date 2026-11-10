@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 16 ported below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 11 in v2-subscriptions and 3 in v2-payments, below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -51,6 +51,20 @@ Cross-cutting facts used for the classes:
 
 Details in `statistic-reads.md`, `payment-writes.md`, `association-transfer.md`, `instance-setup.md`, `data-restore.md` and `instance-updates.md`.
 
+### Ported in the v2-subscriptions change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2sub-*`; each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| documents-writes | `POST subscription/<uid>/medical-certificate/upload`, `POST document/medical/certificate/` (and every multipart upload) | filename containing `&` | 124 cases; RED `v2sub-red-r1` Django 124/124, Go 500; GREEN `v2sub-versioned-r1` 4 transports; mutation `v2sub-mutation-r1` (no longest-prefix match) CAUGHT |
+| subscription-lifecycle | `POST subscription/<uid>/archive` | unpaid invoiced payment; soft-deleted payment | 63 cases; RED `v2sub-red-r5` Django 63/63, Go 500; GREEN `v2sub-versioned-r3` 4 transports; mutation `v2sub-mutation-r2` (stored instead of in-memory invoice) CAUGHT |
+| subscription-lifecycle | `POST subscription/<uid>/delete` | signed subscription; rows of other models referencing it; unpaid invoiced payment | same run |
+| subscription-reads | `GET`/`POST subscription/list` (athlete) | every athlete request | 261 cases; RED `v2sub-red-r2` Django 261/261, Go 500; GREEN `v2sub-versioned-r1` 4 transports; mutation `v2sub-mutation-r1` (ascending order) CAUGHT |
+| subscription-reads | `GET subscription/<uid>/info` | subscription without `document_pdf` (now publishes `print_document_subscription`) | same run |
+| subscription-renew | `POST subscription/renew` | payment clean-up meets an unpaid invoiced payment | 55 cases; RED `v2sub-red-r1` Django 55/55, Go 500; GREEN `v2sub-versioned-r1` 4 transports; mutation `v2sub-mutation-r1` (invoiced payments excluded) CAUGHT |
+| subscription-transfer | `POST subscription/<uid>/transfer` (e-mail branch) | tutor/associate names starting with non-ASCII letters; non-ASCII e-mail domain | 31 cases; RED `v2sub-red-r1` Django 31/31, Go 500; GREEN `v2sub-versioned-r1` 4 transports 31/31; mutation `v2sub-mutation-r1` (no NFKC) CAUGHT |
+
 ## Remaining A items, per family
 
 UI paths under `UI/src/`, Go under `BE_GO/internal/`. Cost: cheap (hours), medium (a family change with new
@@ -78,21 +92,25 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 ### subscription-reads / subscription-lifecycle / subscription-renew / subscription-transfer / subscription-medical
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| GET subscription/list | athlete session (always) | `routes/activities/subscription/SubscriptionList.svelte:40`, `routes/search/modals/BuyCarnetFor.svelte:58` | `service/subscription_reads.go:290` | medium |
 | POST subscription/list | current-view print `format` pdf/excel | `components/modals/CurrentViewPrintingModal.svelte:31,41` | `service/subscription_reads.go:345` | excel medium, pdf expensive |
-| GET subscription/<uid>/info | no printed PDF yet (dispatches the print task) | `Members/detail/Detail.svelte:95` | `service/subscription_reads.go:855` | cheap |
 | GET subscription/<uid>/info | membership payment with an invoice | same | `service/subscription_reads.go:994` | medium |
 | list, list/all, info, calendar | staff impersonating an athlete with an association scope | athlete pages while impersonating | `service/subscription_reads.go:252,547,800,1054` | medium |
-| POST subscription/<uid>/archive | unpaid invoiced payment or soft-deleted payment | `MembersList.svelte:1504` | `service/subscription_lifecycle.go:203` | medium |
-| POST subscription/<uid>/delete | signed subscription (storage key) | `MembersList.svelte:1637` | `service/subscription_lifecycle.go:378` | cheap-medium |
-| POST subscription/<uid>/delete | related rows (appointments, carnets, memberships, transfers, files, tokens, sold products, camps) | same | `service/subscription_lifecycle.go:385` | expensive |
-| POST subscription/<uid>/delete | unpaid invoiced payment | same | `service/subscription_lifecycle.go:408` | medium |
-| POST subscription/<uid>/transfer | e-mail transfer, names starting with non-ASCII letters | `MembersList.svelte:1405-1411` | `service/subscription_transfer.go:261,396` | cheap-medium |
 | POST .../medical-certificate/set-certificate-expiration | member without a certificate | `Members/detail/sections/modals/AddMedicalCertificate.svelte:51` | `service/subscription_medical.go:389` | medium |
 | POST subscription/renew | athlete session | `activities/subscription/partials/subscription-element.svelte:231` | `service/subscription_renew.go:53` | medium |
 | POST subscription/renew | member with courses (pre-filled) | `Members/modals/RenewalModal.svelte:58` | `service/subscription_renew.go:96` | medium-expensive |
-| POST subscription/renew | clean-up meets an unpaid invoiced payment | same | `service/subscription_renew.go:119` | medium |
 | GET subscription card, validate-token-link | unknown token while a Bakney pairing is active | `Tessera.svelte:54`, `SubscribeMultiple.svelte:222` | `service/subscription_card.go:61`, `service/subscription_misc.go:318` | medium |
+
+Why these stay (v2-subscriptions):
+- POST subscription/list export: the PDF is a synchronous render and the Excel a pandas layout; neither was in scope here.
+- info with an invoiced membership payment: needs InvoiceSerializer inside the shared CourseSubscriptionOverviewSerializer port
+  (also refused by course-subscriptions/list); best done with that family's fixture.
+- association-scoped athlete sessions: needs scoped_queryset's family boundary on every related read (subscriptions, course
+  subscriptions, installments, files, registries); impersonation-only.
+- set-certificate-expiration without a certificate: Django draws a PNG with PIL/FreeType; not byte-reproducible, refused before any write.
+- renew by an athlete: runs create_subscription with an athlete requester (subscription-create internals, owned elsewhere).
+- renew with courses: add_course_to_subscription inside the renewal transaction; the course-enrolment port has its own
+  transaction and data handling, so it needs a shared refactor.
+- card / validate-token-link: source_token asks the paired authority (`public-token`); needs a stub authority in both fixtures.
 
 ### course-subscriptions / course-enrolment / course-writes / course-list / course-locations / course-calendar
 | Route | Condition | UI call | Go site | Cost |
@@ -110,7 +128,6 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 ### documents / docmanager / document-views
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| medical-certificate uploads | multipart filename with `&` | `medicalCertificateUpload.js:13-15` | `handler/documents_writes.go:471-472` | cheap |
 | DELETE document/<uid>/delete | every attachment delete | `payment/modals/AddEditModal.svelte:803`, `course/modals/AddModal.svelte:300` | `service/docmanager_reads.go:430` | expensive |
 | GET document/retrieve | PDF object missing, still referenced | `ReceiptList.svelte:68`, `MembersList.svelte:527` | `service/docmanager_reads.go:241-246` | medium |
 | GET document/subscription/preview/ | header/footer with a `<pre>` block | `Preview.svelte:63` | `mentions/tree.go:34-35` | medium |
@@ -393,7 +410,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### documents-writes.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/<uid>/medical-certificate/upload, POST document/medical/certificate/ | multipart filename containing `&` (Go refuses any `&`, Django `html.unescape`s) | `BE_GO/internal/handler/documents_writes.go:471-472` (called at :392-394), `ErrDocumentWritesNotPorted` | **A** | `routes/association/Members/detail/sections/modals/medicalCertificateUpload.js:13-15` appends the File with `file.name`; callers `AddMedicalCertificate.svelte:88`, `Members/add/sections/Section4.svelte:50`, `subscribe/wizard/Step3.svelte:16`, `subscribe-multiple/...`, `subscribefamily/...`. A file named e.g. `Rossi & Bianchi.pdf` is refused. |
+| POST subscription/<uid>/medical-certificate/upload, POST document/medical/certificate/ | multipart filename containing `&` (Go refuses any `&`, Django `html.unescape`s) | `BE_GO/internal/handler/documents_writes.go:471-472` (called at :392-394), `ErrDocumentWritesNotPorted` | **ported** (v2-subscriptions, `pyhtml.Unescape`) | `routes/association/Members/detail/sections/modals/medicalCertificateUpload.js:13-15` appends the File with `file.name`; callers `AddMedicalCertificate.svelte:88`, `Members/add/sections/Section4.svelte:50`, `subscribe/wizard/Step3.svelte:16`, `subscribe-multiple/...`, `subscribefamily/...`. A file named e.g. `Rossi & Bianchi.pdf` is refused. |
 | same | invalid UTF-8 / RFC 2231 / `Content-Transfer-Encoding` / bodies > 250 MiB | `handler/documents_writes.go:328,376,384` | B | Browsers send UTF-8 names, no CTE, no RFC 2231; UI caps certificates at 5 MB (`medicalCertificateUpload.js:1,5`). legacy: no; medium. |
 | POST documents/add, POST subscription/<uid>/upload-document | filename None / NUL / lone surrogates | `service/documents_writes.go:182,488` | B | UI sends `file.name` in JSON (`archive/Archive.svelte:104-119`, `Members/detail/sections/modals/AddFileModal.svelte:36-41`). legacy: no; cheap. |
 | upload-document, archive update | uploaded file as a text field | `service/documents_writes.go:213,481,646` | B | UI sends JSON. cheap. |
@@ -820,14 +837,14 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### subscription-lifecycle.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/<uid>/archive | unpaid payment **with an invoice** on the subscription, a course subscription or an installment | `service/subscription_lifecycle.go:203`, `ErrSubscriptionLifecycleNotPorted` | **A** | The UI archive buttons are at `MembersList.svelte:1504`, `MembersBook.svelte:1258`, `MembersListArchive.svelte:237` and `personas/detail/sections/Subscriptions.svelte:126`. The data comes from payment cancel (see top) |
-| same | payment hidden from `Payment.objects` (soft-deleted, or outside `X-Group-Id`) | `:203` (`hiddenPayment`) | **A** (soft-deleted) / B (group) | Soft-deleted: the payment bulk delete in the UI leaves `subscription.payment` / `course_subscription.payment` pointing at a `deleted=True` row. Group: the UI never sets a group |
+| POST subscription/<uid>/archive | unpaid payment **with an invoice** on the subscription, a course subscription or an installment | `service/subscription_lifecycle.go:203`, `ErrSubscriptionLifecycleNotPorted` | **ported** (v2-subscriptions) | The UI archive buttons are at `MembersList.svelte:1504`, `MembersBook.svelte:1258`, `MembersListArchive.svelte:237` and `personas/detail/sections/Subscriptions.svelte:126`. The data comes from payment cancel (see top) |
+| same | payment hidden from `Payment.objects` (soft-deleted, or outside `X-Group-Id`) | `:203` (`hiddenPayment`) | **ported** (soft-deleted, v2-subscriptions) / B (group) | Soft-deleted: the payment bulk delete in the UI leaves `subscription.payment` / `course_subscription.payment` pointing at a `deleted=True` row. Group: the UI never sets a group |
 | same | payment missing (`payment == nil`) / payment without association | `:197`, `:207`, `:342` | B | Dangling FK or NULL association. legacy: yes. cheap |
 | same | `Payment.save()` raises (account transfer, subject 3, without description) on a reached or in-range payment | `:207`, `:346` (`ErrPaymentSaveFailed`, `service/payment_archive.go:50-68`) | B | The range query (`repository/subscription_lifecycle.go:133`) takes the associate's unpaid payments. Account transfers rarely carry an associate. legacy: yes. medium |
 | same | subscription dates still empty after save defaults (no season settings) | `:300` | B | legacy: yes (old rows, or an association without season settings). cheap |
-| POST subscription/<uid>/delete | subscription has `signature_storage_key` | `:378` | **A** | Every signature upload sets `signature_storage_key` (`BE/application/models/subscriptions_models.py:660-720`). The UI signs from `SignatureModal.svelte:13`. Delete is called from `MembersList.svelte:1637`, `MembersBook.svelte:1391`, `personas/detail/sections/Subscriptions.svelte:173` |
-| same | any row referencing the subscription other than course subscriptions/tags (carnet subscriptions, medical appointments, memberships, sold products, tokens, files, transfers, camp subscriptions; includes soft-deleted rows) | `:385` via `repository/subscription_lifecycle.go:140-157` | **A** | The FKs are at `carnet_models.py:44`, `subscriptions_models.py:94,782,872,895,904,1001`, `courses_models.py:358`. The UI creates them all: medical appointment add (`SUBSCRIPTION.MEDICAL_APPOINTMENTS.ADD`), carnet assign, transfer (`MembersList.svelte:1405`), upload-document, camp subscriptions. Most active members have at least one |
-| same | unpaid payment with invoice | `:408` | **A** | same cancel-payment data as archive |
+| POST subscription/<uid>/delete | subscription has `signature_storage_key` | `:378` | **ported** (v2-subscriptions) | Every signature upload sets `signature_storage_key` (`BE/application/models/subscriptions_models.py:660-720`). The UI signs from `SignatureModal.svelte:13`. Delete is called from `MembersList.svelte:1637`, `MembersBook.svelte:1391`, `personas/detail/sections/Subscriptions.svelte:173` |
+| same | any row referencing the subscription other than course subscriptions/tags (carnet subscriptions, medical appointments, memberships, sold products, tokens, files, transfers, camp subscriptions; includes soft-deleted rows) | `:385` via `repository/subscription_lifecycle.go:140-157` | **ported** (v2-subscriptions, generic Collector) | The FKs are at `carnet_models.py:44`, `subscriptions_models.py:94,782,872,895,904,1001`, `courses_models.py:358`. The UI creates them all: medical appointment add (`SUBSCRIPTION.MEDICAL_APPOINTMENTS.ADD`), carnet assign, transfer (`MembersList.svelte:1405`), upload-document, camp subscriptions. Most active members have at least one |
+| same | unpaid payment with invoice | `:408` | **ported** (v2-subscriptions) | same cancel-payment data as archive |
 | same | unpaid payment reached twice | `:402` | B | needs two links to one unpaid payment. legacy: yes. medium |
 | same | dates empty | `:438` area | B | as archive. legacy: yes |
 | (reject/approve) | — | — | — | nothing refused |
@@ -836,8 +853,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/<uid>/transfer | recipient branch on a subscription with empty `start_date`/`end_date` | `service/subscription_transfer.go:209` → `:261`, `ErrSubscriptionTransferNotPorted` | B | `Subscription.save()` fills the dates, so only rows never re-saved, or associations without season settings, have them empty. legacy: yes. cheap (season defaults are already ported elsewhere) |
-| same | e-mail branch when the first 3 chars of the tutor's (else the associate's) first or last name are non-ASCII | `:226+` → `:261`; also `:396` | **A** | UI sends `{recipient, email}` (`MembersList.svelte:1405-1411`, `MembersBook.svelte:1159`). When the e-mail has no account, `recipient` is undefined and the e-mail branch runs. Names come from the member forms, which accept any Unicode (e.g. `Émile`, `Çelik`, `Šimić`, `Ángel`) |
-| same | e-mail domain non-ASCII | same | B | IDN e-mail domains. legacy: no. cheap |
+| same | e-mail branch when the first 3 chars of the tutor's (else the associate's) first or last name are non-ASCII | `:226+` → `:261`; also `:396` | **ported** (v2-subscriptions) | UI sends `{recipient, email}` (`MembersList.svelte:1405-1411`, `MembersBook.svelte:1159`). When the e-mail has no account, `recipient` is undefined and the e-mail branch runs. Names come from the member forms, which accept any Unicode (e.g. `Émile`, `Çelik`, `Šimić`, `Ángel`) |
+| same | e-mail domain non-ASCII | same | **ported** (v2-subscriptions) | IDN e-mail domains. legacy: no. cheap |
 
 ### subscription-approve.md
 | route | refusal condition | Go site | class | notes |
@@ -847,9 +864,9 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### subscription-reads.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET subscription/list (athlete, no `field`) | every athlete request (`get_optimized_subscriptions` not ported) | `service/subscription_reads.go:290`, `ErrSubscriptionReadsNotPorted` | **A** | Athlete pages call it: `routes/activities/subscription/SubscriptionList.svelte:40` (route `/subscription/list/:tab?`, athlete-only, `routes.js:472-478`), `routes/search/modals/BuyCarnetFor.svelte:58`, `routes/search/profile/sections/AvailableCarnets.svelte:17`. Django `subscriptions_views.py:1071` |
+| GET subscription/list (athlete, no `field`) | every athlete request (`get_optimized_subscriptions` not ported) | `service/subscription_reads.go:290`, `ErrSubscriptionReadsNotPorted` | **ported** (v2-subscriptions) | Athlete pages call it: `routes/activities/subscription/SubscriptionList.svelte:40` (route `/subscription/list/:tab?`, athlete-only, `routes.js:472-478`), `routes/search/modals/BuyCarnetFor.svelte:58`, `routes/search/profile/sections/AvailableCarnets.svelte:17`. Django `subscriptions_views.py:1071` |
 | POST subscription/list (current-view export, `format` pdf/excel) | any POST | `:345` | **A** | The "Vista corrente" button (`MembersList.svelte:2335`, `MembersBook.svelte:1801`) opens `components/modals/CurrentViewPrintingModal.svelte:41-42` and POSTs with `format` `pdf` (default, `:31`) or `excel`. Django `subscriptions_views.py:1087` |
-| GET subscription/<uid>/info | subscription without `document_pdf` | `:855` | **A** | Member detail calls info (`Members/detail/Detail.svelte:95`, `EditSubscription.svelte:23`, `course-selection.svelte:17`, used by renewal). `document_pdf` is filled asynchronously by the `print_document_subscription` worker after create/renew, so it is empty until the print finishes or if it failed. Django prints it on demand at `:1787` |
+| GET subscription/<uid>/info | subscription without `document_pdf` | `:855` | **ported** (v2-subscriptions, Celery producer) | Member detail calls info (`Members/detail/Detail.svelte:95`, `EditSubscription.svelte:23`, `course-selection.svelte:17`, used by renewal). `document_pdf` is filled asynchronously by the `print_document_subscription` worker after create/renew, so it is empty until the print finishes or if it failed. Django prints it on demand at `:1787` |
 | same | course-subscription membership payments with an instructor or an invoice | `:994` | **A** (invoice) / B (instructor) | Paying a membership installment with invoice generation (default `generate_invoice` True, `payment_views.py:1761`), or cancelling it, leaves an invoice on the payment. Instructor on a membership payment: legacy: yes, medium |
 | GET list / list/all / info / calendar | association-scoped athlete session (athlete impersonation with association scope) | `:252`, `:547`, `:800`, `:1054` | **A** (impersonation only) | Reached when staff impersonate an athlete and open the athlete pages (`SubscriptionList.svelte:40`, `EditSubscription.svelte:23`, `Calendar.svelte:92`). Not reached in normal athlete or owner use |
 | GET subscription/list | orderings compiled with rows / relation paths / transforms / `?` | `:166` (lazy), `repository/subscription_reads.go:252` | B | UI sort fields are `associate`, `age`, `creation_date`, `status_flag` (`MembersList.svelte:191-356`), all handled (`service/subscription_reads.go:525-539`), plus `sort_lastname_*` flags. legacy: no |
@@ -871,7 +888,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 |---|---|---|---|---|
 | POST subscription/renew | renewal by an athlete | `service/subscription_renew.go:52-53`, `domain.ErrSubscriptionCreateNotPorted` | **A** | The athlete area renews through `RenewalModal` (`routes/activities/subscription/partials/subscription-element.svelte:231`), which POSTs to `SUBSCRIPTION.RENEW` (`Members/modals/RenewalModal.svelte:65`) |
 | same | renewal with non-empty `courses` | `:96` | **A** | `RenewalModal.svelte:58` sends `courses: formData.renewal_info?.courses`. `partials/course-selection.svelte:17-29` pre-fills it with the member's current courses from info. Any member enrolled in a course hits it. Django `subscriptions_views.py:247` (`add_course_to_subscription`) |
-| same | renewal payment clean-up meets an unpaid payment with an invoice | `:119` | **A** | data from payment cancel (top) in the new period |
+| same | renewal payment clean-up meets an unpaid payment with an invoice | `:119` | **ported** (v2-subscriptions) | data from payment cancel (top) in the new period |
 | same | `X-Group-Id` non-empty; form body | `:53` | B | UI sends JSON and never sets a group |
 | same | `data['sport_association']` names another association | (renew service) | B | UI sends the row's own association |
 | same | `tags` string / non-string ids | `:188` etc. | B | UI sends the list row's tag objects (handled at `:190-198`) |

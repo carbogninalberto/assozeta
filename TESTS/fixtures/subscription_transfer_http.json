@@ -108,6 +108,18 @@
    "last": "Stagione",
    "user": "season_owner",
    "association": "a1000000-0000-4000-8000-000000997025"
+  },
+  "accented": {
+   "id": "a1000000-0000-4000-8000-000000997028",
+   "first": "Émile",
+   "last": "Çelik",
+   "user": "owner"
+  },
+  "casefold": {
+   "id": "a1000000-0000-4000-8000-000000997029",
+   "first": "ßöra",
+   "last": "ǆukić",
+   "user": "owner"
   }
  },
  "relations": {
@@ -174,6 +186,16 @@
    "associate": "season",
    "user": "season_owner",
    "association": "a1000000-0000-4000-8000-000000997025"
+  },
+  "accented": {
+   "id": "a1000000-0000-4000-8000-000000997030",
+   "associate": "accented",
+   "user": "owner"
+  },
+  "casefold": {
+   "id": "a1000000-0000-4000-8000-000000997031",
+   "associate": "casefold",
+   "user": "owner"
   }
  },
  "transfers": {
@@ -1242,6 +1264,262 @@
    },
    "body": {
     "email": ""
+   }
+  },
+  {
+   "name": "subscription-transfer-email-new-account-accented-names",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997030/transfer",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription": "a1000000-0000-4000-8000-000000997030",
+    "expires_at": "$now",
+    "requester": "a1000000-0000-4000-8000-000000700001",
+    "recipient": "$new",
+    "token": "$new",
+    "status": 2
+   },
+   "effect": {
+    "expire": true,
+    "transfer": {
+     "subscription": "accented",
+     "recipient": "$new_user",
+     "requester": "owner"
+    },
+    "subscription": "accented",
+    "associates": [
+     "accented"
+    ],
+    "relation": null,
+    "new_user": {
+     "first_name": "Émile",
+     "last_name": "Çelik",
+     "email": "Émile@exämple.test",
+     "prefix": "ÉMIÇEL"
+    },
+    "welcome": true,
+    "audit": [
+     {
+      "model": "user",
+      "action": 0,
+      "ref": "$new_user",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "notificationsbroadcast",
+      "action": 0,
+      "ref": "$notificationsbroadcast",
+      "changes": "$created",
+      "app": "notifications",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "usernotificationsbroadcast",
+      "action": 0,
+      "ref": "$usernotificationsbroadcast",
+      "changes": "$created",
+      "app": "notifications",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 0,
+      "ref": "$transfer",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 1,
+      "ref": "accented",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "accented",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 1,
+      "ref": "$transfer",
+      "changes": "$accepted",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     }
+    ],
+    "notification": {
+     "user": "$new_user",
+     "msg": "l'associazione Message reads own ha trasferito l'iscrizione Émile Çelik al tuo account",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "email": "Émile@Exämple.TEST"
+   }
+  },
+  {
+   "name": "subscription-transfer-email-new-account-expanding-names",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997031/transfer",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription": "a1000000-0000-4000-8000-000000997031",
+    "expires_at": "$now",
+    "requester": "a1000000-0000-4000-8000-000000700001",
+    "recipient": "$new",
+    "token": "$new",
+    "status": 2
+   },
+   "effect": {
+    "expire": true,
+    "transfer": {
+     "subscription": "casefold",
+     "recipient": "$new_user",
+     "requester": "owner"
+    },
+    "subscription": "casefold",
+    "associates": [
+     "casefold"
+    ],
+    "relation": null,
+    "new_user": {
+     "first_name": "ßöra",
+     "last_name": "ǆukić",
+     "email": "ǅ@i̇stanbul.test",
+     "prefix": "SSÖRDŽUK"
+    },
+    "welcome": true,
+    "audit": [
+     {
+      "model": "user",
+      "action": 0,
+      "ref": "$new_user",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "notificationsbroadcast",
+      "action": 0,
+      "ref": "$notificationsbroadcast",
+      "changes": "$created",
+      "app": "notifications",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "usernotificationsbroadcast",
+      "action": 0,
+      "ref": "$usernotificationsbroadcast",
+      "changes": "$created",
+      "app": "notifications",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 0,
+      "ref": "$transfer",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 1,
+      "ref": "casefold",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "casefold",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 1,
+      "ref": "$transfer",
+      "changes": "$accepted",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     }
+    ],
+    "notification": {
+     "user": "$new_user",
+     "msg": "l'associazione Message reads own ha trasferito l'iscrizione ßöra ǆukić al tuo account",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "email": " ǅ@İSTANBUL.Test "
    }
   },
   {

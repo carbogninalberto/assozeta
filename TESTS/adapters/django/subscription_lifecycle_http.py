@@ -12,7 +12,9 @@ differences) with their index rows.
 from contextlib import contextmanager
 from datetime import date, datetime
 from decimal import Decimal
+import base64
 import ipaddress
+import os
 import re
 
 from TESTS.contracts import test_subscription_lifecycle_http as contract
@@ -26,20 +28,68 @@ SOURCES = ('TESTS/fixtures/subscription_lifecycle_http.json', 'TESTS/contracts/t
            'BE/application/models/subscriptions_models.py', 'BE/application/models/courses_models.py',
            'BE/application/models/payment_models.py', 'BE/application/models/user_models.py', 'BE/application/models/invoices_models.py',
            'BE/application/signals.py', 'BE/application/mixin.py', 'BE/application/permissions.py', 'BE/application/impersonation_scope.py',
-           'BE/application/audit_resolvers.py', 'BE/application/utils/api_utils.py') + harness.SOURCES
+           'BE/application/audit_resolvers.py', 'BE/application/utils/api_utils.py', 'BE/application/models/carnet_models.py',
+           'BE/docmanager/models.py', 'TESTS/adapters/django/instance_logo.py') + harness.SOURCES
 SUB, PAYMENT, CS, INSTALLMENT = ('application.Subscription', 'application.Payment', 'application.CourseSubscription',
                                  'application.CourseSubscriptionInstallment')
 TAG_LINK = 'application.Subscription_tags'
 MEMBERSHIP_LINK = 'application.CourseSubscription_membership_payments'
 CARNET_LINK = 'application.CarnetSubscription_course_subscription'
 ATTACHMENT_LINK = 'application.Payment_attachments'
-MANAGED = (SUB, PAYMENT, CS, INSTALLMENT, TAG_LINK, MEMBERSHIP_LINK, CARNET_LINK, ATTACHMENT_LINK, harness.AUDIT, harness.INDEX)
+# Models of the rows that reference a subscription (and what they need), deleted by its Collector.
+RELATED_MODELS = ('docmanager.Document', 'application.ProductsAndServices', 'application.CampsAndRetreats',
+                  'application.CampsAndRetreatsPeriod', 'application.MedicalAppointments', 'application.SubscriptionMembership',
+                  'application.SoldProducts', 'application.SubscriptionToken', 'application.SubscriptionFile',
+                  'application.SubscriptionTransfer', 'application.CampsAndRetreatsSubscription',
+                  'application.CampsAndRetreatsSubscriptionPeriod', 'application.CarnetSubscription', 'application.Invoice',
+                  'application.InvoiceRows')
+MANAGED = (SUB, PAYMENT, CS, INSTALLMENT, TAG_LINK, MEMBERSHIP_LINK, CARNET_LINK, ATTACHMENT_LINK, harness.AUDIT, harness.INDEX) + RELATED_MODELS
+BUCKET = 'subscription-lifecycle-fixture'
+SENTINEL = ('subscription-lifecycle/sentinel/keep.txt', b'sentinel')
+STORAGE = {}
 TABLES = {'subscriptions': (SUB, 'subscription_id', 'subscriptions'), 'payments': (PAYMENT, 'payment_id', 'payments'),
           'cs': (CS, 'course_subscription_id', 'course_subscriptions'),
           'installments': (INSTALLMENT, 'course_subscription_installment_id', 'installments')}
 MODELS = {'subscription': ('Subscription', 'subscriptions'), 'payment': ('Payment', 'payments'),
           'coursesubscription': ('CourseSubscription', 'course_subscriptions'),
-          'coursesubscriptioninstallment': ('CourseSubscriptionInstallment', 'installments')}
+          'coursesubscriptioninstallment': ('CourseSubscriptionInstallment', 'installments'),
+          **{label.split('.')[1].lower(): (label.split('.')[1], 'related') for label in RELATED_MODELS}}
+
+
+@contextmanager
+def service_context(report, log):
+    """A private MinIO as Django's default storage (the Go server reads the same settings)."""
+    import boto3
+    from botocore.config import Config
+    from django.test.utils import override_settings
+    from TESTS.adapters.django.instance_logo import minio
+    source = contract.load_source()
+    with minio(log, dict(os.environ), report) as (endpoint, access, secret):
+        client = boto3.client('s3', endpoint_url=endpoint, aws_access_key_id=access, aws_secret_access_key=secret,
+                              region_name='us-east-1',
+                              config=Config(signature_version='s3v4', retries={'max_attempts': 0}, s3={'addressing_style': 'path'}))
+        client.create_bucket(Bucket=BUCKET)
+        client.put_object(Bucket=BUCKET, Key=SENTINEL[0], Body=SENTINEL[1], ContentType='text/plain')
+        storages = {'default': {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'},
+                    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}}
+        STORAGE.update(client=client, location=source['location'])
+        try:
+            with override_settings(STORAGES=storages, AWS_ACCESS_KEY_ID=access, AWS_SECRET_ACCESS_KEY=secret,
+                                   AWS_STORAGE_BUCKET_NAME=BUCKET, AWS_S3_REGION_NAME='us-east-1', AWS_S3_ENDPOINT_URL=endpoint,
+                                   AWS_LOCATION=source['location'], AWS_S3_ADDRESSING_STYLE='path'):
+                yield
+            contract.require(listing() == {SENTINEL[0]}, 'storage.objects-restored')
+        finally:
+            STORAGE.clear()
+
+
+def listing():
+    pages = STORAGE['client'].get_paginator('list_objects_v2').paginate(Bucket=BUCKET)
+    return {item['Key'] for page in pages for item in page.get('Contents', [])}
+
+
+def object_key(name):
+    return STORAGE['location'] + '/' + name
 
 
 def moment(text):
@@ -80,14 +130,16 @@ def seed_rows(source, created):
                                 paid=row['paid'], archived=row['archived'], deleted=row['deleted'], group_id=group(row['group']),
                                 associate_id=source['associates'][row['associate']]['id'] if row['associate'] else None,
                                 payment_category_id=source['category'] if row['category'] else None, creation_date=moment(row['created']),
-                                description=row['description']))
+                                description=row['description'],
+                                invoice_id=source['related'][row['invoice']]['id'] if row['invoice'] else None))
     for row in source['subscriptions'].values():
         owner = ids['owner'] if row['association'] == ids['own_association'] else ids['foreign_owner']
         insert(Subscription, Subscription(subscription_id=row['id'], sport_association_id=row['association'], user_id=owner,
                                           associate_id=source['associates'][row['associate']]['id'], status_flag=row['status'],
                                           acceptance_date=day(row['acceptance']), start_date=day(row['start']), end_date=day(row['end']),
                                           creation_date=moment(row['created']), group_id=group(row['group']), archived=row['archived'],
-                                          deleted=row['deleted'], payment_id=source['payments'][row['payment']]['id'] if row['payment'] else None))
+                                          deleted=row['deleted'], payment_id=source['payments'][row['payment']]['id'] if row['payment'] else None,
+                                          signature_storage_key=row['signature_key']))
         Subscription.tags.through.objects.bulk_create([Subscription.tags.through(subscription_id=row['id'], tags_id=source['tags'][t]['id'])
                                                        for t in row['tags']])
     for row in source['course_subscriptions'].values():
@@ -106,6 +158,9 @@ def seed_rows(source, created):
             course_subscription_installment_id=row['id'], course_subscription_id=source['course_subscriptions'][row['cs']]['id'], id=row['number'],
             amount=Decimal(row['amount']), paid=False, payment_date=moment(row['payment_date']), archived=row['archived'],
             payment_id=source['payments'][row['payment']]['id'] if row['payment'] else None, group_id=group(row['group']), deleted=row['deleted']))
+    from django.apps import apps
+    for row in source['related'].values():
+        insert(apps.get_model(row['model']), apps.get_model(row['model'])(**row['fields']))
 
 
 base_fixture_context = harness.fixture_context_for(contract, seed_rows)
@@ -113,9 +168,25 @@ base_fixture_context = harness.fixture_context_for(contract, seed_rows)
 
 @contextmanager
 def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
+    """The seeded signature objects for the workload; afterwards only the sentinel stays."""
+    source = contract.load_source()
+    client = STORAGE['client']
     with base_fixture_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
-        fixture['default_category'] = default_category()
-        yield fixture
+        try:
+            for name, body in source['objects'].items():
+                client.put_object(Bucket=BUCKET, Key=object_key(name), Body=base64.b64decode(body), ContentType='image/png')
+            fixture['default_category'] = default_category()
+            # The views iterate unordered querysets (heap order). Space freed by earlier workloads can place seeded
+            # rows out of insertion order, so every workload starts from the tables rewritten in key order (the
+            # fixture's keys follow its insertion order).
+            from django.db import connection
+            with connection.cursor() as cursor:
+                for table in ('application_payment', 'application_coursesubscription', 'application_coursesubscriptioninstallment'):
+                    cursor.execute(f'CLUSTER {table} USING {table}_pkey')
+            yield fixture
+        finally:
+            for key in listing() - {SENTINEL[0]}:
+                client.delete_object(Bucket=BUCKET, Key=key)
 
 
 def captured(source):
@@ -126,6 +197,12 @@ def captured(source):
                        (CourseSubscription, 'course_subscriptions')):
         for row in model._base_manager.filter(pk__in=[r['id'] for r in source[key].values()]):
             rows[str(row.pk)] = replace.deleted_changes(model, row)
+    from django.apps import apps
+    for item in source['related'].values():
+        model = apps.get_model(item['model'])
+        for row in model._base_manager.filter(pk=item['id']):
+            rows[str(row.pk)] = replace.deleted_changes(model, row)
+    rows['$objects'] = listing()
     return rows
 
 
@@ -171,6 +248,16 @@ def assert_effect(case, before, after, source, context):
                 row['payment_id'] = None
             expected.append(row)
         contract.require([flat(r) for r in after[model]] == expected, 'state.' + name)
+    related_gone = {source['related'][label]['id'] for label in effect['related_deleted']}
+    contract.require(related_gone <= {item['id'] for item in source['related'].values() if not item['parent']}, 'fixture.related')
+    for label in RELATED_MODELS:
+        from django.apps import apps
+        key = apps.get_model(label)._meta.pk.attname
+        kept = [flat(r) for r in before[label] if str(flat(r)[key]) not in related_gone]
+        contract.require([flat(r) for r in after[label]] == kept, 'state.' + label)
+    gone_objects = {object_key(name) for name in effect['objects_deleted']}
+    objects = context['prepared']['$objects']
+    contract.require(gone_objects <= objects and listing() == objects - gone_objects, 'storage.objects')
     for link, columns in ((TAG_LINK, (('subscription_id', 'subscriptions'),)),
                           (MEMBERSHIP_LINK, (('coursesubscription_id', 'cs'), ('payment_id', 'payments'))),
                           (CARNET_LINK, (('coursesubscription_id', 'cs'),)), (ATTACHMENT_LINK, (('payment_id', 'payments'),))):
@@ -198,7 +285,10 @@ def assert_effect(case, before, after, source, context):
         contract.require(event['content_type_id'] == types[entry['model']] and event['action'] == entry['action'] and event['object_pk'] == key
                          and representation == (entry['repr'] or f'{name} object ({key})'), 'audit.identity' + where)
         changes = entry['changes']
-        if changes is None:
+        if changes is None and entry.get('created'):
+            # A diff against None (auditlog found no old instance): the captured delete diff reversed.
+            changes = {**{name: [pair[1], pair[0]] for name, pair in context['prepared'][key].items()}, **entry['overrides']}
+        elif changes is None:
             changes = {**context['prepared'][key], **entry['overrides']}
         contract.require(event['changes'] == bind(changes, bindings), 'audit.changes' + where)
         contract.require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor')

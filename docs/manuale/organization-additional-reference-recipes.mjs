@@ -23,7 +23,7 @@ export const organizationAdditionalReviewedSources = Object.freeze({
     // soft-deleted associates now survive export and repeated restore.
     // Category/VAT dependencies of exported soft-deleted payments remain retained;
     // association scope and the pending full-export workflow are unchanged.
-    "BE/application/services/export_service.py": "d0fcd5140e8054d66dc50083d943a9020ad7f40592c96ddf9206dcf78d842238",
+    "BE/application/services/export_service.py": "a209b477776257fe4c6dc79a66280e5a6538edec4188811ddeb8d16ef1b15678",
     "UI/src/routes/association/course/instructor/InstructorList.svelte": "1bb5636275f07a54fbde9266959cdfa3518d5f88f1274d513379a345797f60ff",
     "BE/application/models/user_models.py": "4800cd1f7a757e9e7d5203d1ea086d58e92ac4592e43c7fa7758103071336c96",
     "UI/src/routes/association/course/instructor/add/sections/Section1.svelte": "991fbfebdbf28eb862ce140436ee8444b3ec16dd2c187bad61cce31600b23a28",

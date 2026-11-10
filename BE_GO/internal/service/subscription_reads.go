@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 )
@@ -19,6 +20,9 @@ type SubscriptionReads struct {
 	store   domain.SubscriptionReadsStore
 	courses domain.CourseSubscriptionStore
 	now     func() time.Time
+	// athletes enables the athlete list; tasks the info print dispatch.
+	athletes *subscriptionReadsAthlete
+	tasks    celery.Publisher
 }
 
 func NewSubscriptionReads(store domain.SubscriptionReadsStore, courses domain.CourseSubscriptionStore, now func() time.Time) *SubscriptionReads {
@@ -31,6 +35,8 @@ type SubscriptionReadsRequest struct {
 	Query       domain.RequestObject
 	GroupHeader string
 	Method      string
+	// Authorization is request.headers.get('authorization').
+	Authorization *string
 }
 
 func (s *SubscriptionReads) today() time.Time {
@@ -286,8 +292,11 @@ func (s *SubscriptionReads) List(ctx context.Context, request SubscriptionReadsR
 		return domain.RequestObject{{Name: "data", Value: data}}, nil
 	}
 	if identity.ScopeUser.Role == domain.RoleAthlete {
-		// get_optimized_subscriptions (SubscriptionSerializerAthleteOptimizedList) is not ported.
-		return nil, domain.ErrSubscriptionReadsNotPorted
+		if scope != nil {
+			// scoped_queryset's family visibility for association-scoped athlete sessions is not ported.
+			return nil, domain.ErrSubscriptionReadsNotPorted
+		}
+		return s.athleteList(ctx, identity.ScopeUser.ID, group)
 	}
 	association, err := s.association(ctx, identity)
 	if err != nil {
@@ -850,8 +859,7 @@ func (s *SubscriptionReads) Info(ctx context.Context, request SubscriptionReadsR
 	if row.Associate == nil {
 		return nil, domain.ErrSubscriptionReadsServer // get_plain_medical_label() dereferences the associate
 	}
-	if row.DocumentID == nil {
-		// print_document_subscription.delay(): the Celery print task is not ported.
+	if row.DocumentID == nil && s.tasks == nil {
 		return nil, domain.ErrSubscriptionReadsNotPorted
 	}
 	tags, err := dto.ParseReferenceJSON([]byte(row.Tags))
@@ -892,6 +900,16 @@ func (s *SubscriptionReads) Info(ctx context.Context, request SubscriptionReadsR
 		return nil, err
 	}
 	info["associate"] = persona
+	if row.DocumentID == nil {
+		// print_document_subscription.delay(str(subscription_id), request.headers.get('authorization')).
+		var header any
+		if request.Authorization != nil {
+			header = *request.Authorization
+		}
+		if _, err := s.tasks.Publish(ctx, celery.Task{Name: "print_document_subscription", Args: []any{row.ID, header}}); err != nil {
+			return nil, err
+		}
+	}
 	return map[string]any{"data": map[string]any{"info": info, "courses": courses, "payments": []any{}}}, nil
 }
 

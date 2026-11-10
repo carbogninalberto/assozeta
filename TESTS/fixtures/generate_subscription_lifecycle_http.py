@@ -63,7 +63,7 @@ TAGS = {'t1': {'id': next(ids), 'name': 'Agonisti'}, 't2': {'id': next(ids), 'na
 def subscription(associate='mario', **fields):
     row = {'id': next(ids), 'association': OWN, 'associate': associate, 'status': 4, 'acceptance': '2026-01-15', 'start': '2026-01-01',
            'end': '2026-12-31', 'created': '2026-01-10T09:00:00Z', 'group': None, 'archived': False, 'deleted': False, 'payment': None,
-           'tags': []}
+           'tags': [], 'signature_key': None}
     row.update(fields)
     return row
 
@@ -90,7 +90,7 @@ SUBSCRIPTIONS = {
 def payment(paid=False, *, associate=None, created='2026-04-01T10:00:00Z', archived=False, deleted=False, group=None, category=True,
             amount='10.00', subject=2):
     return {'id': next(ids), 'association': OWN, 'subject': subject, 'amount': amount, 'paid': paid, 'archived': archived, 'deleted': deleted,
-            'associate': associate, 'group': group, 'category': category, 'created': created, 'description': 'Quota fixture'}
+            'associate': associate, 'group': group, 'category': category, 'created': created, 'description': 'Quota fixture', 'invoice': None}
 
 
 PAYMENTS = {
@@ -155,6 +155,105 @@ INSTALLMENTS = {
 UNKNOWN = 'a1000000-0000-4000-8000-000000619999'
 STATE = {'cs': copy.deepcopy(CS)}
 
+# Rows of other models that reference the subscription (the UI creates all of them): the
+# Collector deletes them with the subscription. 'parent' rows are what they need and stay.
+SUBSCRIPTIONS['d_rel'] = subscription('carla')
+REL = SUBSCRIPTIONS['d_rel']['id']
+LOCATION = 'lifecycle-fixture'
+SIGNATURE_KEY = lambda label: f'subscriptions/{label}/signature_1767225600.0.png'
+# Two rows share one signature object; the other row has its own (and one has no object in the bucket).
+SUBSCRIPTIONS['d_sig_a'] = subscription('carla', signature_key=SIGNATURE_KEY('shared'))
+SUBSCRIPTIONS['d_sig_b'] = subscription('carla', signature_key=SIGNATURE_KEY('shared'))
+SUBSCRIPTIONS['d_sig_own'] = subscription('carla', signature_key=SIGNATURE_KEY('own'))
+SUBSCRIPTIONS['d_sig_missing'] = subscription('carla', signature_key=SIGNATURE_KEY('missing'))
+OBJECTS = {SIGNATURE_KEY('shared'): 'iVBORw0KGgpzaGFyZWQ=', SIGNATURE_KEY('own'): 'iVBORw0KGgpvd24=',
+           SIGNATURE_KEY('other'): 'iVBORw0KGgpvdGhlcg=='}
+
+
+def related(model, key, parent=False, **fields):
+    row_id = next(ids)
+    return {'model': model, 'id': row_id, 'parent': parent, 'fields': {key: row_id, **fields}}
+
+
+RELATED = {}
+RELATED['rel_doc'] = related('docmanager.Document', 'document_id', True, creation_date='2026-01-05T08:00:00Z', filename='allegato.pdf',
+                             token=next(ids))
+RELATED['rel_product'] = related('application.ProductsAndServices', 'product_id', True, sport_association_id=OWN, product_sku='SKU-1',
+                                 product_name='Maglia', creation_date='2026-01-05T08:00:00Z')
+RELATED['rel_camp'] = related('application.CampsAndRetreats', 'camps_and_retreats_id', True, title='Campo estivo', sport_association_id=OWN)
+RELATED['rel_camp_period'] = related('application.CampsAndRetreatsPeriod', 'camps_and_retreats_period_id', True,
+                                     camps_and_retreats_id=RELATED['rel_camp']['id'], start_date='2026-07-01T08:00:00Z',
+                                     end_date='2026-07-15T18:00:00Z', title='Turno 1', fee='100.00', created_at='2026-01-05T08:00:00Z')
+RELATED['rel_appointment'] = related('application.MedicalAppointments', 'medical_appointments_id', subscription_id=REL, region='agonistica',
+                                     date='2026-03-01', notes='Visita', sport='Calcio', meta={'esito': 'idoneo'})
+RELATED['rel_membership'] = related('application.SubscriptionMembership', 'subscription_membership_id', subscription_id=REL,
+                                    sport_association_id=OWN, creation_date='2026-01-12T08:00:00Z', start_date='2026-01-01',
+                                    end_date='2026-12-31', membership_type='CSEN', membership_number='12', description='Tessera',
+                                    price='15.00', associate_id=ASSOCIATES['carla']['id'])
+RELATED['rel_sold'] = related('application.SoldProducts', 'sold_product_id', subscription_id=REL, product_id=RELATED['rel_product']['id'],
+                              quantity=2, creation_date='2026-02-01T08:00:00Z', selling_date='2026-02-01T08:00:00Z')
+RELATED['rel_token'] = related('application.SubscriptionToken', 'subscription_token_id', subscription_id=REL, token=next(ids),
+                               creation_date='2026-02-01T08:00:00Z', expiration_date='2026-03-01T08:00:00Z')
+RELATED['rel_file'] = related('application.SubscriptionFile', 'subscription_file_id', subscription_id=REL,
+                              document_id=RELATED['rel_doc']['id'], creation_date='2026-02-01T08:00:00Z')
+RELATED['rel_transfer'] = related('application.SubscriptionTransfer', 'subscription_transfer_id', subscription_id=REL,
+                                  expires_at='2026-02-01T08:00:00Z', requester_id=OWNER, recipient_id=None, token=next(ids), status=2)
+RELATED['rel_camp_sub'] = related('application.CampsAndRetreatsSubscription', 'camps_and_retreats_subscription_id',
+                                  camps_and_retreats_id=RELATED['rel_camp']['id'], status_flag=2, subscription_id=REL,
+                                  created_at='2026-02-01T08:00:00Z')
+RELATED['rel_camp_sub_period'] = related('application.CampsAndRetreatsSubscriptionPeriod', 'camps_and_retreats_subscription_period_id',
+                                         camps_and_retreats_period_id=RELATED['rel_camp_period']['id'],
+                                         camps_and_retreats_subscription_id=RELATED['rel_camp_sub']['id'], payment_id=None)
+# Invoices of unpaid payments (payment cancel and invoice generation leave them): archive and delete call
+# payment.invoice.delete() (its Collector: rows first, then the invoice; Payment.invoice is SET_NULL).
+ASSOCIATES['elena'] = {'id': next(ids), 'association': OWN, 'first': 'Elena', 'last': 'Fixture'}
+
+
+def invoice(label, rows=0):
+    RELATED[label] = related('application.Invoice', 'invoice_id', sport_association_id=OWN, creation_date='2026-03-01T08:00:00Z',
+                             membership_fee='0.00', activity_fee='10.00', description='Fattura fixture', number=7, archived=False,
+                             cancelled=False, meta=None, deleted=False)
+    for index in range(rows):
+        RELATED[f'{label}_row{index}'] = related('application.InvoiceRows', 'invoice_row_id', invoice_id=RELATED[label]['id'],
+                                                 description='Quota', quantity=1, unit_price='10.00', vat='0.00')
+    return label
+
+
+def invoiced(label, invoice_label, **fields):
+    PAYMENTS[label] = payment(**fields)
+    PAYMENTS[label]['invoice'] = invoice_label
+    return label
+
+
+# archive: a soft-deleted unpaid subscription payment (the accessor uses the base manager; auditlog's
+# Payment.objects lookup misses it, so the update entry diffs against None like a create).
+PAYMENTS['ahp'] = payment(deleted=True)
+SUBSCRIPTIONS['a_hidden'] = subscription('elena', payment='ahp')
+# archive: invoiced unpaid course-subscription payment (ValueError after the invoice delete), installment payment
+# (saved first, then its invoice deleted) and subscription payment (ValueError after the invoice delete).
+invoice('inv_acs', rows=1)
+SUBSCRIPTIONS['a_inv_cs'] = subscription('elena', payment=None)
+CS['acs_inv'] = course_subscription('a_inv_cs', payment=invoiced('acp_inv', 'inv_acs'))
+invoice('inv_ai')
+SUBSCRIPTIONS['a_inv_inst'] = subscription('elena')
+CS['acs_inst'] = course_subscription('a_inv_inst', multi_payments=True)
+INSTALLMENTS['aii'] = installment('acs_inst', 0, invoiced('aiip', 'inv_ai'))
+invoice('inv_as')
+SUBSCRIPTIONS['a_inv_sub'] = subscription('elena', payment=invoiced('asp_inv', 'inv_as'))
+CS['acs_plain'] = course_subscription('a_inv_sub')
+# delete: invoiced unpaid subscription payment; course-subscription and installment payments.
+invoice('inv_d', rows=1)
+SUBSCRIPTIONS['d_inv'] = subscription('elena', payment=invoiced('dip_inv', 'inv_d'))
+invoice('inv_dc')
+invoice('inv_dci')
+SUBSCRIPTIONS['d_inv_cs'] = subscription('elena')
+CS['dci'] = course_subscription('d_inv_cs', payment=invoiced('dcip', 'inv_dc'), multi_payments=True)
+INSTALLMENTS['dcii'] = installment('dci', 0, invoiced('dciip', 'inv_dci'))
+STATE['cs'].update(copy.deepcopy({key: CS[key] for key in ('acs_inv', 'acs_inst', 'acs_plain', 'dci')}))
+
+RELATED['rel_carnet'] = related('application.CarnetSubscription', 'carnet_subscription_id', user_id_id=OWNER, subscription_id=REL,
+                                carnet_id_id=None, disabled=False, meta=None)
+
 cases = []
 
 
@@ -167,9 +266,10 @@ def route(label, verb):
     return f'/subscription/{SUBSCRIPTIONS[label]["id"] if label in SUBSCRIPTIONS else label}/{verb}'
 
 
-def effect(actor, audit, **tables):
-    """tables: subscriptions/payments/cs/installments -> {'changed': {label: {column: value}}, 'deleted': [labels]}."""
-    result = {'actor': actor, 'audit': audit}
+def effect(actor, audit, *, related_deleted=(), objects_deleted=(), **tables):
+    """tables: subscriptions/payments/cs/installments -> {'changed': {label: {column: value}}, 'deleted': [labels]};
+    related_deleted: RELATED labels the request deletes; objects_deleted: storage names it deletes."""
+    result = {'actor': actor, 'audit': audit, 'related_deleted': list(related_deleted), 'objects_deleted': list(objects_deleted)}
     for name in ('subscriptions', 'payments', 'cs', 'installments'):
         value = tables.get(name, {})
         result[name] = {'changed': value.get('changed', {}), 'deleted': value.get('deleted', [])}
@@ -380,6 +480,82 @@ add('delete-membership-and-deleted-rows', 'owner', route('d_mem', 'delete'), 200
     dict(removed('coursesubscription', 'dm_member', ACTOR, {'deleted': ['True', 'None']}), repr=dm_saved),
 ], subscriptions={'deleted': ['d_mem']}, payments={'deleted': ['dmp_u']}, cs={'deleted': ['dm_member', 'dm_old']},
     installments={'deleted': ['dmi_old']}))
+removed_related = lambda model, label, index=ACTOR: {'model': model, 'label': label, 'action': 2, 'changes': None, 'overrides': {},
+                                                     'index': index, 'repr': None}
+INVOICE_SET_NULL = {'invoice_id': None}
+created_payment = lambda label, overrides: {'model': 'payment', 'label': label, 'action': 1, 'changes': None, 'created': True,
+                                            'overrides': overrides, 'index': CHANGES_JSON, 'repr': None}
+removed_invoice = lambda label, rows=0: [removed_related('invoicerows', f'{label}_row{index}') for index in reversed(range(rows))] + [
+    removed_related('invoice', label, CHANGES_JSON)]
+add('archive-soft-deleted-payment', 'owner', route('a_hidden', 'archive'), 200, ARCHIVED, effect=effect('owner', [
+    created_payment('ahp', {'archived': ['None', 'True']}),
+    updated('subscription', 'a_hidden', FLIP, DIRECT),
+], subscriptions={'changed': {'a_hidden': {'archived': True}}}, payments={'changed': {'ahp': {'archived': True}}}))
+# payment.save() after payment.invoice.delete(): the cached invoice has no pk any more (ValueError, the HTML 500 page).
+add('archive-invoiced-course-payment-server-error', 'owner', route('a_inv_cs', 'archive'), 500, SERVER, effect=effect('owner',
+    removed_invoice('inv_acs', rows=1), payments={'changed': {'acp_inv': INVOICE_SET_NULL}}, related_deleted=['inv_acs', 'inv_acs_row0']))
+STATE['cs']['acs_inst']['archived'] = True
+add('archive-invoiced-installment-payment', 'owner', route('a_inv_inst', 'archive'), 200, ARCHIVED, effect=effect('owner', [
+    updated('payment', 'aiip', FLIP, DIRECT),
+    *removed_invoice('inv_ai'),
+    updated('coursesubscriptioninstallment', 'aii', FLIP, INSTALLMENT_INDEX),
+    updated('coursesubscription', 'acs_inst', FLIP, COURSE_INDEX),
+    updated('subscription', 'a_inv_inst', FLIP, DIRECT),
+], subscriptions={'changed': {'a_inv_inst': {'archived': True}}}, payments={'changed': {'aiip': {'archived': True, 'invoice_id': None}}},
+    cs={'changed': {'acs_inst': {'archived': True}}}, installments={'changed': {'aii': {'archived': True}}}, related_deleted=['inv_ai']))
+STATE['cs']['acs_plain']['archived'] = True
+add('archive-invoiced-subscription-payment-server-error', 'owner', route('a_inv_sub', 'archive'), 500, SERVER, effect=effect('owner', [
+    updated('coursesubscription', 'acs_plain', FLIP, COURSE_INDEX),
+    *removed_invoice('inv_as'),
+], payments={'changed': {'asp_inv': INVOICE_SET_NULL}}, cs={'changed': {'acs_plain': {'archived': True}}}, related_deleted=['inv_as']))
+add('delete-invoiced-subscription-payment', 'owner', route('d_inv', 'delete'), 200, DELETED, effect=effect('owner', [
+    *removed_invoice('inv_d', rows=1),
+    removed('payment', 'dip_inv', CHANGES_JSON),
+    updated('subscription', 'd_inv', FLIP, DIRECT),
+    removed('subscription', 'd_inv', CHANGES_JSON, {**GONE, 'payment': ['None', 'None']}),
+], subscriptions={'deleted': ['d_inv']}, payments={'deleted': ['dip_inv']}, related_deleted=['inv_d', 'inv_d_row0']))
+STATE['cs']['dci'].update(payment=None, deleted=True)
+dci_saved = cs_repr('dci')
+add('delete-invoiced-course-payments', 'owner', route('d_inv_cs', 'delete'), 200, DELETED, effect=effect('owner', [
+    *removed_invoice('inv_dc'),
+    removed('payment', 'dcip', CHANGES_JSON),
+    *removed_invoice('inv_dci'),
+    # Payment's pre_delete deletes dcii, whose pre_delete deletes dciip as stored (invoice already cleared).
+    removed('payment', 'dciip', CHANGES_JSON, {'invoice': ['None', 'None']}), removed('coursesubscriptioninstallment', 'dcii', ACTOR),
+    removed('payment', 'dciip', CHANGES_JSON),
+    removed('coursesubscriptioninstallment', 'dcii', ACTOR, NULL_PAYMENT),
+    dict(updated('coursesubscription', 'dci', {'deleted': ['False', 'True']}, COURSE_INDEX), repr=dci_saved),
+    updated('subscription', 'd_inv_cs', FLIP, DIRECT),
+    removed('subscription', 'd_inv_cs', CHANGES_JSON, GONE),
+    dict(removed('coursesubscription', 'dci', ACTOR, {'deleted': ['True', 'None'], **NULL_PAYMENT}), repr=dci_saved),
+], subscriptions={'deleted': ['d_inv_cs']}, payments={'deleted': ['dcip', 'dciip']}, cs={'deleted': ['dci']},
+    installments={'deleted': ['dcii']}, related_deleted=['inv_dc', 'inv_dci']))
+
+# The Collector's models: those without non-null references from the others first (in collection order), then the
+# subscription (medical appointments, tokens, files and transfers reference it with non-null keys) and the camp
+# subscription (its periods do). Deleted rows resolve no association: changes_json.sport_association or the actor's.
+add('delete-related-rows', 'owner', route('d_rel', 'delete'), 200, DELETED, effect=effect('owner', [
+    updated('subscription', 'd_rel', FLIP, DIRECT),
+    removed_related('medicalappointments', 'rel_appointment'),
+    removed_related('subscriptionmembership', 'rel_membership', CHANGES_JSON),
+    removed_related('soldproducts', 'rel_sold'),
+    removed_related('subscriptiontoken', 'rel_token'),
+    removed_related('subscriptionfile', 'rel_file'),
+    removed_related('subscriptiontransfer', 'rel_transfer'),
+    removed_related('campsandretreatssubscriptionperiod', 'rel_camp_sub_period'),
+    removed_related('carnetsubscription', 'rel_carnet'),
+    removed('subscription', 'd_rel', CHANGES_JSON, GONE),
+    removed_related('campsandretreatssubscription', 'rel_camp_sub'),
+], subscriptions={'deleted': ['d_rel']},
+    related_deleted=['rel_appointment', 'rel_membership', 'rel_sold', 'rel_token', 'rel_file', 'rel_transfer', 'rel_camp_sub_period',
+                     'rel_carnet', 'rel_camp_sub']))
+# transaction.on_commit(delete_signature_key_if_unreferenced) runs at once (autocommit): the object is deleted only
+# when no row (base manager) still has the key; a missing object is not an error.
+for label, gone in (('d_sig_a', []), ('d_sig_b', [SIGNATURE_KEY('shared')]), ('d_sig_own', [SIGNATURE_KEY('own')]), ('d_sig_missing', [])):
+    add(f'delete-signed-{label[6:]}', 'owner', route(label, 'delete'), 200, DELETED, effect=effect('owner', [
+        updated('subscription', label, FLIP, DIRECT),
+        removed('subscription', label, CHANGES_JSON, GONE),
+    ], subscriptions={'deleted': [label]}, objects_deleted=gone))
 add('delete-owner-scoped-athlete-denied', 'owner', route('d_cs', 'delete'), 403,
     {'detail': 'Operazione non disponibile nel contesto dell’associazione.'}, headers={'X-Impersonation-Id': '$session:owner_athlete', 'User-Id': IDS['athlete']})
 add('delete-restricted-missing-permission', 'restricted_collaborator', route('d_cs', 'delete'), 403,
@@ -395,5 +571,5 @@ assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Subscription reject, archive and delete authored sequence with audit effects',
                               'ids': IDS, 'category': CATEGORY, 'associates': ASSOCIATES, 'courses': COURSES, 'tags': TAGS,
                               'subscriptions': SUBSCRIPTIONS, 'payments': PAYMENTS, 'course_subscriptions': CS, 'installments': INSTALLMENTS,
-                              'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+                              'related': RELATED, 'location': LOCATION, 'objects': OBJECTS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')
