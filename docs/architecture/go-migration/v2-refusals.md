@@ -200,6 +200,19 @@ Receipts are `quality-reports/go-migration/<family>-http-v2misc3-*`; each family
 | misc-routes | `GET subscription/<uid>/card` | unknown token while a Bakney pairing is pending or paired (`source_token` asks the paired server, `public-token`) | 128 cases with a paired-server stub; RED `v2misc3-red-r1` Django 128/128, Go 500; GREEN `v2misc3-final-r1` 4 transports; mutation `v2misc3-mutation-r2` (expiry without an offset accepted) CAUGHT; sso-pairing re-run |
 | subscription-misc | `GET subscription/validate-token-link-and-get-subscriptions` | unknown token while a Bakney pairing is pending or paired | 157 cases; RED `v2misc3-red-r1` Django 157/157, Go 500; GREEN `v2misc3-final-r1` 4 transports; mutation `v2misc3-mutation-r1` (gym name limit 256) CAUGHT |
 
+### Ported in the famvis change
+
+Receipts are `quality-reports/go-migration/subscription-reads-http-famvis-*`; details in `subscription-reads.md`
+("Association-scoped athlete sessions").
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| subscription-reads | `GET`/`POST subscription/list`, `GET subscription/list/all`, `GET subscription/<uid>/info`, `GET subscription/<uid>/calendar` | staff viewing as an athlete in an association-scoped session | 331 cases; RED `famvis-red-r1` Django 331/331, Go 500; GREEN `famvis-green-r1` 4 transports; mutation `famvis-mutation-r1` (the athlete list without the session's boundary) CAUGHT; subscription-lifecycle 63/63, subscription-renew 75/75, payment-reads 276/276 and statistic-reads 87/87 re-run natively (`famvis-rerun-r1`) |
+
+Still refused in an association-scoped session (writes, owned by subscription-create and subscription-renew): the quick
+re-subscription (`service/subscription_create_quick.go`, `quickMember` and `quick`) and the renewal's requester lookup
+(`service/subscription_renew.go`, `renewRequesterOwner`). Cost: medium each (session cases in a write family).
+
 ## Remaining A items, per family
 
 UI paths under `UI/src/`, Go under `BE_GO/internal/`. Cost: cheap (hours), medium (a family change with new
@@ -220,14 +233,11 @@ No A item remains.
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | POST subscription/list | current-view print `format` pdf (excel is ported) | `components/modals/CurrentViewPrintingModal.svelte:31,41` | `service/subscription_reads_export.go:45` | expensive |
-| list, list/all, info, calendar | staff impersonating an athlete with an association scope | athlete pages while impersonating | `service/subscription_reads.go:252,547,800,1054` | medium |
 | POST .../medical-certificate/set-certificate-expiration | member without a certificate | `Members/detail/sections/modals/AddMedicalCertificate.svelte:51` | `service/subscription_medical.go:389` | medium |
 | POST subscription/renew | member with courses (pre-filled) | `Members/modals/RenewalModal.svelte:58` | `service/subscription_renew.go:96` | medium-expensive |
 
 Why these stay (v2-subscriptions):
 - POST subscription/list export: the PDF is a synchronous render and stays refused; the Excel export is ported (subscription-reads.md, "Excel export").
-- association-scoped athlete sessions: needs scoped_queryset's family boundary on every related read (subscriptions, course
-  subscriptions, installments, files, registries); impersonation-only.
 - set-certificate-expiration without a certificate: Django draws a PNG with PIL/FreeType; not byte-reproducible, refused before any write.
 - renew with courses: add_course_to_subscription inside the renewal transaction; the course-enrolment port has its own
   transaction and data handling, so it needs a shared refactor.
@@ -806,7 +816,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | GET payment/list | `sort[field]` = relation (`user`, …) | `service/payment_reads.go:424,725` | **A** | The "Informazioni" column has `field: 'user'` and no `sortable: false` (`routes/accounting/payment/PaymentList.svelte:227-236`). BKNDatatable treats columns as sortable unless `sortable === false` (`components/tables/BKNDatatable.svelte:736,787`). Clicking the header sends `sort[field]=user`. Cost: medium. |
 | GET payment/list | random ordering + text search | `service/payment_reads.go:430` | B | The UI never sends a random order. |
 | GET payment/stats | Stripe configured (env or instance integration) | `service/payment_reads.go:579` | A (conditional on config) | Called on every list load (`PaymentList.svelte:997`). Stripe is configurable in the UI (`routes/profile/sections/InstanceIntegrations.svelte:9`). Cost: medium (balance transactions + cache). |
-| payment/list compressed, athlete scoped session | scoped athlete | `service/payment_reads.go:329` | B | The UI does not send `mode=compressed`. |
+| payment/list compressed, athlete scoped session | scoped athlete | `service/payment_reads.go:329` | n/a | Not a gap: an athlete has no association, so Django and Go both answer the 500 page before that line (payment-reads `athlete-scoped-compressed`). The UI does not send `mode=compressed`. |
 | search | `inf` / special lower-casing | `service/payment_reads.go:126,143` | B | Exotic search text. |
 
 ### payment-writes.md
@@ -984,7 +994,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | GET subscription/<uid>/info | subscription without `document_pdf` | `:855` | **ported** (v2-subscriptions, Celery producer) | Member detail calls info (`Members/detail/Detail.svelte:95`, `EditSubscription.svelte:23`, `course-selection.svelte:17`, used by renewal). `document_pdf` is filled asynchronously by the `print_document_subscription` worker after create/renew, so it is empty until the print finishes or if it failed. Django prints it on demand at `:1787` |
 | same | course-subscription membership payments with an instructor or an invoice | `:994` | **A** (invoice) / B (instructor) (both ported in v2-documents) | Paying a membership installment with invoice generation (default `generate_invoice` True, `payment_views.py:1761`), or cancelling it, leaves an invoice on the payment. Instructor on a membership payment: legacy: yes, medium |
 | same | course-subscription membership payments with an instructor or an invoice | — | ported | Ported in v2-misc (nested invoice and instructor rendered). |
-| GET list / list/all / info / calendar | association-scoped athlete session (athlete impersonation with association scope) | `:252`, `:547`, `:800`, `:1054` | **A** (impersonation only) | Reached when staff impersonate an athlete and open the athlete pages (`SubscriptionList.svelte:40`, `EditSubscription.svelte:23`, `Calendar.svelte:92`). Not reached in normal athlete or owner use |
+| GET list / list/all / info / calendar | association-scoped athlete session (athlete impersonation with association scope) | `service/subscription_reads.go` (`sessionVisible`) | **ported** (famvis) | Reached when staff impersonate an athlete and open the athlete pages (`SubscriptionList.svelte:40`, `EditSubscription.svelte:23`, `Calendar.svelte:92`). Not reached in normal athlete or owner use |
 | GET subscription/list | orderings compiled with rows / relation paths / transforms / `?` | `:166` (lazy), `repository/subscription_reads.go:252` | B | UI sort fields are `associate`, `age`, `creation_date`, `status_flag` (`MembersList.svelte:191-356`), all handled (`service/subscription_reads.go:525-539`), plus `sort_lastname_*` flags. legacy: no |
 | GET subscription/list | search terms with chars ≥ U+0250 or U+0130 | `:141` | B | Exotic Unicode (Greek, Cyrillic, CJK, Turkish dotted I). legacy: no. medium |
 
