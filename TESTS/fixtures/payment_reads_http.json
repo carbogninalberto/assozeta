@@ -39,6 +39,12 @@
   "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
   "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
  },
+ "stripe": {
+  "secret_key": "sk_test_payment_reads_fixture",
+  "public_key": "pk_test_payment_reads_fixture",
+  "api_version": "2025-02-24.acacia",
+  "user_agent": "Stripe/v1 PythonBindings/11.6.0"
+ },
  "category": {
   "id": "cafecafe-eeee-4eee-8eee-eeeeeeeeeaaa",
   "name": "Quote sociali"
@@ -875,7 +881,9 @@
     "detail": "Authentication credentials were not provided."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-admin-without-session",
@@ -888,7 +896,9 @@
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-restricted-collaborator",
@@ -901,7 +911,9 @@
     "detail": "Missing permission: bookeeping.payments.read"
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-post",
@@ -914,7 +926,9 @@
     "detail": "Method \"POST\" not allowed."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-delete",
@@ -927,7 +941,9 @@
     "detail": "Method \"DELETE\" not allowed."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-options",
@@ -949,7 +965,9 @@
     ]
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-owner-without-association",
@@ -960,7 +978,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-format-unknown",
@@ -973,7 +993,9 @@
     "detail": "Not found."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-anonymous",
@@ -986,7 +1008,9 @@
     "detail": "Authentication credentials were not provided."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-admin-without-session",
@@ -999,7 +1023,9 @@
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-restricted-collaborator",
@@ -1012,7 +1038,9 @@
     "detail": "Missing permission: bookeeping.payments.read"
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-post",
@@ -1025,7 +1053,9 @@
     "detail": "Method \"POST\" not allowed."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-delete",
@@ -1038,7 +1068,9 @@
     "detail": "Method \"DELETE\" not allowed."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-options",
@@ -1060,7 +1092,9 @@
     ]
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-owner-without-association",
@@ -1071,7 +1105,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-format-unknown",
@@ -1084,7 +1120,9 @@
     "detail": "Not found."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-anonymous",
@@ -1097,7 +1135,9 @@
     "detail": "Authentication credentials were not provided."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-admin-without-session",
@@ -1110,7 +1150,9 @@
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-restricted-collaborator",
@@ -1123,7 +1165,9 @@
     "detail": "Missing permission: association.members.read"
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-post",
@@ -1136,7 +1180,9 @@
     "detail": "Method \"POST\" not allowed."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-delete",
@@ -1149,7 +1195,9 @@
     "detail": "Method \"DELETE\" not allowed."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-options",
@@ -1171,7 +1219,9 @@
     ]
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-owner-without-association",
@@ -1182,7 +1232,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-format-unknown",
@@ -1195,7 +1247,9 @@
     "detail": "Not found."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-owner",
@@ -2157,7 +2211,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-full-collaborator",
@@ -3119,7 +3175,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-admin-impersonating-owner",
@@ -4084,7 +4142,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-foreign-owner",
@@ -4143,7 +4203,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-deleted-association-owner",
@@ -4163,7 +4225,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-athlete-unknown-course-subscription",
@@ -4174,7 +4238,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-athlete-malformed-course-subscription",
@@ -4187,7 +4253,9 @@
     "badly formed hexadecimal UUID string"
    ],
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-malformed-course-subscription",
@@ -4200,7 +4268,9 @@
     "badly formed hexadecimal UUID string"
    ],
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-malformed-course-subscription-before-compressed",
@@ -4213,7 +4283,9 @@
     "badly formed hexadecimal UUID string"
    ],
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-empty-course-subscription-ignored",
@@ -5175,7 +5247,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-course-subscription-ignored-for-owner",
@@ -6137,7 +6211,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-athlete-compressed",
@@ -6148,7 +6224,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-scoped-athlete-compressed",
@@ -6162,7 +6240,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-compressed",
@@ -6341,7 +6421,9 @@
     ]
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-compressed-ignores-filters",
@@ -6520,7 +6602,9 @@
     ]
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-compressed-archived",
@@ -6549,7 +6633,9 @@
     ]
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-compressed-archived-one",
@@ -6578,7 +6664,9 @@
     ]
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-compressed-archived-false",
@@ -6757,7 +6845,9 @@
     ]
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-compressed-archived-lowercase-true",
@@ -6768,7 +6858,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-compressed-group",
@@ -6799,7 +6891,9 @@
     ]
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-compressed-group-malformed-ignored",
@@ -6980,7 +7074,9 @@
     ]
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-compressed-foreign-owner",
@@ -7009,7 +7105,9 @@
     ]
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-compressed-deleted-association-owner",
@@ -7022,7 +7120,9 @@
     "data": []
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-compressed-collaborator",
@@ -7201,7 +7301,9 @@
     ]
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-archived-true",
@@ -7351,7 +7453,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-archived-t",
@@ -7501,7 +7605,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-archived-false-text",
@@ -8463,7 +8569,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-archived-zero",
@@ -9425,7 +9533,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-archived-lowercase-true",
@@ -9436,7 +9546,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-archived-empty",
@@ -9447,7 +9559,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-group",
@@ -9599,7 +9713,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-group-foreign",
@@ -9621,7 +9737,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-group-malformed-ignored",
@@ -10585,7 +10703,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-paid-true",
@@ -11114,7 +11234,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-paid-other-is-false",
@@ -11720,7 +11842,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-paid-empty-ignored",
@@ -12682,7 +12806,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-expense-true",
@@ -12934,7 +13060,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-expense-false",
@@ -13817,7 +13945,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-subject-course",
@@ -14232,7 +14362,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-subject-python-int",
@@ -14533,7 +14665,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-subject-zero",
@@ -14937,7 +15071,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-subject-text",
@@ -14948,7 +15084,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-subject-float",
@@ -14959,7 +15097,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-subject-out-of-range",
@@ -14979,7 +15119,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-subject-empty-ignored",
@@ -15941,7 +16083,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-type",
@@ -16149,7 +16293,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-type-unknown",
@@ -16169,7 +16315,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-category",
@@ -16473,7 +16621,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-category-list",
@@ -16777,7 +16927,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-category-none",
@@ -17608,7 +17760,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-category-malformed",
@@ -17619,7 +17773,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-category-trailing-comma",
@@ -17630,7 +17786,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-account",
@@ -17838,7 +17996,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-account-none",
@@ -18577,7 +18737,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-account-malformed",
@@ -18588,7 +18750,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-associate",
@@ -19410,7 +19574,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-associate-hyphenless",
@@ -19493,7 +19659,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-associate-malformed",
@@ -19504,7 +19672,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-associate-empty",
@@ -19515,7 +19685,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-filters-combined",
@@ -19668,7 +19840,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-range-ymd",
@@ -20068,7 +20242,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-range-dmy",
@@ -20468,7 +20644,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-range-single-digits",
@@ -20813,7 +20991,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-range-creation-date-for-unpaid",
@@ -20966,7 +21146,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-range-mixed-formats-ignored",
@@ -21928,7 +22110,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-range-without-separator-ignored",
@@ -22890,7 +23074,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-range-three-parts-ignored",
@@ -23852,7 +24038,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-range-fallback-last-year",
@@ -23872,7 +24060,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-range-invalid-day-fallback",
@@ -23892,7 +24082,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-range-empty-ignored",
@@ -24854,7 +25046,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-range-skipped-for-uuid-search",
@@ -25007,7 +25201,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-range-and-filter",
@@ -25259,7 +25455,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-last-name",
@@ -26081,7 +26279,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-upper",
@@ -26903,7 +27103,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-tutor-name",
@@ -27725,7 +27927,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-words",
@@ -28547,7 +28751,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-words-in-other-order",
@@ -29369,7 +29575,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-tutor-words-same-row-only",
@@ -29389,7 +29597,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-tutor-words-one-tutor",
@@ -30211,7 +30421,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-supplier",
@@ -30288,7 +30500,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-instructor",
@@ -30448,7 +30662,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-description",
@@ -30507,7 +30723,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-notes",
@@ -30590,7 +30808,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-json-meta",
@@ -30673,7 +30893,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-json-course",
@@ -30826,7 +31048,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-boolean-text",
@@ -31421,7 +31645,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-type-text",
@@ -31574,7 +31800,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-payment-id",
@@ -31651,7 +31879,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-date-dmy",
@@ -32534,7 +32764,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-date-words",
@@ -33496,7 +33728,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-underscore-escaped",
@@ -33579,7 +33813,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-percent-only",
@@ -34541,7 +34777,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-blank",
@@ -35503,7 +35741,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-accented",
@@ -35580,7 +35820,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-tax-code",
@@ -36463,7 +36705,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-nothing",
@@ -36483,7 +36727,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-amount",
@@ -36656,7 +36902,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-amount-comma",
@@ -36739,7 +36987,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-amount-zero",
@@ -37754,7 +38004,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-amount-exponent",
@@ -37904,7 +38156,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-amount-padded",
@@ -38057,7 +38311,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-amount-underscore",
@@ -38210,7 +38466,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-group",
@@ -38362,7 +38620,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-and-filter",
@@ -38666,7 +38926,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-search-paginated",
@@ -38947,7 +39209,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-amount",
@@ -40005,7 +40269,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-amount-desc",
@@ -40990,7 +41256,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-without-direction-is-asc",
@@ -42048,7 +42316,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-other-direction-is-asc",
@@ -43106,7 +43376,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-negated-field",
@@ -44091,7 +44363,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-double-negation",
@@ -44102,7 +44376,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-payment-date-nulls-last",
@@ -44890,7 +45166,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-payment-date-desc-nulls-first",
@@ -45149,7 +45427,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-creation-date",
@@ -46111,7 +46391,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-pk",
@@ -47096,7 +47378,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-payment-id-desc",
@@ -48058,7 +48342,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-random",
@@ -49171,7 +49457,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-random-desc",
@@ -49182,7 +49470,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-unknown",
@@ -49193,7 +49483,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-unknown-before-page",
@@ -49204,7 +49496,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-relevance-unknown",
@@ -49215,7 +49509,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-lazy-path-error",
@@ -49226,7 +49522,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-lazy-path-after-page",
@@ -49239,7 +49537,9 @@
     "detail": "Invalid page."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-user-first-page",
@@ -49412,7 +49712,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-user-desc-all",
@@ -50525,7 +50827,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-user-desc-last-page",
@@ -50698,7 +51002,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-sort-with-search",
@@ -51520,7 +51826,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-page-two",
@@ -51693,7 +52001,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-page-last",
@@ -52128,7 +52438,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-page-python-int",
@@ -52375,7 +52687,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-page-empty-is-first",
@@ -52850,7 +53164,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-page-beyond",
@@ -52863,7 +53179,9 @@
     "detail": "Invalid page."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-page-zero",
@@ -52876,7 +53194,9 @@
     "detail": "Invalid page."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-page-text",
@@ -52889,7 +53209,9 @@
     "detail": "Invalid page."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-perpage-zero-default",
@@ -53851,7 +54173,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-perpage-text-default",
@@ -54813,7 +55137,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-perpage-huge",
@@ -55926,7 +56252,9 @@
       "body": "printed"
      }
     }
-   ]
+   ],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-list-empty-page-two",
@@ -55939,7 +56267,9 @@
     "detail": "Invalid page."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-owner-this-month",
@@ -55970,7 +56300,372 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
+  },
+  {
+   "name": "payment-reads-stats-stripe-fees-fetched-and-cached",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/stats?query[payment_range]=2024/01/01%20al%202024/12/31",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "stripe_charges": {
+      "total": 12.65,
+      "stripe_fee": 12.65
+     },
+     "monthly_income": 105.5,
+     "monthly_expenses": 285.0,
+     "monthly_to_pay": 80.0,
+     "monthly_to_cash_in": 160.0,
+     "current_income": 265.5,
+     "current_expenses": 365.0,
+     "accounts": {
+      "cash": 25.0,
+      "bank": -160.0,
+      "other": 0
+     },
+     "total_transactions": 11,
+     "net_balance": -192.15
+    }
+   },
+   "unordered": false,
+   "prints": [],
+   "stripe_setup": {
+    "enabled": true,
+    "cache_key": "stripe_fees_direct_da91b15fe64091591515ba97_1704067200_1735603200",
+    "cache_before": null,
+    "cache_after": {
+     "total": 12.65,
+     "stripe_fee": 12.65
+    }
+   },
+   "stripe": [
+    {
+     "method": "GET",
+     "path": "/v1/balance_transactions?created%5Bgte%5D=1704067200&created%5Blte%5D=1735603200",
+     "body": "",
+     "same_key_as_previous": false,
+     "telemetry": null,
+     "status": 200,
+     "response": {
+      "object": "list",
+      "url": "/v1/balance_transactions",
+      "has_more": true,
+      "data": [
+       {
+        "id": "txn_reads_1",
+        "object": "balance_transaction",
+        "type": "charge",
+        "fee_details": [
+         {
+          "type": "stripe_fee",
+          "amount": 31
+         },
+         {
+          "type": "application_fee",
+          "amount": 50
+         }
+        ]
+       },
+       {
+        "id": "txn_reads_2",
+        "object": "balance_transaction",
+        "type": "payout",
+        "fee_details": [
+         {
+          "type": "stripe_fee",
+          "amount": 999
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/v1/balance_transactions?created%5Bgte%5D=1704067200&created%5Blte%5D=1735603200&starting_after=txn_reads_2",
+     "body": "",
+     "same_key_as_previous": false,
+     "telemetry": "req_stub_1",
+     "status": 200,
+     "response": {
+      "object": "list",
+      "url": "/v1/balance_transactions",
+      "has_more": false,
+      "data": [
+       {
+        "id": "txn_reads_3",
+        "object": "balance_transaction",
+        "type": "charge",
+        "fee_details": [
+         {
+          "type": "stripe_fee",
+          "amount": 1234
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "payment-reads-stats-stripe-fees-from-cache",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/payment/stats?query[payment_range]=2024/01/01%20al%202024/12/31",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "stripe_charges": {
+      "total": 3.3,
+      "stripe_fee": 2.2
+     },
+     "monthly_income": 105.5,
+     "monthly_expenses": 285.0,
+     "monthly_to_pay": 80.0,
+     "monthly_to_cash_in": 160.0,
+     "current_income": 265.5,
+     "current_expenses": 365.0,
+     "accounts": {
+      "cash": 25.0,
+      "bank": -160.0,
+      "other": 0
+     },
+     "total_transactions": 11,
+     "net_balance": -182.8
+    }
+   },
+   "unordered": false,
+   "prints": [],
+   "stripe_setup": {
+    "enabled": true,
+    "cache_key": "stripe_fees_direct_da91b15fe64091591515ba97_1704067200_1735603200",
+    "cache_before": {
+     "total": 3.3,
+     "stripe_fee": 2.2
+    },
+    "cache_after": {
+     "total": 3.3,
+     "stripe_fee": 2.2
+    }
+   },
+   "stripe": []
+  },
+  {
+   "name": "payment-reads-stats-stripe-error-zero-uncached",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/stats?query[payment_range]=2024/01/01%20al%202024/12/31",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "stripe_charges": {
+      "total": 0,
+      "stripe_fee": 0
+     },
+     "monthly_income": 105.5,
+     "monthly_expenses": 285.0,
+     "monthly_to_pay": 80.0,
+     "monthly_to_cash_in": 160.0,
+     "current_income": 265.5,
+     "current_expenses": 365.0,
+     "accounts": {
+      "cash": 25.0,
+      "bank": -160.0,
+      "other": 0
+     },
+     "total_transactions": 11,
+     "net_balance": -179.5
+    }
+   },
+   "unordered": false,
+   "prints": [],
+   "stripe_setup": {
+    "enabled": true,
+    "cache_key": "stripe_fees_direct_da91b15fe64091591515ba97_1704067200_1735603200",
+    "cache_before": null,
+    "cache_after": null
+   },
+   "stripe": [
+    {
+     "method": "GET",
+     "path": "/v1/balance_transactions?created%5Bgte%5D=1704067200&created%5Blte%5D=1735603200",
+     "body": "",
+     "same_key_as_previous": false,
+     "telemetry": null,
+     "status": 400,
+     "response": {
+      "error": {
+       "type": "invalid_request_error",
+       "message": "fixture"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "payment-reads-stats-stripe-missing-fee-type-zero-uncached",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/stats?query[payment_range]=2024/01/01%20al%202024/12/31",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "stripe_charges": {
+      "total": 0,
+      "stripe_fee": 0
+     },
+     "monthly_income": 105.5,
+     "monthly_expenses": 285.0,
+     "monthly_to_pay": 80.0,
+     "monthly_to_cash_in": 160.0,
+     "current_income": 265.5,
+     "current_expenses": 365.0,
+     "accounts": {
+      "cash": 25.0,
+      "bank": -160.0,
+      "other": 0
+     },
+     "total_transactions": 11,
+     "net_balance": -179.5
+    }
+   },
+   "unordered": false,
+   "prints": [],
+   "stripe_setup": {
+    "enabled": true,
+    "cache_key": "stripe_fees_direct_da91b15fe64091591515ba97_1704067200_1735603200",
+    "cache_before": null,
+    "cache_after": null
+   },
+   "stripe": [
+    {
+     "method": "GET",
+     "path": "/v1/balance_transactions?created%5Bgte%5D=1704067200&created%5Blte%5D=1735603200",
+     "body": "",
+     "same_key_as_previous": false,
+     "telemetry": null,
+     "status": 200,
+     "response": {
+      "object": "list",
+      "url": "/v1/balance_transactions",
+      "has_more": false,
+      "data": [
+       {
+        "id": "txn_reads_4",
+        "type": "charge",
+        "fee_details": [
+         {
+          "amount": 5
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "payment-reads-stats-stripe-disabled",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/stats?query[payment_range]=2024/01/01%20al%202024/12/31",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "stripe_charges": {
+      "total": 0,
+      "stripe_fee": 0
+     },
+     "monthly_income": 105.5,
+     "monthly_expenses": 285.0,
+     "monthly_to_pay": 80.0,
+     "monthly_to_cash_in": 160.0,
+     "current_income": 265.5,
+     "current_expenses": 365.0,
+     "accounts": {
+      "cash": 25.0,
+      "bank": -160.0,
+      "other": 0
+     },
+     "total_transactions": 11,
+     "net_balance": -179.5
+    }
+   },
+   "unordered": false,
+   "prints": [],
+   "stripe_setup": {
+    "enabled": false,
+    "cache_key": "stripe_fees_direct_da91b15fe64091591515ba97_1704067200_1735603200",
+    "cache_before": null,
+    "cache_after": null
+   },
+   "stripe": []
+  },
+  {
+   "name": "payment-reads-stats-stripe-no-transactions",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/stats?query[payment_range]=2024/02/01%20al%202024/07/02",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "stripe_charges": {
+      "total": 0.0,
+      "stripe_fee": 0.0
+     },
+     "monthly_income": 105.5,
+     "monthly_expenses": 0,
+     "monthly_to_pay": 0,
+     "monthly_to_cash_in": 150.0,
+     "current_income": 255.5,
+     "current_expenses": 0,
+     "accounts": {
+      "cash": 50.0,
+      "bank": 40.0,
+      "other": 0
+     },
+     "total_transactions": 5,
+     "net_balance": 105.5
+    }
+   },
+   "unordered": false,
+   "prints": [],
+   "stripe_setup": {
+    "enabled": true,
+    "cache_key": "stripe_fees_direct_da91b15fe64091591515ba97_1706745600_1719878400",
+    "cache_before": null,
+    "cache_after": {
+     "total": 0.0,
+     "stripe_fee": 0.0
+    }
+   },
+   "stripe": [
+    {
+     "method": "GET",
+     "path": "/v1/balance_transactions?created%5Bgte%5D=1706745600&created%5Blte%5D=1719878400",
+     "body": "",
+     "same_key_as_previous": false,
+     "telemetry": null,
+     "status": 200,
+     "response": {
+      "object": "list",
+      "url": "/v1/balance_transactions",
+      "has_more": false,
+      "data": []
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-stats-full-collaborator",
@@ -56001,7 +56696,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-admin-impersonating-owner",
@@ -56035,7 +56732,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-scoped-athlete-not-available",
@@ -56051,7 +56750,9 @@
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-athlete",
@@ -56062,7 +56763,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-deleted-association-owner",
@@ -56073,7 +56776,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-foreign-owner",
@@ -56104,7 +56809,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-year",
@@ -56135,7 +56842,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-year-dmy",
@@ -56166,7 +56875,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-end-is-midnight",
@@ -56197,7 +56908,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-end-day-after",
@@ -56228,7 +56941,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-range-mixed-falls-back",
@@ -56259,7 +56974,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-range-invalid-falls-back",
@@ -56290,7 +57007,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-range-without-separator",
@@ -56301,7 +57020,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-range-empty",
@@ -56312,7 +57033,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-group",
@@ -56345,7 +57068,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-group-malformed-ignored",
@@ -56378,7 +57103,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-ignores-archived-parameter",
@@ -56409,7 +57136,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-paid",
@@ -56440,7 +57169,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-paid-empty-is-false",
@@ -56471,7 +57202,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-expense",
@@ -56502,7 +57235,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-subject",
@@ -56533,7 +57268,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-subject-empty",
@@ -56544,7 +57281,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-subject-out-of-range",
@@ -56575,7 +57314,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-type-empty",
@@ -56606,7 +57347,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-type",
@@ -56637,7 +57380,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-category-none",
@@ -56668,7 +57413,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-category",
@@ -56699,7 +57446,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-category-malformed",
@@ -56710,7 +57459,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-account",
@@ -56741,7 +57492,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-account-none",
@@ -56772,7 +57525,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-search-rossi",
@@ -56803,7 +57558,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-search-tutor",
@@ -56834,7 +57591,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-search-supplier",
@@ -56865,7 +57624,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-search-amount",
@@ -56896,7 +57657,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-search-date",
@@ -56927,7 +57690,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-stats-search-none",
@@ -56958,7 +57723,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-owner",
@@ -57929,7 +58696,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-full-collaborator",
@@ -58900,7 +59669,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-admin-impersonating-owner",
@@ -59874,7 +60645,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-athlete",
@@ -59886,7 +60659,9 @@
    "response": "<empty>",
    "unordered": false,
    "prints": [],
-   "challenge": false
+   "challenge": false,
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-scoped-athlete-reference",
@@ -59902,7 +60677,9 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-athlete-malformed",
@@ -59914,7 +60691,9 @@
    "response": "<empty>",
    "unordered": false,
    "prints": [],
-   "challenge": false
+   "challenge": false,
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-malformed",
@@ -59927,7 +60706,9 @@
     "badly formed hexadecimal UUID string"
    ],
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-unknown",
@@ -59938,7 +60719,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-foreign",
@@ -59951,7 +60734,9 @@
     "detail": "User not allowed."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-without-associate",
@@ -59962,7 +60747,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-deleted-association-owner",
@@ -59973,7 +60760,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-tax-code-twin",
@@ -61006,7 +61795,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-deleted-subscription",
@@ -61026,7 +61817,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-group-hides-subscription",
@@ -61039,7 +61832,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-group-malformed-ignored",
@@ -62012,7 +62807,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-hyphenless-uuid",
@@ -62983,7 +63780,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-paid",
@@ -63423,7 +64222,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-paid-empty-is-false",
@@ -63976,7 +64777,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-expense-false",
@@ -64947,7 +65750,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-subject",
@@ -65379,7 +66184,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-subject-empty",
@@ -65390,7 +66197,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-type",
@@ -65549,7 +66358,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-type-empty",
@@ -65569,7 +66380,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-archived-parameter-ignored",
@@ -66540,7 +67353,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-search-full-name",
@@ -67648,7 +68463,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-search-course-title-duplicates",
@@ -68081,7 +68898,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-search-old-course",
@@ -68240,7 +69059,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-search-tax-code",
@@ -69348,7 +70169,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-search-json-meta",
@@ -69368,7 +70191,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-search-payment-date",
@@ -69664,7 +70489,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-search-category",
@@ -69975,7 +70802,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-search-nothing",
@@ -69995,7 +70824,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-search-not-stripped",
@@ -71103,7 +71934,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-search-amount",
@@ -71261,7 +72094,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-search-amount-one",
@@ -71281,7 +72116,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-search-percent-escaped",
@@ -71301,7 +72138,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-sort-creation-asc",
@@ -72272,7 +73111,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-sort-amount-desc",
@@ -73243,7 +74084,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-sort-unknown",
@@ -73254,7 +74097,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-sort-full-name-unknown-without-search",
@@ -73265,7 +74110,9 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-page-two",
@@ -73713,7 +74560,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-page-beyond",
@@ -73726,7 +74575,9 @@
     "detail": "Invalid page."
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   },
   {
    "name": "payment-reads-subscription-search-duplicates-paginated",
@@ -73885,7 +74736,9 @@
     }
    },
    "unordered": false,
-   "prints": []
+   "prints": [],
+   "stripe_setup": null,
+   "stripe": []
   }
  ]
 }
