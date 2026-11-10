@@ -152,6 +152,8 @@ PAYMENTS = {
     'f_dated': {'id': next(ids), **row(amount='15.00', payment_date='2026-03-01T10:00:00Z', sport_association_id=FLAG['association'],
                                        user_id=FLAG['id'], payment_category_id=None)},
     'f_undated': {'id': next(ids), **row(amount='15.00', sport_association_id=FLAG['association'], user_id=FLAG['id'], payment_category_id=None)},
+    'f_tie': {'id': next(ids), **row(subject=1, amount='10.00', payment_date='2026-03-02T10:00:00Z', sport_association_id=FLAG['association'],
+                                     user_id=FLAG['id'], payment_category_id=None, meta_payment_categories=[{'amount': '0.125'}])},
 }
 
 
@@ -531,6 +533,14 @@ response, effect = generated('f_dated', 'sub_flavia', other_flag('Quota'), actor
                              association=FLAG['association'], flag=True)
 add('flag-payment-date-invoice-date', 'flag_owner', GENERATE('f_dated'), 200, response, body={'subscription_id': SUB('sub_flavia')},
     effect=effect)
+
+# The second save of an invoice dated by its payment compares the stored (column) fees with the float fees: the tie differs from both.
+NUMBERS['flag'] = 10  # the NULL number sorts first: every flag invoice is numbered 11
+response, effect = generated('f_tie', 'sub_flavia',
+                             f"Ricevuta di pagamento per l'iscrizione di <b>{escape(full_name('flavia'))}</b> all'associazione "
+                             f"<b>{escape(FLAG['denomination'])}</b>.", actor='flag_owner', number_key='flag', association=FLAG['association'],
+                             flag=True)
+add('flag-payment-date-fee-tie', 'flag_owner', GENERATE('f_tie'), 200, response, body={'subscription_id': SUB('sub_flavia')}, effect=effect)
 
 # --- approve with a truthy generate_invoice ---------------------------------------------
 
