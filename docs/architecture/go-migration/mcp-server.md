@@ -87,10 +87,11 @@ execution owner; nothing here switches traffic.
 Refusal: the Go tool returns `ErrBusinessMCPNotPorted`; over stdio the call
 answers `isError: true` "Tool execution failed". Nothing is written before.
 
-- Building XLSX or PDF files: `export_data` with xlsx/pdf when there is
-  data, `export_multi_sheet` when any sheet has data, `get_attendance_matrix`
-  with `export=true` once the matrix exists (a parallel xlsx-exports family
-  was not merged when this was written).
+- Building XLSX or PDF files is ported (v2-reports-3, below). Still refused: a file whose
+  exporter raises with text Go does not reproduce (a title or `sheets` of another type, a
+  sheet without columns and the other exceptions of the exporters), and a `format`,
+  `export`, `multi_sheet`, `filename` or course/date argument of a type the save_info
+  would write back differently.
 - ORM inputs whose Django text includes difflib suggestions or SQL: unknown
   lookups/transforms on fields (`Unsupported lookup …`), regex/iregex,
   JSON containment and multi-key lookups, nested or integer JSON keys,
@@ -146,3 +147,11 @@ v2-reports-2 (`mcp-server-tools-v2rep2-r2`, 135/135 with 3 refused, 4/4 sessions
 `format` that is not a string (`Unsupported format: <str(value)>`, or `unhashable type` for a list or dict) and writes CSV
 labels and cells of other types with `str()`. Exceptions whose text is not reproduced (a title or `sheets` of another type)
 and the XLSX and PDF results stay refused here. The server has no request, so no group filter applies.
+
+v2-reports-3: the XLSX and PDF results of `export_data`, `export_multi_sheet` and
+`get_attendance_matrix(export=true)` are built on the MCP transport (and the assistant channel)
+by the code the saved-report run uses, with the whole result dict: `row_count`, `sheet_count` or
+`total_dates` and `save_info`. The harness (`mcp-server-tools-v2rep3-b-mcp-r2`) compares a file by its normalized parts
+(workbook parts with the two core.xml times set aside, PDF objects decoded with dates and
+trailer ID set aside; the helpers of `TESTS/contracts`): 147 cases, 146 identical and 1
+refused (`title` that is not a string), 4/4 sessions identical.

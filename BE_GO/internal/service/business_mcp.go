@@ -39,10 +39,8 @@ type BusinessMCPTools struct {
 	store       BusinessMCPStore
 	association string
 	now         func() time.Time
-	// files and group are set for a saved-report run (report_files.go): the
-	// XLSX and PDF files are built, and Course.objects follows the request's
-	// X-Group-Id.
-	files bool
+	// group is set for a saved-report run (report_files.go): Course.objects
+	// follows the request's X-Group-Id.
 	group *string
 }
 
