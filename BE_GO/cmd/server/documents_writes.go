@@ -52,3 +52,8 @@ func composeDocumentStorage(cfg config.Config, db *sqlx.DB, sessions *repository
 	}
 	return service.NewDocumentUploads(repository.NewDocumentUploads(db), objects, sessions, cfg.Storage.FileOverwrite, time.Now, uuid.NewString)
 }
+
+// composeMembershipDocumentUploads is the document storage subscription/memberships' documents_data uses.
+func composeMembershipDocumentUploads(cfg config.Config, db *sqlx.DB) *service.DocumentUploads {
+	return composeDocumentStorage(cfg, db, nil)
+}

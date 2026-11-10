@@ -36,6 +36,10 @@ type SubscriptionCreateRequest struct {
 	Authorization *string // request.headers.get('authorization')
 	Group         string
 	Audit         domain.LoginAuditContext
+	// Language is the request's locale (the welcome e-mail).
+	Language string
+	// StorageKeys collects the objects stored during the request (cleanup_storage_keys on failure).
+	StorageKeys *[]string
 }
 
 // SubscriptionCreates ports subscription_add and create_subscription
@@ -46,6 +50,8 @@ type SubscriptionCreates struct {
 	notifications *SubscriptionNotifier
 	now           func() time.Time
 	logger        *slog.Logger
+	accounts      *SubscriptionCreateAccounts
+	signatures    *SubscriptionSigns
 }
 
 func NewSubscriptionCreates(store domain.SubscriptionCreateStore, tasks celery.Publisher, notifications *SubscriptionNotifier,
@@ -97,8 +103,8 @@ func (s *SubscriptionCreates) Add(ctx context.Context, identity domain.ResolvedI
 		return nil, domain.ErrSubscriptionCreateServer
 	}
 	quick := request.Mode != nil && *request.Mode == "only_associate"
-	if objectHas(data, "sport_association") {
-		// Athlete requests and associations named in the body are not ported.
+	if user.Role != domain.RoleAssociation && objectHas(data, "sport_association") {
+		// Athlete requests (the association named in the body) are not ported.
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
 	if quick {
@@ -116,9 +122,9 @@ func (s *SubscriptionCreates) Add(ctx context.Context, identity domain.ResolvedI
 				// .first().sport_association_id on None.
 				return nil, domain.ErrSubscriptionCreateServer
 			}
+			// data['sport_association'] is set to it: an associate key takes the quick branch.
 			if objectHas(data, "associate") {
-				// The quick subscription of an existing associate is not ported.
-				return nil, domain.ErrSubscriptionCreateNotPorted
+				return s.quick(ctx, identity, data, request)
 			}
 		}
 		return nil, errSubscriptionCreateValidation
@@ -168,22 +174,6 @@ func subscriptionCreateToday(now time.Time) string {
 func subscriptionCreateRefuse(data domain.RequestObject, today string) error {
 	if value, _ := data.Lookup("preregistration"); value == true {
 		return domain.ErrSubscriptionCreateNotPorted
-	}
-	accountValue, _ := data.Lookup("new_user_account")
-	if account, ok := accountValue.(domain.RequestObject); ok {
-		if value, present := account.Lookup("new_member"); present {
-			if flag, code := dtoBoolean(value); code == "" && flag {
-				// A new member account and its welcome e-mail are not ported.
-				return domain.ErrSubscriptionCreateNotPorted
-			}
-		}
-	}
-	signatureValue, _ := data.Lookup("signature")
-	if signature, ok := signatureValue.(domain.RequestObject); ok {
-		if parsed, invalid := dto.ParseSignatureRequest(signature); invalid == nil && parsed.Signed {
-			// Uploading the signature to storage is not ported.
-			return domain.ErrSubscriptionCreateNotPorted
-		}
 	}
 	if medical, ok := data.Lookup("medical_certificate"); ok {
 		if object, isObject := medical.(domain.RequestObject); isObject {
@@ -311,6 +301,10 @@ type subscriptionCreated struct {
 	userID           string
 	// validated is validate_broadcast's result when it already ran (approve).
 	validated *bool
+	// welcome is the new account's e-mail, athleteMail the owner's reminder for an athlete user.
+	welcome, athleteMail *celery.Task
+	// notifyUser receives the notification (create_subscription's user); empty: request.user.
+	notifyUser string
 }
 
 func (s *SubscriptionCreates) create(ctx context.Context, identity domain.ResolvedIdentity, data domain.RequestObject,
@@ -323,11 +317,14 @@ func (s *SubscriptionCreates) create(ctx context.Context, identity domain.Resolv
 		return nil, err
 	}
 	defer tx.Rollback()
+	keys := []string{}
+	request.StorageKeys = &keys
 	created, err := s.createSubscription(ctx, tx, identity, data, request)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		err = tx.Commit()
 	}
-	if err = tx.Commit(); err != nil {
+	if err != nil {
+		s.cleanupStorage(ctx, keys)
 		return nil, err
 	}
 	s.afterCommit(ctx, identity, created, request)
@@ -473,6 +470,18 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	}
 	audit := subscriptionAudit{tx: tx, context: request.Audit, now: s.now}
 	ownAssociation := &association
+	// A new member account (or the user with its e-mail) replaces user from here on.
+	member := domain.SubscriptionCreateMember{ID: user.ID, Role: user.Role, StartDay: settings.StartDay, StartMonth: settings.StartMonth,
+		CustomEnd: settings.CustomEnd, EndDay: settings.EndDay, EndMonth: settings.EndMonth}
+	newMember, err := s.newMember(ctx, tx, data, settings, request)
+	if err != nil {
+		return nil, err
+	}
+	var welcome *celery.Task
+	if newMember != nil {
+		member, welcome = newMember.member, newMember.welcome
+	}
+	memberID := member.ID
 	saved, err := s.saveAssociate(ctx, tx, audit, associate, association, nil)
 	if err != nil {
 		return nil, err
@@ -485,7 +494,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		}
 		if savedTutor != nil {
 			old := *savedTutor
-			savedTutor.UserID = &user.ID
+			savedTutor.UserID = &memberID
 			if err = tx.SaveAssociate(ctx, *savedTutor); err != nil {
 				return nil, err
 			}
@@ -513,7 +522,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		}
 	}
 	old := *saved
-	saved.UserID = &user.ID
+	saved.UserID = &memberID
 	if err = tx.SaveAssociate(ctx, *saved); err != nil {
 		return nil, err
 	}
@@ -521,8 +530,16 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		return nil, err
 	}
 	signatureValue, _ := data.Lookup("signature")
-	if _, invalid := dto.ParseSignatureRequest(signatureValue); invalid != nil {
+	signature, invalid := dto.ParseSignatureRequest(signatureValue)
+	if invalid != nil {
 		return nil, &domain.SubscriptionCreateInvalid{Fields: invalid}
+	}
+	if signature.Signed {
+		// Signature.objects.create(signature=signature.data, user=user).
+		if err = tx.InsertSignature(ctx, uuid.NewString(), memberID, *signature.Data, request.Audit,
+			s.now().UTC().Truncate(time.Microsecond)); err != nil {
+			return nil, err
+		}
 	}
 	if medicalNull {
 		// The elif's data['medical_certificate'].keys() on None.
@@ -638,7 +655,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 				return nil, err
 			}
 			id := uuid.NewString()
-			row := domain.SubscriptionCreatePayment{ID: id, AssociationID: association, AssociateID: saved.ID, UserID: user.ID, Amount: amount,
+			row := domain.SubscriptionCreatePayment{ID: id, AssociationID: association, AssociateID: saved.ID, UserID: memberID, Amount: amount,
 				CategoryID: category, AccountID: account, MetaCategories: fees.metaCategories, Meta: fees.meta, PaymentDate: day, Created: s.now().UTC()}
 			if err = tx.InsertPayment(ctx, row); err != nil {
 				return nil, err
@@ -739,8 +756,12 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		return nil, subscriptionCreateCalendar(err)
 	}
 	subscriptionID := uuid.NewString()
-	row := domain.SubscriptionCreateRow{ID: subscriptionID, AssociationID: association, AssociateID: saved.ID, UserID: user.ID,
-		Type: subscriptionType, Role: role, Status: 1, MedicalID: medical, PaymentID: paymentID, CustomData: customData,
+	status := int64(1)
+	if signature.Signed {
+		status = 2 // PENDING
+	}
+	row := domain.SubscriptionCreateRow{ID: subscriptionID, AssociationID: association, AssociateID: saved.ID, UserID: memberID,
+		Type: subscriptionType, Role: role, Status: status, MedicalID: medical, PaymentID: paymentID, CustomData: customData,
 		AdditionalFields: additionalFields, Meta: meta, Number: number.String(), SubscriptionType: settings.DefaultMembershipType,
 		Created: createdAt, Start: dates.Start, End: dates.End}
 	if err = tx.InsertSubscription(ctx, row); err != nil {
@@ -749,6 +770,24 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	if err = audit.created(ctx, "subscription", "Subscription", "application_subscription", "subscription_id", subscriptionID, nil,
 		ownAssociation, "direct"); err != nil {
 		return nil, err
+	}
+	if signature.Signed && signature.Data != nil && *signature.Data != "" {
+		url, key, err := s.uploadSignature(ctx, subscriptionID, *signature.Data, request)
+		if err != nil {
+			return nil, err
+		}
+		if err = tx.SaveSubscriptionSignature(ctx, subscriptionID, association, url, key, request.Audit, s.now().UTC()); err != nil {
+			return nil, err
+		}
+	}
+	// current_date_from/to of create_subscription's user (a new member's own settings).
+	memberSeason := season
+	if memberID != user.ID {
+		memberRule := domain.CalendarRule{StartDay: member.StartDay, StartMonth: member.StartMonth, CustomEnd: member.CustomEnd,
+			EndDay: member.EndDay, EndMonth: member.EndMonth}
+		if memberSeason, err = SeasonRange(ctx, now, memberRule); err != nil {
+			return nil, subscriptionCreateCalendar(err)
+		}
 	}
 	if subscriptionType == 2 || subscriptionType == 3 {
 		membershipType := ""
@@ -761,10 +800,10 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			}
 			membershipType = text
 		} else {
-			membershipType = fmt.Sprintf("Tesseramento %d/%d", season.Start.Year(), season.End.Year())
+			membershipType = fmt.Sprintf("Tesseramento %d/%d", memberSeason.Start.Year(), memberSeason.End.Year())
 		}
 		var start, end *domain.CalendarDate
-		from, to := subscriptionCreateDay(season.Start), subscriptionCreateDay(season.End)
+		from, to := subscriptionCreateDay(memberSeason.Start), subscriptionCreateDay(memberSeason.End)
 		switch settings.MembershipDuration {
 		case 1:
 			last := subscriptionCreateDay(calendarTime(from).AddDate(1, 0, 0).AddDate(0, 0, -1))
@@ -813,9 +852,13 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		}
 	}
 	name := strings.TrimSpace(subscriptionCreateValue(saved.FirstName) + " " + subscriptionCreateValue(saved.LastName))
-	return &subscriptionCreated{id: subscriptionID, association: association, associateName: name,
+	created := &subscriptionCreated{id: subscriptionID, association: association, associateName: name,
 		result: SubscriptionCreateResult{PaymentID: paymentID, Amount: amountJSON}, first: saved.FirstName, last: saved.LastName,
-		tax: saved.TaxCode, start: dates.Start, end: dates.End, userID: user.ID}, nil
+		tax: saved.TaxCode, start: dates.Start, end: dates.End, userID: memberID, welcome: welcome, notifyUser: memberID}
+	if member.Role == domain.RoleAthlete {
+		created.athleteMail = s.athleteMail(settings, saved.FirstName, saved.LastName)
+	}
+	return created, nil
 }
 
 // subscriptionCreateValue is '%s' of a CharField value.
@@ -1209,6 +1252,11 @@ func (s *SubscriptionCreates) afterCommit(ctx context.Context, identity domain.R
 	request SubscriptionCreateRequest) {
 	work, cancel := context.WithTimeout(context.WithoutCancel(ctx), subscriptionCreateAfterCommitTimeout)
 	defer cancel()
+	if created.welcome != nil {
+		if _, err := s.tasks.Publish(work, *created.welcome); err != nil {
+			s.logger.Error("welcome e-mail dispatch failed", "error", err)
+		}
+	}
 	if _, err := s.tasks.Publish(work, celery.Task{Name: "check_workflows_trigger", Kwargs: celery.Dict{
 		{Key: "trigger_type", Value: "new_subscription"},
 		{Key: "sport_association_id", Value: uuid.MustParse(created.association)},
@@ -1225,14 +1273,23 @@ func (s *SubscriptionCreates) afterCommit(ctx context.Context, identity domain.R
 	}
 	if s.notifications != nil {
 		message := fmt.Sprintf("Nuova Iscrizione aggiunta per %s.", created.associateName)
+		target := identity.ScopeUser.ID
+		if created.notifyUser != "" {
+			target = created.notifyUser
+		}
 		send := func() error {
 			if created.validated != nil {
-				return s.notifications.SendValidated(work, identity.ScopeUser.ID, "subscription", message, created.association, *created.validated)
+				return s.notifications.SendValidated(work, target, "subscription", message, created.association, *created.validated)
 			}
-			return s.notifications.Send(work, identity.ScopeUser.ID, "subscription", message, created.association, request.Audit)
+			return s.notifications.Send(work, target, "subscription", message, created.association, request.Audit)
 		}
 		if err := send(); err != nil {
 			s.logger.Error("subscription notification failed", "error", err)
+		}
+	}
+	if created.athleteMail != nil {
+		if _, err := s.tasks.Publish(work, *created.athleteMail); err != nil {
+			s.logger.Error("new subscription e-mail dispatch failed", "error", err)
 		}
 	}
 }

@@ -73,6 +73,10 @@ type SubscriptionMembershipTransaction interface {
 	CreateMembership(ctx context.Context, row SubscriptionMembership, audit LoginAuditContext, at time.Time) error
 	SaveMembership(ctx context.Context, row SubscriptionMembership, changes map[string][2]string, audit LoginAuditContext, at time.Time) error
 	DeleteMembership(ctx context.Context, id string, audit LoginAuditContext, at time.Time) error
+	// CreateMembershipDocument is Document.objects.create(filename=...) with its create entry (indexed through the actor).
+	CreateMembershipDocument(ctx context.Context, document NewDocument, audit LoginAuditContext, at time.Time) error
+	// LinkMembershipDocument is attached_membership_documents.add(document) (no audit entry).
+	LinkMembershipDocument(ctx context.Context, membership, document string) error
 	Commit() error
 	Rollback() error
 }
