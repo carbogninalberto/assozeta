@@ -67,7 +67,10 @@ Go: `BE_GO/internal/{domain,dto,repository,service}/payment_reads_athlete.go`. T
 `course_subscription_id`. Owner filters, sorting and pagination parameters are ignored.
 
 - With a `course_subscription_id` key (after `is_valid_uuid`; an empty value fails the UUID lookup, 500): the live course
-  subscription with that id (none: 500). When it has `multi_payments`, the payments of its live group-aware installments
+  subscription with that id whose subscription has the athlete as user, or an associate of the athlete's group-aware
+  subscriptions (the people of the list below; an association-scoped session keeps `scoped_queryset`'s members instead).
+  Any other id is the 403 `Risorsa non disponibile per questo utente e associazione.` of the scoped-session reference
+  check. When it has `multi_payments`, the payments of its live group-aware installments
   whose amount is above zero, or all of them when the course association's owner has `show_zero_payments` (an installment
   without payment: 500); otherwise its own payment under the same rule on the payment's amount. Then the payments of the
   carnet holdings linked to it, under the same rule with the carnet association's owner. The rows are the live group-aware
@@ -214,3 +217,14 @@ with their index rows and Celery messages. RED `v2athpay-red-r3`: Django 270/270
 excluded whatever the owner's setting) CAUGHT on `payment-reads-athlete-list-renderer-failure`. Shared code: `main.go`
 (the `DocumentRender` service is now also handed to payment-reads) and the payment-reads handler; payment-writes,
 payment-misc, payment-state and document-render re-run green (`v2athpay-rerun-r1`).
+
+Athlete course subscriptions (`secath-*`): the athlete payment list only shows the athlete's own course subscriptions and
+those of their associates. Django (`payment_views.payment_list`, with
+`application.tests.test_payment_views.AthleteCourseSubscriptionPaymentTests`) and Go
+(`paymentAthleteOwnCourseSubscription` in the repository, the 403 in the service) changed together; the fixture was
+regenerated (276 cases): a course subscription of another user's subscription of a shared associate, the same under a group
+header (no associates: 403) and the athlete's own under it (the group's payments: none), another athlete's course
+subscriptions in both directions, an administrator's impersonation, and the unknown and soft-deleted ids (403). RED
+`secath-red-r1`: Django 276/276, Go 500 on `payment-reads-list-athlete-unknown-course-subscription`. GREEN
+`secath-versioned-r1`: 276/276 on the four transports. Mutation `secath-mutation-r1` (the course subscription lookup without
+the athlete's condition) CAUGHT. payment-writes, payment-misc and payment-state re-run green natively (`secath-rerun-r1`).

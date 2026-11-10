@@ -41,7 +41,9 @@ func paymentAthleteShowZero(positive bool, showZero *bool) (bool, error) {
 	return *showZero, nil
 }
 
-// courseSubscriptionPayments is the course_subscription_id branch: the
+// courseSubscriptionPayments is the course_subscription_id branch: the course
+// subscription must be the athlete's or an associate's (otherwise the 403 of a
+// resource that is not available); the
 // payments of the course subscription's installments (multi_payments) or its
 // own payment, then those of the carnet holdings linked to it, each when its
 // amount is above zero or the association owner shows zero payments.
@@ -51,7 +53,7 @@ func (a *paymentReadsAthlete) courseSubscriptionPayments(ctx context.Context, id
 		return nil, err
 	}
 	if subscription == nil {
-		return nil, domain.ErrPaymentReadsServer // None.multi_payments
+		return nil, &domain.PermissionDenied{Detail: unavailableResource}
 	}
 	ids := []string{}
 	missing := false

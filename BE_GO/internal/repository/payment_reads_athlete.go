@@ -47,8 +47,17 @@ func paymentAthleteArgs(scope domain.PaymentAthleteScope, args ...any) []any {
 	return append([]any{scope.Association, scope.Person, scope.Group}, args...)
 }
 
+// paymentAthleteOwnCourseSubscription keeps, outside an association-scoped
+// session, the course subscriptions of the athlete's user or of an associate of
+// the athlete's group-aware subscriptions: the people of the default list.
+const paymentAthleteOwnCourseSubscription = ` AND (su.user_id=$2 OR su.associate_id IN (SELECT s.associate_id FROM application_subscription s
+   WHERE s.user_id=$2 AND ($3::uuid IS NULL OR s.group_id=$3) AND s.associate_id IS NOT NULL))`
+
 func (r *PaymentReadsAthlete) CourseSubscription(ctx context.Context, id string, scope domain.PaymentAthleteScope) (*domain.PaymentAthleteCourseSubscription, error) {
 	query := paymentAthleteScoped(scope)
+	if scope.Association == nil {
+		query.courseSubscription = paymentAthleteOwnCourseSubscription
+	}
 	rows := []domain.PaymentAthleteCourseSubscription{}
 	err := r.db.SelectContext(ctx, &rows, query.prefix+`
  SELECT cs.course_subscription_id, cs.multi_payments, cs.payment_id, pp.amount > 0 AS payment_positive, ou.show_zero_payments AS show_zero

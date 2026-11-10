@@ -11,6 +11,8 @@ from application.models.subscriptions_models import Signature
 from application.models.user_models import Instructor
 from application.tests.fixtures.factories import (
     create_test_associate,
+    create_test_course,
+    create_test_course_subscription,
     create_test_payment,
     create_test_payment_category,
     create_test_sport_association,
@@ -771,3 +773,47 @@ class SubscriptionPaymentIdentityTests(PaymentViewsTestCase):
         response = self.client.get(f'/subscription/{subscription.pk}/payments')
         self.assertEqual(response.status_code, 200)
         self.assertIn(str(historical.pk), {str(row['payment_id']) for row in response.data['data']})
+
+
+class AthleteCourseSubscriptionPaymentTests(PaymentViewsTestCase):
+    """The athlete payment list only shows the athlete's own course subscriptions."""
+
+    NOT_AVAILABLE = 'Risorsa non disponibile per questo utente e associazione.'
+
+    def setUp(self):
+        super().setUp()
+        self.course = create_test_course(sport_association=self.sport_association)
+        self.client.force_authenticate(user=self.athlete_user)
+
+    def course_subscription(self, associate, user):
+        subscription = create_test_subscription(sport_association=self.sport_association, associate=associate, user=user)
+        payment = create_test_payment(sport_association=self.sport_association, associate=associate, user=user,
+                                      amount=Decimal('40.00'))
+        return create_test_course_subscription(course=self.course, subscription=subscription, payment=payment)
+
+    def listed(self, course_subscription):
+        response = self.client.get(f'/payment/list?course_subscription_id={course_subscription.pk}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        return {str(row['payment_id']) for row in response.data['data'].values()}
+
+    def test_own_course_subscription(self):
+        own = self.course_subscription(self.associate, self.athlete_user)
+        self.assertEqual(self.listed(own), {str(own.payment_id)})
+
+    def test_family_member_course_subscription(self):
+        # The athlete enrolled the member once; a later subscription of the same member has no user of its own.
+        create_test_subscription(sport_association=self.sport_association, associate=self.associate, user=self.athlete_user,
+                                 start_date='2020-01-01', end_date='2020-12-31')
+        member = self.course_subscription(self.associate, self.user)
+        self.assertEqual(self.listed(member), {str(member.payment_id)})
+
+    def test_other_course_subscription_is_not_available(self):
+        other = self.course_subscription(create_test_associate(sport_association=self.sport_association), self.user)
+        response = self.client.get(f'/payment/list?course_subscription_id={other.pk}')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, {'detail': self.NOT_AVAILABLE})
+
+    def test_unknown_course_subscription_is_not_available(self):
+        response = self.client.get('/payment/list?course_subscription_id=7f1c1d7e-0000-4000-8000-000000000001')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, {'detail': self.NOT_AVAILABLE})

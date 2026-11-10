@@ -884,6 +884,11 @@
    "id": "a7b1e7e0-eeee-4eee-8eee-eeeeeeeeebdf",
    "username": "payment-reads-faulty",
    "email": "payment-reads-faulty@example.test"
+  },
+  "partner": {
+   "id": "a7b1e7e0-eeee-4eee-8eee-eeeeeeeeebea",
+   "username": "payment-reads-partner",
+   "email": "payment-reads-partner@example.test"
   }
  },
  "athlete": {
@@ -910,7 +915,7 @@
    }
   },
   "group": {
-   "id": "6a0bbbbb-eeee-4eee-8eee-eeeeeeeeebea",
+   "id": "6a0bbbbb-eeee-4eee-8eee-eeeeeeeeebeb",
    "name": "Agonisti",
    "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf"
   },
@@ -922,7 +927,7 @@
   },
   "associates": {
    "r_self": {
-    "id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+    "id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "first_name": "Rita",
     "last_name": "Corsa",
@@ -931,7 +936,7 @@
     "deleted": false
    },
    "r_kid": {
-    "id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
+    "id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "first_name": "Leo",
     "last_name": "Corsa",
@@ -940,7 +945,7 @@
     "deleted": false
    },
    "r_south": {
-    "id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
+    "id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebee",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebda",
     "first_name": "Rita",
     "last_name": "Corsa",
@@ -949,7 +954,7 @@
     "deleted": false
    },
    "r_old": {
-    "id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebee",
+    "id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebef",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "first_name": "Vecchio",
     "last_name": "Socio",
@@ -958,7 +963,7 @@
     "deleted": true
    },
    "stranger": {
-    "id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebef",
+    "id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebfa",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "first_name": "Altro",
     "last_name": "Socio",
@@ -967,7 +972,7 @@
     "deleted": false
    },
    "sc_child": {
-    "id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebfa",
+    "id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebfb",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "first_name": "Sara",
     "last_name": "Pista",
@@ -976,7 +981,7 @@
     "deleted": false
    },
    "sc_other": {
-    "id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebfb",
+    "id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebfc",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "first_name": "Ospite",
     "last_name": "Pista",
@@ -987,7 +992,7 @@
   },
   "subscriptions": {
    "n_self": {
-    "id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+    "id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "user": "runner",
     "associate": "r_self",
@@ -997,7 +1002,7 @@
     "end": "2024-12-31"
    },
    "n_kid": {
-    "id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
+    "id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfe",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "user": "runner",
     "associate": "r_kid",
@@ -1007,7 +1012,7 @@
     "end": null
    },
    "s_self": {
-    "id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfe",
+    "id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebff",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebda",
     "user": "runner",
     "associate": "r_south",
@@ -1017,7 +1022,7 @@
     "end": null
    },
    "n_old": {
-    "id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebff",
+    "id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecaa",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "user": "runner",
     "associate": "r_old",
@@ -1027,7 +1032,7 @@
     "end": null
    },
    "sc_one": {
-    "id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecaa",
+    "id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecab",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "user": "scoped",
     "associate": "sc_child",
@@ -1037,7 +1042,7 @@
     "end": null
    },
    "sc_two": {
-    "id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecab",
+    "id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecac",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "user": "scoped",
     "associate": "sc_other",
@@ -1047,10 +1052,20 @@
     "end": null
    },
    "f_sub": {
-    "id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecac",
+    "id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecad",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "user": "faulty",
     "associate": null,
+    "payment": null,
+    "deleted": false,
+    "start": null,
+    "end": null
+   },
+   "n_kid_partner": {
+    "id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecae",
+    "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
+    "user": "partner",
+    "associate": "r_kid",
     "payment": null,
     "deleted": false,
     "start": null,
@@ -1059,7 +1074,7 @@
   },
   "courses": {
    "c_single": {
-    "id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeecad",
+    "id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeecaf",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "title": "Atletica",
     "multi": false,
@@ -1067,7 +1082,7 @@
     "events": []
    },
    "c_multi": {
-    "id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeecae",
+    "id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeecba",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "title": "Mezzofondo",
     "multi": true,
@@ -1086,7 +1101,7 @@
     ]
    },
    "c_south": {
-    "id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeecaf",
+    "id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeecbb",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebda",
     "title": "Yoga",
     "multi": false,
@@ -1096,7 +1111,7 @@
   },
   "course_subscriptions": {
    "cs_single": {
-    "id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecba",
+    "id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbc",
     "course": "c_single",
     "subscription": "n_self",
     "payment": "p_course",
@@ -1104,7 +1119,7 @@
     "multi": false
    },
    "cs_zero": {
-    "id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbb",
+    "id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbd",
     "course": "c_single",
     "subscription": "n_kid",
     "payment": "p_zero",
@@ -1112,7 +1127,7 @@
     "multi": false
    },
    "cs_multi": {
-    "id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbc",
+    "id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbe",
     "course": "c_multi",
     "subscription": "n_self",
     "payment": null,
@@ -1120,7 +1135,7 @@
     "multi": true
    },
    "cs_south": {
-    "id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbd",
+    "id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbf",
     "course": "c_south",
     "subscription": "s_self",
     "payment": "p_szero",
@@ -1128,7 +1143,7 @@
     "multi": false
    },
    "cs_deleted": {
-    "id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbe",
+    "id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecca",
     "course": "c_single",
     "subscription": "n_kid",
     "payment": "p_csdel",
@@ -1136,7 +1151,7 @@
     "multi": false
    },
    "cs_broken": {
-    "id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbf",
+    "id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeeccb",
     "course": "c_multi",
     "subscription": "n_kid",
     "payment": null,
@@ -1144,7 +1159,7 @@
     "multi": true
    },
    "sc_cs": {
-    "id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecca",
+    "id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeeccc",
     "course": "c_single",
     "subscription": "sc_one",
     "payment": "sp_child",
@@ -1152,17 +1167,25 @@
     "multi": false
    },
    "f_cs": {
-    "id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeeccb",
+    "id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeeccd",
     "course": "c_multi",
     "subscription": "f_sub",
     "payment": null,
     "deleted": false,
     "multi": true
+   },
+   "cs_member": {
+    "id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecce",
+    "course": "c_single",
+    "subscription": "n_kid_partner",
+    "payment": "p_member_course",
+    "deleted": false,
+    "multi": false
    }
   },
   "installments": {
    "i0": {
-    "id": "11a5cccc-eeee-4eee-8eee-eeeeeeeeeccc",
+    "id": "11a5cccc-eeee-4eee-8eee-eeeeeeeeeccf",
     "cs": "cs_multi",
     "number": 0,
     "amount": "30.00",
@@ -1172,7 +1195,7 @@
     "deleted": false
    },
    "i1": {
-    "id": "11a5cccc-eeee-4eee-8eee-eeeeeeeeeccd",
+    "id": "11a5cccc-eeee-4eee-8eee-eeeeeeeeecda",
     "cs": "cs_multi",
     "number": 1,
     "amount": "30.00",
@@ -1182,7 +1205,7 @@
     "deleted": false
    },
    "i2": {
-    "id": "11a5cccc-eeee-4eee-8eee-eeeeeeeeecce",
+    "id": "11a5cccc-eeee-4eee-8eee-eeeeeeeeecdb",
     "cs": "cs_multi",
     "number": 2,
     "amount": "0.00",
@@ -1192,7 +1215,7 @@
     "deleted": false
    },
    "i3": {
-    "id": "11a5cccc-eeee-4eee-8eee-eeeeeeeeeccf",
+    "id": "11a5cccc-eeee-4eee-8eee-eeeeeeeeecdc",
     "cs": "cs_multi",
     "number": 3,
     "amount": "30.00",
@@ -1202,7 +1225,7 @@
     "deleted": false
    },
    "i_del": {
-    "id": "11a5cccc-eeee-4eee-8eee-eeeeeeeeecda",
+    "id": "11a5cccc-eeee-4eee-8eee-eeeeeeeeecdd",
     "cs": "cs_multi",
     "number": 4,
     "amount": "30.00",
@@ -1212,7 +1235,7 @@
     "deleted": true
    },
    "i_nopay": {
-    "id": "11a5cccc-eeee-4eee-8eee-eeeeeeeeecdb",
+    "id": "11a5cccc-eeee-4eee-8eee-eeeeeeeeecde",
     "cs": "cs_broken",
     "number": 0,
     "amount": "10.00",
@@ -1222,7 +1245,7 @@
     "deleted": false
    },
    "f_i": {
-    "id": "11a5cccc-eeee-4eee-8eee-eeeeeeeeecdc",
+    "id": "11a5cccc-eeee-4eee-8eee-eeeeeeeeecdf",
     "cs": "f_cs",
     "number": 0,
     "amount": "10.00",
@@ -1233,13 +1256,13 @@
    }
   },
   "carnet": {
-   "id": "ca0e7bbb-eeee-4eee-8eee-eeeeeeeeecdd",
+   "id": "ca0e7bbb-eeee-4eee-8eee-eeeeeeeeecea",
    "title": "Carnet dieci lezioni",
    "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf"
   },
   "holdings": {
    "h1": {
-    "id": "ab0ca7ef-eeee-4eee-8eee-eeeeeeeeecde",
+    "id": "ab0ca7ef-eeee-4eee-8eee-eeeeeeeeeceb",
     "subscription": "n_self",
     "payment": "p_carnet",
     "course_subscriptions": [
@@ -1248,76 +1271,76 @@
    }
   },
   "camp": {
-   "id": "ca0b0000-eeee-4eee-8eee-eeeeeeeeecdf",
+   "id": "ca0b0000-eeee-4eee-8eee-eeeeeeeeecec",
    "title": "Camp estivo",
    "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
    "period": {
-    "id": "ca0b1111-eeee-4eee-8eee-eeeeeeeeecea",
+    "id": "ca0b1111-eeee-4eee-8eee-eeeeeeeeeced",
     "title": "Settimana uno",
     "start": "2024-07-01T00:00:00Z",
     "end": "2024-07-07T00:00:00Z"
    },
    "subscription": {
-    "id": "ca0b2222-eeee-4eee-8eee-eeeeeeeeeceb",
+    "id": "ca0b2222-eeee-4eee-8eee-eeeeeeeeecee",
     "subscription": "n_kid"
    },
    "link": {
-    "id": "ca0b3333-eeee-4eee-8eee-eeeeeeeeecec",
+    "id": "ca0b3333-eeee-4eee-8eee-eeeeeeeeecef",
     "payment": "p_camp"
    }
   },
   "documents": {
    "south_pdf": {
-    "id": "d0c0eeee-eeee-4eee-8eee-eeeeeeeeeced",
-    "token": "70ce0eee-eeee-4eee-8eee-eeeeeeeeecee",
+    "id": "d0c0eeee-eeee-4eee-8eee-eeeeeeeeecfa",
+    "token": "70ce0eee-eeee-4eee-8eee-eeeeeeeeecfb",
     "filename": "ricevuta-sud.pdf"
    }
   },
   "invoices": {
    "inv_member": {
-    "id": "1a0c0bbb-eeee-4eee-8eee-eeeeeeeeecef",
-    "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
-    "document": null,
-    "deleted": false
-   },
-   "inv_i3": {
-    "id": "1a0c0bbb-eeee-4eee-8eee-eeeeeeeeecfa",
-    "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
-    "document": null,
-    "deleted": false
-   },
-   "inv_south": {
-    "id": "1a0c0bbb-eeee-4eee-8eee-eeeeeeeeecfb",
-    "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebda",
-    "document": "south_pdf",
-    "deleted": false
-   },
-   "inv_unpaid": {
     "id": "1a0c0bbb-eeee-4eee-8eee-eeeeeeeeecfc",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "document": null,
     "deleted": false
    },
-   "inv_nodate": {
+   "inv_i3": {
     "id": "1a0c0bbb-eeee-4eee-8eee-eeeeeeeeecfd",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "document": null,
     "deleted": false
    },
-   "inv_shared": {
+   "inv_south": {
     "id": "1a0c0bbb-eeee-4eee-8eee-eeeeeeeeecfe",
+    "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebda",
+    "document": "south_pdf",
+    "deleted": false
+   },
+   "inv_unpaid": {
+    "id": "1a0c0bbb-eeee-4eee-8eee-eeeeeeeeecff",
+    "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
+    "document": null,
+    "deleted": false
+   },
+   "inv_nodate": {
+    "id": "1a0c0bbb-eeee-4eee-8eee-eeeeeeeeedaa",
+    "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
+    "document": null,
+    "deleted": false
+   },
+   "inv_shared": {
+    "id": "1a0c0bbb-eeee-4eee-8eee-eeeeeeeeedab",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "document": null,
     "deleted": false
    },
    "inv_deleted": {
-    "id": "1a0c0bbb-eeee-4eee-8eee-eeeeeeeeecff",
+    "id": "1a0c0bbb-eeee-4eee-8eee-eeeeeeeeedac",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "document": null,
     "deleted": true
    },
    "sc_inv": {
-    "id": "1a0c0bbb-eeee-4eee-8eee-eeeeeeeeedaa",
+    "id": "1a0c0bbb-eeee-4eee-8eee-eeeeeeeeedad",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "document": null,
     "deleted": false
@@ -1325,7 +1348,7 @@
   },
   "payments": {
    "p_member": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedab",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedae",
     "created": "2024-02-01T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 1,
@@ -1345,7 +1368,7 @@
     "course": null
    },
    "p_course": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedac",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedaf",
     "created": "2024-03-01T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 2,
@@ -1367,7 +1390,7 @@
     }
    },
    "p_zero": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedad",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedba",
     "created": "2024-03-02T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 2,
@@ -1387,7 +1410,7 @@
     "course": null
    },
    "p_i0": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedae",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbb",
     "created": "2024-03-03T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 2,
@@ -1407,7 +1430,7 @@
     "course": null
    },
    "p_i1": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedaf",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbc",
     "created": "2024-03-04T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 2,
@@ -1427,7 +1450,7 @@
     "course": null
    },
    "p_i2": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedba",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbd",
     "created": "2024-03-05T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 2,
@@ -1447,7 +1470,7 @@
     "course": null
    },
    "p_i3": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbb",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbe",
     "created": "2024-03-06T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 2,
@@ -1467,7 +1490,7 @@
     "course": null
    },
    "p_idel": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbc",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbf",
     "created": "2024-03-07T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 2,
@@ -1487,7 +1510,7 @@
     "course": null
    },
    "p_carnet": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbd",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedca",
     "created": "2024-03-08T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 2,
@@ -1507,7 +1530,7 @@
     "course": null
    },
    "p_camp": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbe",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcb",
     "created": "2024-03-09T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 0,
@@ -1527,7 +1550,7 @@
     "course": null
    },
    "p_szero": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbf",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcc",
     "created": "2024-03-10T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebda",
     "subject": 2,
@@ -1547,7 +1570,7 @@
     "course": null
    },
    "p_csdel": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedca",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcd",
     "created": "2024-03-11T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 2,
@@ -1567,7 +1590,7 @@
     "course": null
    },
    "p_south_paid": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcb",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedce",
     "created": "2024-03-12T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebda",
     "subject": 0,
@@ -1587,7 +1610,7 @@
     "course": null
    },
    "p_expense": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcc",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcf",
     "created": "2024-03-13T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 0,
@@ -1607,7 +1630,7 @@
     "course": null
    },
    "p_future": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcd",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedda",
     "created": "2099-01-01T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 0,
@@ -1627,7 +1650,7 @@
     "course": null
    },
    "p_deleted": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedce",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddb",
     "created": "2024-03-15T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 0,
@@ -1647,7 +1670,7 @@
     "course": null
    },
    "p_old": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcf",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddc",
     "created": "2024-03-16T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 0,
@@ -1667,7 +1690,7 @@
     "course": null
    },
    "p_stranger": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedda",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddd",
     "created": "2024-03-17T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 0,
@@ -1687,7 +1710,7 @@
     "course": null
    },
    "p_unpaid_invoiced": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddb",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedde",
     "created": "2024-03-18T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 0,
@@ -1707,7 +1730,7 @@
     "course": null
    },
    "p_nodate": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddc",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddf",
     "created": "2024-03-19T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 0,
@@ -1727,7 +1750,7 @@
     "course": null
    },
    "p_shared_a": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddd",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedea",
     "created": "2024-03-20T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 0,
@@ -1747,7 +1770,7 @@
     "course": null
    },
    "p_shared_b": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedde",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedeb",
     "created": "2024-03-21T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 0,
@@ -1767,7 +1790,7 @@
     "course": null
    },
    "p_delinv": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddf",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedec",
     "created": "2024-03-22T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 0,
@@ -1787,7 +1810,7 @@
     "course": null
    },
    "p_grouped": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedea",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeded",
     "created": "2024-03-23T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 0,
@@ -1803,11 +1826,11 @@
     "paid_on": null,
     "deleted": false,
     "archived": false,
-    "group": "6a0bbbbb-eeee-4eee-8eee-eeeeeeeeebea",
+    "group": "6a0bbbbb-eeee-4eee-8eee-eeeeeeeeebeb",
     "course": null
    },
    "p_archived": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedeb",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedee",
     "created": "2024-03-24T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 0,
@@ -1826,8 +1849,28 @@
     "group": null,
     "course": null
    },
+   "p_member_course": {
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedef",
+    "created": "2024-03-25T09:00:00Z",
+    "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
+    "subject": 2,
+    "type": "default",
+    "amount": "35.00",
+    "paid": false,
+    "expense": false,
+    "description": null,
+    "notes": null,
+    "user": null,
+    "associate": "r_kid",
+    "invoice": null,
+    "paid_on": null,
+    "deleted": false,
+    "archived": false,
+    "group": null,
+    "course": null
+   },
    "sp_user": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedec",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedfa",
     "created": "2024-04-01T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 0,
@@ -1847,7 +1890,7 @@
     "course": null
    },
    "sp_child": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeded",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedfb",
     "created": "2024-04-02T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 2,
@@ -1867,7 +1910,7 @@
     "course": null
    },
    "sp_other": {
-    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedee",
+    "id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedfc",
     "created": "2024-04-03T09:00:00Z",
     "association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
     "subject": 0,
@@ -5312,8 +5355,10 @@
    "method": "GET",
    "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeebcc",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
    "unordered": false,
    "prints": [],
    "renders": [],
@@ -76328,10 +76373,12 @@
    "name": "payment-reads-athlete-course-subscription-deleted",
    "actor": "runner",
    "method": "GET",
-   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbe",
+   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecca",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
    "unordered": false,
    "prints": [],
    "renders": [],
@@ -76343,7 +76390,7 @@
    "name": "payment-reads-athlete-course-subscription-installment-without-payment",
    "actor": "runner",
    "method": "GET",
-   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbf",
+   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeeccb",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -76358,7 +76405,7 @@
    "name": "payment-reads-athlete-course-subscription-zero-hidden",
    "actor": "runner",
    "method": "GET",
-   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbb",
+   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbd",
    "headers": {},
    "status": 200,
    "response": {
@@ -76381,18 +76428,18 @@
    "name": "payment-reads-athlete-course-subscription-zero-shown",
    "actor": "runner",
    "method": "GET",
-   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbd",
+   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbf",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "0": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbf",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcc",
       "type": "default",
       "subject": 2,
       "amount": "0.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebee",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -76416,7 +76463,7 @@
        "notes": null,
        "name": "Yoga",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfe",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebff",
         "start_date": null,
         "end_date": null
        }
@@ -76447,13 +76494,13 @@
    "method": "GET",
    "path": "/payment/list",
    "headers": {
-    "X-Group-Id": "6a0bbbbb-eeee-4eee-8eee-eeeeeeeeebea"
+    "X-Group-Id": "6a0bbbbb-eeee-4eee-8eee-eeeeeeeeebeb"
    },
    "status": 200,
    "response": {
     "data": {
      "0": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedea",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeded",
       "type": "default",
       "subject": 0,
       "amount": "11.00",
@@ -76513,7 +76560,47 @@
    "response": {
     "data": {
      "0": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedeb",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedef",
+      "type": "default",
+      "subject": 2,
+      "amount": "35.00",
+      "associate": {
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
+       "first_name": "Leo",
+       "last_name": "Corsa"
+      },
+      "description": null,
+      "paid": false,
+      "creation_date": "2024-03-25T09:00:00Z",
+      "payment_date": null,
+      "payment_category": null,
+      "sport_association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
+      "notes": null,
+      "course": null,
+      "meta": {
+       "type": "Iscrizione ",
+       "is_installment": false,
+       "installment": {
+        "id": null,
+        "payment_date": null
+       },
+       "conjunction": " al corso ",
+       "description": null,
+       "notes": null,
+       "name": "Atletica",
+       "subscription": {
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecae",
+        "start_date": null,
+        "end_date": null
+       }
+      },
+      "payment_method": "default",
+      "online_pay_available": false,
+      "sport_association_denomination": "Polisportiva Nord",
+      "one_solution_available": false
+     },
+     "1": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedee",
       "type": "default",
       "subject": 0,
       "amount": "2.00",
@@ -76548,8 +76635,8 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "1": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedea",
+     "2": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeded",
       "type": "default",
       "subject": 0,
       "amount": "11.00",
@@ -76584,8 +76671,8 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "2": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddb",
+     "3": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedde",
       "type": "default",
       "subject": 0,
       "amount": "6.00",
@@ -76620,13 +76707,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "3": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcf",
+     "4": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddc",
       "type": "default",
       "subject": 0,
       "amount": "3.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebee",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebef",
        "first_name": "Vecchio",
        "last_name": "Socio"
       },
@@ -76660,13 +76747,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "4": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedca",
+     "5": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcd",
       "type": "default",
       "subject": 2,
       "amount": "0.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
        "first_name": "Leo",
        "last_name": "Corsa"
       },
@@ -76700,13 +76787,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "5": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbf",
+     "6": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcc",
       "type": "default",
       "subject": 2,
       "amount": "0.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebee",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -76730,7 +76817,7 @@
        "notes": null,
        "name": "Yoga",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfe",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebff",
         "start_date": null,
         "end_date": null
        }
@@ -76740,13 +76827,13 @@
       "sport_association_denomination": "ASD Sud",
       "one_solution_available": false
      },
-     "6": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbe",
+     "7": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcb",
       "type": "default",
       "subject": 0,
       "amount": "45.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
        "first_name": "Leo",
        "last_name": "Corsa"
       },
@@ -76770,7 +76857,7 @@
        "notes": null,
        "name": "Settimana uno",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfe",
         "start_date": null,
         "end_date": null
        }
@@ -76780,13 +76867,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "7": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbd",
+     "8": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedca",
       "type": "default",
       "subject": 2,
       "amount": "25.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -76810,7 +76897,7 @@
        "notes": null,
        "name": "Carnet dieci lezioni",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -76820,13 +76907,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "8": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbc",
+     "9": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbf",
       "type": "default",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -76860,13 +76947,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "9": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedae",
+     "10": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbb",
       "type": "default",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -76890,7 +76977,7 @@
        "notes": null,
        "name": "Mezzofondo",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -76900,13 +76987,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "10": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedac",
+     "11": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedaf",
       "type": "default",
       "subject": 2,
       "amount": "80.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -76932,7 +77019,7 @@
        "notes": "saldo entro marzo",
        "name": "Atletica",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -76942,8 +77029,8 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "11": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddf",
+     "12": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedec",
       "type": "default",
       "subject": 0,
       "amount": "10.00",
@@ -76979,8 +77066,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "12": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedde",
+     "13": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedeb",
       "type": "default",
       "subject": 0,
       "amount": "9.50",
@@ -77016,8 +77103,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "13": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddd",
+     "14": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedea",
       "type": "default",
       "subject": 0,
       "amount": "9.00",
@@ -77053,8 +77140,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "14": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddc",
+     "15": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddf",
       "type": "default",
       "subject": 0,
       "amount": "8.00",
@@ -77090,8 +77177,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "15": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcb",
+     "16": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedce",
       "type": "default",
       "subject": 0,
       "amount": "12.50",
@@ -77125,15 +77212,15 @@
       "online_pay_available": false,
       "sport_association_denomination": "ASD Sud",
       "one_solution_available": false,
-      "document_pdf": "d0c0eeee-eeee-4eee-8eee-eeeeeeeeeced"
+      "document_pdf": "d0c0eeee-eeee-4eee-8eee-eeeeeeeeecfa"
      },
-     "16": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbb",
+     "17": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbe",
       "type": "online",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -77157,7 +77244,7 @@
        "notes": null,
        "name": "Mezzofondo",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -77168,13 +77255,13 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "17": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedab",
+     "18": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedae",
       "type": "cash",
       "subject": 1,
       "amount": "50.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -77198,7 +77285,7 @@
        "notes": null,
        "name": "Polisportiva Nord",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -77216,7 +77303,7 @@
    "prints": [],
    "renders": [
     {
-     "url": "document/invoice/1a0c0bbb-eeee-4eee-8eee-eeeeeeeeecfa/view",
+     "url": "document/invoice/1a0c0bbb-eeee-4eee-8eee-eeeeeeeeecfd/view",
      "authorization": "$bearer",
      "reply": {
       "status": 500,
@@ -77225,7 +77312,7 @@
      }
     },
     {
-     "url": "document/invoice/1a0c0bbb-eeee-4eee-8eee-eeeeeeeeecef/view",
+     "url": "document/invoice/1a0c0bbb-eeee-4eee-8eee-eeeeeeeeecfc/view",
      "authorization": "$bearer",
      "reply": {
       "status": 500,
@@ -77266,7 +77353,47 @@
    "response": {
     "data": {
      "0": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedeb",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedef",
+      "type": "default",
+      "subject": 2,
+      "amount": "35.00",
+      "associate": {
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
+       "first_name": "Leo",
+       "last_name": "Corsa"
+      },
+      "description": null,
+      "paid": false,
+      "creation_date": "2024-03-25T09:00:00Z",
+      "payment_date": null,
+      "payment_category": null,
+      "sport_association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
+      "notes": null,
+      "course": null,
+      "meta": {
+       "type": "Iscrizione ",
+       "is_installment": false,
+       "installment": {
+        "id": null,
+        "payment_date": null
+       },
+       "conjunction": " al corso ",
+       "description": null,
+       "notes": null,
+       "name": "Atletica",
+       "subscription": {
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecae",
+        "start_date": null,
+        "end_date": null
+       }
+      },
+      "payment_method": "default",
+      "online_pay_available": true,
+      "sport_association_denomination": "Polisportiva Nord",
+      "one_solution_available": false
+     },
+     "1": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedee",
       "type": "default",
       "subject": 0,
       "amount": "2.00",
@@ -77301,8 +77428,8 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "1": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedea",
+     "2": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeded",
       "type": "default",
       "subject": 0,
       "amount": "11.00",
@@ -77337,8 +77464,8 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "2": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddb",
+     "3": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedde",
       "type": "default",
       "subject": 0,
       "amount": "6.00",
@@ -77373,13 +77500,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "3": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcf",
+     "4": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddc",
       "type": "default",
       "subject": 0,
       "amount": "3.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebee",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebef",
        "first_name": "Vecchio",
        "last_name": "Socio"
       },
@@ -77413,13 +77540,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "4": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedca",
+     "5": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcd",
       "type": "default",
       "subject": 2,
       "amount": "0.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
        "first_name": "Leo",
        "last_name": "Corsa"
       },
@@ -77453,13 +77580,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "5": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbf",
+     "6": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcc",
       "type": "default",
       "subject": 2,
       "amount": "0.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebee",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -77483,7 +77610,7 @@
        "notes": null,
        "name": "Yoga",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfe",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebff",
         "start_date": null,
         "end_date": null
        }
@@ -77493,13 +77620,13 @@
       "sport_association_denomination": "ASD Sud",
       "one_solution_available": false
      },
-     "6": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbe",
+     "7": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcb",
       "type": "default",
       "subject": 0,
       "amount": "45.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
        "first_name": "Leo",
        "last_name": "Corsa"
       },
@@ -77523,7 +77650,7 @@
        "notes": null,
        "name": "Settimana uno",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfe",
         "start_date": null,
         "end_date": null
        }
@@ -77533,13 +77660,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "7": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbd",
+     "8": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedca",
       "type": "default",
       "subject": 2,
       "amount": "25.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -77563,7 +77690,7 @@
        "notes": null,
        "name": "Carnet dieci lezioni",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -77573,13 +77700,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "8": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbc",
+     "9": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbf",
       "type": "default",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -77613,13 +77740,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "9": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedae",
+     "10": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbb",
       "type": "default",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -77643,7 +77770,7 @@
        "notes": null,
        "name": "Mezzofondo",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -77653,13 +77780,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": true
      },
-     "10": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedac",
+     "11": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedaf",
       "type": "default",
       "subject": 2,
       "amount": "80.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -77685,7 +77812,7 @@
        "notes": "saldo entro marzo",
        "name": "Atletica",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -77695,8 +77822,8 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "11": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddf",
+     "12": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedec",
       "type": "default",
       "subject": 0,
       "amount": "10.00",
@@ -77732,8 +77859,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "12": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedde",
+     "13": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedeb",
       "type": "default",
       "subject": 0,
       "amount": "9.50",
@@ -77769,8 +77896,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "13": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddd",
+     "14": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedea",
       "type": "default",
       "subject": 0,
       "amount": "9.00",
@@ -77806,8 +77933,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "14": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddc",
+     "15": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddf",
       "type": "default",
       "subject": 0,
       "amount": "8.00",
@@ -77843,8 +77970,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "15": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcb",
+     "16": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedce",
       "type": "default",
       "subject": 0,
       "amount": "12.50",
@@ -77878,15 +78005,15 @@
       "online_pay_available": false,
       "sport_association_denomination": "ASD Sud",
       "one_solution_available": false,
-      "document_pdf": "d0c0eeee-eeee-4eee-8eee-eeeeeeeeeced"
+      "document_pdf": "d0c0eeee-eeee-4eee-8eee-eeeeeeeeecfa"
      },
-     "16": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbb",
+     "17": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbe",
       "type": "online",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -77910,7 +78037,7 @@
        "notes": null,
        "name": "Mezzofondo",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -77921,13 +78048,13 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "17": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedab",
+     "18": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedae",
       "type": "cash",
       "subject": 1,
       "amount": "50.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -77951,7 +78078,7 @@
        "notes": null,
        "name": "Polisportiva Nord",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -77969,7 +78096,7 @@
    "prints": [],
    "renders": [
     {
-     "url": "document/invoice/1a0c0bbb-eeee-4eee-8eee-eeeeeeeeecfa/view",
+     "url": "document/invoice/1a0c0bbb-eeee-4eee-8eee-eeeeeeeeecfd/view",
      "authorization": "$bearer",
      "reply": {
       "status": 200,
@@ -77978,7 +78105,7 @@
      }
     },
     {
-     "url": "document/invoice/1a0c0bbb-eeee-4eee-8eee-eeeeeeeeecef/view",
+     "url": "document/invoice/1a0c0bbb-eeee-4eee-8eee-eeeeeeeeecfc/view",
      "authorization": "$bearer",
      "reply": {
       "status": 200,
@@ -78032,7 +78159,47 @@
    "response": {
     "data": {
      "0": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedeb",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedef",
+      "type": "default",
+      "subject": 2,
+      "amount": "35.00",
+      "associate": {
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
+       "first_name": "Leo",
+       "last_name": "Corsa"
+      },
+      "description": null,
+      "paid": false,
+      "creation_date": "2024-03-25T09:00:00Z",
+      "payment_date": null,
+      "payment_category": null,
+      "sport_association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
+      "notes": null,
+      "course": null,
+      "meta": {
+       "type": "Iscrizione ",
+       "is_installment": false,
+       "installment": {
+        "id": null,
+        "payment_date": null
+       },
+       "conjunction": " al corso ",
+       "description": null,
+       "notes": null,
+       "name": "Atletica",
+       "subscription": {
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecae",
+        "start_date": null,
+        "end_date": null
+       }
+      },
+      "payment_method": "default",
+      "online_pay_available": false,
+      "sport_association_denomination": "Polisportiva Nord",
+      "one_solution_available": false
+     },
+     "1": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedee",
       "type": "default",
       "subject": 0,
       "amount": "2.00",
@@ -78067,8 +78234,8 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "1": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedea",
+     "2": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeded",
       "type": "default",
       "subject": 0,
       "amount": "11.00",
@@ -78103,8 +78270,8 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "2": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddb",
+     "3": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedde",
       "type": "default",
       "subject": 0,
       "amount": "6.00",
@@ -78139,13 +78306,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "3": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcf",
+     "4": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddc",
       "type": "default",
       "subject": 0,
       "amount": "3.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebee",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebef",
        "first_name": "Vecchio",
        "last_name": "Socio"
       },
@@ -78179,13 +78346,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "4": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedca",
+     "5": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcd",
       "type": "default",
       "subject": 2,
       "amount": "0.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
        "first_name": "Leo",
        "last_name": "Corsa"
       },
@@ -78219,13 +78386,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "5": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbf",
+     "6": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcc",
       "type": "default",
       "subject": 2,
       "amount": "0.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebee",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -78249,7 +78416,7 @@
        "notes": null,
        "name": "Yoga",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfe",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebff",
         "start_date": null,
         "end_date": null
        }
@@ -78259,13 +78426,13 @@
       "sport_association_denomination": "ASD Sud",
       "one_solution_available": false
      },
-     "6": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbe",
+     "7": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcb",
       "type": "default",
       "subject": 0,
       "amount": "45.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
        "first_name": "Leo",
        "last_name": "Corsa"
       },
@@ -78289,7 +78456,7 @@
        "notes": null,
        "name": "Settimana uno",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfe",
         "start_date": null,
         "end_date": null
        }
@@ -78299,13 +78466,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "7": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbd",
+     "8": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedca",
       "type": "default",
       "subject": 2,
       "amount": "25.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -78329,7 +78496,7 @@
        "notes": null,
        "name": "Carnet dieci lezioni",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -78339,13 +78506,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "8": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbc",
+     "9": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbf",
       "type": "default",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -78379,13 +78546,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "9": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedae",
+     "10": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbb",
       "type": "default",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -78409,7 +78576,7 @@
        "notes": null,
        "name": "Mezzofondo",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -78419,13 +78586,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "10": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedac",
+     "11": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedaf",
       "type": "default",
       "subject": 2,
       "amount": "80.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -78451,7 +78618,7 @@
        "notes": "saldo entro marzo",
        "name": "Atletica",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -78461,8 +78628,8 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "11": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddf",
+     "12": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedec",
       "type": "default",
       "subject": 0,
       "amount": "10.00",
@@ -78498,8 +78665,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "12": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedde",
+     "13": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedeb",
       "type": "default",
       "subject": 0,
       "amount": "9.50",
@@ -78535,8 +78702,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "13": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddd",
+     "14": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedea",
       "type": "default",
       "subject": 0,
       "amount": "9.00",
@@ -78572,8 +78739,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "14": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddc",
+     "15": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddf",
       "type": "default",
       "subject": 0,
       "amount": "8.00",
@@ -78609,8 +78776,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "15": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcb",
+     "16": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedce",
       "type": "default",
       "subject": 0,
       "amount": "12.50",
@@ -78644,15 +78811,15 @@
       "online_pay_available": false,
       "sport_association_denomination": "ASD Sud",
       "one_solution_available": false,
-      "document_pdf": "d0c0eeee-eeee-4eee-8eee-eeeeeeeeeced"
+      "document_pdf": "d0c0eeee-eeee-4eee-8eee-eeeeeeeeecfa"
      },
-     "16": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbb",
+     "17": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbe",
       "type": "online",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -78676,7 +78843,7 @@
        "notes": null,
        "name": "Mezzofondo",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -78687,13 +78854,13 @@
       "one_solution_available": false,
       "document_pdf": "$document:inv_i3"
      },
-     "17": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedab",
+     "18": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedae",
       "type": "cash",
       "subject": 1,
       "amount": "50.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -78717,7 +78884,7 @@
        "notes": null,
        "name": "Polisportiva Nord",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -78753,7 +78920,47 @@
    "response": {
     "data": {
      "0": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedeb",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedef",
+      "type": "default",
+      "subject": 2,
+      "amount": "35.00",
+      "associate": {
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
+       "first_name": "Leo",
+       "last_name": "Corsa"
+      },
+      "description": null,
+      "paid": false,
+      "creation_date": "2024-03-25T09:00:00Z",
+      "payment_date": null,
+      "payment_category": null,
+      "sport_association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
+      "notes": null,
+      "course": null,
+      "meta": {
+       "type": "Iscrizione ",
+       "is_installment": false,
+       "installment": {
+        "id": null,
+        "payment_date": null
+       },
+       "conjunction": " al corso ",
+       "description": null,
+       "notes": null,
+       "name": "Atletica",
+       "subscription": {
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecae",
+        "start_date": null,
+        "end_date": null
+       }
+      },
+      "payment_method": "default",
+      "online_pay_available": false,
+      "sport_association_denomination": "Polisportiva Nord",
+      "one_solution_available": false
+     },
+     "1": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedee",
       "type": "default",
       "subject": 0,
       "amount": "2.00",
@@ -78788,8 +78995,8 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "1": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedea",
+     "2": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeded",
       "type": "default",
       "subject": 0,
       "amount": "11.00",
@@ -78824,8 +79031,8 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "2": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddb",
+     "3": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedde",
       "type": "default",
       "subject": 0,
       "amount": "6.00",
@@ -78860,13 +79067,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "3": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcf",
+     "4": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddc",
       "type": "default",
       "subject": 0,
       "amount": "3.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebee",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebef",
        "first_name": "Vecchio",
        "last_name": "Socio"
       },
@@ -78900,13 +79107,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "4": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedca",
+     "5": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcd",
       "type": "default",
       "subject": 2,
       "amount": "0.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
        "first_name": "Leo",
        "last_name": "Corsa"
       },
@@ -78940,13 +79147,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "5": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbf",
+     "6": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcc",
       "type": "default",
       "subject": 2,
       "amount": "0.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebee",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -78970,7 +79177,7 @@
        "notes": null,
        "name": "Yoga",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfe",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebff",
         "start_date": null,
         "end_date": null
        }
@@ -78980,13 +79187,13 @@
       "sport_association_denomination": "ASD Sud",
       "one_solution_available": false
      },
-     "6": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbe",
+     "7": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcb",
       "type": "default",
       "subject": 0,
       "amount": "45.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
        "first_name": "Leo",
        "last_name": "Corsa"
       },
@@ -79010,7 +79217,7 @@
        "notes": null,
        "name": "Settimana uno",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfe",
         "start_date": null,
         "end_date": null
        }
@@ -79020,13 +79227,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "7": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbd",
+     "8": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedca",
       "type": "default",
       "subject": 2,
       "amount": "25.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -79050,7 +79257,7 @@
        "notes": null,
        "name": "Carnet dieci lezioni",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -79060,13 +79267,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "8": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbc",
+     "9": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbf",
       "type": "default",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -79100,13 +79307,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "9": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedae",
+     "10": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbb",
       "type": "default",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -79130,7 +79337,7 @@
        "notes": null,
        "name": "Mezzofondo",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -79140,13 +79347,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "10": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedac",
+     "11": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedaf",
       "type": "default",
       "subject": 2,
       "amount": "80.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -79172,7 +79379,7 @@
        "notes": "saldo entro marzo",
        "name": "Atletica",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -79182,8 +79389,8 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "11": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddf",
+     "12": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedec",
       "type": "default",
       "subject": 0,
       "amount": "10.00",
@@ -79219,8 +79426,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "12": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedde",
+     "13": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedeb",
       "type": "default",
       "subject": 0,
       "amount": "9.50",
@@ -79256,8 +79463,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "13": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddd",
+     "14": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedea",
       "type": "default",
       "subject": 0,
       "amount": "9.00",
@@ -79293,8 +79500,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "14": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddc",
+     "15": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddf",
       "type": "default",
       "subject": 0,
       "amount": "8.00",
@@ -79330,8 +79537,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "15": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcb",
+     "16": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedce",
       "type": "default",
       "subject": 0,
       "amount": "12.50",
@@ -79365,15 +79572,15 @@
       "online_pay_available": false,
       "sport_association_denomination": "ASD Sud",
       "one_solution_available": false,
-      "document_pdf": "d0c0eeee-eeee-4eee-8eee-eeeeeeeeeced"
+      "document_pdf": "d0c0eeee-eeee-4eee-8eee-eeeeeeeeecfa"
      },
-     "16": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbb",
+     "17": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbe",
       "type": "online",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -79397,7 +79604,7 @@
        "notes": null,
        "name": "Mezzofondo",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -79408,13 +79615,13 @@
       "one_solution_available": false,
       "document_pdf": "$document:inv_i3"
      },
-     "17": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedab",
+     "18": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedae",
       "type": "cash",
       "subject": 1,
       "amount": "50.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -79438,7 +79645,7 @@
        "notes": null,
        "name": "Polisportiva Nord",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -79479,7 +79686,47 @@
    "response": {
     "data": {
      "0": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedeb",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedef",
+      "type": "default",
+      "subject": 2,
+      "amount": "35.00",
+      "associate": {
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
+       "first_name": "Leo",
+       "last_name": "Corsa"
+      },
+      "description": null,
+      "paid": false,
+      "creation_date": "2024-03-25T09:00:00Z",
+      "payment_date": null,
+      "payment_category": null,
+      "sport_association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
+      "notes": null,
+      "course": null,
+      "meta": {
+       "type": "Iscrizione ",
+       "is_installment": false,
+       "installment": {
+        "id": null,
+        "payment_date": null
+       },
+       "conjunction": " al corso ",
+       "description": null,
+       "notes": null,
+       "name": "Atletica",
+       "subscription": {
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecae",
+        "start_date": null,
+        "end_date": null
+       }
+      },
+      "payment_method": "default",
+      "online_pay_available": false,
+      "sport_association_denomination": "Polisportiva Nord",
+      "one_solution_available": false
+     },
+     "1": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedee",
       "type": "default",
       "subject": 0,
       "amount": "2.00",
@@ -79514,8 +79761,8 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "1": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedea",
+     "2": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeded",
       "type": "default",
       "subject": 0,
       "amount": "11.00",
@@ -79550,8 +79797,8 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "2": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddb",
+     "3": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedde",
       "type": "default",
       "subject": 0,
       "amount": "6.00",
@@ -79586,13 +79833,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "3": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcf",
+     "4": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddc",
       "type": "default",
       "subject": 0,
       "amount": "3.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebee",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebef",
        "first_name": "Vecchio",
        "last_name": "Socio"
       },
@@ -79626,13 +79873,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "4": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedca",
+     "5": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcd",
       "type": "default",
       "subject": 2,
       "amount": "0.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
        "first_name": "Leo",
        "last_name": "Corsa"
       },
@@ -79666,13 +79913,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "5": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbf",
+     "6": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcc",
       "type": "default",
       "subject": 2,
       "amount": "0.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebee",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -79696,7 +79943,7 @@
        "notes": null,
        "name": "Yoga",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfe",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebff",
         "start_date": null,
         "end_date": null
        }
@@ -79706,13 +79953,13 @@
       "sport_association_denomination": "ASD Sud",
       "one_solution_available": false
      },
-     "6": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbe",
+     "7": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcb",
       "type": "default",
       "subject": 0,
       "amount": "45.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
        "first_name": "Leo",
        "last_name": "Corsa"
       },
@@ -79736,7 +79983,7 @@
        "notes": null,
        "name": "Settimana uno",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfe",
         "start_date": null,
         "end_date": null
        }
@@ -79746,13 +79993,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "7": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbd",
+     "8": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedca",
       "type": "default",
       "subject": 2,
       "amount": "25.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -79776,7 +80023,7 @@
        "notes": null,
        "name": "Carnet dieci lezioni",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -79786,13 +80033,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "8": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbc",
+     "9": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbf",
       "type": "default",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -79826,13 +80073,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "9": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedae",
+     "10": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbb",
       "type": "default",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -79856,7 +80103,7 @@
        "notes": null,
        "name": "Mezzofondo",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -79866,13 +80113,13 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "10": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedac",
+     "11": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedaf",
       "type": "default",
       "subject": 2,
       "amount": "80.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -79898,7 +80145,7 @@
        "notes": "saldo entro marzo",
        "name": "Atletica",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -79908,8 +80155,8 @@
       "sport_association_denomination": "Polisportiva Nord",
       "one_solution_available": false
      },
-     "11": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddf",
+     "12": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedec",
       "type": "default",
       "subject": 0,
       "amount": "10.00",
@@ -79945,8 +80192,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "12": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedde",
+     "13": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedeb",
       "type": "default",
       "subject": 0,
       "amount": "9.50",
@@ -79982,8 +80229,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "13": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddd",
+     "14": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedea",
       "type": "default",
       "subject": 0,
       "amount": "9.00",
@@ -80019,8 +80266,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "14": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddc",
+     "15": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeddf",
       "type": "default",
       "subject": 0,
       "amount": "8.00",
@@ -80056,8 +80303,8 @@
       "one_solution_available": false,
       "document_pdf": null
      },
-     "15": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedcb",
+     "16": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedce",
       "type": "default",
       "subject": 0,
       "amount": "12.50",
@@ -80091,15 +80338,15 @@
       "online_pay_available": false,
       "sport_association_denomination": "ASD Sud",
       "one_solution_available": false,
-      "document_pdf": "d0c0eeee-eeee-4eee-8eee-eeeeeeeeeced"
+      "document_pdf": "d0c0eeee-eeee-4eee-8eee-eeeeeeeeecfa"
      },
-     "16": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbb",
+     "17": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbe",
       "type": "online",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -80123,7 +80370,7 @@
        "notes": null,
        "name": "Mezzofondo",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -80134,13 +80381,13 @@
       "one_solution_available": false,
       "document_pdf": "$document:inv_i3"
      },
-     "17": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedab",
+     "18": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedae",
       "type": "cash",
       "subject": 1,
       "amount": "50.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -80164,7 +80411,7 @@
        "notes": null,
        "name": "Polisportiva Nord",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -80194,18 +80441,18 @@
    "name": "payment-reads-athlete-course-subscription-single",
    "actor": "runner",
    "method": "GET",
-   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecba",
+   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbc",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "0": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedac",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedaf",
       "type": "default",
       "subject": 2,
       "amount": "80.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -80231,7 +80478,7 @@
        "notes": "saldo entro marzo",
        "name": "Atletica",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -80242,12 +80489,12 @@
       "one_solution_available": false
      },
      "1": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbd",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedca",
       "type": "default",
       "subject": 2,
       "amount": "25.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -80271,7 +80518,7 @@
        "notes": null,
        "name": "Carnet dieci lezioni",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -80300,18 +80547,18 @@
    "name": "payment-reads-athlete-course-subscription-installments",
    "actor": "runner",
    "method": "GET",
-   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbc",
+   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbe",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "0": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedae",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbb",
       "type": "default",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -80335,7 +80582,7 @@
        "notes": null,
        "name": "Mezzofondo",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -80346,12 +80593,12 @@
       "one_solution_available": true
      },
      "1": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedaf",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbc",
       "type": "default",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -80375,7 +80622,7 @@
        "notes": null,
        "name": "Mezzofondo",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -80386,12 +80633,12 @@
       "one_solution_available": false
      },
      "2": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbb",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedbe",
       "type": "online",
       "subject": 2,
       "amount": "30.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebeb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebec",
        "first_name": "Rita",
        "last_name": "Corsa"
       },
@@ -80415,7 +80662,7 @@
        "notes": null,
        "name": "Mezzofondo",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfc",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebfd",
         "start_date": "2024-01-01",
         "end_date": "2024-12-31"
        }
@@ -80447,27 +80694,27 @@
    }
   },
   {
-   "name": "payment-reads-athlete-course-subscription-by-id",
+   "name": "payment-reads-athlete-course-subscription-of-associate",
    "actor": "runner",
    "method": "GET",
-   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecca",
+   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecce",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "0": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeded",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedef",
       "type": "default",
       "subject": 2,
-      "amount": "15.00",
+      "amount": "35.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebfa",
-       "first_name": "Sara",
-       "last_name": "Pista"
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebed",
+       "first_name": "Leo",
+       "last_name": "Corsa"
       },
       "description": null,
       "paid": false,
-      "creation_date": "2024-04-02T09:00:00Z",
+      "creation_date": "2024-03-25T09:00:00Z",
       "payment_date": null,
       "payment_category": null,
       "sport_association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
@@ -80485,8 +80732,8 @@
        "notes": null,
        "name": "Atletica",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecaa",
-        "start_date": "2024-09-01",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecae",
+        "start_date": null,
         "end_date": null
        }
       },
@@ -80511,24 +80758,119 @@
    }
   },
   {
-   "name": "payment-reads-athlete-scoped-list",
-   "actor": "north_owner",
+   "name": "payment-reads-athlete-course-subscription-of-associate-group",
+   "actor": "runner",
    "method": "GET",
-   "path": "/payment/list",
+   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecce",
    "headers": {
-    "X-Impersonation-Id": "$session:north_scoped",
-    "User-Id": "a7b1e7e0-eeee-4eee-8eee-eeeeeeeeebde"
+    "X-Group-Id": "6a0bbbbb-eeee-4eee-8eee-eeeeeeeeebeb"
    },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "unordered": false,
+   "prints": [],
+   "renders": [],
+   "generated": [],
+   "stripe_setup": null,
+   "stripe": []
+  },
+  {
+   "name": "payment-reads-athlete-course-subscription-group",
+   "actor": "runner",
+   "method": "GET",
+   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbc",
+   "headers": {
+    "X-Group-Id": "6a0bbbbb-eeee-4eee-8eee-eeeeeeeeebeb"
+   },
+   "status": 200,
+   "response": {
+    "data": {},
+    "meta": {}
+   },
+   "unordered": false,
+   "prints": [],
+   "renders": [],
+   "generated": [],
+   "stripe_setup": null,
+   "stripe": [],
+   "audit": {
+    "actor": "runner",
+    "association": null,
+    "session_association": null
+   }
+  },
+  {
+   "name": "payment-reads-athlete-course-subscription-of-another-athlete",
+   "actor": "runner",
+   "method": "GET",
+   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeeccc",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "unordered": false,
+   "prints": [],
+   "renders": [],
+   "generated": [],
+   "stripe_setup": null,
+   "stripe": []
+  },
+  {
+   "name": "payment-reads-athlete-course-subscription-of-another-athlete-installments",
+   "actor": "scoped",
+   "method": "GET",
+   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbe",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "unordered": false,
+   "prints": [],
+   "renders": [],
+   "generated": [],
+   "stripe_setup": null,
+   "stripe": []
+  },
+  {
+   "name": "payment-reads-athlete-course-subscription-admin-impersonating-athlete",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbc",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "unordered": false,
+   "prints": [],
+   "renders": [],
+   "generated": [],
+   "stripe_setup": null,
+   "stripe": []
+  },
+  {
+   "name": "payment-reads-athlete-course-subscription-own",
+   "actor": "scoped",
+   "method": "GET",
+   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeeccc",
+   "headers": {},
    "status": 200,
    "response": {
     "data": {
      "0": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeded",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedfb",
       "type": "default",
       "subject": 2,
       "amount": "15.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebfa",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebfb",
        "first_name": "Sara",
        "last_name": "Pista"
       },
@@ -80552,7 +80894,74 @@
        "notes": null,
        "name": "Atletica",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecaa",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecab",
+        "start_date": "2024-09-01",
+        "end_date": null
+       }
+      },
+      "payment_method": "default",
+      "online_pay_available": false,
+      "sport_association_denomination": "Polisportiva Nord",
+      "one_solution_available": false
+     }
+    },
+    "meta": {}
+   },
+   "unordered": false,
+   "prints": [],
+   "renders": [],
+   "generated": [],
+   "stripe_setup": null,
+   "stripe": [],
+   "audit": {
+    "actor": "scoped",
+    "association": null,
+    "session_association": null
+   }
+  },
+  {
+   "name": "payment-reads-athlete-scoped-list",
+   "actor": "north_owner",
+   "method": "GET",
+   "path": "/payment/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:north_scoped",
+    "User-Id": "a7b1e7e0-eeee-4eee-8eee-eeeeeeeeebde"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedfb",
+      "type": "default",
+      "subject": 2,
+      "amount": "15.00",
+      "associate": {
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebfb",
+       "first_name": "Sara",
+       "last_name": "Pista"
+      },
+      "description": null,
+      "paid": false,
+      "creation_date": "2024-04-02T09:00:00Z",
+      "payment_date": null,
+      "payment_category": null,
+      "sport_association": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebcf",
+      "notes": null,
+      "course": null,
+      "meta": {
+       "type": "Iscrizione ",
+       "is_installment": false,
+       "installment": {
+        "id": null,
+        "payment_date": null
+       },
+       "conjunction": " al corso ",
+       "description": null,
+       "notes": null,
+       "name": "Atletica",
+       "subscription": {
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecab",
         "start_date": "2024-09-01",
         "end_date": null
        }
@@ -80563,7 +80972,7 @@
       "one_solution_available": false
      },
      "1": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedec",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedfa",
       "type": "default",
       "subject": 0,
       "amount": "20.00",
@@ -80606,7 +81015,7 @@
    "prints": [],
    "renders": [
     {
-     "url": "document/invoice/1a0c0bbb-eeee-4eee-8eee-eeeeeeeeedaa/view",
+     "url": "document/invoice/1a0c0bbb-eeee-4eee-8eee-eeeeeeeeedad/view",
      "authorization": "$bearer",
      "reply": {
       "status": 200,
@@ -80635,7 +81044,7 @@
    "name": "payment-reads-athlete-scoped-course-subscription",
    "actor": "north_owner",
    "method": "GET",
-   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecca",
+   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeeccc",
    "headers": {
     "X-Impersonation-Id": "$session:north_scoped",
     "User-Id": "a7b1e7e0-eeee-4eee-8eee-eeeeeeeeebde"
@@ -80644,12 +81053,12 @@
    "response": {
     "data": {
      "0": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeded",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedfb",
       "type": "default",
       "subject": 2,
       "amount": "15.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebfa",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebfb",
        "first_name": "Sara",
        "last_name": "Pista"
       },
@@ -80673,7 +81082,7 @@
        "notes": null,
        "name": "Atletica",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecaa",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecab",
         "start_date": "2024-09-01",
         "end_date": null
        }
@@ -80702,7 +81111,7 @@
    "name": "payment-reads-athlete-scoped-course-subscription-not-available",
    "actor": "north_owner",
    "method": "GET",
-   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecba",
+   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecbc",
    "headers": {
     "X-Impersonation-Id": "$session:north_scoped",
     "User-Id": "a7b1e7e0-eeee-4eee-8eee-eeeeeeeeebde"
@@ -80746,12 +81155,12 @@
    "response": {
     "data": {
      "0": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedee",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedfc",
       "type": "default",
       "subject": 0,
       "amount": "9.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebfb",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebfc",
        "first_name": "Ospite",
        "last_name": "Pista"
       },
@@ -80786,12 +81195,12 @@
       "one_solution_available": false
      },
      "1": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeeded",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedfb",
       "type": "default",
       "subject": 2,
       "amount": "15.00",
       "associate": {
-       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebfa",
+       "associate_id": "a550c1a7-eeee-4eee-8eee-eeeeeeeeebfb",
        "first_name": "Sara",
        "last_name": "Pista"
       },
@@ -80815,7 +81224,7 @@
        "notes": null,
        "name": "Atletica",
        "subscription": {
-        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecaa",
+        "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecab",
         "start_date": "2024-09-01",
         "end_date": null
        }
@@ -80826,7 +81235,7 @@
       "one_solution_available": false
      },
      "2": {
-      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedec",
+      "payment_id": "ba1dbeef-eeee-4eee-8eee-eeeeeeeeedfa",
       "type": "default",
       "subject": 0,
       "amount": "20.00",
