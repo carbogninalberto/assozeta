@@ -632,7 +632,8 @@ add('list-admin-impersonating-owner', 'admin', LIST, 200, OWNER_LIST, headers=AD
 add('list-foreign-owner', 'foreign_owner', LIST, 200, list_page(['abroad']))
 # request.user.sportassociation is the base manager's row: the soft-deleted association lists (no payments).
 add('list-deleted-association-owner', 'deleted_association_owner', LIST, 200, list_page([]))
-add('list-athlete-unknown-course-subscription', 'athlete', LIST + '?course_subscription_id=' + uid('c5c5c5c5'), 500, SERVER)
+add('list-athlete-unknown-course-subscription', 'athlete', LIST + '?course_subscription_id=' + uid('c5c5c5c5'), 403,
+    {'detail': 'Risorsa non disponibile per questo utente e associazione.'})
 add('list-athlete-malformed-course-subscription', 'athlete', LIST + '?course_subscription_id=nope', 400, BAD_UUID)
 add('list-malformed-course-subscription', 'owner', LIST + '?course_subscription_id=nope', 400, BAD_UUID)
 add('list-malformed-course-subscription-before-compressed', 'owner', LIST + '?mode=compressed&course_subscription_id=x', 400, BAD_UUID)
@@ -1081,8 +1082,10 @@ add('subscription-search-duplicates-paginated', 'owner', SS + 'corso&pagination[
 
 # --- payment/list: athletes ----------------------------------------------------------------------------
 # An athlete (no mode=compressed) takes its own branch:
-# - with a ``course_subscription_id`` key: the live course subscription with that id (missing: 500; an empty
-#   value: 500); when it has ``multi_payments`` the payments of its live installments (amount > 0, or the
+# - with a ``course_subscription_id`` key: the live course subscription with that id (an empty value: 500)
+#   whose subscription has the athlete as user or an associate of the athlete's subscriptions (the people of
+#   the list below; an association-scoped session keeps scoped_queryset's members instead); any other id is
+#   the 403 of a resource that is not available; when it has ``multi_payments`` the payments of its live installments (amount > 0, or the
 #   association owner's ``show_zero_payments``; an installment without payment: 500), otherwise its own
 #   payment under the same amount rule; then the payments of the carnet holdings linked to it; finally the
 #   live payments with those ids, in database order;
@@ -1111,7 +1114,7 @@ ATH_OWNERS = {
 }
 ASSOCIATION_OWNER = {row['association']: row for row in ATH_OWNERS.values()}
 EXTRA_USERS = {label: {'id': uid('a7b1e7e0'), 'username': f'payment-reads-{label}', 'email': f'payment-reads-{label}@example.test'}
-               for label in ('runner', 'scoped', 'faulty')}
+               for label in ('runner', 'scoped', 'faulty', 'partner')}
 U = {label: row['id'] for label, row in EXTRA_USERS.items()}
 ATH_GROUP = {'id': uid('6a0bbbbb'), 'name': 'Agonisti', 'association': NORTH}
 ATH_SESSION = {'label': 'north_scoped', 'actor': 'north_owner', 'target': 'scoped', 'association': NORTH}
@@ -1147,6 +1150,8 @@ ATH_SUBSCRIPTIONS = {
     'sc_one': ath_subscription(NORTH, 'scoped', 'sc_child', start='2024-09-01'),
     'sc_two': ath_subscription(NORTH, 'scoped', 'sc_other'),
     'f_sub': ath_subscription(NORTH, 'faulty', None),
+    # Another user's subscription of an associate the runner also subscribed.
+    'n_kid_partner': ath_subscription(NORTH, 'partner', 'r_kid'),
 }
 ATH_COURSES = {
     'c_single': {'id': uid('c0a5ec0a'), 'association': NORTH, 'title': 'Atletica', 'multi': False, 'one_fee': False, 'events': []},
@@ -1172,6 +1177,7 @@ ATH_COURSE_SUBSCRIPTIONS = {
     'cs_broken': ath_cs('c_multi', 'n_kid', multi=True),
     'sc_cs': ath_cs('c_single', 'sc_one', 'sp_child'),
     'f_cs': ath_cs('c_multi', 'f_sub', multi=True),
+    'cs_member': ath_cs('c_single', 'n_kid_partner', 'p_member_course'),
 }
 
 
@@ -1242,6 +1248,7 @@ ATH_PAYMENTS = {
                             invoice='inv_deleted'),
     'p_grouped': ath_payment('2024-03-23T09:00:00Z', user='runner', amount='11.00', group=ATH_GROUP['id']),
     'p_archived': ath_payment('2024-03-24T09:00:00Z', user='runner', amount='2.00', archived=True),
+    'p_member_course': ath_payment('2024-03-25T09:00:00Z', associate='r_kid', subject=2, amount='35.00'),
     'sp_user': ath_payment('2024-04-01T09:00:00Z', user='scoped', amount='20.00', paid=True, paid_on='2024-04-02T09:00:00Z',
                            invoice='sc_inv'),
     'sp_child': ath_payment('2024-04-02T09:00:00Z', associate='sc_child', subject=2, amount='15.00'),
@@ -1298,7 +1305,16 @@ def ath_excluded(user, group=None):
     return excluded
 
 
-def ath_by_course_subscription(name):
+def ath_course_subscription_available(user, name, group=None):
+    """Outside a scoped session: a live course subscription of the athlete's user or of an associate of their subscriptions."""
+    cs = ATH_COURSE_SUBSCRIPTIONS[name]
+    subscription = ATH_SUBSCRIPTIONS[cs['subscription']]
+    # Subscriptions carry no group here: a group header leaves no associates.
+    associates = {s['associate'] for s in ATH_SUBSCRIPTIONS.values() if s['user'] == user and group is None and s['associate']}
+    return not cs['deleted'] and (subscription['user'] == user or subscription['associate'] in associates)
+
+
+def ath_by_course_subscription(name, group=None):
     """The course subscription branch: the payment labels (database order is not defined)."""
     cs = ATH_COURSE_SUBSCRIPTIONS[name]
     if cs['deleted']:
@@ -1317,7 +1333,7 @@ def ath_by_course_subscription(name):
         if name in holding['course_subscriptions'] and holding['payment'] and (
                 Decimal(ATH_PAYMENTS[holding['payment']]['amount']) > 0 or show_zero):
             labels.append(holding['payment'])
-    return [k for k in labels if ath_live(k, None)]
+    return [k for k in labels if ath_live(k, group)]
 
 
 def ath_meta(label):
@@ -1441,7 +1457,9 @@ add('athlete-list-empty', 'athlete', LIST, 200, EMPTY_LIST)
 add('athlete-list-admin-impersonating-athlete', 'admin', LIST, 200, EMPTY_LIST, headers=ADMIN_ATHLETE)
 add('athlete-list-installment-without-payment', 'faulty', LIST, 500, SERVER)
 add('athlete-course-subscription-empty-value', 'runner', LIST + '?course_subscription_id=', 500, SERVER)
-add('athlete-course-subscription-deleted', 'runner', ACS['cs_deleted'], 500, SERVER)
+NOT_AVAILABLE_RESOURCE = {'detail': 'Risorsa non disponibile per questo utente e associazione.'}
+assert not ath_course_subscription_available('runner', 'cs_deleted')
+add('athlete-course-subscription-deleted', 'runner', ACS['cs_deleted'], 403, NOT_AVAILABLE_RESOURCE)
 add('athlete-course-subscription-installment-without-payment', 'runner', ACS['cs_broken'], 500, SERVER)
 ath_add('athlete-course-subscription-zero-hidden', 'runner', ACS['cs_zero'], ath_by_course_subscription('cs_zero'))
 ath_add('athlete-course-subscription-zero-shown', 'runner', ACS['cs_south'], ath_by_course_subscription('cs_south'))
@@ -1471,8 +1489,24 @@ SINGLE, INSTALLED = ath_by_course_subscription('cs_single'), ath_by_course_subsc
 assert sorted(SINGLE) == ['p_carnet', 'p_course'] and sorted(INSTALLED) == ['p_i0', 'p_i1', 'p_i3']
 ath_add('athlete-course-subscription-single', 'runner', ACS['cs_single'], SINGLE, unordered=True)
 ath_add('athlete-course-subscription-installments', 'runner', ACS['cs_multi'], INSTALLED, stripe=True, unordered=True)
-# The course subscription is resolved by its id.
-ath_add('athlete-course-subscription-by-id', 'runner', ACS['sc_cs'], ath_by_course_subscription('sc_cs'))
+# The course subscription of another user's subscription of an associate the athlete subscribed too.
+assert ath_course_subscription_available('runner', 'cs_member') and ath_by_course_subscription('cs_member') == ['p_member_course']
+ath_add('athlete-course-subscription-of-associate', 'runner', ACS['cs_member'], ['p_member_course'])
+# A group header: the athlete's subscriptions (none in the group) give no associates; the payments are the group's.
+assert not ath_course_subscription_available('runner', 'cs_member', ATH_GROUP['id'])
+add('athlete-course-subscription-of-associate-group', 'runner', ACS['cs_member'], 403, NOT_AVAILABLE_RESOURCE,
+    headers={'X-Group-Id': ATH_GROUP['id']})
+assert ath_course_subscription_available('runner', 'cs_single', ATH_GROUP['id'])
+assert ath_by_course_subscription('cs_single', ATH_GROUP['id']) == []
+ath_add('athlete-course-subscription-group', 'runner', ACS['cs_single'], [], headers={'X-Group-Id': ATH_GROUP['id']})
+# Only the athlete's own course subscriptions and those of their associates.
+assert not ath_course_subscription_available('runner', 'sc_cs') and not ath_course_subscription_available('scoped', 'cs_single')
+add('athlete-course-subscription-of-another-athlete', 'runner', ACS['sc_cs'], 403, NOT_AVAILABLE_RESOURCE)
+add('athlete-course-subscription-of-another-athlete-installments', 'scoped', ACS['cs_multi'], 403, NOT_AVAILABLE_RESOURCE)
+add('athlete-course-subscription-admin-impersonating-athlete', 'admin', ACS['cs_single'], 403, NOT_AVAILABLE_RESOURCE,
+    headers=ADMIN_ATHLETE)
+assert ath_course_subscription_available('scoped', 'sc_cs')
+ath_add('athlete-course-subscription-own', 'scoped', ACS['sc_cs'], ath_by_course_subscription('sc_cs'))
 
 # An association-scoped session (the owner viewing as the athlete): scoped_queryset keeps the association's rows
 # of the athlete's user and of the members it resolves (the associate with the athlete's user, or with the tax
@@ -1487,8 +1521,7 @@ ath_add('athlete-scoped-list', 'north_owner', LIST, SCOPED_QUERY, headers=NORTH_
 assert cases[-1]['generated'] and cases[-1]['generated'][0]['invoice'] == 'sc_inv'
 ath_add('athlete-scoped-course-subscription', 'north_owner', ACS['sc_cs'], ath_by_course_subscription('sc_cs'), headers=NORTH_SCOPED,
         audit=SCOPED_AUDIT)
-add('athlete-scoped-course-subscription-not-available', 'north_owner', ACS['cs_single'], 403,
-    {'detail': 'Risorsa non disponibile per questo utente e associazione.'}, headers=NORTH_SCOPED)
+add('athlete-scoped-course-subscription-not-available', 'north_owner', ACS['cs_single'], 403, NOT_AVAILABLE_RESOURCE, headers=NORTH_SCOPED)
 add('athlete-scoped-compressed', 'north_owner', LIST + '?mode=compressed', 500, SERVER, headers=NORTH_SCOPED)
 UNSCOPED = ath_candidates('scoped')
 assert UNSCOPED == ['sp_other', 'sp_child', 'sp_user']

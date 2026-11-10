@@ -776,9 +776,19 @@ def payment_list(request):
     payments = []
     # case athlete is asking for his payments
     if User.ATHLETE == request.user.role and course_subscription_id is not None:
-        course_subscription = scoped_queryset(request, CourseSubscription.objects).filter(
+        course_subscriptions = scoped_queryset(request, CourseSubscription.objects).filter(
             course_subscription_id=course_subscription_id
-        ).select_related('course').first()
+        )
+        if getattr(request, 'impersonation_association', None) is None:
+            # The same people as the list below: the athlete's subscriptions and those of their associates.
+            own_subscriptions = scoped_queryset(request, Subscription.objects).filter(user=request.user)
+            course_subscriptions = course_subscriptions.filter(
+                Q(subscription__user=request.user) |
+                Q(subscription__associate__in=own_subscriptions.filter(associate__isnull=False).values('associate'))
+            )
+        course_subscription = course_subscriptions.select_related('course').first()
+        if course_subscription is None:
+            raise PermissionDenied('Risorsa non disponibile per questo utente e associazione.')
         if course_subscription.multi_payments:
             installments = scoped_queryset(request, CourseSubscriptionInstallment.objects).filter(course_subscription=course_subscription)
             for installment in installments:
