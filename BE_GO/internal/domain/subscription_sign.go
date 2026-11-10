@@ -45,6 +45,8 @@ type SubscriptionSignTransaction interface {
 	// association) and saves the subscription's signature columns and status
 	// PENDING (update entry with the changed fields, indexed direct).
 	Save(ctx context.Context, row SubscriptionSignRow, save SubscriptionSignSave) error
+	// SaveSeason reads what Subscription.save() computes before it writes.
+	SaveSeason(ctx context.Context, subscription string) (SubscriptionSaveSeason, error)
 	Commit() error
 	Rollback() error
 }

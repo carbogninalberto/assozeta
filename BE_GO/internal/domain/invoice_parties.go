@@ -248,5 +248,5 @@ type InvoicePartyStore interface {
 	AppendAudit(ctx context.Context, entry InvoicePartyAudit, audit LoginAuditContext, at time.Time) error
 	UpdateCustomerInvoice(ctx context.Context, id string, paid, transmitted bool) error
 	UpdateSupplierInvoice(ctx context.Context, row SupplierInvoiceRow) error
-	UpdatePaymentPaid(ctx context.Context, id string, paid bool, at time.Time, category *string) error
+	UpdatePaymentPaid(ctx context.Context, id string, paid bool, at time.Time, category, description *string) error
 }

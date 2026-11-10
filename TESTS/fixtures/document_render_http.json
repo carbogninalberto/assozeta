@@ -49,13 +49,21 @@
    "user": "a1000000-0000-4000-8000-000000984003",
    "association": "a1000000-0000-4000-8000-000000984004",
    "denomination": "Club – Roma"
+  },
+  "season": {
+   "user": "a1000000-0000-4000-8000-000000984005",
+   "association": "a1000000-0000-4000-8000-000000984006",
+   "denomination": "Render stagione",
+   "start_day": 31,
+   "start_month": 4
   }
  },
  "association_ids": {
   "own": "a1000000-0000-4000-8000-000000701001",
   "foreign": "a1000000-0000-4000-8000-000000701002",
   "latin": "a1000000-0000-4000-8000-000000984002",
-  "wide": "a1000000-0000-4000-8000-000000984004"
+  "wide": "a1000000-0000-4000-8000-000000984004",
+  "season": "a1000000-0000-4000-8000-000000984006"
  },
  "associates": {
   "mario": {
@@ -206,6 +214,14 @@
    "association": "foreign",
    "associate": "mario",
    "user": "foreign_owner",
+   "group": null,
+   "document": null
+  },
+  "season": {
+   "id": "a1000000-0000-4000-8000-000000984029",
+   "association": "season",
+   "associate": "mario",
+   "user": "owner",
    "group": null,
    "document": null
   }
@@ -1229,6 +1245,36 @@
     "mail": null
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
+  },
+  {
+   "name": "document-render-subscription-invalid-season-settings",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984029",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Invalid date combination: day is out of range for month"
+   },
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984029/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Render stagione] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null
+   }
   },
   {
    "name": "document-render-subscription-unknown",

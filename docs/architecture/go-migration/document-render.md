@@ -154,3 +154,8 @@ The stub answers renderer failures as authored: 500/502/503/400/404/304, HTML, a
 - `go test ./internal/pdfrender` compares `HeaderBytes` with Django 5.2's stored header bytes and `Payload` with `json.dumps`
   (`testdata/django_values.json`). It also checks the acceptance rules against a local server: statuses, gzip, the charset
   rules, truncation to 500 code points and the content-type/magic checks.
+
+Model hooks ([model-hooks](model-hooks.md)): `document-render-subscription-invalid-season-settings`: the
+`save(update_fields=['document_pdf'])` raises in the season range for an owner whose season start is 31 April; the Document
+and its storage task stay, the row is not linked, 500 `{"exception": "Invalid date combination: day is out of range for
+month"}`. Native 142/142; mutation (`model-hooks-mutation`) fails Go with 200 (CAUGHT).

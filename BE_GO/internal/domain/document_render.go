@@ -120,4 +120,6 @@ type DocumentRenderStore interface {
 	CreateSubscriptionFile(ctx context.Context, id string, subscription RenderSubscription, document string, created time.Time,
 		audit LoginAuditContext, at time.Time) error
 	Link(ctx context.Context, link RenderLink, document string, audit LoginAuditContext, at time.Time) error
+	// SubscriptionSaveSeason reads what Subscription.save() computes before it writes.
+	SubscriptionSaveSeason(ctx context.Context, subscription string) (SubscriptionSaveSeason, error)
 }

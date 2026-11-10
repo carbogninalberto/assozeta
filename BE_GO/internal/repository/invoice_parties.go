@@ -426,10 +426,10 @@ func (r *InvoiceParties) UpdateSupplierInvoice(ctx context.Context, row domain.S
 	})
 }
 
-func (r *InvoiceParties) UpdatePaymentPaid(ctx context.Context, id string, paid bool, at time.Time, category *string) error {
+func (r *InvoiceParties) UpdatePaymentPaid(ctx context.Context, id string, paid bool, at time.Time, category, description *string) error {
 	return r.write(ctx, func(tx *sqlx.Tx) error {
-		_, err := tx.ExecContext(ctx, `UPDATE application_payment SET paid=$2, payment_date=$3, payment_category_id=$4 WHERE payment_id=$1`,
-			id, paid, at, category)
+		_, err := tx.ExecContext(ctx, `UPDATE application_payment SET paid=$2, payment_date=$3, payment_category_id=$4, description=$5
+ WHERE payment_id=$1`, id, paid, at, category, description)
 		return err
 	})
 }

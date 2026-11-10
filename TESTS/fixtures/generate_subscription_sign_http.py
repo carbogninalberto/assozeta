@@ -78,6 +78,10 @@ SUBSCRIPTIONS = {
     'plain': subscription(),
     'long_url': subscription(),
 }
+# An association whose owner's season settings make Subscription.save() raise
+# (get_range_from_year_and_starting_date: 31 April is not a date), with a dated row.
+SEASON = {'owner': next(ids), 'association': next(ids), 'start_day': 31, 'start_month': 4}
+SUBSCRIPTIONS['season'] = subscription(association=SEASON['association'])
 # Seeded keys with an object in the bucket (relative to AWS_LOCATION).
 SUBSCRIPTIONS['keyed']['signature_key'] = f'subscriptions/{SUBSCRIPTIONS["keyed"]["id"]}/signature_1700000000.25.png'
 SUBSCRIPTIONS['shared_a']['signature_key'] = SUBSCRIPTIONS['shared_b']['signature_key'] = 'signatures/firma-condivisa.png'
@@ -220,6 +224,13 @@ add('acl-denied-unavailable', 'owner', 503, UNAVAILABLE, body=payload('acl_denie
     effect={'subscription': 'acl_denied', 'columns': {}, 'signature': None, 'stored': None, 'old': None,
             'storage': ['HEAD $new', 'PUT $new', 'ACL $new denied', 'DELETE $new'], 'audit': [], 'celery': []})
 
+# save(update_fields=[...]) still runs Subscription.save(): the season range raises after the upload, the
+# object is deleted and the atomic block rolls back (no Signature, no audit, no on_commit messages).
+add('invalid-season-settings-server-error', 'owner', 500, SERVER,
+    body=payload('season', {'there_is_signature': True, 'data': png('stagione')[1]}),
+    effect={'subscription': 'season', 'columns': {}, 'signature': None, 'stored': None, 'old': None,
+            'storage': ['HEAD $new', 'PUT $new', 'ACL $new', 'DELETE $new'], 'audit': [], 'celery': []})
+
 # --- Without a signature: only the on_commit messages ---------------------------------------------------
 add('no-signature', 'owner', 200, SUCCESS, body=payload('plain', {'there_is_signature': False, 'data': None}), effect=unsigned('plain'))
 add('no-signature-flag-default', 'owner', 200, SUCCESS, body=payload('plain', {'data': 'ignorata'}), effect=unsigned('plain'))
@@ -265,6 +276,6 @@ add('undated-row-keeps-dates', 'owner', 200, SUCCESS, body=payload('undated', {'
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/sign authored sequence with row, audit, storage and Celery effects',
-    'ids': IDS, 'location': LOCATION, 'public_base': PUBLIC_BASE, 'acl_denied': ACL_DENIED, 'subscriptions': SUBSCRIPTIONS,
+    'ids': IDS, 'location': LOCATION, 'public_base': PUBLIC_BASE, 'acl_denied': ACL_DENIED, 'season': SEASON, 'subscriptions': SUBSCRIPTIONS,
     'objects': OBJECTS, 'unknown': UNKNOWN, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

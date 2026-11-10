@@ -42,6 +42,12 @@
  "location": "subscription-sign",
  "public_base": "https://firme.example.test/cdn",
  "acl_denied": "a1000000-0000-4000-8000-000000998006",
+ "season": {
+  "owner": "a1000000-0000-4000-8000-000000998015",
+  "association": "a1000000-0000-4000-8000-000000998016",
+  "start_day": 31,
+  "start_month": 4
+ },
  "subscriptions": {
   "first": {
    "id": "a1000000-0000-4000-8000-000000998001",
@@ -189,6 +195,17 @@
   "long_url": {
    "id": "a1000000-0000-4000-8000-000000998014",
    "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "status": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "group": null,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "season": {
+   "id": "a1000000-0000-4000-8000-000000998017",
+   "association": "a1000000-0000-4000-8000-000000998016",
    "user": "owner",
    "status": 1,
    "start": "2026-01-01",
@@ -809,6 +826,37 @@
     "signature": {
      "there_is_signature": true,
      "data": "iVBORw0KGgpmaXJtYSBhY2w="
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-invalid-season-settings-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "subscription": "season",
+    "columns": {},
+    "signature": null,
+    "stored": null,
+    "old": null,
+    "storage": [
+     "HEAD $new",
+     "PUT $new",
+     "ACL $new",
+     "DELETE $new"
+    ],
+    "audit": [],
+    "celery": []
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998017",
+    "signature": {
+     "there_is_signature": true,
+     "data": "iVBORw0KGgpmaXJtYSBzdGFnaW9uZQ=="
     }
    }
   },

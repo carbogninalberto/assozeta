@@ -206,3 +206,9 @@ the unordered queries identically.
 
 Current-model fixtures only; packaged images, installed ownership activation, crash/drain groups
 for these tasks and mixed-runtime handoff remain open.
+
+Model hooks ([model-hooks](model-hooks.md)): scenario `a payment whose save() raises is rolled back and the run goes on`
+(an account-transfer payment without a description: `Payment.save()` raises in the type save). Django rolls that payment
+back, counts it and marks the others; Go's planning pass used to fail the run on `ErrPaymentSaveFailed`, which is now one of
+the Python exceptions of the paid flow (`stripePaidCheckPython`). RED with the error removed from that list:
+`quality-reports/go-migration/model-hooks-stripe-paid-check-red`; GREEN: `model-hooks-stripe-paid-check-green`.

@@ -193,7 +193,8 @@ def seed_rows(source, created):
     seeded = datetime(2026, 1, 2, 3, 4, 5, 678901, tzinfo=timezone.utc)
     for label, spec in source['associations'].items():
         insert(User, User(user_id=spec['user'], username=f'document-render-{label}', email=f'document-render-{label}@example.test',
-                          password='!synthetic', role=User.ASSOCIATION, first_name='Render', last_name=label))
+                          password='!synthetic', role=User.ASSOCIATION, first_name='Render', last_name=label,
+                          subscription_start_day=spec.get('start_day', 1), subscription_start_month=spec.get('start_month', 1)))
         insert(SportAssociation, SportAssociation(sport_association_id=spec['association'], user_id=spec['user'],
                                                   denomination=spec['denomination'], tax_code='7153000000' + str(len(label))))
     for label, row in source['associates'].items():

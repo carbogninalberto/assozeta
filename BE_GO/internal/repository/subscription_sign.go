@@ -77,6 +77,10 @@ func (t *subscriptionSignTransaction) Lock(ctx context.Context, lookup domain.Su
 	return subscriptionSignFind(ctx, t.tx, lookup, true)
 }
 
+func (t *subscriptionSignTransaction) SaveSeason(ctx context.Context, subscription string) (domain.SubscriptionSaveSeason, error) {
+	return modelHooksSubscriptionSeason(ctx, t.tx, subscription)
+}
+
 func subscriptionSignText(value *string) string {
 	if value == nil {
 		return "None"

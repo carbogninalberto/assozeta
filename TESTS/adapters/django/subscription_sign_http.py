@@ -217,8 +217,20 @@ day = lambda text: date.fromisoformat(text) if text else None
 
 
 def seed_rows(source, created):
-    from application.models import Subscription
+    from application.models import Subscription, SportAssociation, User
     ids = source['ids']
+    season = source.get('season')
+    if season:
+        owner = User(user_id=season['owner'], username='subscription-sign-season', email='subscription-sign-season@example.test',
+                     password='!synthetic', role=1,
+                     first_name='Stagione', last_name='Fixture', subscription_start_day=season['start_day'],
+                     subscription_start_month=season['start_month'])
+        User._base_manager.bulk_create([owner])
+        created.append((User, owner.pk))
+        association = SportAssociation(sport_association_id=season['association'], user_id=owner.pk,
+                                       denomination='Subscription sign season', tax_code='79600000002')
+        SportAssociation._base_manager.bulk_create([association])
+        created.append((SportAssociation, association.pk))
     for row in source['subscriptions'].values():
         item = Subscription(subscription_id=row['id'], sport_association_id=row['association'], user_id=ids[row['user']],
                             status_flag=row['status'], start_date=day(row['start']), end_date=day(row['end']),

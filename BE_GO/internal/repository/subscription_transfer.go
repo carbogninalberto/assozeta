@@ -189,6 +189,10 @@ func (r *SubscriptionTransfers) CreateTransfer(ctx context.Context, transfer dom
 	return tx.Commit()
 }
 
+func (r *SubscriptionTransfers) SubscriptionSaveSeason(ctx context.Context, subscription string) (domain.SubscriptionSaveSeason, error) {
+	return modelHooksSubscriptionSeason(ctx, r.db, subscription)
+}
+
 // SaveSubscriptionUser is subscription.user = recipient; subscription.save()
 // (the dates are set: Subscription.save() changes nothing else).
 func (r *SubscriptionTransfers) SaveSubscriptionUser(ctx context.Context, row domain.SubscriptionTransferRow, user string,

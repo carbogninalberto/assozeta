@@ -60,11 +60,13 @@ EXPECTED = {
     'unconfigured credentials return before any request',
     'unsupported version payload and tenant fail before business effects',
     'a payment outside the ported paid flow refuses the run before any effect',
+    'a payment whose save() raises is rolled back and the run goes on',
 }
 stripe_stub.INTENTS.update({
     'pi_ok_3': (200, {'id': 'pi_ok_3', 'object': 'payment_intent', 'status': 'succeeded'}),
     'pi_ok_4': (200, {'id': 'pi_ok_4', 'object': 'payment_intent', 'status': 'succeeded'}),
     'pi_ok_5': (200, {'id': 'pi_ok_5', 'object': 'payment_intent', 'status': 'succeeded'}),
+    'pi_ok_6': (200, {'id': 'pi_ok_6', 'object': 'payment_intent', 'status': 'succeeded'}),
 })
 
 
@@ -131,6 +133,10 @@ class PaidFixture:
         if variant == 'unported':
             # A membership fee (30 - 0.125) whose two-place rounding is an exact tie: not ported.
             rows[0] = (0, 'pi_ok_1', 1, 21, 61, 'default', {'meta_payment_categories': [{'amount': 0.125}]})
+        if variant == 'save-raises':
+            # An account transfer without a description: Payment.save() (the type save) raises AttributeError
+            # deriving 'Trasferimento da ... a <destination_account_name>'; the task re-raises and counts it.
+            rows.append((14, 'pi_ok_6', 3, 21, None, 'default', {}))
         Payment.objects.bulk_create([Payment(payment_id=U(100 + n), payment_intent_id=intent, subject=subject, user_id=U(u) if u else None,
             associate_id=U(a) if a else None, type=kind, amount=Decimal('30.00'), sport_association_id=U(11), creation_date=recent,
             payment_category_id=U(13), custom_accounts_id=U(12), **extra) for n, intent, subject, u, a, kind, extra in rows])
@@ -267,7 +273,7 @@ class PaidRehearsal(Rehearsal):
         notification_utils.REDIS_POOL = redis.ConnectionPool(host='127.0.0.1', port=redis_port, password=REDIS_PASSWORD, username='default',
                                                              socket_connect_timeout=5, socket_timeout=5, decode_responses=False)
         self.fixture = PaidFixture()
-        self.oracles = {variant: self.django(variant) for variant in ('main', 'unconfigured')}
+        self.oracles = {variant: self.django(variant) for variant in ('main', 'unconfigured', 'save-raises')}
 
     def connect(self, name):
         connection = psycopg2.connect(host=str(self.work), user='contracts', dbname=DATABASE, application_name='fixture-paid-' + name)
@@ -392,13 +398,18 @@ class PaidRehearsal(Rehearsal):
             assert not paths and not outcome['published'] and not outcome['pushes'], outcome
             return
         # The one-thread run reached the payments in payment_id order.
+        extra = ('pi_ok_6',) if variant == 'save-raises' else ()
         assert paths == ['/v1/payment_intents/' + p for p in ('pi_ok_1', 'pi_pending', 'pi_missing', 'pi_card', 'pi_empty', 'pi_nostatus',
-                                                              'pi_ok_2', 'pi_ok_3', 'pi_ok_4', 'pi_ok_5')], paths
+                                                              'pi_ok_2', 'pi_ok_3', 'pi_ok_4', 'pi_ok_5') + extra], paths
+        if variant == 'save-raises':
+            raised = next(row for row in after['application.Payment'] if row['payment_id'] == U(114))
+            assert not raised['paid'] and raised['type'] == 'default' and raised['description'] is None, raised
+            assert not [e for e in after['auditlog.LogEntry'] if e['object_pk'] == str(U(114))]
         # print_document_invoice runs on commit: the payment without user (8, rolled back) publishes nothing.
         assert outcome['published'] == ['invoice:8', 'invoice:9', 'invoice:10'], outcome['published']
         payments = {row['payment_id']: row for row in after['application.Payment']}
         # mark_payment_as_paid saves every unpaid payment paid (9 keeps its existing invoice); 8 rolls back.
-        assert [n for n in range(14) if payments[U(100 + n)]['paid']] == [0, 7, 9, 10, 12]
+        assert [n for n in range(15) if U(100 + n) in payments and payments[U(100 + n)]['paid']] == [0, 7, 9, 10, 12]
         assert payments[U(108)]['type'] == 'cash' and payments[U(109)]['type'] == 'stripe' and payments[U(109)]['invoice_id'] == U(70)
         # The task's type save, then mark_payment_as_paid's update_fields save (paid, payment date; type already
         # 'stripe'), then the save that records the invoice.
@@ -484,8 +495,12 @@ class PaidRehearsal(Rehearsal):
         await_condition(lambda: self.job(identifier)[0] == 'failed', 'unported paid flow refused')
         assert self.sql('SELECT error_code FROM assozeta_go_jobs WHERE id=%s', (identifier,)) == [('task_failed',)]
         assert self.fixture.snapshot() == before and not self.messages() and not self.stub.take() and not self.realtime.take()
-        self.stop(process)
         self.case('a payment outside the ported paid flow refuses the run before any effect')
+
+        identifier, before = self.seed_job(variant='save-raises')
+        self.go_matches(identifier, before, 'save-raises')
+        self.stop(process)
+        self.case('a payment whose save() raises is rolled back and the run goes on')
         assert set(self.completed) == EXPECTED and len(self.completed) == len(EXPECTED)
 
     def close(self):
