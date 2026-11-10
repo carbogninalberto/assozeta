@@ -163,6 +163,14 @@ The athlete query (both variants), the installment and zero-amount exclusions, `
 without a PDF go through `DocumentRender.Render` (`invoice` route) in-process, checked against document-render's renderer
 stub and the Celery broker. Association-scoped athlete sessions keep `scoped_queryset`'s boundary.
 
+### Ported in the v2-misc-3 change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2misc3-*`; each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| personas-writes | `POST personas/add`, `PATCH personas/<pk>/update` | `picture_path` data URL (the photo widget): decoded, stored as `associates/<id>/picture_<timestamp>.jpg`, ACL `public-read`, CDN URL saved | 188 cases with a private MinIO; RED `v2misc3-red-r4` Django 188/188, Go 500; GREEN `v2misc3-versioned-r3` 4 transports; mutation `v2misc3-mutation-r3` (ACL key without the location) CAUGHT; subscription-sign 47/47, router-personas 51/51 and router-persona-subscriptions 73/73 re-run |
+
 ## Remaining A items, per family
 
 UI paths under `UI/src/`, Go under `BE_GO/internal/`. Cost: cheap (hours), medium (a family change with new
@@ -244,14 +252,11 @@ legacy Bakney invoices or tutors that would be reassigned (refused by the valida
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | GET communications/settings/smtp/verify | a failed connection whose Python text comes from the platform libraries: TLS handshake error (for example `SSL` on a STARTTLS port), name resolution failure, connect timeout | `communication/settings/sections/EmailSMTP.svelte:155` | `service/communications_smtp.go` (`Verify`) | medium |
-| personas add/update | `picture_path` data URL (photo) | `preview-blocks/image-upload.svelte:35-38` | `service/personas_writes.go:270-288` | medium |
 | oauth2/signup | Google/Apple configured | `routes/login/Login.svelte:425-447` | `service/oauth_accounts.go:448` | medium-expensive |
 
 Why these stay (v2-misc):
 - smtp/verify: the dialogue is ported (v2-misc-2). What stays is the text of OpenSSL, resolver and connect-timeout errors, which
   depends on the Python build and the platform; Go answers the 500 page instead of a `verified: false` body.
-- personas photo: the data URL is stored under a timestamped key with a `put_object_acl` and a CDN URL; needs a MinIO in the
-  personas-writes adapter.
 - oauth2/signup with providers: needs stubbed Google/Apple token verification in the oauth-accounts adapter.
 
 Not HTTP (websocket, Django today): agent exports to XLSX/PDF (`service/business_mcp_query.go:290`).
@@ -814,7 +819,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### personas-writes.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST personas/add, PATCH personas/<pk>/update | `picture_path` containing `base64` | `service/personas_writes.go:270-288` (called at `:653,709`) | **A** | The photo widget stores `reader.readAsDataURL(file)` (`components/formBuilder/preview-blocks/image-upload.svelte:35-38`), bound to `associate.picture_path` (`routes/association/personas/detail/partials/associate-form.svelte:304-319`). It is sent by `detail/AddInfo.svelte:38` and `detail/sections/Info.svelte:22-25`. Cost: medium (storage upload). |
+| POST personas/add, PATCH personas/<pk>/update | `picture_path` containing `base64` | `service/personas_picture.go` | ported | Ported in v2-misc-3 (`personas-writes.md`, `v2misc3-versioned-r3`). A body `associate_id` outside `[A-Za-z0-9_-]{1,64}`, a list or object value and storage failures other than a refused ACL stay refused (B). |
 | same | tutor `is_primary` not bool, numeric tutor ids, non-ASCII-digit born_date, non-canonical X-Group-Id | `service/personas_writes.go:313-334,445,657,713,751` | B | The UI sends booleans and string ids (`associate-form.svelte:222-230,708-724`). |
 | DELETE personas-subscriptions/<pk>/list | found subscription | `service/personas_writes.go:224-228` | B | Route method not called by the UI (GET list only). |
 

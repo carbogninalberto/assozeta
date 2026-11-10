@@ -92,7 +92,21 @@ def listing():
 
 
 def check_storage(case, source, since, bindings):
-    """The case's storage requests and objects; binds each '$picN' to its URL."""
+    """The case's storage requests and objects; binds each '$picN' to its URL.
+
+    Families reusing this effect check without the storage service author no uploads."""
+    if not STORAGE:
+        contract.require(not case.get('pictures') and not case.get('storage'), 'storage.unavailable')
+        return
+    try:
+        verify_storage(case, source, since, bindings)
+    finally:
+        # A failed case must not leave its objects for the following ones.
+        for key in listing():
+            STORAGE['client'].delete_object(Bucket=STORAGE['bucket'], Key=key)
+
+
+def verify_storage(case, source, since, bindings):
     requests = STORAGE['proxy'].take()
     until = time.time()
     expected, objects = [], {}
@@ -123,7 +137,6 @@ def check_storage(case, source, since, bindings):
         contract.require(stored['Body'].read() == base64.b64decode(spec['body_b64']), 'storage.bytes')
         contract.require(stored['ContentType'] == 'image/jpeg' and stored.get('ContentEncoding') is None
                          and stored.get('CacheControl') == 'max-age=86400', 'storage.metadata')
-        client.delete_object(Bucket=STORAGE['bucket'], Key=key)
     # The response named the same URL (bound by the contract).
     contract.require(all(bindings[ref] == value for ref, value in contract.BOUND.items()), 'storage.response-url')
 
@@ -188,7 +201,8 @@ fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(associ
 def captured(source):
     """auditlog's delete diffs of the seeded relations, captured before each case."""
     from application.models import AssociateTutorRelation
-    STORAGE['proxy'].take()
+    if STORAGE:
+        STORAGE['proxy'].take()
     rows = {'$started': time.time()}
     for row in AssociateTutorRelation._base_manager.filter(pk__in=[r['id'] for r in source['relations'].values()]):
         rows[str(row.pk)] = replace.deleted_changes(AssociateTutorRelation, row)
