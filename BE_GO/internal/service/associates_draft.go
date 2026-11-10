@@ -279,7 +279,7 @@ func (s *AssociateDrafts) associateDraftValidity(editData domain.RequestObject) 
 	if !present {
 		return false, ErrAssociateDraftFailed
 	}
-	date, result := dto.PersonDate(born)
+	date, result := dto.PersonDate(born, s.now())
 	switch result {
 	case dto.DateutilFailed:
 		return false, ErrAssociateDraftFailed
@@ -303,7 +303,7 @@ func (s *AssociateDrafts) associateDraftValidity(editData domain.RequestObject) 
 	if !present {
 		return valid, nil
 	}
-	date, result = dto.PersonDate(tutorBorn)
+	date, result = dto.PersonDate(tutorBorn, s.now())
 	switch result {
 	case dto.DateutilFailed:
 		return valid, nil
