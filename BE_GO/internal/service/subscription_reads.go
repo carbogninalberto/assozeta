@@ -1007,11 +1007,7 @@ func (s *SubscriptionReads) infoCourses(ctx context.Context, subscription string
 		if person, ok := persons[subscription]; ok {
 			render.Person = &person
 		}
-		for _, payment := range render.Payments {
-			if payment.InstructorID != nil || payment.InvoiceID != nil {
-				return nil, domain.ErrSubscriptionReadsNotPorted // the payment serializer's instructor and invoice are not ported here
-			}
-		}
+		// PaymentSerializer's nested instructor and invoice: loaded by MembershipPayments.
 		for _, installment := range installments {
 			if installment.CourseSubscription == chosen.ID {
 				render.Installments = append(render.Installments, installment)

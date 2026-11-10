@@ -116,7 +116,6 @@ registries of the courses of its live course subscriptions; each truthy events l
 
 - Association-scoped athlete sessions on subscription/list, list/all, info and calendar (scoped_queryset's family boundary).
 - The POST export of subscription/list with `format` `pdf` or `excel` (`current_view_subscriptions`).
-- subscription/info rows whose course subscriptions have membership payments with an instructor or an invoice.
 - Orderings compiled with the rows (relations, paths, transforms, `?`, annotations), field-mode relation paths and
   transforms, and search terms with characters at or above U+0250 or U+0130 (personas-reads).
 
@@ -152,3 +151,9 @@ the authored ones.
 - RED (`v2sub-red-r2`): Django 261/261; Go 500 on `subscription-reads-list-athlete`.
 - GREEN (`v2sub-versioned-r1`): 261/261 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`v2sub-mutation-r1`): ordering the athlete list by ascending creation date is CAUGHT.
+
+API v2 (v2-misc): subscription/info renders the course subscriptions' membership payments with PaymentSerializer's nested
+invoice and instructor (loaded by the shared course-subscriptions repository). The fixture seeds an instructor, an invoice and
+three membership payments of one course subscription (invoiced, open, invoiced with an instructor); 261 cases. RED
+`v2misc-red-r1`: Django 261/261, Go 500. GREEN `v2misc-green-r1`: 261/261 on the four transports. Mutation `v2misc-mutation-r1`
+(the nested invoice not loaded) fails `info-hyphenless-uuid` on Go.

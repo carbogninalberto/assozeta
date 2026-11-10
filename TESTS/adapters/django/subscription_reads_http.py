@@ -77,9 +77,21 @@ def seed_rows(source, created):
             relation = AssociateTutorRelation._base_manager.create(associate_id=associates[associate]['id'],
                                                                    tutor_id=associates[tutor]['id'], is_primary=primary)
             created.append((AssociateTutorRelation, relation.pk))
+    from application.models import Instructor, Invoice
+    teacher, bill = source['instructor'], source['invoice']
+    insert(Instructor, Instructor(instructor_id=teacher['id'], user_id=source['ids']['owner'], first_name=teacher['first_name'],
+                                  last_name=teacher['last_name'], email=teacher['email'], tax_code=teacher['tax_code'],
+                                  default_hourly_billing=Decimal(teacher['default_hourly_billing'])))
+    insert(Invoice, Invoice(invoice_id=bill['id'], sport_association_id=source['ids']['own_association'], creation_date=moment(bill['created']),
+                            membership_fee=Decimal(bill['membership_fee']), activity_fee=Decimal(bill['activity_fee']),
+                            description=bill['description'], number=bill['number'], meta=bill['meta']))
     payments = source['payments']
     for row in payments.values():
-        insert(Payment, Payment(payment_id=row['id'], sport_association_id=row['association'], amount=Decimal(row['amount']),
+        extra = {}
+        if 'subject' in row:  # membership payments
+            extra = {'subject': row['subject'], 'meta': row['meta'], 'description': row['description'],
+                     'invoice_id': bill['id'] if row['invoice'] else None, 'instructor_id': teacher['id'] if row['instructor'] else None}
+        insert(Payment, Payment(**extra, payment_id=row['id'], sport_association_id=row['association'], amount=Decimal(row['amount']),
                                 paid=row['paid'], archived=row['archived'], deleted=row['deleted'], group_id=row['group'],
                                 associate_id=associates[row['associate']]['id'] if row['associate'] else None,
                                 creation_date=moment(row['created']), payment_date=moment(row['paid_on'])))
@@ -110,6 +122,9 @@ def seed_rows(source, created):
             course_subscription_id=row['id'], course_id=courses[row['course']]['id'],
             subscription_id=subscriptions[row['subscription']]['id'] if row['subscription'] else None,
             paid=row['paid'], multi_payments=row['multi'], creation_date=moment(row['created']), deleted=row['deleted']))
+        link_model = CourseSubscription.membership_payments.through
+        link_model.objects.bulk_create([link_model(coursesubscription_id=row['id'], payment_id=payments[label]['id'])
+                                        for label in row.get('membership', [])])
     for row in source['installments'].values():
         insert(CourseSubscriptionInstallment, CourseSubscriptionInstallment(
             course_subscription_installment_id=row['id'], course_subscription_id=course_subscriptions[row['cs']]['id'], id=row['number'],
