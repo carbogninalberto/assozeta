@@ -42,6 +42,9 @@ Cross-cutting facts used for the classes:
 | instance-setup | `POST instance/configure` | `type: import` with a finished task | fixture `instance_setup_http.json` 99 cases; RED Django 99/99, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (`association_id` key ignored) CAUGHT |
 | data-restore | `POST instance/admin/data-restore` | every upload | fixture `data_restore_http.json` 150 cases; RED Django 150/150, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (summary record count) CAUGHT |
 | instance-updates | `GET/POST admin/updates`, `POST admin/restarts` | production mode | fixture `instance_updates_http.json` 40 cases; RED Django 40/40, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (version check) CAUGHT |
+| payment-reads | `GET payment/list?sort[field]=user` ("Informazioni" column) | always | `payment_reads_http.json` 242 cases; GREEN `v2gaps-versioned-r1` 4 transports; mutation CAUGHT |
+| payment-reads | `GET payment/list` with instructor compensations (several hours, or no document yet: eager compensation print) | after any compensation | GREEN `v2gaps-versioned-r2` 4 transports; mutation `v2gaps-mutation-r3` CAUGHT |
+| subscription-create | `POST subscription/add` from the owner wizard: default certificate date (today), emptied date, uploaded certificate with its expiration | always (date always sent) | `subscription_create_http.json` 45 cases; RED `v2gaps-red-r1` Django 45/45, Go 500; GREEN `v2gaps-versioned-r1` 4 transports; mutation CAUGHT; subscription-renew 54/54 and associates-draft 128/128 re-run |
 
 Details in `statistic-reads.md`, `payment-writes.md`, `association-transfer.md`, `instance-setup.md`, `data-restore.md` and `instance-updates.md`.
 
@@ -57,8 +60,6 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 | POST payment/add | owner setting `auto_paid_payment` on | `routes/profile/sections/Settings.svelte:1013`, `AddEditModal.svelte:102` | `service/payment_writes.go:570` | medium-expensive |
 | payment cancel / delete | payment has an invoice | `PaymentList.svelte:575,689`, `partials/payment-overview.svelte:187` | `service/payment_state.go:322,363` | medium-expensive |
 | GET payment/list | athlete session (no `mode=compressed`) | `routes/activities/payment/PaymentList.svelte:36-38` | `service/payment_reads.go:349` | medium-expensive |
-| GET payment/list | instructor compensation payments in the page | `Instructor.svelte:358`, `PaymentList.svelte:1485` | `service/payment_reads.go:494,497` | medium |
-| GET payment/list | sort by the "Informazioni" column (`sort[field]=user`) | `PaymentList.svelte:227-236`, `components/tables/BKNDatatable.svelte:736` | `service/payment_reads.go:424` | medium |
 | GET payment/stats | Stripe configured | `PaymentList.svelte:997` | `service/payment_reads.go:579` | medium |
 | POST partial-quotes-apply | a subscription belongs to a member's own account | `components/modals/SubscriptionFeesPlanModal.svelte:46` | `service/payment_misc.go:478` | medium |
 | POST payment/sign | with a signature (instructor page) | `components/signature/DocumentSignatureModal.svelte:39-45` | `service/payment_misc.go:611` | medium |
@@ -66,7 +67,7 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 ### subscription-create / subscription-import-upload / subscription-memberships
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST subscription/add | owner wizard: certificate date always set; signature; "new member" | `routes/association/Members/add/AddMember.svelte:104-139` | `service/subscription_create.go:148,156,164` | medium each |
+| POST subscription/add | owner wizard: a typed certificate date without an upload (placeholder PNG drawn with PIL: image rendering, refused by the porting rules); signature; "new member" | `routes/association/Members/add/AddMember.svelte:104-139` | `service/subscription_create.go:148,156,164` | expensive (image) / medium / medium |
 | POST subscription/add | public forms: anonymous, `sport_association`, preregistration, family wizard | `Subscribe.svelte:124,147,167`, `SubscribeMultiple.svelte:183`, `SubscribeFamily.svelte:136-181` | `service/subscription_create.go:91,102,132,141` | expensive |
 | POST subscription/add?m=only_associate | quick re-subscription | `MembersList.svelte:1564`, `MembersBook.svelte:1318` | `service/subscription_create.go:121` | medium |
 | POST subscription/import/upload | final mapping step (every import) | `routes/association/Members/import/ImportMembers.svelte:46-52` | `service/subscription_import_upload.go:200` | expensive |

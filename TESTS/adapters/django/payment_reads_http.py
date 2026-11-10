@@ -6,11 +6,18 @@ five subscriptions, the authored payments (one attachment), course
 subscriptions, installments, a carnet holding and an instructor-hours row with
 its document (audit disabled). The routes are reads: every case must leave the
 complete model state unchanged.
+
+A CURRENT_HOST print stub (invoice-sync-print's service_context) runs for the
+whole run: each case's outbound requests must be exactly its authored 'prints'
+(payment_list prints the listed compensations whose hours have no document).
 """
 from datetime import date, datetime
 from decimal import Decimal
 
-from TESTS.contracts import test_payment_reads_http as contract
+import types
+
+from TESTS.contracts import test_payment_reads_http as base_contract
+from TESTS.adapters.django import invoice_sync_print_http as printer
 from TESTS.adapters.django import family_harness as harness
 
 SOURCES = ('TESTS/fixtures/payment_reads_http.json', 'TESTS/contracts/test_payment_reads_http.py',
@@ -23,7 +30,8 @@ SOURCES = ('TESTS/fixtures/payment_reads_http.json', 'TESTS/contracts/test_payme
            'BE/application/models/balance_sheet_models.py', 'BE/application/utils/subscriptions_utils.py',
            'BE/application/utils/api_utils.py', 'BE/application/utils/stripe_utils.py', 'BE/application/mixin.py',
            'BE/application/impersonation_scope.py', 'BE/application/permissions_registry.py', 'BE/application/urls.py',
-           'BE/docmanager/models.py') + harness.SOURCES
+           'BE/docmanager/models.py', 'TESTS/adapters/django/invoice_sync_print_http.py', 'BE/application/printing_tasks.py',
+           'BE/instance/restore/task_base.py') + harness.SOURCES
 
 ASSOCIATE_FIELDS = ('picture_path', 'first_name', 'last_name', 'sex', 'tax_code', 'born_city', 'address_city', 'address', 'address_cap',
                     'nationality', 'nationality_residence', 'email', 'phone', 'phone_2', 'phone_3', 'phone_4', 'phone_label',
@@ -134,8 +142,24 @@ def seed_rows(source, created):
     for row in source['hours'].values():
         insert(InstructorHours, InstructorHours(
             instructor_hours_id=row['id'], instructor_id=teacher['id'], hours=Decimal('2.00'),
-            payment_id=payments[row['payment']]['id'], document_id=documents[row['document']]['id']))
+            payment_id=payments[row['payment']]['id'], document_id=documents[row['document']]['id'] if row['document'] else None))
 
 
+service_context = printer.service_context
+
+
+def _assert_case(case, base_url, *, token, sessions):
+    """The authored request, with the print stub scripted for it and its outbound requests checked after."""
+    stub = printer.STUB
+    with stub['lock']:
+        stub['log'] = []
+        stub['script'] = [item['reply'] for item in case['prints']]
+    stub['token'] = token
+    status = base_contract.assert_case(case, base_url, token=token, sessions=sessions)
+    printer.check_prints(case, None)
+    return status
+
+
+contract = types.SimpleNamespace(load_source=base_contract.load_source, require=base_contract.require, assert_case=_assert_case)
 fixture_context = harness.fixture_context_for(contract, seed_rows)
 run_workload = harness.run_workload_for(contract)

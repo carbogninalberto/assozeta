@@ -68,7 +68,7 @@ func (h *PaymentReadsHandler) serve(c echo.Context, operation, name string, read
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
 	body, err := read(service.PaymentReadsRequest{Identity: *identity, Query: parseReferenceForm(request.URL.RawQuery),
-		GroupHeader: request.Header.Get("X-Group-Id")})
+		GroupHeader: request.Header.Get("X-Group-Id"), Authorization: requestAuthorization(request)})
 	var invalid *service.PaymentInfoUUIDError
 	var denied *domain.PermissionDenied
 	switch {

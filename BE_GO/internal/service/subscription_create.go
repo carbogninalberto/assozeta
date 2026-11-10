@@ -134,9 +134,38 @@ func (s *SubscriptionCreates) Add(ctx context.Context, identity domain.ResolvedI
 	return s.create(ctx, identity, data, request)
 }
 
+// subscriptionMedicalDate is create_subscription's expiration parse:
+// strptime '%d/%m/%Y' when the text has a '/', else '%Y-%m-%d'. ok is false
+// for every value the view's try blocks swallow (non-strings, bad dates);
+// refused marks digits strptime accepts beyond ASCII.
+func subscriptionMedicalDate(value any) (date time.Time, ok, refused bool) {
+	text, isText := value.(string)
+	if !isText {
+		return time.Time{}, false, false
+	}
+	if dto.StrptimeUnicodeDigits(text) {
+		return time.Time{}, false, true
+	}
+	if strings.Contains(text, "/") {
+		iso, parsed := dto.PythonStrptimeDMY(text)
+		if !parsed {
+			return time.Time{}, false, false
+		}
+		date, err := time.Parse("2006-01-02", iso)
+		return date, err == nil, false
+	}
+	date, parsed := dto.PythonStrptimeDate(text)
+	return date, parsed, false
+}
+
+// subscriptionCreateToday is datetime.now().strftime('%Y-%m-%d') (naive, process clock).
+func subscriptionCreateToday(now time.Time) string {
+	return DjangoNaiveNow(now, time.Local).Format("2006-01-02")
+}
+
 // refuse rejects the inputs whose create_subscription paths are not ported,
-// before anything is read or written.
-func subscriptionCreateRefuse(data domain.RequestObject) error {
+// before anything is read or written. today is the naive current date.
+func subscriptionCreateRefuse(data domain.RequestObject, today string) error {
 	if value, _ := data.Lookup("preregistration"); value == true {
 		return domain.ErrSubscriptionCreateNotPorted
 	}
@@ -158,10 +187,16 @@ func subscriptionCreateRefuse(data domain.RequestObject) error {
 	}
 	if medical, ok := data.Lookup("medical_certificate"); ok {
 		if object, isObject := medical.(domain.RequestObject); isObject {
-			// The expiration update and the placeholder certificate image are not
-			// ported; a None date raises inside their try blocks and changes nothing.
-			if expiration, present := object.Lookup("certificate_expring_date"); present && expiration != nil {
-				return domain.ErrSubscriptionCreateNotPorted
+			// Without a medical_id the view draws a placeholder certificate image
+			// (not ported) for a valid date other than today; today's date (the
+			// wizard's default) and unparseable values raise inside its try block
+			// and change nothing.
+			id, _ := object.Lookup("medical_id")
+			if expiration, present := object.Lookup("certificate_expring_date"); present {
+				date, parsed, refused := subscriptionMedicalDate(expiration)
+				if refused || (id == nil && parsed && date.Format("2006-01-02") != today) {
+					return domain.ErrSubscriptionCreateNotPorted
+				}
 			}
 		}
 	}
@@ -280,7 +315,7 @@ type subscriptionCreated struct {
 
 func (s *SubscriptionCreates) create(ctx context.Context, identity domain.ResolvedIdentity, data domain.RequestObject,
 	request SubscriptionCreateRequest) (*SubscriptionCreateResult, error) {
-	if err := subscriptionCreateRefuse(data); err != nil {
+	if err := subscriptionCreateRefuse(data, subscriptionCreateToday(s.now())); err != nil {
 		return nil, err
 	}
 	tx, err := s.store.BeginSubscriptionCreate(ctx)
@@ -510,15 +545,40 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		}
 		if found {
 			medical = &id
+			changes := map[string][2]string{}
+			user := owner
 			if owner == nil {
-				if err = tx.SaveCertificateUser(ctx, id, settings.OwnerID); err != nil {
+				user = &settings.OwnerID
+				changes["user"] = [2]string{"None", settings.OwnerID}
+			}
+			// The expiration date: a parsed datetime assigned to the DateField,
+			// so auditlog compares str(date) with str(datetime).
+			var expiration *time.Time
+			if object, isObject := data.Lookup("medical_certificate"); isObject {
+				if value, present := object.(domain.RequestObject).Lookup("certificate_expring_date"); present {
+					if date, parsed, _ := subscriptionMedicalDate(value); parsed {
+						expiration = &date
+						stored, err := tx.CertificateExpiration(ctx, id)
+						if err != nil {
+							return nil, err
+						}
+						before := "None"
+						if stored != nil {
+							before = stored.Format("2006-01-02")
+						}
+						changes["expiration_date"] = [2]string{before, subscriptionPythonDateTime(date)}
+					}
+				}
+			}
+			if len(changes) > 0 {
+				if err = tx.SaveCertificate(ctx, id, *user, expiration); err != nil {
 					return nil, err
 				}
 				actorAssociation, err := s.actorAssociation(ctx, tx, request.Audit)
 				if err != nil {
 					return nil, err
 				}
-				if err = audit.updated(ctx, "medicalcertificate", "MedicalCertificate", id, map[string][2]string{"user": {"None", settings.OwnerID}},
+				if err = audit.updated(ctx, "medicalcertificate", "MedicalCertificate", id, changes,
 					actorAssociation, "actor.sport_association"); err != nil {
 					return nil, err
 				}
@@ -1175,4 +1235,9 @@ func (s *SubscriptionCreates) afterCommit(ctx context.Context, identity domain.R
 			s.logger.Error("subscription notification failed", "error", err)
 		}
 	}
+}
+
+// subscriptionPythonDateTime is str() of a naive datetime at midnight.
+func subscriptionPythonDateTime(date time.Time) string {
+	return fmt.Sprintf("%04d-%02d-%02d 00:00:00", date.Year(), int(date.Month()), date.Day())
 }

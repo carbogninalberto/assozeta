@@ -201,7 +201,12 @@ INSTALLMENTS = {
     'live': {'id': uid('11a5bbbb'), 'cs': 'rates', 'payment': 'installment', 'deleted': False, 'number': 2},
 }
 HOLDINGS = {'carnet': {'id': uid('ab0ca7ee'), 'subscription': 'mario', 'payment': 'carnet'}}
-HOURS = {'instructor': {'id': uid('b0a5b0a5'), 'payment': 'instructor', 'document': 'compensation'}}
+HOURS = {'instructor': {'id': uid('b0a5b0a5'), 'payment': 'instructor', 'document': 'compensation'},
+         # Several hours paid by one compensation share its document (the map keeps the last row).
+         'instructor_more': {'id': uid('b0a5b0a5'), 'payment': 'instructor', 'document': 'compensation'},
+         # A compensation without its document yet: payment_list prints it (print_document_compensation.apply)
+         # and re-reads the hours; the stub renders nothing, so the row has no instructor_document.
+         'instructor_plain': {'id': uid('b0a5b0a5'), 'payment': 'instructor_plain', 'document': None}}
 
 P = {label: row['id'] for label, row in PAYMENTS.items()}
 A = {label: row['id'] for label, row in ASSOCIATES.items()}
@@ -491,7 +496,7 @@ def listed(label, group=None):
     """payment_list's row: the serializer plus the InstructorHours document."""
     item = optimized(label, group)
     for hours in HOURS.values():
-        if hours['payment'] == label and PAYMENTS[label]['instructor']:
+        if hours['payment'] == label and PAYMENTS[label]['instructor'] and hours['document']:
             item['instructor_document'] = DOCUMENTS[hours['document']]['id']
             item['instructor_document_token'] = DOCUMENTS[hours['document']]['token']
     return item
@@ -556,10 +561,23 @@ def list_page(labels, *, group=None, number=1, size=10, ordered=None):
 cases = []
 
 
+PRINTED = [k for k in HOURS.values() if k['document'] is None]
+
+
+def prints_for(path, response):
+    """payment_list's serializer branch prints each listed compensation whose hours have no document."""
+    if not path.startswith('/payment/list') or not isinstance(response, dict) or not response.get('meta') or 'data' not in response:
+        return []
+    listed_ids = [row['payment_id'] for row in response['data']]
+    return [{'path': f'/document/compensation/{PAYMENTS[h["payment"]]["id"]}', 'reply': {'status': 200, 'body': 'printed'}}
+            for h in PRINTED if PAYMENTS[h['payment']]['id'] in listed_ids]
+
+
 def add(name, actor, path, status, response, *, method='GET', headers=None, unordered=False, challenge=None):
-    """unordered: the rows (and rowIds) are compared as multisets (an ordering Django leaves to the database)."""
+    """unordered: the rows (and rowIds) are compared as multisets (an ordering Django leaves to the database).
+    prints: the CURRENT_HOST requests the case makes (compensation prints of listed rows)."""
     case = {'name': f'payment-reads-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'unordered': unordered}
+            'status': status, 'response': response, 'unordered': unordered, 'prints': prints_for(path, response)}
     if challenge is not None:
         case['challenge'] = challenge
     cases.append(case)
@@ -782,6 +800,16 @@ add('list-sort-unknown-before-page', 'owner', S_ + 'nope&pagination[page]=9', 50
 add('list-sort-relevance-unknown', 'owner', S_ + 'relevance&query[generalSearch]=rossi', 500, SERVER)
 add('list-sort-lazy-path-error', 'owner', S_ + 'associate__nope&sort[sort]=asc', 500, SERVER)
 add('list-sort-lazy-path-after-page', 'owner', S_ + 'associate__nope&pagination[page]=9', 404, INVALID_PAGE)
+# The "Informazioni" column sends sort[field]=user: a relation whose model (User) has no Meta.ordering orders by
+# user_id (NULLs last ascending, first descending); ties among NULLs are the database's order.
+USERED = [k for k in VISIBLE if PAYMENTS[k].get('user')]
+assert len(USERED) == 1
+add('list-sort-user-first-page', 'owner', S_ + 'user&sort[sort]=asc&pagination[perpage]=1', 200,
+    list_page(VISIBLE, size=1, ordered=USERED + [k for k in VISIBLE if k not in USERED]))
+add('list-sort-user-desc-all', 'owner', S_ + f'user&sort[sort]=desc&pagination[perpage]={len(VISIBLE)}', 200,
+    list_page(VISIBLE, size=len(VISIBLE)), unordered=True)
+add('list-sort-user-desc-last-page', 'owner', S_ + f'user&sort[sort]=desc&pagination[perpage]={len(VISIBLE) - 1}&pagination[page]=2',
+    200, list_page(VISIBLE, size=len(VISIBLE) - 1, number=2, ordered=[k for k in VISIBLE if k not in USERED] + USERED))
 add('list-sort-with-search', 'owner', SEARCH + 'rossi&sort[field]=amount&sort[sort]=desc', 200,
     list_page(searched('rossi'), ordered=column_order(searched('rossi'), amount_key, True)))
 

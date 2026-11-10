@@ -496,8 +496,13 @@ func run() (runErr error) {
 	e.Any("/google/calendar/config", googleCalendarHandler.Config, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/google/calendar/list", googleCalendarHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/google/calendar/:course_id/export", googleCalendarHandler.Export, middleware.DjangoSessionAudit(sessionAuthentication))
+	// The eager print tasks of payment update (print_document_invoice) and payment list
+	// (print_document_compensation), with invoice-sync-print's CoordinatedTask gate.
+	paymentInvoicePrinter := service.NewInvoiceSyncPrint(service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
+		repository.NewRestoreStates(db), cfg.RestoreLockPath != ""), os.Getenv("CURRENT_HOST"))
 	paymentReadsHandler := handler.NewPaymentReadsHandler(service.NewPaymentReads(repository.NewPaymentReads(db), time.Now,
-		cfg.StripePublicKey != "" && cfg.StripeSecretConfigured), service.NewActorAuthentication(accounts, tokens), identities)
+		cfg.StripePublicKey != "" && cfg.StripeSecretConfigured).WithCompensationPrint(paymentInvoicePrinter),
+		service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/payment/list", paymentReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/stats", paymentReadsHandler.Stats, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/payments", paymentReadsHandler.SubscriptionPayments, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -534,9 +539,6 @@ func run() (runErr error) {
 		middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment-bulk/archive", paymentStatesHandler.BulkArchive, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment-bulk/delete", paymentStatesHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
-	// payment update of an invoiced payment: print_document_invoice.apply (see invoice-sync-print).
-	paymentInvoicePrinter := service.NewInvoiceSyncPrint(service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
-		repository.NewRestoreStates(db), cfg.RestoreLockPath != ""), os.Getenv("CURRENT_HOST"))
 	paymentWritesHandler := handler.NewPaymentWritesHandler(service.NewPaymentWrites(repository.NewPaymentWrites(repository.NewPaymentStates(db)),
 		time.Now, uuid.NewString).WithInvoicePrint(paymentInvoicePrinter), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
 		paymentCategoryOperations)
