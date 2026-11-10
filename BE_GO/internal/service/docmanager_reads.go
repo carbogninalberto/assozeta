@@ -38,6 +38,19 @@ type DocmanagerReads struct {
 	now     func() time.Time
 	guess   func(string) (string, bool, error)
 	deleter domain.DocumentDeleteStore
+	printer DocumentReprinter
+}
+
+// DocumentReprinter is PrintingService.print_and_store_pdf as download_file
+// and view_file call it: the outcome is not read.
+type DocumentReprinter interface {
+	PrintAndStore(ctx context.Context, view string, authorization *string, document domain.StoredDocument)
+}
+
+// WithReprinter wires the renderer and the storage task for missing objects.
+func (s *DocmanagerReads) WithReprinter(printer DocumentReprinter) *DocmanagerReads {
+	s.printer = printer
+	return s
 }
 
 func NewDocmanagerReads(store domain.DocmanagerReadsStore, objects DocumentObjects, actors *ActorAuthentication, secret string,
@@ -68,6 +81,8 @@ type RetrieveRequest struct {
 	Cookie   string // the raw Cookie header(s), joined with "; "
 	Group    string // X-Group-Id
 	Identity domain.ResolvedIdentity
+	// Authorization is request.headers.get('authorization') (nil when absent).
+	Authorization *string
 }
 
 func docmanagerJSON(status int, body any) *DocmanagerReply {
@@ -177,7 +192,13 @@ func (s *DocmanagerReads) Retrieve(ctx context.Context, request RetrieveRequest)
 			return nil, &domain.PermissionDenied{Detail: "Documento non disponibile per questa associazione."}
 		}
 	}
-	return s.stream(ctx, document, download, downloadValue, group)
+	// header_auth_token: the Authorization header, else 'Bearer <?token>'.
+	authorization := request.Authorization
+	if _, present := queryText(request.Query, "token"); authorization == nil && present {
+		bearer := "Bearer " + token
+		authorization = &bearer
+	}
+	return s.stream(ctx, document, download, downloadValue, group, authorization)
 }
 
 // requestUser is _get_authenticated_user: the Authorization header, then the
@@ -222,10 +243,13 @@ func (s *DocmanagerReads) relatedDocument(ctx context.Context, uid string, group
 
 // stream is PrintingService.download_file (download) or view_file. Their
 // exceptions become 500 {'exception': str(e)}; the ones whose text is a
-// provider error, and the re-render of a missing subscription/invoice PDF,
-// are refused instead.
+// provider error other than a missing key are refused instead. A missing
+// object that one subscription or invoice has as its PDF is printed again
+// (the renderer, then the save_to_storage task) and the stream is still
+// attempted: until the worker has stored the file the answer is the missing
+// key exception.
 func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDocument, download bool, downloadValue string,
-	group *string) (*DocmanagerReply, error) {
+	group *string, authorization *string) (*DocmanagerReply, error) {
 	exception := func(text string) *DocmanagerReply { return docmanagerJSON(500, map[string]string{"exception": text}) }
 	id, err := uuid.Parse(document.ID)
 	if err != nil {
@@ -247,16 +271,19 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 	if err != nil {
 		return nil, domain.ErrDocmanagerNotPorted
 	}
+	reprint := ""
 	if !exists {
-		render, err := s.store.RenderSource(ctx, document.ID, group)
+		view, err := s.store.RenderSource(ctx, document.ID, group)
 		if err != nil {
 			return nil, err
 		}
-		if render {
-			// print_and_store_pdf: Puppeteer and the save_to_storage task.
+		if view == "" {
+			return exception("File not found"), nil
+		}
+		if s.printer == nil {
 			return nil, domain.ErrDocmanagerNotPorted
 		}
-		return exception("File not found"), nil
+		reprint = view
 	}
 	filename := document.Filename
 	var disposition *string
@@ -272,7 +299,15 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 	if err != nil {
 		return nil, domain.ErrDocmanagerNotPorted
 	}
+	if reprint != "" {
+		// After the refusals above, so a refused name prints nothing.
+		s.printer.PrintAndStore(ctx, reprint, authorization, *document)
+	}
 	object, err := s.objects.Open(ctx, key)
+	var missing *documentobjects.NoSuchKeyError
+	if errors.As(err, &missing) {
+		return exception(missing.Error()), nil
+	}
 	if err != nil {
 		return nil, domain.ErrDocmanagerNotPorted
 	}

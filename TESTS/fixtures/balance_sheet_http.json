@@ -139,6 +139,26 @@
    "code": "C",
    "editable": true,
    "enabled": true
+  },
+  "busy": {
+   "id": "a1000000-0000-4000-8000-000001300040",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "In uso",
+   "initial": "0.00",
+   "type": 1,
+   "code": "C",
+   "editable": true,
+   "enabled": true
+  },
+  "busy_group": {
+   "id": "a1000000-0000-4000-8000-000001300041",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "In uso gruppo",
+   "initial": "0.00",
+   "type": 1,
+   "code": "C",
+   "editable": true,
+   "enabled": true
   }
  },
  "transfers": {
@@ -446,7 +466,7 @@
    "account": "ledger",
    "expense": false,
    "paid": false,
-   "deleted": false,
+   "deleted": true,
    "archived": false,
    "group": "own_group",
    "meta": null,
@@ -461,7 +481,7 @@
    "account": "ledger",
    "expense": false,
    "paid": false,
-   "deleted": false,
+   "deleted": true,
    "archived": false,
    "group": null,
    "meta": null,
@@ -491,7 +511,7 @@
    "account": "ledger_installment",
    "expense": false,
    "paid": false,
-   "deleted": false,
+   "deleted": true,
    "archived": false,
    "group": null,
    "meta": null,
@@ -507,6 +527,36 @@
    "expense": false,
    "paid": false,
    "deleted": true,
+   "archived": false,
+   "group": null,
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "l7": {
+   "id": "a1000000-0000-4000-8000-000001300042",
+   "amount": "21.00",
+   "category": null,
+   "date": "2015-03-07T10:00:00Z",
+   "account": "busy",
+   "expense": false,
+   "paid": false,
+   "deleted": false,
+   "archived": false,
+   "group": null,
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "l8": {
+   "id": "a1000000-0000-4000-8000-000001300043",
+   "amount": "22.00",
+   "category": null,
+   "date": "2015-03-08T10:00:00Z",
+   "account": "busy_group",
+   "expense": false,
+   "paid": false,
+   "deleted": false,
    "archived": false,
    "group": null,
    "meta": null,
@@ -528,7 +578,7 @@
  },
  "sheets": {
   "y2025": {
-   "id": "a1000000-0000-4000-8000-000001300040",
+   "id": "a1000000-0000-4000-8000-000001300044",
    "association": "a1000000-0000-4000-8000-000000701001",
    "status": 1,
    "year": 2025,
@@ -574,7 +624,7 @@
    }
   },
   "y2024": {
-   "id": "a1000000-0000-4000-8000-000001300041",
+   "id": "a1000000-0000-4000-8000-000001300045",
    "association": "a1000000-0000-4000-8000-000000701001",
    "status": 2,
    "year": 2024,
@@ -596,7 +646,7 @@
    }
   },
   "y2022": {
-   "id": "a1000000-0000-4000-8000-000001300042",
+   "id": "a1000000-0000-4000-8000-000001300046",
    "association": "a1000000-0000-4000-8000-000000701001",
    "status": 1,
    "year": 2022,
@@ -617,7 +667,7 @@
    }
   },
   "y2021": {
-   "id": "a1000000-0000-4000-8000-000001300043",
+   "id": "a1000000-0000-4000-8000-000001300047",
    "association": "a1000000-0000-4000-8000-000000701001",
    "status": 1,
    "year": 2021,
@@ -628,7 +678,7 @@
    }
   },
   "y2019": {
-   "id": "a1000000-0000-4000-8000-000001300044",
+   "id": "a1000000-0000-4000-8000-000001300048",
    "association": "a1000000-0000-4000-8000-000000701001",
    "status": 1,
    "year": 2019,
@@ -5286,25 +5336,52 @@
    }
   },
   {
-   "name": "balance-sheet-account-deleted-with-transfers",
+   "name": "balance-sheet-account-with-transfers-refused",
    "actor": "owner",
    "method": "DELETE",
    "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300006/delete",
    "headers": {},
-   "status": 200,
+   "status": 403,
    "response": {
-    "msg": "bank accounts deleted"
+    "msg": "An account with transfers or payments cannot be deleted."
    },
-   "effect": {
-    "kind": "delete-account",
-    "account": "cash",
-    "transfers": [
-     "t1",
-     "t2",
-     "t3"
-    ],
-    "actor": "owner"
-   }
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-with-payments-and-transfers-refused",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300004/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "An account with transfers or payments cannot be deleted."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-with-unpaid-payment-refused",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300040/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "An account with transfers or payments cannot be deleted."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-with-outgoing-transfer-refused",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300010/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "An account with transfers or payments cannot be deleted."
+   },
+   "effect": null
   },
   {
    "name": "balance-sheet-account-already-deleted-not-found",
@@ -5360,37 +5437,45 @@
    }
   },
   {
-   "name": "balance-sheet-account-deleted-with-payments-and-transfers",
+   "name": "balance-sheet-account-with-payment-group-header-refused",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300041/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "An account with transfers or payments cannot be deleted."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-deleted-under-group-header",
    "actor": "full_collaborator",
    "method": "DELETE",
-   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300010/delete",
-   "headers": {},
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300041/delete",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
    "status": 200,
    "response": {
     "msg": "bank accounts deleted"
    },
    "effect": {
     "kind": "delete-account-cascade",
-    "account": "ledger_transfers",
-    "transfers": [
-     "t4"
-    ],
+    "account": "busy_group",
+    "transfers": [],
     "payments": [
-     "l4"
+     "l8"
     ],
     "installments": [],
     "audit": [
      [
       "account",
-      "ledger_transfers"
-     ],
-     [
-      "transfer",
-      "t4"
+      "busy_group"
      ],
      [
       "payment",
-      "l4"
+      "l8"
      ]
     ],
     "actor": "full_collaborator"

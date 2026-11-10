@@ -51,7 +51,8 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
 - The stored file is read with the columns of codes as text (`text_columns(map)`: the columns the map gives to
   `tax_code`, `address_cap`, `phone` and `subscription_number`, tutor keys included): `read_excel(converters=...)` turns a
   number of such a column into its `str()` and leaves every other cell as it is, with no numeric reading of the column
-  (`"00100"` stays `"00100"`, the number `20100` is `"20100"`); `read_csv(dtype=str)` for CSV. Go: `pandasxlsx.ReadText`.
+  (`"00100"` stays `"00100"`, the number `20100` is `"20100"`); `read_csv(dtype=str)` for CSV. Go: `pandasxlsx.ReadAll` and
+  `pandascsv.ReadText` with the same columns.
 - The import runs between the two status changes, its rows inside `transaction.atomic()`:
   - `manage_import_status('start')` deletes the association's IMPORTING `AssociateImportDraftStatus` rows and creates one
     (audited, indexed to the association).
@@ -105,25 +106,48 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
 - `go test ./internal/codicefiscale`: 1,897 tax codes (`TESTS/adapters/go/codicefiscale_decode_golden.py`) give the
   helper's birthplace name or None.
 
+## CSV imports and every cell type (v2subs)
+
+- A stored `.csv` is imported: `pandascsv.ReadText` is `pandas.read_csv(file, delimiter=';', dtype={column: str})` on the
+  storage's file object (bytes handed to the C parser undecoded): a port of the C tokenizer, its integer and float
+  conversions and the chunked type inference. The columns of codes are text as written (`00100`, `0042`); the other
+  columns give whole numbers, decimals, booleans or text; a missing value is no value. A failed read (no columns, a
+  tokenizing error, invalid UTF-8 in a name or a text value) is the 500 page.
+- `process_row_value` takes a NumPy scalar with `item()`: numbers and booleans are stored as JSON numbers and booleans
+  (`False` is a value: it is kept, also in a date field; `True` in a date field is no date).
+- Workbooks are read with `pandasxlsx.ReadAll`: boolean cells, the 1904 date system, date-only and ISO date cells, time-of-day
+  and duration cells, integers beyond 64 bits. A date is stored as day/month/year. A time of day or a duration in a
+  stored field, like an infinite number of a CSV, cannot be stored: the import fails (400, nothing of the rows stays,
+  the upload is kept) at `bulk_create`, after every row was read.
+
 ## Not ported (refused with the 500 page before any write)
 
-- The import of a stored CSV document: `read_csv`'s value typing (the C parser's numeric conversion and implicit index)
-  is not reproduced. CSV uploads answer their columns; the final step on them is refused.
-- Workbooks outside `pandasxlsx`'s subset: the 1904 date system, no stylesheet, a first sheet that is not a worksheet,
-  boolean, error and ISO date cells, time-of-day and duration cells, dates outside serials 1 to 2958465, a header cell
-  that is not text, one-column sheets with a blank cell, a text column of only
-  `True`/`False` (unless the column is read as text), number-like text with an exponent, with a fraction and more than 15 digits, beyond int64 or spelling
-  `inf`/`nan`, `_xHHHH_` escapes, XML that is not UTF-8, a part above 256 MiB, a stored file above 64 MiB.
+- Workbooks outside `pandasxlsx`'s subset (`ReadAll`): a first sheet that is not a worksheet, a column label that is not
+  text (a number or a date in the header row), ISO date cells openpyxl raises on, an infinite number cell, numbers beyond
+  a float, number-like text whose reading depends on how pandas was compiled, XML that is not UTF-8, a part above
+  256 MiB, a stored file above 64 MiB. In the golden corpus 6,128 of the 6,246 workbooks pandas reads are accepted.
+- CSV files outside `pandascsv`'s subset (`Read`, `ReadText`): a line that starts with whitespace after a bare carriage
+  return, and decimal text whose value depends on how pandas was compiled (1,904 of 97,442 corpus outcomes).
+- A date cell with a year below 1000 in a mapped column (strftime's year width).
 - Import values: a non-zero number in a birth, membership or certificate date column (its reading depends on the current
   date); date text outside `YYYY-MM-DD`, `YYYY-MM-DD[T ]HH:MM:SS[.f]`, `A/B/YYYY` that contains a digit or a month or
   weekday name, or a year below 1000; a tax code beyond ASCII in a complete row or outside the transliteration subset; a
   `default` that is not an object when a value is missing.
-- CSV input outside `pandascsv`'s subset: invalid UTF-8 (pandas raises `UnicodeDecodeError`), NUL bytes, and a carriage
-  return not followed by a line feed. Columns containing `İ` or `Σ` (Python's full lower-casing and final sigma).
+- Columns containing `İ` or `Σ` (Python's full lower-casing and final sigma).
 - A file given as `document_id`.
 
 ## Evidence (TDD)
 
+- v2subs (67 cases: a CSV with codes, numbers, decimals, booleans and missing values imported; a CSV of numbers and
+  booleans; a CSV with an infinite number (400, then imported without that column); a workbook with booleans; a workbook
+  with a time-of-day cell (400, then imported without that column)): RED (`v2subs-red-r2`): Django 67/67; Go 500 on
+  `subscription-import-upload-xlsx-booleans-times`. GREEN (`v2subs-versioned-r1`, after merging the base): 67/67 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+  Mutation (`v2subs-mutation-r1`): reading the CSV without its text columns fails Go on
+  `subscription-import-upload-csv-import-members` (`state.drafts`).
+- `go test ./internal/pandascsv`: 48,721 inputs read by pandas 2.2.3 with and without text columns
+  (`TESTS/adapters/go/pandas_csv_frames_golden.py`): columns, dtypes and every value of `iterrows()`.
+  `go test ./internal/pandasxlsx`: 6,504 workbooks (`TESTS/adapters/go/pandas_xlsx_golden.py`), 11,059 readings with text
+  columns and 8,190 number-like texts.
 - `go test ./internal/pandascsv`: 8,379 inputs parsed by pandas 2.2.3 (`TESTS/adapters/go/pandas_csv_golden.py`).
 - `TESTS/fixtures/subscription_import_upload_http.json` (47 cases, `generate_subscription_import_upload_http.py`) on
   documents-writes' private MinIO, with seeded status rows and one seeded Document whose workbook lies under

@@ -51,7 +51,8 @@
      that e-mail becomes the subscription's user: `save()` writes one update entry when it changes.
   3. `data['tags']`: ids, or `{'tag_id'}` dicts when the first item is not a string. `Tags.objects.filter(tag_id__in=..., sport_association=...)`
      links the association's own tags with those ids; the through rows are not audited.
-  4. `data['courses']` with items: see Not ported.
+  4. `data['courses']` with items: each course goes through `add_course_to_subscription` inside the renewal's transaction
+     (see "Courses and association-scoped sessions").
 - Response `{"status": "success", "payment_id": <id or null>}`.
 
 ## subscription/associates-draft/list/approve
@@ -107,13 +108,30 @@ is not read at all for such a requester.
 The certificate named by `medical_certificate.medical_id` follows
 [subscription-create](subscription-create.md#the-certificate-a-registration-links) with the member as requester.
 
+## Courses and association-scoped sessions (v2subs)
+
+- `data['courses']`: for each item the association's course `c['value']` (`scoped_queryset(request, Course.objects)`,
+  `first()`) goes through `add_course_to_subscription(course, fresh_sub, request.user.sport_association, data=None,
+  is_athlete=False)` inside the renewal's transaction; a course the subscription is already in is skipped. Go runs the
+  course-enrolment port on the renewal's transaction (`subscriptionRenewTransaction.Enrolment`,
+  `CourseEnrolment.addCourseToSubscription`): the enrolment, its payments and audit entries commit or roll back with the
+  renewal. An exception is the view's 400 body.
+- In an impersonation session with an association scope the renewal's requester lookup finds the session's association
+  only, and the payment cleanup of an athlete's session keeps to the payments that session sees
+  (`VisiblePayments`). The quick re-subscription keeps both of its lookups to the session's association.
+- Evidence: 93 cases. RED (`v2subs-red-r4`): Django 93/93; Go 500 on `subscription-renew-renew-with-courses`. GREEN
+  (`v2subs-versioned-r1`, after merging the base): 93/93 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+  Mutation (`v2subs-mutation-r3`): refusing a renewal with courses again fails Go on
+  `subscription-renew-renew-with-courses` (`response.status`). `v2subs-mutation-r2` (the session's association not compared
+  in the requester lookup) was not caught: the cases of the scoped session answer the same without it. Re-run green natively (`v2subs-rerun-r1`): course-enrolment,
+  course-overview.
+
 ## Not ported
 
 Refused with the 500 page before anything is committed:
-- athlete renewals during an impersonation session with an association scope (`scoped_queryset`'s filter), an association whose
+- an association whose
   user is not an owner account, an integer `sport_association_id`; form bodies and a non-empty `X-Group-Id` on both routes;
 - `data['sport_association']` naming another association;
-- a renewal with `courses` items (`add_course_to_subscription` inside the renewal);
 - a `tags` string, tag ids that are not strings;
 - a `user.email` that is a list or dict;
 - `str(e)` bodies of the Python exceptions not listed above (unknown dateutil formats, out-of-range days, non-dict tutors and similar);

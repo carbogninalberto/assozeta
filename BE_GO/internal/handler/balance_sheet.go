@@ -79,6 +79,8 @@ func (h *BalanceSheetHandler) serve(c echo.Context, allowed map[string]bool, ope
 		return c.JSON(404, map[string]string{"exception": "CustomAccounts matching query does not exist."})
 	case errors.Is(err, service.ErrBalanceAccountNotDeletable):
 		return c.JSON(403, map[string]string{"msg": "This account is not deletable."})
+	case errors.Is(err, service.ErrBalanceAccountInUse):
+		return c.JSON(403, map[string]string{"msg": "An account with transfers or payments cannot be deleted."})
 	case err != nil:
 		return messageReadsError(c, err)
 	}

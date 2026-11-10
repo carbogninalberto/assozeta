@@ -2,6 +2,7 @@ package pdfexport
 
 import (
 	"errors"
+	"strings"
 	"testing"
 	"time"
 )
@@ -28,6 +29,11 @@ func TestInputsNotPorted(t *testing.T) {
 		if _, err := input.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrNotPorted) {
 			t.Errorf("%s: %v", name, err)
 		}
+	}
+	// A paragraph cut between two pages is refused only when a line ends inside a long word.
+	long := ReportTable{Headers: []string{"A"}, Rows: [][]string{{"a"}}, TextBefore: strings.Repeat("X", 40000)}
+	if _, err := long.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrNotPorted) {
+		t.Errorf("long word over pages: %v", err)
 	}
 	plain := base
 	plain.Header = header("None", "ASD > Aurora \"1990\"")

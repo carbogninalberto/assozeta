@@ -20,6 +20,7 @@ type SavedReportService interface {
 	Update(context.Context, domain.ResolvedIdentity, string, any) (string, json.RawMessage, error)
 	Delete(context.Context, domain.ResolvedIdentity, string) error
 	Run(context.Context, domain.ResolvedIdentity, string, any) (any, error)
+	RunGroup(ctx context.Context, identity domain.ResolvedIdentity, pk string, body any, group string) (any, error)
 }
 
 type SavedReportsHandler struct {
@@ -103,14 +104,21 @@ func (h *SavedReportsHandler) serve(c echo.Context, action, method, allow string
 		}
 	case action == "run":
 		var data any
-		data, err = h.reports.Run(ctx, *identity, pk, body)
+		data, err = h.reports.RunGroup(ctx, *identity, pk, body, request.Header.Get("X-Group-Id"))
 		var failure *dto.ReportToolError
 		switch {
 		case errors.Is(err, dto.ErrReportFailed):
 			return c.JSON(500, map[string]string{"error": "Errore durante l'esecuzione del report."})
 		case errors.As(err, &failure):
+			if failure.Result != nil {
+				return c.Blob(400, echo.MIMEApplicationJSON, dto.PythonJSONDumps(failure.Result))
+			}
 			return c.JSON(400, map[string]string{"error": failure.Message})
 		case err == nil:
+			if file, ok := data.(*service.ReportDownload); ok {
+				c.Response().Header()["Content-Disposition"] = []string{file.Disposition}
+				return c.Blob(200, file.ContentType, file.Bytes)
+			}
 			return c.Blob(200, echo.MIMEApplicationJSON, dto.PythonJSONDumps(domain.RequestObject{{Name: "data", Value: data}}))
 		}
 	case action == "add":

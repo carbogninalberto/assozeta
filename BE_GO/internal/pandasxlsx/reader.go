@@ -6,11 +6,9 @@ import (
 	"encoding/xml"
 	"errors"
 	"io"
-	"math"
 	"path"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/dlclark/regexp2"
 )
@@ -21,8 +19,8 @@ const (
 	packageRelNS   = "http://schemas.openxmlformats.org/package/2006/relationships"
 	contentTypesNS = "http://schemas.openxmlformats.org/package/2006/content-types"
 	worksheetType  = relationNS + "/worksheet"
-	stringsType    = relationNS + "/sharedStrings"
-	stylesType     = relationNS + "/styles"
+	stringsContent = "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"
+	stylesPart     = "xl/styles.xml"
 	maxPartBytes   = 256 << 20
 )
 
@@ -46,7 +44,6 @@ var (
 	stripFormat     = regexp2.MustCompile(`".*?"|\[(?!hh?\]|mm?\]|ss?\])[^\]]*\]`, regexp2.None)
 	dateFormat      = regexp2.MustCompile(`(?<![_\\])[dmhysDMHYS]`, regexp2.None)
 	timedeltaFormat = regexp2.MustCompile(`\[hh?\](:mm(:ss(\.0*)?)?)?|\[mm?\](:ss(\.0*)?)?|\[ss?\](\.0*)?`, regexp2.IgnoreCase)
-	escapedText     = regexp2.MustCompile(`_x[0-9A-Fa-f]{4}_|x005F_`, regexp2.None)
 )
 
 func matches(pattern *regexp2.Regexp, text string) bool {
@@ -132,14 +129,11 @@ func partName(base, target string) string {
 	return path.Join(path.Dir(base), target)
 }
 
-// Read is pandas.read_excel(io.BytesIO(data), engine="openpyxl").
-func Read(data []byte) (*Frame, error) { return ReadText(data, nil) }
-
-// ReadText is Read with converters for the columns textual names: a number of
-// such a column is its str(), every other cell stays as it is, and the column
-// gets no numeric or boolean reading (read_excel(converters={column:
-// lambda value: str(value) if it is an int or a float else value})).
-func ReadText(data []byte, textual func(column string) bool) (*Frame, error) {
+// ReadAll is pandas.read_excel(io.BytesIO(data), engine="openpyxl",
+// converters=...) with the view's text converter on the columns textual names
+// (nil: no converters): a number of such a column is its str(), every other
+// cell stays as it is, and the column gets no numeric or boolean reading.
+func ReadAll(data []byte, textual func(column string) bool) (*Frame, error) {
 	reader, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
 	if err != nil {
 		return nil, ErrInvalid
@@ -168,11 +162,18 @@ func ReadText(data []byte, textual func(column string) bool) (*Frame, error) {
 	if err = decode(raw, &types); err != nil {
 		return nil, err
 	}
-	workbookPart := ""
+	// The workbook and the shared strings are the first parts of their
+	// content types.
+	workbookPart, stringsPart, hasStrings := "", "", false
 	for _, override := range types.Overrides {
-		if workbookTypes[override.Type] {
+		if workbookTypes[override.Type] && workbookPart == "" {
 			workbookPart = strings.TrimPrefix(override.Part, "/")
-			break
+		}
+		if override.Type == stringsContent && !hasStrings {
+			if !strings.HasPrefix(override.Part, "/") {
+				return nil, ErrUnsupported
+			}
+			stringsPart, hasStrings = override.Part[1:], true
 		}
 	}
 	if workbookPart == "" {
@@ -193,8 +194,12 @@ func ReadText(data []byte, textual func(column string) bool) (*Frame, error) {
 	if err = decode(raw, &workbook); err != nil {
 		return nil, err
 	}
-	if workbook.Properties.Date1904 != "" && workbook.Properties.Date1904 != "0" && workbook.Properties.Date1904 != "false" {
-		return nil, ErrUnsupported
+	// openpyxl's Bool: every text but '', 'false', 'f' and '0' is true.
+	mac := false
+	switch workbook.Properties.Date1904 {
+	case "", "false", "f", "0":
+	default:
+		mac = true
 	}
 	if raw, err = files.read(path.Join(path.Dir(workbookPart), "_rels", path.Base(workbookPart)+".rels")); err != nil {
 		return nil, err
@@ -205,7 +210,6 @@ func ReadText(data []byte, textual func(column string) bool) (*Frame, error) {
 	}
 	targets := map[string]string{}
 	kinds := map[string]string{}
-	stringsPart, stylesPart := "", ""
 	for _, item := range rels.Items {
 		if item.Mode != "" || item.ID == "" {
 			return nil, ErrUnsupported
@@ -214,14 +218,8 @@ func ReadText(data []byte, textual func(column string) bool) (*Frame, error) {
 			return nil, ErrUnsupported
 		}
 		targets[item.ID], kinds[item.ID] = partName(workbookPart, item.Target), item.Type
-		switch item.Type {
-		case stringsType:
-			stringsPart = targets[item.ID]
-		case stylesType:
-			stylesPart = targets[item.ID]
-		}
 	}
-	if len(workbook.Sheets) == 0 || stylesPart == "" {
+	if len(workbook.Sheets) == 0 {
 		return nil, ErrUnsupported
 	}
 	// read_excel's sheet 0: the first worksheet (chartsheets are not worksheets).
@@ -230,26 +228,25 @@ func ReadText(data []byte, textual func(column string) bool) (*Frame, error) {
 		return nil, ErrUnsupported
 	}
 	var shared []string
-	if stringsPart != "" {
-		if _, ok := files[stringsPart]; ok {
-			if raw, err = files.read(stringsPart); err != nil {
-				return nil, err
-			}
-			var table struct {
-				XMLName xml.Name `xml:"http://schemas.openxmlformats.org/spreadsheetml/2006/main sst"`
-				Items   []text   `xml:"http://schemas.openxmlformats.org/spreadsheetml/2006/main si"`
-			}
-			if err = decode(raw, &table); err != nil {
-				return nil, err
-			}
-			for _, item := range table.Items {
-				shared = append(shared, item.content())
-			}
+	if hasStrings {
+		if raw, err = files.read(stringsPart); err != nil {
+			return nil, err
+		}
+		var table struct {
+			XMLName xml.Name `xml:"http://schemas.openxmlformats.org/spreadsheetml/2006/main sst"`
+			Items   []text   `xml:"http://schemas.openxmlformats.org/spreadsheetml/2006/main si"`
+		}
+		if err = decode(raw, &table); err != nil {
+			return nil, err
+		}
+		for _, item := range table.Items {
+			// read_string_table: the escape of an underscore is dropped; other
+			// '_xHHHH_' sequences stay as written.
+			shared = append(shared, strings.ReplaceAll(item.content(), "x005F_", ""))
 		}
 	}
-	if raw, err = files.read(stylesPart); err != nil {
-		return nil, err
-	}
+	// The stylesheet is 'xl/styles.xml' whatever the relationships say; a
+	// workbook without it has no date formats.
 	var styles struct {
 		XMLName xml.Name `xml:"http://schemas.openxmlformats.org/spreadsheetml/2006/main styleSheet"`
 		Formats []struct {
@@ -260,8 +257,13 @@ func ReadText(data []byte, textual func(column string) bool) (*Frame, error) {
 			Format string `xml:"numFmtId,attr"`
 		} `xml:"cellXfs>xf"`
 	}
-	if err = decode(raw, &styles); err != nil {
-		return nil, err
+	if _, present := files[stylesPart]; present {
+		if raw, err = files.read(stylesPart); err != nil {
+			return nil, err
+		}
+		if err = decode(raw, &styles); err != nil {
+			return nil, err
+		}
 	}
 	custom := map[int]string{}
 	for _, format := range styles.Formats {
@@ -271,7 +273,8 @@ func ReadText(data []byte, textual func(column string) bool) (*Frame, error) {
 		}
 		custom[id] = format.Code
 	}
-	// 0 number, 1 date, 2 timedelta (refused when a cell uses it).
+	// 0 number, 1 date, 2 timedelta (a date format that is also a timedelta
+	// format).
 	styleKinds := make([]int, len(styles.Cells))
 	for index, style := range styles.Cells {
 		id := 0
@@ -286,26 +289,33 @@ func ReadText(data []byte, textual func(column string) bool) (*Frame, error) {
 		}
 		if known && isDateFormat(format) {
 			styleKinds[index] = 1
-		}
-		if known && isTimedeltaFormat(format) {
-			styleKinds[index] = 2
+			if isTimedeltaFormat(format) {
+				styleKinds[index] = 2
+			}
 		}
 	}
 	if raw, err = files.read(targets[first]); err != nil {
 		return nil, err
 	}
-	rows, err := sheetRows(raw, shared, styleKinds)
+	rows, err := sheetRows(raw, sheetContext{shared: shared, styleKinds: styleKinds, mac: mac})
 	if err != nil {
 		return nil, err
 	}
 	return build(rows, textual)
 }
 
+// sheetContext is what a cell's value depends on beyond the cell itself.
+type sheetContext struct {
+	shared     []string
+	styleKinds []int
+	mac        bool // the 1904 date system
+}
+
 type sheetCell struct {
 	XMLName   xml.Name
 	Reference string   `xml:"r,attr"`
 	Type      *string  `xml:"t,attr"`
-	Style     string   `xml:"s,attr"`
+	Style     *string  `xml:"s,attr"`
 	Values    []string `xml:"http://schemas.openxmlformats.org/spreadsheetml/2006/main v"`
 	Inline    []text   `xml:"http://schemas.openxmlformats.org/spreadsheetml/2006/main is"`
 }
@@ -335,7 +345,7 @@ func columnIndex(reference string) (int, bool) {
 
 // sheetRows is ReadOnlyWorksheet.rows after reset_dimensions(): the rows from
 // row 1 with the cells from column 1 to each row's last cell.
-func sheetRows(data []byte, shared []string, styleKinds []int) ([][]cell, error) {
+func sheetRows(data []byte, context sheetContext) ([][]cell, error) {
 	decoder := xml.NewDecoder(bytes.NewReader(data))
 	decoder.CharsetReader = func(string, io.Reader) (io.Reader, error) { return nil, ErrUnsupported }
 	var rows [][]cell
@@ -380,7 +390,7 @@ func sheetRows(data []byte, shared []string, styleKinds []int) ([][]cell, error)
 				} else {
 					rowCounter++
 				}
-				cells, err := rowCells(row, shared, styleKinds)
+				cells, err := rowCells(row, context)
 				if err != nil {
 					return nil, err
 				}
@@ -403,149 +413,4 @@ func sheetRows(data []byte, shared []string, styleKinds []int) ([][]cell, error)
 		return nil, ErrUnsupported
 	}
 	return rows, nil
-}
-
-func rowCells(row sheetRow, shared []string, styleKinds []int) ([]cell, error) {
-	type placed struct {
-		column int
-		value  cell
-	}
-	var cells []placed
-	counter := 0
-	for _, item := range row.Cells {
-		if item.XMLName.Space != mainNS || item.XMLName.Local != "c" || len(item.Values) > 1 || len(item.Inline) > 1 {
-			return nil, ErrUnsupported
-		}
-		if item.Reference != "" {
-			column, ok := columnIndex(item.Reference)
-			if !ok {
-				return nil, ErrUnsupported
-			}
-			counter = column
-		} else {
-			counter++
-		}
-		kind := "n"
-		if item.Type != nil {
-			kind = *item.Type
-		}
-		style := 0
-		if item.Style != "" {
-			var err error
-			if style, err = strconv.Atoi(item.Style); err != nil || style < 0 {
-				return nil, ErrUnsupported
-			}
-		}
-		value := cell{}
-		raw := ""
-		if len(item.Values) == 1 && kind != "inlineStr" {
-			raw = item.Values[0]
-		}
-		switch {
-		case kind == "inlineStr":
-			if len(item.Inline) == 1 {
-				value = cell{kind: cellString, s: item.Inline[0].content()}
-			}
-		case raw == "":
-			if kind != "n" && kind != "s" && kind != "str" {
-				return nil, ErrUnsupported
-			}
-		case kind == "n":
-			number, err := castNumber(raw)
-			if err != nil {
-				return nil, err
-			}
-			value = number
-			if style >= len(styleKinds) {
-				return nil, ErrUnsupported
-			}
-			switch styleKinds[style] {
-			case 1:
-				if value, err = fromExcel(number); err != nil {
-					return nil, err
-				}
-			case 2:
-				return nil, ErrUnsupported
-			}
-		case kind == "s":
-			index, err := strconv.Atoi(raw)
-			if err != nil || index < 0 || index >= len(shared) {
-				return nil, ErrUnsupported
-			}
-			value = cell{kind: cellString, s: shared[index]}
-		case kind == "str":
-			value = cell{kind: cellString, s: raw}
-		default:
-			return nil, ErrUnsupported // booleans, errors, ISO dates
-		}
-		if value.kind == cellString && matches(escapedText, value.s) {
-			return nil, ErrUnsupported
-		}
-		cells = append(cells, placed{column: counter, value: value})
-	}
-	if len(cells) == 0 {
-		return nil, nil
-	}
-	// The row is as wide as its last cell's column.
-	width := cells[len(cells)-1].column
-	if width < 1 {
-		return nil, ErrUnsupported
-	}
-	out := make([]cell, width)
-	for _, item := range cells {
-		if item.column >= 1 && item.column <= width {
-			out[item.column-1] = item.value
-		}
-	}
-	return out, nil
-}
-
-// castNumber is openpyxl's _cast_number followed by pandas' _convert_cell:
-// an integral float is an int.
-func castNumber(raw string) (cell, error) {
-	if raw == "" || strings.Trim(raw, "0123456789+-.eE") != "" {
-		return cell{}, ErrUnsupported
-	}
-	if !strings.ContainsAny(raw, ".eE") {
-		value, err := strconv.ParseInt(raw, 10, 64)
-		if err != nil {
-			return cell{}, ErrUnsupported
-		}
-		return cell{kind: cellInt, i: value}, nil
-	}
-	value, err := strconv.ParseFloat(raw, 64)
-	if err != nil || math.IsInf(value, 0) || math.IsNaN(value) {
-		return cell{}, ErrUnsupported
-	}
-	if value == math.Trunc(value) {
-		if math.Abs(value) >= 1<<63 {
-			return cell{}, ErrUnsupported
-		}
-		return cell{kind: cellInt, i: int64(value)}, nil
-	}
-	return cell{kind: cellFloat, f: value}, nil
-}
-
-var windowsEpoch = time.Date(1899, 12, 30, 0, 0, 0, 0, time.UTC)
-
-// fromExcel is openpyxl's from_excel for the 1900 date system, for serials
-// that give a datetime (from 1 to the end of year 9999).
-func fromExcel(number cell) (cell, error) {
-	value := number.f
-	if number.kind == cellInt {
-		value = float64(number.i)
-	}
-	if value < 1 || value >= 2958466 {
-		return cell{}, ErrUnsupported // a time of day, or outside datetime
-	}
-	day, fraction := math.Modf(value)
-	milliseconds := math.RoundToEven(fraction * 86400 * 1000)
-	if value < 60 {
-		day++
-	}
-	moment := windowsEpoch.AddDate(0, 0, int(day)).Add(time.Duration(milliseconds) * time.Millisecond)
-	if moment.Year() > 9999 {
-		return cell{}, ErrUnsupported
-	}
-	return cell{kind: cellTime, t: moment}, nil
 }

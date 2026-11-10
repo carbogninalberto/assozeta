@@ -25,6 +25,18 @@ library, as ``{'$xlsx': spec}``:
   ``'stream': True`` saves it to a write-only stream (wb.save(HttpResponse)),
   where zipfile writes each entry with a data descriptor (flag 0x08).
 
+- ``{'engine': 'report_sheets', 'sheets': [{'title': name, 'columns': [label,
+  ...], 'rows': [[value, ...], ...]}, ...]}``: the saved-report XLSXExporter
+  (application.mcp_server.exporters.xlsx_exporter) after format_export_data:
+  one DataFrame per sheet with its columns renamed to the labels, the numeric
+  coercion, ``to_excel(index=False, sheet_name=title)`` through openpyxl and
+  the column widths;
+- ``{'engine': 'attendance', 'mode': 'single'|'flat'|'sheets', 'courses':
+  [{'course': str, 'dates': [...], 'rows': [{'name': str, 'attendance': [...],
+  'present_count': int}, ...]}, ...]}``: application.mcp_server.attendance
+  .export_attendance_matrix_xlsx (one course, every course in one sheet, one
+  sheet per course).
+
 Values are JSON strings and nulls, or ``{'int': text}``, ``{'float': repr}``,
 ``{'decimal': text}``, ``{'bool': b}``, ``{'list': [...]}``, ``{'dict': [[k, v], ...]}``.
 The expected workbook is built here with the same libraries (pandas 2.2.3,
@@ -120,9 +132,139 @@ def _openpyxl_rows(sheets, stream=False):
     return out.getvalue()
 
 
+def _report_sheets(sheets):
+    """XLSXExporter.export / export_multi_sheet from the formatted rows on, call for call."""
+    import pandas as pd
+    out = io.BytesIO()
+    with pd.ExcelWriter(out, engine='openpyxl', mode='w') as writer:
+        for sheet in sheets:
+            labels = sheet['columns']
+            df = pd.DataFrame([[decode(value) for value in row] for row in sheet['rows']], columns=list(range(len(labels))))
+            df = df.rename(columns=dict(enumerate(labels)))
+            for col in df.columns:
+                try:
+                    numeric_mask = pd.to_numeric(df[col].dropna(), errors='coerce').notna()
+                    if numeric_mask.all() and not df[col].dropna().empty:
+                        df[col] = pd.to_numeric(df[col], errors='coerce')
+                        if df[col].dropna().apply(lambda x: float(x).is_integer()).all():
+                            df[col] = df[col].astype('Int64')
+                except (ValueError, TypeError):
+                    continue
+            df.to_excel(writer, index=False, sheet_name=sheet['title'])
+            worksheet = writer.sheets[sheet['title']]
+            for idx, col in enumerate(df.columns):
+                max_length = max(df[col].astype(str).apply(len).max(), len(str(col)))
+                col_letter = chr(65 + idx) if idx < 26 else chr(64 + idx // 26) + chr(65 + idx % 26)
+                worksheet.column_dimensions[col_letter].width = min(max_length + 2, 50)
+    return out.getvalue()
+
+
+def _attendance_letter(idx):
+    result = ''
+    while idx >= 0:
+        result = chr(65 + idx % 26) + result
+        idx = idx // 26 - 1
+    return result
+
+
+def _attendance_width(ws, df, dates):
+    from openpyxl.styles import Alignment
+    ws.column_dimensions['A'].width = 6
+    name_width = max(df['Nome e Cognome'].astype(str).apply(len).max(), len('Nome e Cognome'))
+    ws.column_dimensions['B'].width = min(name_width + 2, 40)
+    vertical = Alignment(textRotation=90, horizontal='center', vertical='center')
+    for idx in range(len(dates)):
+        col_letter = _attendance_letter(idx + 2)
+        ws.column_dimensions[col_letter].width = 5
+        ws[f'{col_letter}1'].alignment = vertical
+    ws.column_dimensions[_attendance_letter(len(dates) + 2)].width = 10
+
+
+def _attendance_frame(matrix):
+    import pandas as pd
+    data = []
+    for idx, row in enumerate(matrix['rows'], start=1):
+        entry = {'#': idx, 'Nome e Cognome': row['name']}
+        for i, date_label in enumerate(matrix['dates']):
+            entry[date_label] = row['attendance'][i] if i < len(row['attendance']) else ''
+        entry['Presenze'] = row.get('present_count', 0)
+        data.append(entry)
+    return pd.DataFrame(data)
+
+
+def _attendance(mode, courses):
+    """application.mcp_server.attendance.export_attendance_matrix_xlsx, call for call."""
+    import pandas as pd
+    from openpyxl.styles import Alignment
+    out = io.BytesIO()
+    if mode == 'single':
+        matrix, = courses
+        df = _attendance_frame(matrix)
+        sheet_name = matrix.get('course', 'Presenze')[:31]
+        with pd.ExcelWriter(out, engine='openpyxl', mode='w') as writer:
+            df.to_excel(writer, index=False, sheet_name=sheet_name)
+            _attendance_width(writer.sheets[sheet_name], df, matrix['dates'])
+    elif mode == 'flat':
+        ordered, seen = [], set()
+        for matrix in courses:
+            for d in matrix['dates']:
+                if d not in seen:
+                    ordered.append(d)
+                    seen.add(d)
+        data = []
+        for matrix in courses:
+            course_dates = matrix['dates']
+            for idx, row in enumerate(matrix['rows'], start=1):
+                entry = {'#': idx, 'Corso': matrix['course'], 'Nome e Cognome': row['name']}
+                for d in ordered:
+                    if d in course_dates:
+                        d_idx = course_dates.index(d)
+                        entry[d] = row['attendance'][d_idx] if d_idx < len(row['attendance']) else ''
+                    else:
+                        entry[d] = ''
+                entry['Presenze'] = row.get('present_count', 0)
+                data.append(entry)
+        df = pd.DataFrame(data)
+        with pd.ExcelWriter(out, engine='openpyxl', mode='w') as writer:
+            df.to_excel(writer, index=False, sheet_name='Presenze')
+            ws = writer.sheets['Presenze']
+            ws.column_dimensions['A'].width = 6
+            corso_width = max(df['Corso'].astype(str).apply(len).max(), len('Corso'))
+            ws.column_dimensions['B'].width = min(corso_width + 2, 40)
+            name_width = max(df['Nome e Cognome'].astype(str).apply(len).max(), len('Nome e Cognome'))
+            ws.column_dimensions['C'].width = min(name_width + 2, 40)
+            vertical = Alignment(textRotation=90, horizontal='center', vertical='center')
+            for idx in range(len(ordered)):
+                col_letter = _attendance_letter(idx + 3)
+                ws.column_dimensions[col_letter].width = 5
+                ws[f'{col_letter}1'].alignment = vertical
+            ws.column_dimensions[_attendance_letter(len(ordered) + 3)].width = 10
+    else:
+        used_names = {}
+        with pd.ExcelWriter(out, engine='openpyxl', mode='w') as writer:
+            for matrix in courses:
+                df = _attendance_frame(matrix)
+                sanitized = re.sub(r'[<>:"/\\|?*\x00-\x1f\[\]]', '-', matrix['course'] or 'Foglio')
+                sanitized = re.sub(r'-+', '-', sanitized).strip().strip('-')
+                sheet_name = (sanitized or 'Foglio')[:31]
+                if sheet_name in used_names:
+                    used_names[sheet_name] += 1
+                    suffix = f' ({used_names[sheet_name]})'
+                    sheet_name = sheet_name[:31 - len(suffix)] + suffix
+                else:
+                    used_names[sheet_name] = 1
+                df.to_excel(writer, index=False, sheet_name=sheet_name)
+                _attendance_width(writer.sheets[sheet_name], df, matrix['dates'])
+    return out.getvalue()
+
+
 def build(spec):
     """The expected workbook bytes of a '$xlsx' spec."""
     engine = spec['engine']
+    if engine == 'report_sheets':
+        return _report_sheets(spec['sheets'])
+    if engine == 'attendance':
+        return _attendance(spec['mode'], spec['courses'])
     if engine == 'excel_utils':
         return _excel_utils(spec['columns'], spec['data'])
     if engine == 'xlsxwriter':

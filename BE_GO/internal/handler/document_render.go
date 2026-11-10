@@ -4,6 +4,7 @@ import (
 	"errors"
 	"mime"
 	"net/http"
+	"strconv"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
@@ -100,6 +101,8 @@ func (h *DocumentRenderHandler) serve(c echo.Context, route, operation, name str
 	}
 	if reply.PDF != nil {
 		c.Response().Header().Set("Content-Disposition", reply.Disposition)
+		// CommonMiddleware's Content-Length: a filled form is larger than the buffer net/http measures by itself.
+		c.Response().Header().Set("Content-Length", strconv.Itoa(len(reply.PDF)))
 		return c.Blob(reply.Status, "application/pdf", reply.PDF)
 	}
 	return c.JSON(reply.Status, reply.JSON)

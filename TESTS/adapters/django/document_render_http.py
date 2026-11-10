@@ -11,6 +11,16 @@ headers, Content-Type application/json and the body bytes of
 json.dumps(FastRender payload) naming the view URL and the request's
 Authorization header.
 
+service_context also owns a private MinIO (the instance-logo image and
+lifetime) with an empty bucket that Django's default storage and the Go server
+both use: the regional PDF form of a medical appointment is filled and saved
+by the view itself. The expected bytes of such a case are
+docmanager.views.utils.fill_pdf_fields over the case's authored values; the
+bucket must hold exactly that object under '<location>/<creation
+timestamp>/<id>/<filename>' after the case (it is then removed) and nothing
+after any other case (a failed case leaves the private bucket as it is). renderer_context is the renderer stub alone, for the
+runners that bring their own storage.
+
 seed_rows inserts (audit disabled) two extra associations with their owners,
 associates, documents, subscriptions, invoices with their payments,
 compensation payments with instructors and hours, customer invoices, module
@@ -27,8 +37,11 @@ from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import base64
+import contextlib
+import io
 import ipaddress
 import os
+from pathlib import Path
 import threading
 import time
 import types
@@ -47,7 +60,8 @@ SOURCES = ('TESTS/fixtures/document_render_http.json', 'TESTS/contracts/test_doc
            'BE/application/models/payment_models.py', 'BE/application/models/user_models.py', 'BE/application/mixin.py',
            'BE/application/impersonation_scope.py', 'BE/application/impersonation.py', 'BE/application/audit_resolvers.py',
            'BE/application/signals.py', 'BE/application/permissions_registry.py', 'BE/core/settings.py',
-           'BE/core/middleware.py') + harness.SOURCES
+           'BE/core/middleware.py', 'BE/templates/document/application/pdfs/piemonte-biella.pdf',
+           'TESTS/adapters/django/instance_logo.py', 'TESTS/adapters/django/s3_objects.py') + harness.SOURCES
 DOCUMENT, ARCHIVE, SUBSCRIPTION_FILE = 'docmanager.Document', 'application.SportAssociationDocumentsArchive', 'application.SubscriptionFile'
 LINKED = {'subscription': ('application.Subscription', 'subscription_id', 'document_pdf_id', 'document_pdf'),
           'invoice': ('application.Invoice', 'invoice_id', 'document_pdf_id', 'document_pdf'),
@@ -58,6 +72,9 @@ MANAGED = (DOCUMENT, ARCHIVE, SUBSCRIPTION_FILE, harness.AUDIT, harness.INDEX) +
 PDF_BYTES = b'%PDF-1.7\n%\xe2\xe3\xcf\xd3\n1 0 obj << /Type /Catalog >> endobj\n' + bytes(range(256)) + b'\n%%EOF\n'
 STUB = {}
 FOLDERS = {}
+BUCKET = 'document-render-fixture'
+STORAGE = {}
+FORM_TEMPLATE = 'BE/templates/document/application/pdfs/piemonte-biella.pdf'
 
 
 # ---------------------------------------------------------------------------
@@ -95,8 +112,58 @@ class _RendererHandler(BaseHTTPRequestHandler):
     do_GET = do_POST = _answer
 
 
+def form_bytes(source):
+    """fill_pdf_fields over the authored values of every '<form-pdf>' case (Django's own form filling)."""
+    from docmanager.views.utils import fill_pdf_fields
+    template = Path(__file__).resolve().parents[3] / FORM_TEMPLATE
+    contract.require(template.is_file() and template.stat().st_size > 0, 'fixture.form-template')
+    filled = {}
+    for case in source['cases']:
+        if case['response'] != '<form-pdf>':
+            continue
+        contract.require(case['form'] and 'sport_association.president_signature' not in case['form'], 'fixture.form-values')
+        with contextlib.redirect_stdout(io.StringIO()):
+            filled[case['name']] = fill_pdf_fields(pdf_path=str(template), replace_dict=dict(case['form']))
+        contract.require(filled[case['name']].startswith(b'%PDF-') and len(filled[case['name']]) > 100000, 'fixture.form-bytes')
+    contract.require(len(filled) >= 3 and len(set(filled.values())) >= 2, 'fixture.form-cases')
+    return filled
+
+
+def stored_objects():
+    return {item['Key']: item for item in STORAGE['client'].list_objects_v2(Bucket=BUCKET).get('Contents', [])}
+
+
 @contextmanager
 def service_context(report, log):
+    import boto3
+    from botocore.config import Config
+    from django.test.utils import override_settings
+    from TESTS.adapters.django.instance_logo import minio
+    source = contract.load_source()
+    with minio(log, dict(os.environ), report) as (endpoint, access, secret):
+        client = boto3.client('s3', endpoint_url=endpoint, aws_access_key_id=access, aws_secret_access_key=secret,
+                              region_name='us-east-1',
+                              config=Config(signature_version='s3v4', retries={'max_attempts': 0}, s3={'addressing_style': 'path'}))
+        client.create_bucket(Bucket=BUCKET)
+        storages = {'default': {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'},
+                    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}}
+        STORAGE.update(client=client, location=source['location'], forms=form_bytes(source))
+        # The view opens the form template by a path relative to the server's working directory (BE in the image).
+        started_in = os.getcwd()
+        os.chdir(Path(__file__).resolve().parents[3] / 'BE')
+        try:
+            with override_settings(STORAGES=storages, AWS_ACCESS_KEY_ID=access, AWS_SECRET_ACCESS_KEY=secret,
+                                   AWS_STORAGE_BUCKET_NAME=BUCKET, AWS_S3_REGION_NAME='us-east-1', AWS_S3_ENDPOINT_URL=endpoint,
+                                   AWS_LOCATION=source['location'], AWS_S3_ADDRESSING_STYLE='path'), \
+                    renderer_context(report, log):
+                yield
+        finally:
+            os.chdir(started_in)
+            STORAGE.clear()
+
+
+@contextmanager
+def renderer_context(report, log):
     from application.utils import printing
     server = ThreadingHTTPServer(('127.0.0.1', 0), _RendererHandler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -178,7 +245,7 @@ def seed_rows(source, created):
     from application.models import (Associate, CustomerInvoice, Folder, Instructor, InstructorHours, Invoice, Payment, SportAssociation,
                                     Subscription, User)
     from application.models.subscriptions_models import MedicalAppointments
-    from application.models.user_models import SportAssociationModuleTemplates
+    from application.models.user_models import AssociateTutorRelation, SportAssociationModuleTemplates
     from docmanager.models import Document
     ids = source['ids']
     associations = source['association_ids']
@@ -197,10 +264,20 @@ def seed_rows(source, created):
                           password='!synthetic', role=User.ASSOCIATION, first_name='Render', last_name=label,
                           subscription_start_day=spec.get('start_day', 1), subscription_start_month=spec.get('start_month', 1)))
         insert(SportAssociation, SportAssociation(sport_association_id=spec['association'], user_id=spec['user'],
-                                                  denomination=spec['denomination'], tax_code='7153000000' + str(len(label))))
+                                                  denomination=spec['denomination'], tax_code='7153000000' + str(len(label)),
+                                                  **spec.get('form', {})))
     for label, row in source['associates'].items():
+        extra = dict(row.get('form', {}))
+        if 'born_date' in extra:
+            extra['born_date'] = date.fromisoformat(extra['born_date'])
         insert(Associate, Associate(associate_id=row['id'], sport_association_id=associations[row['association']], first_name=row['first'],
-                                    last_name=row['last'], email=row['email'], is_minor=False))
+                                    last_name=row['last'], email=row['email'], is_minor=False, **extra))
+    for row in source['tutors']:
+        relation = AssociateTutorRelation(associate_id=source['associates'][row['associate']]['id'],
+                                          tutor_id=source['associates'][row['tutor']]['id'], is_primary=row['primary'])
+        AssociateTutorRelation._base_manager.bulk_create([relation])
+        contract.require(relation.pk is not None, 'fixture.tutor-relation')
+        created.append((AssociateTutorRelation, relation.pk))
     for row in source['documents'].values():
         insert(Document, Document(document_id=row['id'], token=row['token'], filename=row['filename'], creation_date=seeded))
     associate_ids = {**{k: v['id'] for k, v in source['associates'].items()}, 'athlete': 'a1000000-0000-4000-8000-000000700101'}
@@ -246,7 +323,7 @@ def seed_rows(source, created):
         insert(MedicalAppointments, MedicalAppointments(
             medical_appointments_id=row['id'], subscription_id=source['subscriptions'][row['subscription']]['id'], region=row['region'],
             date=date.fromisoformat(row['date']) if row['date'] else None, document_id=document(row['document']), creation_date=seeded,
-            meta={}))
+            meta={}, sport=row.get('sport'), address=row.get('address')))
 
 
 def _purged():
@@ -299,6 +376,9 @@ def assert_effect(case, before, after, source, context):
     added = [row for key, row in new_documents.items() if key not in old_documents]
     require(len(added) == (1 if spec else 0), 'state.document-count')
     fixture = context['fixture']
+    objects = stored_objects() if STORAGE else {}
+    if not (spec and spec['stored']):
+        require(objects == {}, 'storage.nothing-stored')
     if not spec:
         for label in (ARCHIVE, SUBSCRIPTION_FILE) + tuple(item[0] for item in LINKED.values()):
             require(before[label] == after[label], 'state.unchanged:' + label)
@@ -311,6 +391,14 @@ def assert_effect(case, before, after, source, context):
     require(document['filename'] == filename and document['filepath'] is None and document['file_size_bytes'] is None
             and recent(created), 'state.document')
     doc_id, token = uuid4_text(document['document_id']), uuid4_text(document['token'])
+    if spec['stored']:
+        # fill_pdf_and_store: one object under the document's directory holding the bytes the view answered.
+        key = f"{STORAGE['location']}/{created.timestamp()}/{doc_id}/{filename}"
+        require(list(objects) == [key], 'storage.form-object')
+        saved = STORAGE['client'].get_object(Bucket=BUCKET, Key=key)
+        require(saved['Body'].read() == STORAGE['forms'][case['name']] and saved['ContentType'] == 'application/pdf'
+                and not saved.get('ContentEncoding'), 'storage.form-bytes')
+        STORAGE['client'].delete_object(Bucket=BUCKET, Key=key)
 
     # Links: the authored rows point at the new document; every other row is unchanged.
     links = {}
@@ -436,7 +524,8 @@ _run_workload = harness.run_workload_for(contract, assert_effect, prepare=lambda
 def run_workload(label, backend, base_url, fixture, apps, raw, observer):
     from django.conf import settings
     base_contract.RUNTIME.clear()
-    base_contract.RUNTIME.update(bypass=settings.DOCUMENT_BYPASS_TOKEN, folders=dict(FOLDERS), pdf=PDF_BYTES)
+    base_contract.RUNTIME.update(bypass=settings.DOCUMENT_BYPASS_TOKEN, folders=dict(FOLDERS), pdf=PDF_BYTES,
+                                 forms=dict(STORAGE.get('forms', {})))
     try:
         return _run_workload(label, backend, base_url, fixture, apps, raw, observer)
     finally:

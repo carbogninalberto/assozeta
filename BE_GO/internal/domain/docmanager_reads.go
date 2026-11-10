@@ -33,6 +33,6 @@ type DocmanagerReadsStore interface {
 	ExportArchiveDocument(ctx context.Context, association, document string) (*StoredDocument, error)
 	FirstArchiveOwner(ctx context.Context, document string) (owner string, found bool, err error)
 	VisibleDocument(ctx context.Context, scope ResourceScope, document string) (bool, error)
-	RenderSource(ctx context.Context, document string, group *string) (bool, error)
+	RenderSource(ctx context.Context, document string, group *string) (string, error)
 	HasActiveAssociation(ctx context.Context, user string) (bool, error)
 }

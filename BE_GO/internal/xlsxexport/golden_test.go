@@ -44,6 +44,7 @@ var goldenNotPorted = map[string]bool{
 	"ir-mailto":      true, // internal: and {=...} tokens
 	"sub-specials":   true, // formulas
 	"mod-strings":    true, // a '=' formula
+	"rs-collision":   true, // a generated sheet name equal to an earlier one
 }
 
 func decodeValue(t *testing.T, raw json.RawMessage) Value {
@@ -207,6 +208,58 @@ func buildGolden(t *testing.T, item goldenCase, now time.Time) ([]byte, error) {
 			frame.Widths = append(frame.Widths, float64(pyLen(name)+10))
 		}
 		return PandasXlsxwriter(frame, now)
+	case "report_xlsx", "report_sheets":
+		type sheetInput struct {
+			Title   string              `json:"title"`
+			Columns []string            `json:"columns"`
+			Rows    [][]json.RawMessage `json:"rows"`
+		}
+		decode := func(input sheetInput) ReportSheet {
+			sheet := ReportSheet{Title: input.Title, Columns: input.Columns, Data: make([][]Value, len(input.Columns))}
+			for _, row := range input.Rows {
+				for c, value := range decodeRow(t, row) {
+					sheet.Data[c] = append(sheet.Data[c], value)
+				}
+			}
+			return sheet
+		}
+		if item.Kind == "report_xlsx" {
+			var input sheetInput
+			json.Unmarshal(item.Input, &input)
+			return ReportWorkbook(decode(input), now)
+		}
+		var input struct {
+			Sheets []sheetInput `json:"sheets"`
+		}
+		json.Unmarshal(item.Input, &input)
+		var sheets []ReportSheet
+		for _, sheet := range input.Sheets {
+			sheets = append(sheets, decode(sheet))
+		}
+		return ReportSheetsWorkbook(sheets, now)
+	case "attendance":
+		var input struct {
+			Mode    string `json:"mode"`
+			Courses []struct {
+				Course string   `json:"course"`
+				Dates  []string `json:"dates"`
+				Rows   []struct {
+					Name       string   `json:"name"`
+					Attendance []string `json:"attendance"`
+					Present    int64    `json:"present_count"`
+				} `json:"rows"`
+			} `json:"courses"`
+		}
+		json.Unmarshal(item.Input, &input)
+		var courses []AttendanceCourse
+		for _, course := range input.Courses {
+			entry := AttendanceCourse{Course: course.Course, Dates: course.Dates}
+			for _, row := range course.Rows {
+				entry.Rows = append(entry.Rows, AttendanceRow{Name: row.Name, Attendance: row.Attendance, Present: row.Present})
+			}
+			courses = append(courses, entry)
+		}
+		return AttendanceWorkbook(input.Mode, courses, now)
 	case "all_data":
 		var input struct {
 			Sheets [][2]json.RawMessage `json:"sheets"`

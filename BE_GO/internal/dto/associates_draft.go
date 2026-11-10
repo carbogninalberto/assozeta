@@ -115,7 +115,15 @@ var (
 // (the date as written) and A/B/YYYY (A is the month unless it exceeds 12).
 // Years before 1000 are unsupported: the views round-trip the date through
 // strftime('%d/%m/%Y'), whose year width is platform dependent there.
-func DateutilDate(value any) (time.Time, DateutilResult) {
+func DateutilDate(value any) (time.Time, DateutilResult) { return dateutilDate(value, false) }
+
+// PersonDate is the calendar date of person_date(value)
+// (BE/application/utils/person_dates.py): dateutil's reading with the day
+// first unless the text starts with the year, on DateutilDate's forms. A/B/YYYY
+// is day A of month B unless B exceeds 12 (then month A, day B).
+func PersonDate(value any) (time.Time, DateutilResult) { return dateutilDate(value, true) }
+
+func dateutilDate(value any, dayFirst bool) (time.Time, DateutilResult) {
 	text, ok := value.(string)
 	if !ok {
 		return time.Time{}, DateutilFailed
@@ -135,7 +143,7 @@ func DateutilDate(value any) (time.Time, DateutilResult) {
 	} else if match := dateutilSlashes.FindStringSubmatch(text); match != nil {
 		first, second := number(match[1]), number(match[2])
 		year, month, day = number(match[3]), first, second
-		if first > 12 {
+		if first > 12 || dayFirst && second <= 12 {
 			month, day = second, first
 		}
 	} else {

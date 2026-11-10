@@ -59,6 +59,12 @@ type SubscriptionRenewTransaction interface {
 	// of the requester's subscriptions, for the associate (by key, or by tax code iexact
 	// when associate is nil).
 	MemberRenewable(ctx context.Context, requester, association string, associate, taxCode *string) (bool, error)
+	// Enrolment is the course-enrolment view of this transaction (add_course_to_subscription
+	// inside the renewal's transaction.atomic()).
+	Enrolment() CourseEnrolmentTransaction
+	// VisiblePayments keeps the ids scoped_queryset(request, Payment.objects) returns for the
+	// session's person (an athlete's own payments and those of the members it sees).
+	VisiblePayments(ctx context.Context, scope ResourceScope, ids []string) ([]string, error)
 }
 
 type SubscriptionRenewStore interface {

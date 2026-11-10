@@ -143,12 +143,24 @@ func (s *S3) Size(ctx context.Context, key string) (int64, error) {
 }
 
 // Open is the GetObject of PrintingService._stream_file_response.
+// NoSuchKeyError is GetObject's NoSuchKey answer. Error() is the text of
+// botocore's ClientError for it.
+type NoSuchKeyError struct{ Message string }
+
+func (e *NoSuchKeyError) Error() string {
+	return "An error occurred (NoSuchKey) when calling the GetObject operation: " + e.Message
+}
+
 func (s *S3) Open(ctx context.Context, key string) (*Object, error) {
 	client, err := s.client(ctx)
 	if err != nil {
 		return nil, err
 	}
 	output, err := client.GetObject(ctx, &s3.GetObjectInput{Bucket: aws.String(s.options.Bucket), Key: aws.String(key)})
+	var missing *types.NoSuchKey
+	if ctx.Err() == nil && errors.As(err, &missing) {
+		return nil, &NoSuchKeyError{Message: missing.ErrorMessage()}
+	}
 	if err != nil {
 		return nil, err
 	}

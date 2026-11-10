@@ -28,12 +28,15 @@ reportlab, as ``{'$pdf': spec}``:
   'title': str, 'align': [...]|None, 'header': str|None, 'is_a3': bool,
   'landscape': bool, 'additional': [[key, text], ...]|None}``:
   application.utils.printing.generate_pdf_from_data(rows, columns, ...).
-- ``{'engine': 'report_table', 'data': [[[key, value], ...], ...], 'title':
-  str, 'labels': [[key, label], ...], 'header_text': str, 'footer_text': str,
-  'text_before': str, 'text_after': str}``: the saved-report PDFExporter after
-  format_export_data (values are the formatted strings or nulls).
-- ``{'engine': 'attendance', 'matrix': {...}, 'title': str}``:
-  application.mcp_server.attendance.export_attendance_matrix_pdf.
+- ``{'engine': 'report_table', 'headers': [str, ...], 'rows': [[str, ...],
+  ...], 'title': str, 'footer_text': str, 'text_before': str, 'text_after':
+  str}``: the saved-report PDFExporter (application.mcp_server.exporters
+  .pdf_exporter) from its headers and its rows of str() values on; title is
+  ``header_text or title``.
+- ``{'engine': 'attendance', 'courses': [{'course': str, 'dates': [str, ...],
+  'rows': [{'name': str, 'attendance': [str, ...], 'present_count': int},
+  ...]}, ...]}``: application.mcp_server.attendance
+  .export_attendance_matrix_pdf for those course matrices.
 
 Values are JSON strings and nulls, or the typed values of
 TESTS/contracts/xlsx.py. The expected document is built here with the same
@@ -255,7 +258,142 @@ def _data_table(columns, rows, title='', scale=3.5, align=None, header=None, is_
     return buffer.getvalue()
 
 
-ENGINES = {'data_table': _data_table}
+def _report_table(headers, rows, title='', footer_text='', text_before='', text_after=''):
+    """application.mcp_server.exporters.pdf_exporter.PDFExporter.export, call for call."""
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A2, A3, A4
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.units import cm
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+    styles = getSampleStyleSheet()
+    header_style = styles['Normal'].clone('header')
+    header_style.fontName = 'Helvetica-Bold'
+    header_style.fontSize = 8
+    cell_style = styles['Normal'].clone('cell')
+    cell_style.fontSize = 7
+    table_data = [[Paragraph(h, header_style) for h in headers]] + [[Paragraph(str(cell), cell_style) for cell in row] for row in rows]
+    table = Table(table_data, repeatRows=1)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f0f0f0')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
+        ('FONTSIZE', (0, 1), (-1, -1), 7),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('BOX', (0, 0), (-1, -1), 1, colors.black),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#fafafa')]),
+    ]))
+    selected = A4 if len(headers) <= 5 else A3 if len(headers) <= 10 else A2
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=(selected[1], selected[0]), rightMargin=30, leftMargin=30, topMargin=40, bottomMargin=30)
+    flowables = []
+    body_style = styles['Normal'].clone('body')
+    body_style.fontSize = 9
+    body_style.leading = 12
+    if text_before:
+        flowables.append(Paragraph(text_before, body_style))
+        flowables.append(Spacer(1, 0.5 * cm))
+    flowables.append(table)
+    if text_after:
+        flowables.append(Spacer(1, 0.5 * cm))
+        flowables.append(Paragraph(text_after, body_style))
+    page = partial(_header_footer, title=title, footer=footer_text)
+    doc.build(flowables, onFirstPage=page, onLaterPages=page)
+    return buffer.getvalue()
+
+
+def _attendance(courses):
+    """application.mcp_server.attendance.export_attendance_matrix_pdf, call for call."""
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A2, A3, A4
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.units import cm
+    from reportlab.pdfbase.pdfmetrics import stringWidth
+    from reportlab.platypus import Flowable, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+    class VerticalText(Flowable):
+        def __init__(self, text, font_name='Helvetica-Bold', font_size=7):
+            Flowable.__init__(self)
+            self.text = text
+            self.font_name = font_name
+            self.font_size = font_size
+            self.width = font_size + 2
+            self.height = stringWidth(text, font_name, font_size) + 4
+
+        def wrap(self, avail_width, avail_height):
+            return self.width, self.height
+
+        def draw(self):
+            c = self.canv
+            c.saveState()
+            c.rotate(90)
+            c.setFont(self.font_name, self.font_size)
+            c.drawString(2, -self.font_size / 3.0, self.text)
+            c.restoreState()
+
+    styles = getSampleStyleSheet()
+
+    def course_table(matrix):
+        header_style = styles['Normal'].clone('att_header')
+        header_style.fontName = 'Helvetica-Bold'
+        header_style.fontSize = 7
+        header_style.alignment = 1
+        cell_style = styles['Normal'].clone('att_cell')
+        cell_style.fontSize = 7
+        cell_style.alignment = 1
+        name_style = styles['Normal'].clone('att_name')
+        name_style.fontSize = 7
+        name_style.alignment = 0
+        dates = matrix['dates']
+        data = [[Paragraph('#', header_style), Paragraph('Nome e Cognome', header_style)] + [VerticalText(d) for d in dates]
+                + [Paragraph('Presenze', header_style)]]
+        for index, row in enumerate(matrix['rows'], start=1):
+            data.append([Paragraph(str(index), cell_style), Paragraph(row['name'], name_style)]
+                        + [Paragraph(att, cell_style) for att in row['attendance']]
+                        + [Paragraph(str(row.get('present_count', 0)), cell_style)])
+        table = Table(data, colWidths=[1.0 * cm, 5.5 * cm] + [1.0 * cm] * len(dates) + [1.8 * cm], repeatRows=1)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f0f0f0')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('ALIGN', (1, 1), (1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 7),
+            ('FONTSIZE', (0, 1), (-1, -1), 7),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+            ('TOPPADDING', (0, 0), (-1, 0), 14),
+            ('BOX', (0, 0), (-1, -1), 1, colors.black),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#fafafa')]),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        return table
+
+    columns = max(len(c['dates']) for c in courses) + 3
+    base = A4 if columns <= 15 else A3 if columns <= 25 else A2
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=(base[1], base[0]), rightMargin=30, leftMargin=30, topMargin=40, bottomMargin=30)
+    flowables = []
+    title_style = styles['Heading2'].clone('course_title')
+    title_style.fontSize = 12
+    title_style.spaceAfter = 8
+    for index, matrix in enumerate(courses):
+        if len(courses) > 1:
+            flowables.append(Paragraph(matrix.get('course', 'Presenze'), title_style))
+            flowables.append(Spacer(1, 0.3 * cm))
+        flowables.append(course_table(matrix))
+        if index < len(courses) - 1:
+            flowables.append(PageBreak())
+    page = partial(_header_footer, title='Presenze')
+    doc.build(flowables, onFirstPage=page, onLaterPages=page)
+    return buffer.getvalue()
+
+
+ENGINES = {'data_table': _data_table, 'report_table': _report_table, 'attendance': _attendance}
 
 
 def build(spec):

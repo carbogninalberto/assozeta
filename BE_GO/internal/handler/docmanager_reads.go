@@ -82,9 +82,15 @@ func (h *DocmanagerReadsHandler) Retrieve(c echo.Context) error {
 	if request.Method != http.MethodGet {
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
+	var authorization *string
+	if values := request.Header.Values("Authorization"); len(values) > 0 {
+		// Django joins repeated headers with a comma.
+		joined := strings.Join(values, ",")
+		authorization = &joined
+	}
 	reply, err := h.documents.Retrieve(request.Context(), service.RetrieveRequest{
 		UID: c.Param("uid"), Query: parseReferenceForm(request.URL.RawQuery), Cookie: strings.Join(request.Header.Values("Cookie"), "; "),
-		Group: request.Header.Get("X-Group-Id"), Identity: *identity,
+		Group: request.Header.Get("X-Group-Id"), Identity: *identity, Authorization: authorization,
 	})
 	return docmanagerRespond(c, reply, err)
 }

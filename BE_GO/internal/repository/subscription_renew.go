@@ -127,6 +127,33 @@ func (t *subscriptionRenewTransaction) RenewalPayments(ctx context.Context, asso
 	return ids, invoiced, nil
 }
 
+func (t *subscriptionRenewTransaction) Enrolment() domain.CourseEnrolmentTransaction {
+	return &courseEnrolmentTransaction{courseWritesTransaction: &courseWritesTransaction{courseSubscriptionTransaction: t.courses}}
+}
+
+func (t *subscriptionRenewTransaction) VisiblePayments(ctx context.Context, scope domain.ResourceScope, ids []string) ([]string, error) {
+	visible := make([]string, 0, len(ids))
+	for start := 0; start < len(ids); start += MaxResourceBatch {
+		batch, err := NewScopedResources(t.tx).Available(ctx, scope, "payment", ids[start:min(start+MaxResourceBatch, len(ids))])
+		if err != nil {
+			return nil, err
+		}
+		visible = append(visible, batch...)
+	}
+	// Available returns the ids in no particular order: keep the caller's.
+	keep := make(map[string]bool, len(visible))
+	for _, id := range visible {
+		keep[id] = true
+	}
+	ordered := make([]string, 0, len(visible))
+	for _, id := range ids {
+		if keep[id] {
+			ordered = append(ordered, id)
+		}
+	}
+	return ordered, nil
+}
+
 func (t *subscriptionRenewTransaction) DeletePayments(ctx context.Context, ids []string, audit domain.CourseSubscriptionAudit) error {
 	snapshots := make([]*courseSubscriptionSnapshot, 0, len(ids))
 	for _, id := range ids {

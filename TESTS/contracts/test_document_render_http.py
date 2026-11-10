@@ -6,6 +6,8 @@ exactly the renderer stub's PDF bytes with Content-Type application/pdf, its
 Content-Length and the authored Content-Disposition as Django's response
 headers carry it: latin-1 text as is (http.client reads headers as
 ISO-8859-1), anything else MIME-encoded by email.header.Header('utf-8').
+A '<form-pdf>' case must return the bytes RUNTIME['forms'] holds for it (the
+regional form filled with the case's authored values), with the same headers.
 Other cases are JSON bodies or the stable server error page; every 401 is
 DRF's (NotAuthenticated or AuthenticationFailed) with the Bearer challenge.
 
@@ -98,8 +100,9 @@ def assert_case(case, base_url, *, token, sessions):
     check(set(received.get('Allow', '').replace(' ', '').split(',')) == ALLOWED, 'response.allow')
     check(received.get('Content-Language') == 'en' and received.get('Set-Cookie') is None, 'response.headers')
     check(received.get('WWW-Authenticate') == ('Bearer realm="api"' if status == 401 else None), 'response.authentication')
-    if case['response'] == '<pdf>':
-        check(raw == RUNTIME['pdf'], 'pdf.body')
+    if case['response'] in ('<pdf>', '<form-pdf>'):
+        expected = RUNTIME['pdf'] if case['response'] == '<pdf>' else RUNTIME['forms'][case['name']]
+        check(len(expected) > 0 and raw == expected, 'pdf.body')
         check(received.get('Content-Type') == 'application/pdf', 'pdf.content-type')
         check(received.get('Content-Length') == str(len(raw)), 'pdf.content-length')
         check(received.get_all('Content-Disposition') == [header_value(case['disposition'])], 'pdf.content-disposition')

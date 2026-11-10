@@ -340,10 +340,8 @@ func subscriptionImportExcel(lower string) bool {
 func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity domain.ResolvedIdentity, association, id string,
 	document domain.SubscriptionImportDocument, data domain.RequestObject, audit domain.LoginAuditContext) (domain.RequestObject, error) {
 	lower := strings.ToLower(document.Filename)
-	switch {
-	case strings.HasSuffix(lower, ".csv"):
-		return nil, ErrSubscriptionImportNotPorted // read_csv's values
-	case !subscriptionImportExcel(lower):
+	csv := strings.HasSuffix(lower, ".csv")
+	if !csv && !subscriptionImportExcel(lower) {
 		return nil, ErrSubscriptionImportServerError // TypeError: file extension not recognized
 	}
 	name, err := subscriptionImportName(association, document.Created, id, document.Filename)
@@ -360,14 +358,45 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 	}
 	mapping, _ := data.Lookup("map")
 	text := subscriptionImportTextColumns(mapping)
-	frame, err := pandasxlsx.ReadText(content, func(column string) bool { return text[column] })
-	switch {
-	case errors.Is(err, pandasxlsx.ErrInvalid):
-		return nil, ErrSubscriptionImportServerError
-	case err != nil:
-		return nil, errors.Join(ErrSubscriptionImportNotPorted, err)
+	textual := func(column string) bool { return text[column] }
+	var names []string
+	var rows [][]any
+	if csv {
+		frame, err := pandascsv.ReadText(content, textual)
+		switch {
+		case errors.Is(err, pandascsv.ErrUnsupported):
+			return nil, errors.Join(ErrSubscriptionImportNotPorted, err)
+		case err != nil:
+			return nil, errors.Join(ErrSubscriptionImportServerError, err) // EmptyDataError, ParserError, UnicodeDecodeError
+		}
+		names = frame.Columns
+		for _, cells := range frame.Rows {
+			row := make([]any, len(cells))
+			for index, cell := range cells {
+				row[index] = subscriptionImportCSVCell(cell)
+			}
+			rows = append(rows, row)
+		}
+	} else {
+		frame, err := pandasxlsx.ReadAll(content, textual)
+		switch {
+		case errors.Is(err, pandasxlsx.ErrInvalid):
+			return nil, ErrSubscriptionImportServerError
+		case err != nil:
+			return nil, errors.Join(ErrSubscriptionImportNotPorted, err)
+		case !frame.TextLabels():
+			return nil, ErrSubscriptionImportNotPorted // labels that are numbers or dates
+		}
+		names = frame.Columns
+		for _, cells := range frame.Rows {
+			row := make([]any, len(cells))
+			for index, cell := range cells {
+				row[index] = subscriptionImportCell(cell)
+			}
+			rows = append(rows, row)
+		}
 	}
-	effects, err := s.subscriptionImportPlan(frame, data)
+	effects, err := s.subscriptionImportPlan(names, rows, data)
 	if err != nil {
 		return nil, err
 	}
@@ -384,8 +413,8 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 	}
 	// remove_upload's default_storage.delete: a failure is logged by the view and the import stands.
 	_ = s.objects.Delete(ctx, key)
-	list := make([]any, len(frame.Columns))
-	for i, column := range frame.Columns {
+	list := make([]any, len(names))
+	for i, column := range names {
 		list[i] = column
 	}
 	return domain.RequestObject{{Name: "columns", Value: list}, {Name: "map", Value: subscriptionImportRendered(nil)}}, nil
@@ -400,16 +429,20 @@ func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.R
 	var parseErr error
 	switch {
 	case csv:
-		columns, parseErr = pandascsv.Columns(file.Content)
+		var frame *pandascsv.Frame
+		frame, parseErr = pandascsv.Read(file.Content)
 		if errors.Is(parseErr, pandascsv.ErrUnsupported) {
 			return nil, errors.Join(ErrSubscriptionImportNotPorted, parseErr)
+		}
+		if parseErr == nil {
+			columns = frame.Columns
 		}
 	case excel:
 		// read_excel reads the bytes whatever the suffix; a failure (then the
 		// xlrd fallback's ImportError) is the 500 page after the writes.
 		var frame *pandasxlsx.Frame
-		frame, parseErr = pandasxlsx.Read(file.Content)
-		if errors.Is(parseErr, pandasxlsx.ErrUnsupported) {
+		frame, parseErr = pandasxlsx.ReadAll(file.Content, nil)
+		if errors.Is(parseErr, pandasxlsx.ErrUnsupported) || parseErr == nil && !frame.TextLabels() {
 			return nil, errors.Join(ErrSubscriptionImportNotPorted, parseErr)
 		}
 		if parseErr == nil {

@@ -20,6 +20,9 @@ type opCell struct {
 	kind   byte // 's' string, 'f' formula, 'e' error code, 'n' number, 'b' bool
 	text   string
 	styled bool
+	// style is a cell style index past the header's (the attendance
+	// workbooks); 0 leaves styled to decide.
+	style int
 }
 
 type opRow struct {
@@ -90,7 +93,9 @@ func (cell opCell) write(out *strings.Builder, row int) {
 	out.WriteString(columnLetter(cell.col))
 	out.WriteString(strconv.Itoa(row))
 	out.WriteByte('"')
-	if cell.styled {
+	if cell.style > 0 {
+		out.WriteString(` s="` + strconv.Itoa(cell.style) + `"`)
+	} else if cell.styled {
 		out.WriteString(` s="1"`)
 	}
 	switch cell.kind {
@@ -207,6 +212,24 @@ func openpyxlPackageFlags(sheets []opSheet, styled bool, now time.Time, flags ui
 	styles := openpyxlStylesPlain
 	if styled {
 		styles = openpyxlStylesHeader
+	}
+	extra := 0
+	for _, sheet := range sheets {
+		for _, row := range sheet.rows {
+			for _, cell := range row.cells {
+				extra = max(extra, cell.style-1)
+			}
+		}
+	}
+	if extra > 0 {
+		// Alignment(textRotation=90, horizontal='center', vertical='center') set
+		// on a header cell, then on a cell without a style.
+		xfs := `<xf numFmtId="0" fontId="1" fillId="0" borderId="1" applyAlignment="1" pivotButton="0" quotePrefix="0" xfId="0"><alignment horizontal="center" vertical="center" textRotation="90" /></xf>`
+		if extra > 1 {
+			xfs += `<xf numFmtId="0" fontId="0" fillId="0" borderId="0" applyAlignment="1" pivotButton="0" quotePrefix="0" xfId="0"><alignment horizontal="center" vertical="center" textRotation="90" /></xf>`
+		}
+		styles = strings.Replace(styles, `<cellXfs count="2">`, `<cellXfs count="`+strconv.Itoa(2+extra)+`">`, 1)
+		styles = strings.Replace(styles, `</cellXfs>`, xfs+`</cellXfs>`, 1)
 	}
 	var book, rels, types strings.Builder
 	book.WriteString(`<workbook xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><workbookPr /><workbookProtection /><bookViews><workbookView visibility="visible" minimized="0" showHorizontalScroll="1" showVerticalScroll="1" showSheetTabs="1" tabRatio="600" firstSheet="0" activeTab="0" autoFilterDateGrouping="1" /></bookViews><sheets>`)

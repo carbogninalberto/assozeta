@@ -41,12 +41,16 @@ Django remains the production execution owner.
   `No balance sheet found.`).
 - **Account delete**: the association's account (malformed/foreign/unknown:
   404 `{"exception": ...}`), non-editable is 403 `This account is not deletable.`;
-  then `custom_account.delete()`, Django's deletion collector (Go runs the shared
-  collector, `collaborator_delete_collector.go`): the account, the transfers
-  referencing it and every payment of the account (base manager: payments removed
-  from the list, of a group or never paid too) are deleted, each with a delete
-  entry indexed through `changes_json`, in that order, the payments in descending
-  key order. Before anything is deleted the payments' delete receiver runs: the
+  an account in use is 403 `An account with transfers or payments cannot be
+  deleted.`: the rule of the `deletable` flag in the accounts list
+  (`custom_account_in_use`, `BE/application/serializers/balance_sheet.py`), a
+  transfer from or to the account or a payment the payment manager returns
+  (in the payment list, and of the `X-Group-Id` group when the header is sent).
+  Then `custom_account.delete()`, Django's deletion collector (Go runs the shared
+  collector, `collaborator_delete_collector.go`): the account and the payments
+  still stored for it (base manager: the ones removed from the payment list)
+  are deleted, each with a delete entry indexed through `changes_json`, in that
+  order, the payments in descending key order. Before anything is deleted the payments' delete receiver runs: the
   instalments of a payment are deleted, and an instalment's own receiver deletes
   its unpaid payment first. That payment is audited, then the instalment (indexed
   to the actor's association, none for a collaborator), then the account's own
@@ -140,3 +144,19 @@ account-delete cases were merged): Django 86/86, Go 500 on `pdf-draft`. GREEN
 instead of the day before fail `pdf-draft`. The logo, long and unbroken
 denominations, several pages and the closing line on a page of its own are
 covered by the golden documents of `BE_GO/internal/pdfexport`.
+
+Account delete rule (`v2doc2-*`): the view refuses an account in use, with the
+rule of the list's `deletable` flag. Django first: three tests in
+`BE/application/tests/test_balance_sheet_views.py` (payments, transfers on
+either side, the flag and the refusal agreeing) failed, then passed with the
+fix. The fixture has 84 cases: accounts with transfers, with payments, with an
+unpaid payment and with an outgoing transfer are refused; the deleted accounts
+are the ones whose payments are all removed from the payment list, plus one
+under an `X-Group-Id` header. RED `v2doc2-red-r1`: Django 84/84, Go 200 on
+`account-with-transfers-refused`. GREEN `v2doc2-versioned-r2` (after merging
+`codex/go-backend-parity`): 84/84 on native Django, native Go, Caddy `/api/v1`
+and `/api/v2`. Mutation `v2doc2-mutation-r2`: the rule requiring both a transfer
+and a payment fails `account-with-transfers-refused`. Re-run green
+(`v2doc2-rerun-r1`): balance-accounts 25/25, balance-account-writes 29/29,
+balance-transfer-writes 30/30. Final run on the current base, with the PDF export
+cases (`v2doc2-final-r1`): 93/93 on the four transports.

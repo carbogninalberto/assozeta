@@ -17,7 +17,7 @@ from application.models.user_models import SportAssociation, User
 from application.permissions import IsAssociationUser
 from application.serializers.auth_serializers import SportAssociationSerializer
 from application.serializers.balance_sheet import CustomAccountSerializer, CustomAccountTransferSerializer, \
-    CustomAccountTransferInfoSerializer
+    CustomAccountTransferInfoSerializer, custom_account_in_use
 from application.utils.api_utils import BalanceSheetData
 import logging
 
@@ -521,6 +521,17 @@ def balance_sheet_accounts_delete(request, uid):
             'account_id': uid
         })
         return Response({'msg': 'This account is not deletable.'}, status=status.HTTP_403_FORBIDDEN)
+
+    # Same rule as the `deletable` flag of the accounts list.
+    if custom_account_in_use(custom_account):
+        logger.warning("Attempted to delete an account in use", extra={
+            'user_id': str(user.user_id),
+            'account_id': uid
+        })
+        return Response(
+            {'msg': 'An account with transfers or payments cannot be deleted.'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
 
     logger.info("Custom account deleted successfully", extra={
         'user_id': str(user.user_id),

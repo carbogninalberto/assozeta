@@ -76,6 +76,8 @@ type BalanceSheetWriteStore interface {
 type BalanceAccountDeleteTransaction interface {
 	OwnerAssociation(ctx context.Context, owner string) (string, error)
 	AccountForUpdate(ctx context.Context, id, association string) (*BalanceAccountRow, error)
+	// SerializedAccount carries the facts of the list's deletable flag.
+	SerializedAccount(ctx context.Context, association, id string, group *string) (BalanceAccount, error)
 	// DeleteAccount is CustomAccounts.delete(): the deletion collector over
 	// the account, its transfers and its payments (base managers), with the
 	// payments' delete receivers and every auditlog delete entry. group is the

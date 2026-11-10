@@ -1,4 +1,5 @@
 from application.impersonation_scope import scoped_queryset
+from application.utils.person_dates import person_date
 """
 @ copyright: Bakney SRL
 """
@@ -754,7 +755,7 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
         preregistration = True
 
     now = date.today()
-    age = relativedelta(now, parser.parse(str(data['associate_data']['born_date'])).date()).years
+    age = relativedelta(now, person_date(str(data['associate_data']['born_date'])).date()).years
 
     if 'associate_tutor_data' in data.keys() and data['associate_tutor_data'] is not None:
         # smart check if associate_data has & associate_tutor_data have
