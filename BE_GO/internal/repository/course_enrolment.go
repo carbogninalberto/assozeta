@@ -43,7 +43,7 @@ func (t *courseEnrolmentTransaction) CoursesCategory(ctx context.Context, associ
 	if preferred != nil && preferred.Valid {
 		return t.CategoryFirst(ctx, preferred.String)
 	}
-	return t.DefaultPaymentCategory(ctx)
+	return t.DefaultPaymentCategory(ctx, &association)
 }
 
 func (t *courseEnrolmentTransaction) CategoryFirst(ctx context.Context, id string) (*string, error) {

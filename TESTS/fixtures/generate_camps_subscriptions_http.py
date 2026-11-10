@@ -51,6 +51,10 @@ ACCOUNT = {'id': next(ids), 'name': 'Banca campi', 'code': 'BC1'}
 CATEGORIES = {
     'own': {'id': next(ids), 'name': 'Servizi campo', 'created': '2026-05-01T08:00:00Z', 'association': OWN},
     'foreign': {'id': next(ids), 'name': 'Servizi esteri', 'created': '2026-05-02T08:00:00Z', 'association': FOREIGN},
+    # Same name as the default payment category, owned by the other association and keyed
+    # below every uuid4 key: camp payments keep the own or global row.
+    'foreign_default': {'id': '00000000-0000-4000-8000-000000000501', 'name': 'Entrate e proventi da attività tipiche',
+                        'created': '2026-05-02T08:00:00Z', 'association': FOREIGN},
 }
 ASSOCIATES = {
     'mario': {'id': next(ids), 'association': OWN, 'user': None, 'first': 'Mario', 'last': 'Rossi', 'sex': 'M', 'tax': 'RSSMRA90E10H501Z',

@@ -235,7 +235,7 @@ type InvoicePartyStore interface {
 	BankAccount(ctx context.Context, association string, id *string) (*string, error)
 	LiveSupplier(ctx context.Context, id, association string, group *string) (*Supplier, error)
 	SupplierPaymentCategory(ctx context.Context, association string) (*string, error)
-	DefaultPaymentCategory(ctx context.Context) (*string, error)
+	DefaultPaymentCategory(ctx context.Context, association *string) (*string, error)
 	ActorAssociation(ctx context.Context, actor string) (*string, error)
 
 	// Writes, each its own transaction (Django autocommit).

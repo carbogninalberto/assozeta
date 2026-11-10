@@ -37,6 +37,7 @@ from TESTS.adapters.django import family_harness as harness
 from TESTS.adapters.django import message_read_scopes as scopes
 from TESTS.adapters.django import message_reads as shared
 from TESTS.adapters.django.workflow_writes_http import keyed
+from TESTS.adapters.django import default_payment_category
 
 SOURCES = ('TESTS/fixtures/subscription_create_http.json', 'TESTS/contracts/test_subscription_create_http.py',
            'TESTS/adapters/django/subscription_create_http.py', 'BE/application/views/subscriptions_views.py',
@@ -48,7 +49,7 @@ SOURCES = ('TESTS/fixtures/subscription_create_http.json', 'TESTS/contracts/test
            'BE/application/utils/notification_utils.py', 'BE/notifications/services.py', 'BE/notifications/utils.py',
            'BE/notifications/models.py', 'BE/notifications/realtime_layer.py', 'BE/application/audit_resolvers.py',
            'BE/application/mixin.py', 'BE/application/permissions_registry.py', 'BE/application/impersonation_scope.py',
-           'BE/core/celery.py', 'BE/core/settings.py') + harness.SOURCES
+           'BE/core/celery.py', 'BE/core/settings.py') + harness.SOURCES + default_payment_category.SOURCES
 TTL = 60 * 60 * 24 * 30
 REALTIME = 'assozeta:realtime:v1'
 CATEGORY_NAME = 'entrate e proventi da attività tipiche'
@@ -129,10 +130,12 @@ def seed_rows(source, created):
         return row
 
     apply_settings(ids, source['settings'])
-    category = PaymentCategory.objects.filter(name__iexact=CATEGORY_NAME).first()
+    category = default_payment_category.default_category(ids['own_association'])
     if category is None:
         category = insert(PaymentCategory, PaymentCategory(name=CATEGORY_NAME))
     STATE['category'] = str(category.pk)
+    # A same-named category of the other association, keyed below every uuid4 key.
+    default_payment_category.seed_other_association_category(ids['foreign_association'], created)
     insert(CustomAccounts, CustomAccounts(custom_account_id=source['account'], name='Banca fixture', initial_balance=0,
                                           account_type=CustomAccounts.BANK, account_code='IT00X', editable=False, enabled=True,
                                           sport_association_id=ids['own_association']))

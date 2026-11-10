@@ -281,9 +281,7 @@ def payment_bulk_add(request):
     if payment_category_id:
         payment_category = PaymentCategory.objects.filter(pk=payment_category_id).first()
     else:
-        payment_category = PaymentCategory.objects.filter(
-            name__iexact='entrate e proventi da attività tipiche'
-        ).first()
+        payment_category = PaymentCategory.default_for(sport_association)
 
     # Description - generate based on subject if not provided
     description = data.get('description')

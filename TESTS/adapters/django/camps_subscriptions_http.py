@@ -22,7 +22,7 @@ from TESTS.adapters.django import camps_periods_http as periods
 from TESTS.adapters.django import carnet_replace_http as replace
 from TESTS.adapters.django import family_harness as harness
 from TESTS.adapters.django.carnet_subscription_topup_http import auditlog_moment
-from TESTS.adapters.django.course_subscriptions_http import default_category
+from TESTS.adapters.django import default_payment_category
 from TESTS.adapters.django.workflow_writes_http import keyed
 
 SOURCES = ('TESTS/fixtures/camps_subscriptions_http.json', 'TESTS/contracts/test_camps_subscriptions_http.py',
@@ -35,7 +35,7 @@ SOURCES = ('TESTS/fixtures/camps_subscriptions_http.json', 'TESTS/contracts/test
            'BE/application/models/courses_models.py', 'BE/application/models/payment_models.py',
            'BE/application/models/subscriptions_models.py', 'BE/application/models/user_models.py',
            'BE/application/models/balance_sheet_models.py', 'BE/application/utils/api_utils.py', 'BE/application/mixin.py',
-           'BE/application/tenant_scope.py', 'BE/application/audit_resolvers.py', 'BE/application/signals.py') + harness.SOURCES
+           'BE/application/tenant_scope.py', 'BE/application/audit_resolvers.py', 'BE/application/signals.py') + harness.SOURCES + default_payment_category.SOURCES
 CSUB, SUBPERIOD, PAYMENT = 'application.CampsAndRetreatsSubscription', periods.SUBPERIOD, periods.PAYMENT
 LINK = periods.SUBPERIOD_LINK
 KEYS = {CSUB: 'camps_and_retreats_subscription_id', SUBPERIOD: 'camps_and_retreats_subscription_period_id', PAYMENT: 'payment_id'}
@@ -129,7 +129,9 @@ base_fixture_context = harness.fixture_context_for(contract, seed_rows, purge=tu
 @contextmanager
 def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
     with base_fixture_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
-        category, name = default_category()
+        row = default_payment_category.default_category(contract.load_source()['ids']['own_association'])
+        contract.require(row is not None, 'fixture.default-category')
+        category, name = str(row.pk), row.name
         fixture['default_category'], fixture['default_category_name'] = category, name
         yield fixture
 

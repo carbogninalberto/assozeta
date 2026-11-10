@@ -54,6 +54,11 @@
    "id": "a1000000-0000-4000-8000-000000988003",
    "name": "Categoria estera",
    "association": "a1000000-0000-4000-8000-000000701002"
+  },
+  "foreign_default": {
+   "id": "00000000-0000-4000-8000-000000000501",
+   "name": "Entrate e proventi da attività tipiche",
+   "association": "a1000000-0000-4000-8000-000000701002"
   }
  },
  "accounts": {

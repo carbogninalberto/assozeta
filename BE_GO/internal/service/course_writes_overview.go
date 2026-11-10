@@ -294,7 +294,7 @@ func (s *CourseWrites) overviewPayment(ctx context.Context, tx domain.CourseWrit
 	if err != nil {
 		return domain.CourseWritePayment{}, err
 	}
-	category, err := tx.DefaultPaymentCategory(ctx)
+	category, err := tx.DefaultPaymentCategory(ctx, &association)
 	if err != nil {
 		return domain.CourseWritePayment{}, err
 	}

@@ -331,7 +331,7 @@ func (s *CourseSubscriptions) savePayment(ctx context.Context, tx domain.CourseS
 	diff("description", courseSubscriptionAuditText(state.Description), description)
 	diff("meta", string(dto.PythonJSONDumpsSorted(old)), string(dto.PythonJSONDumpsSorted(meta)))
 	if state.CategoryID == nil {
-		if save.CategoryID, err = tx.DefaultPaymentCategory(ctx); err != nil {
+		if save.CategoryID, err = tx.DefaultPaymentCategory(ctx, state.AssociationID); err != nil {
 			return err
 		}
 		if save.CategoryID != nil {

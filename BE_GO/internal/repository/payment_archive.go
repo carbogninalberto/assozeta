@@ -42,15 +42,13 @@ func (t *paymentArchiveTransaction) PaymentForArchive(ctx context.Context, id, a
 	return row, err
 }
 
-// DefaultPaymentCategory is PaymentCategory.objects.filter(name__iexact=
-// 'entrate e proventi da attività tipiche').first() (by key).
-func (t *paymentArchiveTransaction) DefaultPaymentCategory(ctx context.Context) (*string, *string, error) {
+// DefaultPaymentCategory is PaymentCategory.default_for(association).
+func (t *paymentArchiveTransaction) DefaultPaymentCategory(ctx context.Context, association *string) (*string, *string, error) {
 	var row struct {
 		ID   string `db:"payment_category_id"`
 		Name string `db:"name"`
 	}
-	err := t.tx.GetContext(ctx, &row, `SELECT payment_category_id, name FROM application_paymentcategory
- WHERE UPPER(name::text)=UPPER('entrate e proventi da attività tipiche') ORDER BY payment_category_id LIMIT 1`)
+	err := t.tx.GetContext(ctx, &row, secCategoryDefaultSQL, association)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil, nil
 	}

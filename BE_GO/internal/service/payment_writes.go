@@ -408,7 +408,7 @@ func (s *PaymentWrites) defaults(ctx context.Context, tx domain.PaymentWritesTra
 		}
 		save.CategoryName = name
 	}
-	if err := paymentSaveDefaults(ctx, tx, &save, map[string][2]string{}); err != nil {
+	if err := secCategorySaveDefaults(ctx, tx, &save, m.row.AssociationID, map[string][2]string{}); err != nil {
 		if errors.Is(err, ErrPaymentSaveFailed) {
 			return domain.ErrPaymentWritesServer
 		}
@@ -1095,7 +1095,7 @@ func (s *PaymentWrites) BulkAdd(ctx context.Context, identity domain.ResolvedIde
 		if exists {
 			category = &id
 		}
-	} else if category, _, err = tx.DefaultPaymentCategory(ctx); err != nil {
+	} else if category, _, err = tx.DefaultPaymentCategory(ctx, &association); err != nil {
 		return 0, nil, err
 	}
 	var description *string

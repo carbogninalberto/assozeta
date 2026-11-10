@@ -115,8 +115,7 @@ def create_payment(**kwargs):
         amount=amount,
         subject=Payment.OTHER,
         type=Payment.DEFAULT,
-        payment_category=PaymentCategory.objects.filter(
-            name__iexact='entrate e proventi da attività tipiche').first(),
+        payment_category=PaymentCategory.default_for(subscription.camps_and_retreats.sport_association),
         meta_payment_categories=meta_payment_categories,
         notes=notes,
         sport_association=subscription.camps_and_retreats.sport_association,

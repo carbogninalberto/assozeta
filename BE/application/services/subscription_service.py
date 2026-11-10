@@ -299,9 +299,7 @@ class SubscriptionService:
                 payment_category_id=sport_association.user.default_payment_category_courses
             ).first()
         else:
-            payment_category = PaymentCategory.objects.filter(
-                name__iexact='entrate e proventi da attività tipiche'
-            ).first()
+            payment_category = PaymentCategory.default_for(sport_association)
 
         # Create payment
         payment = Payment.objects.create(

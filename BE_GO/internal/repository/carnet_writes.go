@@ -357,8 +357,8 @@ func (t *carnetWriteTransaction) TopupSource(ctx context.Context, holding string
 	return source, err
 }
 
-func (t *carnetWriteTransaction) DefaultPaymentCategory(ctx context.Context) (*string, *string, error) {
-	return (&paymentArchiveTransaction{paymentCategoryTransaction: t.paymentCategoryTransaction}).DefaultPaymentCategory(ctx)
+func (t *carnetWriteTransaction) DefaultPaymentCategory(ctx context.Context, association *string) (*string, *string, error) {
+	return (&paymentArchiveTransaction{paymentCategoryTransaction: t.paymentCategoryTransaction}).DefaultPaymentCategory(ctx, association)
 }
 
 func (t *carnetWriteTransaction) DefaultBankAccount(ctx context.Context, association *string) (*string, error) {

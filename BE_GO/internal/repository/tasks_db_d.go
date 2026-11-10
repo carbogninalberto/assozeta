@@ -198,9 +198,12 @@ func (t *tasksDBDTransaction) CreateRenewalPayment(ctx context.Context, payment 
 			return err
 		}
 	}
-	var id string
-	err := t.tx.GetContext(ctx, &id, `SELECT payment_category_id FROM application_paymentcategory
- WHERE UPPER(name::text)=UPPER('entrate e proventi da attività tipiche') ORDER BY payment_category_id LIMIT 1`)
+	var row struct {
+		ID   string `db:"payment_category_id"`
+		Name string `db:"name"`
+	}
+	err := t.tx.GetContext(ctx, &row, secCategoryDefaultSQL, payment.AssociationID)
+	id := row.ID
 	if err == nil {
 		category = &id
 	} else if !errors.Is(err, sql.ErrNoRows) {
