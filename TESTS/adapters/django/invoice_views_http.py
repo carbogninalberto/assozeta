@@ -26,7 +26,8 @@ from TESTS.adapters.django import document_views_http as views_runner
 SOURCES = ('TESTS/fixtures/invoice_views_http.json', 'TESTS/contracts/test_invoice_views_http.py',
            'TESTS/adapters/django/invoice_views_http.py', 'TESTS/adapters/django/document_views_http.py',
            'TESTS/adapters/go/document_template_golden.py', 'TESTS/adapters/go/fatturapa_golden.py',
-           'TESTS/adapters/go/payment_category_server.py', 'BE/docmanager/views/printing_views.py', 'BE/docmanager/views/utils.py',
+           'TESTS/adapters/go/payment_category_server.py', 'BE/docmanager/views/printing_views.py', 'BE/docmanager/access.py',
+           'BE/instance/permissions.py', 'BE/docmanager/views/utils.py',
            'BE/application/serializers/invoice_serializers.py', 'BE/application/utils/payments_utils.py',
            'BE/application/models/utils.py', 'BE/application/models/subscriptions_models.py',
            'BE/application/models/payment_models.py', 'BE/application/models/user_models.py',
@@ -142,6 +143,7 @@ def seed_rows(source, created):
             supplier_id=source['suppliers'][row['supplier']]['id'] if row['supplier'] else None,
             instructor_id=source['instructors'][row['instructor']]['id'] if row['instructor'] else None, course=row['course'],
             meta=row['meta'], deleted=row['deleted'], group_id=ids[row['group']] if row['group'] else None, amount=Decimal('10.00'),
+            user_id=ids[source['payment_users'][row['invoice']]] if row['invoice'] in source['payment_users'] else None,
             creation_date=seeded))
     for label, payment in source['subscription_payments'].items():
         Subscription._base_manager.filter(pk=subscription_ids[label]).update(payment_id=payment)

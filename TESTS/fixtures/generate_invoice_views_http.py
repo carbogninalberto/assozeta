@@ -157,6 +157,10 @@ ASSOCIATES = {
              'address': None, 'city': None, 'cap': None, 'phone': None, 'email': None, 'is_minor': True},
 }
 TUTORS = [('giulia', 'paolo', True)]
+# The athlete's record: the payment of the 'nobody' receipt.
+PAYMENT_USERS = {'nobody': 'athlete'}
+# Another member of the association (an athlete account without records).
+EXTRA_USERS = {'member': {'id': uid(90), 'username': 'invoice-views-member', 'email': 'invoice-views-member@example.test'}}
 SUPPLIERS = {'acme': {'id': uid(25), 'name': 'ACME <srl>', 'address': 'Via X 1', 'tax_code': 'IT123'}}
 INSTRUCTORS = {'anna': {'id': uid(26), 'first': 'Anna', 'last': "D'Amico"}}
 COURSES = {'nuoto': {'id': uid(27), 'title': 'Nuoto & Acqua'}, 'yoga': {'id': uid(28), 'title': 'Yoga'},
@@ -374,7 +378,7 @@ SUPPLIER_HTML = invoice_html(
     category_name='Kit & Maglia', override=True, membership_period=NULL_MEMBERSHIP, header=alpha_header(), footer=alpha_footer(),
     extra=alpha_extra())
 for name, actor, headers in (('invoice-owner', 'owner', {}), ('invoice-full-collaborator', 'full_collaborator', {}),
-                             ('invoice-athlete-direct', 'athlete', {}), ('invoice-admin-impersonating-owner', 'admin', ADMIN_OWNER),
+                             ('invoice-admin-impersonating-owner', 'admin', ADMIN_OWNER),
                              ('invoice-bypass', 'anonymous', {'Authorization': '$bypass'}),
                              ('invoice-foreign-owner', 'foreign_owner', {})):
     add(name, actor, INV('supplier'), 200, HTML, headers=headers, html=SUPPLIER_HTML)
@@ -386,17 +390,31 @@ add('invoice-instructor-cancelled', 'owner', INV('instructor'), 200, HTML, html=
     'instructor', description=s(f"Ricevuta di pagamento di <b>{ESC(chr(65) + 'nna D' + chr(39) + 'Amico')}</b> con causale "
                                 f"<b>Pagamento</b> per l'associazione <b>{ALPHA}</b>."),
     membership_period=NULL_MEMBERSHIP, header=alpha_header(), footer=alpha_footer(cancelled=True), extra=alpha_extra()))
-add('invoice-other-without-recipient', 'owner', INV('nobody'), 200, HTML, html=invoice_html(
+NOBODY_HTML = invoice_html(
     'nobody', description=s(f"Ricevuta di pagamento con causale <b>{ESC('Rimborso <spese>')}</b> per l'associazione <b>{ALPHA}</b>."),
     category_name='', override=True, membership_period=NULL_MEMBERSHIP, header=alpha_header(), footer=alpha_footer(),
-    extra=alpha_extra()))
+    extra=alpha_extra())
+add('invoice-other-without-recipient', 'owner', INV('nobody'), 200, HTML, html=NOBODY_HTML)
+# The page is rendered for the association's staff and for the member the receipt belongs to.
+add('invoice-athlete-own-payment', 'athlete', INV('nobody'), 200, HTML, html=NOBODY_HTML)
+add('invoice-athlete-direct', 'athlete', INV('supplier'), 403, SCOPED_HIDDEN)
+add('invoice-athlete-instructor-receipt', 'athlete', INV('instructor'), 403, SCOPED_HIDDEN)
+add('invoice-athlete-other-associate', 'athlete', INV('subscription'), 403, SCOPED_HIDDEN)
+add('invoice-athlete-without-payment', 'athlete', INV('nopayment'), 403, SCOPED_HIDDEN)
+add('invoice-athlete-deleted', 'athlete', INV('deleted'), 500, SERVER)
+add('invoice-athlete-unknown', 'athlete', f'/document/invoice/{UNKNOWN}/view/', 500, SERVER)
+add('invoice-member-of-athlete', 'member', INV('nobody'), 403, SCOPED_HIDDEN)
+add('invoice-member-of-associate', 'member', INV('otherassoc'), 403, SCOPED_HIDDEN)
+add('invoice-bypass-of-athlete', 'anonymous', INV('nobody'), 200, HTML, headers={'Authorization': '$bypass'}, html=NOBODY_HTML)
+OTHERASSOC_HTML = invoice_html(
+    'otherassoc', description=s(f"Ricevuta di pagamento con causale <b>Quota Associativa</b> per l'associazione <b>{ALPHA}</b>."),
+    category_name='Quota Associativa', associate='mario', tutor='paolo', override=True, stamp_free=False,
+    categories=dct(('quota associativa', flt(12.00 - (0 + 2.5 + 3))), ('kit & maglia', flt(2.5)), ('kit & maglia (1)', i(3))),
+    membership_period=NULL_MEMBERSHIP, header=alpha_header('Mario', 'Bianchi'), footer=alpha_footer(),
+    extra=alpha_extra('Paolo'), language='it')
 add('invoice-other-associate-selected-tutor', 'owner', INV('otherassoc'), 200, HTML, headers={'Accept-Language': 'it'}, language='it',
-    html=invoice_html(
-        'otherassoc', description=s(f"Ricevuta di pagamento con causale <b>Quota Associativa</b> per l'associazione <b>{ALPHA}</b>."),
-        category_name='Quota Associativa', associate='mario', tutor='paolo', override=True, stamp_free=False,
-        categories=dct(('quota associativa', flt(12.00 - (0 + 2.5 + 3))), ('kit & maglia', flt(2.5)), ('kit & maglia (1)', i(3))),
-        membership_period=NULL_MEMBERSHIP, header=alpha_header('Mario', 'Bianchi'), footer=alpha_footer(),
-        extra=alpha_extra('Paolo'), language='it'))
+    html=OTHERASSOC_HTML)
+add('invoice-athlete-other-associate-receipt', 'athlete', INV('otherassoc'), 403, SCOPED_HIDDEN)
 add('invoice-subscription-plans', 'owner', INV('subscription'), 200, HTML, html=invoice_html(
     'subscription', description=s('Salvata'), category_name='Quota Associativa', associate='giulia', tutor='paolo', override=True,
     stamp_free=False, categories=dct(('kit & maglia', i(5)), ('kit & maglia (1)', i(-1))), sub_type=1, sub_period='25/26',
@@ -520,5 +538,6 @@ OUTPUT.write_text(json.dumps({
     'suppliers': SUPPLIERS, 'instructors': INSTRUCTORS, 'courses': COURSES, 'carnets': CARNETS, 'subscriptions': SUBSCRIPTIONS,
     'memberships': MEMBERSHIPS, 'invoices': INVOICES, 'payments': PAYMENTS, 'subscription_payments': SUBSCRIPTION_PAYMENTS,
     'course_subscriptions': COURSE_SUBSCRIPTIONS, 'installments': INSTALLMENTS, 'carnet_subscriptions': CARNET_SUBSCRIPTIONS,
-    'customer_invoices': CUSTOMER_INVOICES, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+    'customer_invoices': CUSTOMER_INVOICES, 'payment_users': PAYMENT_USERS,
+    'extra_users': EXTRA_USERS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')
