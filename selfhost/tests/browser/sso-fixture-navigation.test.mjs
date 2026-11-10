@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {openSSOFixture} from './sso-fixture-navigation.mjs';
+import {openSSOFixture,readHostNetwork,waitForStableHostNetwork} from './sso-fixture-navigation.mjs';
 
 const base='https://club.assozeta.test';
 const network=()=>new Error('page.goto: net::ERR_NETWORK_CHANGED at '+base+'/fixture-blank.html');
@@ -31,4 +31,35 @@ test('a different failure after the first network change is propagated',async()=
     const failure=new Error('net::ERR_CONNECTION_REFUSED');let calls=0;
     await assert.rejects(openSSOFixture({goto:async()=>{if(++calls===1)throw network();throw failure;}},base,async()=>{}),error=>error===failure);
     assert.equal(calls,2);
+});
+
+// A fake clock: each wait advances it, reads return scripted host states.
+function clock(states){let time=0,reads=0;return {now:()=>time,wait:async ms=>{time+=ms;},read:()=>states[Math.min(reads++,states.length-1)],reads:()=>reads};}
+const settled='1: lo: <LOOPBACK,UP>\n2: eth0 inet6 fe80::1/64 scope link';
+test('the browser waits for a full quiet window without tentative addresses',async()=>{
+    const c=clock([settled+' tentative',settled+' tentative',settled]);
+    assert.equal(await waitForStableHostNetwork(c.read,{now:c.now,wait:c.wait,quietMs:1000,intervalMs:250}),true);
+    assert.ok(c.now()>=1500,'returned before the quiet window after the last change');
+});
+test('a new interface restarts the quiet window',async()=>{
+    const c=clock([settled,settled,settled+'\n3: veth0 inet6 fe80::2/64 scope link',settled+'\n3: veth0 inet6 fe80::2/64 scope link']);
+    await waitForStableHostNetwork(c.read,{now:c.now,wait:c.wait,quietMs:1000,intervalMs:250});
+    assert.ok(c.now()>=1500);
+});
+test('a network that never settles or becomes unreadable fails the run',async()=>{
+    let n=0;const changing=()=>settled+String(n++);const c=clock([]);
+    await assert.rejects(waitForStableHostNetwork(changing,{now:c.now,wait:c.wait,quietMs:1000,timeoutMs:5000}),/did not settle/);
+    const t=clock([settled+' tentative']);
+    await assert.rejects(waitForStableHostNetwork(t.read,{now:t.now,wait:t.wait,quietMs:1000,timeoutMs:5000}),/did not settle/);
+    const u=clock([settled,null]);
+    await assert.rejects(waitForStableHostNetwork(u.read,{now:u.now,wait:u.wait,quietMs:1000}),/unreadable/);
+});
+test('hosts without the ip tool skip the wait',async()=>{
+    assert.equal(readHostNetwork(()=>({status:null,error:new Error('ENOENT')})),null);
+    assert.equal(await waitForStableHostNetwork(()=>null,{wait:async()=>assert.fail('unexpected wait')}),false);
+});
+test('address lifetimes are ignored, state changes are kept',()=>{
+    const run=(lft,state)=>(_cmd,args)=>({status:0,stdout:args[1]==='link'?`2: eth0: <UP> state ${state}\n`:`2: eth0 inet 10.1.0.4/16 scope global eth0\\       valid_lft ${lft}sec preferred_lft ${lft}sec\n`});
+    assert.equal(readHostNetwork(run(100,'UP')),readHostNetwork(run(99,'UP')));
+    assert.notEqual(readHostNetwork(run(100,'UP')),readHostNetwork(run(100,'DOWN')));
 });

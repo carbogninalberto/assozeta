@@ -30,7 +30,7 @@ const server = await createServer({
         },
         load(id) {
             if (id === '\0fixture-api') return `export const originalFetch = window.fetch.bind(window); export async function apiFetch(url, options) { const r = await fetch(url, options); return {error: !r.ok, response: await r.json()}; }`;
-            if (id === '\0fixture-store') return `import {writable} from 'svelte/store'; export const oemConfig = writable({logo: '/oem/assozeta/brand/logo.svg'}); export const getApiHost = () => '/api'; export const saveRuntimeConfig = () => {}; export const clearInstanceCache = () => {}; export const uploadInstanceLogo = async () => {};`;
+            if (id === '\0fixture-store') return `import {writable} from 'svelte/store'; export const oemConfig = writable({logo: '/oem/assozeta/brand/logo.svg'}); export const getApiHost = () => '/api'; export const saveRuntimeConfig = () => {}; export const clearInstanceCache = () => {}; export const uploadInstanceLogo = async () => {}; export const applyApiVersion = async () => 'v1';`;
             if (id === '\0fixture-entry') return `import SelfInstance from '/src/routes/profile/sections/SelfInstance.svelte'; new SelfInstance({target: document.getElementById('app')});`;
         },
         configureServer(vite) {

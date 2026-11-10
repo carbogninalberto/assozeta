@@ -37,7 +37,7 @@ export const memberAdditionalReviewedSources = Object.freeze({
     "UI/src/utils/TaxCode.js": "40c46f64f4451097c4a97b3d57f546d8799fcc360949376fc760825855a99b8f",
     "UI/src/routes/association/personas/detail/sections/Info.svelte": "0e4db1303333da0546b4bbd238e7aea669451938cd3298f5bcc7f9df37b075da",
     "BE/application/views/personas_views.py": "75aca593c1938ddfd8ee213e731a77c17d5b287b368170d71dbfb48fdea8b687",
-    "UI/src/routes/association/Members/detail/sections/Medical.svelte": "79d036985cf8fd39eccb9885255b1ccfb9baa4dfa5c657a0bc3d0efcee07e150",
+    "UI/src/routes/association/Members/detail/sections/Medical.svelte": "e577b134442d77f32b4950935b9efd2e650cb6d3248c2f9c481bf0eae6bef2c5",
     "UI/src/routes/association/Members/detail/sections/modals/AddMedicalCertificate.svelte": "95803afa6d9e428067e18c4f560c5e70bffa01a57360f0ee8eac746bd2dcf3e8",
     "UI/src/routes/association/Members/detail/sections/modals/medicalCertificateUpload.js": "8b78ae7aaf29c309c5eaf6d8f2ed00078a085beba54ef7316675a585f2a83f21",
     "BE/application/views/statistic_views.py": "9d528567f5bd542ec80ce77c2dc4569aea5f61665aaa4584bf7080ffdcc87a0a",

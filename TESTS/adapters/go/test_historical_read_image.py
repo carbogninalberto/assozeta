@@ -53,7 +53,7 @@ def acceptance(first='django'):
                                    'final_login_projection_verified', 'import_worker_quiescent_before_baseline')}
     oracle.update(first_backend=first, versioned=True, go_import_supported=False,
                   whole_read_family_verified=False, historical_population={'exact': True},
-                  schema={'mode': 'full-migration-history', 'remaining_plan': 0, 'applied_migrations': 549},
+                  schema={'mode': 'full-migration-history', 'remaining_plan': 0, 'applied_migrations': 550},
                   **{'import': {'success': True, 'skipped_records': image.oracle.SKIPS, 'warnings': []}},
                   configuration={'success': True}, workloads=workloads, logins=logins,
                   workload_counts=image.oracle.assert_workload_receipts(workloads, specifications),
@@ -163,10 +163,10 @@ class HistoricalImageControls(unittest.TestCase):
             with self.subTest(fault=fault), self.assertRaises(AssertionError):
                 image.assert_both_orders(altered)
 
-    def test_each_order_requires_exact_pinned_549_migration_history(self):
+    def test_each_order_requires_exact_pinned_550_migration_history(self):
         for first in ('django', 'go'):
             self.assertIs(image.assert_acceptance(acceptance(first))['success'], True)
-            for count in (1, 548, 550, 0, -1, True, 549.0, '549', None):
+            for count in (1, 549, 551, 0, -1, True, 550.0, '550', None):
                 report = acceptance(first)
                 report['oracle']['schema']['applied_migrations'] = count
                 with self.subTest(first=first, count=count), self.assertRaises(AssertionError):
@@ -177,8 +177,8 @@ class HistoricalImageControls(unittest.TestCase):
                 image.assert_acceptance(report)
 
     def test_both_orders_reject_inconsistent_or_equally_unpinned_migration_histories(self):
-        for counts in ((1, 548), (548, 1), (549, 548), (548, 549),
-                       (549, 550), (550, 549), (548, 548), (550, 550)):
+        for counts in ((1, 549), (549, 1), (550, 549), (549, 550),
+                       (550, 551), (551, 550), (549, 549), (551, 551)):
             reports = [acceptance('django'), acceptance('go')]
             for report, count in zip(reports, counts):
                 report['oracle']['schema']['applied_migrations'] = count
@@ -334,7 +334,7 @@ class HistoricalImageControls(unittest.TestCase):
                     report.update(acceptance('go')['oracle'])
                     report['service_cleanup'] = {name: 'stopped' for name in image.oracle.SERVICES}
                     if fault == 'migrations':
-                        report['schema']['applied_migrations'] = 548
+                        report['schema']['applied_migrations'] = 549
                     if fault == 'receipt':
                         build_path.write_text('{}')
 
