@@ -39,9 +39,12 @@ test('the callback route is exact and full document navigation is explicit', () 
     assert(!isBakneyLogin({hash:'#/bakney-login-other'}));
     const calls = [];
     globalThis.history = {replaceState: (...args) => calls.push(args)};
-    globalThis.window = {location:{reload:()=>calls.push('reload')}};
+    globalThis.window = {location:{href:'https://app.test/#/bakney-login', reload:()=>calls.push('reload'), replace:(path)=>calls.push(['replace',path])}};
     reloadAppAt('/');
-    assert.deepEqual(calls, [[null,'','/'], 'reload']);
+    assert.deepEqual(calls, [['replace','/']]);
+    calls.length = 0;
+    reloadAppAt('/#/dashboard');
+    assert.deepEqual(calls, [[null,'','/#/dashboard'], 'reload']);
 });
 
 test('an identity change in another tab reloads and closes its old document', () => {
