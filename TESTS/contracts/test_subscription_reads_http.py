@@ -12,7 +12,11 @@ and GET, OPTIONS elsewhere. The checks are http_family.assert_case's, plus:
 - lists the serializers render without an ordering (tags, the info tags,
   subscription files and installments, calendar events) are compared sorted; 'unordered' cases
   (an ordering Django leaves to the database) compare the data rows, keyed
-  by index or listed, as multisets.
+  by index or listed, as multisets;
+- '$today' in a string is the %d/%m/%Y date of date.today() (UTC), read before
+  and after the request (a run across midnight accepts either day), and
+  '{"$xlsx": spec}' is a workbook checked part by part with the opt-in XLSX
+  standard of TESTS/contracts/xlsx.py within the request window.
 """
 from datetime import date, datetime, timezone
 import json
@@ -21,6 +25,7 @@ import re
 from zoneinfo import ZoneInfo
 
 from TESTS.contracts import http_family as family
+from TESTS.contracts import xlsx
 from TESTS.http_client import Client
 from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, ResponseFailure, difference, require, substitute
 
@@ -73,6 +78,16 @@ def materialized(value, now):
     return TOKEN.sub(fill, value)
 
 
+def dated(value, today):
+    if isinstance(value, dict):
+        return {key: dated(item, today) for key, item in value.items()}
+    if isinstance(value, list):
+        return [dated(item, today) for item in value]
+    if isinstance(value, str):
+        return value.replace('$today', today.strftime('%d/%m/%Y'))
+    return value
+
+
 def _key(item):
     return json.dumps(item, sort_keys=True, ensure_ascii=False)
 
@@ -108,8 +123,13 @@ def unordered(value):
 def assert_case(case, base_url, *, token, sessions):
     headers = {'Accept-Language': 'en', 'Accept': 'application/json', 'X-Correlation-ID': case['name'],
                **substitute(case['headers'], sessions)}
-    status, raw, received = Client(base_url, token).request(case['method'], case['path'], case.get('body'), headers, raw=True,
-                                                            include_headers=True)
+    body = case.get('body')
+    if 'raw_body' in case:
+        body = case['raw_body'].encode()
+        headers['Content-Type'] = case['content_type']
+    before, started = datetime.now(timezone.utc).date(), datetime.now(timezone.utc)
+    status, raw, received = Client(base_url, token).request(case['method'], case['path'], body, headers, raw=True, include_headers=True)
+    finished, after = datetime.now(timezone.utc), datetime.now(timezone.utc).date()
 
     def check(condition, code):
         if not condition:
@@ -131,11 +151,19 @@ def assert_case(case, base_url, *, token, sessions):
         actual = json.loads(raw)
     except (ValueError, UnicodeDecodeError):
         raise ResponseFailure('response.json', status) from None
-    expected = normalized(materialized(case['response'], datetime.now(timezone.utc)))
     actual = normalized(actual)
-    if case['unordered']:
-        expected, actual = unordered(expected), unordered(actual)
-    check(actual == expected, 'response.body' + difference(expected, actual))
+    reasons = []
+    for day in dict.fromkeys((before, after)):
+        expected = normalized(dated(materialized(case['response'], datetime.now(timezone.utc)), day))
+        expected, reason = xlsx.resolve(expected, actual, started, finished)
+        got = actual
+        if case['unordered']:
+            expected, got = unordered(expected), unordered(actual)
+        if reason is None and got == expected:
+            break
+        reasons.append(f'response.xlsx: {reason}'[:600] if reason else 'response.body' + difference(expected, got))
+    else:
+        check(False, reasons[-1])
     check(received.get('Content-Type', '').split(';')[0] == 'application/json', 'response.type')
     return status
 
