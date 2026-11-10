@@ -423,6 +423,12 @@ run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare
 
 
 def font_diagnostic():
-    from PIL import features, ImageFont
-    return (f'freetype2={features.check_module("freetype2")}:raqm={features.check("raqm")}:'
-            f'font={type(ImageFont.load_default()).__name__}:{features.version("freetype2")}')
+    from PIL import features, ImageFont, ImageDraw, Image
+    import PIL
+    draw = ImageDraw.Draw(Image.new('RGB', (600, 100)))
+    text = "Attenzione: questo e un placeholder, il certificato medico deve essere caricato in seguito."
+    font = ImageFont.load_default()
+    sized = ImageFont.load_default(10)
+    return (f'pil={PIL.__version__}:raqm={features.check("raqm")}:fribidi={features.version("fribidi")}:font={type(font).__name__}:'
+            f'size={getattr(font, "size", None)}:{font.getname()}:engine={getattr(font, "layout_engine", None)}:'
+            f'bbox={draw.textbbox((0, 0), text, font=font)}:bbox10={draw.textbbox((0, 0), text, font=sized)}')
