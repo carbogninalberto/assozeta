@@ -1701,6 +1701,16 @@
    "disabled": false,
    "meta": {},
    "created": "2026-09-18T08:00:00Z"
+  },
+  "h_deleted": {
+   "id": "a1000000-0000-4000-8000-000000669904",
+   "carnet": "zero",
+   "cs": [
+    "cs_deleted"
+   ],
+   "disabled": false,
+   "meta": null,
+   "created": "2026-09-19T08:00:00Z"
   }
  },
  "instructor": {
@@ -1710,6 +1720,35 @@
   "email": "anna@example.test",
   "tax_code": "BNCNNA80A41H501X",
   "default_hourly_billing": "12.50"
+ },
+ "tags": {
+  "t_a": {
+   "id": "a1000000-0000-4000-8000-000000669901",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Agonisti"
+  },
+  "t_b": {
+   "id": "a1000000-0000-4000-8000-000000669902",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Master è"
+  },
+  "t_f": {
+   "id": "a1000000-0000-4000-8000-000000669903",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "name": "Estero"
+  }
+ },
+ "subscription_tags": {
+  "sub_mario": [
+   "t_a",
+   "t_b"
+  ],
+  "sub_luisa": [
+   "t_b"
+  ],
+  "sub_abroad": [
+   "t_f"
+  ]
  },
  "invoice": {
   "id": "a1000000-0000-4000-8000-000000660029",
@@ -5565,7 +5604,18 @@
       "auto_renewal": false,
       "membership_payments": [],
       "medical_label": "<span class=\"text-danger font-weight-boldest\"><i class=\"ph-bold ph-first-aid-kit\"></i>Scaduto da {since:2020-01-15}</span><span class=\"badge badge-info ml-1\" title=\"Certificato Medico Agonistico\">AG</span>",
-      "carnets": []
+      "carnets": [
+       {
+        "carnet_subscription_id": "a1000000-0000-4000-8000-000000669904",
+        "carnet_id": "a1000000-0000-4000-8000-000000660108",
+        "title": "Libero",
+        "lessons_total": 0,
+        "lessons_left": 0,
+        "lessons_used": 0,
+        "lessons_display": null,
+        "creation_date": "19/09/2026"
+       }
+      ]
      },
      {
       "course_subscription_id": "a1000000-0000-4000-8000-000000660070",
@@ -8885,6 +8935,1009 @@
    "effect": null,
    "body": {
     "format": "pdf"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-excel-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660021",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags",
+       "Agonisti",
+       "Master è"
+      ],
+      "data": [
+       [
+        "Bianchi",
+        "Bianchi",
+        "Bianchi",
+        "Bianchi",
+        "Bianchi",
+        "Bianchi"
+       ],
+       [
+        "Luisa",
+        "Luisa",
+        "Luisa",
+        "Luisa",
+        "Luisa",
+        "Luisa"
+       ],
+       [
+        "02/02/1985",
+        "02/02/1985",
+        "02/02/1985",
+        "02/02/1985",
+        "02/02/1985",
+        "02/02/1985"
+       ],
+       [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+       ],
+       [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+       ],
+       [
+        "Palestra",
+        "Palestra",
+        "Palestra",
+        "Palestra",
+        "Palestra",
+        "Palestra"
+       ],
+       [
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026"
+       ],
+       [
+        "Master è",
+        "Master è",
+        "Master è",
+        "Master è",
+        "Master è",
+        "Master è"
+       ],
+       [
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "assegnato",
+        "assegnato",
+        "assegnato",
+        "assegnato",
+        "assegnato",
+        "assegnato"
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Iscrizioni ai corsi - Message reads own.xlsx"
+   },
+   "effect": null,
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-excel-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660021",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags",
+       "Agonisti",
+       "Master è"
+      ],
+      "data": [
+       [
+        "Bianchi",
+        "Bianchi",
+        "Bianchi",
+        "Bianchi",
+        "Bianchi",
+        "Bianchi"
+       ],
+       [
+        "Luisa",
+        "Luisa",
+        "Luisa",
+        "Luisa",
+        "Luisa",
+        "Luisa"
+       ],
+       [
+        "02/02/1985",
+        "02/02/1985",
+        "02/02/1985",
+        "02/02/1985",
+        "02/02/1985",
+        "02/02/1985"
+       ],
+       [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+       ],
+       [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+       ],
+       [
+        "Palestra",
+        "Palestra",
+        "Palestra",
+        "Palestra",
+        "Palestra",
+        "Palestra"
+       ],
+       [
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026"
+       ],
+       [
+        "Master è",
+        "Master è",
+        "Master è",
+        "Master è",
+        "Master è",
+        "Master è"
+       ],
+       [
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "assegnato",
+        "assegnato",
+        "assegnato",
+        "assegnato",
+        "assegnato",
+        "assegnato"
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Iscrizioni ai corsi - Message reads own.xlsx"
+   },
+   "effect": null,
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-excel-group-header-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660021",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags",
+       "Agonisti",
+       "Master è"
+      ],
+      "data": [
+       [
+        "Bianchi",
+        "Bianchi",
+        "Bianchi",
+        "Bianchi",
+        "Bianchi",
+        "Bianchi"
+       ],
+       [
+        "Luisa",
+        "Luisa",
+        "Luisa",
+        "Luisa",
+        "Luisa",
+        "Luisa"
+       ],
+       [
+        "02/02/1985",
+        "02/02/1985",
+        "02/02/1985",
+        "02/02/1985",
+        "02/02/1985",
+        "02/02/1985"
+       ],
+       [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+       ],
+       [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+       ],
+       [
+        "Palestra",
+        "Palestra",
+        "Palestra",
+        "Palestra",
+        "Palestra",
+        "Palestra"
+       ],
+       [
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026"
+       ],
+       [
+        "Master è",
+        "Master è",
+        "Master è",
+        "Master è",
+        "Master è",
+        "Master è"
+       ],
+       [
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "assegnato",
+        "assegnato",
+        "assegnato",
+        "assegnato",
+        "assegnato",
+        "assegnato"
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Iscrizioni ai corsi - Message reads own.xlsx"
+   },
+   "effect": null,
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-excel-form-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660021",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags",
+       "Agonisti",
+       "Master è"
+      ],
+      "data": [
+       [
+        "Bianchi",
+        "Bianchi",
+        "Bianchi",
+        "Bianchi",
+        "Bianchi",
+        "Bianchi"
+       ],
+       [
+        "Luisa",
+        "Luisa",
+        "Luisa",
+        "Luisa",
+        "Luisa",
+        "Luisa"
+       ],
+       [
+        "02/02/1985",
+        "02/02/1985",
+        "02/02/1985",
+        "02/02/1985",
+        "02/02/1985",
+        "02/02/1985"
+       ],
+       [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+       ],
+       [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+       ],
+       [
+        "Palestra",
+        "Palestra",
+        "Palestra",
+        "Palestra",
+        "Palestra",
+        "Palestra"
+       ],
+       [
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026"
+       ],
+       [
+        "Master è",
+        "Master è",
+        "Master è",
+        "Master è",
+        "Master è",
+        "Master è"
+       ],
+       [
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "assegnato",
+        "assegnato",
+        "assegnato",
+        "assegnato",
+        "assegnato",
+        "assegnato"
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Iscrizioni ai corsi - Message reads own.xlsx"
+   },
+   "effect": null,
+   "raw_body": "format=pdf&format=excel",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-subscriptions-list-excel-subscription-carnet-title",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660020&subscription_id=a1000000-0000-4000-8000-000000660013",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags",
+       "Carnet",
+       "Agonisti",
+       "Master è"
+      ],
+      "data": [
+       [
+        "Rossi",
+        "Rossi",
+        "Rossi"
+       ],
+       [
+        "Mario",
+        "Mario",
+        "Mario"
+       ],
+       [
+        "10/05/1990",
+        "10/05/1990",
+        "10/05/1990"
+       ],
+       [
+        "mario@example.test",
+        "mario@example.test",
+        "mario@example.test"
+       ],
+       [
+        null,
+        null,
+        null
+       ],
+       [
+        "Yoga è",
+        "Yoga è",
+        "Yoga è"
+       ],
+       [
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026"
+       ],
+       [
+        "Agonisti, Master è",
+        "Agonisti, Master è",
+        "Agonisti, Master è"
+       ],
+       [
+        "-",
+        "-",
+        "Dieci ingressi (15/09/2026) - 7/10"
+       ],
+       [
+        "assegnato",
+        "assegnato",
+        "assegnato"
+       ],
+       [
+        "assegnato",
+        "assegnato",
+        "assegnato"
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Dieci ingressi - Message reads own.xlsx"
+   },
+   "effect": null,
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-excel-several-carnets",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660020&subscription_id=a1000000-0000-4000-8000-000000660015",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags",
+       "Carnet",
+       "Agonisti",
+       "Master è"
+      ],
+      "data": [
+       [
+        "Verdi",
+        "Verdi"
+       ],
+       [
+        "Piccolo",
+        "Piccolo"
+       ],
+       [
+        "01/06/2024",
+        "01/06/2024"
+       ],
+       [
+        null,
+        null
+       ],
+       [
+        null,
+        null
+       ],
+       [
+        "Yoga è",
+        "Yoga è"
+       ],
+       [
+        "10/09/2026",
+        "10/09/2026"
+       ],
+       [
+        "",
+        ""
+       ],
+       [
+        "Dieci ingressi (15/09/2026) - 7/10, Dieci ingressi (17/09/2026) - 10/10, Libero (18/09/2026)",
+        "-"
+       ],
+       [
+        "",
+        ""
+       ],
+       [
+        "",
+        ""
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Libero - Message reads own.xlsx"
+   },
+   "effect": null,
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-excel-include-deleted",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?include_deleted=true&course_id=a1000000-0000-4000-8000-000000660020&subscription_id=a1000000-0000-4000-8000-000000660013",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags",
+       "Carnet",
+       "Agonisti",
+       "Master è"
+      ],
+      "data": [
+       [
+        "Rossi",
+        "Rossi",
+        "Rossi",
+        "Rossi"
+       ],
+       [
+        "Mario",
+        "Mario",
+        "Mario",
+        "Mario"
+       ],
+       [
+        "10/05/1990",
+        "10/05/1990",
+        "10/05/1990",
+        "10/05/1990"
+       ],
+       [
+        "mario@example.test",
+        "mario@example.test",
+        "mario@example.test",
+        "mario@example.test"
+       ],
+       [
+        null,
+        null,
+        null,
+        null
+       ],
+       [
+        "Yoga è",
+        "Yoga è",
+        "Yoga è",
+        "Yoga è"
+       ],
+       [
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026",
+        "10/09/2026"
+       ],
+       [
+        "Agonisti, Master è",
+        "Agonisti, Master è",
+        "Agonisti, Master è",
+        "Agonisti, Master è"
+       ],
+       [
+        "-",
+        "-",
+        "-",
+        "Dieci ingressi (15/09/2026) - 7/10"
+       ],
+       [
+        "assegnato",
+        "assegnato",
+        "assegnato",
+        "assegnato"
+       ],
+       [
+        "assegnato",
+        "assegnato",
+        "assegnato",
+        "assegnato"
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Dieci ingressi - Message reads own.xlsx"
+   },
+   "effect": null,
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-excel-one-row",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660022",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags",
+       "Agonisti",
+       "Master è"
+      ],
+      "data": [
+       [
+        "Neri"
+       ],
+       [
+        "Gino"
+       ],
+       [
+        "03/03/1970"
+       ],
+       [
+        null
+       ],
+       [
+        null
+       ],
+       [
+        "Sala pesi"
+       ],
+       [
+        "10/09/2026"
+       ],
+       [
+        ""
+       ],
+       [
+        ""
+       ],
+       [
+        ""
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Iscrizioni ai corsi - Message reads own.xlsx"
+   },
+   "effect": null,
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-excel-empty",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660025",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags",
+       "Agonisti",
+       "Master è"
+      ],
+      "data": [
+       [],
+       [],
+       [],
+       [],
+       [],
+       [],
+       [],
+       [],
+       [],
+       []
+      ]
+     }
+    },
+    "filename": "[$today] Iscrizioni ai corsi - Message reads own.xlsx"
+   },
+   "effect": null,
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-excel-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags",
+       "Estero"
+      ],
+      "data": [
+       [
+        "Muller"
+       ],
+       [
+        "Hans"
+       ],
+       [
+        "01/01/1980"
+       ],
+       [
+        null
+       ],
+       [
+        null
+       ],
+       [
+        "Estero"
+       ],
+       [
+        "10/09/2026"
+       ],
+       [
+        "Estero"
+       ],
+       [
+        "assegnato"
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Iscrizioni ai corsi - Message reads foreign.xlsx"
+   },
+   "effect": null,
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-excel-row-without-subscription-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-excel-missing-birth-date-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660020&subscription_id=a1000000-0000-4000-8000-000000660016",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-excel-format-case-sensitive",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660022",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "format": "EXCEL"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-excel-string-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660022",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "\"excel\"",
+   "content_type": "application/json"
+  },
+  {
+   "name": "course-subscriptions-list-excel-malformed-json",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660022",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "JSON parse error - Expecting value: line 1 column 1 (char 0)"
+   },
+   "effect": null,
+   "raw_body": "nope",
+   "content_type": "application/json"
+  },
+  {
+   "name": "course-subscriptions-list-excel-filter-error-before-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=abc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "nope",
+   "content_type": "application/json"
+  },
+  {
+   "name": "course-subscriptions-list-excel-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/course-subscriptions/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-excel-athlete-not-association",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/course-subscriptions/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null,
+   "body": {
+    "format": "excel"
    }
   },
   {
@@ -12738,7 +13791,18 @@
       "auto_renewal": false,
       "membership_payments": [],
       "medical_label": "<span class=\"text-danger font-weight-boldest\"><i class=\"ph-bold ph-first-aid-kit\"></i>Scaduto da {since:2020-01-15}</span><span class=\"badge badge-info ml-1\" title=\"Certificato Medico Agonistico\">AG</span>",
-      "carnets": []
+      "carnets": [
+       {
+        "carnet_subscription_id": "a1000000-0000-4000-8000-000000669904",
+        "carnet_id": "a1000000-0000-4000-8000-000000660108",
+        "title": "Libero",
+        "lessons_total": 0,
+        "lessons_left": 0,
+        "lessons_used": 0,
+        "lessons_display": null,
+        "creation_date": "19/09/2026"
+       }
+      ]
      },
      {
       "course_subscription_id": "a1000000-0000-4000-8000-000000660070",

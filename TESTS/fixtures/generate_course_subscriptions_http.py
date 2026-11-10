@@ -11,8 +11,13 @@ optional ``course_id`` / ``subscription_id`` query values (a value the UUID
 column rejects is a 500) and ``course__sport_association`` =
 User.sport_association (athletes: PermissionDenied 'User is not a sport
 association'; owners without an association: 500). list renders
-{'data': [...]} unordered; POST runs the PDF/Excel export, whose invalid
-formats are a 500 (valid formats are not ported and not authored).
+{'data': [...]} unordered; POST reads request.data (a parse error is DRF's
+400) and runs current_view_course_subscription: an invalid format is a 500,
+'excel' answers {'file', 'filename'} with get_excel_base64 of the rows in the
+database's order (Cognome, Nome, Nato il, Email, Telefono, Corso, Data
+creazione, Tags, a Carnet column when a listed row has an enabled carnet
+subscription, one column per Tags of the association); a row without
+subscription, associate or birth date is a 500. The pdf file is not ported.
 
 The serializer renders the nested subscription (SubscriptionSerializerSimplify),
 the live group-aware installments, the live group-aware membership payments
@@ -240,6 +245,15 @@ HOLDINGS = {
     'h_plain': {'id': next(ids), 'carnet': 'dieci', 'cs': ['cs_carnet'], 'disabled': False, 'meta': None, 'created': '2026-09-17T08:00:00Z'},
     'h_zero': {'id': next(ids), 'carnet': 'zero', 'cs': ['cs_carnet'], 'disabled': False, 'meta': {}, 'created': '2026-09-18T08:00:00Z'},
 }
+# Tags of the excel export, with ids of their own (the shared iterator stays as it was). Tags and their through rows are
+# seeded in this order; the export reads them without ORDER BY (course-subscriptions.md, "Excel export").
+TAGS = {'t_a': {'id': 'a1000000-0000-4000-8000-000000669901', 'association': OWN, 'name': 'Agonisti'},
+        't_b': {'id': 'a1000000-0000-4000-8000-000000669902', 'association': OWN, 'name': 'Master è'},
+        't_f': {'id': 'a1000000-0000-4000-8000-000000669903', 'association': FOREIGN, 'name': 'Estero'}}
+SUBSCRIPTION_TAGS = {'sub_mario': ['t_a', 't_b'], 'sub_luisa': ['t_b'], 'sub_abroad': ['t_f']}
+# A carnet subscription of a soft-deleted course subscription: the export's prefetch does not list it.
+HOLDINGS['h_deleted'] = {'id': 'a1000000-0000-4000-8000-000000669904', 'carnet': 'zero', 'cs': ['cs_deleted'], 'disabled': False,
+                         'meta': None, 'created': '2026-09-19T08:00:00Z'}
 UNKNOWN = 'a1000000-0000-4000-8000-000000669999'
 
 STATE = {'cs': copy.deepcopy(CS), 'payments': copy.deepcopy(PAYMENTS), 'installments': copy.deepcopy(INSTALLMENTS)}
@@ -687,6 +701,79 @@ add('list-export-athlete-not-association', 'athlete', LIST, 403, NOT_ASSOCIATION
 add('list-export-malformed-filter-server-error', 'owner', f'{LIST}?subscription_id=abc', 500, SERVER, method='POST', body={'format': 'pdf'})
 add('list-export-restricted-missing-permission', 'restricted_collaborator', LIST, 403, missing('read'), method='POST', body={'format': 'pdf'})
 
+# POST excel: current_view_course_subscription over get_queryset() (database order: the seed order of CS).
+EXCEL = {'format': 'excel'}
+ddmmyyyy = lambda text: f'{text[8:10]}/{text[5:7]}/{text[:4]}'
+
+
+def export(*labels, association=OWN, denomination='Message reads own'):
+    title, lookup, listed = 'Iscrizioni ai corsi', {}, set(labels)
+    for holding in HOLDINGS.values():
+        if holding['disabled']:
+            continue
+        # One queryset row per listed course subscription of the holding; each walks its live course subscriptions.
+        for _ in [cs for cs in holding['cs'] if cs in listed]:
+            for cs in holding['cs']:
+                if cs not in listed or CS[cs]['deleted']:
+                    continue
+                carnet = CARNETS[holding['carnet']]
+                title = carnet['title'] or 'Carnet'  # the loop rebinds the function's title
+                total = carnet['lessons'] or 0
+                left = holding['meta'].get('lessons_left', total) if holding['meta'] else total
+                display = f"{title} ({ddmmyyyy(holding['created'])})" + (f' - {left}/{total}' if total else '')
+                lookup.setdefault(cs, []).append(display)
+    rows = [CS[label] for label in labels]
+    people = [ASSOCIATES[SUBSCRIPTIONS[row['subscription']]['associate']] for row in rows]
+    owned = [SUBSCRIPTION_TAGS.get(row['subscription'], []) for row in rows]
+    columns = ['Cognome', 'Nome', 'Nato il', 'Email', 'Telefono', 'Corso', 'Data creazione', 'Tags']
+    data = [[person['last'] for person in people], [person['first'] for person in people],
+            [f"{person['born'][8:10]}/{person['born'][5:7]}/{person['born'][:4]}" for person in people],
+            [person['email'] for person in people], [None for _ in people], [COURSES[row['course']]['title'] for row in rows],
+            [ddmmyyyy(row['created']) for row in rows], [', '.join(TAGS[t]['name'] for t in tags) for tags in owned]]
+    if lookup:
+        columns.append('Carnet')
+        data.append([', '.join(lookup.get(label, [])) or '-' for label in labels])
+    for key, tag in TAGS.items():
+        if tag['association'] == association:
+            columns.append(tag['name'])
+            data.append(['assegnato' if key in tags else '' for tags in owned])
+    return {'file': {'$xlsx': {'engine': 'excel_utils', 'columns': columns, 'data': data}},
+            'filename': f'[$today] {title} - {denomination}.xlsx'}
+
+
+PALESTRA = ('cs_member', 'cs_dup', 'cs_mismatch', 'cs_recover', 'cs_badmeta', 'cs_bd2')
+add('list-excel-course', 'owner', f'{LIST}?course_id={C("palestra")}', 200, export(*PALESTRA), method='POST', body=EXCEL)
+add('list-excel-full-collaborator', 'full_collaborator', f'{LIST}?course_id={C("palestra")}', 200, export(*PALESTRA), method='POST', body=EXCEL)
+add('list-excel-group-header-ignored', 'owner', f'{LIST}?course_id={C("palestra")}', 200, export(*PALESTRA), method='POST', body=EXCEL,
+    headers=GROUP)
+add('list-excel-form-body', 'owner', f'{LIST}?course_id={C("palestra")}', 200, export(*PALESTRA), method='POST',
+    raw_body='format=pdf&format=excel', content_type='application/x-www-form-urlencoded')
+# One carnet subscription on a listed row: the Carnet column, and its title in the filename.
+# The export cases filter one course: across courses the unordered statement's row order follows the query plan.
+add('list-excel-subscription-carnet-title', 'admin', f'{LIST}?course_id={C("yoga")}&subscription_id={S("sub_mario")}', 200,
+    export('cs_yoga', 'cs_del', 'cs_bd1'), method='POST', body=EXCEL, headers=ADMIN_OWNER)
+add('list-excel-several-carnets', 'owner', f'{LIST}?course_id={C("yoga")}&subscription_id={S("sub_piccolo")}', 200,
+    export('cs_carnet', 'cs_del5'), method='POST', body=EXCEL)
+add('list-excel-include-deleted', 'owner', f'{LIST}?include_deleted=true&course_id={C("yoga")}&subscription_id={S("sub_mario")}', 200,
+    export('cs_yoga', 'cs_deleted', 'cs_del', 'cs_bd1'), method='POST', body=EXCEL)
+add('list-excel-one-row', 'owner', f'{LIST}?course_id={C("sala")}', 200, export('cs_invoiced'), method='POST', body=EXCEL)
+add('list-excel-empty', 'owner', f'{LIST}?course_id={C("estero")}', 200, export(), method='POST', body=EXCEL)
+add('list-excel-foreign-owner', 'foreign_owner', LIST, 200, export('cs_abroad', association=FOREIGN, denomination='Message reads foreign'),
+    method='POST', body=EXCEL)
+# A row without subscription, or an associate without birth date, raises in the export.
+add('list-excel-row-without-subscription-server-error', 'owner', LIST, 500, SERVER, method='POST', body=EXCEL)
+add('list-excel-missing-birth-date-server-error', 'owner', f'{LIST}?course_id={C("yoga")}&subscription_id={S("sub_senza")}', 500, SERVER,
+    method='POST', body=EXCEL)
+add('list-excel-format-case-sensitive', 'owner', f'{LIST}?course_id={C("sala")}', 500, SERVER, method='POST', body={'format': 'EXCEL'})
+add('list-excel-string-body-server-error', 'owner', f'{LIST}?course_id={C("sala")}', 500, SERVER, method='POST', raw_body='"excel"',
+    content_type='application/json')
+add('list-excel-malformed-json', 'owner', f'{LIST}?course_id={C("sala")}', 400,
+    {'detail': 'JSON parse error - Expecting value: line 1 column 1 (char 0)'}, method='POST', raw_body='nope', content_type='application/json')
+add('list-excel-filter-error-before-body', 'owner', f'{LIST}?course_id=abc', 500, SERVER, method='POST', raw_body='nope',
+    content_type='application/json')
+add('list-excel-owner-without-association-server-error', 'owner_without_association', LIST, 500, SERVER, method='POST', body=EXCEL)
+add('list-excel-athlete-not-association', 'athlete', LIST, 403, NOT_ASSOCIATION, method='POST', body=EXCEL)
+
 # --- update ----------------------------------------------------------------
 def updated(actor, label, fields, changes, *, payments=None, index=None, sent=()):
     """A partial update: the stored row takes fields; changes are auditlog's pairs;
@@ -1014,6 +1101,7 @@ OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Course subscription
                               'ids': IDS, 'category': CATEGORY, 'document': DOCUMENT, 'associates': ASSOCIATES, 'medicals': MEDICALS,
                               'subscriptions': SUBSCRIPTIONS, 'courses': COURSES, 'payments': PAYMENTS, 'course_subscriptions': CS,
                               'installments': INSTALLMENTS, 'carnets': CARNETS, 'holdings': HOLDINGS, 'instructor': INSTRUCTOR,
+                              'tags': TAGS, 'subscription_tags': SUBSCRIPTION_TAGS,
                               'invoice': INVOICE, 'cases': cases},
                              ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')
