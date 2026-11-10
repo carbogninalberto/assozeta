@@ -20644,13 +20644,24 @@
         "BE_GO/internal/repository/payment_stats_stripe.go",
         "BE_GO/internal/stripeapi/client.go",
         "BE_GO/internal/service/stripe_routes.go",
-        "BE_GO/internal/service/stripe_availability.go"
+        "BE_GO/internal/service/stripe_availability.go",
+        "BE_GO/internal/domain/payment_reads_athlete.go",
+        "BE_GO/internal/dto/payment_reads_athlete.go",
+        "BE_GO/internal/dto/payment_reads_athlete_test.go",
+        "BE_GO/internal/repository/payment_reads_athlete.go",
+        "BE_GO/internal/service/payment_reads_athlete.go",
+        "BE_GO/internal/service/document_render.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/repository/scoped_resources.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
         "PaymentSerializer, InstructorSerializer, SupplierSerializer and BasicAssociateSerializer ports; personas-reads search preparation and pagination",
         "application_payment, application_associate, application_associatetutorrelation, application_subscription, application_coursesubscription, application_coursesubscriptioninstallment, application_carnetsubscription, application_course, application_carnet, application_invoice, application_instructorhours, application_customaccounts, application_paymentcategory, application_supplierandcustomers, application_instructor, docmanager_document, instance_instanceconfiguration",
-        "stripe-routes Stripe SDK port (stripeapi) and integration settings; Django cache (django-redis, DB 1)"
+        "stripe-routes Stripe SDK port (stripeapi) and integration settings; Django cache (django-redis, DB 1)",
+        "document-render: DocumentRender.Render (invoice route), the PDF renderer client, the Celery producer (save_to_storage, send_mail_async) and its audit writes",
+        "scoped_queryset family boundary (familyScopeCTE); StripeAvailability (stripe_direct_credentials_configured)",
+        "application_sportassociation, bakney_user, application_carnetsubscription_course_subscription, application_campsandretreatssubscriptionperiod, application_campsandretreatsperiod, application_campsandretreatssubscription, auditlog_logentry, application_auditlogindex"
       ],
       "contract": {
         "methods": [
@@ -20662,14 +20673,14 @@
           "/api/v2/payment/list",
           "/api/payment/list"
         ],
-        "request": "Query: mode=compressed, course_subscription_id, associate_id, query[archived], query[payment_range], query[subject], query[type], query[paid], query[expense], query[payment_categories], query[account], query[generalSearch], sort[field], sort[sort], pagination[page], pagination[perpage]; optional X-Group-Id.",
-        "response": "200 {\"data\": [PaymentOptimizedSerializer + instructor_document(_token)], \"meta\": {total, page, pages, perpage, rowIds}} by -payment_date, -creation_date; compressed: {\"data\": [values()]} by -creation_date.",
-        "errors": "401; 403 administrator without impersonation or registry permission; 405 other methods; 500 owner without association; 400 malformed course_subscription_id; 404 Invalid page.; 500 invalid archived/subject/UUID filters or unknown ordering; athletes outside the compressed mode refused (500).",
+        "request": "Query: mode=compressed, course_subscription_id, associate_id, query[archived], query[payment_range], query[subject], query[type], query[paid], query[expense], query[payment_categories], query[account], query[generalSearch], sort[field], sort[sort], pagination[page], pagination[perpage]; optional X-Group-Id. Athletes (no mode=compressed): only course_subscription_id is read, plus send_receipt_email (and download) by the in-process document_invoice.",
+        "response": "200 {\"data\": [PaymentOptimizedSerializer + instructor_document(_token)], \"meta\": {total, page, pages, perpage, rowIds}} by -payment_date, -creation_date; compressed: {\"data\": [values()]} by -creation_date. Athletes: {\"data\": {\"<index>\": PaymentCompressedSerializer (with get_meta) + payment_method, online_pay_available, sport_association_denomination, one_solution_available and, for paid invoiced rows, document_pdf}, \"meta\": {}}: by paid, -creation_date, or in database order with course_subscription_id.",
+        "errors": "401; 403 administrator without impersonation or registry permission; 405 other methods; 500 owner without association; 400 malformed course_subscription_id; 404 Invalid page.; 500 invalid archived/subject/UUID filters or unknown ordering. Athletes: 500 for an empty or unknown course_subscription_id, an installment without payment, a payment without association, a get_meta match without its subscription and malformed one-fee course events; 403 for a course_subscription_id outside an association-scoped session; 500 in the compressed mode.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
-        "permissions": "Registry bookeeping.payments.read; athlete view for association-scoped sessions.",
-        "resource_scope": "Live, group-aware payments of request.user.sportassociation (base manager) and the scoped session's association.",
-        "side_effects": "None.",
-        "transaction": "Autocommit reads.",
+        "permissions": "Registry bookeeping.payments.read; athlete view for association-scoped sessions (query references checked).",
+        "resource_scope": "Live, group-aware payments of request.user.sportassociation (base manager) and the scoped session's association. Athletes: the live group-aware income payments of the athlete's user and of the associates of the athlete's subscriptions (created at most 60 days ahead, minus the installment and zero-amount exclusions), or the payments of the course subscription named by course_subscription_id (resolved by id), its installments and linked carnet holdings; an association-scoped session keeps scoped_queryset's association and family boundary on every queryset.",
+        "side_effects": "Owner listing: eager print_document_compensation (GET CURRENT_HOST/document/compensation/<id>) for listed compensations without a document. Athletes: document_invoice in-process for each listed paid payment whose invoice has no PDF: a Document row, the renderer request, the save_to_storage Celery task, the invoice's document_pdf, the auditlog entries with their index rows and, with send_receipt_email, the send_mail_async task; failures are ignored by the list.",
+        "transaction": "Autocommit reads; each receipt write commits on its own (no request transaction).",
         "execution_owner": "django"
       },
       "tests": [
@@ -20682,25 +20693,25 @@
         "docs/architecture/go-migration/payment-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 248/248; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-reads-http-v2pay2-stats-red-r1/results.json",
-          "receipt_sha256": "ab7e05023d6b5d9f7674d755b51d4ac548877c821959b2c73e7711332ceae3e8"
+          "result": "RED: Django 270/270; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2athpay-red-r3/results.json",
+          "receipt_sha256": "223a5cfaa5fef03c471c95f31836bbadc145214f0783936c9bb4d0710352894f"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 248/248 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects Final GREEN on the integrated tree (payment scope, default category and v2 payment changes together)..",
-          "artifact": "quality-reports/go-migration/payment-reads-http-merged-pay-r1/results.json",
-          "receipt_sha256": "fdc9db624d815fd515d5c31ad012727fb6cfaeaf49cf8948025a84a46ab17c7b"
+          "result": "GREEN: 270/270 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2athpay-versioned-r1/results.json",
+          "receipt_sha256": "221a444de6cef8e5b854b9916fdd9e043a57547401888540d7c25a1cc1d51547"
         },
         {
-          "revision": "Stripe fees skipping refunds instead of payouts",
-          "result": "Mutation control: fails Go on payment-reads-stats-stripe-fees-fetched-and-cached (response.body).",
-          "artifact": "quality-reports/go-migration/payment-reads-http-v2pay2-stats-mutation-r1/results.json",
-          "receipt_sha256": "4f8a5bc27f99d34cebb0f5af16278058221b512f79d4e44b0154bab5f059b34a"
+          "revision": "zero course subscription payments excluded from the athlete list whatever the owner's show_zero_payments",
+          "result": "Mutation control: fails Go on payment-reads-athlete-list-renderer-failure (response.body).",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2athpay-mutation-r1/results.json",
+          "receipt_sha256": "06aa6f2ae717849f76997a315ed5bebbe3bbed5790c98ba94830f025dbf16a6e"
         }
       ],
       "notes": [
-        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500). API v2: sort[field]=user and instructor compensations (several hours, eager compensation print) are ported. API v2: payment/stats with Stripe configured (Django cache entry read and written in django-redis format, BalanceTransaction list over every page, zero uncached on errors) is ported."
+        "Implementing: Payment list (owner/collaborator listing, compressed mode and the athlete list), payment stats and subscription payments with HTTP parity. API v2: the athlete list is ported (both query variants, installment and zero-amount exclusions, PaymentCompressedSerializer with get_meta, online payment flags, index-keyed response, receipts through document_invoice in-process, association-scoped sessions). Still refused (500): compile-time orderings, random ordering with the text search, infinite search terms, and an athlete receipt whose filename is not a valid header value. Earlier API v2 ports: sort[field]=user, instructor compensations (eager compensation print), payment/stats with Stripe configured."
       ]
     },
     {
@@ -21040,13 +21051,24 @@
         "BE_GO/internal/repository/payment_stats_stripe.go",
         "BE_GO/internal/stripeapi/client.go",
         "BE_GO/internal/service/stripe_routes.go",
-        "BE_GO/internal/service/stripe_availability.go"
+        "BE_GO/internal/service/stripe_availability.go",
+        "BE_GO/internal/domain/payment_reads_athlete.go",
+        "BE_GO/internal/dto/payment_reads_athlete.go",
+        "BE_GO/internal/dto/payment_reads_athlete_test.go",
+        "BE_GO/internal/repository/payment_reads_athlete.go",
+        "BE_GO/internal/service/payment_reads_athlete.go",
+        "BE_GO/internal/service/document_render.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/repository/scoped_resources.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
         "PaymentSerializer, InstructorSerializer, SupplierSerializer and BasicAssociateSerializer ports; personas-reads search preparation and pagination",
         "application_payment, application_associate, application_associatetutorrelation, application_subscription, application_coursesubscription, application_coursesubscriptioninstallment, application_carnetsubscription, application_course, application_carnet, application_invoice, application_instructorhours, application_customaccounts, application_paymentcategory, application_supplierandcustomers, application_instructor, docmanager_document, instance_instanceconfiguration",
-        "stripe-routes Stripe SDK port (stripeapi) and integration settings; Django cache (django-redis, DB 1)"
+        "stripe-routes Stripe SDK port (stripeapi) and integration settings; Django cache (django-redis, DB 1)",
+        "document-render: DocumentRender.Render (invoice route), the PDF renderer client, the Celery producer (save_to_storage, send_mail_async) and its audit writes",
+        "scoped_queryset family boundary (familyScopeCTE); StripeAvailability (stripe_direct_credentials_configured)",
+        "application_sportassociation, bakney_user, application_carnetsubscription_course_subscription, application_campsandretreatssubscriptionperiod, application_campsandretreatsperiod, application_campsandretreatssubscription, auditlog_logentry, application_auditlogindex"
       ],
       "contract": {
         "methods": [
@@ -21078,25 +21100,25 @@
         "docs/architecture/go-migration/payment-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 248/248; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-reads-http-v2pay2-stats-red-r1/results.json",
-          "receipt_sha256": "ab7e05023d6b5d9f7674d755b51d4ac548877c821959b2c73e7711332ceae3e8"
+          "result": "RED: Django 270/270; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2athpay-red-r3/results.json",
+          "receipt_sha256": "223a5cfaa5fef03c471c95f31836bbadc145214f0783936c9bb4d0710352894f"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 248/248 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects Final GREEN on the integrated tree (payment scope, default category and v2 payment changes together)..",
-          "artifact": "quality-reports/go-migration/payment-reads-http-merged-pay-r1/results.json",
-          "receipt_sha256": "fdc9db624d815fd515d5c31ad012727fb6cfaeaf49cf8948025a84a46ab17c7b"
+          "result": "GREEN: 270/270 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2athpay-versioned-r1/results.json",
+          "receipt_sha256": "221a444de6cef8e5b854b9916fdd9e043a57547401888540d7c25a1cc1d51547"
         },
         {
-          "revision": "Stripe fees skipping refunds instead of payouts",
-          "result": "Mutation control: fails Go on payment-reads-stats-stripe-fees-fetched-and-cached (response.body).",
-          "artifact": "quality-reports/go-migration/payment-reads-http-v2pay2-stats-mutation-r1/results.json",
-          "receipt_sha256": "4f8a5bc27f99d34cebb0f5af16278058221b512f79d4e44b0154bab5f059b34a"
+          "revision": "zero course subscription payments excluded from the athlete list whatever the owner's show_zero_payments",
+          "result": "Mutation control: fails Go on payment-reads-athlete-list-renderer-failure (response.body).",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2athpay-mutation-r1/results.json",
+          "receipt_sha256": "06aa6f2ae717849f76997a315ed5bebbe3bbed5790c98ba94830f025dbf16a6e"
         }
       ],
       "notes": [
-        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500). API v2: sort[field]=user and instructor compensations (several hours, eager compensation print) are ported. API v2: payment/stats with Stripe configured (Django cache entry read and written in django-redis format, BalanceTransaction list over every page, zero uncached on errors) is ported."
+        "Implementing: Payment list (owner/collaborator listing, compressed mode and the athlete list), payment stats and subscription payments with HTTP parity. API v2: the athlete list is ported (both query variants, installment and zero-amount exclusions, PaymentCompressedSerializer with get_meta, online payment flags, index-keyed response, receipts through document_invoice in-process, association-scoped sessions). Still refused (500): compile-time orderings, random ordering with the text search, infinite search terms, and an athlete receipt whose filename is not a valid header value. Earlier API v2 ports: sort[field]=user, instructor compensations (eager compensation print), payment/stats with Stripe configured."
       ]
     },
     {
@@ -25857,13 +25879,24 @@
         "BE_GO/internal/repository/payment_stats_stripe.go",
         "BE_GO/internal/stripeapi/client.go",
         "BE_GO/internal/service/stripe_routes.go",
-        "BE_GO/internal/service/stripe_availability.go"
+        "BE_GO/internal/service/stripe_availability.go",
+        "BE_GO/internal/domain/payment_reads_athlete.go",
+        "BE_GO/internal/dto/payment_reads_athlete.go",
+        "BE_GO/internal/dto/payment_reads_athlete_test.go",
+        "BE_GO/internal/repository/payment_reads_athlete.go",
+        "BE_GO/internal/service/payment_reads_athlete.go",
+        "BE_GO/internal/service/document_render.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/repository/scoped_resources.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
         "PaymentSerializer, InstructorSerializer, SupplierSerializer and BasicAssociateSerializer ports; personas-reads search preparation and pagination",
         "application_payment, application_associate, application_associatetutorrelation, application_subscription, application_coursesubscription, application_coursesubscriptioninstallment, application_carnetsubscription, application_course, application_carnet, application_invoice, application_instructorhours, application_customaccounts, application_paymentcategory, application_supplierandcustomers, application_instructor, docmanager_document, instance_instanceconfiguration",
-        "stripe-routes Stripe SDK port (stripeapi) and integration settings; Django cache (django-redis, DB 1)"
+        "stripe-routes Stripe SDK port (stripeapi) and integration settings; Django cache (django-redis, DB 1)",
+        "document-render: DocumentRender.Render (invoice route), the PDF renderer client, the Celery producer (save_to_storage, send_mail_async) and its audit writes",
+        "scoped_queryset family boundary (familyScopeCTE); StripeAvailability (stripe_direct_credentials_configured)",
+        "application_sportassociation, bakney_user, application_carnetsubscription_course_subscription, application_campsandretreatssubscriptionperiod, application_campsandretreatsperiod, application_campsandretreatssubscription, auditlog_logentry, application_auditlogindex"
       ],
       "contract": {
         "methods": [
@@ -25895,25 +25928,25 @@
         "docs/architecture/go-migration/payment-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 248/248; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-reads-http-v2pay2-stats-red-r1/results.json",
-          "receipt_sha256": "ab7e05023d6b5d9f7674d755b51d4ac548877c821959b2c73e7711332ceae3e8"
+          "result": "RED: Django 270/270; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2athpay-red-r3/results.json",
+          "receipt_sha256": "223a5cfaa5fef03c471c95f31836bbadc145214f0783936c9bb4d0710352894f"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 248/248 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects Final GREEN on the integrated tree (payment scope, default category and v2 payment changes together)..",
-          "artifact": "quality-reports/go-migration/payment-reads-http-merged-pay-r1/results.json",
-          "receipt_sha256": "fdc9db624d815fd515d5c31ad012727fb6cfaeaf49cf8948025a84a46ab17c7b"
+          "result": "GREEN: 270/270 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2athpay-versioned-r1/results.json",
+          "receipt_sha256": "221a444de6cef8e5b854b9916fdd9e043a57547401888540d7c25a1cc1d51547"
         },
         {
-          "revision": "Stripe fees skipping refunds instead of payouts",
-          "result": "Mutation control: fails Go on payment-reads-stats-stripe-fees-fetched-and-cached (response.body).",
-          "artifact": "quality-reports/go-migration/payment-reads-http-v2pay2-stats-mutation-r1/results.json",
-          "receipt_sha256": "4f8a5bc27f99d34cebb0f5af16278058221b512f79d4e44b0154bab5f059b34a"
+          "revision": "zero course subscription payments excluded from the athlete list whatever the owner's show_zero_payments",
+          "result": "Mutation control: fails Go on payment-reads-athlete-list-renderer-failure (response.body).",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2athpay-mutation-r1/results.json",
+          "receipt_sha256": "06aa6f2ae717849f76997a315ed5bebbe3bbed5790c98ba94830f025dbf16a6e"
         }
       ],
       "notes": [
-        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500). API v2: sort[field]=user and instructor compensations (several hours, eager compensation print) are ported. API v2: payment/stats with Stripe configured (Django cache entry read and written in django-redis format, BalanceTransaction list over every page, zero uncached on errors) is ported."
+        "Implementing: Payment list (owner/collaborator listing, compressed mode and the athlete list), payment stats and subscription payments with HTTP parity. API v2: the athlete list is ported (both query variants, installment and zero-amount exclusions, PaymentCompressedSerializer with get_meta, online payment flags, index-keyed response, receipts through document_invoice in-process, association-scoped sessions). Still refused (500): compile-time orderings, random ordering with the text search, infinite search terms, and an athlete receipt whose filename is not a valid header value. Earlier API v2 ports: sort[field]=user, instructor compensations (eager compensation print), payment/stats with Stripe configured."
       ]
     },
     {
