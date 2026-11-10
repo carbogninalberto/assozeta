@@ -45072,7 +45072,9 @@
         "BE_GO/internal/associationexport/values_test.go",
         "BE_GO/internal/pyzlib/pyzlib_test.go",
         "BE_GO/internal/repository/consumer_restore_cache_test.go",
-        "BE_GO/internal/service/consumer_export_association_test.go"
+        "BE_GO/internal/service/consumer_export_association_test.go",
+        "BE/application/tests/test_export_service.py",
+        "BE_GO/internal/associationexport/plan_test.go"
       ],
       "evidence": [
         {
@@ -45123,13 +45125,70 @@
           "result": "re-run after the shared changes (Task.Cleanup, pyzip FileWriter): passed 15/15",
           "artifact": "quality-reports/go-migration/consumer-restore-rerun-celery-consumer-process-export/results.json",
           "receipt_sha256": "abd05d0f4a8dd8be064a310856df296a5611d4c1c244db68119cfb639fd19103"
+        },
+        {
+          "command": "BE manage.py test application.tests.test_export_* test_import_* test_validators test_platform_billing_invoice_removal instance.tests.test_data_restore test_message_historical_restore test_restore_archive_entries test_restore_progress test_backup_restore",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "Django: RED first (export 6 failures; import/restore 5 failures), then GREEN 206/206",
+          "artifact": "quality-reports/go-migration/sec-data-portability-django/django-green.log",
+          "receipt_sha256": "1c8bd6c9457aa4d4ccd7d45350fc19d9b1ff0300ca0f20bb3b77b5fef05a6e97"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_export_process.py (plan.json before regeneration)",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "red: the export plan Django generates differs (stale plan)",
+          "artifact": "quality-reports/go-migration/sec-data-portability-export-red/run.log",
+          "receipt_sha256": "5fd593c7c17301996257ba40f8d9d27fd0d7af534f8cc8424e9dc758ada43122"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_export_process.py",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "passed 8/8 (rich scenario adds mail settings and a collaborator running another association; authored check reads the archive)",
+          "artifact": "quality-reports/go-migration/sec-data-portability-export-process/results.json",
+          "receipt_sha256": "072dad80f5d28959db2edcc4ce930fefd9cc7ada89d50b685a7638119f5bac2a"
+        },
+        {
+          "command": "mutation: export writes RecoveryExport fields (consumer_export_association.go exportPlan)",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "CAUGHT: Go differs from Django on the rich export",
+          "artifact": "quality-reports/go-migration/sec-data-portability-mutation-export-fields/result.txt",
+          "receipt_sha256": "ed88caae6c9bd26038a363002ecb61149cfc03b3ab06108280babf36aa60f7ab"
+        },
+        {
+          "command": "mutation: LoadPlan restores the earlier owner/collaborator queries (plan.go)",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "CAUGHT: Go differs from Django on the rich export",
+          "artifact": "quality-reports/go-migration/sec-data-portability-mutation-export-scope/result.txt",
+          "receipt_sha256": "abdbfdac8cef2a30d79722a022569dffda48d81cdad05196ea863beddfbe14ed"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_restore_process.py",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "re-run (RecoveryExport shares the plan): passed 23/23",
+          "artifact": "quality-reports/go-migration/sec-data-portability-restore-process/results.json",
+          "receipt_sha256": "bec8c3919ca4f8fdee11cd10e723c45e42d2ef71768815e195e5322acc8d994d"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_capabilities_process.py",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "re-run after the shared changes: passed 13/13",
+          "artifact": "quality-reports/go-migration/sec-data-portability-rerun-capabilities/results.json",
+          "receipt_sha256": "090009d11c0b40890b56141eae90dce44c5cf28272521439f61c369d9a54e143"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_process.py",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "re-run after the shared changes: passed 15/15",
+          "artifact": "quality-reports/go-migration/sec-data-portability-rerun-celery-consumer-process/results.json",
+          "receipt_sha256": "038a4a243a3303c55b2130f8663e1573a069fd0c766181a1597c2cb80f7f9a3b"
         }
       ],
       "notes": [
         "Main reconciliation 06bac65: export_association_data no longer reads nonexistent service.skipped_records after successful archive creation; preserve successful completion and verify the task contract in Go.",
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "consumer-restore step 2: cmd/celery-consumer runs the message-consumed export_association_data when GO_TASK_QUEUE_TASKS routes it to assozeta-go: every read in Plan (lookups, credential hashes, Django's own compiled export querysets from internal/associationexport/plan.json, attachments, manifest, ZIP with the pure-Go zlib port), then cleanup_old_exports, the export Document/archive rows with audit, the S3 object, the summary e-mail child, the progress state/cache/WebSocket events and the result in Django's order. Handed off before any effect: arguments other than lowercase canonical UUID strings, credential password hashes other than pbkdf2_sha256/sha1, referenced export documents, values outside the serialized subset, ZIP64 or >1 GiB archives, read errors. execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-restore.md."
+        "consumer-restore step 2: cmd/celery-consumer runs the message-consumed export_association_data when GO_TASK_QUEUE_TASKS routes it to assozeta-go: every read in Plan (lookups, credential hashes, Django's own compiled export querysets from internal/associationexport/plan.json, attachments, manifest, ZIP with the pure-Go zlib port), then cleanup_old_exports, the export Document/archive rows with audit, the S3 object, the summary e-mail child, the progress state/cache/WebSocket events and the result in Django's order. Handed off before any effect: arguments other than lowercase canonical UUID strings, credential password hashes other than pbkdf2_sha256/sha1, referenced export documents, values outside the serialized subset, ZIP64 or >1 GiB archives, read errors. execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-restore.md.",
+        "sec-data-portability: the export leaves out CommunicationConfiguration.email_smtp_password and User.integration_google_state, and its queries select the association's own records (association row by key; instructors and invites on the owner account; module responses to its modules; signatures of the owner and subscribed members). Go: regenerated plan.json. See docs/architecture/go-migration/consumer-restore.md."
       ]
     },
     {
@@ -45372,7 +45431,8 @@
         "TESTS/adapters/go/celery_consumer_import_process.py",
         "TESTS/adapters/go/association_import_plan.py",
         "TESTS/adapters/go/consumer_import_settings.py",
-        "BE_GO/internal/importeffects/importeffects_test.go"
+        "BE_GO/internal/importeffects/importeffects_test.go",
+        "BE/application/tests/test_import_identity_media.py"
       ],
       "evidence": [
         {
@@ -45423,13 +45483,84 @@
           "result": "re-run after the shared change: passed 15/15",
           "artifact": "quality-reports/go-migration/consumer-import-rerun-celery-consumer-process/results.json",
           "receipt_sha256": "471e96d4c806f7ae69f7b107ac906ec737d7c98ee0bd0e526e09a07d2b75ee5b"
+        },
+        {
+          "command": "BE manage.py test application.tests.test_export_* test_import_* test_validators test_platform_billing_invoice_removal instance.tests.test_data_restore test_message_historical_restore test_restore_archive_entries test_restore_progress test_backup_restore",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "Django: RED first (export 6 failures; import/restore 5 failures), then GREEN 206/206",
+          "artifact": "quality-reports/go-migration/sec-data-portability-django/django-green.log",
+          "receipt_sha256": "1c8bd6c9457aa4d4ccd7d45350fc19d9b1ff0300ca0f20bb3b77b5fef05a6e97"
+        },
+        {
+          "command": "CELERY_CONSUMER_DJANGO_ONLY=1 python -I TESTS/adapters/go/celery_consumer_import_process.py",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "oracle: Django prefork worker alone passed all 20 import scenarios",
+          "artifact": "quality-reports/go-migration/sec-data-portability-import-oracle/results.json",
+          "receipt_sha256": "e8dfcb55b7de0aebe3c97919972b530dafd016cab3604a5b660a5a0916e537dd"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='not linked to the archive owner' python -I TESTS/adapters/go/celery_consumer_import_process.py (Go before the change)",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "red: Go differs from Django",
+          "artifact": "quality-reports/go-migration/sec-data-portability-import-red/results.json",
+          "receipt_sha256": "624ca2a7e38da6f8f62ad2dc55a4e357b891ef45c5d7354433a1ca22a088df89"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='linked to the archive owner is reused' python -I TESTS/adapters/go/celery_consumer_import_process.py (Go before the change)",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "red: Go differs from Django",
+          "artifact": "quality-reports/go-migration/sec-data-portability-import-red-credentials/results.json",
+          "receipt_sha256": "7cdc5ea872e77df746b3a5c262259413bc20da62b3759637c2fa3492326c8306"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_import_process.py",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "passed 20/20",
+          "artifact": "quality-reports/go-migration/sec-data-portability-import-process/results.json",
+          "receipt_sha256": "bd27ccd8b7e04d2a0fddb067a6c8a394f0fe68ba09f475f0b2906efb5098ed47"
+        },
+        {
+          "command": "mutation: reused accounts take the archived hash on import",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "CAUGHT: Go differs from Django",
+          "artifact": "quality-reports/go-migration/sec-data-portability-mutation-import-credentials/result.txt",
+          "receipt_sha256": "7bf29a3abb39fcc6c58ce807c2eac1ef5b7079832d986b6e666b1747f500cc91"
+        },
+        {
+          "command": "mutation: validation accepts accounts not linked to the archive owner",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "CAUGHT: Go differs from Django",
+          "artifact": "quality-reports/go-migration/sec-data-portability-mutation-import-link/result.txt",
+          "receipt_sha256": "acde9fba0de9d92aab5e738f7e4886138c14c2c4c9f42637cc8bf8b53c7bde23"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_restore_process.py",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "re-run (shared importer): passed 23/23",
+          "artifact": "quality-reports/go-migration/sec-data-portability-restore-process/results.json",
+          "receipt_sha256": "bec8c3919ca4f8fdee11cd10e723c45e42d2ef71768815e195e5322acc8d994d"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_capabilities_process.py",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "re-run after the shared changes: passed 13/13",
+          "artifact": "quality-reports/go-migration/sec-data-portability-rerun-capabilities/results.json",
+          "receipt_sha256": "090009d11c0b40890b56141eae90dce44c5cf28272521439f61c369d9a54e143"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_process.py",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "re-run after the shared changes: passed 15/15",
+          "artifact": "quality-reports/go-migration/sec-data-portability-rerun-celery-consumer-process/results.json",
+          "receipt_sha256": "038a4a243a3303c55b2130f8663e1573a069fd0c766181a1597c2cb80f7f9a3b"
         }
       ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
         "Bounded message timestamp preservation reference correction documented in message_import_timestamps.md. No task-status promotion: actual queue/job/recovery lifecycle and other historical automatic fields remain open.",
-        "consumer-restore step 3: cmd/celery-consumer runs the message-consumed import_association_data when GO_TASK_QUEUE_TASKS routes it to assozeta-go: staging, validate(), and import_all()'s database part in one transaction during Plan (internal/importeffects reproduces the ORM effects from Django-generated model metadata), media upload, commit, staged-object delete and the result in Run. Handed off before any effect: non-string arguments, missing staged objects, archives Go's reader or Python-JSON checks reject, CourseSubscription records (repr), values outside the reproduced subset, any database error. execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-restore.md (Step 3)."
+        "consumer-restore step 3: cmd/celery-consumer runs the message-consumed import_association_data when GO_TASK_QUEUE_TASKS routes it to assozeta-go: staging, validate(), and import_all()'s database part in one transaction during Plan (internal/importeffects reproduces the ORM effects from Django-generated model metadata), media upload, commit, staged-object delete and the result in Run. Handed off before any effect: non-string arguments, missing staged objects, archives Go's reader or Python-JSON checks reject, CourseSubscription records (repr), values outside the reproduced subset, any database error. execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-restore.md (Step 3).",
+        "sec-data-portability: existing accounts are reused only when they are the archive owner or linked to it; others fail validation (User UUID collision ... not linked to the archive owner). Existing accounts keep their own credentials; the recovery password only applies to an owner account the import creates."
       ]
     },
     {
@@ -47512,7 +47643,9 @@
         "TESTS/adapters/go/restore_deletion_graph.py",
         "TESTS/adapters/go/association_export_plan.py",
         "TESTS/adapters/go/association_import_plan.py",
-        "BE_GO/internal/service/consumer_restore_archive_test.go"
+        "BE_GO/internal/service/consumer_restore_archive_test.go",
+        "BE/instance/tests/test_data_restore.py",
+        "BE_GO/internal/associationexport/plan_test.go"
       ],
       "evidence": [
         {
@@ -47570,13 +47703,70 @@
           "result": "re-run after the shared changes: passed 15/15",
           "artifact": "quality-reports/go-migration/consumer-restore-instance-rerun-celery-consumer-process/results.json",
           "receipt_sha256": "518447bb995312cccfe3707bad8aec58821b816a1a8907f91af4b538e19ba66d"
+        },
+        {
+          "command": "BE manage.py test application.tests.test_export_* test_import_* test_validators test_platform_billing_invoice_removal instance.tests.test_data_restore test_message_historical_restore test_restore_archive_entries test_restore_progress test_backup_restore",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "Django: RED first (export 6 failures; import/restore 5 failures), then GREEN 206/206",
+          "artifact": "quality-reports/go-migration/sec-data-portability-django/django-green.log",
+          "receipt_sha256": "1c8bd6c9457aa4d4ccd7d45350fc19d9b1ff0300ca0f20bb3b77b5fef05a6e97"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='take archived passwords' python -I TESTS/adapters/go/celery_consumer_restore_process.py (Go before the change)",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "red: Go differs from Django",
+          "artifact": "quality-reports/go-migration/sec-data-portability-restore-red/results.json",
+          "receipt_sha256": "06236fb079dd32559fc3dbbc39ae0fc857757331300c08b777fc7dac59df470b"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_restore_process.py",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "passed 23/23",
+          "artifact": "quality-reports/go-migration/sec-data-portability-restore-process/results.json",
+          "receipt_sha256": "bec8c3919ca4f8fdee11cd10e723c45e42d2ef71768815e195e5322acc8d994d"
+        },
+        {
+          "command": "mutation: every reused account takes the archived hash on restore",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "CAUGHT: Go differs from Django",
+          "artifact": "quality-reports/go-migration/sec-data-portability-mutation-restore-credentials/result.txt",
+          "receipt_sha256": "8b3849f3ce05c5b3defacd7b12c9fb0c0fe248d1c0738e5b881a860133204cb9"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_import_process.py",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "re-run (shared importer): passed 20/20",
+          "artifact": "quality-reports/go-migration/sec-data-portability-import-process/results.json",
+          "receipt_sha256": "bd27ccd8b7e04d2a0fddb067a6c8a394f0fe68ba09f475f0b2906efb5098ed47"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_export_process.py",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "re-run (shared plan): passed 8/8",
+          "artifact": "quality-reports/go-migration/sec-data-portability-export-process/results.json",
+          "receipt_sha256": "072dad80f5d28959db2edcc4ce930fefd9cc7ada89d50b685a7638119f5bac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_capabilities_process.py",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "re-run after the shared changes: passed 13/13",
+          "artifact": "quality-reports/go-migration/sec-data-portability-rerun-capabilities/results.json",
+          "receipt_sha256": "090009d11c0b40890b56141eae90dce44c5cf28272521439f61c369d9a54e143"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_process.py",
+          "revision": "go/sec-data-portability 7e434951 (working tree before the commit, identical content; base codex/go-backend-parity 1df97bd9)",
+          "result": "re-run after the shared changes: passed 15/15",
+          "artifact": "quality-reports/go-migration/sec-data-portability-rerun-celery-consumer-process/results.json",
+          "receipt_sha256": "038a4a243a3303c55b2130f8663e1573a069fd0c766181a1597c2cb80f7f9a3b"
         }
       ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
         "consumer-restore step 1 (capabilities): cmd/celery-consumer runs tasks marked Prefork in a child process of its own binary, as Celery's prefork pool: acks_late acknowledges after the outcome, reject_on_worker_lost requeues (redelivered, far end of the queue) a message whose child died, otherwise WorkerLostError('Worker exited prematurely: <status> Job: <n>.'); SIGUSR1 soft limit stored as SoftTimeLimitExceeded when unhandled; hard limit stores TimeLimitExceeded(hard), acks, SIGTERM/SIGKILL; header limits win when truthy; retries keep timelimit; instance.restore.* skips CoordinatedTask admission. The task body itself is not ported yet (execution_owner stays django). See docs/architecture/go-migration/consumer-restore.md.",
-        "consumer-restore step 4: cmd/celery-consumer runs instance.restore.execute when GO_TASK_QUEUE_TASKS routes it to assozeta-go (prefork, acks_late, reject_on_worker_lost). Plan takes the lock, drains Go transactions, validates the upload and the recovery export, computes the deletion plan and runs the replacement's database work in an open transaction; Run performs Django's effects in order and commits after staging. Handed off before any effect: non-UUID arguments, archives Go's reader/JSON decoder or to_python emulation does not decide, legacy invoices, tutor reassignments, unsupported importeffects values (CourseSubscription), taken storage names, database errors. Documented differences: sequence values consumed by a killed or handed-off Plan transaction; throttled progress counts; recovery archive times/digest. execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-restore.md (Step 4)."
+        "consumer-restore step 4: cmd/celery-consumer runs instance.restore.execute when GO_TASK_QUEUE_TASKS routes it to assozeta-go (prefork, acks_late, reject_on_worker_lost). Plan takes the lock, drains Go transactions, validates the upload and the recovery export, computes the deletion plan and runs the replacement's database work in an open transaction; Run performs Django's effects in order and commits after staging. Handed off before any effect: non-UUID arguments, archives Go's reader/JSON decoder or to_python emulation does not decide, legacy invoices, tutor reassignments, unsupported importeffects values (CourseSubscription), taken storage names, database errors. Documented differences: sequence values consumed by a killed or handed-off Plan transaction; throttled progress counts; recovery archive times/digest. execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-restore.md (Step 4).",
+        "sec-data-portability: only accounts of the replaced association (the safety backup users) take an archived hash when theirs is unusable; other reused accounts keep their credentials. The safety backup uses the narrowed export scope."
       ]
     },
     {
