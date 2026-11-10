@@ -65,7 +65,7 @@ These are covered by `TestAutomationWorkflowEnablePlan`, `TestAutomationWorkflow
 
 ## Evidence (TDD)
 
-`TESTS/fixtures/workflow_update_http.json` (generator alongside) authors 76 cases
+`TESTS/fixtures/workflow_update_http.json` (generator alongside) authors 75 cases
 over 16 seeded workflows: identity and dispatch, malformed/missing/foreign ids,
 15 invalid bodies, foreign and soft-deleted association relations (403, also
 ahead of other errors), field updates by the owner, a FULL collaborator and an

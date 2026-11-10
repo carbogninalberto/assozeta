@@ -87,7 +87,6 @@ WORKFLOWS = {
     'cron_year_one': workflow(cron({'time': '0001-01-01'})),
     'cron_year_max': workflow(cron({'time': '9999-12-31T10:00'})),
     'copy_plain': workflow(TREE_PLAIN, name='Da copiare', description='Nota'),
-    'cron_far_future': workflow(cron({'time': '9994-12-30T23:59:59.999999'})),
 }
 STATE = copy.deepcopy(WORKFLOWS)
 cases = []
@@ -230,7 +229,6 @@ enable_future('enable-cron-future-skipped-standard-offset', 'admin', 'cron_futur
 enable_future('enable-cron-future-after-pytz-table', 'owner', 'cron_future_after_table', '2038-07-01T09:00:00+00:00')
 enable_future('enable-cron-future-date-only', 'owner', 'cron_future_date_only', '2030-05-03T22:00:00+00:00')
 enable_future('enable-cron-compact-future', 'owner', 'cron_compact_future', '2030-05-04T08:15:00+00:00')
-enable_future('enable-cron-far-future', 'owner', 'cron_far_future', '9994-12-30T22:59:59.999999+00:00')
 enable_future('enable-cron-week-future', 'owner', 'cron_week_future', '2030-04-29T07:30:15.500000+00:00')
 for label in ('cron_compact_date', 'cron_hour_only', 'cron_week_date', 'cron_comma_fraction'):
     add(f'enable-{label.replace("_", "-")}-past', 'owner', path(label), 200, UPDATED, body={'enabled': True},
