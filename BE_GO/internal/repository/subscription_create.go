@@ -95,6 +95,21 @@ func (t *subscriptionCreateTransaction) SaveCertificateUser(ctx context.Context,
 	return err
 }
 
+func (t *subscriptionCreateTransaction) CertificateExpiration(ctx context.Context, id string) (*time.Time, error) {
+	var date *time.Time
+	err := t.tx.GetContext(ctx, &date, `SELECT expiration_date FROM application_medicalcertificate WHERE medical_id=$1`, id)
+	return date, err
+}
+
+func (t *subscriptionCreateTransaction) SaveCertificate(ctx context.Context, id, user string, expiration *time.Time) error {
+	if expiration == nil {
+		return t.SaveCertificateUser(ctx, id, user)
+	}
+	_, err := t.tx.ExecContext(ctx, `UPDATE application_medicalcertificate SET user_id=$2, expiration_date=$3::date WHERE medical_id=$1`,
+		id, user, expiration.Format("2006-01-02"))
+	return err
+}
+
 // Category is the default payment category by key, or the first category
 // named 'entrate e proventi da attività tipiche' (iexact, by key).
 func (t *subscriptionCreateTransaction) Category(ctx context.Context, id *string) (*string, error) {

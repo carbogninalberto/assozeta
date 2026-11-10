@@ -70,7 +70,7 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 	if !ok {
 		return nil, renewError(pythonAttributeError(request.Body, "keys"))
 	}
-	if err = subscriptionCreateRefuse(data); err != nil {
+	if err = subscriptionCreateRefuse(data, subscriptionCreateToday(s.creates.now())); err != nil {
 		return nil, err
 	}
 	created, err := s.creates.createSubscription(ctx, tx, identity, data, request)
@@ -385,7 +385,7 @@ func (s *SubscriptionDraftApprovals) Approve(ctx context.Context, identity domai
 			crashed = true
 			break
 		}
-		if err = subscriptionCreateRefuse(draft); err != nil {
+		if err = subscriptionCreateRefuse(draft, subscriptionCreateToday(s.creates.now())); err != nil {
 			return nil, err
 		}
 		if err = tx.Savepoint(ctx); err != nil {

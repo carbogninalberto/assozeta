@@ -89,6 +89,11 @@ func (p *InvoiceSyncPrint) Invoice(ctx context.Context, id string, authorization
 	return p.apply(ctx, "/document/invoice/"+id+"?send_receipt_email=False", authorization)
 }
 
+// Compensation is print_document_compensation.apply(args=[str(payment_id), authorization]).
+func (p *InvoiceSyncPrint) Compensation(ctx context.Context, payment string, authorization *string) error {
+	return p.apply(ctx, "/document/compensation/"+payment, authorization)
+}
+
 // CustomerInvoice is print_document_customer_invoice.apply(args=[str(id), authorization]).
 func (p *InvoiceSyncPrint) CustomerInvoice(ctx context.Context, id string, authorization *string) error {
 	return p.apply(ctx, "/document/einvoice/"+id, authorization)

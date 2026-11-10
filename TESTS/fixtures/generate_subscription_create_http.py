@@ -58,6 +58,10 @@ ASSOCIATES = {
 CERTIFICATES = {
     'unowned': {'id': next(ids), 'user': None},
     'owned': {'id': next(ids), 'user': 'owner'},
+    # The owner wizard sends the uploaded certificate's id with its expiration date.
+    'expiring': {'id': next(ids), 'user': None},
+    'dated': {'id': next(ids), 'user': 'owner', 'expiration': '2026-01-01'},
+    'kept': {'id': next(ids), 'user': 'owner'},
 }
 SUBSCRIPTIONS = {
     # The whole season: always current, so a new one for the same person is a duplicate.
@@ -409,6 +413,40 @@ add('associate-id-created', 'owner', 200, SUCCESS(25.0), body=request(keyed),
                    subscription={'type': 2, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', **SEASON},
                    membership={'membership_type': '$default_membership_type', 'start_date': '$season_start', 'end_date': '$season_end',
                                'price': None}))
+
+# --- The owner wizard's medical_certificate --------------------------------------------------------------
+# {'medical_id', 'filename', 'certificate_expring_date'}: the date defaults to today ('$today' is the request's
+# naive date, YYYY-MM-DD) and an untouched empty date is moment's 'Invalid date'. Without medical_id the view's
+# placeholder branch skips today's date and swallows unparseable values; with an uploaded certificate the date
+# is parsed ('/' -> '%d/%m/%Y', else '%Y-%m-%d') and assigned as a datetime, then medical.save().
+PLAIN = {'type': 2, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', **SEASON}
+MEMBER = {'membership_type': '$default_membership_type', 'start_date': '$season_start', 'end_date': '$season_end', 'price': None}
+
+
+def wizard(name, data, full_name, medical_certificate, *, medical=None, medical_id=None):
+    subscription = {**PLAIN, **({'medical_id': medical_id} if medical_id else {})}
+    add(name, 'owner', 200, SUCCESS(25.0), body=request(data, medical_certificate=medical_certificate),
+        effect=success('owner', full_name, associate=created_associate(data), medical=medical,
+                       payment=new_payment('25.00', audit_amount='25.0'), subscription=subscription, membership=dict(MEMBER)))
+
+
+wizard('wizard-certificate-date-today-skipped', person('Olga', 'Oggi', 'GGOLGO90C41H501K'), 'Olga Oggi',
+       {'medical_id': None, 'filename': '', 'certificate_expring_date': '$today'})
+wizard('wizard-certificate-invalid-date-skipped', person('Ivo', 'Invalido', 'NVLVIO90C01H501K'), 'Ivo Invalido',
+       {'medical_id': None, 'filename': '', 'certificate_expring_date': 'Invalid date'})
+wizard('wizard-uploaded-certificate-expiration', person('Ugo', 'Caricato', 'CRCUGO90C01H501K'), 'Ugo Caricato',
+       {'medical_id': CERTIFICATES['expiring']['id'], 'filename': 'certificato.pdf', 'certificate_expring_date': '2027-03-31'},
+       medical={'label': 'expiring', 'columns': {'user_id': OWNER, 'expiration_date': '2027-03-31'},
+                'audit': {'user': ['None', OWNER], 'expiration_date': ['None', '2027-03-31 00:00:00']},
+                'index': [OWN, 'actor.sport_association']}, medical_id=CERTIFICATES['expiring']['id'])
+wizard('wizard-uploaded-certificate-italian-date', person('Dina', 'Datata', 'DTTDNI90C41H501K'), 'Dina Datata',
+       {'medical_id': CERTIFICATES['dated']['id'], 'filename': 'c.pdf', 'certificate_expring_date': '5/4/2027'},
+       medical={'label': 'dated', 'columns': {'expiration_date': '2027-04-05'},
+                'audit': {'expiration_date': ['2026-01-01', '2027-04-05 00:00:00']}, 'index': [OWN, 'actor.sport_association']},
+       medical_id=CERTIFICATES['dated']['id'])
+wizard('wizard-uploaded-certificate-invalid-date-kept', person('Kai', 'Tenuto', 'TNTKAI90C01H501K'), 'Kai Tenuto',
+       {'medical_id': CERTIFICATES['kept']['id'], 'filename': 'c.pdf', 'certificate_expring_date': 'Invalid date'},
+       medical={'label': 'kept', 'columns': {}, 'audit': {}, 'index': None}, medical_id=CERTIFICATES['kept']['id'])
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

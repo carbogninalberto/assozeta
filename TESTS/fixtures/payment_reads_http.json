@@ -851,6 +851,16 @@
    "id": "b0a5b0a5-eeee-4eee-8eee-eeeeeeeeebbf",
    "payment": "instructor",
    "document": "compensation"
+  },
+  "instructor_more": {
+   "id": "b0a5b0a5-eeee-4eee-8eee-eeeeeeeeebca",
+   "payment": "instructor",
+   "document": "compensation"
+  },
+  "instructor_plain": {
+   "id": "b0a5b0a5-eeee-4eee-8eee-eeeeeeeeebcb",
+   "payment": "instructor_plain",
+   "document": null
   }
  },
  "cases": [
@@ -864,7 +874,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-admin-without-session",
@@ -876,7 +887,8 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-restricted-collaborator",
@@ -888,7 +900,8 @@
    "response": {
     "detail": "Missing permission: bookeeping.payments.read"
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-post",
@@ -900,7 +913,8 @@
    "response": {
     "detail": "Method \"POST\" not allowed."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-delete",
@@ -912,7 +926,8 @@
    "response": {
     "detail": "Method \"DELETE\" not allowed."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-options",
@@ -933,7 +948,8 @@
      "multipart/form-data"
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-owner-without-association",
@@ -943,7 +959,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-format-unknown",
@@ -955,7 +972,8 @@
    "response": {
     "detail": "Not found."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-anonymous",
@@ -967,7 +985,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-admin-without-session",
@@ -979,7 +998,8 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-restricted-collaborator",
@@ -991,7 +1011,8 @@
    "response": {
     "detail": "Missing permission: bookeeping.payments.read"
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-post",
@@ -1003,7 +1024,8 @@
    "response": {
     "detail": "Method \"POST\" not allowed."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-delete",
@@ -1015,7 +1037,8 @@
    "response": {
     "detail": "Method \"DELETE\" not allowed."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-options",
@@ -1036,7 +1059,8 @@
      "multipart/form-data"
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-owner-without-association",
@@ -1046,7 +1070,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-format-unknown",
@@ -1058,7 +1083,8 @@
    "response": {
     "detail": "Not found."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-anonymous",
@@ -1070,7 +1096,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-admin-without-session",
@@ -1082,7 +1109,8 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-restricted-collaborator",
@@ -1094,7 +1122,8 @@
    "response": {
     "detail": "Missing permission: association.members.read"
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-post",
@@ -1106,7 +1135,8 @@
    "response": {
     "detail": "Method \"POST\" not allowed."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-delete",
@@ -1118,7 +1148,8 @@
    "response": {
     "detail": "Method \"DELETE\" not allowed."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-options",
@@ -1139,7 +1170,8 @@
      "multipart/form-data"
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-owner-without-association",
@@ -1149,7 +1181,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-format-unknown",
@@ -1161,7 +1194,8 @@
    "response": {
     "detail": "Not found."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-owner",
@@ -2114,7 +2148,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-full-collaborator",
@@ -3067,7 +3110,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-admin-impersonating-owner",
@@ -4023,7 +4075,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-foreign-owner",
@@ -4081,7 +4142,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-deleted-association-owner",
@@ -4100,17 +4162,19 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-athlete-unknown-course-subscription",
    "actor": "athlete",
    "method": "GET",
-   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeebca",
+   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeebcc",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-athlete-malformed-course-subscription",
@@ -4122,7 +4186,8 @@
    "response": [
     "badly formed hexadecimal UUID string"
    ],
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-malformed-course-subscription",
@@ -4134,7 +4199,8 @@
    "response": [
     "badly formed hexadecimal UUID string"
    ],
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-malformed-course-subscription-before-compressed",
@@ -4146,7 +4212,8 @@
    "response": [
     "badly formed hexadecimal UUID string"
    ],
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-empty-course-subscription-ignored",
@@ -5099,7 +5166,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-course-subscription-ignored-for-owner",
@@ -6052,7 +6128,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-athlete-compressed",
@@ -6062,7 +6147,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-scoped-athlete-compressed",
@@ -6075,7 +6161,8 @@
    },
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed",
@@ -6253,7 +6340,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-ignores-filters",
@@ -6431,7 +6519,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-archived",
@@ -6459,7 +6548,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-archived-one",
@@ -6487,7 +6577,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-archived-false",
@@ -6665,7 +6756,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-archived-lowercase-true",
@@ -6675,7 +6767,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-group",
@@ -6705,7 +6798,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-group-malformed-ignored",
@@ -6885,7 +6979,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-foreign-owner",
@@ -6913,7 +7008,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-deleted-association-owner",
@@ -6925,7 +7021,8 @@
    "response": {
     "data": []
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-collaborator",
@@ -7103,7 +7200,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-archived-true",
@@ -7252,7 +7350,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-archived-t",
@@ -7401,7 +7500,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-archived-false-text",
@@ -8354,7 +8454,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-archived-zero",
@@ -9307,7 +9416,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-archived-lowercase-true",
@@ -9317,7 +9435,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-archived-empty",
@@ -9327,7 +9446,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-group",
@@ -9478,7 +9598,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-group-foreign",
@@ -9499,7 +9620,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-group-malformed-ignored",
@@ -10454,7 +10576,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-paid-true",
@@ -10974,7 +11105,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-paid-other-is-false",
@@ -11579,7 +11719,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-paid-empty-ignored",
@@ -12532,7 +12673,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-expense-true",
@@ -12775,7 +12925,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-expense-false",
@@ -13657,7 +13816,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-subject-course",
@@ -14071,7 +14231,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-subject-python-int",
@@ -14371,7 +14532,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-subject-zero",
@@ -14766,7 +14928,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-subject-text",
@@ -14776,7 +14947,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-subject-float",
@@ -14786,7 +14958,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-subject-out-of-range",
@@ -14805,7 +14978,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-subject-empty-ignored",
@@ -15758,7 +15932,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-type",
@@ -15965,7 +16148,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-type-unknown",
@@ -15984,7 +16168,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-category",
@@ -16287,13 +16472,14 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-category-list",
    "actor": "owner",
    "method": "GET",
-   "path": "/payment/list?query[payment_categories]=cafecafe-eeee-4eee-8eee-eeeeeeeeeaaa,cafecafe-eeee-4eee-8eee-eeeeeeeeebcb",
+   "path": "/payment/list?query[payment_categories]=cafecafe-eeee-4eee-8eee-eeeeeeeeeaaa,cafecafe-eeee-4eee-8eee-eeeeeeeeebcd",
    "headers": {},
    "status": 200,
    "response": {
@@ -16590,7 +16776,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-category-none",
@@ -17412,7 +17599,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-category-malformed",
@@ -17422,7 +17618,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-category-trailing-comma",
@@ -17432,7 +17629,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-account",
@@ -17639,7 +17837,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-account-none",
@@ -18369,7 +18568,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-account-malformed",
@@ -18379,7 +18587,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-associate",
@@ -19200,7 +19409,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-associate-hyphenless",
@@ -19282,7 +19492,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-associate-malformed",
@@ -19292,7 +19503,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-associate-empty",
@@ -19302,7 +19514,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-filters-combined",
@@ -19454,7 +19667,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-range-ymd",
@@ -19853,7 +20067,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-range-dmy",
@@ -20252,7 +20467,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-range-single-digits",
@@ -20596,7 +20812,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-range-creation-date-for-unpaid",
@@ -20748,7 +20965,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-range-mixed-formats-ignored",
@@ -21701,7 +21919,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-range-without-separator-ignored",
@@ -22654,7 +22881,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-range-three-parts-ignored",
@@ -23607,7 +23843,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-range-fallback-last-year",
@@ -23626,7 +23871,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-range-invalid-day-fallback",
@@ -23645,7 +23891,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-range-empty-ignored",
@@ -24598,7 +24845,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-range-skipped-for-uuid-search",
@@ -24750,7 +25006,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-range-and-filter",
@@ -24993,7 +25250,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-search-last-name",
@@ -25814,7 +26080,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-upper",
@@ -26635,7 +26902,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-tutor-name",
@@ -27456,7 +27724,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-words",
@@ -28277,7 +28546,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-words-in-other-order",
@@ -29098,7 +29368,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-tutor-words-same-row-only",
@@ -29117,7 +29388,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-tutor-words-one-tutor",
@@ -29938,7 +30210,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-supplier",
@@ -30014,7 +30287,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-instructor",
@@ -30165,7 +30439,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-search-description",
@@ -30223,7 +30506,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-notes",
@@ -30305,7 +30589,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-json-meta",
@@ -30387,7 +30672,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-json-course",
@@ -30539,7 +30825,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-boolean-text",
@@ -31125,7 +31412,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-search-type-text",
@@ -31277,7 +31573,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-payment-id",
@@ -31353,7 +31650,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-date-dmy",
@@ -32235,7 +32533,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-date-words",
@@ -33188,7 +33487,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-search-underscore-escaped",
@@ -33270,7 +33578,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-percent-only",
@@ -34223,7 +34532,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-search-blank",
@@ -35176,7 +35494,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-search-accented",
@@ -35252,7 +35579,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-tax-code",
@@ -36134,7 +36462,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-nothing",
@@ -36153,7 +36482,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-amount",
@@ -36325,7 +36655,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-amount-comma",
@@ -36407,7 +36738,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-amount-zero",
@@ -37413,7 +37745,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-search-amount-exponent",
@@ -37562,7 +37903,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-amount-padded",
@@ -37714,7 +38056,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-amount-underscore",
@@ -37866,7 +38209,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-group",
@@ -38017,7 +38361,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-and-filter",
@@ -38320,7 +38665,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-paginated",
@@ -38600,7 +38946,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-amount",
@@ -39649,7 +39996,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-amount-desc",
@@ -40625,7 +40981,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-without-direction-is-asc",
@@ -41674,7 +42039,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-other-direction-is-asc",
@@ -42723,7 +43097,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-negated-field",
@@ -43699,7 +44082,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-double-negation",
@@ -43709,7 +44101,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-payment-date-nulls-last",
@@ -44488,7 +44881,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-payment-date-desc-nulls-first",
@@ -44738,7 +45140,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-creation-date",
@@ -45691,7 +46102,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-pk",
@@ -46667,7 +47087,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-payment-id-desc",
@@ -47620,7 +48049,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-random",
@@ -48724,7 +49162,16 @@
      ]
     }
    },
-   "unordered": true
+   "unordered": true,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-random-desc",
@@ -48734,7 +49181,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-unknown",
@@ -48744,7 +49192,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-unknown-before-page",
@@ -48754,7 +49203,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-relevance-unknown",
@@ -48764,7 +49214,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-lazy-path-error",
@@ -48774,7 +49225,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-lazy-path-after-page",
@@ -48786,7 +49238,1467 @@
    "response": {
     "detail": "Invalid page."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
+  },
+  {
+   "name": "payment-reads-list-sort-user-first-page",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list?sort[field]=user&sort[sort]=asc&pagination[perpage]=1",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "payment_id": "ba1dface-eeee-4eee-8eee-eeeeeeeeeaed",
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeabf",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "available_tutors": [
+        {
+         "tutor": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeacb",
+          "full_name": "Lucia Verdi",
+          "tutors": [],
+          "picture_path": null,
+          "first_name": "Lucia",
+          "last_name": "Verdi",
+          "sex": "F",
+          "tax_code": "VRDLCU65B54L781K",
+          "born_date": "1965-02-14",
+          "born_city": "Padova",
+          "address_city": null,
+          "address": null,
+          "address_cap": null,
+          "nationality": "Italiana",
+          "nationality_residence": "Italia",
+          "email": "lucia@example.test",
+          "phone": null,
+          "phone_2": null,
+          "phone_3": null,
+          "phone_4": null,
+          "phone_label": null,
+          "phone_2_label": null,
+          "phone_3_label": null,
+          "phone_4_label": null,
+          "is_minor": false,
+          "disabled": false,
+          "draft": false,
+          "deleted": false,
+          "family_role": null,
+          "id_number": null,
+          "migrated": false,
+          "notes": null,
+          "creation_date": "2023-11-03T08:00:00Z",
+          "user": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "group": null,
+          "family": null
+         },
+         "is_primary": true
+        },
+        {
+         "tutor": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeacc",
+          "full_name": "Paolo Neri",
+          "tutors": [],
+          "picture_path": null,
+          "first_name": "Paolo",
+          "last_name": "Neri",
+          "sex": "M",
+          "tax_code": null,
+          "born_date": "1963-09-30",
+          "born_city": null,
+          "address_city": null,
+          "address": null,
+          "address_cap": null,
+          "nationality": "Italiana",
+          "nationality_residence": "Italia",
+          "email": null,
+          "phone": null,
+          "phone_2": null,
+          "phone_3": null,
+          "phone_4": null,
+          "phone_label": null,
+          "phone_2_label": null,
+          "phone_3_label": null,
+          "phone_4_label": null,
+          "is_minor": false,
+          "disabled": false,
+          "draft": false,
+          "deleted": false,
+          "family_role": null,
+          "id_number": null,
+          "migrated": false,
+          "notes": null,
+          "creation_date": "2023-11-04T08:00:00Z",
+          "user": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "group": "a1000000-0000-4000-8000-000000714001",
+          "family": null
+         },
+         "is_primary": false
+        }
+       ]
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeade",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": 1,
+      "custom_account_name": "Cassa sede",
+      "invoice": {
+       "invoice_id": "1a0c0ace-eeee-4eee-8eee-eeeeeeeeeadd",
+       "document_token": "70ce0aaa-eeee-4eee-8eee-eeeeeeeeeaae",
+       "creation_date": "2024-02-10T10:05:00Z",
+       "membership_fee": "40.00",
+       "activity_fee": "10.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta iscrizione",
+       "number": 7,
+       "archived": false,
+       "cancelled": false,
+       "meta": {
+        "serie": "A"
+       },
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": "d0c0aaaa-eeee-4eee-8eee-eeeeeeeeeaad",
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": [
+        "d0c0bbbb-eeee-4eee-8eee-eeeeeeeeeaaf"
+       ]
+      },
+      "course": null,
+      "attachments": [],
+      "payment_category_name": "Quote sociali",
+      "type": "cash",
+      "subject": 1,
+      "amount": "50.00",
+      "creation_date": "2024-02-01T09:00:00Z",
+      "payment_date": "2024-02-10T10:00:00.250000Z",
+      "paid": true,
+      "expense": false,
+      "description": "Iscrizione annuale",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "payment_category": "cafecafe-eeee-4eee-8eee-eeeeeeeeeaaa",
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": "acc0cace-eeee-4eee-8eee-eeeeeeeeeaab",
+      "signature": null,
+      "group": null
+     }
+    ],
+    "meta": {
+     "total": 11,
+     "page": 1,
+     "pages": 11,
+     "perpage": 1,
+     "rowIds": [
+      "ba1dface-eeee-4eee-8eee-eeeeeeeeeaed"
+     ]
+    }
+   },
+   "unordered": false,
+   "prints": []
+  },
+  {
+   "name": "payment-reads-list-sort-user-desc-all",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list?sort[field]=user&sort[sort]=desc&pagination[perpage]=11",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "payment_id": "ba1dface-eeee-4eee-8eee-eeeeeeeeebaa",
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeabf",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "available_tutors": [
+        {
+         "tutor": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeacb",
+          "full_name": "Lucia Verdi",
+          "tutors": [],
+          "picture_path": null,
+          "first_name": "Lucia",
+          "last_name": "Verdi",
+          "sex": "F",
+          "tax_code": "VRDLCU65B54L781K",
+          "born_date": "1965-02-14",
+          "born_city": "Padova",
+          "address_city": null,
+          "address": null,
+          "address_cap": null,
+          "nationality": "Italiana",
+          "nationality_residence": "Italia",
+          "email": "lucia@example.test",
+          "phone": null,
+          "phone_2": null,
+          "phone_3": null,
+          "phone_4": null,
+          "phone_label": null,
+          "phone_2_label": null,
+          "phone_3_label": null,
+          "phone_4_label": null,
+          "is_minor": false,
+          "disabled": false,
+          "draft": false,
+          "deleted": false,
+          "family_role": null,
+          "id_number": null,
+          "migrated": false,
+          "notes": null,
+          "creation_date": "2023-11-03T08:00:00Z",
+          "user": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "group": null,
+          "family": null
+         },
+         "is_primary": true
+        },
+        {
+         "tutor": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeacc",
+          "full_name": "Paolo Neri",
+          "tutors": [],
+          "picture_path": null,
+          "first_name": "Paolo",
+          "last_name": "Neri",
+          "sex": "M",
+          "tax_code": null,
+          "born_date": "1963-09-30",
+          "born_city": null,
+          "address_city": null,
+          "address": null,
+          "address_cap": null,
+          "nationality": "Italiana",
+          "nationality_residence": "Italia",
+          "email": null,
+          "phone": null,
+          "phone_2": null,
+          "phone_3": null,
+          "phone_4": null,
+          "phone_label": null,
+          "phone_2_label": null,
+          "phone_3_label": null,
+          "phone_4_label": null,
+          "is_minor": false,
+          "disabled": false,
+          "draft": false,
+          "deleted": false,
+          "family_role": null,
+          "id_number": null,
+          "migrated": false,
+          "notes": null,
+          "creation_date": "2023-11-04T08:00:00Z",
+          "user": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "group": "a1000000-0000-4000-8000-000000714001",
+          "family": null
+         },
+         "is_primary": false
+        }
+       ]
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeade",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "course": null,
+      "attachments": [],
+      "payment_category_name": null,
+      "type": "default",
+      "subject": 0,
+      "amount": "0.00",
+      "creation_date": "2024-11-01T09:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": null,
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "payment_category": null,
+      "user": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     },
+     {
+      "payment_id": "ba1dface-eeee-4eee-8eee-eeeeeeeeeafd",
+      "associate": null,
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeaeb",
+      "instructor_id": "1eac0e00-eeee-4eee-8eee-eeeeeeeeeace",
+      "instructor": {
+       "instructor_id": "1eac0e00-eeee-4eee-8eee-eeeeeeeeeace",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "first_name": "Giulia",
+       "last_name": "Bianchi",
+       "email": "giulia@example.test",
+       "born_date": null,
+       "born_city": null,
+       "born_province": null,
+       "tax_code": "BNCGLI85A41H501X",
+       "address_city": null,
+       "address": "Via Garibaldi 9",
+       "address_province": null,
+       "civic_number": null,
+       "study_title": null,
+       "role": "Istruttore",
+       "phone": "3405556666",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "draft": false,
+       "associated_user_id": null,
+       "is_volunteer": false,
+       "stipulated_contract_in": null,
+       "default_hourly_billing": "18.50",
+       "default_percentage_billing": "0.00",
+       "documents": []
+      },
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "course": null,
+      "attachments": [],
+      "payment_category_name": null,
+      "type": "default",
+      "subject": 0,
+      "amount": "80.00",
+      "creation_date": "2024-08-01T09:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": true,
+      "description": "Compenso",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "payment_category": null,
+      "user": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null,
+      "instructor_document": "d0c0dddd-eeee-4eee-8eee-eeeeeeeeeabd",
+      "instructor_document_token": "70ce0ddd-eeee-4eee-8eee-eeeeeeeeeabe"
+     },
+     {
+      "payment_id": "ba1dface-eeee-4eee-8eee-eeeeeeeeeaee",
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeabf",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "available_tutors": [
+        {
+         "tutor": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeacb",
+          "full_name": "Lucia Verdi",
+          "tutors": [],
+          "picture_path": null,
+          "first_name": "Lucia",
+          "last_name": "Verdi",
+          "sex": "F",
+          "tax_code": "VRDLCU65B54L781K",
+          "born_date": "1965-02-14",
+          "born_city": "Padova",
+          "address_city": null,
+          "address": null,
+          "address_cap": null,
+          "nationality": "Italiana",
+          "nationality_residence": "Italia",
+          "email": "lucia@example.test",
+          "phone": null,
+          "phone_2": null,
+          "phone_3": null,
+          "phone_4": null,
+          "phone_label": null,
+          "phone_2_label": null,
+          "phone_3_label": null,
+          "phone_4_label": null,
+          "is_minor": false,
+          "disabled": false,
+          "draft": false,
+          "deleted": false,
+          "family_role": null,
+          "id_number": null,
+          "migrated": false,
+          "notes": null,
+          "creation_date": "2023-11-03T08:00:00Z",
+          "user": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "group": null,
+          "family": null
+         },
+         "is_primary": true
+        },
+        {
+         "tutor": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeacc",
+          "full_name": "Paolo Neri",
+          "tutors": [],
+          "picture_path": null,
+          "first_name": "Paolo",
+          "last_name": "Neri",
+          "sex": "M",
+          "tax_code": null,
+          "born_date": "1963-09-30",
+          "born_city": null,
+          "address_city": null,
+          "address": null,
+          "address_cap": null,
+          "nationality": "Italiana",
+          "nationality_residence": "Italia",
+          "email": null,
+          "phone": null,
+          "phone_2": null,
+          "phone_3": null,
+          "phone_4": null,
+          "phone_label": null,
+          "phone_2_label": null,
+          "phone_3_label": null,
+          "phone_4_label": null,
+          "is_minor": false,
+          "disabled": false,
+          "draft": false,
+          "deleted": false,
+          "family_role": null,
+          "id_number": null,
+          "migrated": false,
+          "notes": null,
+          "creation_date": "2023-11-04T08:00:00Z",
+          "user": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "group": "a1000000-0000-4000-8000-000000714001",
+          "family": null
+         },
+         "is_primary": false
+        }
+       ]
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeade",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "course": {
+       "title": "Corso nuoto",
+       "course_id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeeada"
+      },
+      "attachments": [],
+      "payment_category_name": "Quote sociali",
+      "type": "transfer",
+      "subject": 2,
+      "amount": "120.00",
+      "creation_date": "2024-03-05T09:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Corso nuoto",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "payment_category": "cafecafe-eeee-4eee-8eee-eeeeeeeeeaaa",
+      "user": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     },
+     {
+      "payment_id": "ba1dface-eeee-4eee-8eee-eeeeeeeeebab",
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeabf",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "available_tutors": [
+        {
+         "tutor": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeacb",
+          "full_name": "Lucia Verdi",
+          "tutors": [],
+          "picture_path": null,
+          "first_name": "Lucia",
+          "last_name": "Verdi",
+          "sex": "F",
+          "tax_code": "VRDLCU65B54L781K",
+          "born_date": "1965-02-14",
+          "born_city": "Padova",
+          "address_city": null,
+          "address": null,
+          "address_cap": null,
+          "nationality": "Italiana",
+          "nationality_residence": "Italia",
+          "email": "lucia@example.test",
+          "phone": null,
+          "phone_2": null,
+          "phone_3": null,
+          "phone_4": null,
+          "phone_label": null,
+          "phone_2_label": null,
+          "phone_3_label": null,
+          "phone_4_label": null,
+          "is_minor": false,
+          "disabled": false,
+          "draft": false,
+          "deleted": false,
+          "family_role": null,
+          "id_number": null,
+          "migrated": false,
+          "notes": null,
+          "creation_date": "2023-11-03T08:00:00Z",
+          "user": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "group": null,
+          "family": null
+         },
+         "is_primary": true
+        },
+        {
+         "tutor": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeacc",
+          "full_name": "Paolo Neri",
+          "tutors": [],
+          "picture_path": null,
+          "first_name": "Paolo",
+          "last_name": "Neri",
+          "sex": "M",
+          "tax_code": null,
+          "born_date": "1963-09-30",
+          "born_city": null,
+          "address_city": null,
+          "address": null,
+          "address_cap": null,
+          "nationality": "Italiana",
+          "nationality_residence": "Italia",
+          "email": null,
+          "phone": null,
+          "phone_2": null,
+          "phone_3": null,
+          "phone_4": null,
+          "phone_label": null,
+          "phone_2_label": null,
+          "phone_3_label": null,
+          "phone_4_label": null,
+          "is_minor": false,
+          "disabled": false,
+          "draft": false,
+          "deleted": false,
+          "family_role": null,
+          "id_number": null,
+          "migrated": false,
+          "notes": null,
+          "creation_date": "2023-11-04T08:00:00Z",
+          "user": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "group": "a1000000-0000-4000-8000-000000714001",
+          "family": null
+         },
+         "is_primary": false
+        }
+       ]
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeade",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "course": null,
+      "attachments": [],
+      "payment_category_name": null,
+      "type": "default",
+      "subject": 1,
+      "amount": "10.00",
+      "creation_date": "2024-10-01T09:00:00Z",
+      "payment_date": "2024-10-05T09:00:00Z",
+      "paid": false,
+      "expense": false,
+      "description": null,
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "payment_category": null,
+      "user": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": "a1000000-0000-4000-8000-000000714001"
+     },
+     {
+      "payment_id": "ba1dface-eeee-4eee-8eee-eeeeeeeeeaff",
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": 1,
+      "custom_account_name": "Cassa sede",
+      "invoice": null,
+      "course": null,
+      "attachments": [],
+      "payment_category_name": null,
+      "type": "default",
+      "subject": 3,
+      "amount": "25.00",
+      "creation_date": "2024-09-01T09:00:00Z",
+      "payment_date": "2024-09-01T12:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "Giroconto cassa",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "payment_category": null,
+      "user": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": "acc0cace-eeee-4eee-8eee-eeeeeeeeeaab",
+      "signature": null,
+      "group": null
+     },
+     {
+      "payment_id": "ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+      "associate": null,
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeaeb",
+      "instructor_id": "1eac0e00-eeee-4eee-8eee-eeeeeeeeeace",
+      "instructor": {
+       "instructor_id": "1eac0e00-eeee-4eee-8eee-eeeeeeeeeace",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "first_name": "Giulia",
+       "last_name": "Bianchi",
+       "email": "giulia@example.test",
+       "born_date": null,
+       "born_city": null,
+       "born_province": null,
+       "tax_code": "BNCGLI85A41H501X",
+       "address_city": null,
+       "address": "Via Garibaldi 9",
+       "address_province": null,
+       "civic_number": null,
+       "study_title": null,
+       "role": "Istruttore",
+       "phone": "3405556666",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "draft": false,
+       "associated_user_id": null,
+       "is_volunteer": false,
+       "stipulated_contract_in": null,
+       "default_hourly_billing": "18.50",
+       "default_percentage_billing": "0.00",
+       "documents": []
+      },
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "course": null,
+      "attachments": [],
+      "payment_category_name": null,
+      "type": "cash",
+      "subject": 0,
+      "amount": "60.00",
+      "creation_date": "2024-08-15T09:00:00Z",
+      "payment_date": "2024-08-20T09:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "Compenso agosto",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "payment_category": null,
+      "user": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     },
+     {
+      "payment_id": "ba1dface-eeee-4eee-8eee-eeeeeeeeeafc",
+      "associate": null,
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeaeb",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": {
+       "supplier_id": "5abb0ace-eeee-4eee-8eee-eeeeeeeeeacf",
+       "name": "Palestre Riunite",
+       "address": "Viale Europa 12",
+       "tax_code": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "vat_number": "01234567890",
+       "type": "supplier",
+       "email": "fornitore@example.test",
+       "phone_number": null,
+       "city": "Verona",
+       "cap": null,
+       "state": null,
+       "country": "Italia",
+       "nationality": "Italiana",
+       "note": null,
+       "group": null,
+       "deleted": false
+      },
+      "supplier_id": "5abb0ace-eeee-4eee-8eee-eeeeeeeeeacf",
+      "custom_account_type": 2,
+      "custom_account_name": "Banca Intesa",
+      "invoice": null,
+      "course": null,
+      "attachments": [],
+      "payment_category_name": null,
+      "type": "transfer",
+      "subject": 0,
+      "amount": "200.00",
+      "creation_date": "2024-07-01T09:00:00Z",
+      "payment_date": "2024-07-02T09:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "Affitto palestra città",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "payment_category": null,
+      "user": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": "acc0bace-eeee-4eee-8eee-eeeeeeeeeaac",
+      "signature": null,
+      "group": null
+     },
+     {
+      "payment_id": "ba1dface-eeee-4eee-8eee-eeeeeeeeeafb",
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeaca",
+       "first_name": "Marco",
+       "last_name": "Russo",
+       "is_minor": false,
+       "available_tutors": []
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeadf",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "course": null,
+      "attachments": [
+       {
+        "document_id": "d0c0cccc-eeee-4eee-8eee-eeeeeeeeeabb",
+        "creation_date": "2024-06-03T09:01:00Z",
+        "filepath": "docs/s.png",
+        "filename": "scontrino è.png",
+        "file_size_bytes": 512,
+        "token": "70ce0ccc-eeee-4eee-8eee-eeeeeeeeeabc"
+       }
+      ],
+      "payment_category_name": null,
+      "type": "default",
+      "subject": 0,
+      "amount": "15.50",
+      "creation_date": "2024-06-01T09:00:00Z",
+      "payment_date": "2024-06-03T09:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": null,
+      "meta_payment_categories": [
+       {
+        "payment_category_id": "cafecafe-eeee-4eee-8eee-eeeeeeeeeaaa",
+        "amount": 5.5,
+        "subject": 0
+       }
+      ],
+      "payment_intent_id": "pi_sportello",
+      "archived": false,
+      "invoice_fiscal_code": "FSCL0001",
+      "meta": {
+       "source": "sportello",
+       "n": 2
+      },
+      "notes": "nota contanti",
+      "deleted": false,
+      "payment_category": null,
+      "user": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     },
+     {
+      "payment_id": "ba1dface-eeee-4eee-8eee-eeeeeeeeeafa",
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeabf",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "available_tutors": [
+        {
+         "tutor": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeacb",
+          "full_name": "Lucia Verdi",
+          "tutors": [],
+          "picture_path": null,
+          "first_name": "Lucia",
+          "last_name": "Verdi",
+          "sex": "F",
+          "tax_code": "VRDLCU65B54L781K",
+          "born_date": "1965-02-14",
+          "born_city": "Padova",
+          "address_city": null,
+          "address": null,
+          "address_cap": null,
+          "nationality": "Italiana",
+          "nationality_residence": "Italia",
+          "email": "lucia@example.test",
+          "phone": null,
+          "phone_2": null,
+          "phone_3": null,
+          "phone_4": null,
+          "phone_label": null,
+          "phone_2_label": null,
+          "phone_3_label": null,
+          "phone_4_label": null,
+          "is_minor": false,
+          "disabled": false,
+          "draft": false,
+          "deleted": false,
+          "family_role": null,
+          "id_number": null,
+          "migrated": false,
+          "notes": null,
+          "creation_date": "2023-11-03T08:00:00Z",
+          "user": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "group": null,
+          "family": null
+         },
+         "is_primary": true
+        },
+        {
+         "tutor": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeacc",
+          "full_name": "Paolo Neri",
+          "tutors": [],
+          "picture_path": null,
+          "first_name": "Paolo",
+          "last_name": "Neri",
+          "sex": "M",
+          "tax_code": null,
+          "born_date": "1963-09-30",
+          "born_city": null,
+          "address_city": null,
+          "address": null,
+          "address_cap": null,
+          "nationality": "Italiana",
+          "nationality_residence": "Italia",
+          "email": null,
+          "phone": null,
+          "phone_2": null,
+          "phone_3": null,
+          "phone_4": null,
+          "phone_label": null,
+          "phone_2_label": null,
+          "phone_3_label": null,
+          "phone_4_label": null,
+          "is_minor": false,
+          "disabled": false,
+          "draft": false,
+          "deleted": false,
+          "family_role": null,
+          "id_number": null,
+          "migrated": false,
+          "notes": null,
+          "creation_date": "2023-11-04T08:00:00Z",
+          "user": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "group": "a1000000-0000-4000-8000-000000714001",
+          "family": null
+         },
+         "is_primary": false
+        }
+       ]
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeade",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "course": {
+       "title": "Carnet JSON",
+       "n": 1.5
+      },
+      "attachments": [],
+      "payment_category_name": null,
+      "type": "online",
+      "subject": 2,
+      "amount": "30.00",
+      "creation_date": "2024-05-02T09:00:00Z",
+      "payment_date": "2024-05-20T08:00:00Z",
+      "paid": false,
+      "expense": false,
+      "description": null,
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "payment_category": null,
+      "user": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     },
+     {
+      "payment_id": "ba1dface-eeee-4eee-8eee-eeeeeeeeeaef",
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeabf",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "available_tutors": [
+        {
+         "tutor": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeacb",
+          "full_name": "Lucia Verdi",
+          "tutors": [],
+          "picture_path": null,
+          "first_name": "Lucia",
+          "last_name": "Verdi",
+          "sex": "F",
+          "tax_code": "VRDLCU65B54L781K",
+          "born_date": "1965-02-14",
+          "born_city": "Padova",
+          "address_city": null,
+          "address": null,
+          "address_cap": null,
+          "nationality": "Italiana",
+          "nationality_residence": "Italia",
+          "email": "lucia@example.test",
+          "phone": null,
+          "phone_2": null,
+          "phone_3": null,
+          "phone_4": null,
+          "phone_label": null,
+          "phone_2_label": null,
+          "phone_3_label": null,
+          "phone_4_label": null,
+          "is_minor": false,
+          "disabled": false,
+          "draft": false,
+          "deleted": false,
+          "family_role": null,
+          "id_number": null,
+          "migrated": false,
+          "notes": null,
+          "creation_date": "2023-11-03T08:00:00Z",
+          "user": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "group": null,
+          "family": null
+         },
+         "is_primary": true
+        },
+        {
+         "tutor": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeacc",
+          "full_name": "Paolo Neri",
+          "tutors": [],
+          "picture_path": null,
+          "first_name": "Paolo",
+          "last_name": "Neri",
+          "sex": "M",
+          "tax_code": null,
+          "born_date": "1963-09-30",
+          "born_city": null,
+          "address_city": null,
+          "address": null,
+          "address_cap": null,
+          "nationality": "Italiana",
+          "nationality_residence": "Italia",
+          "email": null,
+          "phone": null,
+          "phone_2": null,
+          "phone_3": null,
+          "phone_4": null,
+          "phone_label": null,
+          "phone_2_label": null,
+          "phone_3_label": null,
+          "phone_4_label": null,
+          "is_minor": false,
+          "disabled": false,
+          "draft": false,
+          "deleted": false,
+          "family_role": null,
+          "id_number": null,
+          "migrated": false,
+          "notes": null,
+          "creation_date": "2023-11-04T08:00:00Z",
+          "user": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "group": "a1000000-0000-4000-8000-000000714001",
+          "family": null
+         },
+         "is_primary": false
+        }
+       ]
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeade",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": 2,
+      "custom_account_name": "Banca Intesa",
+      "invoice": null,
+      "course": {
+       "title": "Corso nuoto",
+       "course_id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeeada"
+      },
+      "attachments": [],
+      "payment_category_name": null,
+      "type": "pos",
+      "subject": 2,
+      "amount": "40.00",
+      "creation_date": "2024-04-01T09:00:00Z",
+      "payment_date": "2024-04-15T09:30:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Rata corso",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "payment_category": null,
+      "user": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": "acc0bace-eeee-4eee-8eee-eeeeeeeeeaac",
+      "signature": null,
+      "group": null
+     },
+     {
+      "payment_id": "ba1dface-eeee-4eee-8eee-eeeeeeeeeaed",
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeabf",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "available_tutors": [
+        {
+         "tutor": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeacb",
+          "full_name": "Lucia Verdi",
+          "tutors": [],
+          "picture_path": null,
+          "first_name": "Lucia",
+          "last_name": "Verdi",
+          "sex": "F",
+          "tax_code": "VRDLCU65B54L781K",
+          "born_date": "1965-02-14",
+          "born_city": "Padova",
+          "address_city": null,
+          "address": null,
+          "address_cap": null,
+          "nationality": "Italiana",
+          "nationality_residence": "Italia",
+          "email": "lucia@example.test",
+          "phone": null,
+          "phone_2": null,
+          "phone_3": null,
+          "phone_4": null,
+          "phone_label": null,
+          "phone_2_label": null,
+          "phone_3_label": null,
+          "phone_4_label": null,
+          "is_minor": false,
+          "disabled": false,
+          "draft": false,
+          "deleted": false,
+          "family_role": null,
+          "id_number": null,
+          "migrated": false,
+          "notes": null,
+          "creation_date": "2023-11-03T08:00:00Z",
+          "user": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "group": null,
+          "family": null
+         },
+         "is_primary": true
+        },
+        {
+         "tutor": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeacc",
+          "full_name": "Paolo Neri",
+          "tutors": [],
+          "picture_path": null,
+          "first_name": "Paolo",
+          "last_name": "Neri",
+          "sex": "M",
+          "tax_code": null,
+          "born_date": "1963-09-30",
+          "born_city": null,
+          "address_city": null,
+          "address": null,
+          "address_cap": null,
+          "nationality": "Italiana",
+          "nationality_residence": "Italia",
+          "email": null,
+          "phone": null,
+          "phone_2": null,
+          "phone_3": null,
+          "phone_4": null,
+          "phone_label": null,
+          "phone_2_label": null,
+          "phone_3_label": null,
+          "phone_4_label": null,
+          "is_minor": false,
+          "disabled": false,
+          "draft": false,
+          "deleted": false,
+          "family_role": null,
+          "id_number": null,
+          "migrated": false,
+          "notes": null,
+          "creation_date": "2023-11-04T08:00:00Z",
+          "user": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "group": "a1000000-0000-4000-8000-000000714001",
+          "family": null
+         },
+         "is_primary": false
+        }
+       ]
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeade",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": 1,
+      "custom_account_name": "Cassa sede",
+      "invoice": {
+       "invoice_id": "1a0c0ace-eeee-4eee-8eee-eeeeeeeeeadd",
+       "document_token": "70ce0aaa-eeee-4eee-8eee-eeeeeeeeeaae",
+       "creation_date": "2024-02-10T10:05:00Z",
+       "membership_fee": "40.00",
+       "activity_fee": "10.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta iscrizione",
+       "number": 7,
+       "archived": false,
+       "cancelled": false,
+       "meta": {
+        "serie": "A"
+       },
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": "d0c0aaaa-eeee-4eee-8eee-eeeeeeeeeaad",
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": [
+        "d0c0bbbb-eeee-4eee-8eee-eeeeeeeeeaaf"
+       ]
+      },
+      "course": null,
+      "attachments": [],
+      "payment_category_name": "Quote sociali",
+      "type": "cash",
+      "subject": 1,
+      "amount": "50.00",
+      "creation_date": "2024-02-01T09:00:00Z",
+      "payment_date": "2024-02-10T10:00:00.250000Z",
+      "paid": true,
+      "expense": false,
+      "description": "Iscrizione annuale",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "payment_category": "cafecafe-eeee-4eee-8eee-eeeeeeeeeaaa",
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": "acc0cace-eeee-4eee-8eee-eeeeeeeeeaab",
+      "signature": null,
+      "group": null
+     }
+    ],
+    "meta": {
+     "total": 11,
+     "page": 1,
+     "pages": 1,
+     "perpage": 11,
+     "rowIds": [
+      "ba1dface-eeee-4eee-8eee-eeeeeeeeebaa",
+      "ba1dface-eeee-4eee-8eee-eeeeeeeeeafd",
+      "ba1dface-eeee-4eee-8eee-eeeeeeeeeaee",
+      "ba1dface-eeee-4eee-8eee-eeeeeeeeebab",
+      "ba1dface-eeee-4eee-8eee-eeeeeeeeeaff",
+      "ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+      "ba1dface-eeee-4eee-8eee-eeeeeeeeeafc",
+      "ba1dface-eeee-4eee-8eee-eeeeeeeeeafb",
+      "ba1dface-eeee-4eee-8eee-eeeeeeeeeafa",
+      "ba1dface-eeee-4eee-8eee-eeeeeeeeeaef",
+      "ba1dface-eeee-4eee-8eee-eeeeeeeeeaed"
+     ]
+    }
+   },
+   "unordered": true,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
+  },
+  {
+   "name": "payment-reads-list-sort-user-desc-last-page",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list?sort[field]=user&sort[sort]=desc&pagination[perpage]=10&pagination[page]=2",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "payment_id": "ba1dface-eeee-4eee-8eee-eeeeeeeeeaed",
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeabf",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "available_tutors": [
+        {
+         "tutor": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeacb",
+          "full_name": "Lucia Verdi",
+          "tutors": [],
+          "picture_path": null,
+          "first_name": "Lucia",
+          "last_name": "Verdi",
+          "sex": "F",
+          "tax_code": "VRDLCU65B54L781K",
+          "born_date": "1965-02-14",
+          "born_city": "Padova",
+          "address_city": null,
+          "address": null,
+          "address_cap": null,
+          "nationality": "Italiana",
+          "nationality_residence": "Italia",
+          "email": "lucia@example.test",
+          "phone": null,
+          "phone_2": null,
+          "phone_3": null,
+          "phone_4": null,
+          "phone_label": null,
+          "phone_2_label": null,
+          "phone_3_label": null,
+          "phone_4_label": null,
+          "is_minor": false,
+          "disabled": false,
+          "draft": false,
+          "deleted": false,
+          "family_role": null,
+          "id_number": null,
+          "migrated": false,
+          "notes": null,
+          "creation_date": "2023-11-03T08:00:00Z",
+          "user": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "group": null,
+          "family": null
+         },
+         "is_primary": true
+        },
+        {
+         "tutor": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeacc",
+          "full_name": "Paolo Neri",
+          "tutors": [],
+          "picture_path": null,
+          "first_name": "Paolo",
+          "last_name": "Neri",
+          "sex": "M",
+          "tax_code": null,
+          "born_date": "1963-09-30",
+          "born_city": null,
+          "address_city": null,
+          "address": null,
+          "address_cap": null,
+          "nationality": "Italiana",
+          "nationality_residence": "Italia",
+          "email": null,
+          "phone": null,
+          "phone_2": null,
+          "phone_3": null,
+          "phone_4": null,
+          "phone_label": null,
+          "phone_2_label": null,
+          "phone_3_label": null,
+          "phone_4_label": null,
+          "is_minor": false,
+          "disabled": false,
+          "draft": false,
+          "deleted": false,
+          "family_role": null,
+          "id_number": null,
+          "migrated": false,
+          "notes": null,
+          "creation_date": "2023-11-04T08:00:00Z",
+          "user": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "group": "a1000000-0000-4000-8000-000000714001",
+          "family": null
+         },
+         "is_primary": false
+        }
+       ]
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeade",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": 1,
+      "custom_account_name": "Cassa sede",
+      "invoice": {
+       "invoice_id": "1a0c0ace-eeee-4eee-8eee-eeeeeeeeeadd",
+       "document_token": "70ce0aaa-eeee-4eee-8eee-eeeeeeeeeaae",
+       "creation_date": "2024-02-10T10:05:00Z",
+       "membership_fee": "40.00",
+       "activity_fee": "10.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta iscrizione",
+       "number": 7,
+       "archived": false,
+       "cancelled": false,
+       "meta": {
+        "serie": "A"
+       },
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": "d0c0aaaa-eeee-4eee-8eee-eeeeeeeeeaad",
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": [
+        "d0c0bbbb-eeee-4eee-8eee-eeeeeeeeeaaf"
+       ]
+      },
+      "course": null,
+      "attachments": [],
+      "payment_category_name": "Quote sociali",
+      "type": "cash",
+      "subject": 1,
+      "amount": "50.00",
+      "creation_date": "2024-02-01T09:00:00Z",
+      "payment_date": "2024-02-10T10:00:00.250000Z",
+      "paid": true,
+      "expense": false,
+      "description": "Iscrizione annuale",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "payment_category": "cafecafe-eeee-4eee-8eee-eeeeeeeeeaaa",
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": "acc0cace-eeee-4eee-8eee-eeeeeeeeeaab",
+      "signature": null,
+      "group": null
+     }
+    ],
+    "meta": {
+     "total": 11,
+     "page": 2,
+     "pages": 2,
+     "perpage": 10,
+     "rowIds": [
+      "ba1dface-eeee-4eee-8eee-eeeeeeeeeaed"
+     ]
+    }
+   },
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-with-search",
@@ -49607,7 +51519,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-page-two",
@@ -49779,7 +51692,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-page-last",
@@ -50213,7 +52127,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-page-python-int",
@@ -50451,7 +52366,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-page-empty-is-first",
@@ -50925,7 +52849,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-page-beyond",
@@ -50937,7 +52862,8 @@
    "response": {
     "detail": "Invalid page."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-page-zero",
@@ -50949,7 +52875,8 @@
    "response": {
     "detail": "Invalid page."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-page-text",
@@ -50961,7 +52888,8 @@
    "response": {
     "detail": "Invalid page."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-perpage-zero-default",
@@ -51914,7 +53842,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-perpage-text-default",
@@ -52867,7 +54804,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-perpage-huge",
@@ -53971,7 +55917,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-empty-page-two",
@@ -53983,7 +55938,8 @@
    "response": {
     "detail": "Invalid page."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-owner-this-month",
@@ -54013,7 +55969,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-full-collaborator",
@@ -54043,7 +56000,8 @@
      "net_balance": -179.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-admin-impersonating-owner",
@@ -54076,7 +56034,8 @@
      "net_balance": -179.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-scoped-athlete-not-available",
@@ -54091,7 +56050,8 @@
    "response": {
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-athlete",
@@ -54101,7 +56061,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-deleted-association-owner",
@@ -54111,7 +56072,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-foreign-owner",
@@ -54141,7 +56103,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-year",
@@ -54171,7 +56134,8 @@
      "net_balance": -179.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-year-dmy",
@@ -54201,7 +56165,8 @@
      "net_balance": -179.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-end-is-midnight",
@@ -54231,7 +56196,8 @@
      "net_balance": 105.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-end-day-after",
@@ -54261,7 +56227,8 @@
      "net_balance": -94.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-range-mixed-falls-back",
@@ -54291,7 +56258,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-range-invalid-falls-back",
@@ -54321,7 +56289,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-range-without-separator",
@@ -54331,7 +56300,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-range-empty",
@@ -54341,7 +56311,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-group",
@@ -54373,7 +56344,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-group-malformed-ignored",
@@ -54405,7 +56377,8 @@
      "net_balance": -179.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-ignores-archived-parameter",
@@ -54435,7 +56408,8 @@
      "net_balance": -179.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-paid",
@@ -54465,7 +56439,8 @@
      "net_balance": -179.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-paid-empty-is-false",
@@ -54495,7 +56470,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-expense",
@@ -54525,7 +56501,8 @@
      "net_balance": -285.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-subject",
@@ -54555,7 +56532,8 @@
      "net_balance": 40.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-subject-empty",
@@ -54565,7 +56543,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-subject-out-of-range",
@@ -54595,7 +56574,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-type-empty",
@@ -54625,7 +56605,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-type",
@@ -54655,7 +56636,8 @@
      "net_balance": -10.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-category-none",
@@ -54685,7 +56667,8 @@
      "net_balance": -229.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-category",
@@ -54715,7 +56698,8 @@
      "net_balance": 50.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-category-malformed",
@@ -54725,7 +56709,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-account",
@@ -54755,7 +56740,8 @@
      "net_balance": 25.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-account-none",
@@ -54785,7 +56771,8 @@
      "net_balance": -44.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-search-rossi",
@@ -54815,7 +56802,8 @@
      "net_balance": 90.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-search-tutor",
@@ -54845,7 +56833,8 @@
      "net_balance": 90.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-search-supplier",
@@ -54875,7 +56864,8 @@
      "net_balance": -200.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-search-amount",
@@ -54905,7 +56895,8 @@
      "net_balance": 40.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-search-date",
@@ -54935,7 +56926,8 @@
      "net_balance": 40.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-search-none",
@@ -54965,7 +56957,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-owner",
@@ -55935,7 +57928,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-full-collaborator",
@@ -56905,7 +58899,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-admin-impersonating-owner",
@@ -57878,7 +59873,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-athlete",
@@ -57889,6 +59885,7 @@
    "status": 401,
    "response": "<empty>",
    "unordered": false,
+   "prints": [],
    "challenge": false
   },
   {
@@ -57904,7 +59901,8 @@
    "response": {
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-athlete-malformed",
@@ -57915,6 +59913,7 @@
    "status": 401,
    "response": "<empty>",
    "unordered": false,
+   "prints": [],
    "challenge": false
   },
   {
@@ -57927,17 +59926,19 @@
    "response": [
     "badly formed hexadecimal UUID string"
    ],
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-unknown",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeebcc/payments",
+   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeebce/payments",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-foreign",
@@ -57949,7 +59950,8 @@
    "response": {
     "detail": "User not allowed."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-without-associate",
@@ -57959,7 +59961,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-deleted-association-owner",
@@ -57969,7 +59972,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-tax-code-twin",
@@ -59001,7 +61005,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-deleted-subscription",
@@ -59020,7 +61025,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-group-hides-subscription",
@@ -59032,7 +61038,8 @@
    },
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-group-malformed-ignored",
@@ -60004,7 +62011,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-hyphenless-uuid",
@@ -60974,7 +62982,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-paid",
@@ -61413,7 +63422,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-paid-empty-is-false",
@@ -61965,7 +63975,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-expense-false",
@@ -62935,7 +64946,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-subject",
@@ -63366,7 +65378,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-subject-empty",
@@ -63376,7 +65389,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-type",
@@ -63534,7 +65548,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-type-empty",
@@ -63553,7 +65568,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-archived-parameter-ignored",
@@ -64523,7 +66539,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-full-name",
@@ -65630,7 +67647,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-course-title-duplicates",
@@ -66062,7 +68080,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-old-course",
@@ -66220,7 +68239,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-tax-code",
@@ -67327,7 +69347,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-json-meta",
@@ -67346,7 +69367,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-payment-date",
@@ -67641,7 +69663,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-category",
@@ -67951,7 +69974,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-nothing",
@@ -67970,7 +69994,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-not-stripped",
@@ -69077,7 +71102,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-amount",
@@ -69234,7 +71260,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-amount-one",
@@ -69253,7 +71280,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-percent-escaped",
@@ -69272,7 +71300,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-sort-creation-asc",
@@ -70242,7 +72271,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-sort-amount-desc",
@@ -71212,7 +73242,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-sort-unknown",
@@ -71222,7 +73253,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-sort-full-name-unknown-without-search",
@@ -71232,7 +73264,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-page-two",
@@ -71679,7 +73712,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-page-beyond",
@@ -71691,7 +73725,8 @@
    "response": {
     "detail": "Invalid page."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-duplicates-paginated",
@@ -71849,7 +73884,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   }
  ]
 }
