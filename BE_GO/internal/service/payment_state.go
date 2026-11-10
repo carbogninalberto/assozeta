@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -123,11 +122,16 @@ func (s *PaymentStates) render(ctx context.Context, tx domain.PaymentStateTransa
 	return dto.PaymentStateItem(render)
 }
 
-// paymentStateDate is datetime.strptime(value, '%Y-%m-%d') made aware in UTC
+// paymentStateDateAny is datetime.strptime(value, '%Y-%m-%d') made aware in UTC
 // (TIME_ZONE): a value that is not a matching string is a 500.
 var paymentStateDatePattern = regexp.MustCompile(`^(\d{4})-(1[0-2]|0[1-9]|[1-9])-(3[01]|[12]\d|0[1-9]|[1-9]| [1-9])$`)
 
-func paymentStateDate(value any) (*time.Time, error) {
+// paymentStateDateAnyPattern is the strptime pattern with Python's \d: the
+// year and the day's second digit accept decimal digits of any script.
+var paymentStateDateAnyPattern = regexp.MustCompile(`^(\p{Nd}{4})-(1[0-2]|0[1-9]|[1-9])-(3[01]|[12]\p{Nd}|0[1-9]|[1-9]| [1-9])$`)
+
+// paymentStateDateAny parses the date; int() reads those digits.
+func paymentStateDateAny(value any) (*time.Time, error) {
 	if value == nil {
 		return nil, nil
 	}
@@ -135,13 +139,10 @@ func paymentStateDate(value any) (*time.Time, error) {
 	if !ok {
 		return nil, domain.ErrPaymentStateServer
 	}
-	for _, r := range text {
-		if r > unicode.MaxASCII && unicode.IsDigit(r) {
-			// strptime's \d also matches non-ASCII decimal digits: not ported.
-			return nil, domain.ErrPaymentStateNotPorted
-		}
+	if !paymentStateDateAnyPattern.MatchString(text) {
+		return nil, domain.ErrPaymentStateServer
 	}
-	parts := paymentStateDatePattern.FindStringSubmatch(text)
+	parts := paymentStateDatePattern.FindStringSubmatch(dto.PythonASCIIDigits(text))
 	if parts == nil {
 		return nil, domain.ErrPaymentStateServer
 	}
@@ -198,7 +199,7 @@ func (s *PaymentStates) Approve(ctx context.Context, identity domain.ResolvedIde
 		return nil, domain.ErrPaymentStateServer
 	}
 	value, _ := object.Lookup("payment_date")
-	sent, err := paymentStateDate(value)
+	sent, err := paymentStateDateAny(value)
 	if err != nil {
 		return nil, err
 	}

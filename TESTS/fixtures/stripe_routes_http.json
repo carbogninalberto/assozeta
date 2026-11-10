@@ -106,6 +106,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_create_owner": {
@@ -126,6 +127,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_create_collab": {
@@ -146,6 +148,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_plain_methods": {
@@ -166,6 +169,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_defaults": {
@@ -186,6 +190,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_reuse": {
@@ -206,6 +211,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_null_secret": {
@@ -226,6 +232,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_amount_changed": {
@@ -246,6 +253,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_retrieve_missing": {
@@ -266,6 +274,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_idempotency_error": {
@@ -286,6 +295,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_card_error": {
@@ -306,6 +316,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_retry": {
@@ -326,6 +337,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_succeeded": {
@@ -346,6 +358,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_succeeded_no_user": {
@@ -366,6 +379,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_query_first": {
@@ -386,6 +400,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_query_second": {
@@ -406,6 +421,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_query_pending": {
@@ -426,6 +442,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_query_bad_key": {
@@ -446,6 +463,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_paid": {
@@ -466,6 +484,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": "2026-04-01T00:00:00Z",
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_offline": {
@@ -486,6 +505,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_deleted": {
@@ -506,6 +526,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_group": {
@@ -526,6 +547,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_no_associate": {
@@ -546,6 +568,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_quoted_intent": {
@@ -566,6 +589,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pay_foreign": {
@@ -586,6 +610,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "mp_ids_a": {
@@ -606,6 +631,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "mp_ids_b": {
@@ -626,6 +652,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "mp_dict": {
@@ -646,6 +673,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "mp_offline": {
@@ -666,6 +694,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "mp_no_associate": {
@@ -686,6 +715,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "mp_succeeded": {
@@ -706,6 +736,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "mp_two_own": {
@@ -726,6 +757,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "mp_two_plain": {
@@ -746,6 +778,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "mp_paid": {
@@ -766,6 +799,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": "2026-04-02T00:00:00Z",
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "mp_group": {
@@ -786,6 +820,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "wh_invoiced": {
@@ -806,6 +841,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "wh_paid": {
@@ -826,6 +862,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": "2026-04-03T00:00:00Z",
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "wh_group": {
@@ -846,6 +883,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pf_wh_other": {
@@ -866,6 +904,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pf_pay_subscription": {
@@ -896,6 +935,7 @@
      "amount": null
     }
    ],
+   "meta": null,
    "type": "default"
   },
   "pf_wh_subscription_plain": {
@@ -916,6 +956,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pf_wh_course": {
@@ -936,6 +977,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pf_wh_installment": {
@@ -956,6 +998,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pf_wh_carnet": {
@@ -976,6 +1019,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pf_wh_course_none": {
@@ -996,6 +1040,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pf_wh_no_user": {
@@ -1016,6 +1061,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pf_pay_anonymous": {
@@ -1036,6 +1082,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pf_mp": {
@@ -1056,6 +1103,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pf_wh_group": {
@@ -1076,6 +1124,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "default"
   },
   "pf_wh_typed": {
@@ -1096,6 +1145,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "stripe"
   },
   "pf_wh_cash": {
@@ -1116,6 +1166,7 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
    "type": "cash"
   },
   "pf_wh_defaults": {
@@ -1136,103 +1187,207 @@
    "created": "2026-10-01T08:00:00Z",
    "payment_date": null,
    "meta_categories": null,
+   "meta": null,
+   "type": "default"
+  },
+  "pf_wh_group_spelling": {
+   "id": "a1000000-0000-4000-8000-000001520061",
+   "association": "a1000000-0000-4000-8000-000001520008",
+   "subject": 0,
+   "amount": "18.50",
+   "paid": false,
+   "associate": true,
+   "user": true,
+   "intent": "pi_stub_pf_spelling",
+   "invoice": false,
+   "supplier_invoice": false,
+   "group": "own_group",
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000001520001",
+   "description": "Quota",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "meta_categories": null,
+   "meta": null,
+   "type": "default"
+  },
+  "pf_wh_tie": {
+   "id": "a1000000-0000-4000-8000-000001520062",
+   "association": "a1000000-0000-4000-8000-000001520008",
+   "subject": 1,
+   "amount": "10.00",
+   "paid": false,
+   "associate": true,
+   "user": true,
+   "intent": "pi_stub_pf_tie",
+   "invoice": false,
+   "supplier_invoice": false,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000001520001",
+   "description": "Quota",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "meta_categories": [
+    {
+     "amount": "0.125"
+    }
+   ],
+   "meta": null,
+   "type": "default"
+  },
+  "pf_wh_name_float": {
+   "id": "a1000000-0000-4000-8000-000001520063",
+   "association": "a1000000-0000-4000-8000-000001520008",
+   "subject": 1,
+   "amount": "26.00",
+   "paid": false,
+   "associate": true,
+   "user": true,
+   "intent": "pi_stub_pf_name_float",
+   "invoice": false,
+   "supplier_invoice": false,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000001520001",
+   "description": "Quota",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "meta_categories": null,
+   "meta": {
+    "subscription_data": {
+     "name": 1.5
+    }
+   },
+   "type": "default"
+  },
+  "pf_wh_name_list": {
+   "id": "a1000000-0000-4000-8000-000001520064",
+   "association": "a1000000-0000-4000-8000-000001520008",
+   "subject": 1,
+   "amount": "27.00",
+   "paid": false,
+   "associate": true,
+   "user": true,
+   "intent": "pi_stub_pf_name_list",
+   "invoice": false,
+   "supplier_invoice": false,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000001520001",
+   "description": "Quota",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "meta_categories": null,
+   "meta": {
+    "subscription_data": {
+     "name": [
+      "Agonisti",
+      {
+       "anno": null,
+       "ok": true
+      },
+      2
+     ]
+    }
+   },
    "type": "default"
   }
  },
  "invoices": {
   "pay_succeeded": {
-   "id": "a1000000-0000-4000-8000-000001520067",
+   "id": "a1000000-0000-4000-8000-000001520071",
    "number": 900
   },
   "pay_succeeded_no_user": {
-   "id": "a1000000-0000-4000-8000-000001520068",
+   "id": "a1000000-0000-4000-8000-000001520072",
    "number": 901
   },
   "pay_query_first": {
-   "id": "a1000000-0000-4000-8000-000001520069",
+   "id": "a1000000-0000-4000-8000-000001520073",
    "number": 902
   },
   "pay_query_second": {
-   "id": "a1000000-0000-4000-8000-000001520070",
+   "id": "a1000000-0000-4000-8000-000001520074",
    "number": 903
   },
   "pay_query_bad_key": {
-   "id": "a1000000-0000-4000-8000-000001520071",
+   "id": "a1000000-0000-4000-8000-000001520075",
    "number": 904
   },
   "mp_succeeded": {
-   "id": "a1000000-0000-4000-8000-000001520072",
+   "id": "a1000000-0000-4000-8000-000001520076",
    "number": 905
   },
   "wh_invoiced": {
-   "id": "a1000000-0000-4000-8000-000001520073",
+   "id": "a1000000-0000-4000-8000-000001520077",
    "number": 906
   },
   "wh_group": {
-   "id": "a1000000-0000-4000-8000-000001520074",
+   "id": "a1000000-0000-4000-8000-000001520078",
    "number": 907
   }
  },
  "supplier_invoices": {
   "pay_succeeded": {
-   "id": "a1000000-0000-4000-8000-000001520075",
+   "id": "a1000000-0000-4000-8000-000001520079",
    "identifier": "FT-S0",
    "amount": "30.00"
   },
   "pay_succeeded_no_user": {
-   "id": "a1000000-0000-4000-8000-000001520076",
+   "id": "a1000000-0000-4000-8000-000001520080",
    "identifier": "FT-S1",
    "amount": "31.00"
   },
   "pay_query_second": {
-   "id": "a1000000-0000-4000-8000-000001520077",
+   "id": "a1000000-0000-4000-8000-000001520081",
    "identifier": "FT-S2",
    "amount": "41.00"
   },
   "mp_succeeded": {
-   "id": "a1000000-0000-4000-8000-000001520078",
+   "id": "a1000000-0000-4000-8000-000001520082",
    "identifier": "FT-S3",
    "amount": "8.50"
   },
   "wh_invoiced": {
-   "id": "a1000000-0000-4000-8000-000001520079",
+   "id": "a1000000-0000-4000-8000-000001520083",
    "identifier": "FT-S4",
    "amount": "50.00"
   },
   "wh_group": {
-   "id": "a1000000-0000-4000-8000-000001520080",
+   "id": "a1000000-0000-4000-8000-000001520084",
    "identifier": "FT-S5",
    "amount": "52.00"
   }
  },
  "course": {
-  "id": "a1000000-0000-4000-8000-000001520061",
+  "id": "a1000000-0000-4000-8000-000001520065",
   "title": "Corso Stripe"
  },
  "carnet": {
-  "id": "a1000000-0000-4000-8000-000001520062",
+  "id": "a1000000-0000-4000-8000-000001520066",
   "title": "Carnet Stripe"
  },
  "course_subscriptions": {
   "cs_pf": {
-   "id": "a1000000-0000-4000-8000-000001520063",
+   "id": "a1000000-0000-4000-8000-000001520067",
    "payment": "pf_wh_course"
   },
   "cs_pf_parent": {
-   "id": "a1000000-0000-4000-8000-000001520064",
+   "id": "a1000000-0000-4000-8000-000001520068",
    "payment": null
   }
  },
  "installments": {
   "i_pf": {
-   "id": "a1000000-0000-4000-8000-000001520065",
+   "id": "a1000000-0000-4000-8000-000001520069",
    "payment": "pf_wh_installment",
    "cs": "cs_pf_parent"
   }
  },
  "holdings": {
   "h_pf": {
-   "id": "a1000000-0000-4000-8000-000001520066",
+   "id": "a1000000-0000-4000-8000-000001520070",
    "payment": "pf_wh_carnet"
   }
  },
@@ -2450,7 +2605,7 @@
      "pay_succeeded": {
       "paid": true,
       "payment_date": "$now",
-      "invoice": "a1000000-0000-4000-8000-000001520067",
+      "invoice": "a1000000-0000-4000-8000-000001520071",
       "type": "stripe"
      }
     },
@@ -2540,7 +2695,7 @@
      "pay_succeeded_no_user": {
       "paid": true,
       "payment_date": "$now",
-      "invoice": "a1000000-0000-4000-8000-000001520068",
+      "invoice": "a1000000-0000-4000-8000-000001520072",
       "type": "stripe"
      }
     },
@@ -2634,13 +2789,13 @@
      "pay_query_first": {
       "paid": true,
       "payment_date": "$now",
-      "invoice": "a1000000-0000-4000-8000-000001520069",
+      "invoice": "a1000000-0000-4000-8000-000001520073",
       "type": "stripe"
      },
      "pay_query_second": {
       "paid": true,
       "payment_date": "$now",
-      "invoice": "a1000000-0000-4000-8000-000001520070",
+      "invoice": "a1000000-0000-4000-8000-000001520074",
       "type": "stripe"
      }
     },
@@ -2831,7 +2986,7 @@
      "pay_query_bad_key": {
       "paid": true,
       "payment_date": "$now",
-      "invoice": "a1000000-0000-4000-8000-000001520071",
+      "invoice": "a1000000-0000-4000-8000-000001520075",
       "type": "stripe"
      }
     },
@@ -3630,7 +3785,7 @@
      "mp_succeeded": {
       "paid": true,
       "payment_date": "$now",
-      "invoice": "a1000000-0000-4000-8000-000001520072",
+      "invoice": "a1000000-0000-4000-8000-000001520076",
       "type": "stripe"
      }
     },
@@ -4236,7 +4391,7 @@
      "wh_invoiced": {
       "paid": true,
       "payment_date": "$now",
-      "invoice": "a1000000-0000-4000-8000-000001520073",
+      "invoice": "a1000000-0000-4000-8000-000001520077",
       "type": "stripe"
      }
     },
@@ -4313,7 +4468,7 @@
      "wh_group": {
       "paid": true,
       "payment_date": "$now",
-      "invoice": "a1000000-0000-4000-8000-000001520074",
+      "invoice": "a1000000-0000-4000-8000-000001520078",
       "type": "stripe"
      }
     },
@@ -6295,6 +6450,708 @@
    "signature": "t={t},v1={v1}"
   },
   {
+   "name": "stripe-routes-webhook-charge-group-upper-case",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/webhook",
+   "headers": {
+    "X-Group-Id": "A1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "payments_changed": {
+     "pf_wh_group_spelling": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "$invoice",
+      "type": "stripe"
+     }
+    },
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "pf_wh_group_spelling",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "type": [
+        "default",
+        "stripe"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000001520008",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000001520008"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "activity_fee": [
+        "None",
+        "18.50"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento con causale <b>Pagamenti Stripe fixture</b> per l'associazione <b>Stripe senza metodi è</b>."
+       ],
+       "number": [
+        "None",
+        "2"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "A1000000-0000-4000-8000-000000714001"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000001520008",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_wh_group_spelling",
+      "action": 1,
+      "changes": {
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000001520008",
+       "direct"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000001520008",
+     "creation_date": "$now",
+     "membership_fee": "0.00",
+     "activity_fee": "18.50",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento con causale <b>Pagamenti Stripe fixture</b> per l'associazione <b>Stripe senza metodi è</b>.",
+     "number": 2,
+     "group_id": "a1000000-0000-4000-8000-000000714001"
+    },
+    "course_subscriptions_paid": [],
+    "installments_paid": [],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$bypass"
+      ],
+      "kwargs": [],
+      "committed": {
+       "invoice": true,
+       "paid": true,
+       "type": "stripe"
+      }
+     }
+    ],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 18,50per Quota. Pagamento dell'associato Mario Rossi.",
+     "association": "a1000000-0000-4000-8000-000001520008"
+    }
+   },
+   "stripe": [],
+   "raw_body": "{\"id\": \"evt_stub\", \"object\": \"event\", \"type\": \"charge.succeeded\", \"data\": {\"object\": {\"id\": \"ch_stub\", \"object\": \"charge\", \"payment_intent\": \"pi_stub_pf_spelling\"}}}",
+   "content_type": "application/json",
+   "signature": "t={t},v1={v1}"
+  },
+  {
+   "name": "stripe-routes-webhook-charge-fee-tie",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "payments_changed": {
+     "pf_wh_tie": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "$invoice",
+      "type": "stripe"
+     }
+    },
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "pf_wh_tie",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "type": [
+        "default",
+        "stripe"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000001520008",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000001520008"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "9.875"
+       ],
+       "activity_fee": [
+        "None",
+        "0.125"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "[{\"amount\": \"0.125\"}]"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento per l'iscrizione di <b>Mario Rossi</b> all'associazione <b>Stripe senza metodi è</b>."
+       ],
+       "number": [
+        "None",
+        "10"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000001520008",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_wh_tie",
+      "action": 1,
+      "changes": {
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000001520008",
+       "direct"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000001520008",
+     "creation_date": "$now",
+     "membership_fee": "9.88",
+     "activity_fee": "0.13",
+     "meta_payment_categories": [
+      {
+       "amount": "0.125"
+      }
+     ],
+     "description": "Ricevuta di pagamento per l'iscrizione di <b>Mario Rossi</b> all'associazione <b>Stripe senza metodi è</b>.",
+     "number": 10,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [],
+    "installments_paid": [],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$bypass"
+      ],
+      "kwargs": [],
+      "committed": {
+       "invoice": true,
+       "paid": true,
+       "type": "stripe"
+      }
+     }
+    ],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 10,00per l'iscrizione all'associazione sportiva. Pagamento dell'associato Mario Rossi.",
+     "association": "a1000000-0000-4000-8000-000001520008"
+    }
+   },
+   "stripe": [],
+   "raw_body": "{\"id\": \"evt_stub\", \"object\": \"event\", \"type\": \"charge.succeeded\", \"data\": {\"object\": {\"id\": \"ch_stub\", \"object\": \"charge\", \"payment_intent\": \"pi_stub_pf_tie\"}}}",
+   "content_type": "application/json",
+   "signature": "t={t},v1={v1}"
+  },
+  {
+   "name": "stripe-routes-webhook-charge-meta-name-float",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "payments_changed": {
+     "pf_wh_name_float": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "$invoice",
+      "type": "stripe"
+     }
+    },
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "pf_wh_name_float",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "type": [
+        "default",
+        "stripe"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000001520008",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000001520008"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "26.00"
+       ],
+       "activity_fee": [
+        "None",
+        "0.0"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento per l'iscrizione (1.5) di <b>Mario Rossi</b> all'associazione <b>Stripe senza metodi è</b>."
+       ],
+       "number": [
+        "None",
+        "11"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000001520008",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_wh_name_float",
+      "action": 1,
+      "changes": {
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000001520008",
+       "direct"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000001520008",
+     "creation_date": "$now",
+     "membership_fee": "26.00",
+     "activity_fee": "0.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento per l'iscrizione (1.5) di <b>Mario Rossi</b> all'associazione <b>Stripe senza metodi è</b>.",
+     "number": 11,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [],
+    "installments_paid": [],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$bypass"
+      ],
+      "kwargs": [],
+      "committed": {
+       "invoice": true,
+       "paid": true,
+       "type": "stripe"
+      }
+     }
+    ],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 26,00per l'iscrizione all'associazione sportiva. Pagamento dell'associato Mario Rossi.",
+     "association": "a1000000-0000-4000-8000-000001520008"
+    }
+   },
+   "stripe": [],
+   "raw_body": "{\"id\": \"evt_stub\", \"object\": \"event\", \"type\": \"charge.succeeded\", \"data\": {\"object\": {\"id\": \"ch_stub\", \"object\": \"charge\", \"payment_intent\": \"pi_stub_pf_name_float\"}}}",
+   "content_type": "application/json",
+   "signature": "t={t},v1={v1}"
+  },
+  {
+   "name": "stripe-routes-webhook-charge-meta-name-list",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "payments_changed": {
+     "pf_wh_name_list": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "$invoice",
+      "type": "stripe"
+     }
+    },
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "pf_wh_name_list",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "type": [
+        "default",
+        "stripe"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000001520008",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000001520008"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "27.00"
+       ],
+       "activity_fee": [
+        "None",
+        "0.0"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento per l'iscrizione ([&#x27;Agonisti&#x27;, {&#x27;ok&#x27;: True, &#x27;anno&#x27;: None}, 2]) di <b>Mario Rossi</b> all'associazione <b>Stripe senza metodi è</b>."
+       ],
+       "number": [
+        "None",
+        "12"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000001520008",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_wh_name_list",
+      "action": 1,
+      "changes": {
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000001520008",
+       "direct"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000001520008",
+     "creation_date": "$now",
+     "membership_fee": "27.00",
+     "activity_fee": "0.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento per l'iscrizione ([&#x27;Agonisti&#x27;, {&#x27;ok&#x27;: True, &#x27;anno&#x27;: None}, 2]) di <b>Mario Rossi</b> all'associazione <b>Stripe senza metodi è</b>.",
+     "number": 12,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [],
+    "installments_paid": [],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$bypass"
+      ],
+      "kwargs": [],
+      "committed": {
+       "invoice": true,
+       "paid": true,
+       "type": "stripe"
+      }
+     }
+    ],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 27,00per l'iscrizione all'associazione sportiva. Pagamento dell'associato Mario Rossi.",
+     "association": "a1000000-0000-4000-8000-000001520008"
+    }
+   },
+   "stripe": [],
+   "raw_body": "{\"id\": \"evt_stub\", \"object\": \"event\", \"type\": \"charge.succeeded\", \"data\": {\"object\": {\"id\": \"ch_stub\", \"object\": \"charge\", \"payment_intent\": \"pi_stub_pf_name_list\"}}}",
+   "content_type": "application/json",
+   "signature": "t={t},v1={v1}"
+  },
+  {
    "name": "stripe-routes-webhook-charge-defaults-before-description",
    "actor": "anonymous",
    "method": "POST",
@@ -6378,7 +7235,7 @@
        ],
        "number": [
         "None",
-        "10"
+        "13"
        ],
        "archived": [
         "None",
@@ -6447,7 +7304,7 @@
      "activity_fee": "22.00",
      "meta_payment_categories": null,
      "description": "Ricevuta di pagamento con causale <b>entrate e proventi da attività tipiche</b> per l'associazione <b>Stripe senza metodi è</b>.",
-     "number": 10,
+     "number": 13,
      "group_id": null
     },
     "course_subscriptions_paid": [],
@@ -6556,7 +7413,7 @@
        ],
        "number": [
         "None",
-        "11"
+        "14"
        ],
        "archived": [
         "None",
@@ -6617,7 +7474,7 @@
      "activity_fee": "19.00",
      "meta_payment_categories": null,
      "description": "Ricevuta di pagamento con causale <b>Pagamenti Stripe fixture</b> per l'associazione <b>Stripe senza metodi è</b>.",
-     "number": 11,
+     "number": 14,
      "group_id": null
     },
     "course_subscriptions_paid": [],
@@ -6730,7 +7587,7 @@
        ],
        "number": [
         "None",
-        "12"
+        "15"
        ],
        "archived": [
         "None",
@@ -6791,7 +7648,7 @@
      "activity_fee": "21.00",
      "meta_payment_categories": null,
      "description": "Ricevuta di pagamento con causale <b>Pagamenti Stripe fixture</b> per l'associazione <b>Stripe senza metodi è</b>.",
-     "number": 12,
+     "number": 15,
      "group_id": null
     },
     "course_subscriptions_paid": [],

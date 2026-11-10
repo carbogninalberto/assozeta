@@ -16761,7 +16761,9 @@
         "BE_GO/internal/xlsxexport/zip.go",
         "BE_GO/internal/xlsxexport/compare.go",
         "BE_GO/internal/xlsxexport/golden_test.go",
-        "BE_GO/pkg/storage/instancelogo/write.go"
+        "BE_GO/pkg/storage/instancelogo/write.go",
+        "BE_GO/internal/repository/association_profile.go",
+        "BE_GO/internal/service/association_profile.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
@@ -16784,7 +16786,7 @@
           "/api/modules/<custom_link>/info"
         ],
         "request": "Path custom_link; optional query response_id (last value).",
-        "response": "200 {'data': ModulesSerializer(module), 'response_data': ModuleResponseSerializer(response or None) or None}.",
+        "response": "200 {data: ModulesSerializer with the nested SportAssociationSerializer of module.sport_association (the row the foreign key resolves by id; null without one), response_data}",
         "errors": "400 ['badly formed hexadecimal UUID string'] for response_id; 403 registry / scoped session / admin without session; 404 {'error': 'module not found'} and {'error': 'module not active'}.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.modules.read.",
@@ -16803,25 +16805,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 145/145; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-red-r1/results.json",
-          "receipt_sha256": "f89f92a06bb44e0f68eeb9c9549c08fa414c92d098db6d1c7fb8df43ca5481c6"
+          "result": "RED: Django 148/148; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
+          "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 145/145 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-green-r3/results.json",
-          "receipt_sha256": "6451b13fdf91a48829e714066f456f4a784d25406b3a00502ddc8c4570702e99"
+          "result": "GREEN: 148/148 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-green-r4/results.json",
+          "receipt_sha256": "180a8230e593534adc84c33475437a5afb121e0f99aabac8327eec8bd580ece4"
         },
         {
-          "revision": "committing change guessing the attachment's type and encoding on the lower-cased storage name",
-          "result": "Mutation control: fails Go on modules-responses-attach-compressed-upper-z (storage.objects).",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-mutation-r1/results.json",
-          "receipt_sha256": "15b3736b32465a85a2b1736775b1bb4087314a19085a5e688a34823fcf13275b"
+          "revision": "the by-id association reader given the owner reader's row condition (repository/association_profile.go)",
+          "result": "Mutation control: fails Go on modules-responses-info-inactive-association (500): CAUGHT.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-mutation-r2/results.json",
+          "receipt_sha256": "b68314715a577884494c1139153f93498bfaa74343fc921944addfc89dac7ded"
         }
       ],
       "notes": [
-        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active. API v2 (v2-misc): add-attachment names with compression suffixes are stored with mimetypes' encoding as ContentEncoding."
+        "Implementing: API v2 (v2-rest-a): modules/<link>/info renders the nested association profile of the row the module points to, resolved by id (AssociationProfiles.ReadAssociation). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
       ]
     },
     {
@@ -17007,7 +17009,9 @@
         "BE_GO/internal/xlsxexport/zip.go",
         "BE_GO/internal/xlsxexport/compare.go",
         "BE_GO/internal/xlsxexport/golden_test.go",
-        "BE_GO/pkg/storage/instancelogo/write.go"
+        "BE_GO/pkg/storage/instancelogo/write.go",
+        "BE_GO/internal/repository/association_profile.go",
+        "BE_GO/internal/service/association_profile.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
@@ -17049,25 +17053,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 145/145; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-red-r1/results.json",
-          "receipt_sha256": "f89f92a06bb44e0f68eeb9c9549c08fa414c92d098db6d1c7fb8df43ca5481c6"
+          "result": "RED: Django 148/148; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
+          "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 145/145 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-green-r3/results.json",
-          "receipt_sha256": "6451b13fdf91a48829e714066f456f4a784d25406b3a00502ddc8c4570702e99"
+          "result": "GREEN: 148/148 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-green-r4/results.json",
+          "receipt_sha256": "180a8230e593534adc84c33475437a5afb121e0f99aabac8327eec8bd580ece4"
         },
         {
-          "revision": "committing change guessing the attachment's type and encoding on the lower-cased storage name",
-          "result": "Mutation control: fails Go on modules-responses-attach-compressed-upper-z (storage.objects).",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-mutation-r1/results.json",
-          "receipt_sha256": "15b3736b32465a85a2b1736775b1bb4087314a19085a5e688a34823fcf13275b"
+          "revision": "the by-id association reader given the owner reader's row condition (repository/association_profile.go)",
+          "result": "Mutation control: fails Go on modules-responses-info-inactive-association (500): CAUGHT.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-mutation-r2/results.json",
+          "receipt_sha256": "b68314715a577884494c1139153f93498bfaa74343fc921944addfc89dac7ded"
         }
       ],
       "notes": [
-        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active. API v2 (v2-misc): add-attachment names with compression suffixes are stored with mimetypes' encoding as ContentEncoding."
+        "Implementing: API v2 (v2-rest-a): modules/<link>/info renders the nested association profile of the row the module points to, resolved by id (AssociationProfiles.ReadAssociation). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
       ]
     },
     {
@@ -17176,7 +17180,9 @@
         "BE_GO/internal/xlsxexport/zip.go",
         "BE_GO/internal/xlsxexport/compare.go",
         "BE_GO/internal/xlsxexport/golden_test.go",
-        "BE_GO/pkg/storage/instancelogo/write.go"
+        "BE_GO/pkg/storage/instancelogo/write.go",
+        "BE_GO/internal/repository/association_profile.go",
+        "BE_GO/internal/service/association_profile.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
@@ -17218,25 +17224,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 145/145; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-red-r1/results.json",
-          "receipt_sha256": "f89f92a06bb44e0f68eeb9c9549c08fa414c92d098db6d1c7fb8df43ca5481c6"
+          "result": "RED: Django 148/148; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
+          "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 145/145 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-green-r3/results.json",
-          "receipt_sha256": "6451b13fdf91a48829e714066f456f4a784d25406b3a00502ddc8c4570702e99"
+          "result": "GREEN: 148/148 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-green-r4/results.json",
+          "receipt_sha256": "180a8230e593534adc84c33475437a5afb121e0f99aabac8327eec8bd580ece4"
         },
         {
-          "revision": "committing change guessing the attachment's type and encoding on the lower-cased storage name",
-          "result": "Mutation control: fails Go on modules-responses-attach-compressed-upper-z (storage.objects).",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-mutation-r1/results.json",
-          "receipt_sha256": "15b3736b32465a85a2b1736775b1bb4087314a19085a5e688a34823fcf13275b"
+          "revision": "the by-id association reader given the owner reader's row condition (repository/association_profile.go)",
+          "result": "Mutation control: fails Go on modules-responses-info-inactive-association (500): CAUGHT.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-mutation-r2/results.json",
+          "receipt_sha256": "b68314715a577884494c1139153f93498bfaa74343fc921944addfc89dac7ded"
         }
       ],
       "notes": [
-        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active. API v2 (v2-misc): add-attachment names with compression suffixes are stored with mimetypes' encoding as ContentEncoding."
+        "Implementing: API v2 (v2-rest-a): modules/<link>/info renders the nested association profile of the row the module points to, resolved by id (AssociationProfiles.ReadAssociation). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
       ]
     },
     {
@@ -17568,7 +17574,9 @@
         "BE_GO/internal/xlsxexport/zip.go",
         "BE_GO/internal/xlsxexport/compare.go",
         "BE_GO/internal/xlsxexport/golden_test.go",
-        "BE_GO/pkg/storage/instancelogo/write.go"
+        "BE_GO/pkg/storage/instancelogo/write.go",
+        "BE_GO/internal/repository/association_profile.go",
+        "BE_GO/internal/service/association_profile.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
@@ -17611,25 +17619,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 145/145; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-red-r1/results.json",
-          "receipt_sha256": "f89f92a06bb44e0f68eeb9c9549c08fa414c92d098db6d1c7fb8df43ca5481c6"
+          "result": "RED: Django 148/148; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
+          "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 145/145 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-green-r3/results.json",
-          "receipt_sha256": "6451b13fdf91a48829e714066f456f4a784d25406b3a00502ddc8c4570702e99"
+          "result": "GREEN: 148/148 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-green-r4/results.json",
+          "receipt_sha256": "180a8230e593534adc84c33475437a5afb121e0f99aabac8327eec8bd580ece4"
         },
         {
-          "revision": "committing change guessing the attachment's type and encoding on the lower-cased storage name",
-          "result": "Mutation control: fails Go on modules-responses-attach-compressed-upper-z (storage.objects).",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-mutation-r1/results.json",
-          "receipt_sha256": "15b3736b32465a85a2b1736775b1bb4087314a19085a5e688a34823fcf13275b"
+          "revision": "the by-id association reader given the owner reader's row condition (repository/association_profile.go)",
+          "result": "Mutation control: fails Go on modules-responses-info-inactive-association (500): CAUGHT.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-mutation-r2/results.json",
+          "receipt_sha256": "b68314715a577884494c1139153f93498bfaa74343fc921944addfc89dac7ded"
         }
       ],
       "notes": [
-        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active. API v2 (v2-misc): add-attachment names with compression suffixes are stored with mimetypes' encoding as ContentEncoding."
+        "Implementing: API v2 (v2-rest-a): modules/<link>/info renders the nested association profile of the row the module points to, resolved by id (AssociationProfiles.ReadAssociation). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
       ]
     },
     {
@@ -17665,7 +17673,9 @@
         "BE_GO/internal/xlsxexport/zip.go",
         "BE_GO/internal/xlsxexport/compare.go",
         "BE_GO/internal/xlsxexport/golden_test.go",
-        "BE_GO/pkg/storage/instancelogo/write.go"
+        "BE_GO/pkg/storage/instancelogo/write.go",
+        "BE_GO/internal/repository/association_profile.go",
+        "BE_GO/internal/service/association_profile.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
@@ -17707,25 +17717,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 145/145; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-red-r1/results.json",
-          "receipt_sha256": "f89f92a06bb44e0f68eeb9c9549c08fa414c92d098db6d1c7fb8df43ca5481c6"
+          "result": "RED: Django 148/148; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
+          "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 145/145 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-green-r3/results.json",
-          "receipt_sha256": "6451b13fdf91a48829e714066f456f4a784d25406b3a00502ddc8c4570702e99"
+          "result": "GREEN: 148/148 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-green-r4/results.json",
+          "receipt_sha256": "180a8230e593534adc84c33475437a5afb121e0f99aabac8327eec8bd580ece4"
         },
         {
-          "revision": "committing change guessing the attachment's type and encoding on the lower-cased storage name",
-          "result": "Mutation control: fails Go on modules-responses-attach-compressed-upper-z (storage.objects).",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-mutation-r1/results.json",
-          "receipt_sha256": "15b3736b32465a85a2b1736775b1bb4087314a19085a5e688a34823fcf13275b"
+          "revision": "the by-id association reader given the owner reader's row condition (repository/association_profile.go)",
+          "result": "Mutation control: fails Go on modules-responses-info-inactive-association (500): CAUGHT.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-mutation-r2/results.json",
+          "receipt_sha256": "b68314715a577884494c1139153f93498bfaa74343fc921944addfc89dac7ded"
         }
       ],
       "notes": [
-        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active. API v2 (v2-misc): add-attachment names with compression suffixes are stored with mimetypes' encoding as ContentEncoding."
+        "Implementing: API v2 (v2-rest-a): modules/<link>/info renders the nested association profile of the row the module points to, resolved by id (AssociationProfiles.ReadAssociation). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
       ]
     },
     {
@@ -17761,7 +17771,9 @@
         "BE_GO/internal/xlsxexport/zip.go",
         "BE_GO/internal/xlsxexport/compare.go",
         "BE_GO/internal/xlsxexport/golden_test.go",
-        "BE_GO/pkg/storage/instancelogo/write.go"
+        "BE_GO/pkg/storage/instancelogo/write.go",
+        "BE_GO/internal/repository/association_profile.go",
+        "BE_GO/internal/service/association_profile.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
@@ -17803,25 +17815,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 145/145; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-red-r1/results.json",
-          "receipt_sha256": "f89f92a06bb44e0f68eeb9c9549c08fa414c92d098db6d1c7fb8df43ca5481c6"
+          "result": "RED: Django 148/148; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
+          "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 145/145 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-green-r3/results.json",
-          "receipt_sha256": "6451b13fdf91a48829e714066f456f4a784d25406b3a00502ddc8c4570702e99"
+          "result": "GREEN: 148/148 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-green-r4/results.json",
+          "receipt_sha256": "180a8230e593534adc84c33475437a5afb121e0f99aabac8327eec8bd580ece4"
         },
         {
-          "revision": "committing change guessing the attachment's type and encoding on the lower-cased storage name",
-          "result": "Mutation control: fails Go on modules-responses-attach-compressed-upper-z (storage.objects).",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-mutation-r1/results.json",
-          "receipt_sha256": "15b3736b32465a85a2b1736775b1bb4087314a19085a5e688a34823fcf13275b"
+          "revision": "the by-id association reader given the owner reader's row condition (repository/association_profile.go)",
+          "result": "Mutation control: fails Go on modules-responses-info-inactive-association (500): CAUGHT.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-mutation-r2/results.json",
+          "receipt_sha256": "b68314715a577884494c1139153f93498bfaa74343fc921944addfc89dac7ded"
         }
       ],
       "notes": [
-        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active. API v2 (v2-misc): add-attachment names with compression suffixes are stored with mimetypes' encoding as ContentEncoding."
+        "Implementing: API v2 (v2-rest-a): modules/<link>/info renders the nested association profile of the row the module points to, resolved by id (AssociationProfiles.ReadAssociation). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
       ]
     },
     {
@@ -19286,7 +19298,10 @@
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/domain/payment_state.go",
         "BE_GO/internal/dto/payment_state_invoice_meta.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/dto/python_digits.go",
+        "BE_GO/internal/service/invoice_generate.go",
+        "BE_GO/internal/service/payment_paid_flow.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, scoped-request guard and audit index",
@@ -19342,25 +19357,25 @@
         "docs/architecture/go-migration/payment-state.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 153/153; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-state-http-v2pay3-state-red-r2/results.json",
-          "receipt_sha256": "7f10c198ed2c4ff8201f68cb6850e1f210bc50de2b3f9f40ee5313d84682600b"
+          "result": "RED: Django 160/160; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-v2resta-red-r3/results.json",
+          "receipt_sha256": "df162bbd8e69965904517c78dcb0186b3c1d0f4bd08f2786da8c7bcab8400b3d"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 153/153 on native Django, native Go, Caddy /api/v1 and /api/v2 153 cases on four transports after merging codex/go-backend-parity (074a5dba); invoice columns, audit entries, Celery messages and print requests are checked..",
-          "artifact": "quality-reports/go-migration/payment-state-http-v2pay3-state-final-r1/results.json",
-          "receipt_sha256": "d9019230b13d655d5522fe3f2fef2658c23eea2644eb23e9e79b3e52b116dee1"
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-v2resta-green-r4/results.json",
+          "receipt_sha256": "9a1cad8baf80ad2eba29fe13dca485a63a8b9889fd59643d499f7713ab48235a"
         },
         {
-          "revision": "Cancel response renders the stored invoice instead of the in-memory cancelled one",
-          "result": "Mutation control: fails Go on the invoiced cancel case (response body).",
-          "artifact": "quality-reports/go-migration/payment-state-http-v2pay3-state-mutation-r2/results.json",
-          "receipt_sha256": "a3b13cf5e84185307cdb43fd3c34f3ce7293c73192797a43daac08cb2c1df311"
+          "revision": "the strptime year limited to ASCII digits (service/payment_state.go, paymentStateDateAnyPattern); earlier control in the same change: the approve re-save of the new invoice comparing the response's half-even fee instead of the column value (service/payment_paid_flow.go)",
+          "result": "Mutation control: fails Go on payment-state-approve-other-script-date: CAUGHT.",
+          "artifact": "quality-reports/go-migration/payment-state-http-v2resta-mutation-r3/results.json",
+          "receipt_sha256": "99079b33d678c936287b267b0fd6a08f0cbf59be07fe5bc24ee89aff243ce35d"
         }
       ],
       "notes": [
-        "Implementing: API v2: cancel and delete of an invoiced payment are ported (invoice saved cancelled with the PaymentSerializer values as meta, print_document_invoice published for cancel and run eagerly for delete before the cascade). Still refused: delete while the print task is deferred for maintenance."
+        "Implementing: API v2 (v2-rest-a): the approve paid flow serves X-Group-Id in any spelling the uuid module accepts (column stores the uuid; create entry, response and re-save keep the text as sent), float fees on an exact two-place tie (column half away from zero, response half to even, re-save audited against the column) and meta.subscription_data.name of any JSON type (str()). Still refused before any write: a paid flow whose request.user is not an owner or collaborator; send_receipt_email that is not null, bool, str or int64; delete of an invoiced payment while the print task is deferred for maintenance. Dates with decimal digits of other scripts are served (RED: documented refusal, see v2-refusals.md row)."
       ]
     },
     {
@@ -19384,7 +19399,10 @@
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/domain/payment_state.go",
         "BE_GO/internal/dto/payment_state_invoice_meta.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/dto/python_digits.go",
+        "BE_GO/internal/service/invoice_generate.go",
+        "BE_GO/internal/service/payment_paid_flow.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, scoped-request guard and audit index",
@@ -19440,25 +19458,25 @@
         "docs/architecture/go-migration/payment-state.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 153/153; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-state-http-v2pay3-state-red-r2/results.json",
-          "receipt_sha256": "7f10c198ed2c4ff8201f68cb6850e1f210bc50de2b3f9f40ee5313d84682600b"
+          "result": "RED: Django 160/160; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-v2resta-red-r3/results.json",
+          "receipt_sha256": "df162bbd8e69965904517c78dcb0186b3c1d0f4bd08f2786da8c7bcab8400b3d"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 153/153 on native Django, native Go, Caddy /api/v1 and /api/v2 153 cases on four transports after merging codex/go-backend-parity (074a5dba); invoice columns, audit entries, Celery messages and print requests are checked..",
-          "artifact": "quality-reports/go-migration/payment-state-http-v2pay3-state-final-r1/results.json",
-          "receipt_sha256": "d9019230b13d655d5522fe3f2fef2658c23eea2644eb23e9e79b3e52b116dee1"
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-v2resta-green-r4/results.json",
+          "receipt_sha256": "9a1cad8baf80ad2eba29fe13dca485a63a8b9889fd59643d499f7713ab48235a"
         },
         {
-          "revision": "Cancel response renders the stored invoice instead of the in-memory cancelled one",
-          "result": "Mutation control: fails Go on the invoiced cancel case (response body).",
-          "artifact": "quality-reports/go-migration/payment-state-http-v2pay3-state-mutation-r2/results.json",
-          "receipt_sha256": "a3b13cf5e84185307cdb43fd3c34f3ce7293c73192797a43daac08cb2c1df311"
+          "revision": "the strptime year limited to ASCII digits (service/payment_state.go, paymentStateDateAnyPattern); earlier control in the same change: the approve re-save of the new invoice comparing the response's half-even fee instead of the column value (service/payment_paid_flow.go)",
+          "result": "Mutation control: fails Go on payment-state-approve-other-script-date: CAUGHT.",
+          "artifact": "quality-reports/go-migration/payment-state-http-v2resta-mutation-r3/results.json",
+          "receipt_sha256": "99079b33d678c936287b267b0fd6a08f0cbf59be07fe5bc24ee89aff243ce35d"
         }
       ],
       "notes": [
-        "Implementing: API v2: cancel and delete of an invoiced payment are ported (invoice saved cancelled with the PaymentSerializer values as meta, print_document_invoice published for cancel and run eagerly for delete before the cascade). Still refused: delete while the print task is deferred for maintenance."
+        "Implementing: API v2 (v2-rest-a): the approve paid flow serves X-Group-Id in any spelling the uuid module accepts (column stores the uuid; create entry, response and re-save keep the text as sent), float fees on an exact two-place tie (column half away from zero, response half to even, re-save audited against the column) and meta.subscription_data.name of any JSON type (str()). Still refused before any write: a paid flow whose request.user is not an owner or collaborator; send_receipt_email that is not null, bool, str or int64; delete of an invoiced payment while the print task is deferred for maintenance. Dates with decimal digits of other scripts are served (RED: documented refusal, see v2-refusals.md row)."
       ]
     },
     {
@@ -19482,7 +19500,10 @@
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/domain/payment_state.go",
         "BE_GO/internal/dto/payment_state_invoice_meta.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/dto/python_digits.go",
+        "BE_GO/internal/service/invoice_generate.go",
+        "BE_GO/internal/service/payment_paid_flow.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, scoped-request guard and audit index",
@@ -19538,25 +19559,25 @@
         "docs/architecture/go-migration/payment-state.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 153/153; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-state-http-v2pay3-state-red-r2/results.json",
-          "receipt_sha256": "7f10c198ed2c4ff8201f68cb6850e1f210bc50de2b3f9f40ee5313d84682600b"
+          "result": "RED: Django 160/160; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-v2resta-red-r3/results.json",
+          "receipt_sha256": "df162bbd8e69965904517c78dcb0186b3c1d0f4bd08f2786da8c7bcab8400b3d"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 153/153 on native Django, native Go, Caddy /api/v1 and /api/v2 153 cases on four transports after merging codex/go-backend-parity (074a5dba); invoice columns, audit entries, Celery messages and print requests are checked..",
-          "artifact": "quality-reports/go-migration/payment-state-http-v2pay3-state-final-r1/results.json",
-          "receipt_sha256": "d9019230b13d655d5522fe3f2fef2658c23eea2644eb23e9e79b3e52b116dee1"
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-v2resta-green-r4/results.json",
+          "receipt_sha256": "9a1cad8baf80ad2eba29fe13dca485a63a8b9889fd59643d499f7713ab48235a"
         },
         {
-          "revision": "Cancel response renders the stored invoice instead of the in-memory cancelled one",
-          "result": "Mutation control: fails Go on the invoiced cancel case (response body).",
-          "artifact": "quality-reports/go-migration/payment-state-http-v2pay3-state-mutation-r2/results.json",
-          "receipt_sha256": "a3b13cf5e84185307cdb43fd3c34f3ce7293c73192797a43daac08cb2c1df311"
+          "revision": "the strptime year limited to ASCII digits (service/payment_state.go, paymentStateDateAnyPattern); earlier control in the same change: the approve re-save of the new invoice comparing the response's half-even fee instead of the column value (service/payment_paid_flow.go)",
+          "result": "Mutation control: fails Go on payment-state-approve-other-script-date: CAUGHT.",
+          "artifact": "quality-reports/go-migration/payment-state-http-v2resta-mutation-r3/results.json",
+          "receipt_sha256": "99079b33d678c936287b267b0fd6a08f0cbf59be07fe5bc24ee89aff243ce35d"
         }
       ],
       "notes": [
-        "Implementing: API v2: cancel and delete of an invoiced payment are ported (invoice saved cancelled with the PaymentSerializer values as meta, print_document_invoice published for cancel and run eagerly for delete before the cascade). Still refused: delete while the print task is deferred for maintenance."
+        "Implementing: API v2 (v2-rest-a): the approve paid flow serves X-Group-Id in any spelling the uuid module accepts (column stores the uuid; create entry, response and re-save keep the text as sent), float fees on an exact two-place tie (column half away from zero, response half to even, re-save audited against the column) and meta.subscription_data.name of any JSON type (str()). Still refused before any write: a paid flow whose request.user is not an owner or collaborator; send_receipt_email that is not null, bool, str or int64; delete of an invoiced payment while the print task is deferred for maintenance. Dates with decimal digits of other scripts are served (RED: documented refusal, see v2-refusals.md row)."
       ]
     },
     {
@@ -19653,7 +19674,10 @@
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/domain/payment_state.go",
         "BE_GO/internal/dto/payment_state_invoice_meta.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/dto/python_digits.go",
+        "BE_GO/internal/service/invoice_generate.go",
+        "BE_GO/internal/service/payment_paid_flow.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, scoped-request guard and audit index",
@@ -19709,25 +19733,25 @@
         "docs/architecture/go-migration/payment-state.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 153/153; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-state-http-v2pay3-state-red-r2/results.json",
-          "receipt_sha256": "7f10c198ed2c4ff8201f68cb6850e1f210bc50de2b3f9f40ee5313d84682600b"
+          "result": "RED: Django 160/160; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-v2resta-red-r3/results.json",
+          "receipt_sha256": "df162bbd8e69965904517c78dcb0186b3c1d0f4bd08f2786da8c7bcab8400b3d"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 153/153 on native Django, native Go, Caddy /api/v1 and /api/v2 153 cases on four transports after merging codex/go-backend-parity (074a5dba); invoice columns, audit entries, Celery messages and print requests are checked..",
-          "artifact": "quality-reports/go-migration/payment-state-http-v2pay3-state-final-r1/results.json",
-          "receipt_sha256": "d9019230b13d655d5522fe3f2fef2658c23eea2644eb23e9e79b3e52b116dee1"
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-v2resta-green-r4/results.json",
+          "receipt_sha256": "9a1cad8baf80ad2eba29fe13dca485a63a8b9889fd59643d499f7713ab48235a"
         },
         {
-          "revision": "Cancel response renders the stored invoice instead of the in-memory cancelled one",
-          "result": "Mutation control: fails Go on the invoiced cancel case (response body).",
-          "artifact": "quality-reports/go-migration/payment-state-http-v2pay3-state-mutation-r2/results.json",
-          "receipt_sha256": "a3b13cf5e84185307cdb43fd3c34f3ce7293c73192797a43daac08cb2c1df311"
+          "revision": "the strptime year limited to ASCII digits (service/payment_state.go, paymentStateDateAnyPattern); earlier control in the same change: the approve re-save of the new invoice comparing the response's half-even fee instead of the column value (service/payment_paid_flow.go)",
+          "result": "Mutation control: fails Go on payment-state-approve-other-script-date: CAUGHT.",
+          "artifact": "quality-reports/go-migration/payment-state-http-v2resta-mutation-r3/results.json",
+          "receipt_sha256": "99079b33d678c936287b267b0fd6a08f0cbf59be07fe5bc24ee89aff243ce35d"
         }
       ],
       "notes": [
-        "Implementing: API v2: cancel and delete of an invoiced payment are ported (invoice saved cancelled with the PaymentSerializer values as meta, print_document_invoice published for cancel and run eagerly for delete before the cascade). Still refused: delete while the print task is deferred for maintenance."
+        "Implementing: API v2 (v2-rest-a): the approve paid flow serves X-Group-Id in any spelling the uuid module accepts (column stores the uuid; create entry, response and re-save keep the text as sent), float fees on an exact two-place tie (column half away from zero, response half to even, re-save audited against the column) and meta.subscription_data.name of any JSON type (str()). Still refused before any write: a paid flow whose request.user is not an owner or collaborator; send_receipt_email that is not null, bool, str or int64; delete of an invoiced payment while the print task is deferred for maintenance. Dates with decimal digits of other scripts are served (RED: documented refusal, see v2-refusals.md row)."
       ]
     },
     {
@@ -19751,7 +19775,10 @@
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/domain/payment_state.go",
         "BE_GO/internal/dto/payment_state_invoice_meta.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/dto/python_digits.go",
+        "BE_GO/internal/service/invoice_generate.go",
+        "BE_GO/internal/service/payment_paid_flow.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, scoped-request guard and audit index",
@@ -19807,25 +19834,25 @@
         "docs/architecture/go-migration/payment-state.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 153/153; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-state-http-v2pay3-state-red-r2/results.json",
-          "receipt_sha256": "7f10c198ed2c4ff8201f68cb6850e1f210bc50de2b3f9f40ee5313d84682600b"
+          "result": "RED: Django 160/160; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-v2resta-red-r3/results.json",
+          "receipt_sha256": "df162bbd8e69965904517c78dcb0186b3c1d0f4bd08f2786da8c7bcab8400b3d"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 153/153 on native Django, native Go, Caddy /api/v1 and /api/v2 153 cases on four transports after merging codex/go-backend-parity (074a5dba); invoice columns, audit entries, Celery messages and print requests are checked..",
-          "artifact": "quality-reports/go-migration/payment-state-http-v2pay3-state-final-r1/results.json",
-          "receipt_sha256": "d9019230b13d655d5522fe3f2fef2658c23eea2644eb23e9e79b3e52b116dee1"
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-v2resta-green-r4/results.json",
+          "receipt_sha256": "9a1cad8baf80ad2eba29fe13dca485a63a8b9889fd59643d499f7713ab48235a"
         },
         {
-          "revision": "Cancel response renders the stored invoice instead of the in-memory cancelled one",
-          "result": "Mutation control: fails Go on the invoiced cancel case (response body).",
-          "artifact": "quality-reports/go-migration/payment-state-http-v2pay3-state-mutation-r2/results.json",
-          "receipt_sha256": "a3b13cf5e84185307cdb43fd3c34f3ce7293c73192797a43daac08cb2c1df311"
+          "revision": "the strptime year limited to ASCII digits (service/payment_state.go, paymentStateDateAnyPattern); earlier control in the same change: the approve re-save of the new invoice comparing the response's half-even fee instead of the column value (service/payment_paid_flow.go)",
+          "result": "Mutation control: fails Go on payment-state-approve-other-script-date: CAUGHT.",
+          "artifact": "quality-reports/go-migration/payment-state-http-v2resta-mutation-r3/results.json",
+          "receipt_sha256": "99079b33d678c936287b267b0fd6a08f0cbf59be07fe5bc24ee89aff243ce35d"
         }
       ],
       "notes": [
-        "Implementing: API v2: cancel and delete of an invoiced payment are ported (invoice saved cancelled with the PaymentSerializer values as meta, print_document_invoice published for cancel and run eagerly for delete before the cascade). Still refused: delete while the print task is deferred for maintenance."
+        "Implementing: API v2 (v2-rest-a): the approve paid flow serves X-Group-Id in any spelling the uuid module accepts (column stores the uuid; create entry, response and re-save keep the text as sent), float fees on an exact two-place tie (column half away from zero, response half to even, re-save audited against the column) and meta.subscription_data.name of any JSON type (str()). Still refused before any write: a paid flow whose request.user is not an owner or collaborator; send_receipt_email that is not null, bool, str or int64; delete of an invoiced payment while the print task is deferred for maintenance. Dates with decimal digits of other scripts are served (RED: documented refusal, see v2-refusals.md row)."
       ]
     },
     {
@@ -20135,7 +20162,11 @@
       "go": [
         "BE_GO/internal/service/payment_writes.go",
         "BE_GO/internal/repository/payment_writes.go",
-        "BE_GO/internal/domain/payment_writes.go"
+        "BE_GO/internal/domain/payment_writes.go",
+        "BE_GO/internal/dto/python_digits.go",
+        "BE_GO/internal/service/invoice_generate.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_state.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks, permission registry and tenant scope",
@@ -20172,25 +20203,25 @@
         "docs/architecture/go-migration/payment-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 152/152; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay3-add-red-r1/results.json",
-          "receipt_sha256": "76b1c51ab76540ce01e561e754a6202ac0504e6b650ec654849af6ca1317f9b4"
+          "result": "RED: Django 156/156; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2resta-red-r1/results.json",
+          "receipt_sha256": "fd3e721d19c0d9c2e36354d03578a4e449ec902987574a6df869c18f2ef4dd94"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 152/152 on native Django, native Go, Caddy /api/v1 and /api/v2 152 cases on four transports after merging codex/go-backend-parity (074a5dba); created invoices, their audit entries and print requests are checked..",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay3-add-versioned-r1/results.json",
-          "receipt_sha256": "322c2237984d5022c36e0b90979a5001c39b17f4e592d48df2229266711c52c3"
+          "result": "GREEN: 156/156 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2resta-green-r3/results.json",
+          "receipt_sha256": "1f66ac3ba70f38b6d39cefcf5b15e6d69217f8b8e6edaaf23df29b1b388da0fd"
         },
         {
-          "revision": "No invoice for an auto-paid payment without an associate (instructor only)",
-          "result": "Mutation control: fails Go on payment-writes-add-auto-paid-instructor-invoice (response.body).",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay3-add-mutation-r1/results.json",
-          "receipt_sha256": "71d74ae429df4571ac65f8352d93f25220b1e287e1b58bb6bf53566f75fd8b63"
+          "revision": "the strptime year limited to ASCII digits (service/payment_state.go, paymentStateDateAnyPattern); earlier control in the same change: the second invoice save of payment/add comparing the response's half-even fee instead of the column value (service/payment_writes.go)",
+          "result": "Mutation control: fails Go on payment-writes-add-other-script-dates: CAUGHT.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2resta-mutation-r2/results.json",
+          "receipt_sha256": "97871ca2809071bd73152fe003cd163282ca4fc17ed1bba21483d87eda9e26e8"
         }
       ],
       "notes": [
-        "Implementing: API v2: payment/add for owners with auto_paid_payment is ported (paid payment, payment date now, invoice numbering by creation date, invoice with optional payment-date creation date, eager print_document_invoice inside the block, last payment save). Still refused before any write: a float fee on an exact half cent, a non-canonical X-Group-Id, a print deferred by a pending restore."
+        "Implementing: API v2 (v2-rest-a): payment/add serves X-Group-Id in any spelling the uuid module accepts (column stores the uuid; create entry, response and later saves keep the text as sent, also on the auto-paid invoice) and auto-paid fees on an exact half cent. Still refused before any write: auto-paid add while the print is deferred by a pending restore; attachments_data outside the ported subset (non-string document/filename, filename over 255 characters, with NUL or invalid UTF-8, a storage name Storage.save rejects, an existing key without AWS_S3_FILE_OVERWRITE); user in the body, payment_id on add, a payment_id other than the row's own on update; update form bodies and add multipart bodies with files. Dates with decimal digits of other scripts are served (RED: documented refusal, see v2-refusals.md row)."
       ]
     },
     {
@@ -20212,7 +20243,11 @@
       "go": [
         "BE_GO/internal/service/payment_writes.go",
         "BE_GO/internal/repository/payment_writes.go",
-        "BE_GO/internal/domain/payment_writes.go"
+        "BE_GO/internal/domain/payment_writes.go",
+        "BE_GO/internal/dto/python_digits.go",
+        "BE_GO/internal/service/invoice_generate.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_state.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks, permission registry and tenant scope",
@@ -20249,25 +20284,25 @@
         "docs/architecture/go-migration/payment-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 152/152; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay3-add-red-r1/results.json",
-          "receipt_sha256": "76b1c51ab76540ce01e561e754a6202ac0504e6b650ec654849af6ca1317f9b4"
+          "result": "RED: Django 156/156; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2resta-red-r1/results.json",
+          "receipt_sha256": "fd3e721d19c0d9c2e36354d03578a4e449ec902987574a6df869c18f2ef4dd94"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 152/152 on native Django, native Go, Caddy /api/v1 and /api/v2 152 cases on four transports after merging codex/go-backend-parity (074a5dba); created invoices, their audit entries and print requests are checked..",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay3-add-versioned-r1/results.json",
-          "receipt_sha256": "322c2237984d5022c36e0b90979a5001c39b17f4e592d48df2229266711c52c3"
+          "result": "GREEN: 156/156 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2resta-green-r3/results.json",
+          "receipt_sha256": "1f66ac3ba70f38b6d39cefcf5b15e6d69217f8b8e6edaaf23df29b1b388da0fd"
         },
         {
-          "revision": "No invoice for an auto-paid payment without an associate (instructor only)",
-          "result": "Mutation control: fails Go on payment-writes-add-auto-paid-instructor-invoice (response.body).",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay3-add-mutation-r1/results.json",
-          "receipt_sha256": "71d74ae429df4571ac65f8352d93f25220b1e287e1b58bb6bf53566f75fd8b63"
+          "revision": "the strptime year limited to ASCII digits (service/payment_state.go, paymentStateDateAnyPattern); earlier control in the same change: the second invoice save of payment/add comparing the response's half-even fee instead of the column value (service/payment_writes.go)",
+          "result": "Mutation control: fails Go on payment-writes-add-other-script-dates: CAUGHT.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2resta-mutation-r2/results.json",
+          "receipt_sha256": "97871ca2809071bd73152fe003cd163282ca4fc17ed1bba21483d87eda9e26e8"
         }
       ],
       "notes": [
-        "Implementing: API v2: payment/add for owners with auto_paid_payment is ported (paid payment, payment date now, invoice numbering by creation date, invoice with optional payment-date creation date, eager print_document_invoice inside the block, last payment save). Still refused before any write: a float fee on an exact half cent, a non-canonical X-Group-Id, a print deferred by a pending restore."
+        "Implementing: API v2 (v2-rest-a): payment/add serves X-Group-Id in any spelling the uuid module accepts (column stores the uuid; create entry, response and later saves keep the text as sent, also on the auto-paid invoice) and auto-paid fees on an exact half cent. Still refused before any write: auto-paid add while the print is deferred by a pending restore; attachments_data outside the ported subset (non-string document/filename, filename over 255 characters, with NUL or invalid UTF-8, a storage name Storage.save rejects, an existing key without AWS_S3_FILE_OVERWRITE); user in the body, payment_id on add, a payment_id other than the row's own on update; update form bodies and add multipart bodies with files. Dates with decimal digits of other scripts are served (RED: documented refusal, see v2-refusals.md row)."
       ]
     },
     {
@@ -20289,7 +20324,11 @@
       "go": [
         "BE_GO/internal/service/payment_writes.go",
         "BE_GO/internal/repository/payment_writes.go",
-        "BE_GO/internal/domain/payment_writes.go"
+        "BE_GO/internal/domain/payment_writes.go",
+        "BE_GO/internal/dto/python_digits.go",
+        "BE_GO/internal/service/invoice_generate.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_state.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks, permission registry and tenant scope",
@@ -20326,25 +20365,25 @@
         "docs/architecture/go-migration/payment-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 152/152; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay3-add-red-r1/results.json",
-          "receipt_sha256": "76b1c51ab76540ce01e561e754a6202ac0504e6b650ec654849af6ca1317f9b4"
+          "result": "RED: Django 156/156; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2resta-red-r1/results.json",
+          "receipt_sha256": "fd3e721d19c0d9c2e36354d03578a4e449ec902987574a6df869c18f2ef4dd94"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 152/152 on native Django, native Go, Caddy /api/v1 and /api/v2 152 cases on four transports after merging codex/go-backend-parity (074a5dba); created invoices, their audit entries and print requests are checked..",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay3-add-versioned-r1/results.json",
-          "receipt_sha256": "322c2237984d5022c36e0b90979a5001c39b17f4e592d48df2229266711c52c3"
+          "result": "GREEN: 156/156 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2resta-green-r3/results.json",
+          "receipt_sha256": "1f66ac3ba70f38b6d39cefcf5b15e6d69217f8b8e6edaaf23df29b1b388da0fd"
         },
         {
-          "revision": "No invoice for an auto-paid payment without an associate (instructor only)",
-          "result": "Mutation control: fails Go on payment-writes-add-auto-paid-instructor-invoice (response.body).",
-          "artifact": "quality-reports/go-migration/payment-writes-http-v2pay3-add-mutation-r1/results.json",
-          "receipt_sha256": "71d74ae429df4571ac65f8352d93f25220b1e287e1b58bb6bf53566f75fd8b63"
+          "revision": "the strptime year limited to ASCII digits (service/payment_state.go, paymentStateDateAnyPattern); earlier control in the same change: the second invoice save of payment/add comparing the response's half-even fee instead of the column value (service/payment_writes.go)",
+          "result": "Mutation control: fails Go on payment-writes-add-other-script-dates: CAUGHT.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2resta-mutation-r2/results.json",
+          "receipt_sha256": "97871ca2809071bd73152fe003cd163282ca4fc17ed1bba21483d87eda9e26e8"
         }
       ],
       "notes": [
-        "Implementing: API v2: payment/add for owners with auto_paid_payment is ported (paid payment, payment date now, invoice numbering by creation date, invoice with optional payment-date creation date, eager print_document_invoice inside the block, last payment save). Still refused before any write: a float fee on an exact half cent, a non-canonical X-Group-Id, a print deferred by a pending restore."
+        "Implementing: API v2 (v2-rest-a): payment/add serves X-Group-Id in any spelling the uuid module accepts (column stores the uuid; create entry, response and later saves keep the text as sent, also on the auto-paid invoice) and auto-paid fees on an exact half cent. Still refused before any write: auto-paid add while the print is deferred by a pending restore; attachments_data outside the ported subset (non-string document/filename, filename over 255 characters, with NUL or invalid UTF-8, a storage name Storage.save rejects, an existing key without AWS_S3_FILE_OVERWRITE); user in the body, payment_id on add, a payment_id other than the row's own on update; update form bodies and add multipart bodies with files. Dates with decimal digits of other scripts are served (RED: documented refusal, see v2-refusals.md row)."
       ]
     },
     {
@@ -21015,7 +21054,10 @@
       "go": [
         "BE_GO/internal/service/payment_misc.go",
         "BE_GO/internal/service/consumer_email.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/dto/python_digits.go",
+        "BE_GO/internal/service/payment_state.go",
+        "BE_GO/internal/service/payment_writes.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -21052,25 +21094,25 @@
         "docs/architecture/go-migration/payment-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 96/96; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay3-misc-red-r1/results.json",
-          "receipt_sha256": "9a9788762b4a288aac25d1ea04285c9edda6f7e0aa83fc2338edfd2e8e65f15c"
+          "result": "RED: Django 101/101; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2resta-red-r1/results.json",
+          "receipt_sha256": "e88536ea1f4cb7b86c9b600293f4e2548c0abb18e9efa8b9a0740cf2ea73747b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 96 cases on four transports after merging codex/go-backend-parity (074a5dba); the fake SMTP delivery, the stored daily balance and its audit entry are checked..",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay3-misc-versioned-r1/results.json",
-          "receipt_sha256": "a30b4ded3badd02f2832da2c7877a089807e77f805ce3ba6a5ba58c71dc29bcc"
+          "result": "GREEN: 101/101 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-merged-resta-r1/results.json",
+          "receipt_sha256": "91c09266d172fec88f6dd67fe2ab5177765ca0482927695f705071db64b625ac"
         },
         {
-          "revision": "Configured fee e-mail sent to the association owner instead of the member",
-          "result": "Mutation control: fails Go on payment-misc-apply-july-member-account-configured-smtp (smtp.rcpt).",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay3-misc-mutation-r1/results.json",
-          "receipt_sha256": "a7515d4ab2dbc6b1daef7977792873acee742d3a12465a0a7b91ccd656da8b00"
+          "revision": "the simulation date accepting only an ASCII second day digit (service/payment_state.go, paymentStateDateAnyPattern)",
+          "result": "Mutation control: fails Go on payment-misc-simulation-other-script-digits (empty simulation): CAUGHT.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2resta-mutation-r1/results.json",
+          "receipt_sha256": "5a6212c56de5f38f3b622f643c3b439c8d85fe476df43e2fe0b585a130ab3ebf"
         }
       ],
       "notes": [
-        "Implementing: API v2: partial-quotes-apply for a member's own account when the association has a CommunicationConfiguration now sends through the configured SMTP from a timer in the web process (send_email_html's Timer thread; SEND_EMAIL_HTML_DELAY_SECONDS pins the delay for fixture runs only). Still refused: template or send values the planners do not take."
+        "Implementing: API v2 (v2-rest-a): partial-quotes and partial-quotes-apply read plan days/months and the date with decimal digits of any script (int(), strptime \\d), and apply serves X-Group-Id in any spelling the uuid module accepts (create entry keeps the text as sent). Still refused before any write: plan int() beyond int64, fees that are not a JSON number or plain decimal string or exceed numeric(9, 2), previous plan / plan id values that are not strings or numbers; apply e-mails with template values the renderer does not take or that the configured-SMTP planner hands off; approve with a send_receipt_email that is not null, bool, str or int64."
       ]
     },
     {
@@ -21092,7 +21134,10 @@
       "go": [
         "BE_GO/internal/service/payment_misc.go",
         "BE_GO/internal/service/consumer_email.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/dto/python_digits.go",
+        "BE_GO/internal/service/payment_state.go",
+        "BE_GO/internal/service/payment_writes.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -21129,25 +21174,25 @@
         "docs/architecture/go-migration/payment-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 96/96; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay3-misc-red-r1/results.json",
-          "receipt_sha256": "9a9788762b4a288aac25d1ea04285c9edda6f7e0aa83fc2338edfd2e8e65f15c"
+          "result": "RED: Django 101/101; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2resta-red-r1/results.json",
+          "receipt_sha256": "e88536ea1f4cb7b86c9b600293f4e2548c0abb18e9efa8b9a0740cf2ea73747b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 96 cases on four transports after merging codex/go-backend-parity (074a5dba); the fake SMTP delivery, the stored daily balance and its audit entry are checked..",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay3-misc-versioned-r1/results.json",
-          "receipt_sha256": "a30b4ded3badd02f2832da2c7877a089807e77f805ce3ba6a5ba58c71dc29bcc"
+          "result": "GREEN: 101/101 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-merged-resta-r1/results.json",
+          "receipt_sha256": "91c09266d172fec88f6dd67fe2ab5177765ca0482927695f705071db64b625ac"
         },
         {
-          "revision": "Configured fee e-mail sent to the association owner instead of the member",
-          "result": "Mutation control: fails Go on payment-misc-apply-july-member-account-configured-smtp (smtp.rcpt).",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay3-misc-mutation-r1/results.json",
-          "receipt_sha256": "a7515d4ab2dbc6b1daef7977792873acee742d3a12465a0a7b91ccd656da8b00"
+          "revision": "the simulation date accepting only an ASCII second day digit (service/payment_state.go, paymentStateDateAnyPattern)",
+          "result": "Mutation control: fails Go on payment-misc-simulation-other-script-digits (empty simulation): CAUGHT.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2resta-mutation-r1/results.json",
+          "receipt_sha256": "5a6212c56de5f38f3b622f643c3b439c8d85fe476df43e2fe0b585a130ab3ebf"
         }
       ],
       "notes": [
-        "Implementing: API v2: partial-quotes-apply for a member's own account when the association has a CommunicationConfiguration now sends through the configured SMTP from a timer in the web process (send_email_html's Timer thread; SEND_EMAIL_HTML_DELAY_SECONDS pins the delay for fixture runs only). Still refused: template or send values the planners do not take."
+        "Implementing: API v2 (v2-rest-a): partial-quotes and partial-quotes-apply read plan days/months and the date with decimal digits of any script (int(), strptime \\d), and apply serves X-Group-Id in any spelling the uuid module accepts (create entry keeps the text as sent). Still refused before any write: plan int() beyond int64, fees that are not a JSON number or plain decimal string or exceed numeric(9, 2), previous plan / plan id values that are not strings or numbers; apply e-mails with template values the renderer does not take or that the configured-SMTP planner hands off; approve with a send_receipt_email that is not null, bool, str or int64."
       ]
     },
     {
@@ -21169,7 +21214,10 @@
       "go": [
         "BE_GO/internal/service/payment_misc.go",
         "BE_GO/internal/service/consumer_email.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/dto/python_digits.go",
+        "BE_GO/internal/service/payment_state.go",
+        "BE_GO/internal/service/payment_writes.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -21206,25 +21254,25 @@
         "docs/architecture/go-migration/payment-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 96/96; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay3-misc-red-r1/results.json",
-          "receipt_sha256": "9a9788762b4a288aac25d1ea04285c9edda6f7e0aa83fc2338edfd2e8e65f15c"
+          "result": "RED: Django 101/101; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2resta-red-r1/results.json",
+          "receipt_sha256": "e88536ea1f4cb7b86c9b600293f4e2548c0abb18e9efa8b9a0740cf2ea73747b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 96 cases on four transports after merging codex/go-backend-parity (074a5dba); the fake SMTP delivery, the stored daily balance and its audit entry are checked..",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay3-misc-versioned-r1/results.json",
-          "receipt_sha256": "a30b4ded3badd02f2832da2c7877a089807e77f805ce3ba6a5ba58c71dc29bcc"
+          "result": "GREEN: 101/101 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-merged-resta-r1/results.json",
+          "receipt_sha256": "91c09266d172fec88f6dd67fe2ab5177765ca0482927695f705071db64b625ac"
         },
         {
-          "revision": "Configured fee e-mail sent to the association owner instead of the member",
-          "result": "Mutation control: fails Go on payment-misc-apply-july-member-account-configured-smtp (smtp.rcpt).",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay3-misc-mutation-r1/results.json",
-          "receipt_sha256": "a7515d4ab2dbc6b1daef7977792873acee742d3a12465a0a7b91ccd656da8b00"
+          "revision": "the simulation date accepting only an ASCII second day digit (service/payment_state.go, paymentStateDateAnyPattern)",
+          "result": "Mutation control: fails Go on payment-misc-simulation-other-script-digits (empty simulation): CAUGHT.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2resta-mutation-r1/results.json",
+          "receipt_sha256": "5a6212c56de5f38f3b622f643c3b439c8d85fe476df43e2fe0b585a130ab3ebf"
         }
       ],
       "notes": [
-        "Implementing: API v2: partial-quotes-apply for a member's own account when the association has a CommunicationConfiguration now sends through the configured SMTP from a timer in the web process (send_email_html's Timer thread; SEND_EMAIL_HTML_DELAY_SECONDS pins the delay for fixture runs only). Still refused: template or send values the planners do not take."
+        "Implementing: API v2 (v2-rest-a): partial-quotes and partial-quotes-apply read plan days/months and the date with decimal digits of any script (int(), strptime \\d), and apply serves X-Group-Id in any spelling the uuid module accepts (create entry keeps the text as sent). Still refused before any write: plan int() beyond int64, fees that are not a JSON number or plain decimal string or exceed numeric(9, 2), previous plan / plan id values that are not strings or numbers; apply e-mails with template values the renderer does not take or that the configured-SMTP planner hands off; approve with a send_receipt_email that is not null, bool, str or int64."
       ]
     },
     {
@@ -24291,7 +24339,7 @@
         "target": "stripe_complete_on_boarding",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/stripeapi/client.go",
         "BE_GO/internal/stripeapi/webhook.go",
@@ -24351,21 +24399,28 @@
         "TESTS/adapters/django/stripe_routes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/stripe-routes.md",
         {
-          "command": "python tools/go-migration/family.py run stripe-routes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "587ba24fabf8c92de5041f49188c848672f367d008b4fedfadabeeb2baa192d8",
-          "scope": "HTTP family stripe-routes: 101/101 cases on native Django and native Go, 101/101 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 105/105; Go fails state.invoice-count on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-v2resta-red-r2/results.json",
+          "receipt_sha256": "a24881fc57f0316702e31afc57be09baf15826bcf807bc586058acbdac17cbdd"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 105/105 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and outbound Stripe requests.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-merged-resta-r1/results.json",
+          "receipt_sha256": "69f1c99027b4d9d85c35e6d7d1126a5dec80ac042f4f87b513db73067f636ded"
+        },
+        {
+          "revision": "the new invoice's create entry recording the stored group uuid instead of the header text (service/payment_paid_flow.go)",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-group-upper-case (audit changes of the invoice): CAUGHT.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-v2resta-mutation-r1/results.json",
+          "receipt_sha256": "b6a02be66a25d70f95c5d206e8520919ce7d636f716f03a247c785a18bed52d1"
         }
       ],
       "notes": [
-        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering).",
-        "Implementing evidence: docs/architecture/go-migration/stripe-routes.md",
-        "Implementing evidence: RED: Django 98/98; Go 500 on the first case. (quality-reports/go-migration/stripe-routes-http-red-pf1/results.json)",
-        "Implementing evidence: GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects. (quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on stripe-routes-webhook-charge-installment. (quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json)"
+        "Implementing: API v2 (v2-rest-a): mark_payment_as_paid serves X-Group-Id in any spelling the uuid module accepts, float fees on an exact two-place tie and meta.subscription_data.name of any JSON type. Still refused before any write: stripe_available_methods values the client does not encode (floats, nested lists), payments lists mixing ids with non-strings, objects whose sport_association/payment_id are not strings or null, a webhook payment_intent that is not a string, integer, bool or null, a created intent without a string id, amounts outside int64 cents, a webhook body over DATA_UPLOAD_MAX_MEMORY_SIZE."
       ]
     },
     {
@@ -24383,7 +24438,7 @@
         "target": "stripe_info",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/stripeapi/client.go",
         "BE_GO/internal/stripeapi/webhook.go",
@@ -24443,21 +24498,28 @@
         "TESTS/adapters/django/stripe_routes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/stripe-routes.md",
         {
-          "command": "python tools/go-migration/family.py run stripe-routes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "587ba24fabf8c92de5041f49188c848672f367d008b4fedfadabeeb2baa192d8",
-          "scope": "HTTP family stripe-routes: 101/101 cases on native Django and native Go, 101/101 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 105/105; Go fails state.invoice-count on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-v2resta-red-r2/results.json",
+          "receipt_sha256": "a24881fc57f0316702e31afc57be09baf15826bcf807bc586058acbdac17cbdd"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 105/105 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and outbound Stripe requests.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-merged-resta-r1/results.json",
+          "receipt_sha256": "69f1c99027b4d9d85c35e6d7d1126a5dec80ac042f4f87b513db73067f636ded"
+        },
+        {
+          "revision": "the new invoice's create entry recording the stored group uuid instead of the header text (service/payment_paid_flow.go)",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-group-upper-case (audit changes of the invoice): CAUGHT.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-v2resta-mutation-r1/results.json",
+          "receipt_sha256": "b6a02be66a25d70f95c5d206e8520919ce7d636f716f03a247c785a18bed52d1"
         }
       ],
       "notes": [
-        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering).",
-        "Implementing evidence: docs/architecture/go-migration/stripe-routes.md",
-        "Implementing evidence: RED: Django 98/98; Go 500 on the first case. (quality-reports/go-migration/stripe-routes-http-red-pf1/results.json)",
-        "Implementing evidence: GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects. (quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on stripe-routes-webhook-charge-installment. (quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json)"
+        "Implementing: API v2 (v2-rest-a): mark_payment_as_paid serves X-Group-Id in any spelling the uuid module accepts, float fees on an exact two-place tie and meta.subscription_data.name of any JSON type. Still refused before any write: stripe_available_methods values the client does not encode (floats, nested lists), payments lists mixing ids with non-strings, objects whose sport_association/payment_id are not strings or null, a webhook payment_intent that is not a string, integer, bool or null, a created intent without a string id, amounts outside int64 cents, a webhook body over DATA_UPLOAD_MAX_MEMORY_SIZE."
       ]
     },
     {
@@ -24475,7 +24537,7 @@
         "target": "stripe_multiple_pay",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/stripeapi/client.go",
         "BE_GO/internal/stripeapi/webhook.go",
@@ -24535,27 +24597,28 @@
         "TESTS/adapters/django/stripe_routes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/stripe-routes.md",
         {
-          "command": "python tools/go-migration/family.py run stripe-routes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "587ba24fabf8c92de5041f49188c848672f367d008b4fedfadabeeb2baa192d8",
-          "scope": "HTTP family stripe-routes: 101/101 cases on native Django and native Go, 101/101 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 105/105; Go fails state.invoice-count on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-v2resta-red-r2/results.json",
+          "receipt_sha256": "a24881fc57f0316702e31afc57be09baf15826bcf807bc586058acbdac17cbdd"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 105/105 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and outbound Stripe requests.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-merged-resta-r1/results.json",
+          "receipt_sha256": "69f1c99027b4d9d85c35e6d7d1126a5dec80ac042f4f87b513db73067f636ded"
+        },
+        {
+          "revision": "the new invoice's create entry recording the stored group uuid instead of the header text (service/payment_paid_flow.go)",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-group-upper-case (audit changes of the invoice): CAUGHT.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-v2resta-mutation-r1/results.json",
+          "receipt_sha256": "b6a02be66a25d70f95c5d206e8520919ce7d636f716f03a247c785a18bed52d1"
         }
       ],
       "notes": [
-        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering).",
-        "Re-verified after main 6b20715d (payments-impersonation-reverify): mark_payment_as_paid saves an unpaid payment (invoiced or not) with paid, payment_date and type 'stripe' via update_fields first (Go stripeMarkPaid), the invoice description reads the in-memory Payment.save() defaults, and print_document_invoice is published after the commit (Go: with the notification, after it); a rolled-back mark publishes nothing. The mark_as_paid_payments_checking_stripe task is ported by tasks-db-f.",
-        "Implementing evidence: docs/architecture/go-migration/stripe-routes.md",
-        "Implementing evidence: RED: Django 98/98; Go 500 on the first case. (quality-reports/go-migration/stripe-routes-http-red-pf1/results.json)",
-        "Implementing evidence: GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects. (quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on stripe-routes-webhook-charge-installment. (quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json)",
-        "Implementing evidence: RED: Django 100/100; Go fails stripe-routes-pay-succeeded-marks-supplier-invoice (invoiced payment not saved paid). (quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-red/results.json)",
-        "Implementing evidence: GREEN: 101/101 on native Django, native Go, Caddy /api/v1 and /api/v2: update_fields save (paid, payment_date, type 'stripe') before the paid flow, invoiced payments saved paid, defaults read by the invoice description, on-commit print_document_invoice checked by a broker-side committed-state observer, nothing published on rollback. (quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-green/results.json)",
-        "Implementing evidence: Mutation CAUGHT: Go fails stripe-routes-pay-succeeded-marks-supplier-invoice. (quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-mutation/results.json)",
-        "Implementing evidence: Mutation CAUGHT: Go fails stripe-routes-webhook-charge-subscription-without-categories (celery.committed). (quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-mutation-precommit/results.json)",
-        "Implementing evidence: Rerun (shared payment_paid_flow.go): 147/147 native Django and Go. (quality-reports/go-migration/payments-impersonation-reverify-rerun-payment-state/results.json)"
+        "Implementing: API v2 (v2-rest-a): mark_payment_as_paid serves X-Group-Id in any spelling the uuid module accepts, float fees on an exact two-place tie and meta.subscription_data.name of any JSON type. Still refused before any write: stripe_available_methods values the client does not encode (floats, nested lists), payments lists mixing ids with non-strings, objects whose sport_association/payment_id are not strings or null, a webhook payment_intent that is not a string, integer, bool or null, a created intent without a string id, amounts outside int64 cents, a webhook body over DATA_UPLOAD_MAX_MEMORY_SIZE."
       ]
     },
     {
@@ -24573,7 +24636,7 @@
         "target": "stripe_on_boarding",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/stripeapi/client.go",
         "BE_GO/internal/stripeapi/webhook.go",
@@ -24633,21 +24696,28 @@
         "TESTS/adapters/django/stripe_routes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/stripe-routes.md",
         {
-          "command": "python tools/go-migration/family.py run stripe-routes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "587ba24fabf8c92de5041f49188c848672f367d008b4fedfadabeeb2baa192d8",
-          "scope": "HTTP family stripe-routes: 101/101 cases on native Django and native Go, 101/101 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 105/105; Go fails state.invoice-count on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-v2resta-red-r2/results.json",
+          "receipt_sha256": "a24881fc57f0316702e31afc57be09baf15826bcf807bc586058acbdac17cbdd"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 105/105 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and outbound Stripe requests.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-merged-resta-r1/results.json",
+          "receipt_sha256": "69f1c99027b4d9d85c35e6d7d1126a5dec80ac042f4f87b513db73067f636ded"
+        },
+        {
+          "revision": "the new invoice's create entry recording the stored group uuid instead of the header text (service/payment_paid_flow.go)",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-group-upper-case (audit changes of the invoice): CAUGHT.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-v2resta-mutation-r1/results.json",
+          "receipt_sha256": "b6a02be66a25d70f95c5d206e8520919ce7d636f716f03a247c785a18bed52d1"
         }
       ],
       "notes": [
-        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering).",
-        "Implementing evidence: docs/architecture/go-migration/stripe-routes.md",
-        "Implementing evidence: RED: Django 98/98; Go 500 on the first case. (quality-reports/go-migration/stripe-routes-http-red-pf1/results.json)",
-        "Implementing evidence: GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects. (quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on stripe-routes-webhook-charge-installment. (quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json)"
+        "Implementing: API v2 (v2-rest-a): mark_payment_as_paid serves X-Group-Id in any spelling the uuid module accepts, float fees on an exact two-place tie and meta.subscription_data.name of any JSON type. Still refused before any write: stripe_available_methods values the client does not encode (floats, nested lists), payments lists mixing ids with non-strings, objects whose sport_association/payment_id are not strings or null, a webhook payment_intent that is not a string, integer, bool or null, a created intent without a string id, amounts outside int64 cents, a webhook body over DATA_UPLOAD_MAX_MEMORY_SIZE."
       ]
     },
     {
@@ -24665,7 +24735,7 @@
         "target": "stripe_pay",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/stripeapi/client.go",
         "BE_GO/internal/stripeapi/webhook.go",
@@ -24725,27 +24795,28 @@
         "TESTS/adapters/django/stripe_routes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/stripe-routes.md",
         {
-          "command": "python tools/go-migration/family.py run stripe-routes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "587ba24fabf8c92de5041f49188c848672f367d008b4fedfadabeeb2baa192d8",
-          "scope": "HTTP family stripe-routes: 101/101 cases on native Django and native Go, 101/101 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 105/105; Go fails state.invoice-count on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-v2resta-red-r2/results.json",
+          "receipt_sha256": "a24881fc57f0316702e31afc57be09baf15826bcf807bc586058acbdac17cbdd"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 105/105 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and outbound Stripe requests.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-merged-resta-r1/results.json",
+          "receipt_sha256": "69f1c99027b4d9d85c35e6d7d1126a5dec80ac042f4f87b513db73067f636ded"
+        },
+        {
+          "revision": "the new invoice's create entry recording the stored group uuid instead of the header text (service/payment_paid_flow.go)",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-group-upper-case (audit changes of the invoice): CAUGHT.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-v2resta-mutation-r1/results.json",
+          "receipt_sha256": "b6a02be66a25d70f95c5d206e8520919ce7d636f716f03a247c785a18bed52d1"
         }
       ],
       "notes": [
-        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering).",
-        "Re-verified after main 6b20715d (payments-impersonation-reverify): mark_payment_as_paid saves an unpaid payment (invoiced or not) with paid, payment_date and type 'stripe' via update_fields first (Go stripeMarkPaid), the invoice description reads the in-memory Payment.save() defaults, and print_document_invoice is published after the commit (Go: with the notification, after it); a rolled-back mark publishes nothing. The mark_as_paid_payments_checking_stripe task is ported by tasks-db-f.",
-        "Implementing evidence: docs/architecture/go-migration/stripe-routes.md",
-        "Implementing evidence: RED: Django 98/98; Go 500 on the first case. (quality-reports/go-migration/stripe-routes-http-red-pf1/results.json)",
-        "Implementing evidence: GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects. (quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on stripe-routes-webhook-charge-installment. (quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json)",
-        "Implementing evidence: RED: Django 100/100; Go fails stripe-routes-pay-succeeded-marks-supplier-invoice (invoiced payment not saved paid). (quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-red/results.json)",
-        "Implementing evidence: GREEN: 101/101 on native Django, native Go, Caddy /api/v1 and /api/v2: update_fields save (paid, payment_date, type 'stripe') before the paid flow, invoiced payments saved paid, defaults read by the invoice description, on-commit print_document_invoice checked by a broker-side committed-state observer, nothing published on rollback. (quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-green/results.json)",
-        "Implementing evidence: Mutation CAUGHT: Go fails stripe-routes-pay-succeeded-marks-supplier-invoice. (quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-mutation/results.json)",
-        "Implementing evidence: Mutation CAUGHT: Go fails stripe-routes-webhook-charge-subscription-without-categories (celery.committed). (quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-mutation-precommit/results.json)",
-        "Implementing evidence: Rerun (shared payment_paid_flow.go): 147/147 native Django and Go. (quality-reports/go-migration/payments-impersonation-reverify-rerun-payment-state/results.json)"
+        "Implementing: API v2 (v2-rest-a): mark_payment_as_paid serves X-Group-Id in any spelling the uuid module accepts, float fees on an exact two-place tie and meta.subscription_data.name of any JSON type. Still refused before any write: stripe_available_methods values the client does not encode (floats, nested lists), payments lists mixing ids with non-strings, objects whose sport_association/payment_id are not strings or null, a webhook payment_intent that is not a string, integer, bool or null, a created intent without a string id, amounts outside int64 cents, a webhook body over DATA_UPLOAD_MAX_MEMORY_SIZE."
       ]
     },
     {
@@ -24763,7 +24834,7 @@
         "target": "stripe_webhook",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/stripeapi/client.go",
         "BE_GO/internal/stripeapi/webhook.go",
@@ -24823,27 +24894,28 @@
         "TESTS/adapters/django/stripe_routes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/stripe-routes.md",
         {
-          "command": "python tools/go-migration/family.py run stripe-routes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "587ba24fabf8c92de5041f49188c848672f367d008b4fedfadabeeb2baa192d8",
-          "scope": "HTTP family stripe-routes: 101/101 cases on native Django and native Go, 101/101 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 105/105; Go fails state.invoice-count on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-v2resta-red-r2/results.json",
+          "receipt_sha256": "a24881fc57f0316702e31afc57be09baf15826bcf807bc586058acbdac17cbdd"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 105/105 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and outbound Stripe requests.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-merged-resta-r1/results.json",
+          "receipt_sha256": "69f1c99027b4d9d85c35e6d7d1126a5dec80ac042f4f87b513db73067f636ded"
+        },
+        {
+          "revision": "the new invoice's create entry recording the stored group uuid instead of the header text (service/payment_paid_flow.go)",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-group-upper-case (audit changes of the invoice): CAUGHT.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-v2resta-mutation-r1/results.json",
+          "receipt_sha256": "b6a02be66a25d70f95c5d206e8520919ce7d636f716f03a247c785a18bed52d1"
         }
       ],
       "notes": [
-        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering).",
-        "Re-verified after main 6b20715d (payments-impersonation-reverify): mark_payment_as_paid saves an unpaid payment (invoiced or not) with paid, payment_date and type 'stripe' via update_fields first (Go stripeMarkPaid), the invoice description reads the in-memory Payment.save() defaults, and print_document_invoice is published after the commit (Go: with the notification, after it); a rolled-back mark publishes nothing. The mark_as_paid_payments_checking_stripe task is ported by tasks-db-f.",
-        "Implementing evidence: docs/architecture/go-migration/stripe-routes.md",
-        "Implementing evidence: RED: Django 98/98; Go 500 on the first case. (quality-reports/go-migration/stripe-routes-http-red-pf1/results.json)",
-        "Implementing evidence: GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects. (quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on stripe-routes-webhook-charge-installment. (quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json)",
-        "Implementing evidence: RED: Django 100/100; Go fails stripe-routes-pay-succeeded-marks-supplier-invoice (invoiced payment not saved paid). (quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-red/results.json)",
-        "Implementing evidence: GREEN: 101/101 on native Django, native Go, Caddy /api/v1 and /api/v2: update_fields save (paid, payment_date, type 'stripe') before the paid flow, invoiced payments saved paid, defaults read by the invoice description, on-commit print_document_invoice checked by a broker-side committed-state observer, nothing published on rollback. (quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-green/results.json)",
-        "Implementing evidence: Mutation CAUGHT: Go fails stripe-routes-pay-succeeded-marks-supplier-invoice. (quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-mutation/results.json)",
-        "Implementing evidence: Mutation CAUGHT: Go fails stripe-routes-webhook-charge-subscription-without-categories (celery.committed). (quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-mutation-precommit/results.json)",
-        "Implementing evidence: Rerun (shared payment_paid_flow.go): 147/147 native Django and Go. (quality-reports/go-migration/payments-impersonation-reverify-rerun-payment-state/results.json)"
+        "Implementing: API v2 (v2-rest-a): mark_payment_as_paid serves X-Group-Id in any spelling the uuid module accepts, float fees on an exact two-place tie and meta.subscription_data.name of any JSON type. Still refused before any write: stripe_available_methods values the client does not encode (floats, nested lists), payments lists mixing ids with non-strings, objects whose sport_association/payment_id are not strings or null, a webhook payment_intent that is not a string, integer, bool or null, a created intent without a string id, amounts outside int64 cents, a webhook body over DATA_UPLOAD_MAX_MEMORY_SIZE."
       ]
     },
     {

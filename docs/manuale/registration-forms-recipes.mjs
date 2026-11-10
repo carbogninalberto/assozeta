@@ -37,7 +37,7 @@ const reviewed = {
   "UI/src/routes/association/Members/detail/sections/Cloud.svelte": "dc79dccd5dd5c90a20903493c5483d8cb84eab327f33fc7ee3f47512e46d8896",
   "UI/src/routes/association/archive/modals/GenerateFromTemplateModal.svelte": "d68a581779ef24b65f2ed0afa0de99ee880079d1b7a6cab218f05b5dfa064c81",
   "BE/application/views/archive_views.py": "4507583ea5811c7a0287ea0e83456f6a5b1707efe38bb950cedb23a0efcfae96",
-  "BE/docmanager/views/printing_views.py": "ad81f3188af72ec93d2bf010f75a99a4e0b579089e737ac0171a8a4fa3876420"
+  "BE/docmanager/views/printing_views.py": "2986b9d21dbbc85f46d779880e692f700f421136d597a41f16d9cf6f64343e26"
 };
 const contracts = [
   ["UI/src/components/Sidebar.svelte",">Modulo Iscrizioni",7],

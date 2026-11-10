@@ -80,7 +80,6 @@ and `GET modules/<module_id>/export` (`modules_response_export`) are implemented
   name and its encoding as `ContentEncoding` (`S3Storage._get_write_parameters`).
 - add-attachment DELETE with a non-string, non-null `document_id` (`UUID(int=...)`), or of a document that any other table references
   (Django's collector would cascade or set null there).
-- info for a module whose association is not active (the shared profile reader serves active associations).
 
 Not authored: JSON floats at or above 1e16 in a response (auditlog renders the in-memory float, Go the stored number), DRF parse errors
 of malformed JSON bodies.
@@ -106,3 +105,12 @@ API v2 (v2-misc): attachment names with compression suffixes (10 cases: `.tar.gz
 the table's physical order, and the rows a previous workload deleted otherwise let the next seed land out of authored order.
 Shared code: `instancelogo.WriteParameters` gains `ContentEncoding` (empty for every other caller); profile-template 45/45 and
 subscription-sign 47/47 re-run green natively.
+
+API v2 (v2-rest-a): `modules/<link>/info` for a module whose association is not the active one of an owner. The nested
+`SportAssociationSerializer` renders `module.sport_association` through the related descriptor, which resolves the row
+by id: `AssociationProfiles.ReadAssociation` (repository `AssociationProfileByID`) now does the same for this route. Three more cases (148 in all): a module of another association, a module of an association marked deleted,
+and the latter with a `response_id`. RED `v2resta-red-r2`: Django 148/148, Go 500 on
+`modules-responses-info-inactive-association`. GREEN `v2resta-green-r3` (after merging `codex/go-backend-parity`
+`b64953a5`): 148/148 on the four transports. Mutation `v2resta-mutation-r2` (the by-id reader given the owner reader's row condition)
+fails `modules-responses-info-inactive-association` (CAUGHT). modules-reads 81/81 re-run (`v2resta-rerun-r2`, shared
+profile service).

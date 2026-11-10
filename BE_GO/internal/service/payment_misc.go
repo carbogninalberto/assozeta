@@ -131,12 +131,8 @@ func paymentMiscInt(value any) (int64, error) {
 			integer, _ = new(big.Int).SetString(string(v), 10)
 		}
 	case string:
-		for _, r := range v {
-			if r > unicode.MaxASCII && unicode.IsDigit(r) {
-				return 0, domain.ErrPaymentMiscNotPorted
-			}
-		}
-		text := strings.TrimFunc(v, unicode.IsSpace)
+		// int() reads the decimal digits of any script.
+		text := dto.PythonASCIIDigits(strings.TrimFunc(v, unicode.IsSpace))
 		if !paymentMiscIntLiteral.MatchString(text) {
 			return 0, errPaymentMiscStop
 		}
@@ -372,7 +368,7 @@ func (s *PaymentMisc) prepare(ctx context.Context, identity domain.ResolvedIdent
 	now := s.now().UTC()
 	day := now
 	if value, present := request.Query.Lookup("date"); present {
-		parsed, err := paymentStateDate(value)
+		parsed, err := paymentStateDateAny(value)
 		switch {
 		case errors.Is(err, domain.ErrPaymentStateNotPorted):
 			return fail(domain.ErrPaymentMiscNotPorted)
@@ -536,12 +532,10 @@ func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentit
 		if err != nil {
 			return err
 		}
-		group, err := s.writes.createGroup(ctx, tx, request.GroupHeader)
+		// The column stores the header's uuid; the instance (auditlog) keeps the text as sent.
+		group, sentGroup, err := s.writes.createGroupSent(ctx, tx, request.GroupHeader)
 		if errors.Is(err, domain.ErrPaymentWritesServer) {
 			return errPaymentMiscStop
-		}
-		if errors.Is(err, domain.ErrPaymentWritesNotPorted) {
-			return domain.ErrPaymentMiscNotPorted
 		}
 		if err != nil {
 			return err
@@ -549,7 +543,7 @@ func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentit
 		user, association := subscription.UserID, run.association.ID
 		m := &paymentMemory{row: domain.PaymentWriteRow{ID: s.writes.newID(), Type: "default", Subject: 1, CreationDate: s.writes.at(),
 			UserID: &user, AssociateID: subscription.AssociateID, AssociationID: &association, AccountID: account, GroupID: group},
-			jsonAudit: map[string]string{}}
+			jsonAudit: map[string]string{}, groupSent: sentGroup}
 		if float != nil {
 			m.setFloat(*float)
 		} else {

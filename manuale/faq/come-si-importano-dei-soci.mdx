@@ -25,9 +25,11 @@ Prepara una riga per persona e una prima riga di intestazioni. **XLSX** è il fo
 | Minore | Dati anagrafici e residenza del tutore; email e telefono se disponibili. |
 | Dati aggiuntivi | Scadenza del certificato, date del tesseramento e numero tessera, se disponibili. |
 
-Nome, cognome, sesso, codice fiscale, nascita e residenza sono usati per valutare la validità della bozza. Email e telefono sono opzionali. Scrivi date non ambigue e controlla che codice fiscale e CAP non vengano trasformati in numeri o formule.
+Nome, cognome, sesso, codice fiscale, nascita e residenza sono usati per valutare la validità della bozza. Email e telefono sono opzionali.
 
-<Warning>La schermata dichiara **XLS/XLSX, CSV o ODS sotto 15 MB**. Le sorgenti del lettore mostrano però lettori Excel specifici e non dimostrano il funzionamento di ogni file ODS, né un limite di 15 MB applicato in tutti i passaggi. Per ridurre gli errori, converti in XLSX e prova prima un elenco piccolo.</Warning>
+Le colonne collegate a **codice fiscale**, **CAP**, **telefono** e **numero tessera** vengono lette come testo, così come sono scritte nel file: gli zeri iniziali presenti nel file restano. Controlla comunque che il foglio di calcolo non li abbia già tolti o trasformati in formule prima del salvataggio. Le date scritte come testo sono lette con il **giorno per primo** (per esempio 03/04/2020 è il 3 aprile); una data che inizia con l'anno a quattro cifre, come 2020-04-03, è letta così com'è scritta.
+
+<Warning>La schermata dichiara **XLS/XLSX, CSV o ODS sotto 15 MB**. Le sorgenti del lettore mostrano però lettori Excel specifici e non dimostrano il funzionamento di ogni file ODS. Il server rifiuta comunque i file oltre il proprio limite, 20 MB salvo diversa configurazione dell'installazione, con il messaggio **Il file supera la dimensione massima consentita**. Per ridurre gli errori, converti in XLSX e prova prima un elenco piccolo.</Warning>
 
 ## Processo di importazione
 
@@ -47,12 +49,12 @@ In **Colonne senza collegamento** puoi assegnare un valore comune ad alcuni camp
 <Frame>![Valori comuni per i campi di residenza non collegati](/images/faq/importazione-file/3.png)</Frame>
 </Step>
   <Step title="Avvia e verifica le bozze">
-    Premi **Importa Atleti** e conferma **Continua**. L'applicazione torna alle **Bozze** e invita ad attendere l'importazione. Controlla le righe effettivamente presenti e il loro stato; se manca una parte dell'elenco, verifica il file e i collegamenti prima di ricaricarlo.
+    Premi **Importa Atleti** e conferma **Continua**. L'applicazione torna alle **Bozze** e invita ad attendere l'importazione. Controlla le righe effettivamente presenti e il loro stato; se manca una parte dell'elenco, verifica il file e i collegamenti prima di ricaricarlo. Le righe vengono importate insieme: se una di esse non può essere elaborata compare **Importazione non riuscita. Controlla i dati e riprova.**, resti nella schermata di importazione e non viene creata alcuna bozza.
     <Frame>![Due bozze importate, una con dati incompleti](/images/faq/importazione-file/4.png)</Frame>
   </Step>
 </Steps>
 
-<Note>Il messaggio di avvio non certifica che tutte le righe siano state importate correttamente. Il controllo delle bozze è parte della procedura.</Note>
+<Note>Il messaggio di avvio non certifica che i dati di ogni riga siano completi o corretti. Il controllo delle bozze è parte della procedura. Dopo un'importazione riuscita il file caricato viene rimosso dal server; un file caricato e mai importato viene eliminato in seguito, per impostazione predefinita dopo 24 ore, al successivo caricamento.</Note>
 
 ## Gestione dei soci importati
 
@@ -81,7 +83,7 @@ Dopo la conferma verifica le persone nel **Libro Soci** o in **Tesserati**, seco
 Inizia con poche righe rappresentative: una persona adulta, un minore con tutore e una riga con campi opzionali vuoti. Controlla le bozze prima di procedere con l'elenco completo.
 
 - Conserva una copia del file originale e annota quale gruppo hai già approvato.
-- Controlla date e CAP dopo l'apertura nel foglio di calcolo; gli zeri iniziali possono andare persi.
+- Controlla date e CAP dopo l'apertura nel foglio di calcolo: l'importazione conserva gli zeri iniziali scritti nel file, ma non recupera quelli già tolti dal foglio di calcolo. Per le date in formato testo scrivi prima il giorno.
 - Verifica i collegamenti suggeriti, soprattutto per le colonne del tutore.
 - Cerca le persone già presenti prima di approvare: il confronto dei doppioni usa anche nomi e periodo, non solo il codice fiscale.
 - Per una scadenza sanitaria importata, controlla anche il documento e il tipo di certificato.

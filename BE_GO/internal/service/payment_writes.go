@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -73,15 +72,10 @@ func (s *PaymentWrites) begin(ctx context.Context, identity domain.ResolvedIdent
 }
 
 // paymentWritesStrptime is datetime.strptime(text, '%Y-%m-%d'): ok false is
-// the ValueError the views catch. strptime's \d also matches non-ASCII
-// decimal digits: not ported.
+// the ValueError the views catch. strptime's \d also matches decimal digits
+// of other scripts (paymentStateDateAny).
 func paymentWritesStrptime(text string) (time.Time, bool, error) {
-	for _, r := range text {
-		if r > unicode.MaxASCII && unicode.IsDigit(r) {
-			return time.Time{}, false, domain.ErrPaymentWritesNotPorted
-		}
-	}
-	moment, err := paymentStateDate(text)
+	moment, err := paymentStateDateAny(text)
 	if err != nil {
 		return time.Time{}, false, nil
 	}
@@ -326,6 +320,9 @@ type paymentMemory struct {
 	// amountFloat is the in-memory amount when it is a Python float.
 	amountFloat *float64
 	jsonAudit   map[string]string
+	// groupSent is the X-Group-Id text the in-memory payment keeps when the
+	// column stores another spelling of the same uuid.
+	groupSent *string
 }
 
 func jsonText(value any) *string {
@@ -432,6 +429,9 @@ func (s *PaymentWrites) values(ctx context.Context, tx domain.PaymentWritesTrans
 	}
 	for field, text := range m.jsonAudit {
 		values[field] = text
+	}
+	if m.groupSent != nil {
+		values["group"] = *m.groupSent
 	}
 	return values, nil
 }
@@ -602,6 +602,9 @@ func (s *PaymentWrites) render(ctx context.Context, tx domain.PaymentWritesTrans
 	if m.amountShown != nil {
 		item["amount"] = *m.amountShown
 	}
+	if m.groupSent != nil {
+		item["group"] = *m.groupSent
+	}
 	return item, nil
 }
 
@@ -627,26 +630,38 @@ func (s *PaymentWrites) entry(ctx context.Context, tx domain.PaymentWritesTransa
 
 // createGroup is GroupAwareManager.create's raw X-Group-Id: a value the
 // UUIDField rejects, or an unknown group (deferred foreign key), fails the
-// create; a non-canonical spelling would be stored as sent (not ported).
+// create; another spelling of the uuid is refused here (createGroupSent
+// serves it).
 func (s *PaymentWrites) createGroup(ctx context.Context, tx domain.PaymentWritesTransaction, header string) (*string, error) {
-	if header == "" {
-		return nil, nil
-	}
-	group := supplierGroup(header)
-	if group == nil {
-		return nil, domain.ErrPaymentWritesServer
-	}
-	if *group != header {
+	group, sent, err := s.createGroupSent(ctx, tx, header)
+	if err == nil && sent != nil {
 		return nil, domain.ErrPaymentWritesNotPorted
+	}
+	return group, err
+}
+
+// createGroupSent is createGroup for every spelling the UUIDField accepts:
+// the column stores the uuid; sent is the header text when it differs (the
+// in-memory payment keeps it).
+func (s *PaymentWrites) createGroupSent(ctx context.Context, tx domain.PaymentWritesTransaction, header string) (group, sent *string, err error) {
+	if header == "" {
+		return nil, nil, nil
+	}
+	group = supplierGroup(header)
+	if group == nil {
+		return nil, nil, domain.ErrPaymentWritesServer
 	}
 	exists, err := tx.GroupExists(ctx, *group)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if !exists {
-		return nil, domain.ErrPaymentWritesServer
+		return nil, nil, domain.ErrPaymentWritesServer
 	}
-	return group, nil
+	if *group != header {
+		sent = &header
+	}
+	return group, sent, nil
 }
 
 // paymentWritesFees is payment_add's fee arithmetic on the in-memory payment:
@@ -655,17 +670,17 @@ func (s *PaymentWrites) createGroup(ctx context.Context, tx domain.PaymentWrites
 func paymentWritesFees(m *paymentMemory) (invoiceFeePair, error) {
 	payment := domain.InvoiceGeneratePayment{Amount: m.row.Amount, MetaPaymentCategories: m.row.MetaCategories}
 	if m.amountFloat == nil {
-		return invoiceFees(m.row.Subject, payment)
+		return invoiceFeesAny(m.row.Subject, payment)
 	}
 	amount := *m.amountFloat
 	if m.row.Subject != 1 {
 		zero, _ := floatFee(0)
-		activity, err := floatFee(amount)
+		activity, err := floatFeeAny(amount)
 		return invoiceFeePair{membership: zero, activity: activity}, err
 	}
 	// The activity fee is the float sum of the meta amounts.
 	payment.Amount = "0"
-	fees, err := invoiceFees(1, payment)
+	fees, err := invoiceFeesAny(1, payment)
 	if err != nil {
 		return fees, err
 	}
@@ -676,7 +691,7 @@ func paymentWritesFees(m *paymentMemory) (invoiceFeePair, error) {
 		}
 		amount -= activity
 	}
-	fees.membership, err = floatFee(amount)
+	fees.membership, err = floatFeeAny(amount)
 	return fees, err
 }
 
@@ -719,17 +734,23 @@ func (s *PaymentWrites) addInvoice(ctx context.Context, tx domain.PaymentWritesT
 	if m.row.SupplierID != nil {
 		return nil, nil
 	}
-	invoiceGroup, err := paymentPaidFlowInvoiceGroup(request.GroupHeader)
+	invoiceGroup, sentGroup, err := paymentPaidFlowSentGroup(request.GroupHeader)
 	if err != nil {
 		return nil, err
+	}
+	if sentGroup != nil && *sentGroup == *invoiceGroup {
+		sentGroup = nil
 	}
 	at := s.at()
 	audit := paymentCategoryAuditContext(identity, request.Audit)
 	create := domain.InvoiceGenerateCreate{ID: s.newID(), Association: association, CreationDate: at, MembershipFee: fees.membership.stored,
 		ActivityFee: fees.activity.stored, MetaPaymentCategories: payment.MetaPaymentCategories, Description: &description, Number: number,
 		Group: invoiceGroup}
-	if err = invoices.CreateInvoice(ctx, create, map[string]string{"membership_fee": fees.membership.memory,
-		"activity_fee": fees.activity.memory}, audit, at); err != nil {
+	overrides := map[string]string{"membership_fee": fees.membership.memory, "activity_fee": fees.activity.memory}
+	if sentGroup != nil {
+		overrides["group"] = *sentGroup
+	}
+	if err = invoices.CreateInvoice(ctx, create, overrides, audit, at); err != nil {
 		return nil, err
 	}
 	if owner.PaymentDateEqual {
@@ -741,9 +762,12 @@ func (s *PaymentWrites) addInvoice(ctx context.Context, tx domain.PaymentWritesT
 		if before, after := courseSubscriptionAuditTime(&at), courseSubscriptionAuditTime(m.row.PaymentDate); before != after {
 			changes["creation_date"] = [2]string{before, after}
 		}
+		if sentGroup != nil {
+			changes["group"] = [2]string{*invoiceGroup, *sentGroup}
+		}
 		for field, fee := range map[string]invoiceFee{"membership_fee": fees.membership, "activity_fee": fees.activity} {
-			if fee.rendered != fee.memory {
-				changes[field] = [2]string{fee.rendered, fee.memory}
+			if fee.column != fee.memory {
+				changes[field] = [2]string{fee.column, fee.memory}
 			}
 		}
 		if err = invoices.SetInvoiceCreationDate(ctx, create.ID, association, *m.row.PaymentDate, changes, audit, at); err != nil {
@@ -824,11 +848,12 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 	if err != nil {
 		return nil, err
 	}
-	group, err := s.createGroup(ctx, tx, request.GroupHeader)
+	group, sentGroup, err := s.createGroupSent(ctx, tx, request.GroupHeader)
 	if err != nil {
 		return nil, err
 	}
-	m := &paymentMemory{row: domain.PaymentWriteRow{ID: s.newID(), Type: "default", GroupID: group}, jsonAudit: map[string]string{}}
+	m := &paymentMemory{row: domain.PaymentWriteRow{ID: s.newID(), Type: "default", GroupID: group}, jsonAudit: map[string]string{},
+		groupSent: sentGroup}
 	// The model default amount is the float 0.00.
 	m.setFloat(0)
 	m.apply(input, total)
@@ -946,6 +971,9 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 	if invoice, ok := result["invoice"].(map[string]any); ok && fees != nil {
 		// The in-memory invoice keeps the float fees.
 		invoice["membership_fee"], invoice["activity_fee"] = fees.membership.rendered, fees.activity.rendered
+		if m.groupSent != nil {
+			invoice["group"] = *m.groupSent
+		}
 	}
 	return result, tx.Commit()
 }

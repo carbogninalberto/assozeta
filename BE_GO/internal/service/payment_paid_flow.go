@@ -69,6 +69,21 @@ func stripeMarkPaid(ctx context.Context, tx domain.PaymentPaidFlowTransaction, r
 		Context: audit, At: now})
 }
 
+// paymentPaidFlowSentGroup is the group Invoice.objects.create is given: the
+// X-Group-Id as sent. The column stores its uuid; the instance keeps the text
+// (auditlog and the response write it).
+func paymentPaidFlowSentGroup(header string) (stored, sent *string, err error) {
+	if header == "" {
+		return nil, nil, nil
+	}
+	parsed, err := uuid.Parse(header)
+	if err != nil {
+		return nil, nil, domain.ErrPaymentStateServer
+	}
+	canonical := parsed.String()
+	return &canonical, &header, nil
+}
+
 // paymentPaidFlowInvoiceGroup is the group Invoice.objects.create stores: the
 // raw X-Group-Id (a non-canonical spelling is not ported).
 func paymentPaidFlowInvoiceGroup(header string) (*string, error) {
@@ -119,7 +134,7 @@ func paymentPaidFlowFloat(value any) (float64, error) {
 // membership fee is only recomputed when there are meta payment categories.
 func paymentPaidFlowStripeFees(subject int, payment domain.InvoiceGeneratePayment) (invoiceFeePair, error) {
 	if subject != 1 {
-		return invoiceFees(subject, payment)
+		return invoiceFeesAny(subject, payment)
 	}
 	zero, _ := floatFee(0)
 	pair := invoiceFeePair{membership: decimalFee(payment.Amount), activity: zero}
@@ -156,7 +171,7 @@ func paymentPaidFlowStripeFees(subject int, payment domain.InvoiceGeneratePaymen
 		}
 		activity += number
 	}
-	if pair.activity, err = floatFee(activity); err != nil {
+	if pair.activity, err = floatFeeAny(activity); err != nil {
 		return pair, err
 	}
 	amount, ok := new(big.Rat).SetString(payment.Amount)
@@ -171,7 +186,7 @@ func paymentPaidFlowStripeFees(subject int, payment domain.InvoiceGeneratePaymen
 	if !ok {
 		return pair, domain.ErrPaymentStateServer
 	}
-	if pair.membership, err = floatFee(base - activity); err != nil {
+	if pair.membership, err = floatFeeAny(base - activity); err != nil {
 		return pair, err
 	}
 	return pair, nil
@@ -299,7 +314,7 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 	if err != nil {
 		return nil, err
 	}
-	fees, err := invoiceFees(row.Subject, payment)
+	fees, err := invoiceFeesAny(row.Subject, payment)
 	if err != nil {
 		return nil, err
 	}
@@ -323,7 +338,7 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 		number = *last
 	}
 	number = max(number, int64(owner.StartingNumber)) + 1
-	description, err := (&InvoiceGenerations{}).description(ctx, tx, row, payment, row.AssociateID, association, group)
+	description, err := (&InvoiceGenerations{anyMetaName: true}).description(ctx, tx, row, payment, row.AssociateID, association, group)
 	if err != nil {
 		return nil, err
 	}
@@ -331,20 +346,28 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 	audit := paymentCategoryAuditContext(identity, request.Audit)
 	invoice := row.InvoiceID
 	var created *invoiceFeePair
+	var sentGroup *string
 	if row.SupplierID != nil || row.AssociateID != nil {
-		invoiceGroup, err := paymentPaidFlowInvoiceGroup(request.GroupHeader)
+		invoiceGroup, sent, err := paymentPaidFlowSentGroup(request.GroupHeader)
 		if err != nil {
 			return nil, err
 		}
+		sentGroup = sent
 		create := domain.InvoiceGenerateCreate{ID: uuid.NewString(), Association: association, CreationDate: at,
 			MembershipFee: fees.membership.stored, ActivityFee: fees.activity.stored, MetaPaymentCategories: payment.MetaPaymentCategories,
 			Description: &description, Number: number, Group: invoiceGroup}
-		if err = tx.CreateInvoice(ctx, create, map[string]string{"membership_fee": fees.membership.memory,
-			"activity_fee": fees.activity.memory}, audit, at); err != nil {
+		overrides := map[string]string{"membership_fee": fees.membership.memory, "activity_fee": fees.activity.memory}
+		if sent != nil {
+			overrides["group"] = *sent
+		}
+		if err = tx.CreateInvoice(ctx, create, overrides, audit, at); err != nil {
 			return nil, err
 		}
-		// invoice.save(): creation_date (payment_date_equal_invoice_date) and the float fees.
+		// invoice.save(): creation_date (payment_date_equal_invoice_date), the float fees and a group sent in another spelling.
 		changes := map[string][2]string{}
+		if sent != nil && *sent != *invoiceGroup {
+			changes["group"] = [2]string{*invoiceGroup, *sent}
+		}
 		date := at
 		if owner.PaymentDateEqual {
 			date = *paymentDate
@@ -353,8 +376,8 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 			}
 		}
 		for field, fee := range map[string]invoiceFee{"membership_fee": fees.membership, "activity_fee": fees.activity} {
-			if fee.rendered != fee.memory {
-				changes[field] = [2]string{fee.rendered, fee.memory}
+			if fee.column != fee.memory {
+				changes[field] = [2]string{fee.column, fee.memory}
 			}
 		}
 		if err = tx.SetInvoiceCreationDate(ctx, create.ID, association, date, changes, audit, at); err != nil {
@@ -415,6 +438,9 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 	if rendered, ok := item["invoice"].(map[string]any); ok && created != nil {
 		// The in-memory invoice keeps the float fees.
 		rendered["membership_fee"], rendered["activity_fee"] = created.membership.rendered, created.activity.rendered
+		if sentGroup != nil {
+			rendered["group"] = *sentGroup
+		}
 	}
 	dispatch := invoice != nil && generate
 	if dispatch && s.tasks == nil {
@@ -506,11 +532,12 @@ func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaid
 		number = *last
 	}
 	number = max(number, int64(owner.StartingNumber)) + 1
-	description, err := (&InvoiceGenerations{}).description(ctx, tx, row, payment, row.AssociateID, row.AssociationID, group)
+	description, err := (&InvoiceGenerations{anyMetaName: true}).description(ctx, tx, row, payment, row.AssociateID, row.AssociationID, group)
 	if err != nil {
 		return nil, err
 	}
-	invoiceGroup, err := paymentPaidFlowInvoiceGroup(request.GroupHeader)
+	// The column stores the header's uuid; the instance (auditlog) keeps the text as sent.
+	invoiceGroup, sentGroup, err := paymentPaidFlowSentGroup(request.GroupHeader)
 	if err != nil {
 		return nil, err
 	}
@@ -518,8 +545,11 @@ func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaid
 	create := domain.InvoiceGenerateCreate{ID: uuid.NewString(), Association: row.AssociationID, CreationDate: now,
 		MembershipFee: fees.membership.stored, ActivityFee: fees.activity.stored, MetaPaymentCategories: payment.MetaPaymentCategories,
 		Description: &description, Number: number, Group: invoiceGroup}
-	if err = tx.CreateInvoice(ctx, create, map[string]string{"membership_fee": fees.membership.memory,
-		"activity_fee": fees.activity.memory}, audit, now); err != nil {
+	overrides := map[string]string{"membership_fee": fees.membership.memory, "activity_fee": fees.activity.memory}
+	if sentGroup != nil {
+		overrides["group"] = *sentGroup
+	}
+	if err = tx.CreateInvoice(ctx, create, overrides, audit, now); err != nil {
 		return nil, err
 	}
 	// paid, payment_date and type were saved by stripeMarkPaid: only the invoice and the defaults change.

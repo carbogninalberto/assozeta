@@ -22,8 +22,8 @@ const reviewed = {
   "UI/src/routes/accounting/receipts/modals/ShareModal.svelte": "0c86445d001a0d9141f26b673471a5b8b1ed1b9f15dc22264e125dc34d61bda3",
   "BE/application/views/invoice_views.py": "afddd7239fe7e2a23c6e997d27c0f5ad3b0b3501c7601438d112e318a46d8922",
   "BE/application/printing_tasks.py": "858df2f90a7788ca9c2a27ce43266b62d8ec9b1f86ab197570834975b6b2fde9",
-  "BE/docmanager/views/printing_views.py": "ad81f3188af72ec93d2bf010f75a99a4e0b579089e737ac0171a8a4fa3876420",
-  "BE/docmanager/views/document_view.py": "bd71a57ad2ab774caa7423d64d713884663a2fe3c770d8440c45b7527c8f8d20",
+  "BE/docmanager/views/printing_views.py": "2986b9d21dbbc85f46d779880e692f700f421136d597a41f16d9cf6f64343e26",
+  "BE/docmanager/views/document_view.py": "29d4901df07aa93ee0540f214feb87ce6c3173656968c10a0a197bb16cda2905",
   "BE/application/utils/printing.py": "58461a8b9022432f807ba7d912821aaae4ab2e44608c58d43e4280556ee7c760",
   "BE/templates/document/application/invoice.html": "5a0b5f66655c8b7d288a42dba051e9a9ff2cc3e49e7f6227f442ddd2c926039d",
   // Reviewed: documents are served to the association staff and to the member they belong to.
