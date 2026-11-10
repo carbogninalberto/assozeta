@@ -244,6 +244,22 @@ Receipts are `quality-reports/go-migration/<family>-http-v2del-*`; each family d
 | document-delete | `DELETE document/<uid>/delete` | every existing document of a requester with an association (A): the ownership walk over the objects referencing it, then `Document.delete()` with its cascade and audit entries | 57 cases; RED `v2del-red-r3` Django 57/57, Go 500; GREEN `v2del-versioned-r1` 4 transports; mutation `v2del-mutation-r1` (update entries counted as creation entries) CAUGHT; docmanager-reads 155/155 re-run (`v2del-rerun-r1`) |
 | balance-sheet | `DELETE balance-sheet/accounts/<uid>/delete` | an account that any payment references (A: payments removed from the list or of another group leave it deletable in the UI): the collector deletes the account, its transfers and its payments, with the payments' delete receivers | 80 cases; RED `v2del-red-r1` Django 80/80, Go 500; GREEN `v2del-versioned-r1` 4 transports; mutation `v2del-mutation-r1` (payment receiver skipped) CAUGHT; balance-account-writes 29/29, balance-transfer-writes 30/30 and balance-accounts 25/25 re-run (`v2del-rerun-r1`) |
 
+### Ported in the v2subs change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2subs-*`; each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| subscription-renew | `POST subscription/renew` | a renewal with `courses` (A); the requester lookup and the payment cleanup in an impersonation session with an association scope (B) | 93 cases; RED `v2subs-red-r4` Django 93/93, Go 500; GREEN `v2subs-versioned-r1` 4 transports; mutation `v2subs-mutation-r3` CAUGHT |
+| subscription-create | `POST subscription/add` | the quick re-subscription in an association-scoped session; a renewing preregistration whose member has a tutor; `sport_association` or `subscription_id` that is not a string; a new member with a `username` or a role other than athlete (B) | 149 cases; RED `v2subs-red-r1`, `v2subs-red-r2`; GREEN `v2subs-versioned-r1`; mutation `v2subs-mutation-r2` CAUGHT |
+| subscription-create, associates-draft | `POST subscription/add`, `POST subscription/associates-draft/<uid>/edit` | — (behaviour change: `A/B/YYYY` birth dates are read with the day first in Django and in Go) | associates-draft 132 cases; RED `v2subs-red-r1`; GREEN `v2subs-versioned-r1`; mutation `v2subs-mutation-r1` CAUGHT |
+| subscription-import-upload | `POST subscription/import/upload` `{document_id, map}` | the final step on a stored CSV (A); workbooks with boolean cells, the 1904 date system, date-only and ISO date cells, times and durations, integers beyond 64 bits (B) | 67 cases; RED `v2subs-red-r2` Django 67/67, Go 500; GREEN `v2subs-versioned-r1`; mutation `v2subs-mutation-r1` CAUGHT |
+
+Still refused after this change in these families: the placeholder certificate image (`subscription/add` with a typed
+certificate date and no upload; `set-certificate-expiration` for a member without a certificate), the remaining B rows of
+the appendix tables of subscription-*, course-* and associates-draft, and the reader subsets listed in
+subscription-import-upload.md.
+
 ## Remaining A items, per family
 
 UI paths under `UI/src/`, Go under `BE_GO/internal/`. Cost: cheap (hours), medium (a family change with new
@@ -257,18 +273,14 @@ No A item remains.
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | POST subscription/add | owner wizard: a typed certificate date without an upload (placeholder PNG drawn with PIL: image rendering, refused by the porting rules) | `routes/association/Members/add/AddMember.svelte:104-139` | `service/subscription_create.go` (`subscriptionCreateRefuse`) | expensive (image) |
-| POST subscription/import/upload | final mapping step on a stored CSV file (Excel uploads and their final step are ported) | `routes/association/Members/import/ImportMembers.svelte:46-52` | `service/subscription_import_upload.go` (`importDocument`) | medium-expensive |
 
 ### subscription-reads / subscription-lifecycle / subscription-renew / subscription-transfer / subscription-medical
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | POST .../medical-certificate/set-certificate-expiration | member without a certificate | `Members/detail/sections/modals/AddMedicalCertificate.svelte:51` | `service/subscription_medical.go:389` | medium |
-| POST subscription/renew | member with courses (pre-filled) | `Members/modals/RenewalModal.svelte:58` | `service/subscription_renew.go:96` | medium-expensive |
 
 Why these stay (v2-subscriptions):
 - set-certificate-expiration without a certificate: Django draws a PNG with PIL/FreeType; not byte-reproducible, refused before any write.
-- renew with courses: add_course_to_subscription inside the renewal transaction; the course-enrolment port has its own
-  transaction and data handling, so it needs a shared refactor.
 
 ### course-subscriptions / course-enrolment / course-writes / course-list / course-locations / course-calendar
 | Route | Condition | UI call | Go site | Cost |
@@ -905,7 +917,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/import/upload `{document_id, map, default}` | import of a stored Excel workbook | ported (`importDocument`, `subscription_import_rows.go`) | ported | `routes/association/Members/import/ImportMembers.svelte:46-52`. Workbooks and values outside the subset in subscription-import-upload.md stay refused (B). |
-| same | the stored document is a CSV file | `service/subscription_import_upload.go` (`importDocument`) | **A** | The dropzone accepts `text/csv` (`sections/Section1.svelte:63`); the upload answers its columns and the final step is refused. Cost: medium-expensive (`read_csv`'s C parser typing of every value). |
+| same | the stored document is a CSV file | ported (v2subs: `pandascsv.ReadText`, `subscriptionImportCSVCell`) | **ported** | The dropzone accepts `text/csv` (`sections/Section1.svelte:63`). Files outside `pandascsv`'s subset stay refused (B): a whitespace-led line after a bare carriage return, decimal text whose value depends on how pandas was compiled. |
 | same, multipart `associates_file` | Excel suffix (xls/xlsx/…) | ported (`pandasxlsx.Read`) | ported | `sections/Section1.svelte:33-37` uploads the file. A legacy `.xls` or an `.ods` file answers the 500 page on Django too. |
 | same | workbook with boolean, error, time-of-day or duration cells, the 1904 date system, a non-text header cell, only whole-number columns | `pandasxlsx.ErrUnsupported` | B | Member sheets carry names and text columns; these forms need a hand-made or converted sheet. Cost: medium. |
 | same | a non-zero number in a date column, or date text outside `YYYY-MM-DD`, with a time, `A/B/YYYY` | `service/subscription_import_rows.go` (`subscriptionImportDate`) | B | Date cells and the usual text forms are handled; `dd-mm-yyyy`, `dd.mm.yyyy` and month names are not. Cost: medium (more dateutil forms). |
@@ -1035,7 +1047,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/renew | renewal by an athlete | ported (v2-sub-create) | **ported** | The athlete area renews through `RenewalModal` (`routes/activities/subscription/partials/subscription-element.svelte:231`), which POSTs to `SUBSCRIPTION.RENEW` (`Members/modals/RenewalModal.svelte:65`) |
-| same | renewal with non-empty `courses` | `:96` | **A** | `RenewalModal.svelte:58` sends `courses: formData.renewal_info?.courses`. `partials/course-selection.svelte:17-29` pre-fills it with the member's current courses from info. Any member enrolled in a course hits it. Django `subscriptions_views.py:247` (`add_course_to_subscription`) |
+| same | renewal with non-empty `courses` | ported (v2subs: `SubscriptionRenewals.courses`) | **ported** | `RenewalModal.svelte:58` sends `courses: formData.renewal_info?.courses`; each course runs through the course-enrolment port inside the renewal's transaction. |
 | same | renewal payment clean-up meets an unpaid payment with an invoice | `:119` | **ported** (v2-subscriptions) | data from payment cancel (top) in the new period |
 | same | `X-Group-Id` non-empty; form body | `:53` | B | UI sends JSON and never sets a group |
 | same | `data['sport_association']` names another association | (renew service) | B | UI sends the row's own association |
