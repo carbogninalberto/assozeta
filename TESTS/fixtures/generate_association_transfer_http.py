@@ -26,8 +26,11 @@ BE/application/views/export_views.py, in Django's order:
   primary association is the own one: only its owner or a superuser;
   others 403 'Setup token missing or invalid.', anonymous 401). Parsers are
   multipart and form only (a JSON body is 415 when request.FILES is read).
-  - status: task_id required, then AsyncResult on the django-db result
-    backend (no row is PENDING; SUCCESS carries the decoded JSON result).
+  - status: task_id required; an id start_import did not register in the
+    cache, or whose result row carries another task's name, answers like an
+    id without a row (PENDING). FAILURE and REVOKED rows answer a fixed
+    message, RETRY is not ready; other rows go through AsyncResult on the
+    django-db result backend (SUCCESS carries the decoded JSON result).
   - validate / start: request.FILES['file'] missing is 400 'File ZIP richiesto'.
 
 Run with ``python3 -I``.
@@ -76,6 +79,9 @@ FOREIGN_ACTIVE = {'task_id': uid(900), 'sport_association_id': FOREIGN, 'user_id
 ACTIVE_KEY = lambda association: f'association-export-active:{IDS[association]}'
 LAST_KEY = lambda association: f'association-export-last:{IDS[association]}'
 TASK_KEY = lambda task_id: f'association-export-task:{task_id}'
+IMPORT_KEY = lambda task_id: f'association-import-task:{task_id}'
+IMPORT_TASK = {'task': 'import_association_data'}
+TASK_FAILED = 'Operazione non riuscita. Riprova più tardi o contatta il supporto.'
 
 # Old own exports (before every listed date) that the delete cases remove; tokens are fixed for the audit entries.
 for n, (filepath, size) in enumerate((('exports/own/export_old_a.zip', 10), (None, None), ('exports/own/export_old_c.zip', 30),
@@ -98,6 +104,10 @@ TASKS = {
     'success_null': {'task_id': uid(802), 'status': 'SUCCESS', 'result': None},
     'success_text': {'task_id': uid(803), 'status': 'SUCCESS', 'result': '"Import completato"'},
     'success_broken': {'task_id': uid(804), 'status': 'SUCCESS', 'result': '{not json'},
+    'success_named': {'task_id': uid(805), 'status': 'SUCCESS', 'result': '{"success": true}', 'task_name': 'import_association_data'},
+    'other_task': {'task_id': uid(806), 'status': 'SUCCESS', 'result': '{"removed": 2}', 'task_name': 'cleanup_old_exports'},
+    'other_task_failed': {'task_id': uid(807), 'status': 'FAILURE', 'task_name': 'export_association_data',
+                          'result': '{"exc_type": "ValueError", "exc_message": ["altro task"], "exc_module": "builtins"}'},
 }
 INSTANCE = {'id': 976090, 'domain': 'association-transfer.example.test', 'name': 'Association transfer', 'self_hosted': True,
             'setup_provenance': 'fresh', 'primary_association': 'own_association'}
@@ -107,10 +117,14 @@ cases = []
 
 
 def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, association=None,
-        setup=None, cache_after=None, objects_after=None, effect=None, raw_b64=None):
+        setup=None, cache_after=None, objects_after=None, effect=None, raw_b64=None, registered=True):
+    setup = {'instance': True, 'cache': {}, 'objects': {}, **(setup or {})}
+    # import/status of a seeded task row: the task is registered as start_import does, unless the case says otherwise.
+    prefix = '/association/import/status?task_id='
+    if registered and path.startswith(prefix) and path[len(prefix):] in {row['task_id'] for row in TASKS.values()}:
+        setup['cache'] = {IMPORT_KEY(path[len(prefix):]): IMPORT_TASK, **setup['cache']}
     case = {'name': f'association-transfer-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'effect': effect,
-            'setup': {'instance': True, 'cache': {}, 'objects': {}, **(setup or {})},
+            'status': status, 'response': response, 'effect': effect, 'setup': setup,
             'cache_after': cache_after, 'objects_after': objects_after}
     if association is not None:
         case['association'] = IDS[association]
@@ -326,8 +340,21 @@ add('import-status-owner-success-undecodable', 'owner', task('success_broken'), 
 add('import-status-full-collaborator', 'full_collaborator', task('started'), 200, {
     'task_id': TASKS['started']['task_id'], 'status': 'STARTED', 'ready': False})
 add('import-status-admin-impersonating-owner', 'admin', ISTATUS + '?task_id=' + UNKNOWN, 200, pending(UNKNOWN), headers=ADMIN_OWNER)
-# Rows in an exception state: Celery rebuilds the exception from exc_type, exc_module and exc_message (the arguments),
-# and the view answers str() of it. key: (status, stored result, error text or None for the 500 page).
+# Only registered imports answer their row: other ids, and rows named after another task, are PENDING.
+for key in ('success', 'started', 'success_broken', 'other_task_failed'):
+    add('import-status-owner-not-registered-' + key.replace('_', '-'), 'owner', task(key), 200, pending(TASKS[key]['task_id']),
+        registered=False)
+add('import-status-owner-registered-without-row', 'owner', ISTATUS + '?task_id=' + UNKNOWN, 200, pending(UNKNOWN),
+    setup={'cache': {IMPORT_KEY(UNKNOWN): IMPORT_TASK}})
+add('import-status-owner-export-registration-only', 'owner', task('success'), 200, pending(TASKS['success']['task_id']),
+    registered=False, setup={'cache': {TASK_KEY(TASKS['success']['task_id']): {'sport_association_id': IDS['own_association'],
+                                                                              'user_id': IDS['owner']}}})
+add('import-status-owner-named-import-row', 'owner', task('success_named'), 200, {
+    'task_id': TASKS['success_named']['task_id'], 'status': 'SUCCESS', 'ready': True, 'result': {'success': True}})
+for key in ('other_task', 'other_task_failed'):
+    add('import-status-owner-row-of-' + key.replace('_', '-'), 'owner', task(key), 200, pending(TASKS[key]['task_id']))
+# Rows in an exception state answer a fixed message whatever the stored result is; RETRY is not ready.
+# key: (status, stored result, unused).
 exc = lambda kind, message, module='builtins': json.dumps({'exc_type': kind, 'exc_message': message, 'exc_module': module})
 DUPLICATE = 'duplicate key value violates unique constraint "application_user_pkey"\nDETAIL:  Key (user_id) already exists.\n'
 FAILED = {
@@ -354,14 +381,12 @@ for n, (key, (state, stored, _)) in enumerate(FAILED.items()):
     TASKS[key] = {'task_id': uid(840 + n), 'status': state, 'result': stored}
 for key, (state, _, error) in FAILED.items():
     label = 'import-status-owner-' + key.replace('_', '-')
-    if error is None:
-        add(label, 'owner', task(key), 500, SERVER)
-    elif state == 'RETRY':
+    if state == 'RETRY':
         add(label, 'owner', task(key), 200, {'task_id': TASKS[key]['task_id'], 'status': 'RETRY', 'ready': False})
     else:
-        add(label, 'owner', task(key), 200, {'task_id': TASKS[key]['task_id'], 'status': state, 'ready': True, 'error': error})
+        add(label, 'owner', task(key), 200, {'task_id': TASKS[key]['task_id'], 'status': state, 'ready': True, 'error': TASK_FAILED})
 add('import-status-owner-revoked', 'owner', task('export_revoked'), 200,
-    {'task_id': TASKS['export_revoked']['task_id'], 'status': 'REVOKED', 'ready': True, 'error': 'revoked'})
+    {'task_id': TASKS['export_revoked']['task_id'], 'status': 'REVOKED', 'ready': True, 'error': TASK_FAILED})
 add('import-status-post-not-allowed', 'owner', ISTATUS, 405, method('POST'), method='POST')
 add('import-status-options', 'owner', ISTATUS, 200, IMPORT_OPTIONS, method='OPTIONS')
 
@@ -442,14 +467,15 @@ add('active-owner-terminal-other-user', 'owner', ACTIVE, 200, {'active': False},
     setup={'cache': last(snapshot(uid(926), user='full_collaborator', status='SUCCESS'))})
 add('active-owner-active-not-a-dict', 'owner', ACTIVE, 200, {'active': False, 'terminal': TERMINAL},
     setup={'cache': {**active('not a snapshot'), **last(TERMINAL)}})
-# The snapshot's task row in an exception state: FAILURE and REVOKED are ready, RETRY is not.
-for key in ('failed_value', 'export_revoked'):
+# The snapshot's task row in an exception state: FAILURE and REVOKED are ready, RETRY is not (the stored result is not read).
+for key in ('failed_value', 'export_revoked', 'failed_without_type', 'success_broken'):
     add('active-owner-' + key.replace('_', '-') + '-row', 'owner', ACTIVE, 200, {'active': False},
         setup={'cache': active(snapshot(TASKS[key]['task_id']))}, cache_after={})
 add('active-owner-retry-row', 'owner', ACTIVE, 200, {'active': True, **snapshot(TASKS['retry_value']['task_id'])},
     setup={'cache': active(snapshot(TASKS['retry_value']['task_id']))})
-add('active-owner-failed-row-without-type', 'owner', ACTIVE, 500, SERVER,
-    setup={'cache': active(snapshot(TASKS['failed_without_type']['task_id']))})
+add('active-owner-retry-row-without-type', 'owner', ACTIVE, 200,
+    {'active': True, **snapshot(TASKS['retry_without_type']['task_id'])},
+    setup={'cache': active(snapshot(TASKS['retry_without_type']['task_id']))})
 add('active-owner-foreign-snapshot-ignored', 'owner', ACTIVE, 200, {'active': False},
     setup={'cache': {ACTIVE_KEY('foreign_association'): FOREIGN_ACTIVE}})
 
@@ -694,7 +720,7 @@ def import_started(name, archive, password, *, actor='owner', headers=None, setu
                    extra=(), filename='export.zip'):
     raw, content = upload('start', name, archive, kind=kind, extra=extra, filename=filename)
     add('import-start-' + name, actor, IMPORT_START, 202, IMPORT_STARTED, method='POST', raw_b64=raw, content_type=content,
-        headers=headers, setup=setup,
+        headers=headers, setup=setup, cache_after={IMPORT_KEY('$task'): {'value': IMPORT_TASK, 'ttl': 86400}},
         objects_after={'$upload': {'body_b64': base64.b64encode(archive).decode(), 'content_type': stored or kind}},
         effect={'celery': [{'task': 'import_association_data', 'args': [],
                             'kwargs': [['zip_file_path', '$upload'], ['owner_password', password]], 'id': '$task'}]})

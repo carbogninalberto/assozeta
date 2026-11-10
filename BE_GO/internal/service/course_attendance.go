@@ -290,14 +290,6 @@ func (r *attendanceRun) log(ctx context.Context, model, key string, changes map[
 // saveDay is AttendanceDay.save() of a loaded day: auditlog's diff of the
 // stored row against the in-memory values, then every column.
 func (r *attendanceRun) saveDay(ctx context.Context, day domain.AttendanceDayRow, attendees, absences any, event, rawEvent *string) error {
-	return r.saveDayRow(ctx, day, attendees, absences, event, rawEvent, true)
-}
-
-// saveDayRow with store=false is a save() whose associated_event the UUID
-// field rejects while preparing the UPDATE: the pre_save diff is logged and
-// the row keeps its values.
-func (r *attendanceRun) saveDayRow(ctx context.Context, day domain.AttendanceDayRow, attendees, absences any, event, rawEvent *string,
-	store bool) error {
 	stored, err := r.tx.StoredDay(ctx, day.ID)
 	if err != nil {
 		return err
@@ -325,9 +317,6 @@ func (r *attendanceRun) saveDayRow(ctx context.Context, day domain.AttendanceDay
 	}
 	if err = r.log(ctx, "attendanceday", day.ID, changes, day.CourseAssociation, "attendance_registry.course.sport_association"); err != nil {
 		return err
-	}
-	if !store {
-		return nil
 	}
 	return r.tx.UpdateDay(ctx, day.ID, attendanceJSON(attendees), attendanceJSON(absences), event)
 }
@@ -721,11 +710,12 @@ func (r *attendanceRun) extendedProps(ctx context.Context, registry domain.Atten
 				continue
 			}
 		} else if value, present := object.Lookup("event_id"); present {
-			// try: event.associated_event = e['event_id']; event.save() except: pass
-			// A value the field rejects fails the save after its audit entry.
-			prepared, text, valid := attendanceEventLink(value)
-			if err = r.saveDayRow(ctx, day, attendees, *absences, prepared, text, valid); err != nil {
-				return nil, err
+			// try: to_python(e['event_id']); event.associated_event = e['event_id']; event.save() except: pass
+			// A value the field rejects leaves the day as stored: nothing is written.
+			if prepared, text, valid := attendanceEventLink(value); valid {
+				if err = r.saveDay(ctx, day, attendees, *absences, prepared, text); err != nil {
+					return nil, err
+				}
 			}
 		}
 		data, found = object, true

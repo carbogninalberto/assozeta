@@ -6815,23 +6815,38 @@
    "effect": {
     "kind": "document",
     "file": "shared_own",
-    "cascade": [
-     "shared_grouped"
-    ],
-    "document": true,
+    "document": false,
     "actor": "owner",
     "association": "a1000000-0000-4000-8000-000000701001"
    }
   },
   {
-   "name": "subscription-misc-delete-document-of-two-files-other-gone",
+   "name": "subscription-misc-delete-document-of-two-files-again",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/subscription/a1000000-0000-4000-8000-000001410056/delete-document/b3000000-0000-4000-8000-000000970902",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/b3000000-0000-4000-8000-000000970901",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-document-of-two-files-last-link",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410056/delete-document/b3000000-0000-4000-8000-000000970902",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "subscription file deleted"
+   },
+   "effect": {
+    "kind": "document",
+    "file": "shared_grouped",
+    "document": true,
+    "actor": "owner",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   }
   }
  ]
 }

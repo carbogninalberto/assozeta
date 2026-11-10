@@ -26,6 +26,28 @@ def export_last_cache_key(sport_association_id) -> str:
     return f'association-export-last:{sport_association_id}'
 
 
+IMPORT_TASK_NAME = 'import_association_data'
+# An import can run for hours; status polling needs the registration that long.
+IMPORT_TASK_CACHE_TIMEOUT = 24 * 60 * 60
+# The answer of the status routes for a task that did not complete; the stored
+# details go to the server log.
+TASK_FAILED_MESSAGE = 'Operazione non riuscita. Riprova più tardi o contatta il supporto.'
+TASK_READY_STATES = frozenset({'SUCCESS', 'FAILURE', 'REVOKED'})
+
+
+def import_task_cache_key(task_id) -> str:
+    return f'association-import-task:{task_id}'
+
+
+def stored_task(task_id) -> Optional[Dict[str, Any]]:
+    """The stored result row of a task (status, name, result, traceback), or None."""
+    from django_celery_results.models import TaskResult
+
+    return TaskResult.objects.filter(task_id=task_id).values(
+        'status', 'task_name', 'result', 'traceback',
+    ).first()
+
+
 def normalize_progress(progress: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     progress = progress or {}
     try:

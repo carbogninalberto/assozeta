@@ -122,6 +122,8 @@ def get_extended_prop_for_attendance_day(event: AttendanceDay):
 
                 if not event.associated_event:
                     try:
+                        # An id the field rejects leaves the day as stored: nothing is written.
+                        AttendanceDay._meta.get_field('associated_event').to_python(e['event_id'])
                         event.associated_event = e['event_id']
                         event.save()
                     except Exception:

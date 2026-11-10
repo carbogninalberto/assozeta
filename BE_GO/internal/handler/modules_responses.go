@@ -10,6 +10,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/labstack/echo/v4"
 )
 
@@ -90,9 +91,14 @@ func (h *ModulesResponsesHandler) write(c echo.Context, run func(ctx context.Con
 
 func (h *ModulesResponsesHandler) answer(c echo.Context, status int, result any, err error) error {
 	var invalidUUID *service.PaymentInfoUUIDError
+	var suspicious *documentkey.SuspiciousFileError
 	switch {
 	case err == nil:
 		return c.JSON(status, result)
+	case errors.As(err, &suspicious):
+		// Storage.save's SuspiciousFileOperation: Django's 400 page.
+		c.Response().Header().Del("Allow")
+		return c.Blob(400, "text/html; charset=utf-8", djangoBadRequestPage)
 	case errors.As(err, &invalidUUID):
 		return c.JSON(400, []string{invalidUUID.Detail})
 	}

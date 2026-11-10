@@ -206,9 +206,7 @@ type CampsPeriodResult struct {
 
 func (r *campsRequest) validatePeriod(ctx context.Context, input *dto.CampsPeriodInput, instance *domain.CampsPeriod) (*CampsValidationError, error) {
 	errs := input.Errors
-	// UniqueValidator excludes the instance; a different free key would make
-	// Model.save() insert a copy, which is refused once validation passes.
-	keyChange := false
+	// UniqueValidator excludes the instance.
 	if input.ID.Present && (instance == nil || input.ID.ID != instance.ID) {
 		taken, err := r.tx.PeriodIDTaken(ctx, input.ID.ID)
 		if err != nil {
@@ -216,8 +214,6 @@ func (r *campsRequest) validatePeriod(ctx context.Context, input *dto.CampsPerio
 		}
 		if taken {
 			errs["camps_and_retreats_period_id"] = []string{"unique:camps and retreats period:camps and retreats period id"}
-		} else {
-			keyChange = instance != nil
 		}
 	}
 	if input.Camp.Present {
@@ -239,10 +235,25 @@ func (r *campsRequest) validatePeriod(ctx context.Context, input *dto.CampsPerio
 			break
 		}
 	}
-	if failure := campsOrdered(errs, dto.CampsPeriodFieldOrder); failure != nil || !keyChange {
-		return failure, nil
+	return campsOrdered(errs, dto.CampsPeriodFieldOrder), nil
+}
+
+// campsPeriodCreatedChanges is auditlog's diff of a period against nothing;
+// fee is the in-memory value's text.
+func campsPeriodCreatedChanges(row domain.CampsPeriod, fee string) map[string][2]string {
+	changes := map[string][2]string{"camps_and_retreats_period_id": {"None", row.ID}, "camps_and_retreats": {"None", row.CampID},
+		"start_date": {"None", dto.CampsNaiveUTC(row.Start)}, "end_date": {"None", dto.CampsNaiveUTC(row.End)}, "fee": {"None", fee},
+		"created_at": {"None", dto.CampsNaiveUTC(row.CreatedAt)}}
+	if row.Title != nil {
+		changes["title"] = [2]string{"None", *row.Title}
 	}
-	return nil, ErrCampsPrimaryKeyChange
+	if row.Description != nil {
+		changes["description"] = [2]string{"None", *row.Description}
+	}
+	if row.Max != nil {
+		changes["max_participants"] = [2]string{"None", campsInt(row.Max)}
+	}
+	return changes
 }
 
 func (r *campsRequest) result(ctx context.Context, row domain.CampsPeriod, fee string) (*CampsPeriodResult, error) {
@@ -329,18 +340,7 @@ func (s *CampsPeriods) AddPeriod(ctx context.Context, identity domain.ResolvedId
 	if err = r.tx.InsertPeriod(ctx, row); err != nil {
 		return nil, err
 	}
-	changes := map[string][2]string{"camps_and_retreats_period_id": {"None", row.ID}, "camps_and_retreats": {"None", row.CampID},
-		"start_date": {"None", dto.CampsNaiveUTC(row.Start)}, "end_date": {"None", dto.CampsNaiveUTC(row.End)}, "fee": {"None", fee},
-		"created_at": {"None", dto.CampsNaiveUTC(row.CreatedAt)}}
-	if row.Title != nil {
-		changes["title"] = [2]string{"None", *row.Title}
-	}
-	if row.Description != nil {
-		changes["description"] = [2]string{"None", *row.Description}
-	}
-	if row.Max != nil {
-		changes["max_participants"] = [2]string{"None", campsInt(row.Max)}
-	}
+	changes := campsPeriodCreatedChanges(row, fee)
 	association := row.CampAssociationID
 	path := "camps_and_retreats.sport_association"
 	events := []domain.CampsAudit{{Model: "CampsAndRetreatsPeriod", Key: row.ID, Action: 0, Changes: changes, AssociationID: &association, Path: path}}
@@ -475,10 +475,29 @@ func (s *CampsPeriods) UpdatePeriod(ctx context.Context, identity domain.Resolve
 	if input.CreatedAt.Present {
 		row.CreatedAt = input.CreatedAt.Value
 	}
-	if err = r.tx.UpdatePeriod(ctx, row); err != nil {
+	if input.ID.Present && input.ID.ID != old.ID {
+		// Model.save() under a key no row has inserts a copy with the validated
+		// values and the period the path names stays. auditlog's pre_save finds
+		// no row under the new key and logs the whole row as an update (no row
+		// to resolve and no association in its changes: indexed under the
+		// actor's own association, if any), then post_save logs the create.
+		row.ID = input.ID.ID
+		if err = r.tx.InsertPeriod(ctx, row); err != nil {
+			return nil, err
+		}
+		changes := campsPeriodCreatedChanges(row, fee)
+		before, err := r.actorIndexed(ctx, domain.CampsAudit{Model: "CampsAndRetreatsPeriod", Key: row.ID, Action: 1, Changes: changes})
+		if err != nil {
+			return nil, err
+		}
+		association := row.CampAssociationID
+		if err = r.emit(ctx, before, domain.CampsAudit{Model: "CampsAndRetreatsPeriod", Key: row.ID, Action: 0, Changes: changes,
+			AssociationID: &association, Path: "camps_and_retreats.sport_association"}); err != nil {
+			return nil, err
+		}
+	} else if err = r.tx.UpdatePeriod(ctx, row); err != nil {
 		return nil, err
-	}
-	if changes := campsPeriodChanges(*old, old.Fee, row, fee); len(changes) > 0 {
+	} else if changes := campsPeriodChanges(*old, old.Fee, row, fee); len(changes) > 0 {
 		association := row.CampAssociationID
 		if err = r.emit(ctx, domain.CampsAudit{Model: "CampsAndRetreatsPeriod", Key: row.ID, Action: 1, Changes: changes,
 			AssociationID: &association, Path: "camps_and_retreats.sport_association"}); err != nil {
@@ -563,9 +582,7 @@ func (s *CampsPeriods) DeletePeriod(ctx context.Context, identity domain.Resolve
 
 func (r *campsRequest) validateService(ctx context.Context, input *dto.CampsServiceInput, instance *domain.CampsService) (*CampsValidationError, error) {
 	errs := input.Errors
-	// UniqueValidator excludes the instance; a different free key would make
-	// Model.save() insert a copy, which is refused once validation passes.
-	keyChange := false
+	// UniqueValidator excludes the instance.
 	if input.ID.Present && (instance == nil || input.ID.ID != instance.ID) {
 		taken, err := r.tx.ServiceIDTaken(ctx, input.ID.ID)
 		if err != nil {
@@ -573,8 +590,6 @@ func (r *campsRequest) validateService(ctx context.Context, input *dto.CampsServ
 		}
 		if taken {
 			errs["camps_and_retreats_period_service_id"] = []string{"unique:camps and retreats periods service:camps and retreats period service id"}
-		} else {
-			keyChange = instance != nil
 		}
 	}
 	if input.Period.Present {
@@ -595,10 +610,21 @@ func (r *campsRequest) validateService(ctx context.Context, input *dto.CampsServ
 			errs["payment_category"] = []string{code}
 		}
 	}
-	if failure := campsOrdered(errs, dto.CampsServiceFieldOrder); failure != nil || !keyChange {
-		return failure, nil
+	return campsOrdered(errs, dto.CampsServiceFieldOrder), nil
+}
+
+// campsServiceCreatedChanges is auditlog's diff of a service against nothing;
+// fee is the in-memory value's text.
+func campsServiceCreatedChanges(row domain.CampsService, fee string) map[string][2]string {
+	changes := map[string][2]string{"camps_and_retreats_period_service_id": {"None", row.ID}, "camps_and_retreats_period": {"None", row.PeriodID},
+		"fee": {"None", fee}, "created_at": {"None", dto.CampsNaiveUTC(row.CreatedAt)}, "payment_category": {"None", campsText(row.CategoryID)}}
+	if row.Title != nil {
+		changes["title"] = [2]string{"None", *row.Title}
 	}
-	return nil, ErrCampsPrimaryKeyChange
+	if row.Description != nil {
+		changes["description"] = [2]string{"None", *row.Description}
+	}
+	return changes
 }
 
 func applyCampsService(row *domain.CampsService, input *dto.CampsServiceInput) {
@@ -673,14 +699,7 @@ func (s *CampsPeriods) AddService(ctx context.Context, identity domain.ResolvedI
 	if !input.Fee.Present {
 		fee = "0.0"
 	}
-	changes := map[string][2]string{"camps_and_retreats_period_service_id": {"None", row.ID}, "camps_and_retreats_period": {"None", row.PeriodID},
-		"fee": {"None", fee}, "created_at": {"None", dto.CampsNaiveUTC(row.CreatedAt)}, "payment_category": {"None", campsText(row.CategoryID)}}
-	if row.Title != nil {
-		changes["title"] = [2]string{"None", *row.Title}
-	}
-	if row.Description != nil {
-		changes["description"] = [2]string{"None", *row.Description}
-	}
+	changes := campsServiceCreatedChanges(row, fee)
 	association := row.CampAssociationID
 	path := "period.camps_and_retreats.sport_association"
 	events := []domain.CampsAudit{{Model: "CampsAndRetreatsPeriodsService", Key: row.ID, Action: 0, Changes: changes, AssociationID: &association,
@@ -866,6 +885,10 @@ func (s *CampsPeriods) UpdateService(ctx context.Context, identity domain.Resolv
 	}
 	row := *old
 	applyCampsService(&row, input)
+	copied := input.ID.Present && input.ID.ID != old.ID
+	if copied {
+		row.ID = input.ID.ID
+	}
 	if err = campsServiceIndex(ctx, r, &row); err != nil {
 		return nil, err
 	}
@@ -874,10 +897,29 @@ func (s *CampsPeriods) UpdateService(ctx context.Context, identity domain.Resolv
 	if err != nil {
 		return nil, err
 	}
-	if err = r.tx.UpdateService(ctx, row); err != nil {
+	changes := map[string][2]string{}
+	if copied {
+		// Model.save() under a key no row has inserts a copy with the validated
+		// values and the service the path names stays: auditlog logs the whole
+		// row as an update (indexed under the actor's own association, if
+		// any), then the create. The walk reads the copy's key.
+		if err = r.tx.InsertService(ctx, row); err != nil {
+			return nil, err
+		}
+		created := campsServiceCreatedChanges(row, row.Fee)
+		before, err := r.actorIndexed(ctx, domain.CampsAudit{Model: "CampsAndRetreatsPeriodsService", Key: row.ID, Action: 1, Changes: created})
+		if err != nil {
+			return nil, err
+		}
+		association := row.CampAssociationID
+		if err = r.emit(ctx, before, domain.CampsAudit{Model: "CampsAndRetreatsPeriodsService", Key: row.ID, Action: 0, Changes: created,
+			AssociationID: &association, Path: "period.camps_and_retreats.sport_association"}); err != nil {
+			return nil, err
+		}
+		old = &row
+	} else if err = r.tx.UpdateService(ctx, row); err != nil {
 		return nil, err
 	}
-	changes := map[string][2]string{}
 	diff := func(name, before, after string) {
 		if before != after {
 			changes[name] = [2]string{before, after}
