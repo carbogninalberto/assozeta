@@ -232,7 +232,7 @@ func (s *SubscriptionRenewals) subscriptionUser(ctx context.Context, tx domain.S
 		&association, "direct")
 }
 
-// tags is fresh_sub.tags.set(Tags.objects.filter(tag_id__in=...)).
+// tags is fresh_sub.tags.set(Tags.objects.filter(tag_id__in=..., sport_association=...)).
 func (s *SubscriptionRenewals) tags(ctx context.Context, tx domain.SubscriptionRenewTransaction, data domain.RequestObject,
 	created *subscriptionCreated) error {
 	value, present := data.Lookup("tags")

@@ -97,7 +97,8 @@ func subscriptionAssociationGet(count int) error {
 
 // namedAssociation is create_subscription's data['sport_association']: the
 // association of the user with that username (str() of the value); a miss
-// keeps request.user's. Another association is not ported.
+// keeps request.user's. An association account only names its own
+// association: another one is DRF's 403.
 func (s *SubscriptionCreates) namedAssociation(ctx context.Context, tx domain.SubscriptionCreateTransaction, value any, own string) error {
 	if value == nil {
 		return nil // username=None matches no user
@@ -106,10 +107,54 @@ func (s *SubscriptionCreates) namedAssociation(ctx context.Context, tx domain.Su
 	if err != nil {
 		return err
 	}
-	if len(associations) > 1 || len(associations) == 1 && associations[0] != own {
+	if len(associations) > 1 {
 		return domain.ErrSubscriptionCreateNotPorted
 	}
+	if len(associations) == 1 && associations[0] != own {
+		return &domain.PermissionDenied{Detail: "User not allowed."}
+	}
 	return nil
+}
+
+// subscriptionNamedMember is User.objects.get(username=...) for
+// data['sport_association'] (str() of the value; no live user: the 500 page).
+func subscriptionNamedMember(ctx context.Context, tx domain.SubscriptionCreateTransaction, value any) (*domain.SubscriptionCreateMember, error) {
+	switch value.(type) {
+	case nil:
+		return nil, domain.ErrSubscriptionCreateServer
+	case string, json.Number, bool:
+	default:
+		// Containers as a lookup value are not ported.
+		return nil, domain.ErrSubscriptionCreateNotPorted
+	}
+	member, err := tx.MemberByUsername(ctx, dto.PythonStr(value))
+	if err != nil {
+		return nil, err
+	}
+	if member == nil {
+		return nil, domain.ErrSubscriptionCreateServer
+	}
+	return member, nil
+}
+
+// namedUser is _prepare_subscription_request for an anonymous request:
+// request.user becomes the user data['sport_association'] names; without the
+// key the view reads AnonymousUser.role (the 500 page).
+func (s *SubscriptionCreates) namedUser(ctx context.Context, data domain.RequestObject) (*domain.Account, error) {
+	named, present := data.Lookup("sport_association")
+	if !present {
+		return nil, domain.ErrSubscriptionCreateServer
+	}
+	tx, err := s.store.BeginSubscriptionCreate(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	member, err := subscriptionNamedMember(ctx, tx, named)
+	if err != nil {
+		return nil, err
+	}
+	return &domain.Account{ID: member.ID, Role: member.Role}, nil
 }
 
 // associateUpdateIndex is the audit index of an Associate update entry, which

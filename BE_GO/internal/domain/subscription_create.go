@@ -170,6 +170,8 @@ type SubscriptionCreateTransaction interface {
 	InsertSignature(ctx context.Context, id, user, data string, audit LoginAuditContext, at time.Time) error
 	// SaveSubscriptionSignature is save(update_fields=['signature_url', 'signature_storage_key']) of the new subscription.
 	SaveSubscriptionSignature(ctx context.Context, id, association string, url, key *string, audit LoginAuditContext, at time.Time) error
+	// MemberByUsername is User.objects.get(username=...) (live users).
+	MemberByUsername(ctx context.Context, username string) (*SubscriptionCreateMember, error)
 	// MemberByEmail is User.objects.filter(email=email).first() (live users, by key).
 	MemberByEmail(ctx context.Context, email string) (*SubscriptionCreateMember, error)
 	// Member is the user's role and season settings.

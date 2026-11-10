@@ -11,7 +11,7 @@ unpaid subscription payments of an associate with the same first name, last
 name and tax code (iexact) created between the new subscription's start and end
 dates are deleted (QuerySet.delete(), the new payment excluded); data['user']['email']
 names a user that becomes the subscription's user (save()); data['tags'] (ids or
-{'tag_id'} dicts) are set on the subscription; data['courses'] are enrolled.
+{'tag_id'} dicts) of the association are set on the subscription; its data['courses'] are enrolled.
 APIException (serializer errors, 409) propagates; any other exception is
 400 {"status": "error", "msg": str(e)} with everything rolled back.
 Response {"status": "success", "payment_id": ...}. The create_subscription
@@ -350,6 +350,7 @@ add('renew-courses-none', 'renew', 'owner', 400, error("object of type 'NoneType
 # The renewal form's body: the previous associate (associate_id), its association as a dict (no username matches str(dict)),
 # the owner's id as `user` (a str without 'email'), tags as dicts. The renewing person's unpaid subscription payment of
 # this season is deleted (the previous subscription's reference is cleared); paid and course payments stay.
+# Only the association's own tags are set (tag_other belongs to another association).
 renewing = {'associate_id': ASSOCIATES['renewing']['id'], 'first_name': 'Rino', 'last_name': 'Rinnovo', 'tax_code': 'RNNRNI80A01H501A',
             'born_date': '01/01/1980', 'sex': 'M', 'email': 'rino@example.test', 'user': OWNER, 'sport_association': OWN, 'is_minor': False,
             'family': None, 'phone': '3331112222', 'type': 1, 'role': 1}
@@ -362,7 +363,7 @@ add('renew-basic', 'renew', 'owner', 200, {'status': 'success', 'payment_id': '$
                   changed={'associate': {'renewing': {'sex': 'M', 'email': 'rino@example.test', 'phone': '3331112222'}},
                            'subscription': {'previous': {'payment_id': None}}},
                   deleted={'payment': ['stale']},
-                  tags=[('$renew_subscription', 'tag_a'), ('$renew_subscription', 'tag_other')],
+                  tags=[('$renew_subscription', 'tag_a')],
                   audit=[entry('associate', 1, 'renewing', {'sex': ['A', 'M'], 'email': ['None', 'rino@example.test'],
                                                             'phone': ['None', '3331112222']}),
                          entry('payment', 0, '$renew_payment', {'amount': ['None', '25.0']}),

@@ -21,7 +21,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.timezone import make_aware
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
 from application.models import CourseSubscription, CourseSubscriptionInstallment, Course
@@ -811,10 +811,13 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
         if (sport_association is None or 'sport_association' in data) and 'sport_association' in data:
             try:
                 sport_association_user = User.objects.get(username=data['sport_association'])
-                sport_association = SportAssociation.objects.get(user=sport_association_user)
-                logger.debug(f'Using sport association from request data: {sport_association.denomination}')
+                named_association = SportAssociation.objects.get(user=sport_association_user)
             except (User.DoesNotExist, SportAssociation.DoesNotExist):
                 pass  # Keep the original user.sport_association
+            else:
+                # An association account only names its own association.
+                if sport_association is None or named_association.sport_association_id != sport_association.sport_association_id:
+                    raise PermissionDenied("User not allowed.")
 
     # set sport_association to associate_data & associate_tutor_data
     associate_data.initial_data['sport_association'] = sport_association.sport_association_id

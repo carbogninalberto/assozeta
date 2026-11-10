@@ -237,13 +237,14 @@ def subscription_renew(request):
                     tag_ids = data['tags']
                 else:
                     tag_ids = [tag['tag_id'] for tag in data['tags']]
-                tags = Tags.objects.filter(tag_id__in=tag_ids)
+                tags = Tags.objects.filter(tag_id__in=tag_ids, sport_association=fresh_sub.sport_association)
                 fresh_sub.tags.set(tags)
 
             if 'courses' in data and len(data['courses']) > 0:
                 for c in data['courses']:
                     u: User = request.user
-                    course = scoped_queryset(request, Course.objects).filter(course_id=c['value']).first()
+                    course = scoped_queryset(request, Course.objects).filter(
+                        course_id=c['value'], sport_association=fresh_sub.sport_association).first()
                     add_course_to_subscription(course, fresh_sub, u.sport_association, data=None, is_athlete=False)
 
         logger.info("Subscription renewal completed", extra={'user_id': str(request.user.user_id), 'subscription_id': str(fresh_sub.subscription_id)})
@@ -341,6 +342,10 @@ def _handle_quick_subscription(data, request):
     """Handle quick subscription for existing associate."""
     sport_association = scoped_queryset(request, SportAssociation.objects).get(sport_association_id=data['sport_association'])
     associate = scoped_queryset(request, Associate.objects).get(associate_id=data['associate'])
+    # The quick re-subscription only uses the association's own members, for its own owner.
+    if (request.subscription_requester is None or sport_association.user_id != request.user.user_id
+            or associate.sport_association_id != sport_association.sport_association_id):
+        raise PermissionDenied("User not allowed.")
 
     with transaction.atomic():
         sport_association = scoped_queryset(request, SportAssociation.objects).select_for_update().get(
