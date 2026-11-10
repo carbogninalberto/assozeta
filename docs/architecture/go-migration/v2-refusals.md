@@ -42,6 +42,7 @@ Receipts are `quality-reports/go-migration/<family>-http-v2sub-*`; each family d
 
 | Family | Route | Was refused | Evidence |
 |---|---|---|---|
+| documents-writes | `POST subscription/<uid>/medical-certificate/upload`, `POST document/medical/certificate/` (and every multipart upload) | filename containing `&` | 124 cases; RED `v2sub-red-r1` Django 124/124, Go 500; GREEN `v2sub-versioned-r1` 4 transports; mutation `v2sub-mutation-r1` (no longest-prefix match) CAUGHT |
 | subscription-transfer | `POST subscription/<uid>/transfer` (e-mail branch) | tutor/associate names starting with non-ASCII letters; non-ASCII e-mail domain | 31 cases; RED `v2sub-red-r1` Django 31/31, Go 500; GREEN `v2sub-versioned-r1` 4 transports 31/31; mutation `v2sub-mutation-r1` (no NFKC) CAUGHT |
 
 ## Remaining A items, per family
@@ -106,7 +107,6 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 ### documents / docmanager / document-views
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| medical-certificate uploads | multipart filename with `&` | `medicalCertificateUpload.js:13-15` | `handler/documents_writes.go:471-472` | cheap |
 | DELETE document/<uid>/delete | every attachment delete | `payment/modals/AddEditModal.svelte:803`, `course/modals/AddModal.svelte:300` | `service/docmanager_reads.go:430` | expensive |
 | GET document/retrieve | PDF object missing, still referenced | `ReceiptList.svelte:68`, `MembersList.svelte:527` | `service/docmanager_reads.go:241-246` | medium |
 | GET document/subscription/preview/ | header/footer with a `<pre>` block | `Preview.svelte:63` | `mentions/tree.go:34-35` | medium |
@@ -389,7 +389,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### documents-writes.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/<uid>/medical-certificate/upload, POST document/medical/certificate/ | multipart filename containing `&` (Go refuses any `&`, Django `html.unescape`s) | `BE_GO/internal/handler/documents_writes.go:471-472` (called at :392-394), `ErrDocumentWritesNotPorted` | **A** | `routes/association/Members/detail/sections/modals/medicalCertificateUpload.js:13-15` appends the File with `file.name`; callers `AddMedicalCertificate.svelte:88`, `Members/add/sections/Section4.svelte:50`, `subscribe/wizard/Step3.svelte:16`, `subscribe-multiple/...`, `subscribefamily/...`. A file named e.g. `Rossi & Bianchi.pdf` is refused. |
+| POST subscription/<uid>/medical-certificate/upload, POST document/medical/certificate/ | multipart filename containing `&` (Go refuses any `&`, Django `html.unescape`s) | `BE_GO/internal/handler/documents_writes.go:471-472` (called at :392-394), `ErrDocumentWritesNotPorted` | **ported** (v2-subscriptions, `pyhtml.Unescape`) | `routes/association/Members/detail/sections/modals/medicalCertificateUpload.js:13-15` appends the File with `file.name`; callers `AddMedicalCertificate.svelte:88`, `Members/add/sections/Section4.svelte:50`, `subscribe/wizard/Step3.svelte:16`, `subscribe-multiple/...`, `subscribefamily/...`. A file named e.g. `Rossi & Bianchi.pdf` is refused. |
 | same | invalid UTF-8 / RFC 2231 / `Content-Transfer-Encoding` / bodies > 250 MiB | `handler/documents_writes.go:328,376,384` | B | Browsers send UTF-8 names, no CTE, no RFC 2231; UI caps certificates at 5 MB (`medicalCertificateUpload.js:1,5`). legacy: no; medium. |
 | POST documents/add, POST subscription/<uid>/upload-document | filename None / NUL / lone surrogates | `service/documents_writes.go:182,488` | B | UI sends `file.name` in JSON (`archive/Archive.svelte:104-119`, `Members/detail/sections/modals/AddFileModal.svelte:36-41`). legacy: no; cheap. |
 | upload-document, archive update | uploaded file as a text field | `service/documents_writes.go:213,481,646` | B | UI sends JSON. cheap. |

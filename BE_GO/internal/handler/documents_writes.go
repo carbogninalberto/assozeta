@@ -16,6 +16,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyhtml"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/labstack/echo/v4"
@@ -466,11 +467,12 @@ func djangoHeaderParameters(line string) (map[string]string, bool) {
 // djangoUploadName is MultiPartParser.sanitize_file_name followed by
 // UploadedFile's name handling (basename, 255-character truncation keeping
 // the extension). "" means the file is skipped; ok=false refuses names the
-// port does not model (HTML character references, invalid UTF-8).
+// port does not model (invalid UTF-8).
 func djangoUploadName(filename string) (string, bool) {
-	if strings.Contains(filename, "&") || !utf8.ValidString(filename) {
+	if !utf8.ValidString(filename) {
 		return "", false
 	}
+	filename = pyhtml.Unescape(filename)
 	filename = filename[strings.LastIndex(filename, "/")+1:]
 	filename = filename[strings.LastIndex(filename, `\`)+1:]
 	filename = strings.Map(func(r rune) rune {

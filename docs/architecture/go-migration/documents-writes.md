@@ -97,8 +97,9 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
   - Content-Disposition parameters are read the way `parse_header_parameters` reads them: quoted values only unescape
     `\\` and `\"`, and `filename*` is decoded as UTF-8;
   - a part is a file only with a non-empty filename;
-  - `sanitize_file_name` keeps the text after the last `/` and `\` and drops non-printable characters. `""`, `.` and
-    `..` skip the file;
+  - `sanitize_file_name` first applies `html.unescape` (`pyhtml.Unescape`: the HTML5 named references with and without
+    `;` and the longest-prefix rule, numeric references with Python's replacement tables; a bare `&` stays), then keeps
+    the text after the last `/` and `\` and drops non-printable characters. `""`, `.` and `..` skip the file;
   - names over 255 characters are truncated, keeping the extension;
   - the last value of a key wins, and files win over fields.
 - The certificate is `MedicalCertificate.objects.create(document=..., user=request.user or None)`. Collaborators act
@@ -130,8 +131,7 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
   None filename in upload-document is a 500 without writes in both.
 - `documents/add` items reached after an unmodelled item are never run. The request is refused when the loop would
   reach such an item.
-- Multipart bodies with `Content-Transfer-Encoding`, filenames containing HTML character references (`html.unescape`)
-  or invalid UTF-8, RFC 2231 names in other charsets, and bodies over 250 MiB.
+- Multipart bodies with `Content-Transfer-Encoding`, filenames with invalid UTF-8, RFC 2231 names in other charsets, and bodies over 250 MiB.
 - Uploaded files as values of fields the views read as text (upload-document's `document`/`filename`, the archive
   update fields).
 - A UUID primary key given as a boolean in the archive update (`uuid.UUID(int=True)`).
@@ -143,8 +143,8 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
 
 ## Evidence (TDD)
 
-`TESTS/fixtures/documents_writes_http.json` (generator alongside) authors 119 cases: 38 add, 25 update, 20
-upload-document, 11 medical/certificate and 25 medical-certificate/upload.
+`TESTS/fixtures/documents_writes_http.json` (generator alongside) authors 124 cases: 38 add, 25 update, 20
+upload-document, 15 medical/certificate and 26 medical-certificate/upload.
 
 The runner owns a private MinIO through the `service_context` hook. It creates an empty bucket plus one sentinel
 object and switches Django's default storage to `S3Boto3Storage`. Each case is checked as follows:
@@ -162,6 +162,13 @@ The bucket and the cache must be back to their baseline at the end.
 RED: Django 119/119 and Go 404 on the first case (`native-r11`). GREEN: 119/119 on native Django and Go (`native-r13`)
 and on Caddy `/api/v1` and `/api/v2` (`versioned-r1`). Mutation: dropping the folder from new archive rows fails
 `documents-writes-add-collaborator-two-files-into-folder` on Go (`mutation-archive-folder`).
+
+Filenames with `&` (v2-subscriptions): 5 cases (`documents-writes-certificate-ampersand-*`, `-medical-ampersand-filename`).
+RED `v2sub-red-r1` (Django 124/124, Go 500 on `documents-writes-certificate-ampersand-bare`); GREEN `v2sub-versioned-r1`
+124/124 on the four transports; mutation `v2sub-mutation-r1` (no longest-prefix match) fails
+`documents-writes-certificate-ampersand-references` (CAUGHT). `go test ./internal/pyhtml` compares `Unescape` with
+CPython 3.13 vectors. The multipart parser is shared: `subscription-import-upload` (29/29) and `data-restore` (139/139)
+re-ran green (`v2sub-rerun-r1`).
 
 Shared changes are additive: `pymime.GuessType` (type and encoding), `documentobjects.S3.Put`, `documentkey.UploadName`.
 `docmanager-reads` (110/110), `documents-move` (19/19) and `subscription-medical` (127/127) re-ran green. Go unit tests
