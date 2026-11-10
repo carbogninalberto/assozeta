@@ -6156,7 +6156,8 @@
         "application_customaccounts",
         "application_customaccountstransfer",
         "application_payment",
-        "application_coursesubscriptioninstallment"
+        "application_coursesubscriptioninstallment",
+        "BE/application/serializers/balance_sheet.py custom_account_in_use (shared by the list flag and the delete view)"
       ],
       "contract": {
         "methods": [
@@ -6170,11 +6171,11 @@
         ],
         "request": "DELETE, no body.",
         "response": "{msg: bank accounts deleted}.",
-        "errors": "401; 403 registry/context/IsAssociationUser; 403 {msg: Info not available.}; 403 {msg: This account is not deletable.}; 404 {exception: CustomAccounts matching query does not exist.}; 405; 500 missing association.",
+        "errors": "401; 403 registry/context/IsAssociationUser; 403 {msg: Info not available.}; 403 {msg: This account is not deletable.}; 403 {msg: An account with transfers or payments cannot be deleted.}; 404 {exception: CustomAccounts matching query does not exist.}; 405; 500 missing association.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated, IsAssociationUser; registry bookeeping.management.accounts.delete.",
         "resource_scope": "SportAssociation.objects.get(user=request.user) accounts.",
-        "side_effects": "Deletes the account, its transfers and every payment of the account (base manager), each with an auditlog delete entry indexed through changes_json, payments in descending key order. Before that the payments' delete receiver deletes their course instalments, whose own receiver deletes the unpaid payment first (payment, instalment, then the account pass audits the payment again).",
+        "side_effects": "Refused when a transfer (either side) or a payment returned by the payment manager references the account (the rule of the list's deletable flag, custom_account_in_use). Otherwise deletes the account and the payments still stored for it (base manager: removed from the payment list), each with an auditlog delete entry indexed through changes_json, payments in descending key order. Before that the payments' delete receiver deletes their course instalments, whose own receiver deletes the unpaid payment first (payment, instalment, then the account pass audits the payment again).",
         "transaction": "Single transaction in Go; Django's collector deletes in one atomic block.",
         "execution_owner": "django"
       },
@@ -6188,25 +6189,25 @@
         "docs/architecture/go-migration/balance-sheet.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 80/80; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/balance-sheet-http-v2del-red-r1/results.json",
-          "receipt_sha256": "1a03feda7892f4588f3a72197209defe2178f22727b129dd921ebe746fde416e"
+          "result": "RED: Django 93/93; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/balance-sheet-http-v2doc2-red-r1/results.json",
+          "receipt_sha256": "f9935a0e41332db06c45f901bf4dcbc7434e7cbe58b2b0144bdfacb36a126186"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 80/80 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and audit order, after merging codex/go-backend-parity.",
-          "artifact": "quality-reports/go-migration/balance-sheet-http-v2del-final-r1/results.json",
-          "receipt_sha256": "0d4c70c5cbb1ca3f039dc1d9cf3994b8d6e6f5e8f6044290bba6169fd22909cc"
+          "result": "GREEN: 93/93 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and audit order, after merging codex/go-backend-parity.",
+          "artifact": "quality-reports/go-migration/balance-sheet-http-v2doc2-final-r1/results.json",
+          "receipt_sha256": "926db6ce5026fd90f691856742f0b79fb2cd245fdffd0f5608282771c82b1980"
         },
         {
-          "revision": "committing change with the payments' delete receiver skipped in the account delete",
-          "result": "Mutation control: fails Go on balance-sheet-account-deleted-with-instalment-payment (state.deleted:application.CourseSubscriptionInstallment).",
-          "artifact": "quality-reports/go-migration/balance-sheet-http-v2del-mutation-r1/results.json",
-          "receipt_sha256": "3696254b12a49f0e0a9d6f49a890d9696ca9368423fead27f521798210bab01e"
+          "revision": "the in-use rule requiring both a transfer and a payment (&& instead of ||)",
+          "result": "Mutation control: fails Go on balance-sheet-account-with-transfers-refused (response.status 200).",
+          "artifact": "quality-reports/go-migration/balance-sheet-http-v2doc2-mutation-r2/results.json",
+          "receipt_sha256": "d58612142ed387bccd7c45df655c90471b9fc70429cc73be1c29720d3d398bfc"
         }
       ],
       "notes": [
-        "Implementing: v2-deletes: deleting an account that payments reference is ported (CustomAccounts.delete() through the shared collector: the account, its transfers and every payment of the account, with the payments' delete receivers). The balance-sheet route itself is unchanged (pdf export still refused)."
+        "Implementing: v2doc2: the account delete applies the rule of the accounts list's deletable flag on the server (Django fix with tests, then Go): an account with transfers or listed payments answers 403. Accounts whose remaining payments are all removed from the payment list are still deleted with them through the shared collector. The balance-sheet route itself is unchanged (pdf export still refused)."
       ]
     },
     {
@@ -32871,7 +32872,9 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/document_access.go",
         "BE_GO/internal/repository/document_access.go",
-        "BE_GO/internal/service/document_access.go"
+        "BE_GO/internal/service/document_access.go",
+        "BE_GO/internal/medicalform/medicalform.go",
+        "BE_GO/internal/service/documents_writes.go"
       ],
       "dependencies": [
         "BE/docmanager/views/printing_views.py",
@@ -32892,7 +32895,9 @@
         "BE/core/settings.py",
         "BE/core/middleware.py",
         "BE/docmanager/access.py",
-        "BE/instance/permissions.py"
+        "BE/instance/permissions.py",
+        "BE/templates/document/application/pdfs/piemonte-biella.pdf",
+        "S3 default storage (AWS_* settings)"
       ],
       "contract": {
         "methods": [
@@ -32925,25 +32930,25 @@
         "docs/architecture/go-migration/document-render.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 193/193; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-red-r1/results.json",
-          "receipt_sha256": "1fcf48400c7e4ea3aab6745c44d43e6b5b7fba5decf637a40adc2cc124a1cbf1"
+          "result": "RED: Django 199/199; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-red-r3/results.json",
+          "receipt_sha256": "28f9b34b6f98a12e7c9dc7935ceba1f4835316dbb0912bf73236301a872755a2"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 193/193 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-versioned-final/results.json",
-          "receipt_sha256": "e38acf5e50d31ea0628e569218e126a4f8daed58863616638d77ed38bf289ace"
+          "result": "GREEN: 199/199 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and the stored form objects.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-versioned-r1/results.json",
+          "receipt_sha256": "dd8d72ac41356f65fc5c9c0ffd45c7ff60c305dcd7feb87f447bd23ae7ec3aee"
         },
         {
-          "revision": "HasDocumentToken admitting the token of every document (secdoc2-mutation-r2: every compensation counted as the account's)",
-          "result": "Mutation control: fails Go on document-render-invoice-document-token-other-document (response.status); secdoc2-mutation-r2 fails on document-render-compensation-instructor-account-other.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-mutation-r1/results.json",
-          "receipt_sha256": "d9af65e1c8871e6566db66edab08193cdeefbb58c5c2c791378b8f6805d7314b"
+          "revision": "committing change without the YYYY-MM-DD to DD/MM/YYYY rewrite of the form values",
+          "result": "Mutation control: fails Go on document-render-medical-form-biella (pdf.body).",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-mutation-r1/results.json",
+          "receipt_sha256": "94ff4cf536962c4b0332007e1c53fcc582c3a8de1f1746bc53b6bed7a43ddfd0"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up). Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
+        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc2: the Piemonte Biella medical form is filled in Go (internal/medicalform: pypdf's output for the template with the values written as TextStringObject does) and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing), a tutor promotion, header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
       ]
     },
     {
@@ -33085,7 +33090,9 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/document_access.go",
         "BE_GO/internal/repository/document_access.go",
-        "BE_GO/internal/service/document_access.go"
+        "BE_GO/internal/service/document_access.go",
+        "BE_GO/internal/medicalform/medicalform.go",
+        "BE_GO/internal/service/documents_writes.go"
       ],
       "dependencies": [
         "BE/docmanager/views/printing_views.py",
@@ -33106,7 +33113,9 @@
         "BE/core/settings.py",
         "BE/core/middleware.py",
         "BE/docmanager/access.py",
-        "BE/instance/permissions.py"
+        "BE/instance/permissions.py",
+        "BE/templates/document/application/pdfs/piemonte-biella.pdf",
+        "S3 default storage (AWS_* settings)"
       ],
       "contract": {
         "methods": [
@@ -33139,25 +33148,25 @@
         "docs/architecture/go-migration/document-render.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 193/193; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-red-r1/results.json",
-          "receipt_sha256": "1fcf48400c7e4ea3aab6745c44d43e6b5b7fba5decf637a40adc2cc124a1cbf1"
+          "result": "RED: Django 199/199; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-red-r3/results.json",
+          "receipt_sha256": "28f9b34b6f98a12e7c9dc7935ceba1f4835316dbb0912bf73236301a872755a2"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 193/193 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-versioned-final/results.json",
-          "receipt_sha256": "e38acf5e50d31ea0628e569218e126a4f8daed58863616638d77ed38bf289ace"
+          "result": "GREEN: 199/199 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and the stored form objects.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-versioned-r1/results.json",
+          "receipt_sha256": "dd8d72ac41356f65fc5c9c0ffd45c7ff60c305dcd7feb87f447bd23ae7ec3aee"
         },
         {
-          "revision": "HasDocumentToken admitting the token of every document (secdoc2-mutation-r2: every compensation counted as the account's)",
-          "result": "Mutation control: fails Go on document-render-invoice-document-token-other-document (response.status); secdoc2-mutation-r2 fails on document-render-compensation-instructor-account-other.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-mutation-r1/results.json",
-          "receipt_sha256": "d9af65e1c8871e6566db66edab08193cdeefbb58c5c2c791378b8f6805d7314b"
+          "revision": "committing change without the YYYY-MM-DD to DD/MM/YYYY rewrite of the form values",
+          "result": "Mutation control: fails Go on document-render-medical-form-biella (pdf.body).",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-mutation-r1/results.json",
+          "receipt_sha256": "94ff4cf536962c4b0332007e1c53fcc582c3a8de1f1746bc53b6bed7a43ddfd0"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up). Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
+        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc2: the Piemonte Biella medical form is filled in Go (internal/medicalform: pypdf's output for the template with the values written as TextStringObject does) and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing), a tutor promotion, header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
       ]
     },
     {
@@ -33307,7 +33316,9 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/document_access.go",
         "BE_GO/internal/repository/document_access.go",
-        "BE_GO/internal/service/document_access.go"
+        "BE_GO/internal/service/document_access.go",
+        "BE_GO/internal/medicalform/medicalform.go",
+        "BE_GO/internal/service/documents_writes.go"
       ],
       "dependencies": [
         "BE/docmanager/views/printing_views.py",
@@ -33328,7 +33339,9 @@
         "BE/core/settings.py",
         "BE/core/middleware.py",
         "BE/docmanager/access.py",
-        "BE/instance/permissions.py"
+        "BE/instance/permissions.py",
+        "BE/templates/document/application/pdfs/piemonte-biella.pdf",
+        "S3 default storage (AWS_* settings)"
       ],
       "contract": {
         "methods": [
@@ -33361,25 +33374,25 @@
         "docs/architecture/go-migration/document-render.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 193/193; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-red-r1/results.json",
-          "receipt_sha256": "1fcf48400c7e4ea3aab6745c44d43e6b5b7fba5decf637a40adc2cc124a1cbf1"
+          "result": "RED: Django 199/199; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-red-r3/results.json",
+          "receipt_sha256": "28f9b34b6f98a12e7c9dc7935ceba1f4835316dbb0912bf73236301a872755a2"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 193/193 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-versioned-final/results.json",
-          "receipt_sha256": "e38acf5e50d31ea0628e569218e126a4f8daed58863616638d77ed38bf289ace"
+          "result": "GREEN: 199/199 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and the stored form objects.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-versioned-r1/results.json",
+          "receipt_sha256": "dd8d72ac41356f65fc5c9c0ffd45c7ff60c305dcd7feb87f447bd23ae7ec3aee"
         },
         {
-          "revision": "HasDocumentToken admitting the token of every document (secdoc2-mutation-r2: every compensation counted as the account's)",
-          "result": "Mutation control: fails Go on document-render-invoice-document-token-other-document (response.status); secdoc2-mutation-r2 fails on document-render-compensation-instructor-account-other.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-mutation-r1/results.json",
-          "receipt_sha256": "d9af65e1c8871e6566db66edab08193cdeefbb58c5c2c791378b8f6805d7314b"
+          "revision": "committing change without the YYYY-MM-DD to DD/MM/YYYY rewrite of the form values",
+          "result": "Mutation control: fails Go on document-render-medical-form-biella (pdf.body).",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-mutation-r1/results.json",
+          "receipt_sha256": "94ff4cf536962c4b0332007e1c53fcc582c3a8de1f1746bc53b6bed7a43ddfd0"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up). Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
+        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc2: the Piemonte Biella medical form is filled in Go (internal/medicalform: pypdf's output for the template with the values written as TextStringObject does) and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing), a tutor promotion, header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
       ]
     },
     {
@@ -33529,7 +33542,9 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/document_access.go",
         "BE_GO/internal/repository/document_access.go",
-        "BE_GO/internal/service/document_access.go"
+        "BE_GO/internal/service/document_access.go",
+        "BE_GO/internal/medicalform/medicalform.go",
+        "BE_GO/internal/service/documents_writes.go"
       ],
       "dependencies": [
         "BE/docmanager/views/printing_views.py",
@@ -33550,7 +33565,9 @@
         "BE/core/settings.py",
         "BE/core/middleware.py",
         "BE/docmanager/access.py",
-        "BE/instance/permissions.py"
+        "BE/instance/permissions.py",
+        "BE/templates/document/application/pdfs/piemonte-biella.pdf",
+        "S3 default storage (AWS_* settings)"
       ],
       "contract": {
         "methods": [
@@ -33564,12 +33581,12 @@
           "/api/document/medical-appointment/<uid>"
         ],
         "request": "uid; ?download; ?token",
-        "response": "200 application/pdf (renderer bytes), Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
-        "errors": "401; 403; 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account outside its own subscriptions (after the lookup, before any write); 405; 500 {exception} for invalid uid, a missing row ('NoneType' ... 'subscription'), an unknown region (KeyError repr), renderer failures; 500 page (not ported) for PDF-form regions",
+        "response": "200 application/pdf (renderer bytes; for agonistica-piemonte-biella the PDF form filled by the view), Content-Length, Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
+        "errors": "401; 403; 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account outside its own subscriptions (after the lookup, before any write); 405; 500 {exception} for invalid uid, a missing row ('NoneType' ... 'subscription'), an unknown region (KeyError repr), renderer failures, a region without a form (\"[Errno 2] No such file or directory: 'document/medical-appointments/non-agonistica.html'\", after the Document) and a Biella appointment whose subscription has no associate (\"'NoneType' object has no attribute 'main_tutor'\", after the Document); 500 page (not ported) for the Biella form when the association has a stored president signature (PyMuPDF image drawing), when the associate's tutor relations have no primary one, or when the filename is not storable",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated | HasMedicalAppointmentDocumentToken. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid). ?token admits a caller without an account when it is the token of a document of the record the uid names (base managers); a record without a document, another document's token, a malformed token or uid admit nothing (401). By account: staff, superusers and the instance owner reach every appointment; another athlete account needs the appointment's subscription among the member's (docmanager.access; base managers).",
         "resource_scope": "MedicalAppointments.objects.filter(pk=uid).first(): resolves the row by id; outside a scoped session an athlete account is limited to the appointments of the member's subscriptions",
-        "side_effects": "Document.objects.create (audited, actor association index); one renderer POST (FastRender payload) to PUPPETEER_HOST:PORT/render; on a PDF: save_to_storage.delay(path, base64) then the row link (audited update) (MedicalAppointments.document, full save, index subscription.sport_association); agonistica/non-agonistica only",
+        "side_effects": "Document.objects.create (audited, actor association index). agonistica/non-agonistica: one renderer POST (FastRender payload) to PUPPETEER_HOST:PORT/render; on a PDF: save_to_storage.delay(path, base64) then the row link (audited update) (MedicalAppointments.document, full save, index subscription.sport_association). agonistica-piemonte-biella: no renderer request and no task; the view fills templates/document/application/pdfs/piemonte-biella.pdf with pypdf (extract_values over the form's fields: two leading spaces and upper case unless the text contains 'base64', YYYY-MM-DD rewritten DD/MM/YYYY, empty and 'None' texts left out), saves it with default_storage.save('<creation timestamp>/<id>/<filename>') and links the row. Other regions: the Document only.",
         "transaction": "Not atomic in Django: Document, links and created rows commit one by one; the renderer call and Celery publishes sit between them. Go: one short transaction per write in the same order, publishes after the Document commit.",
         "execution_owner": "django"
       },
@@ -33583,25 +33600,25 @@
         "docs/architecture/go-migration/document-render.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 193/193; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-red-r1/results.json",
-          "receipt_sha256": "1fcf48400c7e4ea3aab6745c44d43e6b5b7fba5decf637a40adc2cc124a1cbf1"
+          "result": "RED: Django 199/199; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-red-r3/results.json",
+          "receipt_sha256": "28f9b34b6f98a12e7c9dc7935ceba1f4835316dbb0912bf73236301a872755a2"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 193/193 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-versioned-final/results.json",
-          "receipt_sha256": "e38acf5e50d31ea0628e569218e126a4f8daed58863616638d77ed38bf289ace"
+          "result": "GREEN: 199/199 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and the stored form objects.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-versioned-r1/results.json",
+          "receipt_sha256": "dd8d72ac41356f65fc5c9c0ffd45c7ff60c305dcd7feb87f447bd23ae7ec3aee"
         },
         {
-          "revision": "HasDocumentToken admitting the token of every document (secdoc2-mutation-r2: every compensation counted as the account's)",
-          "result": "Mutation control: fails Go on document-render-invoice-document-token-other-document (response.status); secdoc2-mutation-r2 fails on document-render-compensation-instructor-account-other.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-mutation-r1/results.json",
-          "receipt_sha256": "d9af65e1c8871e6566db66edab08193cdeefbb58c5c2c791378b8f6805d7314b"
+          "revision": "committing change without the YYYY-MM-DD to DD/MM/YYYY rewrite of the form values",
+          "result": "Mutation control: fails Go on document-render-medical-form-biella (pdf.body).",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-mutation-r1/results.json",
+          "receipt_sha256": "94ff4cf536962c4b0332007e1c53fcc582c3a8de1f1746bc53b6bed7a43ddfd0"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up). Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
+        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc2: the Piemonte Biella medical form is filled in Go (internal/medicalform: pypdf's output for the template with the values written as TextStringObject does) and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing), a tutor promotion, header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
       ]
     },
     {
@@ -33853,12 +33870,16 @@
         "BE_GO/pkg/storage/documentobjects/s3.go",
         "BE_GO/internal/domain/document_access.go",
         "BE_GO/internal/repository/document_access.go",
-        "BE_GO/internal/service/document_access.go"
+        "BE_GO/internal/service/document_access.go",
+        "BE_GO/internal/service/document_render.go",
+        "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
         "PostgreSQL",
         "Redis (identity sessions)",
-        "S3 default storage (AWS_* settings)"
+        "S3 default storage (AWS_* settings)",
+        "PDF renderer service (PUPPETEER_HOST/PORT, CURRENT_HOST_PUPPETEER)",
+        "Celery broker (save_to_storage)"
       ],
       "contract": {
         "methods": [
@@ -33871,12 +33892,12 @@
           "/api/document/retrieve/<uid>"
         ],
         "request": "Path uid (Python uuid.UUID grammar). Query: download ('false' selects view_file; any other value or none selects download_file, attachment when non-empty), token (a JWT or the Document's UUID token), download_token (django.core.signing, salt docmanager.association-export-download, max_age 3600). Headers: Authorization, Cookie BKN_AUTH, X-Group-Id, impersonation headers.",
-        "response": "200 streamed object bytes with Content-Type from mimetypes.guess_type (else the object's, else application/octet-stream), Content-Length and Content-Encoding from the object, and Content-Disposition from content_disposition_header for download_file.",
-        "errors": "400 [ValueError text]; 401 {'error': 'Invalid token. Not Authorized.'} / {'error': 'Invalid download token.'} (no challenge); DRF 401 for an invalid bearer; 403 {'error': 'Not authorized to access this export.'}; 403 {'detail': 'Documento non disponibile per questa associazione.'}; 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account outside its own records (document reached by account); 404 {'error': 'Document not found.'}; 500 {'exception': 'File not found'} / {'exception': \"Attempted access to '<name>' denied.\"}; 405; 500 page.",
+        "response": "200 streamed object bytes with Content-Type from mimetypes.guess_type (else the object's, else application/octet-stream), Content-Length and Content-Encoding from the object, and Content-Disposition from content_disposition_header for download_file. A filename urllib.parse reads as a URL (scheme of two or more characters) is guessed from the URL path; a data: name answers the type it spells.",
+        "errors": "400 [ValueError text]; 401 {'error': 'Invalid token. Not Authorized.'} / {'error': 'Invalid download token.'} (no challenge); DRF 401 for an invalid bearer; 403 {'error': 'Not authorized to access this export.'}; 403 {'detail': 'Documento non disponibile per questa associazione.'}; 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account outside its own records (document reached by account); 404 {'error': 'Document not found.'}; 500 {'exception': 'File not found'} / {'exception': 'An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist.'} (a missing PDF printed again and not stored yet) / {'exception': \"Attempted access to '<name>' denied.\"}; 405; 500 page.",
         "authentication": "DRF AllowAny with ScopedJWTAuthentication; the view recomputes request.user from the Authorization header, the BKN_AUTH cookie or ?token unless impersonating.",
         "permissions": "No registry key (restricted collaborators denied by identity resolution); download tokens and document tokens as before; by account: association accounts, collaborators, superusers and the instance owner reach every document, an athlete account that is neither a superuser nor the instance owner needs the record among those of its user, of the associates of its subscriptions, of associates whose account it is and of associates sharing a non-empty tax code with them (docmanager.access; base managers); export documents need the archive's association owner; association-scoped sessions need visible_documents.",
         "resource_scope": "Document by id or token; related Subscription (group-aware), MedicalCertificate and Invoice (soft-delete, group-aware) ids; export archives. For athlete accounts: the PDF, medical certificate document and attached files of the member's subscriptions, the certificates of the user and the PDFs of the invoices of the member's payments.",
-        "side_effects": "None (object storage is read with HEAD and GET).",
+        "side_effects": "None on the database. A stored PDF whose object is missing and that exactly one subscription (group-aware), or else exactly one listed invoice, has as its PDF is printed again: one renderer request for document/subscription/<id>/view or document/invoice/<id>/view with the request's Authorization header (or 'Bearer <?token>', or null), then the Celery task save_to_storage('<creation timestamp>/<id>/<filename>', <base64 PDF>) when the renderer answered a PDF. The outcome is not read.",
         "transaction": "None.",
         "execution_owner": "django"
       },
@@ -33890,25 +33911,25 @@
         "docs/architecture/go-migration/docmanager-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 155/155; Go 200 on the first case.",
-          "artifact": "quality-reports/go-migration/docmanager-reads-http-secdoc-red-r1/results.json",
-          "receipt_sha256": "268bd67777896dd52e9b48e8137b9f309b21c387fd402a5b89fc5777268adbc0"
+          "result": "RED: Django 175/175; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-v2doc2-red-r2/results.json",
+          "receipt_sha256": "e917cd757c65288112c12e6612ea43048ce72f9c32ca874c7a237255a3ffe186"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 155/155 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/docmanager-reads-http-secdoc-versioned-final/results.json",
-          "receipt_sha256": "69cc9c1557ccbb1983b21370b15e7142f15896d42ce3546454ca0f987bdf5ea3"
+          "result": "GREEN: 175/175 on native Django, native Go, Caddy /api/v1 and /api/v2 with the renderer requests, storage tasks and URL-like names checked.",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-v2doc2-versioned-r2/results.json",
+          "receipt_sha256": "9c64cf73e68a746ccbcffc897c7b8f49838bcf3e3fecf7aa32a1ffa380f0caf0"
         },
         {
-          "revision": "retrieve without the member check for athlete accounts",
-          "result": "Mutation control: fails Go on docmanager-reads-retrieve-orphan-export-athlete (response.status).",
-          "artifact": "quality-reports/go-migration/docmanager-reads-http-secdoc-mutation-r1/results.json",
-          "receipt_sha256": "26976f707cda6a5e87ba60d688f32cfe9ba2d3e3b0e8a2ee043ff66a1befdd88"
+          "revision": "committing change with the query left in a URL-like name's path (v2doc2-mutation-r1: the reprinted PDF stored under the document's filepath)",
+          "result": "Mutation control: fails Go on docmanager-reads-retrieve-url-name-parts (stream.content-type); v2doc2-mutation-r1 fails on docmanager-reads-reprint-filepath-first-try (celery.headers:0).",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-v2doc2-mutation-r2/results.json",
+          "receipt_sha256": "8c5bd89959c6f35608eb366589f49359f242256050de90d1caf6e22ac4522b84"
         }
       ],
       "notes": [
-        "Implementing: retrieve streams stored documents from S3 with Django's lookups, download tokens and headers; delete is implemented up to its ownership walk. Refused with the 500 page: re-rendering a missing subscription/invoice PDF, provider errors other than a 404 HEAD, URL-like or newline-terminated filenames, non-standard JSON in signed payloads, and delete of an existing document by a requester with an association. The PDF rendering routes, their /view/ variants, subscription/preview and medical/certificate are not part of this family. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
+        "Implementing: retrieve streams stored documents from S3 with Django's lookups, download tokens and headers. v2doc2: a missing PDF that one subscription or invoice references is printed again (renderer, then save_to_storage) and the stream answers the provider's missing-key text until the worker has stored the file. A filename urllib.parse reads as a URL has its type guessed from the URL path, as mimetypes.guess_type does (RED v2doc2-red-r2; the missing-PDF RED is v2doc2-red-r1). Refused with the 500 page: provider errors other than a 404 HEAD or a missing key, URL-like filenames with a bracketed or non-ASCII network location, newline-terminated filenames, non-standard JSON in signed payloads. The delete route is recorded by document-delete. The PDF rendering routes, their /view/ variants, subscription/preview and medical/certificate are not part of this family. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to."
       ]
     },
     {
@@ -33938,7 +33959,9 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/document_access.go",
         "BE_GO/internal/repository/document_access.go",
-        "BE_GO/internal/service/document_access.go"
+        "BE_GO/internal/service/document_access.go",
+        "BE_GO/internal/medicalform/medicalform.go",
+        "BE_GO/internal/service/documents_writes.go"
       ],
       "dependencies": [
         "BE/docmanager/views/printing_views.py",
@@ -33959,7 +33982,9 @@
         "BE/core/settings.py",
         "BE/core/middleware.py",
         "BE/docmanager/access.py",
-        "BE/instance/permissions.py"
+        "BE/instance/permissions.py",
+        "BE/templates/document/application/pdfs/piemonte-biella.pdf",
+        "S3 default storage (AWS_* settings)"
       ],
       "contract": {
         "methods": [
@@ -33992,25 +34017,25 @@
         "docs/architecture/go-migration/document-render.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 193/193; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-red-r1/results.json",
-          "receipt_sha256": "1fcf48400c7e4ea3aab6745c44d43e6b5b7fba5decf637a40adc2cc124a1cbf1"
+          "result": "RED: Django 199/199; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-red-r3/results.json",
+          "receipt_sha256": "28f9b34b6f98a12e7c9dc7935ceba1f4835316dbb0912bf73236301a872755a2"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 193/193 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-versioned-final/results.json",
-          "receipt_sha256": "e38acf5e50d31ea0628e569218e126a4f8daed58863616638d77ed38bf289ace"
+          "result": "GREEN: 199/199 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and the stored form objects.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-versioned-r1/results.json",
+          "receipt_sha256": "dd8d72ac41356f65fc5c9c0ffd45c7ff60c305dcd7feb87f447bd23ae7ec3aee"
         },
         {
-          "revision": "HasDocumentToken admitting the token of every document (secdoc2-mutation-r2: every compensation counted as the account's)",
-          "result": "Mutation control: fails Go on document-render-invoice-document-token-other-document (response.status); secdoc2-mutation-r2 fails on document-render-compensation-instructor-account-other.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-mutation-r1/results.json",
-          "receipt_sha256": "d9af65e1c8871e6566db66edab08193cdeefbb58c5c2c791378b8f6805d7314b"
+          "revision": "committing change without the YYYY-MM-DD to DD/MM/YYYY rewrite of the form values",
+          "result": "Mutation control: fails Go on document-render-medical-form-biella (pdf.body).",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-mutation-r1/results.json",
+          "receipt_sha256": "94ff4cf536962c4b0332007e1c53fcc582c3a8de1f1746bc53b6bed7a43ddfd0"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up). Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
+        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc2: the Piemonte Biella medical form is filled in Go (internal/medicalform: pypdf's output for the template with the values written as TextStringObject does) and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing), a tutor promotion, header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
       ]
     },
     {
@@ -34264,7 +34289,9 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/document_access.go",
         "BE_GO/internal/repository/document_access.go",
-        "BE_GO/internal/service/document_access.go"
+        "BE_GO/internal/service/document_access.go",
+        "BE_GO/internal/medicalform/medicalform.go",
+        "BE_GO/internal/service/documents_writes.go"
       ],
       "dependencies": [
         "BE/docmanager/views/printing_views.py",
@@ -34285,7 +34312,9 @@
         "BE/core/settings.py",
         "BE/core/middleware.py",
         "BE/docmanager/access.py",
-        "BE/instance/permissions.py"
+        "BE/instance/permissions.py",
+        "BE/templates/document/application/pdfs/piemonte-biella.pdf",
+        "S3 default storage (AWS_* settings)"
       ],
       "contract": {
         "methods": [
@@ -34318,25 +34347,25 @@
         "docs/architecture/go-migration/document-render.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 193/193; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-red-r1/results.json",
-          "receipt_sha256": "1fcf48400c7e4ea3aab6745c44d43e6b5b7fba5decf637a40adc2cc124a1cbf1"
+          "result": "RED: Django 199/199; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-red-r3/results.json",
+          "receipt_sha256": "28f9b34b6f98a12e7c9dc7935ceba1f4835316dbb0912bf73236301a872755a2"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 193/193 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-versioned-final/results.json",
-          "receipt_sha256": "e38acf5e50d31ea0628e569218e126a4f8daed58863616638d77ed38bf289ace"
+          "result": "GREEN: 199/199 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and the stored form objects.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-versioned-r1/results.json",
+          "receipt_sha256": "dd8d72ac41356f65fc5c9c0ffd45c7ff60c305dcd7feb87f447bd23ae7ec3aee"
         },
         {
-          "revision": "HasDocumentToken admitting the token of every document (secdoc2-mutation-r2: every compensation counted as the account's)",
-          "result": "Mutation control: fails Go on document-render-invoice-document-token-other-document (response.status); secdoc2-mutation-r2 fails on document-render-compensation-instructor-account-other.",
-          "artifact": "quality-reports/go-migration/document-render-http-secdoc2-mutation-r1/results.json",
-          "receipt_sha256": "d9af65e1c8871e6566db66edab08193cdeefbb58c5c2c791378b8f6805d7314b"
+          "revision": "committing change without the YYYY-MM-DD to DD/MM/YYYY rewrite of the form values",
+          "result": "Mutation control: fails Go on document-render-medical-form-biella (pdf.body).",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-mutation-r1/results.json",
+          "receipt_sha256": "94ff4cf536962c4b0332007e1c53fcc582c3a8de1f1746bc53b6bed7a43ddfd0"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up). Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
+        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc2: the Piemonte Biella medical form is filled in Go (internal/medicalform: pypdf's output for the template with the values written as TextStringObject does) and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing), a tutor promotion, header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
       ]
     },
     {
@@ -40447,15 +40476,15 @@
       "kind": "serializer_hook",
       "django": {
         "file": "BE/application/serializers/balance_sheet.py",
-        "line": 113,
+        "line": 114,
         "symbol": "CustomAccountSerializer.save",
-        "sha256": "1a9e9836d10a4da0e4b64a812fe519cf95ee25c94e8b0a8d68183b332d7418a9"
+        "sha256": "89f27c6541c882a4e1cc0181ecbd4a3622b2dcf1cf12d773a117fb1bc2d6b4e7"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/dto/balance_account_write.go",
         "BE_GO/internal/domain/balance_accounts.go",
@@ -40508,15 +40537,15 @@
       "kind": "serializer_hook",
       "django": {
         "file": "BE/application/serializers/balance_sheet.py",
-        "line": 180,
+        "line": 181,
         "symbol": "CustomAccountTransferSerializer.save",
-        "sha256": "1a9e9836d10a4da0e4b64a812fe519cf95ee25c94e8b0a8d68183b332d7418a9"
+        "sha256": "89f27c6541c882a4e1cc0181ecbd4a3622b2dcf1cf12d773a117fb1bc2d6b4e7"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/dto/balance_account_write.go",
         "BE_GO/internal/domain/balance_accounts.go",
