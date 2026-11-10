@@ -63,11 +63,11 @@ the same outbound request, the same acceptance rules and the same database and C
   view's `except Invoice.DoesNotExist` does not catch a missing row: `500 'CustomerInvoice matching query does not exist.'`.
   The filename is `[<denomination>] Fattura <prefix> <number>/<fiscal_year>.pdf`, with `None` for nulls. The link is a full
   `save()`, and only `pdf` changes.
-- **compensation** (`IsAuthenticated | HasDocumentToken`): the live, group-aware, scoped payment (missing:
+- **compensation** (`IsAuthenticated | HasCompensationDocumentToken`): the live, group-aware, scoped payment (missing:
   `404 {"exception": "Compensation not found"}`). The filename is `[<denomination>] Compenso per <first> <last> del <date>.pdf`.
   A payment without an instructor or a payment date is a 500 AttributeError text.
-- **template** (`IsAuthenticated | HasDocumentToken`): `request.user.sport_association` is evaluated first. Anonymous callers get
-  `'AnonymousUser' object has no attribute ...`, athletes `User is not a sport association`, and a missing or duplicated
+- **template** (`IsAuthenticated`): `request.user.sport_association` is evaluated first. Athletes get
+  `User is not a sport association`, and a missing or duplicated
   association gets the `get()` text, each as a 500. Then the template is fetched by `pk` and that association (missing: `404
   {"exception": "Template not found"}`). The filename is `[<denomination>] <name with , and . as spaces> del <dd/mm/YYYY>.pdf`
   (UTC, Django's `TIME_ZONE`). After the Document is created, `request.data['additionalData']` is read:
@@ -77,15 +77,16 @@ the same outbound request, the same acceptance rules and the same database and C
     value creates a `SubscriptionFile` (audited, `subscription.sport_association`).
   
   The answer is always `200 {"msg": "Generato con successo."}`, whatever the renderer said. Nothing is linked.
-- **medical-appointment** (`IsAuthenticated | HasDocumentToken`): `MedicalAppointments.objects.filter(pk=uid).first()`. A missing
+- **medical-appointment** (`IsAuthenticated | HasMedicalAppointmentDocumentToken`): `MedicalAppointments.objects.filter(pk=uid).first()`. A missing
   row is the `'NoneType' ... 'subscription'` 500. The filename is `[<denomination>] <REGIONS[region]> del <date or None>.pdf`,
   and an unknown region is `500 {"exception": "'<region>'"}` (the KeyError repr). Regions `agonistica` and `non-agonistica` are
   printed through the renderer.
 - **Permissions**: identity resolution runs first, inside `IsAuthenticated`. That covers admin without a session, collaborator
   registry denials (no registry key: the "No permission mapping" 403), the athlete-view list and the scoped request guard. In a
   scoped session a uid outside the boundary is `403 Risorsa non disponibile per questo utente e associazione.`.
-  `HasDocumentToken` takes the last `?token`, which must name exactly one Document. A value UUIDField rejects (`''` included)
-  or two matches raise: the 500 page. `HasBypassAuthorizationHeader` is `hmac.compare_digest(Authorization,
+  `HasDocumentToken` takes the last `?token`: it must be the token of a document of the record the `uid` names (see "Staff
+  documents and document tokens" below); a token or uid UUIDField rejects (`''` included) admits nothing.
+  `HasBypassAuthorizationHeader` is `hmac.compare_digest(Authorization,
   DOCUMENT_BYPASS_TOKEN)`, and a non-ASCII header raises. A caller that fails all of them gets DRF's 401 with the challenge.
   The Celery print tasks (`print_document_invoice`, `print_document_customer_invoice` and the others) call these routes with
   the bypass token.
@@ -184,3 +185,32 @@ subscription counted as the member's) and `secdoc-mutation-r2` (every invoice) C
 Re-run after the change (`secdoc-rerun-r1`, native Django and Go): payment-reads 276/276 (the athlete receipts generated
 in-process), invoice-sync-print 70/70, subscription-sign 47/47 and subscription-import-upload 29/29. The print consumer
 harness (`celery-consumer-print-process-secdoc-r1`) passes every scenario.
+
+Staff documents and document tokens (`secdoc2-*`). `docmanager.access.can_access_document` also takes a compensation
+payment (served to the staff and to the account tied to its instructor, `Instructor.associated_user_id`), and any other
+record that is not a Document (a customer invoice, a module template: the staff's). Go: `MemberDocuments.MemberCompensation`
+and `memberDocumentStaffAccess`.
+
+- `document/einvoice/<uid>`, `document/compensation/<uid>` and `document/medical-appointment/<uid>` apply the rule right after
+  the row lookup and before the Document is created (the customer invoice; the payment; the appointment's subscription). The
+  403 leaves no row, renderer request or task; a missing row keeps its answer.
+- `HasDocumentToken` has one class per route, each naming the record whose document the token belongs to (base managers):
+  the invoice's `document_pdf`, the customer invoice's `pdf`, a `document` of the compensation's hours, the appointment's
+  `document`. A record without a document, another document's token, a malformed token or uid: the class admits nothing
+  (401 for a caller without an account or the renderer header). Each generation replaces the record's document, so the
+  earlier token stops naming it. The template route has no token class.
+- The renderer still receives the request's `Authorization` header (none for a token request).
+
+The fixture has 193 cases (38 new or changed): token cases on their own rows (accepted once, then replaced; other
+documents' tokens, malformed values, a malformed uid), member accounts on customer invoices, compensations and
+appointments (GET and POST), the instructor's account generating its own compensation with the hours linked, the athlete
+generating the appointment of its own subscription. RED `secdoc2-red-r1`: Django 193/193, Go differs on
+`document-render-invoice-document-token-other-document`. GREEN `secdoc2-versioned-r1`: 193/193 on the four transports with
+exact effects. Mutations `secdoc2-mutation-r1` (the token matched against every document) and `secdoc2-mutation-r2` (every
+compensation counted as the account's) CAUGHT.
+
+Re-run after the change (`secdoc2-rerun-r1`, native Django and Go): docmanager-reads 155/155, documents-writes 130/130,
+invoice-sync-print 70/70 and payment-reads 276/276. The print consumer harness
+(`celery-consumer-print-process-secdoc2-r1`) passes every scenario. `document/medical/certificate/` (documents-writes) keeps
+taking uploads without an account: the registration form sends the certificate before one exists, and the new row belongs
+to the account when there is one (`docmanager.test_document_access`).

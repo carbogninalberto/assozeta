@@ -45,15 +45,17 @@ Golden tests: `TESTS/adapters/go/document_template_golden.py` renders all eight 
   live, scoped association named by the last `?sport_association_id` and a placeholder subscription (`is_preview`, show lists
   `[1, 2, 3]`, the association's `additional_fields`); no parameter, a value the UUID field rejects or a missing row is the 500 page; an
   association whose user is an athlete is `403 "User is not a sport association"`.
-- **compensation/view** (`IsAuthenticated`): the scoped, live, group-aware payment; `from_date`/`to_date` are the minimum and maximum of
+- **compensation/view** (`IsAuthenticated`): the scoped, live, group-aware payment, served to the staff and to the account tied
+  to its instructor; `from_date`/`to_date` are the minimum and maximum of
   its hours' dates (`hourly`) and the first two `' al '` parts of the others' periods (`strptime('%d/%m/%Y')`; a bad or missing period is
   the 500 page). Italian is activated (`Content-Language: it`, `floatformat` with a comma, Italian day and month names).
-- **template/view** (`IsAuthenticated | HasBypassAuthorizationHeader`): the module template by pk. `?subscription_id` (last
+- **template/view** (`IsAuthenticated | HasBypassAuthorizationHeader`): the module template by pk, served to the staff. `?subscription_id` (last
   value): the scoped subscription, its courses list, then `associate` and `main_tutor`; each step that raises stops the rest silently
   (a course without a title leaves the list `[]`, which a mention prints as `[]`; a subscription without an associate leaves
   `associate` as None). Header/footer (the association's, or the custom ones) only when enabled, through `filter_mentions` with
   `sport_association` and `other.{today, courses_list}`; the body with the full context.
-- **medical-appointment/view** (AllowAny): `is_valid_uuid` (`400 ["<ValueError text>"]`), the appointment by pk (missing: 500), `303
+- **medical-appointment/view** (`IsAuthenticated | HasBypassAuthorizationHeader`): `is_valid_uuid` (`400 ["<ValueError text>"]`),
+  the appointment by pk (missing: 500), served to the staff and to the member of its subscription, `303
   {"error": ...}` for regions other than `agonistica`/`non-agonistica`, then the region's template in Italian.
 - Every view: identity resolution first (admin without a session, collaborator registry denials, the athlete-view list and the scoped
   reference checks on the path `uid` and query parameters), then the view's permission, then method dispatch (`Allow: GET, OPTIONS`);
@@ -123,3 +125,15 @@ unchanged. RED `secdoc-red-r1`: Django 123/123, Go 200 on `document-views-subscr
 off. GREEN `secdoc-versioned-final` (after merging the base; `secdoc-versioned-r1` before): 123/123 on the four transports.
 Mutation `secdoc-mutation-r1` (every subscription counted as the member's) CAUGHT. The other views of this family are
 unchanged.
+
+Staff pages (`secdoc2-*`). The rule of `docmanager.access` now covers the other pages of this family, each right after its
+row lookup (a missing row is still the 500 page): `compensation/view` is served to the staff and to the account tied to the
+payment's instructor (`MemberCompensation`); `template/view` to the staff (`memberDocumentStaffAccess`), with or without
+`?subscription_id`; `medical-appointment/view` to the staff and to the member of the appointment's subscription, before the
+region check. The appointment page takes an account or the renderer header (`IsAuthenticated |
+HasBypassAuthorizationHeader`, as the template page): the PDF route hands the renderer the caller's `Authorization`, and
+the PDF-form regions never fetch the page. A caller without either gets the 401, also for `?token` and a malformed uid.
+
+The fixture has 152 cases (29 new or changed). RED `secdoc2-red-r1`: Django 152/152, Go 200 on
+`document-views-compensation-instructor-account-other`. GREEN `secdoc2-versioned-r1`: 152/152 on the four transports.
+Mutation `secdoc2-mutation-r1` (the appointment page counting every subscription as the member's) CAUGHT.
