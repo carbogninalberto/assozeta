@@ -3,7 +3,9 @@
 Documents are served to the association's staff (the owner and collaborators),
 to the instance owner and administrators, and to the member they belong to. A
 member's own records are those of their user, of the associates of their
-subscriptions and of associates sharing a tax code with them.
+subscriptions and of associates sharing a tax code with them. A compensation
+is also served to the account tied to its instructor; customer invoices and
+module templates are the staff's.
 
 Association-scoped sessions keep their own boundary (impersonation_scope) and
 requests admitted without an account (a document token or the renderer's
@@ -39,6 +41,12 @@ def member_invoices(user):
     return Invoice._base_manager.filter(pk__in=payments.filter(invoice__isnull=False).values('invoice'))
 
 
+def member_compensations(user):
+    from application.models import Payment
+    from application.models.user_models import Instructor
+    return Payment._base_manager.filter(instructor__in=Instructor._base_manager.filter(associated_user_id=user.pk))
+
+
 def member_documents(user):
     from application.models.subscriptions_models import MedicalCertificate, SubscriptionFile
     from docmanager.models import Document
@@ -52,14 +60,19 @@ def member_documents(user):
 
 
 def can_access_document(user, record):
-    """record is a Document, a Subscription or an Invoice."""
-    from application.models import Invoice, Subscription
+    """record is a Document, a Subscription, an Invoice, a compensation Payment or a staff record."""
+    from application.models import Invoice, Payment, Subscription
+    from docmanager.models import Document
     if serves_everything(user):
         return True
     if isinstance(record, Subscription):
         records = member_subscriptions(user)
     elif isinstance(record, Invoice):
         records = member_invoices(user)
+    elif isinstance(record, Payment):
+        records = member_compensations(user)
+    elif not isinstance(record, Document):
+        return False
     else:
         records = member_documents(user)
     return records.filter(pk=record.pk).exists()

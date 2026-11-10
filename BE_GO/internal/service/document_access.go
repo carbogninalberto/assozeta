@@ -33,3 +33,9 @@ func memberDocumentAccess(ctx context.Context, store domain.MemberDocumentStore,
 	}
 	return nil
 }
+
+// memberDocumentStaffAccess is require_document_access for a record of the
+// staff (a customer invoice, a module template): no member account reaches it.
+func memberDocumentStaffAccess(ctx context.Context, store domain.MemberDocumentStore, identity domain.ResolvedIdentity) error {
+	return memberDocumentAccess(ctx, store, identity, identity.ScopeUser, func(context.Context, string) (bool, error) { return false, nil })
+}

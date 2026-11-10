@@ -111,31 +111,38 @@ func pythonFullName(first, last *string) string {
 	return dto.PythonStrip(renderOptional(first) + " " + renderOptional(last))
 }
 
+// documentRenderTokenRecords are the routes with a HasDocumentToken class and
+// the record whose document the token belongs to.
+var documentRenderTokenRecords = map[string]domain.RenderTokenRecord{
+	RenderInvoice:      {Table: "application_invoice", Key: "invoice_id", Document: "document_pdf_id"},
+	RenderEinvoice:     {Table: "application_customerinvoice", Key: "customer_invoice_id", Document: "pdf_id"},
+	RenderCompensation: {Table: "application_instructorhours", Key: "payment_id", Document: "document_id"},
+	RenderMedical:      {Table: "application_medicalappointments", Key: "medical_appointments_id", Document: "document_id"},
+}
+
 // Authorize evaluates the view's permission classes after identity
-// resolution: IsAuthenticated, then HasDocumentToken (?token names exactly
-// one Document; a value UUIDField rejects or two matches raise), then
-// HasBypassAuthorizationHeader (hmac.compare_digest with the configured token).
-func (s *DocumentRender) Authorize(ctx context.Context, identity domain.ResolvedIdentity, route string, query domain.RequestObject,
+// resolution: IsAuthenticated, then HasDocumentToken (?token is the token of
+// a document of the record the uid names; a token or uid UUIDField rejects
+// admits nothing), then HasBypassAuthorizationHeader (hmac.compare_digest
+// with the configured token).
+func (s *DocumentRender) Authorize(ctx context.Context, identity domain.ResolvedIdentity, route, uid string, query domain.RequestObject,
 	authorization *string) error {
 	if identity.ScopeUser != nil {
 		return nil
 	}
-	if route != RenderSubscription {
+	if record, tokens := documentRenderTokenRecords[route]; tokens {
 		if value, present := query.Lookup("token"); present {
 			text, _ := value.(string)
-			token, err := paymentInfoParseUUID(text)
-			if err != nil {
-				return ErrDocumentRenderServer
-			}
-			rows, err := s.store.DocumentTokenRows(ctx, token.String())
-			if err != nil {
-				return err
-			}
-			if rows > 1 {
-				return ErrDocumentRenderServer
-			}
-			if rows == 1 {
-				return nil
+			token, tokenErr := paymentInfoParseUUID(text)
+			key, keyErr := paymentInfoParseUUID(uid)
+			if tokenErr == nil && keyErr == nil {
+				admitted, err := s.store.RecordDocumentToken(ctx, record, key.String(), token.String())
+				if err != nil {
+					return err
+				}
+				if admitted {
+					return nil
+				}
 			}
 		}
 	}
@@ -212,13 +219,13 @@ func (s *DocumentRender) Render(ctx context.Context, identity domain.ResolvedIde
 	case RenderInvoice:
 		job, reply, err = s.invoiceJob(ctx, identity, request, scope)
 	case RenderEinvoice:
-		job, reply, err = s.einvoiceJob(ctx, request)
+		job, reply, err = s.einvoiceJob(ctx, identity, request)
 	case RenderCompensation:
-		job, reply, err = s.compensationJob(ctx, request, scope)
+		job, reply, err = s.compensationJob(ctx, identity, request, scope)
 	case RenderTemplate:
 		job, reply, err = s.templateJob(ctx, identity, request, scope)
 	case RenderMedical:
-		job, reply, err = s.medicalJob(ctx, request)
+		job, reply, err = s.medicalJob(ctx, identity, request)
 	default:
 		return nil, ErrDocumentRenderServer
 	}
@@ -439,7 +446,7 @@ func (s *DocumentRender) invoiceJob(ctx context.Context, identity domain.Resolve
 
 func itoa(n int) string { return strconv.Itoa(n) }
 
-func (s *DocumentRender) einvoiceJob(ctx context.Context, request DocumentRenderRequest) (*renderJob, *DocumentRenderReply, error) {
+func (s *DocumentRender) einvoiceJob(ctx context.Context, identity domain.ResolvedIdentity, request DocumentRenderRequest) (*renderJob, *DocumentRenderReply, error) {
 	id, invalid := s.parseUID(request.UID)
 	if invalid != nil {
 		return nil, invalid, nil
@@ -449,6 +456,10 @@ func (s *DocumentRender) einvoiceJob(ctx context.Context, request DocumentRender
 		// except Invoice.DoesNotExist does not catch CustomerInvoice.DoesNotExist.
 		reply, err := lookupFailure(err, renderException(500, "CustomerInvoice matching query does not exist."))
 		return nil, reply, err
+	}
+	// Generated for the association's staff.
+	if err := memberDocumentStaffAccess(ctx, s.store, identity); err != nil {
+		return nil, nil, err
 	}
 	number := func(value *int64) string {
 		if value == nil {
@@ -466,7 +477,7 @@ func (s *DocumentRender) einvoiceJob(ctx context.Context, request DocumentRender
 	}, nil, nil
 }
 
-func (s *DocumentRender) compensationJob(ctx context.Context, request DocumentRenderRequest, scope domain.RenderScope) (*renderJob, *DocumentRenderReply, error) {
+func (s *DocumentRender) compensationJob(ctx context.Context, identity domain.ResolvedIdentity, request DocumentRenderRequest, scope domain.RenderScope) (*renderJob, *DocumentRenderReply, error) {
 	id, invalid := s.parseUID(request.UID)
 	if invalid != nil {
 		return nil, invalid, nil
@@ -475,6 +486,12 @@ func (s *DocumentRender) compensationJob(ctx context.Context, request DocumentRe
 	if err != nil {
 		reply, err := lookupFailure(err, renderException(404, "Compensation not found"))
 		return nil, reply, err
+	}
+	// Generated for the association's staff and for the account tied to the instructor.
+	if err := memberDocumentAccess(ctx, s.store, identity, identity.ScopeUser, func(ctx context.Context, member string) (bool, error) {
+		return s.store.MemberCompensation(ctx, member, payment.ID)
+	}); err != nil {
+		return nil, nil, err
 	}
 	if !payment.HasInstructor {
 		return nil, renderException(500, "'NoneType' object has no attribute 'first_name'"), nil
@@ -661,7 +678,7 @@ var renderRegions = map[string]string{
 	"non-agonistica":                "Visita Non Agonistica",
 }
 
-func (s *DocumentRender) medicalJob(ctx context.Context, request DocumentRenderRequest) (*renderJob, *DocumentRenderReply, error) {
+func (s *DocumentRender) medicalJob(ctx context.Context, identity domain.ResolvedIdentity, request DocumentRenderRequest) (*renderJob, *DocumentRenderReply, error) {
 	id, invalid := s.parseUID(request.UID)
 	if invalid != nil {
 		return nil, invalid, nil
@@ -670,6 +687,12 @@ func (s *DocumentRender) medicalJob(ctx context.Context, request DocumentRenderR
 	if err != nil {
 		reply, err := lookupFailure(err, renderException(500, "'NoneType' object has no attribute 'subscription'"))
 		return nil, reply, err
+	}
+	// Generated for the association's staff and for the member of the appointment's subscription.
+	if err := memberDocumentAccess(ctx, s.store, identity, identity.ScopeUser, func(ctx context.Context, member string) (bool, error) {
+		return s.store.MemberSubscription(ctx, member, appointment.Subscription)
+	}); err != nil {
+		return nil, nil, err
 	}
 	region, known := renderRegions[appointment.Region]
 	if !known {

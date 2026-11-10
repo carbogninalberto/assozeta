@@ -64,9 +64,14 @@ type RenderTemplate struct {
 	Name            string
 }
 
+// RenderTokenRecord names the rows HasDocumentToken reads for a route: the
+// table, the column the uid is matched on and the column holding the document.
+type RenderTokenRecord struct{ Table, Key, Document string }
+
 // RenderAppointment is a medical appointment with its subscription's association.
 type RenderAppointment struct {
 	ID, Association string
+	Subscription    string
 	Denomination    *string
 	Region          string
 	Date            *string
@@ -104,7 +109,8 @@ var (
 // DocumentRenderStore reads the rows the PDF views name and writes their effects.
 type DocumentRenderStore interface {
 	MemberDocumentStore
-	DocumentTokenRows(ctx context.Context, token string) (int, error)
+	// RecordDocumentToken is HasDocumentToken: token is the token of a document of the record the route's uid names.
+	RecordDocumentToken(ctx context.Context, record RenderTokenRecord, uid, token string) (bool, error)
 	ActorAssociation(ctx context.Context, user string) (*string, error)
 	OwnedAssociations(ctx context.Context, user string) ([]string, error)
 	Subscription(ctx context.Context, id string, scope RenderScope) (*RenderSubscription, error)

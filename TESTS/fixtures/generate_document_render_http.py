@@ -24,10 +24,12 @@ document/{subscription,invoice,einvoice,compensation,template,medical-appointmen
   e-mail (send_mail_async.apply_async) when send_receipt_email is
   'true'/'True'/'1' and the payment's associate has an e-mail.
 
-Permissions: subscription IsAuthenticated; invoice and einvoice
+Permissions: subscription and template IsAuthenticated; invoice and einvoice
 IsAuthenticated | HasDocumentToken | HasBypassAuthorizationHeader;
-compensation, template and medical-appointment IsAuthenticated |
-HasDocumentToken. The template route answers 200 'Generato con successo.'
+compensation and medical-appointment IsAuthenticated | HasDocumentToken.
+?token is the token of the record's own document (the invoice's or customer
+invoice's PDF, a document of the compensation's hours, the appointment's
+document). The template route answers 200 'Generato con successo.'
 whatever the renderer said, after optional archive and subscription-file
 rows from request.data['additionalData'].
 
@@ -81,6 +83,12 @@ DOCUMENTS = {
     'shared': {'id': uid(24), 'token': uid(124), 'filename': 'shared.pdf'},
     'dup_a': {'id': uid(25), 'token': uid(125), 'filename': 'dup a.pdf'},
     'dup_b': {'id': uid(26), 'token': uid(125), 'filename': 'dup b.pdf'},
+    # Documents whose token a case sends for the record holding them.
+    'tok_invoice': {'id': uid(14), 'token': uid(130), 'filename': 'token invoice.pdf'},
+    'tok_invoice_hex': {'id': uid(15), 'token': uid(131), 'filename': 'token invoice hex.pdf'},
+    'tok_customer': {'id': uid(16), 'token': uid(132), 'filename': 'token customer invoice.pdf'},
+    'tok_hours': {'id': uid(17), 'token': uid(133), 'filename': 'token compensation.pdf'},
+    'tok_medical': {'id': uid(18), 'token': uid(134), 'filename': 'token medical.pdf'},
 }
 
 SUBSCRIPTIONS = {
@@ -99,7 +107,9 @@ SUBSCRIPTIONS = {
     'renewal': {'id': uid(28), 'association': 'own', 'associate': 'athlete', 'user': 'owner', 'group': None, 'document': None},
 }
 # Another member of the association (an athlete account without records).
-EXTRA_USERS = {'member': {'id': uid(27), 'username': 'document-render-member', 'email': 'document-render-member@example.test'}}
+EXTRA_USERS = {'member': {'id': uid(27), 'username': 'document-render-member', 'email': 'document-render-member@example.test'},
+               # The account tied to the instructor luca.
+               'coach': {'id': uid(19), 'username': 'document-render-coach', 'email': 'document-render-coach@example.test'}}
 
 # Invoices and their payments (label shared). payment None: the invoice has no payment.
 INVOICES = {
@@ -114,6 +124,8 @@ INVOICES = {
     'group': {'id': uid(48), 'association': 'own', 'deleted': False, 'group': 'own_group', 'document': None},
     'athlete': {'id': uid(49), 'association': 'own', 'deleted': False, 'group': None, 'document': None},
     'previous': {'id': uid(50), 'association': 'latin', 'deleted': False, 'group': None, 'document': 'old_invoice'},
+    'tokened': {'id': uid(51), 'association': 'own', 'deleted': False, 'group': None, 'document': 'tok_invoice'},
+    'tokened_hex': {'id': uid(52), 'association': 'own', 'deleted': False, 'group': None, 'document': 'tok_invoice_hex'},
 }
 PAYMENTS = {
     'plain': {'id': uid(60), 'invoice': 'plain', 'association': 'own', 'amount': '25.00', 'date': '2026-03-04T10:00:00+00:00',
@@ -139,6 +151,10 @@ PAYMENTS = {
                 'associate': 'athlete', 'user': 'athlete', 'instructor': None, 'deleted': False, 'group': None},
     'previous': {'id': uid(70), 'invoice': 'previous', 'association': 'latin', 'amount': '30.00', 'date': '2026-12-31T23:59:59+00:00',
                  'associate': 'mario', 'user': None, 'instructor': None, 'deleted': False, 'group': None},
+    'tokened': {'id': uid(77), 'invoice': 'tokened', 'association': 'own', 'amount': '15.00', 'date': '2026-03-12T10:00:00+00:00',
+                'associate': 'mario', 'user': None, 'instructor': None, 'deleted': False, 'group': None},
+    'tokened_hex': {'id': uid(78), 'invoice': 'tokened_hex', 'association': 'own', 'amount': '16.00', 'date': '2026-03-13T10:00:00+00:00',
+                    'associate': 'mario', 'user': None, 'instructor': None, 'deleted': False, 'group': None},
     # Compensations (instructor payments).
     'comp': {'id': uid(71), 'invoice': None, 'association': 'own', 'amount': '80.00', 'date': '2026-04-05T09:00:00+00:00',
              'associate': None, 'user': None, 'instructor': 'luca', 'deleted': False, 'group': None},
@@ -152,21 +168,25 @@ PAYMENTS = {
                      'associate': None, 'user': None, 'instructor': 'luca', 'deleted': True, 'group': None},
     'comp_foreign': {'id': uid(76), 'invoice': None, 'association': 'foreign', 'amount': '10.00', 'date': '2026-04-09T09:00:00+00:00',
                      'associate': None, 'user': None, 'instructor': 'paolo', 'deleted': False, 'group': None},
+    'comp_tokened': {'id': uid(79), 'invoice': None, 'association': 'own', 'amount': '20.00', 'date': '2026-04-10T09:00:00+00:00',
+                     'associate': None, 'user': None, 'instructor': 'luca', 'deleted': False, 'group': None},
 }
 INSTRUCTORS = {
-    'luca': {'id': uid(80), 'user': 'owner', 'first': 'Luca', 'last': 'Bianchi'},
-    'paolo': {'id': uid(81), 'user': 'foreign_owner', 'first': 'Paolo', 'last': 'Gialli'},
+    'luca': {'id': uid(80), 'user': 'owner', 'first': 'Luca', 'last': 'Bianchi', 'account': 'coach'},
+    'paolo': {'id': uid(81), 'user': 'foreign_owner', 'first': 'Paolo', 'last': 'Gialli', 'account': None},
 }
 HOURS = {
-    'h1': {'id': uid(85), 'instructor': 'luca', 'payment': 'comp', 'date': '2026-04-01'},
-    'h2': {'id': uid(86), 'instructor': 'luca', 'payment': 'comp', 'date': '2026-04-02'},
-    'h_other': {'id': uid(87), 'instructor': 'luca', 'payment': None, 'date': '2026-04-03'},
-    'h_foreign': {'id': uid(88), 'instructor': 'paolo', 'payment': 'comp_foreign', 'date': '2026-04-04'},
+    'h1': {'id': uid(85), 'instructor': 'luca', 'payment': 'comp', 'date': '2026-04-01', 'document': None},
+    'h2': {'id': uid(86), 'instructor': 'luca', 'payment': 'comp', 'date': '2026-04-02', 'document': None},
+    'h_other': {'id': uid(87), 'instructor': 'luca', 'payment': None, 'date': '2026-04-03', 'document': None},
+    'h_foreign': {'id': uid(88), 'instructor': 'paolo', 'payment': 'comp_foreign', 'date': '2026-04-04', 'document': None},
+    'h_tokened': {'id': uid(89), 'instructor': 'luca', 'payment': 'comp_tokened', 'date': '2026-04-05', 'document': 'tok_hours'},
 }
 CUSTOMER_INVOICES = {
     'plain': {'id': uid(90), 'association': 'own', 'prefix': 'FPR', 'number': 7, 'year': 2026, 'document': None},
     'nulls': {'id': uid(91), 'association': 'own', 'prefix': None, 'number': None, 'year': None, 'document': None},
     'previous': {'id': uid(92), 'association': 'foreign', 'prefix': 'B', 'number': 12, 'year': 2025, 'document': 'old_customer'},
+    'tokened': {'id': uid(93), 'association': 'own', 'prefix': 'T', 'number': 3, 'year': 2026, 'document': 'tok_customer'},
 }
 TEMPLATES = {
     'plain': {'id': uid(100), 'association': 'own', 'name': 'Modulo privacy, v1.2'},
@@ -179,6 +199,8 @@ MEDICAL = {
     'nodate': {'id': uid(112), 'subscription': 'plain', 'region': 'agonistica', 'date': None, 'document': None},
     'badregion': {'id': uid(113), 'subscription': 'plain', 'region': 'unknown-region', 'date': '2026-05-08', 'document': None},
     'previous': {'id': uid(114), 'subscription': 'foreign', 'region': 'non-agonistica', 'date': '2026-05-09', 'document': 'old_medical'},
+    'athlete': {'id': uid(115), 'subscription': 'athlete', 'region': 'agonistica', 'date': '2026-05-10', 'document': None},
+    'tokened': {'id': uid(116), 'subscription': 'plain', 'region': 'agonistica', 'date': '2026-05-11', 'document': 'tok_medical'},
 }
 
 cases = []
@@ -383,9 +405,24 @@ invoice_ok('invoice-receipt-email-without-associate', 'owner', 'noassociate', qu
 invoice_ok('invoice-previous-document', 'full_collaborator', 'previous', who='full_collaborator', query='?send_receipt_email=1', email=True)
 invoice_ok('invoice-bypass-header', 'anonymous', 'plain', who=None, headers={'Authorization': '$bypass'}, authorization='$bypass',
            query='?send_receipt_email=True', email=True)
-invoice_ok('invoice-document-token', 'anonymous', 'plain', who=None, query=f"?token={DOCUMENTS['shared']['token']}", authorization=None)
-invoice_ok('invoice-document-token-hex', 'anonymous', 'plain', who=None,
-           query=f"?token={DOCUMENTS['shared']['token'].replace('-', '').upper()}", authorization=None)
+# ?token is the token of the receipt the invoice holds.
+add('invoice-athlete-other-document-token', 'athlete', f"/document/invoice/{I('tokened')}?token={DOCUMENTS['tok_invoice']['token']}", 403,
+    SCOPED_HIDDEN)
+add('invoice-document-token-other-document', 'anonymous', f"/document/invoice/{I('plain')}?token={DOCUMENTS['shared']['token']}", 401,
+    ANONYMOUS)
+add('invoice-document-token-other-invoice', 'anonymous', f"/document/invoice/{I('plain')}?token={DOCUMENTS['tok_invoice']['token']}", 401,
+    ANONYMOUS)
+add('invoice-document-token-post', 'anonymous', f"/document/invoice/{I('athlete')}?token={DOCUMENTS['tok_invoice']['token']}", 401,
+    ANONYMOUS, method='POST', body={'send_receipt_email': 'true'})
+add('invoice-document-token-invalid-uuid', 'anonymous', f"/document/invoice/abc?token={DOCUMENTS['tok_invoice']['token']}", 401, ANONYMOUS)
+invoice_ok('invoice-document-token', 'anonymous', 'tokened', who=None, query=f"?token={DOCUMENTS['tok_invoice']['token']}",
+           authorization=None)
+# Each generation replaces the receipt: the earlier document's token no longer names the invoice.
+add('invoice-document-token-replaced', 'anonymous', f"/document/invoice/{I('tokened')}?token={DOCUMENTS['tok_invoice']['token']}", 401,
+    ANONYMOUS)
+invoice_ok('invoice-document-token-hex', 'anonymous', 'tokened_hex', who=None,
+           query=f"?token={DOCUMENTS['tok_invoice_hex']['token'].replace('-', '').upper()}&send_receipt_email=1", authorization=None,
+           email=True)
 invoice_ok('invoice-group-own', 'owner', 'group', headers={'X-Group-Id': IDS['own_group']})
 invoice_ok('invoice-scoped-athlete', 'owner', 'athlete', headers=SCOPED)
 # The receipt is generated for the association's staff and for the member it belongs to.
@@ -399,9 +436,9 @@ add('invoice-athlete-other-without-payment', 'athlete', f"/document/invoice/{I('
 add('invoice-athlete-unknown', 'athlete', f'/document/invoice/{UNKNOWN}', 404, exception('Invoice not found'))
 add('invoice-member-of-athlete', 'member', f"/document/invoice/{I('athlete')}", 403, SCOPED_HIDDEN)
 add('invoice-document-token-unknown', 'anonymous', f"/document/invoice/{I('plain')}?token={UNKNOWN}", 401, ANONYMOUS)
-add('invoice-document-token-garbage', 'anonymous', f"/document/invoice/{I('plain')}?token=garbage", 500, SERVER)
-add('invoice-document-token-empty', 'anonymous', f"/document/invoice/{I('plain')}?token=", 500, SERVER)
-add('invoice-document-token-duplicated', 'anonymous', f"/document/invoice/{I('plain')}?token={DOCUMENTS['dup_a']['token']}", 500, SERVER)
+add('invoice-document-token-garbage', 'anonymous', f"/document/invoice/{I('previous')}?token=garbage", 401, ANONYMOUS)
+add('invoice-document-token-empty', 'anonymous', f"/document/invoice/{I('previous')}?token=", 401, ANONYMOUS)
+add('invoice-document-token-duplicated', 'anonymous', f"/document/invoice/{I('plain')}?token={DOCUMENTS['dup_a']['token']}", 401, ANONYMOUS)
 add('invoice-bypass-wrong', 'anonymous', f"/document/invoice/{I('plain')}", 401, ANONYMOUS, headers={'Authorization': 'not-the-token'})
 add('invoice-unknown', 'owner', f'/document/invoice/{UNKNOWN}', 404, exception('Invoice not found'))
 add('invoice-deleted', 'owner', f"/document/invoice/{I('deleted')}", 404, exception('Invoice not found'))
@@ -435,6 +472,25 @@ for name, actor, key, who, headers, authorization in (
         ('einvoice-bypass-header', 'anonymous', 'plain', None, {'Authorization': '$bypass'}, '$bypass')):
     add(name, actor, f'/document/einvoice/{E(key)}', 200, PDF, headers=headers, renders=[render('einvoice', E(key), authorization)],
         effect=effect(customer_name(key), actor=who, links=[('customerinvoice', key)]), disposition='inline; filename=' + customer_name(key))
+add('einvoice-document-token-other-document', 'anonymous', f"/document/einvoice/{E('tokened')}?token={DOCUMENTS['shared']['token']}", 401,
+    ANONYMOUS)
+add('einvoice-document-token-other-invoice', 'anonymous', f"/document/einvoice/{E('plain')}?token={DOCUMENTS['tok_customer']['token']}",
+    401, ANONYMOUS)
+add('einvoice-document-token-garbage', 'anonymous', f"/document/einvoice/{E('tokened')}?token=garbage", 401, ANONYMOUS)
+add('einvoice-athlete-document-token', 'athlete', f"/document/einvoice/{E('tokened')}?token={DOCUMENTS['tok_customer']['token']}", 403,
+    SCOPED_HIDDEN)
+add('einvoice-document-token', 'anonymous', f"/document/einvoice/{E('tokened')}?token={DOCUMENTS['tok_customer']['token']}", 200, PDF,
+    renders=[render('einvoice', E('tokened'), None)],
+    effect=effect(customer_name('tokened'), actor=None, links=[('customerinvoice', 'tokened')]),
+    disposition='inline; filename=' + customer_name('tokened'))
+# Customer invoices are generated for the association's staff.
+add('einvoice-athlete', 'athlete', f"/document/einvoice/{E('plain')}", 403, SCOPED_HIDDEN)
+add('einvoice-athlete-post', 'athlete', f"/document/einvoice/{E('previous')}?download=1", 403, SCOPED_HIDDEN, method='POST',
+    body={'ignored': True})
+add('einvoice-athlete-unknown', 'athlete', f'/document/einvoice/{UNKNOWN}', 500,
+    exception('CustomerInvoice matching query does not exist.'))
+add('einvoice-member', 'member', f"/document/einvoice/{E('plain')}", 403, SCOPED_HIDDEN)
+add('einvoice-instructor-account', 'coach', f"/document/einvoice/{E('plain')}", 403, SCOPED_HIDDEN)
 add('einvoice-unknown', 'owner', f'/document/einvoice/{UNKNOWN}', 500, exception('CustomerInvoice matching query does not exist.'))
 add('einvoice-invalid-uuid', 'owner', '/document/einvoice/zz', 500, invalid_uuid('zz'))
 add('einvoice-renderer-error', 'owner', f"/document/einvoice/{E('plain')}", 500,
@@ -462,10 +518,27 @@ add('compensation-foreign-row', 'owner', f"/document/compensation/{C('comp_forei
     renders=[render('compensation', C('comp_foreign'))],
     effect=effect(compensation_name('comp_foreign'), actor='owner', links=[('instructorhours', 'h_foreign')]),
     disposition='inline; filename=' + compensation_name('comp_foreign'))
-add('compensation-document-token', 'anonymous', f"/document/compensation/{C('comp')}?token={DOCUMENTS['shared']['token']}", 200, PDF,
-    renders=[render('compensation', C('comp'), None)],
-    effect=effect(compensation_name('comp'), actor=None, links=[('instructorhours', 'h1'), ('instructorhours', 'h2')]),
+add('compensation-document-token', 'anonymous', f"/document/compensation/{C('comp_tokened')}?token={DOCUMENTS['tok_hours']['token']}", 200,
+    PDF, renders=[render('compensation', C('comp_tokened'), None)],
+    effect=effect(compensation_name('comp_tokened'), actor=None, links=[('instructorhours', 'h_tokened')]),
+    disposition='inline; filename=' + compensation_name('comp_tokened'))
+add('compensation-document-token-other-document', 'anonymous', f"/document/compensation/{C('comp')}?token={DOCUMENTS['shared']['token']}",
+    401, ANONYMOUS)
+add('compensation-document-token-other-compensation', 'anonymous',
+    f"/document/compensation/{C('comp_nohours')}?token={DOCUMENTS['tok_hours']['token']}", 401, ANONYMOUS)
+add('compensation-document-token-garbage', 'anonymous', f"/document/compensation/{C('comp')}?token=garbage", 401, ANONYMOUS)
+# A compensation is generated for the association's staff and for the account tied to its instructor.
+add('compensation-instructor-account', 'coach', f"/document/compensation/{C('comp')}", 200, PDF,
+    renders=[render('compensation', C('comp'))],
+    effect=effect(compensation_name('comp'), actor='coach', links=[('instructorhours', 'h1'), ('instructorhours', 'h2')]),
     disposition='inline; filename=' + compensation_name('comp'))
+add('compensation-instructor-account-other', 'coach', f"/document/compensation/{C('comp_foreign')}", 403, SCOPED_HIDDEN)
+add('compensation-instructor-account-unknown', 'coach', f'/document/compensation/{UNKNOWN}', 404, exception('Compensation not found'))
+add('compensation-athlete', 'athlete', f"/document/compensation/{C('comp')}", 403, SCOPED_HIDDEN)
+add('compensation-athlete-post', 'athlete', f"/document/compensation/{C('comp_nohours')}?download=true", 403, SCOPED_HIDDEN, method='POST')
+add('compensation-athlete-without-instructor', 'athlete', f"/document/compensation/{C('comp_noinstructor')}", 403, SCOPED_HIDDEN)
+add('compensation-athlete-deleted', 'athlete', f"/document/compensation/{C('comp_deleted')}", 404, exception('Compensation not found'))
+add('compensation-member', 'member', f"/document/compensation/{C('comp')}", 403, SCOPED_HIDDEN)
 add('compensation-bypass-header', 'anonymous', f"/document/compensation/{C('comp')}", 401, ANONYMOUS, headers={'Authorization': '$bypass'})
 add('compensation-unknown', 'owner', f'/document/compensation/{UNKNOWN}', 404, exception('Compensation not found'))
 add('compensation-deleted', 'owner', f"/document/compensation/{C('comp_deleted')}", 404, exception('Compensation not found'))
@@ -479,7 +552,7 @@ add('compensation-renderer-error', 'owner', f"/document/compensation/{C('comp')}
     renders=[render('compensation', C('comp'), answer=reply(400, 'application/json', '{"error": "bad url"}'))],
     effect=effect(compensation_name('comp'), actor='owner', celery=False))
 
-# --- document/template/<uid> (IsAuthenticated | HasDocumentToken) ------------------------------------
+# --- document/template/<uid> (IsAuthenticated) -------------------------------------------------------
 TEMPLATE_NAME = '[Message reads own] Modulo privacy  v1 2 del $today.pdf'
 DONE = {'msg': 'Generato con successo.'}
 archive = lambda folder: {'model': 'sportassociationdocumentsarchive', 'folder': folder}
@@ -527,8 +600,8 @@ add('template-invalid-uuid', 'owner', '/document/template/nope', 500, invalid_uu
 add('template-athlete', 'athlete', f"/document/template/{T('plain')}", 500, exception('User is not a sport association'))
 add('template-owner-without-association', 'owner_without_association', f"/document/template/{T('plain')}", 500,
     exception('SportAssociation matching query does not exist.'))
-add('template-document-token', 'anonymous', f"/document/template/{T('plain')}?token={DOCUMENTS['shared']['token']}", 500,
-    exception("'AnonymousUser' object has no attribute 'sport_association'"))
+add('template-document-token', 'anonymous', f"/document/template/{T('plain')}?token={DOCUMENTS['shared']['token']}", 401, ANONYMOUS)
+add('template-bypass-header', 'anonymous', f"/document/template/{T('plain')}", 401, ANONYMOUS, headers={'Authorization': '$bypass'})
 
 # --- document/medical-appointment/<uid> (IsAuthenticated | HasDocumentToken) ------------------------
 REGIONS = {'agonistica': 'Visita Agonistica', 'non-agonistica': 'Visita Non Agonistica'}
@@ -546,9 +619,24 @@ for name, actor, key, who, query, authorization in (
         ('medical-non-agonistica', 'owner', 'non', 'owner', '', '$bearer'),
         ('medical-without-date', 'owner', 'nodate', 'owner', '', '$bearer'),
         ('medical-previous-foreign', 'owner', 'previous', 'owner', '', '$bearer'),
-        ('medical-document-token', 'anonymous', 'agonistica', None, f"?token={DOCUMENTS['shared']['token']}", None)):
+        ('medical-document-token', 'anonymous', 'tokened', None, f"?token={DOCUMENTS['tok_medical']['token']}", None),
+        # An appointment's document is generated for the association's staff and for the member of its subscription.
+        ('medical-athlete-own', 'athlete', 'athlete', 'athlete', '', '$bearer')):
     add(name, actor, f'/document/medical-appointment/{M(key)}{query}', 200, PDF, renders=[render('medical-appointment', M(key), authorization)],
         effect=effect(medical_name(key), actor=who, links=[('medicalappointments', key)]), disposition='inline; filename=' + medical_name(key))
+add('medical-document-token-other-document', 'anonymous',
+    f"/document/medical-appointment/{M('agonistica')}?token={DOCUMENTS['shared']['token']}", 401, ANONYMOUS)
+add('medical-document-token-other-appointment', 'anonymous',
+    f"/document/medical-appointment/{M('agonistica')}?token={DOCUMENTS['tok_medical']['token']}", 401, ANONYMOUS)
+add('medical-document-token-garbage', 'anonymous', f"/document/medical-appointment/{M('previous')}?token=garbage", 401, ANONYMOUS)
+add('medical-bypass-header', 'anonymous', f"/document/medical-appointment/{M('agonistica')}", 401, ANONYMOUS,
+    headers={'Authorization': '$bypass'})
+add('medical-athlete-other', 'athlete', f"/document/medical-appointment/{M('agonistica')}", 403, SCOPED_HIDDEN)
+add('medical-athlete-other-post', 'athlete', f"/document/medical-appointment/{M('previous')}?download=1", 403, SCOPED_HIDDEN, method='POST')
+add('medical-athlete-other-unknown-region', 'athlete', f"/document/medical-appointment/{M('badregion')}", 403, SCOPED_HIDDEN)
+add('medical-athlete-unknown', 'athlete', f'/document/medical-appointment/{UNKNOWN}', 500,
+    exception("'NoneType' object has no attribute 'subscription'"))
+add('medical-member-of-athlete', 'member', f"/document/medical-appointment/{M('athlete')}", 403, SCOPED_HIDDEN)
 add('medical-unknown', 'owner', f'/document/medical-appointment/{UNKNOWN}', 500, exception("'NoneType' object has no attribute 'subscription'"))
 add('medical-invalid-uuid', 'owner', '/document/medical-appointment/bad', 500, invalid_uuid('bad'))
 add('medical-unknown-region', 'owner', f"/document/medical-appointment/{M('badregion')}", 500, exception("'unknown-region'"))

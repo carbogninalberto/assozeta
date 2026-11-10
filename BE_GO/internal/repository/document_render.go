@@ -44,10 +44,27 @@ func renderScopeArgs(scope domain.RenderScope, args ...any) []any {
 	return append([]any{scope.Association, effective, scope.Group}, args...)
 }
 
-func (r *DocumentRender) DocumentTokenRows(ctx context.Context, token string) (int, error) {
-	var count int
-	err := r.db.GetContext(ctx, &count, `SELECT COUNT(*) FROM (SELECT 1 FROM docmanager_document WHERE token=$1::uuid LIMIT 2) t`, token)
-	return count, err
+// documentRenderTokenRecords are the base-manager lookups of the
+// HasDocumentToken classes (table, uid column, document column).
+var documentRenderTokenRecords = map[domain.RenderTokenRecord]string{
+	{Table: "application_invoice", Key: "invoice_id", Document: "document_pdf_id"}: `SELECT EXISTS(SELECT 1 FROM docmanager_document d
+ WHERE d.token=$2::uuid AND d.document_id IN (SELECT r.document_pdf_id FROM application_invoice r WHERE r.invoice_id=$1::uuid))`,
+	{Table: "application_customerinvoice", Key: "customer_invoice_id", Document: "pdf_id"}: `SELECT EXISTS(SELECT 1 FROM docmanager_document d
+ WHERE d.token=$2::uuid AND d.document_id IN (SELECT r.pdf_id FROM application_customerinvoice r WHERE r.customer_invoice_id=$1::uuid))`,
+	{Table: "application_instructorhours", Key: "payment_id", Document: "document_id"}: `SELECT EXISTS(SELECT 1 FROM docmanager_document d
+ WHERE d.token=$2::uuid AND d.document_id IN (SELECT r.document_id FROM application_instructorhours r WHERE r.payment_id=$1::uuid))`,
+	{Table: "application_medicalappointments", Key: "medical_appointments_id", Document: "document_id"}: `SELECT EXISTS(SELECT 1 FROM docmanager_document d
+ WHERE d.token=$2::uuid AND d.document_id IN (SELECT r.document_id FROM application_medicalappointments r WHERE r.medical_appointments_id=$1::uuid))`,
+}
+
+func (r *DocumentRender) RecordDocumentToken(ctx context.Context, record domain.RenderTokenRecord, uid, token string) (bool, error) {
+	query, known := documentRenderTokenRecords[record]
+	if !known {
+		return false, nil
+	}
+	var found bool
+	err := r.db.GetContext(ctx, &found, query, uid, token)
+	return found, err
 }
 
 // ActorAssociation is SportAssociation.objects.filter(user=actor).first().
@@ -265,13 +282,15 @@ func (r *DocumentRender) FolderExists(ctx context.Context, id int64) (bool, erro
 func (r *DocumentRender) Appointment(ctx context.Context, id string) (*domain.RenderAppointment, error) {
 	var row struct {
 		ID           string  `db:"id"`
+		Subscription string  `db:"subscription"`
 		Association  string  `db:"association"`
 		Denomination *string `db:"denomination"`
 		Region       string  `db:"region"`
 		Date         *string `db:"date"`
 		Document     *string `db:"document"`
 	}
-	err := r.db.GetContext(ctx, &row, `SELECT m.medical_appointments_id::text AS id, s.sport_association_id::text AS association, sa.denomination,
+	err := r.db.GetContext(ctx, &row, `SELECT m.medical_appointments_id::text AS id, m.subscription_id::text AS subscription,
+ s.sport_association_id::text AS association, sa.denomination,
  m.region, to_char(m.date, 'YYYY-MM-DD') AS date, m.document_id::text AS document
  FROM application_medicalappointments m JOIN application_subscription s ON s.subscription_id=m.subscription_id
  JOIN application_sportassociation sa ON sa.sport_association_id=s.sport_association_id
@@ -282,7 +301,7 @@ func (r *DocumentRender) Appointment(ctx context.Context, id string) (*domain.Re
 	if err != nil {
 		return nil, err
 	}
-	return &domain.RenderAppointment{ID: row.ID, Association: row.Association, Denomination: row.Denomination, Region: row.Region,
+	return &domain.RenderAppointment{ID: row.ID, Subscription: row.Subscription, Association: row.Association, Denomination: row.Denomination, Region: row.Region,
 		Date: row.Date, Document: row.Document}, nil
 }
 

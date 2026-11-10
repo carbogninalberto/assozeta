@@ -60,7 +60,7 @@ func (h *DocumentRenderHandler) serve(c echo.Context, route, operation, name str
 	}
 	query := parseReferenceForm(request.URL.RawQuery)
 	authorization := requestAuthorization(request)
-	if err := h.renders.Authorize(request.Context(), *identity, route, query, authorization); err != nil {
+	if err := h.renders.Authorize(request.Context(), *identity, route, c.Param("uid"), query, authorization); err != nil {
 		if errors.Is(err, service.ErrDocumentRenderUnauthenticated) {
 			c.Response().Header().Set("WWW-Authenticate", `Bearer realm="api"`)
 			return restError(c, &restInputError{Status: 401, Detail: restText(request, "credentials")})

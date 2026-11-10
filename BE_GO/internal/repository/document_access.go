@@ -54,6 +54,14 @@ func (r MemberDocuments) MemberInvoice(ctx context.Context, user, invoice string
 	return r.exists(ctx, memberRecordsCTE+` SELECT EXISTS(SELECT 1 FROM member_invoices WHERE invoice_id=$2::uuid)`, user, invoice)
 }
 
+// MemberCompensation is member_compensations: the payment's instructor is tied
+// to the account (Instructor.associated_user_id).
+func (r MemberDocuments) MemberCompensation(ctx context.Context, user, payment string) (bool, error) {
+	return r.exists(ctx, `SELECT EXISTS(SELECT 1 FROM application_payment p
+  JOIN application_instructor i ON i.instructor_id=p.instructor_id
+  WHERE p.payment_id=$2::uuid AND i.associated_user_id=$1::uuid)`, user, payment)
+}
+
 // MemberDocument is member_documents: the PDF, medical certificate document
 // and attached files of the member's subscriptions, the certificates of the
 // user and the PDFs of the member's invoices.

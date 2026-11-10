@@ -47,7 +47,7 @@ func (s *InvoiceViews) Render(ctx context.Context, identity domain.ResolvedIdent
 	case ViewInvoice:
 		reply, err = s.invoice(ctx, identity, request)
 	case ViewEinvoice:
-		reply, err = s.einvoice(ctx, request)
+		reply, err = s.einvoice(ctx, identity, request)
 	default:
 		err = ErrDocumentViewServer
 	}
