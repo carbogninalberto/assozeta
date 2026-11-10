@@ -166,7 +166,7 @@ deleted (paid and soft-deleted ones stay).
 Go: `dto.ValidateCourseEvent(value, taken)` with `CourseEventTaken` (`InstallmentIDTaken` in the course writes
 transaction), `courseWritesDMYAny` in `ParseDMYDate`, `courseWritesBody`.
 
-Evidence: 137 cases. RED: documented refusals (v2-refusals.md, course-writes rows); `sweep-restcourses-red-r1` is the previous Go tree against the new cases. GREEN `sweep-restcourses-green-r1` on native
+Evidence: 137 cases. RED: documented refusals (v2-refusals.md, course-writes rows); `sweep-restcourses-red-r1` is the previous Go tree against the new cases. GREEN `sweep-restcourses-green-r2` on native
 Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `restcourses-mutation-r1` (the installment id lookup's result
 ignored) CAUGHT. Re-run green in the same sweep: course-enrolment, course-subscriptions, course-overview,
 subscription-renew, subscription-writes, personas-writes and the router families that share the event and date readers.

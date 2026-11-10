@@ -208,6 +208,6 @@ PDF export of the list (13 more cases, 145 in all):
 
 Go: `planEvents` uses `dto.PythonIterate`; `courseSubscriptionExportLessons` writes numbers with `dto.PythonStr`.
 
-Evidence: 150 cases. RED: documented refusals (v2-refusals.md, course-subscriptions rows); `sweep-restcourses-red-r1` is the previous Go tree against the new cases. GREEN `sweep-restcourses-green-r1` on
+Evidence: 150 cases. RED: documented refusals (v2-refusals.md, course-subscriptions rows); `sweep-restcourses-red-r1` is the previous Go tree against the new cases. GREEN `sweep-restcourses-green-r2` on
 native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `restcourses-mutation-r1` (an object or text read as an
 empty selection) CAUGHT.
