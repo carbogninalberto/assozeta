@@ -97,8 +97,26 @@ HOURS = {
     'c_paid': hour('comp', '2026-09-13', '1.00', '3.00', paid=True),
     'c_linked': hour('comp', '2026-09-13', '1.00', '9.00', payment='linked'),
     'c_group': hour('comp', '2026-09-14', '2.00', '20.00'),
+    'c_upper': hour('comp', '2026-09-17', '3.00', '30.00'),
     'c_zero_pct': hour('comp', '2026-09-15', '1.00', '7.00', compensation_type='percentage', percentage_billing='0.00',
                        calculation_data=[{'amount': '7', 'full_athlete_name': 'Sara', 'course': 'Corso A'}]),
+    # Calculation amounts as Decimal reads their text: non-finite values, products of more than 28 digits.
+    'c_special': hour('comp', '2026-09-18', '1.00', '4.00', compensation_type='percentage', percentage_billing='50.00',
+                      calculation_data=[{'amount': 'Infinity', 'full_athlete_name': 'A', 'course': 'C'},
+                                        {'amount': '-inf', 'full_athlete_name': 'B', 'course': 'C'},
+                                        {'amount': 'NaN12', 'full_athlete_name': 'D', 'course': 'C'},
+                                        {'amount': '12345678901234567890123456789', 'full_athlete_name': 'E', 'course': 'C'},
+                                        {'amount': '12345678901234567890123456791', 'full_athlete_name': 'F', 'course': 'C'},
+                                        {'amount': '99999999999999999999999999999', 'full_athlete_name': 'G', 'course': 'C'},
+                                        {'amount': '1E+999999', 'full_athlete_name': 'H', 'course': 'C'}]),
+    'c_nan_plain': hour('comp', '2026-09-19', '1.00', '6.00', compensation_type='percentage', percentage_billing='0.00',
+                        calculation_data=[{'amount': 'sNaN7', 'full_athlete_name': 'A', 'course': 'C'},
+                                          {'amount': '-NaN', 'full_athlete_name': 'B', 'course': 'C'}]),
+    'c_snan': hour('comp', '2026-09-20', '1.00', '5.00', compensation_type='percentage', percentage_billing='50.00',
+                   calculation_data=[{'amount': '1', 'full_athlete_name': 'A', 'course': 'C'},
+                                     {'amount': 'sNaN', 'full_athlete_name': 'B', 'course': 'C'}]),
+    'c_overflow': hour('comp', '2026-09-21', '1.00', '5.00', compensation_type='percentage', percentage_billing='50.00',
+                       calculation_data=[{'amount': '1E+1000001', 'full_athlete_name': 'A', 'course': 'C'}]),
     'c_bad': hour('comp', '2026-09-16', '1.00', '5.00', compensation_type='percentage', calculation_data=None),
     'r_a': hour('removable', '2026-09-01', '1.00', '1.00'),
     'r_b': hour('removable', '2026-09-02', '2.00', '2.00', notes='due'),
@@ -155,7 +173,7 @@ told = lambda who, title=None, **extra: {'start': '2026-09-01', 'end': '2026-09-
                                          'extendedProps': {'instructor': who, **extra.pop('props', {})},
                                          **({} if title is None else {'title': title}), **extra}
 # AttendanceDay.associated_event is a UUID: report events carry UUID event ids.
-EV = {name: next(rids) for name in ('r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'missing')}
+EV = {name: next(rids) for name in ('r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11', 'r12', 'r13', 'r14', 'r15', 'missing')}
 REGISTRIES['reg_report'] = {'id': next(rids), 'course': 'ca', 'status': 2, 'events': [
     told([one('plain'), one('full')], 'Doppia', event_id=EV['r1'], props={'description': 'Descrizione & <b>'}),
     told(one('comp'), 'Numero', event_id=EV['r2'], props={'description': 42}),
@@ -167,6 +185,11 @@ REGISTRIES['reg_report'] = {'id': next(rids), 'course': 'ca', 'status': 2, 'even
     told(one('full'), event_id=EV['r8']),
     told(one('full'), 'Malformato', event_id=EV['r9']),
     told(one('full'), 'Vuota', event_id=EV['r10'], props={'description': 0}),
+    told(one('full'), 'Id numerici', event_id=EV['r11']),
+    told(one('full'), 'Id decimale', event_id=EV['r12']),
+    told(one('full'), 'Id lista', event_id=EV['r13']),
+    told(one('full'), 'Id enorme', event_id=EV['r14']),
+    told(one('full'), 'Id negativo', event_id=EV['r15']),
 ]}
 PEOPLE = {'mario': {'id': next(rids), 'first_name': 'Mario', 'last_name': 'Rossi'},
           'luisa': {'id': next(rids), 'first_name': 'Luisa', 'last_name': None},
@@ -198,6 +221,13 @@ DAYS = {
     'err6': attendance('reg_report', 'r6', '2026-10-05T06:00:00Z'),
     'err7': attendance('reg_report', 'r7', '2026-10-06T06:00:00Z'),
     'err8': attendance('reg_report', 'r8', '2026-10-07T06:00:00Z'),
+    # Ids of older calendars: integers and booleans read as UUID(int=...) and name no athlete; the other types fail the lookup.
+    'ids_mixed': attendance('reg_report', 'r11', '2026-10-15T06:00:00Z', None, [{'course_subscription_id': 5}, {'course_subscription_id': True},
+                                                                              CS('cs_mario')], [{'course_subscription_id': 0}]),
+    'err_float': attendance('reg_report', 'r12', '2026-10-16T06:00:00Z', None, [{'course_subscription_id': 1.5}]),
+    'err_list': attendance('reg_report', 'r13', '2026-10-17T06:00:00Z', None, [{'course_subscription_id': [1]}]),
+    'err_huge': attendance('reg_report', 'r14', '2026-10-18T06:00:00Z', None, [{'course_subscription_id': 2 ** 128}]),
+    'err_negative': attendance('reg_report', 'r15', '2026-10-19T06:00:00Z', None, [{'course_subscription_id': -1}]),
     'err9': attendance('reg_report', 'r9', '2026-10-08T06:00:00Z', None, [{'course_subscription_id': 'non-un-uuid'}]),
     'err_b2': attendance('reg_b', 'missing', '2026-10-12T06:00:00Z'),
     'err_e14': attendance('reg_a', 'missing', '2026-10-13T06:00:00Z'),
@@ -442,6 +472,11 @@ add('report-full-collaborator', 'full_collaborator', RQ('14/09/2026', '30/09/202
 add('report-admin-impersonating-owner', 'admin', RQ('14/09/2026', '30/09/2026'), 200, MAIN, headers=IMPERSONATED)
 add('report-separators', 'owner', RQ('14-09-2026', '30.09.2026'), 200, MAIN)
 add('report-unpadded', 'owner', RQ(' 14/9/2026', '30/9/2026 '), 200, MAIN)
+# dateutil reads other spellings of the same days (dayfirst swaps a month above 12).
+for name, start, end in (('iso', '2026-09-14', '2026-09-30'), ('month-names', '14 Sep 2026', 'September 30, 2026'),
+                         ('two-digit-years', '14/09/26', '30/09/26'), ('times', '14/09/2026 10:30', '30/09/2026 23:59:59'),
+                         ('swapped-month', '09/14/2026', '30/09/2026')):
+    add(f'report-spelling-{name}', 'owner', RQ(start, end), 200, MAIN)
 add('report-rome-midnight', 'owner', RQ('15/09/2026', '15/09/2026'), 200, report(OWN, '15/09/2026', '15/09/2026'))
 add('report-day-before', 'owner', RQ('14/09/2026', '14/09/2026'), 200, report(OWN, '14/09/2026', '14/09/2026'))
 add('report-one-day-uppercase-id', 'owner', RQ('19/09/2026', '19/09/2026'), 200, report(OWN, '19/09/2026', '19/09/2026'))
@@ -450,6 +485,9 @@ add('report-inverted-period', 'owner', RQ('30/09/2026', '14/09/2026'), 200, repo
 add('report-foreign-owner-empty', 'foreign_owner', RQ('01/11/2026', '30/11/2026'), 200, report(FOREIGN, '01/11/2026', '30/11/2026'))
 for name, day in (('instructor-text', '05/10/2026'), ('instructor-list-text', '06/10/2026'), ('event-without-title', '07/10/2026'),
                   ('attendee-malformed-id', '08/10/2026'), ('events-text-before-match', '13/10/2026'), ('events-object', '14/10/2026')):
+    add(f'report-{name}-server-error', 'owner', RQ(day, day), 500, SERVER)
+add('report-numeric-attendee-ids', 'owner', RQ('15/10/2026', '15/10/2026'), 200, report(OWN, '15/10/2026', '15/10/2026'))
+for name, day in (('float-id', '16/10/2026'), ('list-id', '17/10/2026'), ('huge-id', '18/10/2026'), ('negative-id', '19/10/2026')):
     add(f'report-{name}-server-error', 'owner', RQ(day, day), 500, SERVER)
 add('report-unmatched-event', 'owner', RQ('12/10/2026', '12/10/2026'), 200, report(OWN, '12/10/2026', '12/10/2026'))
 add('report-foreign-owner', 'foreign_owner', RQ('01/09/2026', '30/09/2026'), 200, report(FOREIGN, '01/09/2026', '30/09/2026'))
@@ -644,6 +682,23 @@ add('comp-group-now', 'owner', COMP(), 200, CREATED_COMP, method='POST', headers
     effect=effect('owner', rows={'Payment': {'$new': payment_columns('27.00', '$now', notes_for(GROUPED), IDS['own_group'])},
                                  'InstructorHours': {label: {'payment_id': '$new'} for label in GROUPED}},
                   audit=[payment_created(), linked('c_group'), linked('c_zero_pct'), payment_notes({'notes': ['None', notes_for(GROUPED)]})]))
+# The header is read as a uuid in any spelling the uuid module accepts; the payment keeps the text as sent in memory.
+UPPER = IDS['own_group'].upper()
+add('comp-group-upper-case', 'owner', COMP(), 200, CREATED_COMP, method='POST', headers={'X-Group-Id': UPPER}, body={'hours': [H('c_upper')]},
+    effect=effect('owner', rows={'Payment': {'$new': payment_columns('30.00', '$now', notes_for(['c_upper']), IDS['own_group'])},
+                                 'InstructorHours': {'c_upper': {'payment_id': '$new'}}},
+                  audit=[payment_created({'group': UPPER}), linked('c_upper'),
+                         payment_notes({'notes': ['None', notes_for(['c_upper'])], 'group': [IDS['own_group'], UPPER]})]))
+SPECIAL = ['c_special', 'c_nan_plain']
+add('comp-special-decimals', 'owner', COMP(), 200, CREATED_COMP, method='POST', body={'hours': [H('c_special'), H('c_nan_plain')]},
+    effect=effect('owner', rows={'Payment': {'$new': payment_columns('10.00', '$now', notes_for(SPECIAL))},
+                                 'InstructorHours': {label: {'payment_id': '$new'} for label in SPECIAL}},
+                  audit=[payment_created(), linked('c_special'), linked('c_nan_plain'), payment_notes({'notes': ['None', notes_for(SPECIAL)]})]))
+# A signalling NaN or an exponent above the limit raises while the notes are composed: the saved work stays.
+for label, name in (('c_snan', 'signalling-nan'), ('c_overflow', 'overflow')):
+    add(f'comp-{name}-keeps-saved-work', 'owner', COMP(), 500, SERVER, method='POST', body={'hours': [H(label)]},
+        effect=effect('owner', rows={'Payment': {'$new': payment_columns('5.00', '$now', None)}, 'InstructorHours': {label: {'payment_id': '$new'}}},
+                      audit=[payment_created(), linked(label)]))
 add('comp-bad-calculation-keeps-saved-work', 'owner', COMP(), 500, SERVER, method='POST', body={'hours': [H('c_bad')], 'payment_date': 123},
     effect=effect('owner', rows={'Payment': {'$new': payment_columns('5.00', '$now', None)}, 'InstructorHours': {'c_bad': {'payment_id': '$new'}}},
                   audit=[payment_created(), linked('c_bad')]))

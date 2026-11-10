@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"regexp"
+	"math/big"
 	"sort"
 	"strconv"
 	"strings"
@@ -13,6 +13,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pydateutil"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 	"github.com/google/uuid"
@@ -42,27 +43,21 @@ var instructorReportSchema = []struct{ key, label string }{{"first_name", "Nome"
 	{"title", "Titolo"}, {"description", "Descrizione"}, {"date", "Data"}, {"attendees_count", "Numero di partecipanti"},
 	{"attendees", "Partecipanti"}, {"expected_absences", "Assenti previsti"}}
 
-var instructorReportDate = regexp.MustCompile(`^(\d{1,2})([/.\-])(\d{1,2})([/.\-])(\d{4})$`)
-
-// instructorReportParse is dateutil's parser.parse(text, dayfirst=True) for
-// D/M/YYYY (separators '/', '-' or '.', surrounding whitespace): a day-first
-// date that does not exist raises (500). Other spellings are not ported.
-func instructorReportParse(text string) (time.Time, error) {
-	match := instructorReportDate.FindStringSubmatch(strings.Trim(text, " \t\n\r\v\f"))
-	if match == nil || match[2] != match[4] {
+// instructorReportParse is dateutil's parser.parse(text, dayfirst=True): the date of the parsed value. A value that raises is
+// the 500 page; a zone-aware value (the view keeps its zone) and the texts the parser port does not read are not ported.
+func instructorReportParse(text string, now time.Time) (time.Time, error) {
+	parsed, err := pydateutil.ParseDayFirst(text, now, time.UTC)
+	if err != nil {
+		var raised *pydateutil.Error
+		if errors.As(err, &raised) {
+			return time.Time{}, ErrInstructorReportServer
+		}
 		return time.Time{}, ErrInstructorReportNotPorted
 	}
-	day, _ := strconv.Atoi(match[1])
-	month, _ := strconv.Atoi(match[3])
-	year, _ := strconv.Atoi(match[5])
-	if month > 12 || day > 31 || day == 0 || month == 0 || year == 0 {
-		return time.Time{}, ErrInstructorReportNotPorted // dateutil may swap or reject: not ported
+	if parsed.HasTZ || parsed.Year < 1000 {
+		return time.Time{}, ErrInstructorReportNotPorted
 	}
-	value := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
-	if value.Day() != day {
-		return time.Time{}, ErrInstructorReportServer // ParserError: day is out of range for month
-	}
-	return value, nil
+	return time.Date(parsed.Year, time.Month(parsed.Month), parsed.Day, 0, 0, 0, 0, time.UTC), nil
 }
 
 type instructorReportRow struct {
@@ -91,11 +86,11 @@ func (s *InstructorReport) Report(ctx context.Context, identity domain.ResolvedI
 	if start == nil || end == nil {
 		return nil, InstructorReportMissingDates
 	}
-	from, err := instructorReportParse(*start)
+	from, err := instructorReportParse(*start, s.now())
 	if err != nil {
 		return nil, err
 	}
-	to, err := instructorReportParse(*end)
+	to, err := instructorReportParse(*end, s.now())
 	if err != nil {
 		return nil, err
 	}
@@ -377,8 +372,16 @@ func instructorReportSubscriptions(text *string, ids map[string]bool) ([]any, er
 				return nil, err
 			}
 			ids[typed] = true
+		case bool:
+			// UUID(int=True): a UUID no row is labelled by (the lookup is by str()).
+		case json.Number:
+			// UUIDField.to_python reads an int as UUID(int=value); a float, or an int outside 0..2**128-1, is a ValidationError.
+			number, isInt := new(big.Int).SetString(string(typed), 10)
+			if !isInt || number.Sign() < 0 || number.BitLen() > 128 {
+				return nil, ErrInstructorReportServer
+			}
 		default:
-			return nil, ErrInstructorReportNotPorted // UUIDField.to_python of a number, bool, list or object
+			return nil, ErrInstructorReportServer // set.add of a list or object: unhashable
 		}
 		out = append(out, id)
 	}

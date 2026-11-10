@@ -135,7 +135,6 @@ func (s *InstructorHoursService) List(ctx context.Context, identity domain.Resol
 	// Refuse, before any write, the rows whose loop would delete a document
 	// Django's collector would cascade from (and compensation prints when no
 	// printer is configured).
-	orphans := map[string]bool{}
 	for _, row := range rows {
 		switch {
 		case row.PaymentID != nil && row.DocumentID == nil:
@@ -143,10 +142,6 @@ func (s *InstructorHoursService) List(ctx context.Context, identity domain.Resol
 				return nil, domain.ErrInstructorHoursNotPorted
 			}
 		case row.PaymentID == nil && row.DocumentID != nil:
-			if orphans[*row.DocumentID] {
-				return nil, domain.ErrInstructorHoursNotPorted
-			}
-			orphans[*row.DocumentID] = true
 			deletable, err := tx.DocumentDeletable(ctx, *row.DocumentID)
 			if err != nil {
 				return nil, err
@@ -163,6 +158,7 @@ func (s *InstructorHoursService) List(ctx context.Context, identity domain.Resol
 	data := make([]map[string]any, 0, len(rows))
 	ids := make([]string, 0, len(rows))
 	prints := []string{}
+	deleted := map[string]bool{}
 	for index := range rows {
 		row := &rows[index]
 		switch {
@@ -180,6 +176,20 @@ func (s *InstructorHoursService) List(ctx context.Context, identity domain.Resol
 			}
 			row.Paid = true
 		case row.PaymentID == nil && row.DocumentID != nil:
+			if deleted[*row.DocumentID] {
+				// instructor.document loads the document the first row's delete removed: DoesNotExist (500) after the
+				// earlier rows' writes and prints.
+				if err := tx.Commit(); err != nil {
+					return nil, err
+				}
+				for _, payment := range prints {
+					if err := s.printer.Compensation(ctx, payment, authorization); err != nil {
+						return nil, err
+					}
+				}
+				return nil, errInstructorHoursServer
+			}
+			deleted[*row.DocumentID] = true
 			// The response keeps the in-memory document id and token.
 			changes, err := tx.DeleteDocument(ctx, *row.DocumentID)
 			if err != nil {

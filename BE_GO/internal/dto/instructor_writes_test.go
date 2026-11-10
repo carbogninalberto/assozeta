@@ -15,6 +15,15 @@ func TestInstructorDecimalMatchesPython(t *testing.T) {
 		{"1E+5", "1.00", "1E+5", "0.01", "1E+3"},
 		{".5", "25.00", "0.5", "0.25", "0.125"},
 		{"5.", "-5.00", "5", "-0.05", "-0.25"},
+		// More than 28 digits: rounded half even.
+		{"12345678901234567890123456789", "50.00", "12345678901234567890123456789", "0.50", "6172839450617283945061728394"},
+		{"12345678901234567890123456788", "50.00", "12345678901234567890123456788", "0.50", "6172839450617283945061728394"},
+		{"12345678901234567890123456791", "50.00", "12345678901234567890123456791", "0.50", "6172839450617283945061728396"},
+		{"12345678901234567890123456789", "99.99", "12345678901234567890123456789", "0.9999", "1.234444433334444443333444444E+28"},
+		{"99999999999999999999999999999", "50.00", "99999999999999999999999999999", "0.50", "5.000000000000000000000000000E+28"},
+		{"Infinity", "50.00", "Infinity", "0.50", "Infinity"},
+		{"-inf", "50.00", "-Infinity", "0.50", "-Infinity"},
+		{"-NaN007", "50.00", "-NaN7", "0.50", "-NaN7"},
 	}
 	for _, c := range cases {
 		amount, outcome := ParseInstructorDecimal(c.amount)
@@ -23,13 +32,13 @@ func TestInstructorDecimalMatchesPython(t *testing.T) {
 			t.Fatalf("%q/%q: outcome %v %v", c.amount, c.percentage, outcome, percentageOutcome)
 		}
 		quotient := percentage.PercentOf()
-		product, ok := amount.Times(quotient)
-		if !ok || amount.String() != c.text || quotient.String() != c.quotient || product.String() != c.product {
+		product, result := amount.Times(quotient)
+		if result != TimesOK || amount.String() != c.text || quotient.String() != c.quotient || product.String() != c.product {
 			t.Fatalf("%q*%q/100: %s %s %s", c.amount, c.percentage, amount, quotient, product)
 		}
 	}
-	for text, want := range map[string]DecimalOutcome{"10,5": DecimalInvalid, "True": DecimalInvalid, "None": DecimalInvalid, "NaN": DecimalNotPorted,
-		"-Infinity": DecimalNotPorted} {
+	for text, want := range map[string]DecimalOutcome{"10,5": DecimalInvalid, "True": DecimalInvalid, "None": DecimalInvalid, "NaN": DecimalFinite,
+		"-Infinity": DecimalFinite, "NaN" + "1234567890123456789012345678": DecimalNotPorted} {
 		if _, outcome := ParseInstructorDecimal(text); outcome != want {
 			t.Fatalf("%q: %v, want %v", text, outcome, want)
 		}

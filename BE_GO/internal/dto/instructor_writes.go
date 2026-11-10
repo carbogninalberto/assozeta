@@ -324,7 +324,17 @@ type InstructorDecimal struct {
 	Negative    bool
 	Coefficient *big.Int
 	Exponent    int
+	// Special is "inf", "nan" or "snan" (Coefficient is then nil); Payload is a NaN's diagnostic digits.
+	Special string
+	Payload string
 }
+
+// Python's default decimal context: 28 digits, exponents from Emin to Emax.
+const (
+	instructorDecimalPrecision = 28
+	instructorDecimalEmax      = 999999
+	instructorDecimalEtiny     = -1000026
+)
 
 // DecimalOutcome classifies Decimal(text).
 type DecimalOutcome int
@@ -346,15 +356,24 @@ func ParseInstructorDecimal(text string) (InstructorDecimal, DecimalOutcome) {
 	case "":
 		return InstructorDecimal{}, DecimalInvalid
 	case "finite":
+	case "inf":
+		return InstructorDecimal{Negative: parsed.Negative, Special: "inf"}, DecimalFinite
 	default:
-		return InstructorDecimal{}, DecimalNotPorted
+		if len(parsed.Payload) > instructorDecimalPrecision-1 {
+			return InstructorDecimal{}, DecimalNotPorted
+		}
+		special := "nan"
+		if parsed.Signaling {
+			special = "snan"
+		}
+		return InstructorDecimal{Negative: parsed.Negative, Special: special, Payload: parsed.Payload}, DecimalFinite
 	}
 	value := strings.TrimPrefix(parsed.Text, "-")
 	mantissa, exponentText, scientific := strings.Cut(value, "E")
 	exponent := 0
 	if scientific {
 		number, err := strconv.Atoi(exponentText)
-		if err != nil || number > 100000 || number < -100000 {
+		if err != nil || number > 999999999 || number < -999999999 {
 			return InstructorDecimal{}, DecimalNotPorted
 		}
 		exponent = number
@@ -369,6 +388,16 @@ func ParseInstructorDecimal(text string) (InstructorDecimal, DecimalOutcome) {
 
 // String is Decimal.__str__ (to-scientific-string).
 func (d InstructorDecimal) String() string {
+	switch d.Special {
+	case "inf":
+		return map[bool]string{false: "Infinity", true: "-Infinity"}[d.Negative]
+	case "nan", "snan":
+		out := map[string]string{"nan": "NaN", "snan": "sNaN"}[d.Special] + d.Payload
+		if d.Negative {
+			out = "-" + out
+		}
+		return out
+	}
 	digits := d.Coefficient.String()
 	adjusted := d.Exponent + len(digits) - 1
 	var out string
@@ -406,7 +435,7 @@ func abs(value int) int {
 }
 
 // IsZero reports a zero coefficient (a falsy Decimal).
-func (d InstructorDecimal) IsZero() bool { return d.Coefficient.Sign() == 0 }
+func (d InstructorDecimal) IsZero() bool { return d.Special == "" && d.Coefficient.Sign() == 0 }
 
 // PercentOf is d / 100: the exact quotient at the exponent closest to the
 // ideal one (d's exponent).
@@ -426,11 +455,65 @@ func (d InstructorDecimal) PercentOf() InstructorDecimal {
 	return InstructorDecimal{Negative: d.Negative, Coefficient: coefficient, Exponent: exponent}
 }
 
-// Times is d * other; ok=false is a product the 28-digit context would round.
-func (d InstructorDecimal) Times(other InstructorDecimal) (InstructorDecimal, bool) {
-	coefficient := new(big.Int).Mul(d.Coefficient, other.Coefficient)
-	if len(coefficient.String()) > 28 {
-		return InstructorDecimal{}, false
+// TimesResult classifies d * other in Python's default context.
+type TimesResult int
+
+const (
+	TimesOK TimesResult = iota
+	// TimesInvalid is decimal.InvalidOperation (trapped: an exception).
+	TimesInvalid
+	// TimesOverflow is decimal.Overflow (trapped: an exception).
+	TimesOverflow
+	// TimesNotPorted is a result in the subnormal range, which the port does not reproduce.
+	TimesNotPorted
+)
+
+// Times is d * other rounded to 28 digits half even. other is a finite non-zero value (the percentage scaled by 1/100).
+func (d InstructorDecimal) Times(other InstructorDecimal) (InstructorDecimal, TimesResult) {
+	switch d.Special {
+	case "snan":
+		return InstructorDecimal{}, TimesInvalid
+	case "nan":
+		return d, TimesOK
+	case "inf":
+		if other.Special == "" && other.Coefficient.Sign() == 0 {
+			return InstructorDecimal{}, TimesInvalid
+		}
+		return InstructorDecimal{Negative: d.Negative != other.Negative, Special: "inf"}, TimesOK
 	}
-	return InstructorDecimal{Negative: d.Negative != other.Negative, Coefficient: coefficient, Exponent: d.Exponent + other.Exponent}, true
+	coefficient := new(big.Int).Mul(d.Coefficient, other.Coefficient)
+	exponent := d.Exponent + other.Exponent
+	if digits := len(coefficient.String()); digits > instructorDecimalPrecision {
+		drop := digits - instructorDecimalPrecision
+		unit := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(drop)), nil)
+		quotient, rest := new(big.Int).QuoRem(coefficient, unit, new(big.Int))
+		half := new(big.Int).Quo(unit, big.NewInt(2))
+		switch rest.Cmp(half) {
+		case 1:
+			quotient.Add(quotient, big.NewInt(1))
+		case 0:
+			if quotient.Bit(0) == 1 {
+				quotient.Add(quotient, big.NewInt(1))
+			}
+		}
+		coefficient, exponent = quotient, exponent+drop
+		if len(coefficient.String()) > instructorDecimalPrecision {
+			coefficient.Quo(coefficient, big.NewInt(10))
+			exponent++
+		}
+	}
+	if coefficient.Sign() == 0 {
+		if exponent > instructorDecimalEmax || exponent < instructorDecimalEtiny {
+			return InstructorDecimal{}, TimesNotPorted
+		}
+	} else {
+		adjusted := exponent + len(coefficient.String()) - 1
+		if adjusted > instructorDecimalEmax {
+			return InstructorDecimal{}, TimesOverflow
+		}
+		if exponent < instructorDecimalEtiny {
+			return InstructorDecimal{}, TimesNotPorted
+		}
+	}
+	return InstructorDecimal{Negative: d.Negative != other.Negative, Coefficient: coefficient, Exponent: exponent}, TimesOK
 }
