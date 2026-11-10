@@ -9,9 +9,26 @@ case's auditlog create entries), the authored relations are deleted or
 changed, nothing else moves, and the authored auditlog entries are appended in
 order (relation deletes rendered from the rows captured before the request)
 with their index rows.
+
+service_context owns a private MinIO behind subscription-sign's recording
+proxy (it answers the object ACL calls itself: MinIO supports only the private
+canned ACL). The serializer reads the bucket and AWS_LOCATION that core.settings
+took from the environment, so the default storage keeps both and only its
+endpoint and credentials point at the proxy. Every case is checked against the
+recorded storage requests (HeadObject 404, PutObject, PutObjectAcl public-read
+on '<AWS_LOCATION>/associates/<folder>/picture_<repr(timestamp)>.jpg' with the
+timestamp inside the request window), the stored bytes and metadata, and the
+picture URL of the response and of the saved row; the objects are removed once
+verified. Cases without an upload must send no storage request.
 """
+from contextlib import contextmanager
 from datetime import date, datetime, timedelta, timezone
+import base64
 import ipaddress
+import json
+import os
+import re
+import time
 
 from TESTS.contracts import test_personas_writes_http as contract
 from TESTS.adapters.django import carnet_replace_http as replace
@@ -20,6 +37,8 @@ from TESTS.adapters.django.workflow_writes_http import keyed
 
 SOURCES = ('TESTS/fixtures/personas_writes_http.json', 'TESTS/contracts/test_personas_writes_http.py',
            'TESTS/adapters/django/personas_writes_http.py', 'TESTS/adapters/django/carnet_replace_http.py',
+           'TESTS/adapters/django/subscription_sign_http.py', 'TESTS/adapters/django/instance_logo.py',
+           'TESTS/adapters/django/s3_objects.py',
            'BE/application/views/personas_views.py', 'BE/application/serializers/personas_serializers.py',
            'BE/application/models/user_models.py', 'BE/application/models/subscriptions_models.py', 'BE/application/mixin.py',
            'BE/application/tenant_scope.py', 'BE/application/audit_resolvers.py', 'BE/application/signals.py',
@@ -32,6 +51,81 @@ FIELDS = ('picture_path', 'first_name', 'last_name', 'sex', 'tax_code', 'born_ci
           'phone_3_label', 'phone_4_label', 'is_minor', 'disabled', 'draft', 'deleted', 'family_role', 'id_number', 'migrated', 'notes')
 COLUMNS = {'user': 'user_id', 'association': 'sport_association_id', 'group': 'group_id', 'family': 'family_id',
            'created': 'creation_date', 'id': 'associate_id'}
+
+
+STORAGE = {}
+
+
+@contextmanager
+def service_context(report, log):
+    import boto3
+    from botocore.config import Config
+    import core.settings as module_settings
+    from django.test.utils import override_settings
+    from TESTS.adapters.django.instance_logo import minio
+    from TESTS.adapters.django.subscription_sign_http import RecordingProxy
+    source = contract.load_source()
+    bucket, location = module_settings.AWS_STORAGE_BUCKET_NAME, module_settings.AWS_LOCATION
+    contract.require(bucket and location and '/' not in location, 'storage.settings')
+    with minio(log, dict(os.environ), report) as (endpoint, access, secret):
+        client = boto3.client('s3', endpoint_url=endpoint, aws_access_key_id=access, aws_secret_access_key=secret,
+                              region_name='us-east-1',
+                              config=Config(signature_version='s3v4', retries={'max_attempts': 0}, s3={'addressing_style': 'path'}))
+        client.create_bucket(Bucket=bucket)
+        proxy = RecordingProxy(endpoint, source['acl_denied'], bucket)
+        storages = {'default': {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'},
+                    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}}
+        STORAGE.update(client=client, proxy=proxy, bucket=bucket, location=location)
+        try:
+            with override_settings(STORAGES=storages, AWS_ACCESS_KEY_ID=access, AWS_SECRET_ACCESS_KEY=secret,
+                                   AWS_S3_REGION_NAME='us-east-1', AWS_S3_ENDPOINT_URL=proxy.endpoint, AWS_S3_ADDRESSING_STYLE='path'):
+                yield
+            contract.require(not listing(), 'storage.objects-removed')
+        finally:
+            proxy.close()
+            STORAGE.clear()
+
+
+def listing():
+    pages = STORAGE['client'].get_paginator('list_objects_v2').paginate(Bucket=STORAGE['bucket'])
+    return {item['Key'] for page in pages for item in page.get('Contents', [])}
+
+
+def check_storage(case, source, since, bindings):
+    """The case's storage requests and objects; binds each '$picN' to its URL."""
+    requests = STORAGE['proxy'].take()
+    until = time.time()
+    expected, objects = [], {}
+    puts = [item[1] for item in requests if item[0] == 'PUT']
+    pictures = case.get('pictures', {})
+    contract.require(len(puts) == len(pictures), 'storage.put-count:' + json.dumps(requests))
+    for (ref, spec), key in zip(pictures.items(), puts):
+        match = re.fullmatch(re.escape(f"{STORAGE['location']}/associates/{spec['folder']}/picture_") + r'(\d+\.\d+)\.jpg', key)
+        contract.require(match is not None, 'storage.key-shape:' + key)
+        stamp = match.group(1)
+        contract.require(repr(float(stamp)) == stamp and since - 1 <= float(stamp) <= until + 1, 'storage.key-timestamp')
+        bindings[ref] = source['picture_base'] + '/' + key
+        objects[key] = spec
+    keys = {ref: bindings[ref][len(source['picture_base']) + 1:] for ref in pictures}
+    for item in case.get('storage', []):
+        operation, ref, *rest = item.split(' ')
+        if operation == 'ACL':
+            expected.append(('ACL', keys[ref], 'public-read', 403 if rest == ['denied'] else 200))
+        elif operation == 'HEAD':
+            expected.append(('HEAD', keys[ref], '', 404))
+        else:
+            expected.append(('PUT', keys[ref], '', 200))
+    contract.require(requests == expected, 'storage.requests:' + json.dumps([requests, expected]))
+    contract.require(listing() == set(objects), 'storage.objects')
+    client = STORAGE['client']
+    for key, spec in objects.items():
+        stored = client.get_object(Bucket=STORAGE['bucket'], Key=key)
+        contract.require(stored['Body'].read() == base64.b64decode(spec['body_b64']), 'storage.bytes')
+        contract.require(stored['ContentType'] == 'image/jpeg' and stored.get('ContentEncoding') is None
+                         and stored.get('CacheControl') == 'max-age=86400', 'storage.metadata')
+        client.delete_object(Bucket=STORAGE['bucket'], Key=key)
+    # The response named the same URL (bound by the contract).
+    contract.require(all(bindings[ref] == value for ref, value in contract.BOUND.items()), 'storage.response-url')
 
 
 def moment(text):
@@ -94,7 +188,8 @@ fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(associ
 def captured(source):
     """auditlog's delete diffs of the seeded relations, captured before each case."""
     from application.models import AssociateTutorRelation
-    rows = {}
+    STORAGE['proxy'].take()
+    rows = {'$started': time.time()}
     for row in AssociateTutorRelation._base_manager.filter(pk__in=[r['id'] for r in source['relations'].values()]):
         rows[str(row.pk)] = replace.deleted_changes(AssociateTutorRelation, row)
     return rows
@@ -138,6 +233,8 @@ def stored(row, labels):
 def assert_effect(case, before, after, source, context):
     harness.require_unmanaged_unchanged(contract, before, after, MANAGED)
     effect = case['effect']
+    bindings = {}
+    check_storage(case, source, context['prepared']['$started'], bindings)
     if effect is None:
         contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
         return
@@ -151,7 +248,6 @@ def assert_effect(case, before, after, source, context):
 
     old = {str(flat(r)['associate_id']): flat(r) for r in before[ASSOCIATE]}
     new = {str(flat(r)['associate_id']): flat(r) for r in after[ASSOCIATE]}
-    bindings = {}
     for event, entry in zip(entries, effect['audit']):
         if entry['action'] == 0 and entry['ref'].startswith('$'):
             bindings[entry['ref']] = event['object_pk']
@@ -174,7 +270,8 @@ def assert_effect(case, before, after, source, context):
     for label, columns in effect['changed'].items():
         key = labels[label]
         for name, value in columns.items():
-            expected[key][COLUMNS.get(name, name)] = labels.get(value, value) if name in ('user', 'association', 'group', 'family') else value
+            expected[key][COLUMNS.get(name, name)] = (labels.get(value, value) if name in ('user', 'association', 'group', 'family')
+                                                      else bindings.get(value, value) if isinstance(value, str) else value)
     contract.require(new == expected, 'state.associates')
 
     def relation_key(ref):

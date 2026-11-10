@@ -57,3 +57,12 @@ func composeDocumentStorage(cfg config.Config, db *sqlx.DB, sessions *repository
 func composeMembershipDocumentUploads(cfg config.Config, db *sqlx.DB) *service.DocumentUploads {
 	return composeDocumentStorage(cfg, db, nil)
 }
+
+// composePersonaPictures is the default storage of the personas picture_path upload.
+func composePersonaPictures(cfg config.Config) service.PersonaPictureObjects {
+	objects := documentUploadObjects{S3: composeDocumentObjects(cfg), cacheControl: cfg.Storage.CacheControl}
+	if cfg.Storage.DefaultACL != nil {
+		objects.acl = *cfg.Storage.DefaultACL
+	}
+	return objects
+}

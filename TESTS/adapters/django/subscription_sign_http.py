@@ -65,10 +65,11 @@ class RecordingProxy:
     """Forwards S3 requests to MinIO byte for byte (signed Host kept) and records them;
     answers PutObjectAcl itself."""
 
-    def __init__(self, endpoint, denied):
+    def __init__(self, endpoint, denied, bucket=None):
         target = endpoint.removeprefix('http://')
         self.host, self.port = target.rsplit(':', 1)[0], int(target.rsplit(':', 1)[1])
         self.denied, self.lock, self.requests = denied, threading.Lock(), []
+        self.bucket = bucket or BUCKET
         outer = self
 
         class Forward(BaseHTTPRequestHandler):
@@ -114,7 +115,7 @@ class RecordingProxy:
                 payload = self.body()
                 parsed = urllib.parse.urlsplit(self.path)
                 query = sorted(set(urllib.parse.parse_qs(parsed.query, keep_blank_values=True)) - {'x-id'})
-                prefix = f'/{BUCKET}/'
+                prefix = f'/{outer.bucket}/'
                 key = urllib.parse.unquote(parsed.path[len(prefix):]) if parsed.path.startswith(prefix) else None
                 if self.command == 'PUT' and query == ['acl'] and key is not None:
                     acl = self.headers.get('x-amz-acl')

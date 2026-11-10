@@ -663,7 +663,8 @@ func run() (runErr error) {
 	e.Any("/personas/all-with-subscriptions", personasHandler.AllWithSubscriptions, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/personas/:pk/info", personasHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	personasWritesHandler := handler.NewPersonasWritesHandler(personasService,
-		service.NewPersonaWrites(repository.NewPersonaWrites(db), personasService, time.Now, uuid.NewString),
+		service.NewPersonaWrites(repository.NewPersonaWrites(db), personasService, time.Now, uuid.NewString).
+			WithPictures(composePersonaPictures(cfg), cfg.Storage.FileOverwrite),
 		service.NewPersonaSubscriptions(repository.NewPersonaSubscriptions(db), personasService),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	personasHandler.WithWrites(personasWritesHandler)
