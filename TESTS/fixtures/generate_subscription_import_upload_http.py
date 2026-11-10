@@ -9,23 +9,26 @@ subscription_import_upload (BE/application/views/subscriptions_views.py),
 2. data.keys() (a non-dict body raises: 500).
 3. 'associates_file': upload_and_store_file (Document.objects.create(filename=
    file.name) audited and indexed to the actor's association, then
-   default_storage.save of the bytes under <timestamp>/<id>/<name>), then
+   default_storage.save of the bytes under
+   subscription-import/<association id>/<timestamp>/<id>/<name>), then
    get_pandas_df_from_file: '.csv' (lower-cased path) is pandas.read_csv(file,
    delimiter=';'); Excel extensions use read_excel; anything else raises
    TypeError (500 after the writes); pandas errors are 500 after the writes.
-   columns.tolist(), then auto_map_columns(columns, SubscriptionMaps.MAP):
-   for each column the first key with the smallest edit distance of the
-   lower-cased texts below len(column) * 0.25 (each key once per request) is
-   set to the column in the class-level MAP. The answer is
-   {'columns': [...], 'map': MAP, 'document_id': id}; MAP keeps the values of
-   earlier requests in the same process.
+   columns.tolist(), then auto_map_columns(columns, map) on the request's own
+   copy of SubscriptionMaps.MAP: for each column the first key with the
+   smallest edit distance of the lower-cased texts below len(column) * 0.25
+   (each key once per request) is set to the column. The answer is
+   {'columns': [...], 'map': map, 'document_id': id}.
    An Excel suffix reads the bytes with pandas.read_excel(engine="openpyxl")
    whatever the suffix says (a failure falls back to xlrd, which is not
    installed: 500 after the writes). Number-like text becomes numbers, a
    column with a missing value is float, date cells are datetimes.
 4. 'document_id' and 'map': is_valid_uuid(document_id) (400 [str(exception)]),
    Document.objects.filter(document_id=...).first() (None: ValueError, 500),
-   the same read of the stored object (500 when it fails), then the import
+   default_storage.exists of its path in the association's import folder
+   (False: the same ValueError, 500: a document that is no import upload of
+   the association), the same read of the stored object (500 when it fails),
+   then the import
    inside try/except/finally: manage_import_status('start') deletes the
    association's IMPORTING statuses and creates one; process_import_rows walks
    the rows and the map's keys in order (KEY_TO_FIELD_ASSOCIATE[key without
@@ -33,17 +36,17 @@ subscription_import_upload (BE/application/views/subscriptions_views.py),
    through dateutil.parse(str(value)) to %d/%m/%Y or None; a missing 'sesso'
    is 'A'; a true 'scadenza certificato medico' creates a MedicalCertificate
    for request.user and saves its expiration, or deletes it when the text is
-   not a date; a None value takes data['default'][key]), fills born_city from
+   not a date; a date cell of that column is stored as %d/%m/%Y and an empty
+   cell of a date column is None; a None value takes data['default'][key]),
+   fills born_city from
    the tax code (codicefiscale.decode, once more with the expected control
    character), applies unmapped_static(_tutor), and validates the mandatory
    fields and the tax code pattern; AssociateImportDraft.objects.bulk_create
    (no audit entries). Any exception is logged and swallowed: what was saved
    before it stays, no draft is created. 'end' deletes the status. The answer
-   is 200 {'columns', 'map': MAP} either way.
+   is 200 {'columns', 'map'} either way, the map with every key None.
 5. Otherwise TypeError: 500.
 
-The first upload maps every key it will ever map in this sequence, so a later
-workload in the same server process (Caddy after native) sees the same MAP.
 Run with ``python3 -I`` after the message-mutations fixture.
 """
 import base64
@@ -86,6 +89,8 @@ def distance(left, right):
 
 
 def auto_map(columns):
+    """The request's map: every key, set to the column auto_map_columns chooses."""
+    mapped = dict(MAP)
     keys = list(MAP)
     for column in columns:
         lowest, chosen = len(column) * 0.25, None
@@ -97,7 +102,8 @@ def auto_map(columns):
                     break
         if chosen is not None:
             keys.remove(chosen)
-            MAP[chosen] = column
+            mapped[chosen] = column
+    return mapped
 
 
 def multipart(fields=(), files=()):
@@ -124,16 +130,15 @@ def add(name, actor, status, response, *, method='POST', body=None, raw=None, bi
 
 
 def upload(name, actor, filename, content, *, status=200, columns=None, kind='text/csv', content_type='text/csv', headers=None,
-           session=None, keep=None):
-    """A stored upload: the Document (audited) and its object, then the columns or the 500 page."""
+           session=None, keep=None, association='own_association'):
+    """A stored upload: the Document (audited) and its object in the association's import folder, then the columns or the 500 page."""
     effect = {'actor': actor, 'session': session, 'filename': filename, 'body_b64': base64.b64encode(content).decode(),
-              'content_type': content_type}
+              'content_type': content_type, 'association': association}
     if keep:
         # The object stays for the imports that name '$document:<keep>'; the case that lists it in 'release' removes it.
         effect['keep'] = keep
     if status == 200:
-        auto_map(columns)
-        response = {'columns': columns, 'map': dict(MAP), 'document_id': '$new'}
+        response = {'columns': columns, 'map': auto_map(columns), 'document_id': '$new'}
     else:
         response = SERVER
     try:
@@ -178,7 +183,7 @@ add('unknown-document-server-error', 'owner', 500, SERVER, body={'document_id': 
 add('unknown-document-form-server-error', 'full_collaborator', 500, SERVER,
     raw=multipart(fields=[('document_id', IDS['missing']), ('map', '{}')]))
 
-# Uploads. The first maps every key this sequence maps (fuzzy, duplicated and unmatched columns included).
+# Uploads. The first maps every key (fuzzy, duplicated and unmatched columns included); each answer maps its own columns.
 FIRST = ('Nome;COGNOME;Sesso;Codice fiscal;Data di Nascita;Città di nascita;Indirizzo;Città di residenza;CAP;E-mail;Telefono;'
          'Nome tutore;Cognome tutore;Sesso tutore;Codice fiscale tutore;Data nascita tutore;Città nascita tutore;'
          'Città residenza tutore;Indirizzo tutore;Cap tutore;Email tutore;Telefono tutore;Scadenza certificato med;Data tesseramento;'
@@ -190,8 +195,8 @@ upload('csv-maps-every-key', 'owner', 'soci.csv', FIRST, columns=[
     'E-mail', 'Telefono', 'Nome tutore', 'Cognome tutore', 'Sesso tutore', 'Codice fiscale tutore', 'Data nascita tutore',
     'Città nascita tutore', 'Città residenza tutore', 'Indirizzo tutore', 'Cap tutore', 'Email tutore', 'Telefono tutore',
     'Scadenza certificato med', 'Data tesseramento', 'Scadenza tesseramento', 'Numero tessera', 'Note', 'Nome.1'])
-assert all(value is not None for value in MAP.values()), MAP
-upload('csv-keeps-earlier-map', 'owner', 'altri.csv', SIMPLE, columns=['Nome', 'Cognome'])
+assert all(value is not None for value in cases[-1]['response']['map'].values()), cases[-1]['response']['map']
+upload('csv-maps-its-own-columns', 'owner', 'altri.csv', SIMPLE, columns=['Nome', 'Cognome'])
 upload('csv-bom-crlf-quoted-unnamed-duplicates', 'full_collaborator', 'Esportazione.CSV',
        b'\xef\xbb\xbf"Nome";;"Note;varie";Note;\r\nMario;;x;y;\r\n"Anna\r\nMaria";;;;\r\n', content_type='text/csv',
        columns=['Nome', 'Unnamed: 1', 'Note;varie', 'Note', 'Unnamed: 4'])
@@ -295,8 +300,9 @@ MEMBERS = workbook([
      None],
 ])
 upload('xlsx-members', 'owner', 'Soci 2026.xlsx', MEMBERS, columns=COLUMNS, kind=XLSX, content_type=XLSX, keep='members')
+# Serial 46451 is 2027-03-05.
 upload('xls-suffix-date-cells', 'full_collaborator', 'date.XLS', workbook([
-    ['Nome', 'Scadenza certificato med'], ['Mario', ('date', 46387)], ['Anna', None]]),
+    ['Nome', 'Scadenza certificato med'], ['Mario', ('date', 46451)], ['Anna', None]]),
     columns=['Nome', 'Scadenza certificato med'], kind='application/vnd.ms-excel', content_type='application/vnd.ms-excel', keep='dated')
 upload('xlsx-header-only-unnamed-duplicates', 'admin', 'vuoto.xlsx', workbook([['Telefono', None, 'Altro', 'Altro', None, 'Fine']]),
        headers=ADMIN_OWNER, session='admin_owner', columns=['Telefono', 'Unnamed: 1', 'Altro', 'Altro.1', 'Unnamed: 4', 'Fine'],
@@ -306,9 +312,16 @@ upload('xlsx-not-a-workbook-server-error', 'owner', 'testo.xlsx', SIMPLE, status
 upload('ods-archive-server-error', 'owner', 'soci.ods', archive([('mimetype', 'application/vnd.oasis.opendocument.spreadsheet'),
                                                                  ('content.xml', '<office/>')]),
        status=500, kind='application/vnd.oasis.opendocument.spreadsheet', content_type='application/vnd.oasis.opendocument.spreadsheet')
+# The same workbook uploaded for the import of another association.
+upload('xlsx-members-other-association', 'foreign_owner', 'Soci 2026.xlsx', MEMBERS, columns=COLUMNS, kind=XLSX, content_type=XLSX,
+       keep='other', association='foreign_association')
 
 # --- The import of a stored workbook ---------------------------------------------------------------------------
 pending_statuses = ['own_importing', 'own_importing_done']
+# A Document seeded with its workbook under <timestamp>/<id>/<name>, the folder of the other document uploads; the
+# runner registers it as '$document:stored'.
+STORED = {'id': 'a1000000-0000-4000-8000-000000984201', 'token': 'a1000000-0000-4000-8000-000000984202', 'filename': 'elenco.xlsx',
+          'created': '2026-04-01T08:00:00Z', 'body_b64': base64.b64encode(MEMBERS).decode(), 'content_type': XLSX}
 
 
 def imported(name, actor, document, body, *, columns, steps=(), drafts=(), headers=None, session=None, release=(), form=False):
@@ -318,7 +331,7 @@ def imported(name, actor, document, body, *, columns, steps=(), drafts=(), heade
     effect = {'kind': 'import', 'actor': actor, 'session': session, 'statuses': list(pending_statuses), 'steps': [list(step) for step in steps],
               'drafts': [{'data': data, 'valid': valid} for data, valid in drafts], 'release': list(release)}
     pending_statuses.clear()
-    response = {'columns': columns, 'map': dict(MAP)}
+    response = {'columns': columns, 'map': dict(MAP)}  # no upload in this request: every key None
     if form:
         add(name, actor, 200, response, raw=multipart(fields=[('document_id', f'$document:{document}'), *body]), headers=headers,
             effect=effect)
@@ -382,14 +395,23 @@ imported('number-tax-code-stops', 'owner', 'members', {
     'map': {key: UI_MAP[key] for key in ('nome', 'cognome', 'sesso', 'data di nascita', 'città di nascita', 'indirizzo',
                                          'città di residenza', 'cap')} | {'codice fiscale': None},
     'default': {'codice fiscale': 12345}}, columns=COLUMNS, release=['members'])
-# Date cells in the certificate column: the certificates are saved (an empty cell's is deleted), then the rows
-# cannot be stored and no draft is created.
+# Date cells in the certificate column: the certificate is saved and the draft stores the date as day/month/year;
+# an empty cell is no value (no certificate). The upload was the collaborator's, for the same association.
 imported('date-cell-certificates', 'owner', 'dated', {'map': {'nome': 'Nome', 'scadenza certificato medico': 'Scadenza certificato med'}},
-         columns=['Nome', 'Scadenza certificato med'], steps=[('kept', 'mario', '2026-12-31'), ('deleted',)], release=['dated'])
+         columns=['Nome', 'Scadenza certificato med'], steps=[('kept', 'mario', '2027-03-05')], release=['dated'],
+         drafts=[({'associate': {'first_name': 'Mario', 'certificate_expiring_date': '05/03/2027'}, 'associate_tutor': {},
+                   'medical_certificate': {'medical_id': '$mc:mario', 'filename': None, 'certificate_expring_date': '05/03/2027'}}, False),
+                 ({'associate': {'first_name': 'Anna'}, 'associate_tutor': {}}, False)])
+# The import reads the association's own import uploads: another association's upload and a Document stored outside
+# the import folder answer like an unknown document, before any write.
+add('upload-of-another-association-server-error', 'owner', 500, SERVER,
+    body={'document_id': '$document:other', 'map': {'nome': 'Nome'}}, effect={'kind': 'release', 'release': ['other']})
+add('document-outside-import-folder-server-error', 'owner', 500, SERVER,
+    body={'document_id': '$document:stored', 'map': {'nome': 'Nome'}}, effect={'kind': 'release', 'release': ['stored']})
 add('unreadable-document-server-error', 'owner', 500, SERVER, body={'document_id': '$document:broken', 'map': {'nome': 'Nome'}},
     effect={'kind': 'release', 'release': ['broken']})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'subscription/import/upload', 'ids': IDS, 'location': 'import-uploads',
-                              'statuses': STATUSES, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+                              'statuses': STATUSES, 'stored': STORED, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

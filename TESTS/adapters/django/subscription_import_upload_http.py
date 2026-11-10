@@ -1,13 +1,16 @@
 """Parent-only subscription/import/upload HTTP runner; imports are inert.
 
 service_context is documents-writes' private MinIO (bucket, sentinel object,
-S3Boto3Storage for Django and the same AWS_* settings for Go). Nothing is
-seeded. Each case is checked against the complete model state and the bucket:
-an upload creates exactly one Document (filename, uuid4 id and token, creation
-date within the request) with its auditlog create entry indexed to the actor's
-association, and one object under django-storages' key for
-<str(creation_date.timestamp())>/<id>/<filename> with the uploaded bytes,
-mimetypes' ContentType and CacheControl; a 200 names that Document. Created
+S3Boto3Storage for Django and the same AWS_* settings for Go). seed_rows
+inserts the status rows and one Document with its workbook under
+<str(creation_date.timestamp())>/<id>/<filename> ('$document:stored', removed
+by the case that releases it). Each case is checked against the complete model
+state and the bucket: an upload creates exactly one Document (filename, uuid4
+id and token, creation date within the request) with its auditlog create entry
+indexed to the actor's association, and one object under django-storages' key
+for subscription-import/<association id>/<str(creation_date.timestamp())>/
+<id>/<filename> with the uploaded bytes, mimetypes' ContentType and
+CacheControl; a 200 names that Document. Created
 objects are removed once verified, so the bucket ends at its baseline; an
 upload marked 'keep' leaves its object for the imports that name it, and the
 case that lists it in 'release' removes it.
@@ -23,6 +26,7 @@ from datetime import date, datetime, timedelta, timezone
 import base64
 import ipaddress
 import json
+import os
 
 from TESTS.contracts import test_subscription_import_upload_http as contract
 from TESTS.adapters.django import family_harness as harness
@@ -42,7 +46,7 @@ MANAGED = (DOCUMENT, DRAFT, STATUS, CERTIFICATE, harness.AUDIT, harness.INDEX)
 # label -> object key of the kept uploads.
 KEPT = {}
 # SportAssociation.objects.filter(user=actor).first(): a collaborator owns none.
-ACTOR_ASSOCIATION = {'owner': 'own_association', 'admin': 'admin_association'}
+ACTOR_ASSOCIATION = {'owner': 'own_association', 'admin': 'admin_association', 'foreign_owner': 'foreign_association'}
 service_context = uploads.service_context
 
 
@@ -65,6 +69,22 @@ def seed_rows(source, created):
         created.append((status, row['id']))
     contract.DOCUMENTS.clear()
     KEPT.clear()
+    stored, document = source['stored'], document_model()
+    moment = datetime.fromisoformat(stored['created'].replace('Z', '+00:00'))
+    document._base_manager.bulk_create([document(document_id=stored['id'], token=stored['token'], filename=stored['filename'],
+                                                 creation_date=moment)])
+    created.append((document, stored['id']))
+    key = uploads.object_key(moment, stored['id'], stored['filename'])
+    uploads.STORAGE['client'].put_object(Bucket=uploads.BUCKET, Key=key, Body=base64.b64decode(stored['body_b64']),
+                                         ContentType=stored['content_type'])
+    KEPT['stored'], contract.DOCUMENTS['stored'] = key, stored['id']
+
+
+def import_key(created, association, document_id, filename):
+    """django-storages' key of an import upload: the association's import folder, then the document's own."""
+    from storages.utils import clean_name, safe_join
+    return safe_join(uploads.STORAGE['location'],
+                     clean_name(os.path.join('', 'subscription-import', association, str(created.timestamp()), document_id, filename)))
 
 
 fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(document_model, lambda: import_models()[0],
@@ -253,7 +273,7 @@ def assert_effect(case, before, after, source, context):
     index = indexes.get(str(event['id']))
     require(label is None or (index is not None and index['sport_association_id'] == ids[label]
                               and index['resolution_path'] == 'actor.sport_association'), 'index.fields')
-    object_key = uploads.object_key(created, key, effect['filename'])
+    object_key = import_key(created, ids[effect['association']], key, effect['filename'])
     require(objects == {object_key}, 'storage.keys')
     client = uploads.STORAGE['client']
     stored = client.get_object(Bucket=uploads.BUCKET, Key=object_key)
