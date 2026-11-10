@@ -96,10 +96,14 @@ course subscription by key (`all_objects()`), else the first installment's (`all
   several rows.
 - payment/stats when Stripe credentials are configured (environment `STRIPE_KEY` and `STRIPE_PUBLIC_KEY`, or instance
   integration settings): the balance transactions and their cache are not ported.
-- Orderings Django resolves only when compiling the rows (relations, relation paths and transforms, the
+- Orderings Django resolves only when compiling the rows (relations other than `user`, relation paths and transforms, the
   `full_name` annotation of the subscription search), refused after the count and page checks; random ordering together with
   the payment/list text search (DISTINCT with `RANDOM()` in the select list); reverse relation names are refused as unknown.
 - Infinite float search terms (`inf`) and smart-search terms with characters Python lower-cases differently (personas-reads).
+
+`sort[field]=user` (the list's "Informazioni" column) orders by `user_id`: User has no `Meta.ordering`, so Django orders
+by the foreign key column (NULLs last ascending, first descending). API v2 gaps: 3 cases (242 in all); RED `v2gaps-red-r1`
+Django 242/242, Go 500; GREEN `v2gaps-versioned-r1` on the four transports; mutation (ordering by `associate_id`) CAUGHT.
 
 Not authored: payments in the athlete branch, HEAD, the Italian invalid-page message, Stripe configured.
 

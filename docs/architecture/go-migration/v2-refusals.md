@@ -33,6 +33,7 @@ Cross-cutting facts used for the classes:
 | statistic-reads | `GET statistic/dashboard?widget=expiredPayments` | always | same run |
 | payment-writes | `PATCH payment/<id>/update` with the row's own `payment_id` (edit form) | always from the UI | `payment_writes_http.json` 124 cases; GREEN `v2gaps-versioned-r2` 4 transports; mutation `v2gaps-mutation-r1` CAUGHT |
 | payment-writes | `PATCH payment/<id>/update` of an invoiced payment (eager invoice print) | payment has an invoice | same run; mutation `v2gaps-mutation-r3` CAUGHT |
+| payment-reads | `GET payment/list?sort[field]=user` ("Informazioni" column) | always | `payment_reads_http.json` 242 cases; GREEN `v2gaps-versioned-r1` 4 transports; mutation CAUGHT |
 | subscription-create | `POST subscription/add` from the owner wizard: default certificate date (today), emptied date, uploaded certificate with its expiration | always (date always sent) | `subscription_create_http.json` 45 cases; RED `v2gaps-red-r1` Django 45/45, Go 500; GREEN `v2gaps-versioned-r1` 4 transports; mutation CAUGHT; subscription-renew 54/54 and associates-draft 128/128 re-run |
 
 Details in `statistic-reads.md`.
@@ -50,7 +51,6 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 | payment cancel / delete | payment has an invoice | `PaymentList.svelte:575,689`, `partials/payment-overview.svelte:187` | `service/payment_state.go:322,363` | medium-expensive |
 | GET payment/list | athlete session (no `mode=compressed`) | `routes/activities/payment/PaymentList.svelte:36-38` | `service/payment_reads.go:349` | medium-expensive |
 | GET payment/list | instructor compensation payments in the page | `Instructor.svelte:358`, `PaymentList.svelte:1485` | `service/payment_reads.go:494,497` | medium |
-| GET payment/list | sort by the "Informazioni" column (`sort[field]=user`) | `PaymentList.svelte:227-236`, `components/tables/BKNDatatable.svelte:736` | `service/payment_reads.go:424` | medium |
 | GET payment/stats | Stripe configured | `PaymentList.svelte:997` | `service/payment_reads.go:579` | medium |
 | POST partial-quotes-apply | a subscription belongs to a member's own account | `components/modals/SubscriptionFeesPlanModal.svelte:46` | `service/payment_misc.go:478` | medium |
 | POST payment/sign | with a signature (instructor page) | `components/signature/DocumentSignatureModal.svelte:39-45` | `service/payment_misc.go:611` | medium |

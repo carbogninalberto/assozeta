@@ -782,6 +782,16 @@ add('list-sort-unknown-before-page', 'owner', S_ + 'nope&pagination[page]=9', 50
 add('list-sort-relevance-unknown', 'owner', S_ + 'relevance&query[generalSearch]=rossi', 500, SERVER)
 add('list-sort-lazy-path-error', 'owner', S_ + 'associate__nope&sort[sort]=asc', 500, SERVER)
 add('list-sort-lazy-path-after-page', 'owner', S_ + 'associate__nope&pagination[page]=9', 404, INVALID_PAGE)
+# The "Informazioni" column sends sort[field]=user: a relation whose model (User) has no Meta.ordering orders by
+# user_id (NULLs last ascending, first descending); ties among NULLs are the database's order.
+USERED = [k for k in VISIBLE if PAYMENTS[k].get('user')]
+assert len(USERED) == 1
+add('list-sort-user-first-page', 'owner', S_ + 'user&sort[sort]=asc&pagination[perpage]=1', 200,
+    list_page(VISIBLE, size=1, ordered=USERED + [k for k in VISIBLE if k not in USERED]))
+add('list-sort-user-desc-all', 'owner', S_ + f'user&sort[sort]=desc&pagination[perpage]={len(VISIBLE)}', 200,
+    list_page(VISIBLE, size=len(VISIBLE)), unordered=True)
+add('list-sort-user-desc-last-page', 'owner', S_ + f'user&sort[sort]=desc&pagination[perpage]={len(VISIBLE) - 1}&pagination[page]=2',
+    200, list_page(VISIBLE, size=len(VISIBLE) - 1, number=2, ordered=[k for k in VISIBLE if k not in USERED] + USERED))
 add('list-sort-with-search', 'owner', SEARCH + 'rossi&sort[field]=amount&sort[sort]=desc', 200,
     list_page(searched('rossi'), ordered=column_order(searched('rossi'), amount_key, True)))
 

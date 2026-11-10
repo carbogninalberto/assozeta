@@ -177,6 +177,11 @@ func paymentReadsOrder(filter *domain.PaymentReadsFilter, field, direction strin
 		return nil
 	}
 	name, descending := strings.CutPrefix(field, "-")
+	// A relation whose model has no Meta.ordering orders by its column:
+	// User (the list's "Informazioni" column sends sort[field]=user).
+	if name == "user" {
+		name = "user_id"
+	}
 	if column, ok := paymentReadsFields[name]; ok {
 		filter.Order = []domain.PaymentReadsOrder{{Column: column, Descending: descending}}
 		return nil
