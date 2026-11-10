@@ -83,6 +83,8 @@ DRAFTS = {
     'abroad_draft': {'id': next(ids), 'association': FOREIGN, 'data': {}},
     'list': {'id': next(ids), 'association': OWN, 'data': [1, 2]},
 }
+# A file name with '&' (the browser sends File.name as is): sanitize_file_name html.unescape()s it first.
+SUBSCRIPTIONS['ampersand'] = subscription(OWN)
 
 cases = []
 
@@ -387,6 +389,16 @@ add('certificate-owner-full-session-remembered', 'owner', CERT, 200, created_cer
     effect=effect('owner', documents=[stored('certificato medico.pdf', '%PDF-1.4 certificato', 'application/pdf')],
                   certificates=[{'document': 0, 'user': 'owner'}], audit=[doc_create(0), cert_create(0)],
                   cache={'session': 'owner_full', 'certificate': 0}))
+# html.unescape: a bare '&' stays; named references with and without ';' (longest prefix: '&notit;' is '¬it;'),
+# numeric ones ('&#13;' is a carriage return, then dropped as non-printable); '&sol;' becomes a separator.
+for label, sent, kept in (('bare', 'Rossi & Bianchi.pdf', 'Rossi & Bianchi.pdf'),
+                          ('references', 'a&amp;b&lt;c&#38;d&#x26;e&notit;&ampf&AElig&#13;.pdf', 'a&b<c&d&e¬it;&fÆ.pdf'),
+                          ('unknown-reference', 'referto &xyz; &#; &#x;.pdf', 'referto &xyz; &#; &#x;.pdf'),
+                          ('solidus', 'cartella&sol;visita&period;pdf', 'visita.pdf')):
+    add(f'certificate-ampersand-{label}', 'owner', CERT, 200, created_cert(),
+        raw_body=multipart(('medical_certificate', sent, 'application/pdf', '%PDF-1.4 e'))[0], content_type=CERT_BODY[1],
+        effect=effect('owner', documents=[stored(kept, '%PDF-1.4 e', 'application/pdf')], certificates=[{'document': 0, 'user': 'owner'}],
+                      audit=[doc_create(0), cert_create(0)]))
 
 # ---------------------------------------------------------------- subscription/<uid>/medical-certificate/upload
 MED = lambda label: (f'/subscription/{SUBSCRIPTIONS[label]["id"] if label in SUBSCRIPTIONS else DRAFTS[label]["id"] if label in DRAFTS else label}'
@@ -441,6 +453,11 @@ add('medical-owner-full-session', 'owner', MED('grouped'), 200, attached, raw_bo
     effect=effect('owner', documents=[stored('visita.pdf', '%PDF-1.4 visita', 'application/pdf')], certificates=[{'document': 0, 'user': 'owner'}],
                   subscriptions={'grouped': {'medical_id': '$cert0'}},
                   audit=[doc_create(0), cert_create(0), sub_update('grouped', {'medical': ['None', '$cert0']})]))
+add('medical-ampersand-filename', 'owner', MED('ampersand'), 200, attached,
+    raw_body=multipart(('medical_certificate', 'Rossi & Bianchi.pdf', 'application/pdf', '%PDF-1.4 visita'))[0], content_type=MED_BODY[1],
+    effect=effect('owner', documents=[stored('Rossi & Bianchi.pdf', '%PDF-1.4 visita', 'application/pdf')],
+                  certificates=[{'document': 0, 'user': 'owner'}], subscriptions={'ampersand': {'medical_id': '$cert0'}},
+                  audit=[doc_create(0), cert_create(0), sub_update('ampersand', {'medical': ['None', '$cert0']})]))
 DEFAULT_MC = lambda filename: {'medical_id': '$cert0', 'filename': filename, 'certificate_expring_date': None}
 add('medical-draft-adds-entry', 'owner', MED('none'), 200, {'msg': 'updated draft', 'expiring_date': None}, raw_body=MED_BODY[0],
     content_type=MED_BODY[1],

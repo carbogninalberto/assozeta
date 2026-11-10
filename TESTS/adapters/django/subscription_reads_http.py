@@ -4,10 +4,13 @@ Seeds documents, medical certificates, tags, associates (one tutor relation),
 payments, subscriptions with their tags, courses, course subscriptions,
 installments, attendance registries, a subscription file and a membership card
 configuration (audit disabled). The routes are reads: every case must leave
-the complete model state unchanged.
+the complete model state unchanged, and publish exactly its authored Celery
+tasks (subscription_info's print_document_subscription when the subscription
+has no document_pdf) to the run's broker.
 """
 from datetime import date, datetime
 from decimal import Decimal
+import time
 
 from TESTS.contracts import test_subscription_reads_http as contract
 from TESTS.adapters.django import family_harness as harness
@@ -22,7 +25,8 @@ SOURCES = ('TESTS/fixtures/subscription_reads_http.json', 'TESTS/contracts/test_
            'BE/application/models/attendee_models.py', 'BE/application/utils/subscriptions_utils.py',
            'BE/application/utils/api_utils.py', 'BE/application/utils/printing.py', 'BE/application/mixin.py',
            'BE/application/impersonation_scope.py', 'BE/application/permissions.py', 'BE/application/permissions_registry.py',
-           'BE/application/urls.py', 'BE/docmanager/models.py') + harness.SOURCES
+           'BE/application/urls.py', 'BE/docmanager/models.py', 'BE/application/models/carnet_models.py', 'BE/application/tasks.py',
+           'BE/core/celery.py') + harness.SOURCES
 
 ASSOCIATE_FIELDS = ('picture_path', 'first_name', 'last_name', 'sex', 'tax_code', 'born_city', 'address_city', 'address', 'address_cap',
                     'nationality', 'nationality_residence', 'email', 'phone', 'phone_2', 'phone_3', 'phone_4', 'phone_label',
@@ -117,11 +121,26 @@ def seed_rows(source, created):
     for row in source['files'].values():
         insert(SubscriptionFile, SubscriptionFile(subscription_file_id=row['id'], subscription_id=subscriptions[row['subscription']]['id'],
                                                   document_id=documents[row['document']]['id'], creation_date=moment(row['created'])))
+    from application.models.carnet_models import CarnetSubscription
+    for row in source['carnets'].values():
+        insert(CarnetSubscription, CarnetSubscription(carnet_subscription_id=row['id'],
+                                                      subscription_id=subscriptions[row['subscription']]['id']))
     card = source['card']
     insert(SportAssociationMembershipCardConfiguration, SportAssociationMembershipCardConfiguration(
         sport_association_membership_card_configuration_id=card['id'], sport_association_id=card['association'],
         emit_only_on_approval=card['emit_only_on_approval'], customized_template=card['customized_template']))
 
 
-fixture_context = harness.fixture_context_for(contract, seed_rows)
-run_workload = harness.run_workload_for(contract)
+fixture_context = harness.with_celery_broker(harness.fixture_context_for(contract, seed_rows))
+
+
+def assert_effect(case, before, after, source, context):
+    contract.require(before == after, 'state.unchanged')
+    token = context['fixture']['tokens'].get(case['actor'])
+    binding = {'$authorization': f'Bearer {token}' if token else None}
+    expected = [{**task, 'args': [binding.get(item, item) if isinstance(item, str) else item for item in task['args']]}
+                for task in case.get('celery', [])]
+    harness.celery_published(contract, context['fixture'], expected, since=context['prepared'], until=time.time())
+
+
+run_workload = harness.run_workload_for(contract, assert_effect, prepare=lambda source: time.time())

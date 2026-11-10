@@ -90,6 +90,11 @@ SEASON = {'owner': next(ids), 'association': next(ids), 'start_day': 31, 'start_
 IDS = {**IDS, 'season_owner': SEASON['owner']}  # its access token is minted by the adapter
 ASSOCIATES['season'] = {'id': next(ids), 'first': 'Sara', 'last': 'Stagione', 'user': 'season_owner', 'association': SEASON['association']}
 SUBSCRIPTIONS['season'] = {'id': next(ids), 'associate': 'season', 'user': 'season_owner', 'association': SEASON['association']}
+# Names outside ASCII (member forms accept any Unicode): str.upper() then NFKC of the username.
+ASSOCIATES['accented'] = {'id': next(ids), 'first': 'Émile', 'last': 'Çelik', 'user': 'owner'}
+ASSOCIATES['casefold'] = {'id': next(ids), 'first': 'ßöra', 'last': 'ǆukić', 'user': 'owner'}
+SUBSCRIPTIONS['accented'] = {'id': next(ids), 'associate': 'accented', 'user': 'owner'}
+SUBSCRIPTIONS['casefold'] = {'id': next(ids), 'associate': 'casefold', 'user': 'owner'}
 
 cases = []
 NOTIFIED = set()
@@ -215,6 +220,18 @@ add('email-new-account-associate-names', 'full_collaborator', SUBSCRIPTIONS['bar
     body={'email': ''},
     effect={**transferred('full_collaborator', 'bare', '$new_user2', associate_from=None,
                           new_user={'first_name': 'Nora', 'last_name': 'Nuova', 'email': '', 'prefix': 'NORNUO'}, welcome=True)})
+# Non-ASCII names: 'É'/'Ç' upper-case unchanged; 'ß' becomes 'SS' and 'ǆ' becomes 'Ǆ', which NFKC splits into 'DŽ'.
+# The e-mail domain is lower-cased with str.lower() ('İ' becomes 'i' + U+0307).
+add('email-new-account-accented-names', 'owner', SUBSCRIPTIONS['accented']['id'], 201, created('accented', '$new_user'),
+    body={'email': 'Émile@Exämple.TEST'},
+    effect=transferred('owner', 'accented', '$new_user3', associate_from='owner',
+                       new_user={'first_name': 'Émile', 'last_name': 'Çelik', 'email': 'Émile@exämple.test', 'prefix': 'ÉMIÇEL'},
+                       welcome=True))
+add('email-new-account-expanding-names', 'owner', SUBSCRIPTIONS['casefold']['id'], 201, created('casefold', '$new_user'),
+    body={'email': ' ǅ@İSTANBUL.Test '},
+    effect=transferred('owner', 'casefold', '$new_user4', associate_from='owner',
+                       new_user={'first_name': 'ßöra', 'last_name': 'ǆukić', 'email': 'ǅ@i\u0307stanbul.test', 'prefix': 'SSÖRDŽUK'},
+                       welcome=True))
 # An athlete has no sport_association: the account is created, then the e-mail raises PermissionDenied.
 add('athlete-email-denied-after-account', 'athlete', SUBSCRIPTIONS['athlete_email']['id'], 403,
     {'detail': 'User is not a sport association'}, body={'email': 'creato@example.test'},
@@ -242,7 +259,7 @@ add('transferred-no-longer-owned', 'owner', ADULT, 403, NOT_OWNER, body={'recipi
 # '$new_user2' is a second new account: notify it as a fresh recipient (its own broadcast).
 for case in cases:
     effect = case['effect'] or {}
-    if effect.get('notification', {}).get('user') == '$new_user2':
+    if str(effect.get('notification', {}).get('user')).startswith('$new_user'):
         effect['notification']['user'] = '$new_user'
         effect['transfer']['recipient'] = '$new_user'
 

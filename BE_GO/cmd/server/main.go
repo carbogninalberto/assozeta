@@ -360,7 +360,8 @@ func run() (runErr error) {
 	e.Any("/subscription/tags/:tag_id/delete", subscriptionTagsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/tags/:tag_id/assign/:subscription_id", subscriptionTagsHandler.Assign, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/tags/:tag_id/unassign/:subscription_id", subscriptionTagsHandler.Unassign, middleware.DjangoSessionAudit(sessionAuthentication))
-	subscriptionLifecycleHandler := handler.NewSubscriptionLifecycleHandler(service.NewSubscriptionLifecycles(repository.NewSubscriptionLifecycles(db), time.Now),
+	subscriptionLifecycleHandler := handler.NewSubscriptionLifecycleHandler(service.NewSubscriptionLifecycles(repository.NewSubscriptionLifecycles(db), time.Now).
+		WithSignatureObjects(subscriptionLifecycleSignatures{SubscriptionSigns: repository.NewSubscriptionSigns(db), S3: composeDocumentObjects(cfg)}),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/:uid/reject", subscriptionLifecycleHandler.Reject, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/archive", subscriptionLifecycleHandler.Archive, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -520,7 +521,11 @@ func run() (runErr error) {
 		service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/export-all-data", exportAllDataHandler.Export, middleware.DjangoSessionAudit(sessionAuthentication))
 	subscriptionReadsHandler := handler.NewSubscriptionReadsHandler(service.NewSubscriptionReads(repository.NewSubscriptionReads(db),
-		repository.NewCourseSubscriptions(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities)
+		repository.NewCourseSubscriptions(db), time.Now).
+		WithAthleteList(repository.NewSubscriptionReads(db),
+			service.NewStripeAvailability(repository.NewSocialConfiguration(db), service.StripeEnvironment{PublicKey: cfg.StripePublicKey != "", Secret: cfg.StripeSecretConfigured, Webhook: cfg.StripeEnabled}, cfg.SessionSecret),
+			domain.RegistrationChoices{Family: cfg.FamilyRegistrationEnabled, Federation: cfg.FederationRegistrationEnabled, Multiple: cfg.MultipleRegistrationEnabled}).
+		WithTasks(tasks), service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/subscription/list", subscriptionReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/list/all", subscriptionReadsHandler.ListAll, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/list/archived", subscriptionReadsHandler.Archived, middleware.DjangoSessionAudit(sessionAuthentication))

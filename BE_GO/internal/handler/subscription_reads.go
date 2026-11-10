@@ -44,8 +44,13 @@ func (h *SubscriptionReadsHandler) serve(c echo.Context, operation, name, descri
 	case request.Method == http.MethodOptions:
 		return supplierOptions(c, name, description)
 	}
-	body, err := read(service.SubscriptionReadsRequest{Identity: *identity, Query: parseReferenceForm(request.URL.RawQuery),
-		GroupHeader: request.Header.Get("X-Group-Id"), Method: request.Method})
+	input := service.SubscriptionReadsRequest{Identity: *identity, Query: parseReferenceForm(request.URL.RawQuery),
+		GroupHeader: request.Header.Get("X-Group-Id"), Method: request.Method}
+	if values, present := request.Header[http.CanonicalHeaderKey("Authorization")]; present && len(values) > 0 {
+		value := values[0]
+		input.Authorization = &value
+	}
+	body, err := read(input)
 	var invalid *service.PaymentInfoUUIDError
 	var denied *domain.PermissionDenied
 	switch {

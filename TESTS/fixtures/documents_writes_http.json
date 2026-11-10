@@ -203,6 +203,16 @@
    "start": "2026-01-01",
    "end": "2026-12-31",
    "created": "2026-02-01T09:00:00Z"
+  },
+  "ampersand": {
+   "id": "a1000000-0000-4000-8000-000000352030",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": null,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
   }
  },
  "drafts": {
@@ -2770,6 +2780,234 @@
    "content_type": "multipart/form-data; boundary=documentswritesboundary"
   },
   {
+   "name": "documents-writes-certificate-ampersand-bare",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "Rossi & Bianchi.pdf",
+      "body_b64": "JVBERi0xLjQgZQ==",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_inserted": null,
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"Rossi & Bianchi.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 e\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-ampersand-references",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "a&b<c&d&e¬it;&fÆ.pdf",
+      "body_b64": "JVBERi0xLjQgZQ==",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_inserted": null,
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"a&amp;b&lt;c&#38;d&#x26;e&notit;&ampf&AElig&#13;.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 e\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-ampersand-unknown-reference",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "referto &xyz; &#; &#x;.pdf",
+      "body_b64": "JVBERi0xLjQgZQ==",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_inserted": null,
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"referto &xyz; &#; &#x;.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 e\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-ampersand-solidus",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "visita.pdf",
+      "body_b64": "JVBERi0xLjQgZQ==",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_inserted": null,
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"cartella&sol;visita&period;pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 e\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
    "name": "documents-writes-medical-anonymous",
    "actor": "anonymous",
    "method": "POST",
@@ -3385,6 +3623,78 @@
     "archive_deleted": []
    },
    "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-ampersand-filename",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352030/medical-certificate/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "medical": "$doc0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "Rossi & Bianchi.pdf",
+      "body_b64": "JVBERi0xLjQgdmlzaXRh",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {
+     "ampersand": {
+      "medical_id": "$cert0"
+     }
+    },
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "Subscription",
+      "key": "ampersand",
+      "action": 1,
+      "changes": {
+       "medical": [
+        "None",
+        "$cert0"
+       ]
+      },
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_inserted": null,
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"Rossi & Bianchi.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
    "content_type": "multipart/form-data; boundary=documentswritesboundary"
   },
   {

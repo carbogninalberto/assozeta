@@ -4,11 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"sort"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -137,26 +135,6 @@ func (t *subscriptionLifecycleTransaction) RangePayments(ctx context.Context, as
 	return ids, err
 }
 
-func (t *subscriptionLifecycleTransaction) SubscriptionReferenced(ctx context.Context, id string) (bool, error) {
-	refs, err := modelReferences(ctx, t.tx, "application_subscription", "subscription_id")
-	if err != nil {
-		return false, err
-	}
-	for _, ref := range refs {
-		if ref.Table == "application_coursesubscription" || ref.Table == "application_subscription_tags" {
-			continue
-		}
-		var exists bool
-		if err := t.tx.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM `+pq(ref.Table)+` WHERE `+pq(ref.Column)+`=$1)`, id); err != nil {
-			return false, err
-		}
-		if exists {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
 func (t *subscriptionLifecycleTransaction) DeletePayments(ctx context.Context, ids []string, audit domain.CourseSubscriptionAudit) error {
 	payments := make([]*courseSubscriptionSnapshot, 0, len(ids))
 	for _, id := range ids {
@@ -180,7 +158,7 @@ func (t *subscriptionLifecycleTransaction) DeletePayments(ctx context.Context, i
 // its payment cleared in memory, is then deleted again: its own pre_delete
 // has no payment and auditlog logs the in-memory row.
 func (t *subscriptionLifecycleTransaction) DeleteLoopInstallment(ctx context.Context, installment domain.SubscriptionLifecycleInstallment,
-	audit domain.CourseSubscriptionAudit) error {
+	invoice *string, audit domain.CourseSubscriptionAudit) error {
 	loaded, err := t.snapshot(ctx, "application_coursesubscriptioninstallment", "course_subscription_installment_id", installment.ID)
 	if err != nil {
 		return err
@@ -188,7 +166,12 @@ func (t *subscriptionLifecycleTransaction) DeleteLoopInstallment(ctx context.Con
 	if loaded == nil {
 		return domain.ErrSubscriptionLifecycleNotPorted
 	}
-	if err = t.DeletePayments(ctx, []string{*installment.PaymentID}, audit); err != nil {
+	if invoice != nil {
+		err = t.DeleteInvoicedPayment(ctx, *installment.PaymentID, *invoice, audit)
+	} else {
+		err = t.DeletePayments(ctx, []string{*installment.PaymentID}, audit)
+	}
+	if err != nil {
 		return err
 	}
 	if _, err = t.tx.ExecContext(ctx, `DELETE FROM application_coursesubscriptioninstallment WHERE course_subscription_installment_id=$1`,
@@ -204,121 +187,62 @@ func (t *subscriptionLifecycleTransaction) DeleteLoopInstallment(ctx context.Con
 		changes, nil, "", audit))
 }
 
-// DeleteSubscription is subscription.delete(): the collector loads the row,
-// its course subscriptions (base manager) and their installments (key
-// order); pre_delete runs for the installments (an unpaid payment is
-// deleted with Payment's pre_delete), then for the course subscriptions
-// (delete_related_course_payment: nothing for a row with a payment;
-// otherwise a membership's unpaid live payments, then the live group-aware
-// installments). The through rows go, then the subscription, installments
-// and course subscriptions are deleted, audited in that model order with
-// the instances in reversed key order.
-func (t *subscriptionLifecycleTransaction) DeleteSubscription(ctx context.Context, id string, audit domain.CourseSubscriptionAudit) error {
-	root, err := t.snapshot(ctx, "application_subscription", "subscription_id", id)
+func (t *subscriptionLifecycleTransaction) collectorRun(audit domain.CourseSubscriptionAudit) *collaboratorDeleteRun {
+	return &collaboratorDeleteRun{tx: t.tx, graph: collaboratorDeleteGraphLoaded, audit: audit.Context, group: audit.Group,
+		now: func() time.Time { return audit.At }}
+}
+
+// collectorDelete is Model.delete() of one row through Django's Collector.
+func (t *subscriptionLifecycleTransaction) collectorDelete(ctx context.Context, label, id string, audit domain.CourseSubscriptionAudit) error {
+	run := t.collectorRun(audit)
+	model := collaboratorDeleteGraphLoaded.Models[label]
+	rows, err := run.load(ctx, model, `t.`+model.PK+` = $1::uuid`, id)
 	if err != nil {
 		return err
 	}
-	if root == nil {
+	if len(rows) == 0 {
 		return domain.ErrSubscriptionLifecycleNotPorted
 	}
-	rows := []domain.CourseSubscriptionRow{}
-	if err = t.tx.SelectContext(ctx, &rows, `SELECT `+courseSubscriptionColumns+` FROM application_coursesubscription cs
- JOIN application_course c ON c.course_id=cs.course_id WHERE cs.subscription_id=$1 ORDER BY cs.course_subscription_id FOR UPDATE OF cs`, id); err != nil {
-		return err
-	}
-	sort.Slice(rows, func(i, j int) bool { return rows[i].ID < rows[j].ID })
-	keys := make([]string, len(rows))
-	snapshots := make([]*courseSubscriptionSnapshot, len(rows))
-	for index, row := range rows {
-		keys[index] = row.ID
-		if snapshots[index], err = t.snapshot(ctx, "application_coursesubscription", "course_subscription_id", row.ID); err != nil {
-			return err
-		}
-	}
-	installmentIDs := []string{}
-	if err = t.tx.SelectContext(ctx, &installmentIDs, `SELECT course_subscription_installment_id FROM application_coursesubscriptioninstallment
- WHERE course_subscription_id=ANY($1::uuid[]) ORDER BY course_subscription_installment_id FOR UPDATE`, keys); err != nil {
-		return err
-	}
-	installments := make([]*courseSubscriptionSnapshot, 0, len(installmentIDs))
-	for _, installment := range installmentIDs {
-		snapshot, err := t.snapshot(ctx, "application_coursesubscriptioninstallment", "course_subscription_installment_id", installment)
-		if err != nil {
-			return err
-		}
-		installments = append(installments, snapshot)
-	}
-	for _, installment := range installments {
-		payment := storedText(installment.stored, "payment_id")
-		if payment == nil {
-			continue
-		}
-		current, err := t.snapshot(ctx, "application_payment", "payment_id", *payment)
-		if err != nil {
-			return err
-		}
-		if current != nil && current.stored["paid"] != true {
-			if err = t.deletePayments(ctx, []*courseSubscriptionSnapshot{current}, true, audit); err != nil {
-				return err
-			}
-		}
-	}
-	for _, row := range rows {
-		if row.PaymentID != nil {
-			continue
-		}
-		if row.Type == 3 {
-			unpaid, err := t.MembershipPaymentsWhere(ctx, row.ID, audit.Group, true, nil, 0)
-			if err != nil {
-				return err
-			}
-			ids := make([]string, len(unpaid))
-			for index, payment := range unpaid {
-				ids[index] = payment.ID
-			}
-			if err = t.DeletePayments(ctx, ids, audit); err != nil {
-				return err
-			}
-		}
-		if err := t.DeleteInstallmentsOf(ctx, row.ID, audit); err != nil {
-			return err
-		}
-	}
-	for _, statement := range []string{
-		`DELETE FROM application_coursesubscription_membership_payments WHERE coursesubscription_id=ANY($1::uuid[])`,
-		`DELETE FROM application_carnetsubscription_course_subscription WHERE coursesubscription_id=ANY($1::uuid[])`,
-		`DELETE FROM application_coursesubscriptioninstallment WHERE course_subscription_id=ANY($1::uuid[])`,
-		`DELETE FROM application_coursesubscription WHERE course_subscription_id=ANY($1::uuid[])`,
-	} {
-		if _, err := t.tx.ExecContext(ctx, statement, keys); err != nil {
-			return err
-		}
-	}
-	if _, err = t.tx.ExecContext(ctx, `DELETE FROM application_subscription_tags WHERE subscription_id=$1`, id); err != nil {
-		return err
-	}
-	if _, err = t.tx.ExecContext(ctx, `DELETE FROM application_subscription WHERE subscription_id=$1`, id); err != nil {
-		return err
-	}
-	association, err := t.liveAssociation(ctx, root.changes)
+	return run.Delete(ctx, label, rows)
+}
+
+func (t *subscriptionLifecycleTransaction) DeleteInvoice(ctx context.Context, invoice string, audit domain.CourseSubscriptionAudit) error {
+	return t.collectorDelete(ctx, "application.Invoice", invoice, audit)
+}
+
+func (t *subscriptionLifecycleTransaction) DeleteInvoicedPayment(ctx context.Context, payment, invoice string, audit domain.CourseSubscriptionAudit) error {
+	snapshot, err := t.snapshot(ctx, "application_payment", "payment_id", payment)
 	if err != nil {
 		return err
 	}
-	if err = appendModelAudit(ctx, t.tx, courseSubscriptionEntry("subscription", "Subscription", id, "", 2, root.changes, association,
-		"changes_json.sport_association", audit)); err != nil {
+	if snapshot == nil {
+		return domain.ErrSubscriptionLifecycleNotPorted
+	}
+	snapshot.changes["invoice"] = [2]string{invoice, "None"}
+	return t.deletePayments(ctx, []*courseSubscriptionSnapshot{snapshot}, true, audit)
+}
+
+func (t *subscriptionLifecycleTransaction) AppendHiddenPaymentUpdate(ctx context.Context, payment, association string,
+	audit domain.CourseSubscriptionAudit) error {
+	changes, err := createdModelChanges(ctx, t.tx, "application_payment", "payment_id", payment)
+	if err != nil {
 		return err
 	}
-	for index := len(installments) - 1; index >= 0; index-- {
-		if err := appendModelAudit(ctx, t.tx, courseSubscriptionEntry("coursesubscriptioninstallment", "CourseSubscriptionInstallment",
-			installments[index].id, "", 2, installments[index].changes, nil, "", audit)); err != nil {
-			return err
-		}
+	live, err := t.liveAssociation(ctx, map[string][2]string{"sport_association": {association, "None"}})
+	if err != nil {
+		return err
 	}
-	for index := len(rows) - 1; index >= 0; index-- {
-		if err := appendModelAudit(ctx, t.tx, courseSubscriptionEntry("coursesubscription", "CourseSubscription", rows[index].ID,
-			dto.CourseSubscriptionRepr(rows[index], dto.CourseSubscriptionMemory{}), 2, snapshots[index].changes, nil, "", audit)); err != nil {
-			return err
-		}
-	}
-	return nil
+	return appendModelAudit(ctx, t.tx, courseSubscriptionEntry("payment", "Payment", payment, "", 1, changes, live,
+		"changes_json.sport_association", audit))
+}
+
+// DeleteSubscription is subscription.delete(): Django's Collector from the
+// subscription (collaborator_delete_graph.json) with every cascade it
+// reaches (course subscriptions and installments with their pre_delete
+// receivers, carnet subscriptions, medical appointments, memberships, sold
+// products, tokens, files, transfers, camp subscriptions and the
+// many-to-many rows), audited per model with the instances in reversed key
+// order.
+func (t *subscriptionLifecycleTransaction) DeleteSubscription(ctx context.Context, id string, audit domain.CourseSubscriptionAudit) error {
+	return t.collectorDelete(ctx, "application.Subscription", id, audit)
 }
