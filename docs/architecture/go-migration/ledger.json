@@ -35391,6 +35391,13 @@
           "result": "Mutation control: fails Go on instance-backups-create-runner-404 (500 page instead of 409).",
           "artifact": "quality-reports/go-migration/instance-reverify-backups-mutation/results.json",
           "receipt_sha256": "693a8cd729559081d151763bd29245e5865fd95eaabd2b9e135fc0f061a1921a"
+        },
+        {
+          "command": "tools/go-migration/family.py run instance-backups --versioned (receipt copied from instance-backups-http-sec-versioned-r1)",
+          "revision": "go/sec-backups 906b7eeb",
+          "result": "GREEN: 161/161 on native Django, native Go, Caddy /api/v1 and /api/v2 after password_refusal counts each try before the check (shared with the backup actions).",
+          "artifact": "quality-reports/go-migration/sec-backups-overview-green/results.json",
+          "receipt_sha256": "f0d24358b376696fe0839fc7a26c744690685ec04f760e74b92f7ebc8fd764b1"
         }
       ],
       "notes": [
@@ -35417,6 +35424,8 @@
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
         "BE_GO/internal/dto/instance_backup_actions.go",
+        "BE_GO/internal/dto/instance_backup_endpoint.go",
+        "BE_GO/internal/dto/instance_backup_endpoint_test.go",
         "BE_GO/internal/dto/instance_backup_actions_test.go",
         "BE_GO/internal/repository/instance_backup_actions.go",
         "BE_GO/internal/updaterrunner/send.go",
@@ -35424,7 +35433,10 @@
         "BE_GO/internal/repository/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
         "BE_GO/cmd/server/instance_backup_actions.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/instance_backups_password_test.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/internal/config/instance_backup_settings_test.go"
       ],
       "dependencies": [
         "BE/instance/backups.py",
@@ -35450,13 +35462,13 @@
           "/api/v2/instance/admin/backups/<name>",
           "/api/instance/admin/backups/<name>"
         ],
-        "request": "PATCH JSON {keep: bool}; DELETE JSON {confirm: bool} (default false); the URL name must fullmatch the archive pattern.",
+        "request": "PATCH JSON {keep: bool, password when keep is false}; DELETE JSON {confirm: bool (default false), password}; the URL name must fullmatch the archive pattern.",
         "response": "200 with the runner's body (PATCH/DELETE /backups/<name> with {\"keep\"}/{\"confirm\"}); None renders no content.",
-        "errors": "404 {error: 'Backup non trovato.'} for a non-archive name; 400 {error: 'Richiesta non valida.'} for a non-boolean value; runner refusals keep 4xx statuses (else 503) with str(message); 503 unavailable; non-object rejection bodies are the 500 page.",
+        "errors": "404 {error: 'Backup non trovato.'} for a non-archive name; 400 {error: 'Richiesta non valida.'} for a non-boolean value; then (DELETE, PATCH keep false) the owner's password: PasswordSerializer (password CharField max 256, untrimmed) then password_refusal on the shared attempts key (429 at five; each try counted with cache.add/incr before the check, a count above five is 429; 400 'Password non corretta.'; deleted on a match); 400 password field errors or non_field_errors; runner refusals keep 4xx statuses (else 503) with str(message); 503 unavailable; non-object rejection bodies are the 500 page.",
         "authentication": "Bearer JWT; administration path (no impersonation, impersonation header from a non-administrator is 403).",
         "permissions": "IsInstanceOwner on the authenticated actor, before method dispatch.",
-        "resource_scope": "Instance-wide archives.",
-        "side_effects": "Update runner PATCH/DELETE /backups/<name>; on 200 an auditlog UPDATE entry (backup_keep, backup_unkeep or backup_delete, additional_data backup) on the instance configuration with its AuditLogIndex row (actor.sport_association).",
+        "resource_scope": "The actor's own password and the shared attempts counter; instance-wide archives.",
+        "side_effects": "Django cache attempts key and password rehash (DELETE, un-keep); update runner PATCH/DELETE /backups/<name> (the password is not relayed); on 200 an auditlog UPDATE entry (backup_keep, backup_unkeep or backup_delete, additional_data backup) on the instance configuration with its AuditLogIndex row (actor.sport_association).",
         "transaction": "None.",
         "execution_owner": "django"
       },
@@ -35470,25 +35482,25 @@
         "docs/architecture/go-migration/instance-backups-actions.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 171/171; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-red-r1/results.json",
-          "receipt_sha256": "bbb6136bda4f6f3dfaf3f91e46e234cdb3bee14b40969b55661e575712dffec2"
+          "result": "RED: Django 247/247; Go fails cache.keys on the first case.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-red/results.json",
+          "receipt_sha256": "41a2da13014164db73998eee527c8723df0a92b4d985ce5181734489d47dc076"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 171/171 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-versioned-r1/results.json",
-          "receipt_sha256": "9b15a5cdb8b28e96c8766a67b5a2dc78bd1dda79b07d859e8ba819b9d766b342"
+          "result": "GREEN: 247/247 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-green/results.json",
+          "receipt_sha256": "be6ab63b7ff2a53c920536cbd4f1240c8d794e4fb5ad2eae9d4dfc60aec78d04"
         },
         {
-          "revision": "committing change with the remote relay mapping every runner 404 to the older-runner 409",
-          "result": "Mutation control: fails Go on instance-backups-actions-remote-get-404 (409 instead of the runner's 404 message).",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-mutation-r1/results.json",
-          "receipt_sha256": "e8d56fdf0f3bd232f1d63fce3a1d4c0e5a926a6f4b088e77371eeb042f04cafd"
+          "revision": "committing change with DELETE relayed without the password confirmation",
+          "result": "Mutation control: fails Go on instance-backups-actions-delete-no-body (the runner is called instead of 400 for the missing password).",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-mutation/results.json",
+          "receipt_sha256": "ae5b55ea0ccda252d918b6c474a1e893e5ea53ddedf881781fd2829ad4b33074"
         }
       ],
       "notes": [
-        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore (shared attempts window), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length), and the remote copy settings, test, key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
+        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore, delete, un-keep, remote settings and key generation/confirmation (one shared attempts window; each try counted before the password check), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length, 413 above ASSOZETA_BACKUP_UPLOAD_MAX_BYTES before the runner), and the remote copy settings, test (endpoint checked before the runner: https://, http:// only with ASSOZETA_BACKUP_REMOTE_ALLOW_HTTP, no loopback, link-local or instance addresses), key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
       ]
     },
     {
@@ -35576,6 +35588,13 @@
           "result": "Mutation control: fails Go on instance-backups-create-runner-404 (500 page instead of 409).",
           "artifact": "quality-reports/go-migration/instance-reverify-backups-mutation/results.json",
           "receipt_sha256": "693a8cd729559081d151763bd29245e5865fd95eaabd2b9e135fc0f061a1921a"
+        },
+        {
+          "command": "tools/go-migration/family.py run instance-backups --versioned (receipt copied from instance-backups-http-sec-versioned-r1)",
+          "revision": "go/sec-backups 906b7eeb",
+          "result": "GREEN: 161/161 on native Django, native Go, Caddy /api/v1 and /api/v2 after password_refusal counts each try before the check (shared with the backup actions).",
+          "artifact": "quality-reports/go-migration/sec-backups-overview-green/results.json",
+          "receipt_sha256": "f0d24358b376696fe0839fc7a26c744690685ec04f760e74b92f7ebc8fd764b1"
         }
       ],
       "notes": [
@@ -35602,6 +35621,8 @@
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
         "BE_GO/internal/dto/instance_backup_actions.go",
+        "BE_GO/internal/dto/instance_backup_endpoint.go",
+        "BE_GO/internal/dto/instance_backup_endpoint_test.go",
         "BE_GO/internal/dto/instance_backup_actions_test.go",
         "BE_GO/internal/repository/instance_backup_actions.go",
         "BE_GO/internal/updaterrunner/send.go",
@@ -35609,7 +35630,10 @@
         "BE_GO/internal/repository/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
         "BE_GO/cmd/server/instance_backup_actions.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/instance_backups_password_test.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/internal/config/instance_backup_settings_test.go"
       ],
       "dependencies": [
         "BE/instance/backups.py",
@@ -35636,7 +35660,7 @@
         ],
         "request": "JSON {password: CharField(max 256, untrimmed), confirm: CharField(max 32)}.",
         "response": "202 with the runner's body (POST /backups/<name>/restore with {request_id: str(uuid4()), actor_id, confirm: 'RIPRISTINA'}).",
-        "errors": "404 non-archive name; 400 serializer errors; 400 'Scrivi RIPRISTINA per confermare.'; 429 after five failed attempts; 400 'Password non corretta.'; runner refusals and 503 as relay(); a reply without an operation object is the 500 page.",
+        "errors": "404 non-archive name; 400 serializer errors; 400 'Scrivi RIPRISTINA per confermare.'; 429 at five attempts (each try counted before the password check; a count above five is 429); 400 'Password non corretta.'; runner refusals and 503 as relay(); a reply without an operation object is the 500 page.",
         "authentication": "Bearer JWT; administration path.",
         "permissions": "IsInstanceOwner on the authenticated actor.",
         "resource_scope": "The actor's own password and the shared attempts counter; instance-wide archives.",
@@ -35654,25 +35678,25 @@
         "docs/architecture/go-migration/instance-backups-actions.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 171/171; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-red-r1/results.json",
-          "receipt_sha256": "bbb6136bda4f6f3dfaf3f91e46e234cdb3bee14b40969b55661e575712dffec2"
+          "result": "RED: Django 247/247; Go fails cache.keys on the first case.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-red/results.json",
+          "receipt_sha256": "41a2da13014164db73998eee527c8723df0a92b4d985ce5181734489d47dc076"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 171/171 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-versioned-r1/results.json",
-          "receipt_sha256": "9b15a5cdb8b28e96c8766a67b5a2dc78bd1dda79b07d859e8ba819b9d766b342"
+          "result": "GREEN: 247/247 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-green/results.json",
+          "receipt_sha256": "be6ab63b7ff2a53c920536cbd4f1240c8d794e4fb5ad2eae9d4dfc60aec78d04"
         },
         {
-          "revision": "committing change with the remote relay mapping every runner 404 to the older-runner 409",
-          "result": "Mutation control: fails Go on instance-backups-actions-remote-get-404 (409 instead of the runner's 404 message).",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-mutation-r1/results.json",
-          "receipt_sha256": "e8d56fdf0f3bd232f1d63fce3a1d4c0e5a926a6f4b088e77371eeb042f04cafd"
+          "revision": "committing change with DELETE relayed without the password confirmation",
+          "result": "Mutation control: fails Go on instance-backups-actions-delete-no-body (the runner is called instead of 400 for the missing password).",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-mutation/results.json",
+          "receipt_sha256": "ae5b55ea0ccda252d918b6c474a1e893e5ea53ddedf881781fd2829ad4b33074"
         }
       ],
       "notes": [
-        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore (shared attempts window), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length), and the remote copy settings, test, key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
+        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore, delete, un-keep, remote settings and key generation/confirmation (one shared attempts window; each try counted before the password check), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length, 413 above ASSOZETA_BACKUP_UPLOAD_MAX_BYTES before the runner), and the remote copy settings, test (endpoint checked before the runner: https://, http:// only with ASSOZETA_BACKUP_REMOTE_ALLOW_HTTP, no loopback, link-local or instance addresses), key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
       ]
     },
     {
@@ -35760,6 +35784,13 @@
           "result": "Mutation control: fails Go on instance-backups-create-runner-404 (500 page instead of 409).",
           "artifact": "quality-reports/go-migration/instance-reverify-backups-mutation/results.json",
           "receipt_sha256": "693a8cd729559081d151763bd29245e5865fd95eaabd2b9e135fc0f061a1921a"
+        },
+        {
+          "command": "tools/go-migration/family.py run instance-backups --versioned (receipt copied from instance-backups-http-sec-versioned-r1)",
+          "revision": "go/sec-backups 906b7eeb",
+          "result": "GREEN: 161/161 on native Django, native Go, Caddy /api/v1 and /api/v2 after password_refusal counts each try before the check (shared with the backup actions).",
+          "artifact": "quality-reports/go-migration/sec-backups-overview-green/results.json",
+          "receipt_sha256": "f0d24358b376696fe0839fc7a26c744690685ec04f760e74b92f7ebc8fd764b1"
         }
       ],
       "notes": [
@@ -35786,6 +35817,8 @@
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
         "BE_GO/internal/dto/instance_backup_actions.go",
+        "BE_GO/internal/dto/instance_backup_endpoint.go",
+        "BE_GO/internal/dto/instance_backup_endpoint_test.go",
         "BE_GO/internal/dto/instance_backup_actions_test.go",
         "BE_GO/internal/repository/instance_backup_actions.go",
         "BE_GO/internal/updaterrunner/send.go",
@@ -35793,7 +35826,10 @@
         "BE_GO/internal/repository/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
         "BE_GO/cmd/server/instance_backup_actions.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/instance_backups_password_test.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/internal/config/instance_backup_settings_test.go"
       ],
       "dependencies": [
         "BE/instance/backups.py",
@@ -35820,13 +35856,13 @@
           "/api/v2/instance/admin/backups/remote",
           "/api/instance/admin/backups/remote"
         ],
-        "request": "GET none; PUT JSON RemoteSettingsSerializer (optional endpoint, region, bucket, prefix, access_key, secret_key CharFields with allow_blank; path_style, enabled BooleanFields; retention 1..30).",
+        "request": "GET none; PUT JSON RemoteSettingsChangeSerializer (optional endpoint, region, bucket, prefix, access_key, secret_key CharFields with allow_blank; path_style, enabled BooleanFields; retention 1..30; validate_endpoint; required password).",
         "response": "200 with the runner's body and Cache-Control no-store (GET /backups/remote without payload; PUT with the provided fields in declared order).",
-        "errors": "400 serializer errors; a runner 404 'Unknown endpoint.' is 409; other refusals keep 4xx (else 503); 503 unavailable.",
+        "errors": "400 serializer errors (endpoint: https:// form without user information, query or fragment, port 1..65535, http:// only with ASSOZETA_BACKUP_REMOTE_ALLOW_HTTP, no loopback, link-local, multicast/reserved or instance addresses or localhost/metadata names); then the owner's password: PasswordSerializer (password CharField max 256, untrimmed) then password_refusal on the shared attempts key (429 at five; each try counted with cache.add/incr before the check, a count above five is 429; 400 'Password non corretta.'; deleted on a match); a runner 404 'Unknown endpoint.' is 409; other refusals keep 4xx (else 503); 503 unavailable.",
         "authentication": "Bearer JWT; administration path.",
         "permissions": "IsInstanceOwner on the authenticated actor.",
         "resource_scope": "Instance-wide remote copy settings (kept by the runner).",
-        "side_effects": "Update runner GET/PUT /backups/remote; on a PUT 200 auditlog UPDATE backup_remote_settings (sorted JSON of the provided settings fields, the secret only as 'changed') with its index row.",
+        "side_effects": "Django cache attempts key and password rehash (PUT); update runner GET/PUT /backups/remote (the password is not relayed); on a PUT 200 auditlog UPDATE backup_remote_settings (sorted JSON of the provided settings fields, the secret only as 'changed') with its index row.",
         "transaction": "None.",
         "execution_owner": "django"
       },
@@ -35840,25 +35876,32 @@
         "docs/architecture/go-migration/instance-backups-actions.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 171/171; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-red-r1/results.json",
-          "receipt_sha256": "bbb6136bda4f6f3dfaf3f91e46e234cdb3bee14b40969b55661e575712dffec2"
+          "result": "RED: Django 247/247; Go fails cache.keys on the first case.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-red/results.json",
+          "receipt_sha256": "41a2da13014164db73998eee527c8723df0a92b4d985ce5181734489d47dc076"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 171/171 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-versioned-r1/results.json",
-          "receipt_sha256": "9b15a5cdb8b28e96c8766a67b5a2dc78bd1dda79b07d859e8ba819b9d766b342"
+          "result": "GREEN: 247/247 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-green/results.json",
+          "receipt_sha256": "be6ab63b7ff2a53c920536cbd4f1240c8d794e4fb5ad2eae9d4dfc60aec78d04"
         },
         {
-          "revision": "committing change with the remote relay mapping every runner 404 to the older-runner 409",
-          "result": "Mutation control: fails Go on instance-backups-actions-remote-get-404 (409 instead of the runner's 404 message).",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-mutation-r1/results.json",
-          "receipt_sha256": "e8d56fdf0f3bd232f1d63fce3a1d4c0e5a926a6f4b088e77371eeb042f04cafd"
+          "revision": "committing change with DELETE relayed without the password confirmation",
+          "result": "Mutation control: fails Go on instance-backups-actions-delete-no-body (the runner is called instead of 400 for the missing password).",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-mutation/results.json",
+          "receipt_sha256": "ae5b55ea0ccda252d918b6c474a1e893e5ea53ddedf881781fd2829ad4b33074"
+        },
+        {
+          "command": "tools/go-migration/family.py mutation instance-backups-actions (address check disabled in Go)",
+          "revision": "go/sec-backups 906b7eeb",
+          "result": "Mutation control: fails Go on instance-backups-actions-remote-put-endpoint-before-password (password checked instead of 400 for the address).",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-mutation-endpoint/results.json",
+          "receipt_sha256": "e69d2fcbfaa67c9d0452366bc8818d7d6332d1a60e0fc538b91b7f04a86cf235"
         }
       ],
       "notes": [
-        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore (shared attempts window), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length), and the remote copy settings, test, key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
+        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore, delete, un-keep, remote settings and key generation/confirmation (one shared attempts window; each try counted before the password check), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length, 413 above ASSOZETA_BACKUP_UPLOAD_MAX_BYTES before the runner), and the remote copy settings, test (endpoint checked before the runner: https://, http:// only with ASSOZETA_BACKUP_REMOTE_ALLOW_HTTP, no loopback, link-local or instance addresses), key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
       ]
     },
     {
@@ -35881,6 +35924,8 @@
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
         "BE_GO/internal/dto/instance_backup_actions.go",
+        "BE_GO/internal/dto/instance_backup_endpoint.go",
+        "BE_GO/internal/dto/instance_backup_endpoint_test.go",
         "BE_GO/internal/dto/instance_backup_actions_test.go",
         "BE_GO/internal/repository/instance_backup_actions.go",
         "BE_GO/internal/updaterrunner/send.go",
@@ -35888,7 +35933,10 @@
         "BE_GO/internal/repository/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
         "BE_GO/cmd/server/instance_backup_actions.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/instance_backups_password_test.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/internal/config/instance_backup_settings_test.go"
       ],
       "dependencies": [
         "BE/instance/backups.py",
@@ -35933,25 +35981,25 @@
         "docs/architecture/go-migration/instance-backups-actions.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 171/171; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-red-r1/results.json",
-          "receipt_sha256": "bbb6136bda4f6f3dfaf3f91e46e234cdb3bee14b40969b55661e575712dffec2"
+          "result": "RED: Django 247/247; Go fails cache.keys on the first case.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-red/results.json",
+          "receipt_sha256": "41a2da13014164db73998eee527c8723df0a92b4d985ce5181734489d47dc076"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 171/171 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-versioned-r1/results.json",
-          "receipt_sha256": "9b15a5cdb8b28e96c8766a67b5a2dc78bd1dda79b07d859e8ba819b9d766b342"
+          "result": "GREEN: 247/247 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-green/results.json",
+          "receipt_sha256": "be6ab63b7ff2a53c920536cbd4f1240c8d794e4fb5ad2eae9d4dfc60aec78d04"
         },
         {
-          "revision": "committing change with the remote relay mapping every runner 404 to the older-runner 409",
-          "result": "Mutation control: fails Go on instance-backups-actions-remote-get-404 (409 instead of the runner's 404 message).",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-mutation-r1/results.json",
-          "receipt_sha256": "e8d56fdf0f3bd232f1d63fce3a1d4c0e5a926a6f4b088e77371eeb042f04cafd"
+          "revision": "committing change with DELETE relayed without the password confirmation",
+          "result": "Mutation control: fails Go on instance-backups-actions-delete-no-body (the runner is called instead of 400 for the missing password).",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-mutation/results.json",
+          "receipt_sha256": "ae5b55ea0ccda252d918b6c474a1e893e5ea53ddedf881781fd2829ad4b33074"
         }
       ],
       "notes": [
-        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore (shared attempts window), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length), and the remote copy settings, test, key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
+        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore, delete, un-keep, remote settings and key generation/confirmation (one shared attempts window; each try counted before the password check), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length, 413 above ASSOZETA_BACKUP_UPLOAD_MAX_BYTES before the runner), and the remote copy settings, test (endpoint checked before the runner: https://, http:// only with ASSOZETA_BACKUP_REMOTE_ALLOW_HTTP, no loopback, link-local or instance addresses), key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
       ]
     },
     {
@@ -35974,6 +36022,8 @@
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
         "BE_GO/internal/dto/instance_backup_actions.go",
+        "BE_GO/internal/dto/instance_backup_endpoint.go",
+        "BE_GO/internal/dto/instance_backup_endpoint_test.go",
         "BE_GO/internal/dto/instance_backup_actions_test.go",
         "BE_GO/internal/repository/instance_backup_actions.go",
         "BE_GO/internal/updaterrunner/send.go",
@@ -35981,7 +36031,10 @@
         "BE_GO/internal/repository/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
         "BE_GO/cmd/server/instance_backup_actions.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/instance_backups_password_test.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/internal/config/instance_backup_settings_test.go"
       ],
       "dependencies": [
         "BE/instance/backups.py",
@@ -36006,13 +36059,13 @@
           "/api/v2/instance/admin/backups/remote/key",
           "/api/instance/admin/backups/remote/key"
         ],
-        "request": "Body not read.",
+        "request": "JSON {password} (PasswordSerializer).",
         "response": "201 with the runner's body and Cache-Control no-store (POST /backups/remote/key with {}).",
-        "errors": "Runner refusals and 503 as the remote relay; a non-object reply is the 500 page.",
+        "errors": "400 password field errors or non_field_errors; the owner's password: PasswordSerializer (password CharField max 256, untrimmed) then password_refusal on the shared attempts key (429 at five; each try counted with cache.add/incr before the check, a count above five is 429; 400 'Password non corretta.'; deleted on a match); runner refusals and 503 as the remote relay; a non-object reply is the 500 page.",
         "authentication": "Bearer JWT; administration path.",
         "permissions": "IsInstanceOwner on the authenticated actor.",
         "resource_scope": "Instance-wide remote copy key pair (kept by the runner).",
-        "side_effects": "Update runner key generation; on 201 auditlog UPDATE backup_remote_key_generated (str(key_id)) with its index row.",
+        "side_effects": "Django cache attempts key and password rehash; update runner key generation; on 201 auditlog UPDATE backup_remote_key_generated (str(key_id)) with its index row.",
         "transaction": "None.",
         "execution_owner": "django"
       },
@@ -36026,25 +36079,25 @@
         "docs/architecture/go-migration/instance-backups-actions.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 171/171; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-red-r1/results.json",
-          "receipt_sha256": "bbb6136bda4f6f3dfaf3f91e46e234cdb3bee14b40969b55661e575712dffec2"
+          "result": "RED: Django 247/247; Go fails cache.keys on the first case.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-red/results.json",
+          "receipt_sha256": "41a2da13014164db73998eee527c8723df0a92b4d985ce5181734489d47dc076"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 171/171 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-versioned-r1/results.json",
-          "receipt_sha256": "9b15a5cdb8b28e96c8766a67b5a2dc78bd1dda79b07d859e8ba819b9d766b342"
+          "result": "GREEN: 247/247 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-green/results.json",
+          "receipt_sha256": "be6ab63b7ff2a53c920536cbd4f1240c8d794e4fb5ad2eae9d4dfc60aec78d04"
         },
         {
-          "revision": "committing change with the remote relay mapping every runner 404 to the older-runner 409",
-          "result": "Mutation control: fails Go on instance-backups-actions-remote-get-404 (409 instead of the runner's 404 message).",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-mutation-r1/results.json",
-          "receipt_sha256": "e8d56fdf0f3bd232f1d63fce3a1d4c0e5a926a6f4b088e77371eeb042f04cafd"
+          "revision": "committing change with DELETE relayed without the password confirmation",
+          "result": "Mutation control: fails Go on instance-backups-actions-delete-no-body (the runner is called instead of 400 for the missing password).",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-mutation/results.json",
+          "receipt_sha256": "ae5b55ea0ccda252d918b6c474a1e893e5ea53ddedf881781fd2829ad4b33074"
         }
       ],
       "notes": [
-        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore (shared attempts window), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length), and the remote copy settings, test, key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
+        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore, delete, un-keep, remote settings and key generation/confirmation (one shared attempts window; each try counted before the password check), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length, 413 above ASSOZETA_BACKUP_UPLOAD_MAX_BYTES before the runner), and the remote copy settings, test (endpoint checked before the runner: https://, http:// only with ASSOZETA_BACKUP_REMOTE_ALLOW_HTTP, no loopback, link-local or instance addresses), key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
       ]
     },
     {
@@ -36067,6 +36120,8 @@
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
         "BE_GO/internal/dto/instance_backup_actions.go",
+        "BE_GO/internal/dto/instance_backup_endpoint.go",
+        "BE_GO/internal/dto/instance_backup_endpoint_test.go",
         "BE_GO/internal/dto/instance_backup_actions_test.go",
         "BE_GO/internal/repository/instance_backup_actions.go",
         "BE_GO/internal/updaterrunner/send.go",
@@ -36074,7 +36129,10 @@
         "BE_GO/internal/repository/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
         "BE_GO/cmd/server/instance_backup_actions.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/instance_backups_password_test.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/internal/config/instance_backup_settings_test.go"
       ],
       "dependencies": [
         "BE/instance/backups.py",
@@ -36099,13 +36157,13 @@
           "/api/v2/instance/admin/backups/remote/key/confirm",
           "/api/instance/admin/backups/remote/key/confirm"
         ],
-        "request": "JSON {key_id: RegexField 8 lowercase hex, tail: CharField of 6 characters}.",
+        "request": "JSON {key_id: RegexField 8 lowercase hex, tail: CharField of 6 characters, password}.",
         "response": "200 with the runner's body and Cache-Control no-store (POST /backups/remote/key/confirm with {key_id, tail}).",
-        "errors": "400 serializer errors; runner refusals and 503 as the remote relay.",
+        "errors": "400 serializer errors; the owner's password: PasswordSerializer (password CharField max 256, untrimmed) then password_refusal on the shared attempts key (429 at five; each try counted with cache.add/incr before the check, a count above five is 429; 400 'Password non corretta.'; deleted on a match); runner refusals and 503 as the remote relay.",
         "authentication": "Bearer JWT; administration path.",
         "permissions": "IsInstanceOwner on the authenticated actor.",
         "resource_scope": "Instance-wide remote copy key pair.",
-        "side_effects": "Update runner key confirmation; on 200 auditlog UPDATE backup_remote_key_confirmed (key_id) with its index row.",
+        "side_effects": "Django cache attempts key and password rehash; update runner key confirmation ({key_id, tail}); on 200 auditlog UPDATE backup_remote_key_confirmed (key_id) with its index row.",
         "transaction": "None.",
         "execution_owner": "django"
       },
@@ -36119,25 +36177,25 @@
         "docs/architecture/go-migration/instance-backups-actions.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 171/171; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-red-r1/results.json",
-          "receipt_sha256": "bbb6136bda4f6f3dfaf3f91e46e234cdb3bee14b40969b55661e575712dffec2"
+          "result": "RED: Django 247/247; Go fails cache.keys on the first case.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-red/results.json",
+          "receipt_sha256": "41a2da13014164db73998eee527c8723df0a92b4d985ce5181734489d47dc076"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 171/171 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-versioned-r1/results.json",
-          "receipt_sha256": "9b15a5cdb8b28e96c8766a67b5a2dc78bd1dda79b07d859e8ba819b9d766b342"
+          "result": "GREEN: 247/247 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-green/results.json",
+          "receipt_sha256": "be6ab63b7ff2a53c920536cbd4f1240c8d794e4fb5ad2eae9d4dfc60aec78d04"
         },
         {
-          "revision": "committing change with the remote relay mapping every runner 404 to the older-runner 409",
-          "result": "Mutation control: fails Go on instance-backups-actions-remote-get-404 (409 instead of the runner's 404 message).",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-mutation-r1/results.json",
-          "receipt_sha256": "e8d56fdf0f3bd232f1d63fce3a1d4c0e5a926a6f4b088e77371eeb042f04cafd"
+          "revision": "committing change with DELETE relayed without the password confirmation",
+          "result": "Mutation control: fails Go on instance-backups-actions-delete-no-body (the runner is called instead of 400 for the missing password).",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-mutation/results.json",
+          "receipt_sha256": "ae5b55ea0ccda252d918b6c474a1e893e5ea53ddedf881781fd2829ad4b33074"
         }
       ],
       "notes": [
-        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore (shared attempts window), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length), and the remote copy settings, test, key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
+        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore, delete, un-keep, remote settings and key generation/confirmation (one shared attempts window; each try counted before the password check), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length, 413 above ASSOZETA_BACKUP_UPLOAD_MAX_BYTES before the runner), and the remote copy settings, test (endpoint checked before the runner: https://, http:// only with ASSOZETA_BACKUP_REMOTE_ALLOW_HTTP, no loopback, link-local or instance addresses), key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
       ]
     },
     {
@@ -36160,6 +36218,8 @@
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
         "BE_GO/internal/dto/instance_backup_actions.go",
+        "BE_GO/internal/dto/instance_backup_endpoint.go",
+        "BE_GO/internal/dto/instance_backup_endpoint_test.go",
         "BE_GO/internal/dto/instance_backup_actions_test.go",
         "BE_GO/internal/repository/instance_backup_actions.go",
         "BE_GO/internal/updaterrunner/send.go",
@@ -36167,7 +36227,10 @@
         "BE_GO/internal/repository/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
         "BE_GO/cmd/server/instance_backup_actions.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/instance_backups_password_test.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/internal/config/instance_backup_settings_test.go"
       ],
       "dependencies": [
         "BE/instance/backups.py",
@@ -36194,7 +36257,7 @@
         ],
         "request": "JSON RemoteSettingsSerializer on request.data or {}.",
         "response": "200 with the runner's body and Cache-Control no-store (POST /backups/remote/test without enabled, 30 s timeout).",
-        "errors": "400 serializer errors; runner refusals and 503 as the remote relay.",
+        "errors": "400 serializer errors (the endpoint rules of admin/backups/remote, checked before the runner); runner refusals and 503 as the remote relay.",
         "authentication": "Bearer JWT; administration path.",
         "permissions": "IsInstanceOwner on the authenticated actor.",
         "resource_scope": "The candidate settings.",
@@ -36212,25 +36275,32 @@
         "docs/architecture/go-migration/instance-backups-actions.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 171/171; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-red-r1/results.json",
-          "receipt_sha256": "bbb6136bda4f6f3dfaf3f91e46e234cdb3bee14b40969b55661e575712dffec2"
+          "result": "RED: Django 247/247; Go fails cache.keys on the first case.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-red/results.json",
+          "receipt_sha256": "41a2da13014164db73998eee527c8723df0a92b4d985ce5181734489d47dc076"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 171/171 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-versioned-r1/results.json",
-          "receipt_sha256": "9b15a5cdb8b28e96c8766a67b5a2dc78bd1dda79b07d859e8ba819b9d766b342"
+          "result": "GREEN: 247/247 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-green/results.json",
+          "receipt_sha256": "be6ab63b7ff2a53c920536cbd4f1240c8d794e4fb5ad2eae9d4dfc60aec78d04"
         },
         {
-          "revision": "committing change with the remote relay mapping every runner 404 to the older-runner 409",
-          "result": "Mutation control: fails Go on instance-backups-actions-remote-get-404 (409 instead of the runner's 404 message).",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-mutation-r1/results.json",
-          "receipt_sha256": "e8d56fdf0f3bd232f1d63fce3a1d4c0e5a926a6f4b088e77371eeb042f04cafd"
+          "revision": "committing change with DELETE relayed without the password confirmation",
+          "result": "Mutation control: fails Go on instance-backups-actions-delete-no-body (the runner is called instead of 400 for the missing password).",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-mutation/results.json",
+          "receipt_sha256": "ae5b55ea0ccda252d918b6c474a1e893e5ea53ddedf881781fd2829ad4b33074"
+        },
+        {
+          "command": "tools/go-migration/family.py mutation instance-backups-actions (address check disabled in Go)",
+          "revision": "go/sec-backups 906b7eeb",
+          "result": "Mutation control: fails Go on instance-backups-actions-remote-put-endpoint-before-password (password checked instead of 400 for the address).",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-mutation-endpoint/results.json",
+          "receipt_sha256": "e69d2fcbfaa67c9d0452366bc8818d7d6332d1a60e0fc538b91b7f04a86cf235"
         }
       ],
       "notes": [
-        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore (shared attempts window), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length), and the remote copy settings, test, key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
+        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore, delete, un-keep, remote settings and key generation/confirmation (one shared attempts window; each try counted before the password check), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length, 413 above ASSOZETA_BACKUP_UPLOAD_MAX_BYTES before the runner), and the remote copy settings, test (endpoint checked before the runner: https://, http:// only with ASSOZETA_BACKUP_REMOTE_ALLOW_HTTP, no loopback, link-local or instance addresses), key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
       ]
     },
     {
@@ -36253,6 +36323,8 @@
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
         "BE_GO/internal/dto/instance_backup_actions.go",
+        "BE_GO/internal/dto/instance_backup_endpoint.go",
+        "BE_GO/internal/dto/instance_backup_endpoint_test.go",
         "BE_GO/internal/dto/instance_backup_actions_test.go",
         "BE_GO/internal/repository/instance_backup_actions.go",
         "BE_GO/internal/updaterrunner/send.go",
@@ -36260,7 +36332,10 @@
         "BE_GO/internal/repository/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
         "BE_GO/cmd/server/instance_backup_actions.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/instance_backups_password_test.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/internal/config/instance_backup_settings_test.go"
       ],
       "dependencies": [
         "BE/instance/backups.py",
@@ -36305,25 +36380,25 @@
         "docs/architecture/go-migration/instance-backups-actions.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 171/171; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-red-r1/results.json",
-          "receipt_sha256": "bbb6136bda4f6f3dfaf3f91e46e234cdb3bee14b40969b55661e575712dffec2"
+          "result": "RED: Django 247/247; Go fails cache.keys on the first case.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-red/results.json",
+          "receipt_sha256": "41a2da13014164db73998eee527c8723df0a92b4d985ce5181734489d47dc076"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 171/171 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-versioned-r1/results.json",
-          "receipt_sha256": "9b15a5cdb8b28e96c8766a67b5a2dc78bd1dda79b07d859e8ba819b9d766b342"
+          "result": "GREEN: 247/247 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-green/results.json",
+          "receipt_sha256": "be6ab63b7ff2a53c920536cbd4f1240c8d794e4fb5ad2eae9d4dfc60aec78d04"
         },
         {
-          "revision": "committing change with the remote relay mapping every runner 404 to the older-runner 409",
-          "result": "Mutation control: fails Go on instance-backups-actions-remote-get-404 (409 instead of the runner's 404 message).",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-mutation-r1/results.json",
-          "receipt_sha256": "e8d56fdf0f3bd232f1d63fce3a1d4c0e5a926a6f4b088e77371eeb042f04cafd"
+          "revision": "committing change with DELETE relayed without the password confirmation",
+          "result": "Mutation control: fails Go on instance-backups-actions-delete-no-body (the runner is called instead of 400 for the missing password).",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-mutation/results.json",
+          "receipt_sha256": "ae5b55ea0ccda252d918b6c474a1e893e5ea53ddedf881781fd2829ad4b33074"
         }
       ],
       "notes": [
-        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore (shared attempts window), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length), and the remote copy settings, test, key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
+        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore, delete, un-keep, remote settings and key generation/confirmation (one shared attempts window; each try counted before the password check), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length, 413 above ASSOZETA_BACKUP_UPLOAD_MAX_BYTES before the runner), and the remote copy settings, test (endpoint checked before the runner: https://, http:// only with ASSOZETA_BACKUP_REMOTE_ALLOW_HTTP, no loopback, link-local or instance addresses), key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
       ]
     },
     {
@@ -36346,6 +36421,8 @@
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
         "BE_GO/internal/dto/instance_backup_actions.go",
+        "BE_GO/internal/dto/instance_backup_endpoint.go",
+        "BE_GO/internal/dto/instance_backup_endpoint_test.go",
         "BE_GO/internal/dto/instance_backup_actions_test.go",
         "BE_GO/internal/repository/instance_backup_actions.go",
         "BE_GO/internal/updaterrunner/send.go",
@@ -36353,7 +36430,10 @@
         "BE_GO/internal/repository/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
         "BE_GO/cmd/server/instance_backup_actions.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/instance_backups_password_test.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/internal/config/instance_backup_settings_test.go"
       ],
       "dependencies": [
         "BE/instance/backups.py",
@@ -36380,7 +36460,7 @@
         ],
         "request": "Raw archive body with Content-Length (not parsed; streamed by core.asgi stream_uploads, skipped by the body-reading middleware).",
         "response": "201 with the runner's JSON result (POST /backups/upload, Content-Type application/gzip, the same Content-Length and bytes).",
-        "errors": "411 'Seleziona un file da caricare.' without a positive length; 400 'Caricamento interrotto. Riprova.' when the body ends early; runner 404 is 409; other refusals keep 4xx (default 'Caricamento non riuscito.'), else 503; 503 unavailable; a non-object result or a truthy non-object archive is the 500 page.",
+        "errors": "411 'Seleziona un file da caricare.' without a positive length; 413 {error: 'Il file supera la dimensione massima consentita per il caricamento.', max_bytes} above ASSOZETA_BACKUP_UPLOAD_MAX_BYTES (setting or environment, default 50 GiB) before the body is read; 400 'Caricamento interrotto. Riprova.' when the body ends early; runner 404 is 409; other refusals keep 4xx (default 'Caricamento non riuscito.'), else 503; 503 unavailable; a non-object result or a truthy non-object archive is the 500 page.",
         "authentication": "Bearer JWT; administration path (identity sees an empty body).",
         "permissions": "IsInstanceOwner on the authenticated actor.",
         "resource_scope": "Instance-wide archives.",
@@ -36398,25 +36478,32 @@
         "docs/architecture/go-migration/instance-backups-actions.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 171/171; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-red-r1/results.json",
-          "receipt_sha256": "bbb6136bda4f6f3dfaf3f91e46e234cdb3bee14b40969b55661e575712dffec2"
+          "result": "RED: Django 247/247; Go fails cache.keys on the first case.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-red/results.json",
+          "receipt_sha256": "41a2da13014164db73998eee527c8723df0a92b4d985ce5181734489d47dc076"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 171/171 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes.",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-versioned-r1/results.json",
-          "receipt_sha256": "9b15a5cdb8b28e96c8766a67b5a2dc78bd1dda79b07d859e8ba819b9d766b342"
+          "result": "GREEN: 247/247 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules.",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-green/results.json",
+          "receipt_sha256": "be6ab63b7ff2a53c920536cbd4f1240c8d794e4fb5ad2eae9d4dfc60aec78d04"
         },
         {
-          "revision": "committing change with the remote relay mapping every runner 404 to the older-runner 409",
-          "result": "Mutation control: fails Go on instance-backups-actions-remote-get-404 (409 instead of the runner's 404 message).",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-mutation-r1/results.json",
-          "receipt_sha256": "e8d56fdf0f3bd232f1d63fce3a1d4c0e5a926a6f4b088e77371eeb042f04cafd"
+          "revision": "committing change with DELETE relayed without the password confirmation",
+          "result": "Mutation control: fails Go on instance-backups-actions-delete-no-body (the runner is called instead of 400 for the missing password).",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-mutation/results.json",
+          "receipt_sha256": "ae5b55ea0ccda252d918b6c474a1e893e5ea53ddedf881781fd2829ad4b33074"
+        },
+        {
+          "command": "tools/go-migration/family.py mutation instance-backups-actions (upload limit check disabled in Go)",
+          "revision": "go/sec-backups 906b7eeb",
+          "result": "Mutation control: fails Go on instance-backups-actions-upload-over-the-limit (the runner is called instead of 413).",
+          "artifact": "quality-reports/go-migration/sec-backups-actions-mutation-upload/results.json",
+          "receipt_sha256": "c4775c8ca57401da28bdb542b032fd49bbe40198c897dfc54c9f589c32dd2d33"
         }
       ],
       "notes": [
-        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore (shared attempts window), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length), and the remote copy settings, test, key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
+        "Implementing: instance-backups-actions family (docs/architecture/go-migration/instance-backups-actions.md): the owner's backup actions relayed to the update runner (Unix socket, bearer token, production mode) with Django's JSON payloads, status mapping and UPDATE audit entries on the instance configuration: keep/delete one archive, the schedule, the password-confirmed restore, delete, un-keep, remote settings and key generation/confirmation (one shared attempts window; each try counted before the password check), the streamed upload (core.asgi stream_uploads: the body is forwarded as it arrives, 411 without a length, 413 above ASSOZETA_BACKUP_UPLOAD_MAX_BYTES before the runner), and the remote copy settings, test (endpoint checked before the runner: https://, http:// only with ASSOZETA_BACKUP_REMOTE_ALLOW_HTTP, no loopback, link-local or instance addresses), key generation and confirmation, and fetch (Cache-Control no-store on success). Not ported (500 page before any write): form and multipart bodies on the serializer views, multipart bodies on the item view, lone surrogates in CharFields, runner replies Python decodes but Go does not."
       ]
     },
     {
@@ -40681,6 +40768,20 @@
           "result": "passed: 15 differential scenarios against the prefork Django worker with the production cache (race-built consumer): SMTP transcripts, managed models with TaskResult, broker keys, cache keys (bytes, TTL) and runner requests",
           "artifact": "quality-reports/go-migration/beat-reverify-notify-process/results.json",
           "receipt_sha256": "f42f151a2045f63dfb5bf8fe96327dbad8252871bdcaabc3adf3a1f3dba919cf"
+        },
+        {
+          "command": "python TESTS/adapters/go/celery_consumer_backup_failures_process.py",
+          "revision": "go/sec-backups 906b7eeb",
+          "result": "passed: 15/15 scenarios, race-built Go consumer against the prefork Django worker; notices give the time and archive, no runner message.",
+          "artifact": "quality-reports/go-migration/sec-backups-consumer-green/results.json",
+          "receipt_sha256": "f04d7af1fafd2c2724ad8e5f58ab7e6d149a86eff92ce58a7bf144ed26c78cc9"
+        },
+        {
+          "command": "python TESTS/adapters/go/celery_consumer_backup_failures_process.py (Go notice with the runner message)",
+          "revision": "go/sec-backups 906b7eeb",
+          "result": "Mutation control: CAUGHT, Go differs from Django on the first scenario.",
+          "artifact": "quality-reports/go-migration/sec-backups-consumer-mutation/results.json",
+          "receipt_sha256": "e32518884e386e52f6aef40c305d751a07da039068b80c364453fb1095177290"
         }
       ],
       "notes": [
@@ -47557,6 +47658,20 @@
           "result": "passed after the consumer registration change",
           "artifact": "quality-reports/go-migration/beat-reverify-consumer-capabilities/results.json",
           "receipt_sha256": "7133d889f72c476452a48cea161366ca78ef1f64ab0fb9cb39de2fb7e145dd84"
+        },
+        {
+          "command": "python TESTS/adapters/go/celery_consumer_backup_failures_process.py",
+          "revision": "go/sec-backups 906b7eeb",
+          "result": "passed: 15/15 scenarios, race-built Go consumer against the prefork Django worker; notices give the time and archive, no runner message.",
+          "artifact": "quality-reports/go-migration/sec-backups-consumer-green/results.json",
+          "receipt_sha256": "f04d7af1fafd2c2724ad8e5f58ab7e6d149a86eff92ce58a7bf144ed26c78cc9"
+        },
+        {
+          "command": "python TESTS/adapters/go/celery_consumer_backup_failures_process.py (Go notice with the runner message)",
+          "revision": "go/sec-backups 906b7eeb",
+          "result": "Mutation control: CAUGHT, Go differs from Django on the first scenario.",
+          "artifact": "quality-reports/go-migration/sec-backups-consumer-mutation/results.json",
+          "receipt_sha256": "e32518884e386e52f6aef40c305d751a07da039068b80c364453fb1095177290"
         }
       ],
       "notes": [
