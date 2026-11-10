@@ -29,6 +29,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // SDKVersion is the openai distribution version the requests name.
@@ -53,7 +55,7 @@ const (
 
 // ErrNotPorted refuses an input whose SDK behaviour this client does not
 // reproduce (a base URL httpx would rewrite or reject).
-var ErrNotPorted = errors.New("agent model endpoint input not ported")
+var ErrNotPorted = refusal.New("agent model endpoint input not ported")
 
 // APIError is an exception the SDK raises from a request or a stream; Text
 // is str(exception), which the agent inspects for its own retry decision.
@@ -227,6 +229,7 @@ type Event struct {
 func (c *Client) Create(ctx context.Context, body []byte) (*Stream, error) {
 	target := *c.base
 	target.Path += "chat/completions"
+	handoff.MarkEffect(ctx, "model request")
 	for retries := 0; ; retries++ {
 		remaining := maxRetries - retries
 		request, err := http.NewRequestWithContext(ctx, http.MethodPost, target.String(), bytes.NewReader(body))

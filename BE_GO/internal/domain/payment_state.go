@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -11,7 +13,7 @@ var (
 	ErrPaymentStateServer = errors.New("payment state server error")
 	// ErrPaymentStateNotPorted refuses, before any write, a path whose Django
 	// behaviour is not ported (invoice creation, notifications, PDF tasks).
-	ErrPaymentStateNotPorted = errors.New("payment state behaviour not ported")
+	ErrPaymentStateNotPorted = refusal.New("payment state behaviour not ported")
 	// ErrPaymentStateNotFound is payment_delete's 404 {'msg': 'Payment not found.'}.
 	ErrPaymentStateNotFound = errors.New("payment not found")
 	// ErrPaymentStateNotPaid is payment_cancel's 400 {'error': 'Payment not paid.'}.

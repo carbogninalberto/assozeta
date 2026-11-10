@@ -2,10 +2,11 @@ package domain
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // JobAutoDeleteOrphanMedicalCertificate is the Celery name of
@@ -15,7 +16,7 @@ const JobAutoDeleteOrphanMedicalCertificate = "auto_delete_orphan_medical_certif
 // ErrOrphanMedicalUnsupported refuses a run before any effect: a document in
 // scope is referenced by a row Django's collector would cascade to (other
 // than its one certificate), or its storage name is outside the modelled subset.
-var ErrOrphanMedicalUnsupported = errors.New("orphan medical cleanup needs behaviour Go does not reproduce")
+var ErrOrphanMedicalUnsupported = refusal.New("orphan medical cleanup needs behaviour Go does not reproduce")
 
 // OrphanMedicalCertificate is one MedicalCertificate the task iterates, with
 // the select_related document fields it reads. DocumentID is nil for a

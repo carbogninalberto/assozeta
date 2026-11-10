@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // CampsPythonError is an exception the camps views turn into
@@ -20,7 +21,7 @@ func (e *CampsPythonError) Error() string { return e.Message }
 // ErrCampsFormNotPorted refuses HTML form input this port does not model
 // (QueryDict.getlist of the many-to-many services, file parts) before any
 // write.
-var ErrCampsFormNotPorted = errors.New("camps form input is not ported")
+var ErrCampsFormNotPorted = refusal.New("camps form input is not ported")
 
 // Validation codes beyond the shared payment-category message table.
 const (

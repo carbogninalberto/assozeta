@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"math/big"
 	"regexp"
 	"strconv"
@@ -13,12 +12,13 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/google/uuid"
 )
 
 // ErrBusinessMCPNotPorted refuses a business MCP tool call (or argument)
 // whose Django behaviour is not ported, before any query or write.
-var ErrBusinessMCPNotPorted = errors.New("business MCP tool input not ported")
+var ErrBusinessMCPNotPorted = refusal.New("business MCP tool input not ported")
 
 // BusinessMCPStore is the persistence the ported tool functions use.
 type BusinessMCPStore interface {

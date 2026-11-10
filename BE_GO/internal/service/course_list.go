@@ -10,6 +10,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -20,12 +21,12 @@ var (
 	// ErrCourseListUnported refuses an ordering Django accepts lazily but Go
 	// does not port (relations, reverse relations, transforms); it is raised
 	// where Django compiles the ordering, after the pagination checks.
-	ErrCourseListUnported = errors.New("course list ordering not ported")
+	ErrCourseListUnported = refusal.New("course list ordering not ported")
 	// ErrCourseListExport is a POST without all=1: the handler reads
 	// request.data and refuses current_view_course (see course-list.md).
 	ErrCourseListExport = errors.New("course list export")
 	// ErrCourseListExportUnported refuses generating the PDF or XLSX file.
-	ErrCourseListExportUnported = errors.New("course list export file generation not ported")
+	ErrCourseListExportUnported = refusal.New("course list export file generation not ported")
 )
 
 type courseListStore interface {

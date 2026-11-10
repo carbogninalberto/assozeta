@@ -11,6 +11,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -18,7 +19,7 @@ import (
 // ErrSubscriptionSignatureMigrationNotPorted stops the command where Django
 // would take a path the port does not reproduce (a generated storage key that
 // already exists: get_available_name would pick a random alternative name).
-var ErrSubscriptionSignatureMigrationNotPorted = errors.New("subscription signature migration path not ported")
+var ErrSubscriptionSignatureMigrationNotPorted = refusal.New("subscription signature migration path not ported")
 
 // SubscriptionSignatureMigrationOutput is BaseCommand.stdout with its style.
 type SubscriptionSignatureMigrationOutput interface {

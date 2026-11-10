@@ -12,6 +12,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // SubscriptionReads ports subscription_list, subscription_list_all,
@@ -118,7 +119,7 @@ var subscriptionReadsFields = map[string]string{"pk": "subscription_id", "subscr
 
 // errSubscriptionReadsLazyOrder marks an ordering Django resolves when
 // compiling the rows (after the count and the page checks).
-var errSubscriptionReadsLazyOrder = errors.New("subscription ordering not ported")
+var errSubscriptionReadsLazyOrder = refusal.New("subscription ordering not ported")
 
 // subscriptionReadsOrder is order_by(f"{'-' if desc else ”}{field}"): one
 // leading '-' is stripped, then the name must resolve (FieldError, 500).

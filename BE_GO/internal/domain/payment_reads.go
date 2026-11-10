@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -11,7 +13,7 @@ var (
 	ErrPaymentReadsServer = errors.New("payment reads unhandled error")
 	// ErrPaymentReadsNotPorted refuses inputs whose Django behaviour is not
 	// ported (the 500 page, never a guessed body).
-	ErrPaymentReadsNotPorted = errors.New("payment reads input not ported")
+	ErrPaymentReadsNotPorted = refusal.New("payment reads input not ported")
 	// ErrPaymentReadsAthlete is subscription_payments' Response(status=401) for athletes.
 	ErrPaymentReadsAthlete = errors.New("payment reads athlete")
 )

@@ -15,20 +15,20 @@ package djtemplate
 
 import (
 	"embed"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"sync"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/emailrender"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 //go:embed all:templates
 var files embed.FS
 
 // ErrUnsupported marks a template feature or context value outside the port.
-var ErrUnsupported = errors.New("djtemplate: unsupported template input")
+var ErrUnsupported = refusal.New("djtemplate: unsupported template input")
 
 func unsupported(format string, args ...any) error {
 	return fmt.Errorf("%w: %s", ErrUnsupported, fmt.Sprintf(format, args...))

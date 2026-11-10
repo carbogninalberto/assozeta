@@ -2,10 +2,11 @@ package domain
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 const (
@@ -17,7 +18,7 @@ const (
 
 // ErrEmailTaskUnsupported refuses a run, before any effect, whose SMTP
 // message or envelope is outside the proven smtpsend subset.
-var ErrEmailTaskUnsupported = errors.New("email task input outside the ported subset")
+var ErrEmailTaskUnsupported = refusal.New("email task input outside the ported subset")
 
 // UserPartialRegistration is one bakney_user_partial row.
 type UserPartialRegistration struct {

@@ -2,7 +2,6 @@ package googleapi
 
 import (
 	"encoding/json"
-	"errors"
 	"math"
 	"math/big"
 	"net/url"
@@ -12,13 +11,14 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 type jsonNumber = json.Number
 
 // ErrNotPorted refuses a value whose Python handling this port does not
 // reproduce (the views answer 500 for it here).
-var ErrNotPorted = errors.New("google: value not ported")
+var ErrNotPorted = refusal.New("google: value not ported")
 
 // PythonError is a Python exception raised by the libraries; Mentions is
 // `text in str(exception)` for the export view's 'quotaExceeded' check.

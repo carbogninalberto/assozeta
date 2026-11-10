@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/labstack/echo/v4"
 )
 
@@ -55,8 +56,10 @@ func (h *ChatTestHandler) Page(c echo.Context) error {
 // renders its localized csrf_403.html failure page there, which Go does not
 // reproduce: refused with the 500 page.
 func (h *ChatTestHandler) RefuseCSRF(c echo.Context) error {
-	return restError(c, errors.New("chat test CSRF failure page not ported"))
+	return restError(c, errChatTestCSRFNotPorted)
 }
+
+var errChatTestCSRFNotPorted = refusal.New("chat test CSRF failure page not ported")
 
 // chatTestQuote is urllib.parse.quote(value, safe='/') of an ASCII string.
 func chatTestQuote(value string) string {

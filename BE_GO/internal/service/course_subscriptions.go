@@ -9,6 +9,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 type CourseSubscriptions struct {
@@ -24,13 +25,13 @@ var (
 	// ErrCourseSubscriptionExportUnsupported refuses list's POST: the PDF and
 	// Excel export (current_view_course_subscription) is not ported. Its
 	// invalid formats are Django's 500 as well.
-	ErrCourseSubscriptionExportUnsupported = errors.New("course subscription export is not ported")
+	ErrCourseSubscriptionExportUnsupported = refusal.New("course subscription export is not ported")
 	// ErrCourseSubscriptionNotPorted refuses inputs this port does not
 	// reproduce, before any write: events given as an object or a string,
 	// unmatched installments sharing a payment, HTML-form JSON fields, a
 	// changed primary key, and a soft delete whose row shares its payment with
 	// an installment.
-	ErrCourseSubscriptionNotPorted = errors.New("course subscription input is not ported")
+	ErrCourseSubscriptionNotPorted = refusal.New("course subscription input is not ported")
 )
 
 // CourseSubscriptionValidationError is a 400 field map: lists of codes from

@@ -37,11 +37,14 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrUnsupported marks input outside the subset proven against Python; it is
 // returned before any connection is made.
-var ErrUnsupported = errors.New("smtpsend: input outside the supported subset")
+var ErrUnsupported = refusal.New("smtpsend: input outside the supported subset")
 
 // Server is the SMTP part of a CommunicationConfiguration.
 type Server struct {
@@ -100,6 +103,7 @@ func Send(ctx context.Context, s Server, from string, to []string, message strin
 	if err := CheckEnvelope(from, to); err != nil {
 		return err
 	}
+	handoff.MarkEffect(ctx, "smtp send")
 	for i := 0; i < len(message); i++ {
 		if message[i] >= 0x80 {
 			return ErrUnsupported

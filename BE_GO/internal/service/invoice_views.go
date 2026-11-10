@@ -15,6 +15,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/mentions"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // HTML views of BE/docmanager/views/printing_views.py for invoices.
@@ -62,7 +63,7 @@ func (s *InvoiceViews) Render(ctx context.Context, identity domain.ResolvedIdent
 }
 
 // errInvoiceViewsNotPorted refuses a stored value outside the port.
-var errInvoiceViewsNotPorted = errors.New("invoice view: value not ported")
+var errInvoiceViewsNotPorted = refusal.New("invoice view: value not ported")
 
 func invoiceViewsNotPorted(format string, args ...any) error {
 	return fmt.Errorf("%w: "+format, append([]any{errInvoiceViewsNotPorted}, args...)...)

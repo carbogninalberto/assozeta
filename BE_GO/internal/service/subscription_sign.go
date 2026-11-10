@@ -12,6 +12,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/pymime"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/google/uuid"
@@ -27,7 +28,7 @@ var (
 	// ErrSubscriptionSignFailed is an exception the view does not handle (the 500 page).
 	ErrSubscriptionSignFailed = errors.New("subscription sign failed")
 	// ErrSubscriptionSignNotPorted refuses, before any write, a path the port does not reproduce.
-	ErrSubscriptionSignNotPorted = errors.New("subscription sign path not ported")
+	ErrSubscriptionSignNotPorted = refusal.New("subscription sign path not ported")
 )
 
 // SubscriptionSignUUIDError is is_valid_uuid's ValidationError(<exception>): a 400 list.

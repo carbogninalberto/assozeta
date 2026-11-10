@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -11,7 +13,7 @@ var (
 	ErrModuleUpdateNotFound = errors.New("camp or retreat not found")
 	// ErrModuleWriteNotPorted refuses inputs whose Django path is not ported,
 	// before any write.
-	ErrModuleWriteNotPorted = errors.New("module write input not ported")
+	ErrModuleWriteNotPorted = refusal.New("module write input not ported")
 )
 
 // ModuleUpdateFailure is modules_update's {'error': str(e)}: Status 400 for

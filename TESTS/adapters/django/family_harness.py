@@ -102,13 +102,16 @@ def fixture_context_for(contract, seed, *, purge=()):
     return fixture_context
 
 
-def run_workload_for(contract, effect=None, *, prepare=None):
+def run_workload_for(contract, effect=None, *, prepare=None, handoff=None):
     """The driver's run_workload.
 
     effect(case, before, after, source, context) checks a write family's case;
     without it every case must leave the complete state unchanged. prepare(source)
     runs before each case and its result is context['prepared'] (for example
     rows captured before a delete). context['remote'] is shared across cases.
+    handoff(case, backend) -> whether Go hands the case off to Django (handoff.md):
+    such a case is attributed to one Django request, and the contract's
+    assert_case also receives backend=.
     """
     def run_workload(label, backend, base_url, fixture, apps, raw, observer):
         from TESTS.adapters.django.historical_read_cache import snapshot_historical_read_cache
@@ -120,14 +123,18 @@ def run_workload_for(contract, effect=None, *, prepare=None):
             context['prepared'] = prepare(source) if prepare else None
             cursor = observer.cursor()
             token = None if case['actor'] == 'anonymous' else fixture['tokens'][case['actor']]
+            served = 'django' if handoff is not None and handoff(case, backend) else backend
             try:
-                status = contract.assert_case(case, base_url, token=token, sessions=fixture['sessions'])
+                if handoff is None:
+                    status = contract.assert_case(case, base_url, token=token, sessions=fixture['sessions'])
+                else:
+                    status = contract.assert_case(case, base_url, token=token, sessions=fixture['sessions'], backend=backend)
                 if effect:
                     after = scopes.snapshot_state(apps)
-                    shared.assert_attribution(backend, case['method'], case['path'], status, observer.delta(cursor), case['name'])
+                    shared.assert_attribution(served, case['method'], case['path'], status, observer.delta(cursor), case['name'])
                     effect(case, before, after, source, context)
                 else:
-                    shared.assert_attribution(backend, case['method'], case['path'], status, observer.delta(cursor), case['name'])
+                    shared.assert_attribution(served, case['method'], case['path'], status, observer.delta(cursor), case['name'])
                     carnets.state_unchanged(fixture['baseline_state'], scopes.snapshot_state(apps))
             except BaseException as error:
                 error.case = f'{label}:{case["name"]}'

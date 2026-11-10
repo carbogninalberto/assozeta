@@ -4,13 +4,15 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
 	// ErrSubscriptionLifecycleNotFound is the view's own "Subscription not found" response.
 	ErrSubscriptionLifecycleNotFound = errors.New("subscription not found")
 	// ErrSubscriptionLifecycleNotPorted is a path the Go port refuses (500) before any write.
-	ErrSubscriptionLifecycleNotPorted = errors.New("subscription lifecycle path not ported")
+	ErrSubscriptionLifecycleNotPorted = refusal.New("subscription lifecycle path not ported")
 )
 
 // SubscriptionLifecycleRow is a locked subscription with the columns the

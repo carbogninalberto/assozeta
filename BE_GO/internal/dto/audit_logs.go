@@ -14,6 +14,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -22,7 +23,7 @@ var (
 	ErrAuditUnhandled = errors.New("audit serializer exception")
 	// ErrAuditNotPorted refuses inputs whose Python semantics are not ported
 	// (see audit-logs.md): also the 500 page, never a guessed body.
-	ErrAuditNotPorted = errors.New("audit serializer input not ported")
+	ErrAuditNotPorted = refusal.New("audit serializer input not ported")
 )
 
 // AuditResolver is resolve_uuid(value, field) for a value is_uuid accepted:

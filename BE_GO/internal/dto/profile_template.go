@@ -12,6 +12,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/bs4prettify"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrProfileTemplatePython is an exception profile_update_subscription_template
@@ -21,7 +22,7 @@ var ErrProfileTemplatePython = errors.New("profile template view exception")
 
 // ErrProfileTemplateNotPorted refuses, before any write, a value whose Python
 // conversion this port does not reproduce (see profile-template.md).
-var ErrProfileTemplateNotPorted = errors.New("profile template input not ported")
+var ErrProfileTemplateNotPorted = refusal.New("profile template input not ported")
 
 // ProfileTemplateKind is the model field type that decides str()/json.dumps()
 // for auditlog and the column conversion.

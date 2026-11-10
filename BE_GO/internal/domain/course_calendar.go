@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrCalendarCourseNotFound is the views' NotFound("Course not found.").
@@ -16,7 +18,7 @@ var ErrCalendarRaised = errors.New("calendar view raised")
 
 // ErrCalendarNotPorted refuses, before any write, an input whose Django
 // semantics are not ported (see docs/architecture/go-migration/course-calendar.md).
-var ErrCalendarNotPorted = errors.New("calendar input not ported")
+var ErrCalendarNotPorted = refusal.New("calendar input not ported")
 
 // CalendarValidation is a DRF ValidationError with one string detail (a list body).
 type CalendarValidation struct{ Detail string }

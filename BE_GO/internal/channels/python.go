@@ -13,6 +13,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // Dict is a Python dict with string keys, in insertion order.
@@ -34,7 +35,7 @@ var ErrInvalidGroupName = errors.New("channels: group name not valid")
 
 // ErrUnsupportedValue is a message value GroupSend cannot encode the way
 // msgpack and json.dumps would.
-var ErrUnsupportedValue = errors.New("channels: unsupported message value")
+var ErrUnsupportedValue = refusal.New("channels: unsupported message value")
 
 // maxNameLength is BaseChannelLayer.MAX_NAME_LENGTH (names must be shorter).
 const maxNameLength = 100

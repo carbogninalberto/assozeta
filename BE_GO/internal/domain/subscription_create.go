@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -11,7 +13,7 @@ var (
 	ErrSubscriptionCreateServer = errors.New("subscription create server error")
 	// ErrSubscriptionCreateNotPorted refuses input this port does not handle (the
 	// 500 page, nothing committed).
-	ErrSubscriptionCreateNotPorted = errors.New("subscription create input not ported")
+	ErrSubscriptionCreateNotPorted = refusal.New("subscription create input not ported")
 	// ErrSubscriptionCreateDuplicate is DuplicateSubscriptionError (409).
 	ErrSubscriptionCreateDuplicate = errors.New("subscription already exists")
 )

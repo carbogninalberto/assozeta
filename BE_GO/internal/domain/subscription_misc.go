@@ -4,13 +4,15 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
 	// ErrSubscriptionMiscNotPorted refuses an input whose Django behaviour is not
 	// reproduced (a codice fiscale input outside the ported subset, an outbound
 	// public-link lookup, a Document other rows reference), before any write.
-	ErrSubscriptionMiscNotPorted = errors.New("subscription request not ported")
+	ErrSubscriptionMiscNotPorted = refusal.New("subscription request not ported")
 	// ErrSubscriptionMiscServer is an exception the views do not handle (a 500).
 	ErrSubscriptionMiscServer = errors.New("subscription request failed")
 )

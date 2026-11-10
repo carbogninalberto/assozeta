@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // JobCleanupDataRestores is the Celery name of instance.tasks.cleanup_data_restores
@@ -17,7 +19,7 @@ const JobCleanupDataRestores = "instance.restore.cleanup"
 // receipt's media is not a JSON object of strings, or a storage name the
 // pruning would delete resolves outside AWS_LOCATION. Django raises midway
 // through those runs, after deletes whose order follows a Python set.
-var ErrDataRestoreCleanupUnsupported = errors.New("data restore cleanup input outside the ported subset")
+var ErrDataRestoreCleanupUnsupported = refusal.New("data restore cleanup input outside the ported subset")
 
 // ErrDataRestoreRecoveryBackups is int(DATA_RESTORE_RECOVERY_BACKUPS) raising
 // ValueError: the task ends there, after the receipt loop.

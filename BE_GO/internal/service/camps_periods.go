@@ -9,6 +9,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -22,10 +23,10 @@ var (
 	ErrCampsTenant = errors.New("camps relation of another tenant")
 	// ErrCampsPrimaryKeyChange refuses a new primary key on update before any
 	// write: Model.save() would insert a copy under the new key (not ported).
-	ErrCampsPrimaryKeyChange = errors.New("camps primary key change is not ported")
+	ErrCampsPrimaryKeyChange = refusal.New("camps primary key change is not ported")
 	// ErrCampsPaymentNotPorted refuses a payment walk outcome this port does
 	// not reproduce before any write.
-	ErrCampsPaymentNotPorted = errors.New("camps payment walk is not ported")
+	ErrCampsPaymentNotPorted = refusal.New("camps payment walk is not ported")
 )
 
 // CampsForbidden is the view's PermissionDenied with its message (403).

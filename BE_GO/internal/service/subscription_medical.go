@@ -9,6 +9,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // SubscriptionMedical ports the subscription/<uid> medical-appointments list
@@ -31,7 +32,7 @@ var (
 	// port does not reproduce: printing an appointment without a document
 	// (print_document_medical_appointment) and the placeholder certificate
 	// image a subscription without a certificate would get uploaded.
-	ErrSubscriptionMedicalNotPorted = errors.New("subscription medical behaviour not ported")
+	ErrSubscriptionMedicalNotPorted = refusal.New("subscription medical behaviour not ported")
 )
 
 // medicalAppointmentRegions is MedicalAppointments.REGIONS.

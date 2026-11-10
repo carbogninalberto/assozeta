@@ -2,7 +2,6 @@ package dto
 
 import (
 	"encoding/json"
-	"errors"
 	"math/big"
 	"regexp"
 	"strconv"
@@ -10,11 +9,12 @@ import (
 	"unicode"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrInstanceBackupActionsNotPorted marks input whose DRF handling Go does not
 // carry (lone surrogate code points in a CharField).
-var ErrInstanceBackupActionsNotPorted = errors.New("instance backup actions input not ported")
+var ErrInstanceBackupActionsNotPorted = refusal.New("instance backup actions input not ported")
 
 // InstanceBackupActionsArchive is backups.ARCHIVE (fullmatch); Python's str
 // \d is any Unicode decimal digit (category Nd).

@@ -7,6 +7,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
 )
@@ -214,6 +215,8 @@ func (h *InstanceBackupActionsHandler) Upload(c echo.Context) error {
 			if c.Request().Header.Get("Content-Length") == "" {
 				length = 0
 			}
+			// The body is streamed to storage: never replayed to Django.
+			handoff.Forbid(c.Request().Context(), "streamed backup upload")
 			return h.actions.Upload(c.Request().Context(), request, length, c.Request().Body)
 		})
 	}

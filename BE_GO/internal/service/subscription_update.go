@@ -16,6 +16,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -25,7 +26,7 @@ var (
 	// Django conversion the port does not reproduce: date strings other than
 	// ASCII YYYY-MM-DD (date.fromisoformat's other formats, non-ASCII digits)
 	// and text with NUL characters or lone surrogates.
-	ErrSubscriptionUpdateNotPorted = errors.New("subscription update value not ported")
+	ErrSubscriptionUpdateNotPorted = refusal.New("subscription update value not ported")
 )
 
 // SubscriptionUpdateInvalid is check_date's ValidationError('Invalid <key> format').

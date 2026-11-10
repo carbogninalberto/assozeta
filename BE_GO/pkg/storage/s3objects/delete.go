@@ -17,6 +17,7 @@ import (
 	"github.com/aws/smithy-go/logging"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 )
 
 type Options struct {
@@ -62,6 +63,7 @@ func (c *Client) DeleteBatch(parent context.Context, objects []domain.ObjectVers
 	if err := parent.Err(); err != nil {
 		return nil, err
 	}
+	handoff.MarkEffect(parent, "object storage write")
 	if len(objects) > 1000 {
 		return nil, domain.ErrObjectDeleteInput
 	}

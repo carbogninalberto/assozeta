@@ -12,11 +12,12 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/agentllm"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrAgentNotPorted refuses an agent input whose Django behaviour is not
 // reproduced (see ws-agent.md); the caller ends the session.
-var ErrAgentNotPorted = errors.New("agent input not ported")
+var ErrAgentNotPorted = refusal.New("agent input not ported")
 
 // AgentEnvironment are the core.settings values AIProvider falls back to.
 type AgentEnvironment struct {

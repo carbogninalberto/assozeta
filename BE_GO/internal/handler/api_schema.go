@@ -16,6 +16,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/apischema"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
 )
@@ -50,7 +51,7 @@ var (
 	// `lang`/`version` values are refused rather than approximated.
 	apiSchemaLanguagePattern = regexp.MustCompile(`^[A-Za-z0-9_.@:-]+$`)
 	apiSchemaVersionPattern  = regexp.MustCompile(`^[A-Za-z0-9._-]+$`)
-	errAPISchemaUnsupported  = errors.New("api schema: request outside the ported input range")
+	errAPISchemaUnsupported  = refusal.New("api schema: request outside the ported input range")
 )
 
 const apiSchemaPath = "/schema/"

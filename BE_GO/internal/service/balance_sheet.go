@@ -9,6 +9,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -18,13 +19,13 @@ var (
 	ErrBalanceSheetMissing = errors.New("balance sheet not found")
 	// ErrBalanceSheetExportNotPorted refuses format excel/pdf before the
 	// generation writes: export_balance_sheet renders files (not ported).
-	ErrBalanceSheetExportNotPorted = errors.New("balance sheet export is not ported")
+	ErrBalanceSheetExportNotPorted = refusal.New("balance sheet export is not ported")
 	// ErrBalanceAccountNotDeletable is {'msg': 'This account is not deletable.'} (403).
 	ErrBalanceAccountNotDeletable = errors.New("custom account is not deletable")
 	// ErrBalanceAccountPaymentsNotPorted refuses deleting an account that
 	// payments reference: the cascade deletes them with their own signals
 	// (not ported).
-	ErrBalanceAccountPaymentsNotPorted = errors.New("deleting an account with payments is not ported")
+	ErrBalanceAccountPaymentsNotPorted = refusal.New("deleting an account with payments is not ported")
 	// errBalanceSheetPython is an exception the view does not handle (500).
 	errBalanceSheetPython = errors.New("balance sheet python error")
 )

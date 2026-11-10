@@ -1,16 +1,17 @@
 package associationexport
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrUnsupportedValue is a stored value outside the reproduced subset
 // (infinite dates or timestamps, BC dates); the export hands such an
 // association to Django before any effect.
-var ErrUnsupportedValue = errors.New("associationexport: value outside the reproduced subset")
+var ErrUnsupportedValue = refusal.New("associationexport: value outside the reproduced subset")
 
 // Serialize is serialize_record's value for one field, from the column's
 // PostgreSQL text output (session TimeZone UTC); valid is false for NULL.

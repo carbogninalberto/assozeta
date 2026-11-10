@@ -8,7 +8,11 @@
 // (TESTS/fixtures/generate_xlsx_golden.py).
 package xlsxexport
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
+)
 
 // ErrDjango is a workbook Django fails to build (get_excel_base64 logs and
 // returns None, or the library raises): the views answer 500.
@@ -16,7 +20,7 @@ var ErrDjango = errors.New("xlsxexport: Django fails to build this workbook")
 
 // ErrNotPorted is an input whose workbook this package does not reproduce:
 // callers refuse it before any write.
-var ErrNotPorted = errors.New("xlsxexport: workbook input not ported")
+var ErrNotPorted = refusal.New("xlsxexport: workbook input not ported")
 
 // Kind is the Python type of a cell value as the view hands it to pandas.
 type Kind uint8

@@ -15,6 +15,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/mentions"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // HTML views of BE/docmanager/views/printing_views.py.
@@ -30,7 +31,7 @@ var (
 	// ErrDocumentViewServer is an exception the view does not handle (the 500 page).
 	ErrDocumentViewServer = errors.New("document view: unhandled exception")
 	// ErrDocumentViewNotPorted refuses an input outside the port (the 500 page).
-	ErrDocumentViewNotPorted = errors.New("document view: input not ported")
+	ErrDocumentViewNotPorted = refusal.New("document view: input not ported")
 )
 
 // PreviewRenderer is pdfrender.Client's call without request headers.

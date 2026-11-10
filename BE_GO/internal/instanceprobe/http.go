@@ -27,6 +27,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // RequestsVersion is requests.__version__ (its default User-Agent).
@@ -115,7 +117,7 @@ var ErrUnavailable = errors.New("instanceprobe: service unavailable")
 // with the server error page): a body shorter than its Content-Length
 // (http.client.IncompleteRead), an encoding json.loads would read as UTF-16
 // or UTF-32, or a redirect target urllib would rewrite.
-var ErrNotPorted = errors.New("instanceprobe: outbound response not ported")
+var ErrNotPorted = refusal.New("instanceprobe: outbound response not ported")
 
 // ReadJSON is release_catalog.read_json(url) on urllib.request.urlopen with
 // a 15 s timeout: the GitHub headers plus urllib's Accept-Encoding: identity

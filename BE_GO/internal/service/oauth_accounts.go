@@ -19,6 +19,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/emailrender"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/google/uuid"
 )
 
@@ -26,7 +27,7 @@ var (
 	// ErrOAuthServer stands for the views' uncaught exceptions (the 500 page).
 	ErrOAuthServer = errors.New("oauth2 account view raised")
 	// ErrOAuthNotPorted refuses inputs outside the port (500 before any write).
-	ErrOAuthNotPorted = errors.New("oauth2 account input not ported")
+	ErrOAuthNotPorted = refusal.New("oauth2 account input not ported")
 )
 
 // OAuthAnswer is a Response(...) the views build themselves.

@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -11,7 +13,7 @@ var (
 	ErrSubscriptionReadsServer = errors.New("subscription reads unhandled error")
 	// ErrSubscriptionReadsNotPorted refuses inputs whose Django behaviour is
 	// not ported (the 500 page, never a guessed body).
-	ErrSubscriptionReadsNotPorted = errors.New("subscription reads input not ported")
+	ErrSubscriptionReadsNotPorted = refusal.New("subscription reads input not ported")
 	// ErrSubscriptionReadsAthlete is subscription_list_archived's Response(status=401) for athletes.
 	ErrSubscriptionReadsAthlete = errors.New("subscription reads athlete")
 	// ErrSubscriptionReadsNotFound is subscription_info's {'msg': 'Subscription not found.'} (404).
