@@ -3,7 +3,8 @@
 A '<stream>' case names the stored object whose exact bytes must be returned
 ('$rendered': the PDF printed again for a missing object),
 with the exact Content-Type, Content-Length, Content-Disposition and
-Content-Encoding (absent when the authored value is None). Every other case is
+Content-Encoding (absent when the authored value is None) and
+X-Content-Type-Options: nosniff. Every other case is
 a JSON body or the stable server error page. Unlike http_family, a 401 carries
 the Bearer challenge only when the case says so: retrieve_document answers
 some 401s itself (no challenge) and DRF answers the others.
@@ -74,6 +75,7 @@ def assert_case(case, base_url, *, token, sessions):
         check(received.get('Content-Length') == str(len(body)), 'stream.content-length')
         check(received.get('Content-Disposition') == stream['disposition'], 'stream.content-disposition')
         check(received.get('Content-Encoding') == stream['encoding'], 'stream.content-encoding')
+        check(received.get('X-Content-Type-Options') == 'nosniff', 'stream.content-type-options')
         return status
     try:
         actual = json.loads(raw)

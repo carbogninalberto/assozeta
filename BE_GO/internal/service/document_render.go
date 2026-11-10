@@ -254,8 +254,10 @@ func (s *DocumentRender) Render(ctx context.Context, identity domain.ResolvedIde
 	if err != nil || reply != nil {
 		return reply, err
 	}
-	if !job.ignore && job.failed == nil && !pdfrender.HeaderSafe(job.filename) {
-		// BadHeaderError (or an ASGI header refusal) after the storage task: not ported.
+	if !job.ignore && job.failed == nil && !pdfrender.HeaderSafe(job.filename) &&
+		(job.fill != nil || !strings.ContainsAny(job.filename, "\r\n")) {
+		// A header the HTTP server itself refuses, or email.header splits: not ported. A line break is Django's own
+		// BadHeaderError, answered by print after the storage task.
 		return nil, ErrDocumentRenderNotPorted
 	}
 	return s.print(ctx, identity, request, job)
@@ -330,6 +332,11 @@ func (s *DocumentRender) print(ctx context.Context, identity domain.ResolvedIden
 	if value, _ := queryText(request.Query, "download"); value != "" {
 		disposition = "attachment"
 	}
+	if strings.ContainsAny(job.filename, "\r\n") {
+		// The response refuses the header once the storage task is queued; the view links nothing.
+		return renderException(500, "Header values can't contain newlines (got "+
+			dto.PythonStringRepr(disposition+"; filename="+job.filename)+")"), nil
+	}
 	for _, link := range job.links {
 		if link.Table == "application_subscription" {
 			// save(update_fields=['document_pdf']) runs Subscription.save(): its season range raises before the
@@ -341,6 +348,10 @@ func (s *DocumentRender) print(ctx context.Context, identity domain.ResolvedIden
 			if err = modelHooksSubscriptionSave(ctx, season); err != nil {
 				return renderException(500, err.Error()), nil
 			}
+		}
+		if link.IndexAssociation == nil && actorAssociation != nil {
+			// The row resolves no association: the audit index falls back to the actor's.
+			link.IndexAssociation, link.IndexPath = actorAssociation, "actor.sport_association"
 		}
 		if err := s.store.Link(ctx, link, document.ID, audit, s.now()); err != nil {
 			return renderException(500, err.Error()), nil
@@ -583,10 +594,6 @@ func (s *DocumentRender) compensationJob(ctx context.Context, identity domain.Re
 		}
 		job.links = append(job.links, link)
 	}
-	if len(hours) > 0 && job.links[0].IndexAssociation == nil {
-		// The actor fallback of an instructor without an owning association is not modelled.
-		return nil, nil, ErrDocumentRenderNotPorted
-	}
 	return job, nil, nil
 }
 
@@ -618,24 +625,102 @@ func (s *DocumentRender) requestAssociation(ctx context.Context, identity domain
 
 // templateQueryValue is str() of additionalData['subscription'] for the
 // value types modelled.
-func templateQueryValue(value any) (string, bool) {
+// DocumentRenderBodyError is the APIException request.data raised (a parse
+// error or an unsupported media type) with its detail text.
+type DocumentRenderBodyError struct {
+	Detail string
+	Err    error
+}
+
+func (e *DocumentRenderBodyError) Error() string { return e.Detail }
+func (e *DocumentRenderBodyError) Unwrap() error { return e.Err }
+
+// templateQueryValue is the f-string text of additional_data["subscription"].
+func templateQueryValue(value any) string {
 	switch v := value.(type) {
-	case nil:
-		return "None", true
 	case string:
-		return v, true
-	case bool:
-		if v {
-			return "True", true
-		}
-		return "False", true
+		return v
 	case json.Number:
-		if strings.ContainsAny(string(v), ".eE") {
-			return "", false
+		if text, ok := dto.PythonFloatRepr(v); ok && strings.ContainsAny(string(v), ".eE") {
+			return text
 		}
-		return string(v), true
+		return string(v)
 	}
-	return "", false
+	return dto.PythonRepr(value)
+}
+
+// templatePlan is what document_template reads from request.data: the values
+// of additionalData's parent and subscription keys, or the text of the
+// exception the read raises.
+type templatePlan struct {
+	parent, subscription *any
+	failure              string
+}
+
+// renderContains is `key in value` for request data: a dict key, a substring,
+// a list member; other types raise TypeError (text).
+func renderContains(value any, key string) (bool, string) {
+	switch v := value.(type) {
+	case domain.RequestObject:
+		_, present := v.Lookup(key)
+		return present, ""
+	case string:
+		return strings.Contains(v, key), ""
+	case []any:
+		for _, item := range v {
+			if text, ok := item.(string); ok && text == key {
+				return true, ""
+			}
+		}
+		return false, ""
+	case domain.RequestFile, domain.RequestUpload:
+		// An uploaded file iterates its lines (bytes): never equal to a str.
+		return false, ""
+	}
+	return false, "argument of type '" + pythonTypeNameOf(value) + "' is not iterable"
+}
+
+func planTemplateData(data any) templatePlan {
+	noGet := func(value any) templatePlan {
+		return templatePlan{failure: "'" + pythonTypeNameOf(value) + "' object has no attribute 'get'"}
+	}
+	present, failure := renderContains(data, "additionalData")
+	if failure != "" {
+		return templatePlan{failure: failure}
+	}
+	if !present {
+		return templatePlan{}
+	}
+	object, isObject := data.(domain.RequestObject)
+	if !isObject {
+		return noGet(data)
+	}
+	additional, _ := object.Lookup("additionalData")
+	var plan templatePlan
+	present, failure = renderContains(additional, "parent")
+	if failure != "" {
+		return templatePlan{failure: failure}
+	}
+	fields, isObject := additional.(domain.RequestObject)
+	if present {
+		if !isObject {
+			return noGet(additional)
+		}
+		value, _ := fields.Lookup("parent")
+		plan.parent = &value
+	}
+	if present, _ = renderContains(additional, "subscription"); !present {
+		return plan
+	}
+	switch additional.(type) {
+	case string:
+		return templatePlan{failure: "string indices must be integers, not 'str'"}
+	case []any:
+		return templatePlan{failure: "list indices must be integers or slices, not str"}
+	}
+	value, _ := fields.Lookup("subscription")
+	plan.subscription = &value
+	return plan
 }
 
 func (s *DocumentRender) templateJob(ctx context.Context, identity domain.ResolvedIdentity, request DocumentRenderRequest,
@@ -653,45 +738,35 @@ func (s *DocumentRender) templateJob(ctx context.Context, identity domain.Resolv
 		reply, err := lookupFailure(err, renderException(404, "Template not found"))
 		return nil, reply, err
 	}
-	// request.data is read after the Document exists; malformed or
-	// unmodelled bodies are refused before it.
-	body, _, err := request.Body()
-	if err != nil {
-		return nil, nil, ErrDocumentRenderNotPorted
-	}
-	var additional domain.RequestObject
-	switch data := body.(type) {
-	case nil:
-	case domain.RequestObject:
-		if value, present := data.Lookup("additionalData"); present {
-			object, ok := value.(domain.RequestObject)
-			if !ok {
-				return nil, nil, ErrDocumentRenderNotPorted
-			}
-			additional = object
-		}
-	default:
-		return nil, nil, ErrDocumentRenderNotPorted
-	}
+	// request.data is read after the Document exists: what it raises is the
+	// view's 500 {'exception': str(e)} with the Document kept.
+	var failed *DocumentRenderReply
 	query := "?"
 	var folder *int64
 	var subscriptionValue any
 	subscriptionPresent := false
-	if additional != nil {
-		if parent, present := additional.Lookup("parent"); present {
-			if number, result := dto.PythonInt(parent); result == dto.PythonIntOK && number.IsInt64() &&
+	body, _, err := request.Body()
+	var input *DocumentRenderBodyError
+	switch {
+	case errors.As(err, &input):
+		failed = renderException(500, input.Detail)
+	case err != nil:
+		return nil, nil, ErrDocumentRenderNotPorted
+	default:
+		plan := planTemplateData(body)
+		if plan.failure != "" {
+			failed = renderException(500, plan.failure)
+		}
+		if plan.parent != nil {
+			if number, result := dto.PythonInt(*plan.parent); result == dto.PythonIntOK && number.IsInt64() &&
 				number.Int64() >= math.MinInt32 && number.Int64() <= math.MaxInt32 {
 				value := number.Int64()
 				folder = &value
 			}
 		}
-		if value, present := additional.Lookup("subscription"); present {
-			text, ok := templateQueryValue(value)
-			if !ok {
-				return nil, nil, ErrDocumentRenderNotPorted
-			}
-			query += "subscription_id=" + text + "&"
-			subscriptionValue, subscriptionPresent = value, true
+		if plan.subscription != nil {
+			query += "subscription_id=" + templateQueryValue(*plan.subscription) + "&"
+			subscriptionValue, subscriptionPresent = *plan.subscription, true
 		}
 	}
 	name := strings.ReplaceAll(strings.ReplaceAll(template.Name, ",", " "), ".", " ")
@@ -699,6 +774,10 @@ func (s *DocumentRender) templateJob(ctx context.Context, identity domain.Resolv
 		filename: "[" + renderOptional(template.Denomination) + "] " + name + " del " + s.now().UTC().Format("02/01/2006") + ".pdf",
 		view:     "document/template/" + request.UID + "/view" + query,
 		ignore:   true,
+		failed:   failed,
+	}
+	if failed != nil {
+		return job, nil, nil
 	}
 	job.created = func(ctx context.Context, document domain.NewRenderDocument, audit domain.LoginAuditContext) error {
 		if folder != nil {

@@ -17,7 +17,7 @@ below describe what Go itself does not serve; with the handoff on, an A or B ite
 - **C**: impossible with production data or configuration.
 
 Counts (table rows, appendix): **A 69** (about 63 distinct after duplicates; 1 ported and 1 narrowed (the Biella form, to associations with a stored signature) in v2-documents-rest; 5 ported in v2-pdf (the reportlab documents); 2 ported in v2-deletes; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard, 3 in v2-misc-3 (which also narrows the smtp/verify row to connect timeouts) and 1 in the famwiz change (the preregistration that renews a subscription; also the excel half of the course-subscriptions export row), below), **B 218** (54 with
-`legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
+`legacy: yes`; 3 ported and 3 narrowed in v2-documents-3, below), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
 - The UI never sends `X-Group-Id` (nothing writes `localStorage.selectedGroup`): every group-header refusal is B.
@@ -293,6 +293,25 @@ Still refused after this change in these families: the placeholder certificate i
 certificate date and no upload; `set-certificate-expiration` for a member without a certificate), the remaining B rows of
 the appendix tables of subscription-*, course-* and associates-draft, and the reader subsets listed in
 subscription-import-upload.md.
+
+### Ported in the v2-documents-3 change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2doc3-*`; each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| docmanager-reads | `GET document/retrieve/<uid>` | not a refusal: documents are served with a fixed set of inline types (PDF, PNG, JPEG, GIF, WebP); every other file is `application/octet-stream` and an attachment, with `X-Content-Type-Options: nosniff`, in Django and Go | Django tests first; 189 cases; RED `v2doc3-red-r1` Django 189/189, Go fails `stream.content-type`; GREEN `v2doc3-versioned-r1` 4 transports; mutation `v2doc3-mutation-r1` (type list not consulted) CAUGHT |
+| docmanager-reads | `GET document/retrieve/<uid>` | a quotable name ending in a newline, an empty name, and a storage HEAD answered with a client error other than 404 (B) | 201 cases; RED `v2doc3-red-r2` Django 201/201, Go 500 page; GREEN `v2doc3-versioned-r2` and `v2doc3-final-r1` 4 transports; mutation `v2doc3-mutation-r2` (header check ignoring a newline) CAUGHT; documents-writes re-run (`v2doc3-rerun-r1`) |
+| document-render | `document/*` | a filename with CR or LF (B, legacy: yes): Django's header check text after the storage task | 239 cases; RED `v2doc3-red-r1` Django 239/239, Go 500 page; GREEN `v2doc3-versioned-r1` and `v2doc3-final-r1` 4 transports; mutation `v2doc3-mutation-r1` (fallback row with the instructor path) CAUGHT |
+| document-render | `POST document/template/<uid>` | body shapes (B): lists, text, `null`, numbers, malformed JSON, other media types, multipart, a non-object `additionalData`, any `subscription` value | same receipts |
+| document-render | `GET/POST document/invoice/<uid>` | a multipart or unsupported body with a falsy query flag (B) | same receipts |
+| document-render | `GET document/compensation/<uid>` | hours whose instructor's owner has no association (B): the audit index uses the actor's | same receipts |
+
+Still refused in these families, with the reason:
+- `document/medical-appointment/<uid>`, Biella with a stored president signature: PyMuPDF draws the image byte for byte; the hand-off covers it.
+- document-render: filenames with other control characters (each HTTP server refuses the header its own way) or `email.header` separators without a line break.
+- docmanager-reads: storage answers with a retry count or the endpoint address in botocore's text (429, 5xx, no answer); URL-like names with a bracketed or non-ASCII network location. Invalid UTF-8, NUL and creation dates outside Python's range cannot be read by Django either (class C).
+- Not started in this change: the document-views rows, the documents-writes rows, `medical-appointments/list` with a doc-less appointment, Biella without a primary tutor relation, and every invoice and instructor B row.
 
 ### Ported in the v2-rest-a change
 
@@ -587,10 +606,10 @@ Coordination/status doc; no refusals. Nothing to classify.
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
 | GET document/medical-appointment/<uid> | region `agonistica-piemonte-biella` with a stored president signature (PyMuPDF draws it on the form); the form without a signature and the regions without a form are ported (v2-documents-rest) | service/document_render.go, `medicalJob` (`ErrDocumentRenderNotPorted`) | A | The add-appointment form offers `agonistica-piemonte-biella` (`association/Members/detail/sections/modals/AddMedicalAppointment.svelte:30`, select :160-167). The route is requested by the printing call to `CURRENT_HOST` (`application/printing_tasks.py:47`), not by the browser, so it hits Go only when `CURRENT_HOST` points at the Go API. |
-| document/* | filename with CR/LF/C0/DEL or `email.header` splitting chars | service/document_render.go:230 | B (legacy: yes) | Filenames derive from member/association names; control characters need pasted or imported data. Cost: cheap-medium. |
-| POST document/template/<uid> | body not none/JSON object/urlencoded, malformed JSON, non-object `additionalData`, `subscription` not str/int/bool/null | handler/document_render.go:124; service/document_render.go:553,562,567,584 | B | UI sends `{template, additionalData: <object>}` as JSON (`association/archive/modals/GenerateFromTemplateModal.svelte:31-36`). Cost: cheap. |
-| GET document/invoice/<uid> | multipart/other body with falsy query flag | handler/document_render.go:124 | B | Called by the printing task with GET and no body (`application/printing_tasks.py:12`). |
-| GET document/compensation/<uid> | hours whose instructor's owner has no live association | service/document_render.go:481 | B | Needs a soft-deleted owner association. legacy: no. Cost: medium. |
+| document/* | filename with C0/DEL or `email.header` splitting chars and no line break (CR/LF ported in v2-documents-3) | service/document_render.go, `Render` | B (legacy: yes) | Filenames derive from member/association names; control characters need pasted or imported data. Cost: cheap-medium. |
+| POST document/template/<uid> | body not none/JSON object/urlencoded, malformed JSON, non-object `additionalData`, `subscription` not str/int/bool/null | `planTemplateData` | ported (v2-documents-3) | UI sends `{template, additionalData: <object>}` as JSON (`association/archive/modals/GenerateFromTemplateModal.svelte:31-36`). Cost: cheap. |
+| GET document/invoice/<uid> | multipart/other body with falsy query flag | `documentRenderBody` | ported (v2-documents-3) | Called by the printing task with GET and no body (`application/printing_tasks.py:12`). |
+| GET document/compensation/<uid> | hours whose instructor's owner has no live association | service/document_render.go, `print` | ported (v2-documents-3) | Needs a soft-deleted owner association. legacy: no. Cost: medium. |
 | POST document/template/<uid> | collaborator as `request.user` | service/document_render.go:495 | C | Identity resolution maps collaborators to the owner before the view. |
 
 ### course-subscriptions.md
@@ -654,8 +673,8 @@ Coordination/status doc; no refusals. Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | GET document/retrieve/<uid> | object absent and referenced by a subscription or invoice (re-render) | `service/docmanager_reads.go:241-246` | **A** (ported in v2-documents-rest) | Links everywhere (`accounting/receipts/ReceiptList.svelte:68`, `Members/MembersList.svelte:527`). Produced by a restore with "allow missing media" (`profile/sections/DataImport.svelte:188-189`) or a failed/pending `save_to_storage`. Medium confidence on frequency. |
-| GET document/retrieve | provider errors (HEAD ≠404, GetObject failure other than a missing key) | `service/docmanager_reads.go:237,266` | B | Infrastructure. cheap. |
-| GET document/retrieve | URL-like names with a bracketed or non-ASCII network location (the other URL-like names are ported in v2-documents-rest), trailing newline, inline empty name, invalid UTF-8/NUL, odd creation dates | `service/docmanager_reads.go:225,233,256,262`; `BE_GO/pkg/pymime/pymime.go:146-163` | B | Generated names start with `[`; an uploaded name like `Nota:spese.pdf` (Linux/Android) would hit it. legacy: yes; cheap. |
+| GET document/retrieve | provider errors: HEAD answered 429/5xx or not at all, GetObject failure other than a missing key (a client-error HEAD answer is ported in v2-documents-3) | `service/docmanager_reads.go`, `stream` | B | Infrastructure. cheap. |
+| GET document/retrieve | URL-like names with a bracketed or non-ASCII network location (the other URL-like names are ported in v2-documents-rest; trailing newline and empty name ported in v2-documents-3; invalid UTF-8/NUL and odd creation dates cannot be read by Django either) | `service/docmanager_reads.go:225,233,256,262`; `BE_GO/pkg/pymime/pymime.go:146-163` | B | Generated names start with `[`; an uploaded name like `Nota:spese.pdf` (Linux/Android) would hit it. legacy: yes; cheap. |
 | GET document/retrieve | download token JSON with NaN/Infinity | token decode | C | Needs `SECRET_KEY`. |
 | — | `SECRET_KEY_FALLBACKS` | — | C | Not configured. |
 
