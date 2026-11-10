@@ -453,6 +453,50 @@ offset outside icalendar's table on a value only Django's regex reads (the timez
 answers); stored exceptions of classes with their own `__init__` or `__str__` (the text is the class's);
 calculate-tax-code names outside the transliteration ranges.
 
+### Ported in the v2-rest-docs change
+
+Rare inputs and old data (class B rows) of the document, invoice, medical and instructor families. Receipts are
+`quality-reports/go-migration/<family>-http-sweep-restdocs-<n>` (GitHub Actions runs below); each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| document-views | `GET document/*/view/`, `document/subscription/preview/` | mention paths whose first name is not an attribute of the object (the empty text); non-ASCII digits in a compensation period (B) | 166 cases; GREEN `restdocs-3` 4 transports (run 42910943209); mutation (unknown first name refused) CAUGHT; handoff unit test below |
+| invoice-views | `GET document/invoice/<uid>/view/` | `invoice.*` mention keys (number, dates, fees), unknown payment and associate keys (B) | 92 cases; GREEN `restdocs-3` 4 transports; mutation (activity fee read from the membership fee) CAUGHT |
+| documents-writes | `POST subscription/<uid>/upload-document` | a file part as `filename` or `document` (B) | 150 cases; GREEN `restdocs-2` 4 transports (run 42908069516); mutation (season message) CAUGHT |
+| documents-writes | `POST subscription/<uid>/medical-certificate/upload` | `Subscription.save()` season error (B, legacy: possible): the certificate is kept and the answer is the 500 JSON with the date message | same run |
+| document-render | `GET document/medical-appointment/<uid>`, Biella | no primary tutor relation (B, legacy: yes): the Document is created, then the first relation is saved as primary, then the form is filled | 241 cases; GREEN `restdocs-3` 4 transports; mutation (promotion read instead of saved) CAUGHT |
+| subscription-medical | `GET subscription/<uid>/medical-appointments/list` | an appointment without a document (B, legacy: yes): the view's direct print request to `CURRENT_HOST` per row | 136 cases; GREEN 4 transports, run locally (`restdocs-sm-versioned`); mutation (print sent for another id) CAUGHT; see the note on the CI image below |
+| invoice-generate | `POST payment/<uid>/generate-invoice` | `X-Group-Id` in another spelling; float fees on an exact tie; `meta.subscription_data.name` that is a float, list or dict (B) | 56 cases; GREEN 4 transports (run 42913093092); mutation (re-save compared with the rendered fee) CAUGHT; payment-state 160/160 re-run (run 42908069516) |
+| invoice-core | `GET invoice/list` | an infinite search term (B) | 108 cases; GREEN `restdocs-2` 4 transports; mutation (infinity read as an amount) CAUGHT |
+| invoice-sync-print | `PATCH invoice/<uid>/update` | file parts in the body (B) | 74 cases; GREEN `restdocs-2` 4 transports; mutation (cancelled flag from a literal) CAUGHT |
+| invoice-parties | `PATCH invoice-customers/<uid>/update` | a file part as `paid` or `transmitted` (B) | 139 cases; GREEN `restdocs-2` 4 transports; mutation (entry written with another name) CAUGHT |
+| instructor-hours | `GET instructor/<uid>/hours/list` | two document-only rows sharing a document (B, legacy: yes) | 136 cases; GREEN `restdocs-3` 4 transports; mutation (second row deleting again) CAUGHT |
+| instructor-writes | `GET instructor/report` | dates in other spellings (`dateutil`, day first); `course_subscription_id` values that are integers or booleans, and the types that fail (B, legacy: yes) | 164 cases; GREEN `restdocs-3` 4 transports; mutation (rounding half up) CAUGHT |
+| instructor-writes | `POST instructor/<uid>/hours/add/compensation` | `X-Group-Id` in another spelling; `Infinity`, `NaN` and long products in the calculation amounts (B) | same run |
+
+Evidence notes:
+- A refusal after the tutor promotion is not replayed to Django: `BE_GO/internal/handler/document_views_handoff_test.go` runs the
+  promotion's statements on the admitted request, then a refusal (500, the upstream is not called), and the same refusal without
+  the promotion (replayed once). In `document-render` the promotion follows the Document insert, which already marks the request as
+  having written.
+- `subscription-medical` on GitHub stops at the placeholder image case (`storage.placeholder-bytes`), also on the base branch
+  (`go-ci/rest-docs-base`, run 42910915340): the CI image's zlib differs from the one the byte-for-byte port was proven against. The
+  new cases pass on Django and Go natively.
+
+Left refused in these families, with the reason:
+- document-views: `get_signature_base64()` (private storage read or an HTTP fetch of the legacy URL, with the failures logged and
+  swallowed) and template inputs outside `djtemplate`'s subset (open-ended).
+- documents-writes: storage provider failures (infrastructure errors, not inputs); archive update fields sent as files.
+- invoice-core: random ordering and orderings through relations (nothing to compare / open-ended); smart-search terms in other
+  scripts (the database's case folding); bulk bodies with file parts (iterating an uploaded file).
+- invoice-parties: nested `payment`/`supplier` objects, `payment_id`, a new `invoice_supplier_id`, supplier payments whose nested
+  rendering needs the payment serializer's relations, linked payments the manager cannot load, relation-path ordering.
+- invoice-sync-print: the restore that becomes pending between admission and task (a race window); dates before year 1000 and
+  FatturaPA inputs outside the subset.
+- invoice-generate: `send_receipt_email` of other JSON types; approve without a configured producer (class C).
+- instructor-hours: document deletes that cascade to other models' rows (each with its own audit entry).
+- instructor-writes: report workbook inputs the writer treats as formulas, rich strings or links with an anchor; subnormal products.
+
 ## Remaining A items, per family
 
 UI paths under `UI/src/`, Go under `BE_GO/internal/`. Cost: cheap (hours), medium (a family change with new
@@ -746,11 +790,11 @@ Coordination/status doc; no refusals. Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | GET document/subscription/preview/ | header/footer markup outside `mentions` subset — notably `<pre>` (code block) | `BE_GO/internal/mentions/tree.go:34-35` via `service/document_views.go:730-734`, `ErrDocumentViewNotPorted` | **A** (`<pre>` ported in v2-documents) | Preview iframe `routes/association/Members/subscription/partials/Preview.svelte:63`. Header/footer edited with TipTap (`routes/profile/sections/Account.svelte:757,777`); `components/inputs/TipTapEditor.svelte:104` loads StarterKit, whose CodeBlock (``` input rule or pasted `<pre>`) serializes `<pre><code>`. No toolbar button, so infrequent. Other refusals (comments, mismatched tags, unknown entities) are not produced by TipTap's serializer. |
-| GET document/subscription/preview/ | mention keys outside list / `subscription.*` | `service/document_views.go:207,250,259` | B | Editor list `components/inputs/suggestion.js:9-75` matches the resolvers; `invoice.*` keys resolve to '' (no `invoice` object in context). No `subscription.*` in the editor. legacy: yes (old mention keys); cheap. |
+| GET document/subscription/preview/ | mention keys outside list / `subscription.*` | `service/document_views.go:207,250,259` | B (**ported** in v2-rest-docs) | Editor list `components/inputs/suggestion.js:9-75` matches the resolvers; `invoice.*` keys resolve to '' (no `invoice` object in context). No `subscription.*` in the editor. legacy: yes (old mention keys); cheap. |
 | GET document/subscription/preview/ | association whose user is a collaborator | handler/service preview | C | Association users are owners by construction. |
 | GET document/{subscription,compensation,template,medical-appointment}/<uid>/view/ | `get_main_tutor()` promote write | `domain.ErrViewTutorWrite` via `service/document_views.go:84` | B (**ported** in v2-documents-4 for signed-in requests) | Renderer-only route. legacy: yes (associates whose primary tutor relation was removed); medium (write + audit). |
 | same | `get_signature_base64()` | document_views service | B | Renderer-only; signatures are common UI data but the UI never calls `/view/`. medium. |
-| same | template inputs outside `djtemplate`, non-ASCII compensation periods | `service/document_views.go:468` | B | Renderer-only. legacy: no; medium. |
+| same | template inputs outside `djtemplate`, non-ASCII compensation periods | `service/document_views.go:468` | B (non-ASCII periods **ported** in v2-rest-docs) | Renderer-only. legacy: no; medium. |
 | same | HEAD / slash-less paths | router | B (**ported**, v2-documents-4: served; cases added for HEAD) | Renderer uses slash path GET. cheap. |
 
 ### documents-writes.md
@@ -759,11 +803,11 @@ Coordination/status doc; no refusals. Nothing to classify.
 | POST subscription/<uid>/medical-certificate/upload, POST document/medical/certificate/ | multipart filename containing `&` (Go refuses any `&`, Django `html.unescape`s) | `BE_GO/internal/handler/documents_writes.go:471-472` (called at :392-394), `ErrDocumentWritesNotPorted` | **ported** (v2-subscriptions, `pyhtml.Unescape`) | `routes/association/Members/detail/sections/modals/medicalCertificateUpload.js:13-15` appends the File with `file.name`; callers `AddMedicalCertificate.svelte:88`, `Members/add/sections/Section4.svelte:50`, `subscribe/wizard/Step3.svelte:16`, `subscribe-multiple/...`, `subscribefamily/...`. A file named e.g. `Rossi & Bianchi.pdf` is refused. |
 | same | invalid UTF-8 / RFC 2231 / `Content-Transfer-Encoding` / bodies > 250 MiB | `handler/documents_writes.go:328,376,384` | B | Browsers send UTF-8 names, no CTE, no RFC 2231; UI caps certificates at 5 MB (`medicalCertificateUpload.js:1,5`). legacy: no; medium. |
 | POST documents/add, POST subscription/<uid>/upload-document | filename None / NUL / lone surrogates | `service/documents_writes.go:182,488` | B (NUL and surrogates **ported** in v2-documents-4; None in `documents/add` stays: the error text carries the new row's id and timestamp) | UI sends `file.name` in JSON (`archive/Archive.svelte:104-119`, `Members/detail/sections/modals/AddFileModal.svelte:36-41`). legacy: no; cheap. |
-| upload-document, archive update | uploaded file as a text field | `service/documents_writes.go:213,481,646` | B | UI sends JSON. cheap. |
+| upload-document, archive update | uploaded file as a text field | `service/documents_writes.go:213,481,646` | B (upload-document **ported** in v2-rest-docs; archive update stays) | UI sends JSON. cheap. |
 | PATCH documents/<pk>/update | boolean UUID pk; any input | `BE_GO/internal/dto/documents_writes.go:30,36,68` | B (boolean pk **ported** in v2-documents-4) | Route not called by UI (`DOCUMENTS.UPDATE` unused). cheap. |
 | documents/add, medical uploads | storage key already exists | `service/documents_writes.go:105` | C | Key embeds the new document UUID (`documentkey.UploadName`). |
 | same | storage provider failure | `service/documents_writes.go:286,553` | B | Infrastructure failure, not input. legacy: no; cheap. |
-| medical-certificate/upload | `Subscription.save()` season error | `service/documents_writes.go:688` | B | Needs an invalid season start/end combination (e.g. 29/02) in association settings. legacy: possible; cheap (error text). |
+| medical-certificate/upload | `Subscription.save()` season error | `service/documents_writes.go:688` | B (**ported** in v2-rest-docs) | Needs an invalid season start/end combination (e.g. 29/02) in association settings. legacy: possible; cheap (error text). |
 
 ### data-restore.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -873,7 +917,7 @@ No refusals of its own (re-verification record). Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | GET instructor/<uid>/hours/list | a page row with a payment and no document | `BE_GO/internal/service/instructor_hours.go:133-134`, `ErrInstructorHoursNotPorted` | **A** (ported in v2-documents) | Every compensation added from the UI (`course/instructor/info/Instructor.svelte:358`) leaves its hours with a payment and no document: Django `instructor_views.py:467-469` does `payment = payment.save()` (returns None), so the print is skipped and deferred to the list loop (`instructor_views.py:252-254`). The next list view (`Instructor.svelte:574`) is refused. |
-| GET hours/list | two document-only rows sharing a document | `service/instructor_hours.go:136-137` | B | Needs the compensation payment detached (payments are soft-deleted, FK kept). legacy: yes; medium. |
+| GET hours/list | two document-only rows sharing a document | `service/instructor_hours.go:136-137` | B (**ported** in v2-rest-docs) | Needs the compensation payment detached (payments are soft-deleted, FK kept). legacy: yes; medium. |
 | GET hours/list, DELETE hours/<id>/delete | document delete cascading beyond SET_NULL refs | `service/instructor_hours.go:145,612`, `ErrDocumentCascadeUnsupported` | B | Compensation documents are not otherwise referenced by UI flows. legacy: possible; medium. |
 | POST hours/add, PATCH update | HTML JSON with NaN/Infinity | `dto/instructor_hours_write.go:50` | B | UI JSON (`info/modals/AddEditModal.svelte:215,264`). Django 500 too. |
 | hours/add/compensation, lessons-hours | "stay on Django" | — | n/a | Superseded: routed in Go (`cmd/server/main.go:625-628`, instructor-writes). |
@@ -885,16 +929,20 @@ No refusals of its own (re-verification record). Nothing to classify.
 | same | float fee exact 2-place ties; non-finite sums | `service/invoice_generate.go:272-281` | B | Amounts are 2-decimal; exact binary ties need ≥3 decimals. legacy: no; cheap. |
 | same | `meta.subscription_data.name` not str/bool/int | `service/invoice_generate.go:455` | B | legacy: yes (imported/admin-edited meta); cheap. |
 | POST payment/<uid>/approve | `send_receipt_email` not None/bool/str/int64 | payment_state service | ported (rest-b1) | Every JSON value is passed to the task; an uploaded file stays refused. |
+| POST payment/<uid>/generate-invoice | non-canonical `X-Group-Id` | `BE_GO/internal/service/invoice_generate.go:148-149`, `ErrPaymentStateNotPorted` | B (**ported** in v2-rest-docs) | UI never sends `X-Group-Id`. cheap. |
+| same | float fee exact 2-place ties; non-finite sums | `service/invoice_generate.go:272-281` | B (ties **ported** in v2-rest-docs; non-finite sums stay) | Amounts are 2-decimal; exact binary ties need ≥3 decimals. legacy: no; cheap. |
+| same | `meta.subscription_data.name` not str/bool/int | `service/invoice_generate.go:455` | B (**ported** in v2-rest-docs) | legacy: yes (imported/admin-edited meta); cheap. |
+| POST payment/<uid>/approve | `send_receipt_email` not None/bool/str/int64 | payment_state service | B | UI sends a bool (`accounting/payment/PaymentList.svelte:876,1195`). |
 | approve | no configured Celery producer | payment_state | C | Deployment always configures the broker. |
 
 ### instructor-writes.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET instructor/report | other date spellings | report DTO | B | UI sends `DD/MM/YYYY` (`course/instructor/modals/ReportModal.svelte:10-11,22`). |
-| GET instructor/report | course subscription ids not str/None in attendance JSON | report service | B | legacy: yes (imported attendance); cheap. |
+| GET instructor/report | other date spellings | report DTO | B (**ported** in v2-rest-docs) | UI sends `DD/MM/YYYY` (`course/instructor/modals/ReportModal.svelte:10-11,22`). |
+| GET instructor/report | course subscription ids not str/None in attendance JSON | report service | B (**ported** in v2-rest-docs) | legacy: yes (imported attendance); cheap. |
 | GET instructor/report | workbook inputs xlsxwriter port refuses: cells starting `=`/`{=…}`, `<r>…</r>`, URLs with `#` | `BE_GO/internal/xlsxexport/xlsxwriter.go:95,97,109` | B | Event titles/descriptions are free text; a description starting with `=` or a link with an anchor would hit it. legacy: yes; medium. |
-| instructor writes | non-canonical `X-Group-Id` | instructor_writes service | B | Not sent by UI. |
-| compensation | Decimal infinities/NaN, exponents beyond ±100000, >28-digit products | `service/instructor_writes.go:427,447-453`; `dto/instructor_writes.go:350-365` | B | Values come from UI number inputs. legacy: no; cheap. |
+| instructor writes | non-canonical `X-Group-Id` | instructor_writes service | B (**ported** in v2-rest-docs) | Not sent by UI. |
+| compensation | Decimal infinities/NaN, exponents beyond ±100000, >28-digit products | `service/instructor_writes.go:427,447-453`; `dto/instructor_writes.go:350-365` | B (**ported** in v2-rest-docs) | Values come from UI number inputs. legacy: no; cheap. |
 
 ### ledger-structural.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -908,7 +956,7 @@ No refusals of its own (re-verification record). Nothing to classify.
 |---|---|---|---|---|
 | GET invoice/list | an invoice on the page without a PDF | `BE_GO/internal/service/invoice_core.go:196-198`, `ErrInvoiceCoreNotPorted` | **A** (ported in v2-documents) | `accounting/receipts/ReceiptList.svelte:651`, `payment/partials/payment-overview.svelte:78`. Generated receipts get their PDF from the async `print_document_invoice` task; until it finishes, or permanently if rendering failed, Django re-dispatches (`BE/application/views/invoice_views.py:199`) and Go refuses. |
 | GET invoice/list | `?` ordering or ordering through relations | `service/invoice_core.go:69,78`; `repository/invoice_core.go:214` | B | UI sorts only `number`, `activity_fee`, `creation_date` (`ReceiptList.svelte:142-182`). |
-| GET invoice/list | infinite float search terms; smart-search terms in non-Latin scripts | `service/invoice_core.go:151,158` | B | Typed search; non-Latin names are unusual. cheap/medium. |
+| GET invoice/list | infinite float search terms; smart-search terms in non-Latin scripts | `service/invoice_core.go:151,158` | B (infinite terms **ported** in v2-rest-docs) | Typed search; non-Latin names are unusual. cheap/medium. |
 | invoice-bulk/* | multipart file parts | `service/invoice_core.go:300` | B | UI JSON (`ReceiptList.svelte:450,498`). |
 | invoice/<uid>/update, invoice-customers/add, invoice/list/export | "not in family" | — | n/a | Routed in Go now (`cmd/server/main.go:728,732,509`). |
 
@@ -932,7 +980,7 @@ No refusals of its own (re-verification record). Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | PATCH invoice/<uid>/update, POST invoice-customers/add | restore becomes pending between admission and task | `service/invoice_sync_print.go:258` (`ErrInvoiceSyncPrintDeferred`) | B | Race window only. cheap. |
-| PATCH invoice/<uid>/update | multipart file parts | `service/invoice_sync_print.go:173` | B | UI JSON (`accounting/receipts/modals/EditModal.svelte:47`). |
+| PATCH invoice/<uid>/update | multipart file parts | `service/invoice_sync_print.go:173` | B (**ported** in v2-rest-docs) | UI JSON (`accounting/receipts/modals/EditModal.svelte:47`). |
 | POST invoice-customers/add | dates before year 1000; FatturaPA inputs outside subset | `service/invoice_sync_print_customer.go:60,93-97` | B | UI sends numeric line values (`components/invoice/InvoiceForm.svelte:13,594`). legacy: no; medium. |
 
 ### maintainer-report.md
@@ -1228,7 +1276,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### subscription-medical.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET subscription/<uid>/medical-appointments/list | an appointment row without document | `service/subscription_medical.go:105`, `ErrSubscriptionMedicalNotPorted` | B | The UI add route prints synchronously (medical-appointment-add.md), so normal rows have a document. Doc-less rows come from a failed render or older versions. legacy: yes. medium (synchronous renderer call). UI list: `Members/detail/sections/Medical.svelte:510` |
+| GET subscription/<uid>/medical-appointments/list | an appointment row without document | `service/subscription_medical.go:105`, `ErrSubscriptionMedicalNotPorted` | B (**ported** in v2-rest-docs) | The UI add route prints synchronously (medical-appointment-add.md), so normal rows have a document. Doc-less rows come from a failed render or older versions. legacy: yes. medium (synchronous renderer call). UI list: `Members/detail/sections/Medical.svelte:510` |
 | POST subscription/<uid>/medical-certificate/set-certificate-expiration | subscription without a certificate | `:389` | ported | Ported in v2subs3 (`internal/pilplaceholder`). |
 
 ### subscription-tags.md

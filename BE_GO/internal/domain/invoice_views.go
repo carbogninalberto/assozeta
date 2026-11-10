@@ -17,6 +17,7 @@ type InvoiceViewInvoice struct {
 	Number                     *int64
 	Cancelled                  bool
 	SelectedTutor              *string
+	CreationDate               time.Time
 }
 
 // InvoiceViewPayment is the invoice's scoped, live, group-aware Payment.

@@ -333,6 +333,9 @@ add('list-sort-double-minus-server-error', 'owner', 'GET', listing(**{'sort[fiel
 add('list-search-number', 'owner', 'GET', listing(**{'query[generalSearch]': '3'}), 200, page(['mario', 'mario', 'supplier']))
 add('list-search-comma-fee', 'owner', 'GET', listing(**{'query[generalSearch]': '30,0'}), 200, page(['mario', 'mario']))
 add('list-search-nan-server-error', 'owner', 'GET', listing(**{'query[generalSearch]': 'nan'}), 500, SERVER)
+# float('inf') passes the field's to_python (only NaN is refused there), then fails when the SQL is compiled.
+add('list-search-infinite-server-error', 'owner', 'GET', listing(**{'query[generalSearch]': 'inf'}), 500, SERVER)
+add('list-search-negative-infinity-server-error', 'owner', 'GET', listing(**{'query[generalSearch]': '-Infinity'}), 500, SERVER)
 # smart_search (distinct): the payment's associate, selected_tutor, description, the supplier.
 add('list-search-associate', 'owner', 'GET', listing(**{'query[generalSearch]': 'ROSSI'}), 200, page(['mario']))
 add('list-search-two-words', 'owner', 'GET', listing(**{'query[generalSearch]': 'mario rossi'}), 200, page(['mario']))

@@ -68,7 +68,8 @@ LINKED = {'subscription': ('application.Subscription', 'subscription_id', 'docum
           'customerinvoice': ('application.CustomerInvoice', 'customer_invoice_id', 'pdf_id', 'pdf'),
           'instructorhours': ('application.InstructorHours', 'instructor_hours_id', 'document_id', 'document'),
           'medicalappointments': ('application.MedicalAppointments', 'medical_appointments_id', 'document_id', 'document')}
-MANAGED = (DOCUMENT, ARCHIVE, SUBSCRIPTION_FILE, harness.AUDIT, harness.INDEX) + tuple(item[0] for item in LINKED.values())
+RELATION = 'application.AssociateTutorRelation'
+MANAGED = (DOCUMENT, ARCHIVE, SUBSCRIPTION_FILE, RELATION, harness.AUDIT, harness.INDEX) + tuple(item[0] for item in LINKED.values())
 PDF_BYTES = b'%PDF-1.7\n%\xe2\xe3\xcf\xd3\n1 0 obj << /Type /Catalog >> endobj\n' + bytes(range(256)) + b'\n%%EOF\n'
 STUB = {}
 FOLDERS = {}
@@ -380,7 +381,7 @@ def assert_effect(case, before, after, source, context):
     if not (spec and spec['stored']):
         require(objects == {}, 'storage.nothing-stored')
     if not spec:
-        for label in (ARCHIVE, SUBSCRIPTION_FILE) + tuple(item[0] for item in LINKED.values()):
+        for label in (ARCHIVE, SUBSCRIPTION_FILE, RELATION) + tuple(item[0] for item in LINKED.values()):
             require(before[label] == after[label], 'state.unchanged:' + label)
         require(len(harness.audit_delta(contract, before, after)[0]) == 0, 'audit.none')
         harness.celery_published(contract, fixture, [], since=context['prepared']['started'], until=time.time())
@@ -399,6 +400,19 @@ def assert_effect(case, before, after, source, context):
         require(saved['Body'].read() == STORAGE['forms'][case['name']] and saved['ContentType'] == 'application/pdf'
                 and not saved.get('ContentEncoding'), 'storage.form-bytes')
         STORAGE['client'].delete_object(Bucket=BUCKET, Key=key)
+
+    # Tutor relations: the authored ones become primary; every other row is unchanged.
+    old_relations, new_relations = keyed(before[RELATION], 'id'), keyed(after[RELATION], 'id')
+    promoted = []
+    for child, tutor in spec.get('promoted', []):
+        pair = (source['associates'][child]['id'], source['associates'][tutor]['id'])
+        found = [key for key, row in old_relations.items() if (row['associate_id'], row['tutor_id']) == pair and not row['is_primary']]
+        require(len(found) == 1, 'fixture.promoted-relation')
+        promoted.append((found[0], source['association_ids'][source['associates'][child]['association']]))
+    require(set(old_relations) == set(new_relations), 'state.rows:' + RELATION)
+    for key, row in old_relations.items():
+        expected_row = {**row, 'is_primary': True} if key in [item[0] for item in promoted] else row
+        require(new_relations[key] == expected_row, 'state.relation')
 
     # Links: the authored rows point at the new document; every other row is unchanged.
     links = {}
@@ -448,6 +462,9 @@ def assert_effect(case, before, after, source, context):
                  {'document_id': ['None', doc_id], 'creation_date': ['None', naive(created)], 'filename': ['None', filename],
                   'token': ['None', token], 'customer_invoice_pdf': ['None', 'application.CustomerInvoice.None']},
                  (own_actor, 'actor.sport_association') if own_actor else None)]
+    for key, association in promoted:
+        expected.append(('application', 'associatetutorrelation', 'AssociateTutorRelation', str(key), 1,
+                         {'is_primary': ['False', 'True']}, (association, 'associate.sport_association')))
     for row, item in zip(archives, wanted_archives):
         key = row['sport_association_documents_archive_id']
         expected.append(('application', 'sportassociationdocumentsarchive', 'SportAssociationDocumentsArchive', key, 0,

@@ -76,10 +76,23 @@ workbook ([xlsx-exports](xlsx-exports.md)) with `max(len(str(value)), len(label)
 `200 {'data': {'results': [...], 'report_file': base64}}`.
 
 ## Not ported
-- report: other date spellings, course subscription ids that are not str or None, workbook inputs the writer refuses.
-- Refused with a 500 before any write: a non-canonical `X-Group-Id` spelling (auditlog would record it as
-  sent); calculation amounts that are Decimal infinities or NaNs, have exponents beyond ±100000, or whose
-  percentage product exceeds the 28-digit context.
+- report: workbook inputs the writer refuses (cells starting with `=`, rich strings, links with `#`: the writer's formula and URL
+  handling is not ported).
+- Refused with a 500 before any write: calculation amounts whose product falls in the subnormal range (below the context's
+  smallest exponent) and NaN diagnostics of 28 digits or more.
+
+## Rare inputs (v2-rest-docs)
+
+- report dates go through `dateutil` (`dayfirst=True`, `internal/pydateutil`): ISO dates, month names, two-digit years, times and
+  swapped months are read; a text it rejects is the 500 page. Zone-aware results (the view keeps the zone) stay refused.
+- report: `course_subscription_id` values that are integers or booleans read as `UUID(int=...)` and name no athlete; floats,
+  integers outside 0..2^128-1, lists and objects are the 500 page.
+- compensation: the header is read as a uuid in any spelling, the payment keeps the text as sent in memory (create entry and the
+  notes save's diff).
+- compensation notes: `Decimal(str(amount))` of `Infinity`, `NaN` (with its payload), exponents up to the context limits and
+  products rounded to 28 digits half even; a signalling NaN or an overflow raises while the notes are composed (the saved work
+  stays). 164 cases, receipt `instructor-writes-http-sweep-restdocs-3` (GitHub run 42910943209), 4 transports; unit tests in
+  `internal/dto/instructor_writes_test.go` against Python's results. Mutation (rounding half up) CAUGHT.
 
 ## Evidence
 

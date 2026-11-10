@@ -82,13 +82,17 @@ ASSOCIATES = {
     'formtutor': {'id': uid(54), 'association': 'form', 'first': 'Paola', 'last': 'Tutrice', 'email': 'tutor@example.test', 'user': None,
                   'form': {'phone': '+39 0151234567'}},
     'formbare': {'id': uid(55), 'association': 'form', 'first': 'Zoe', 'last': 'None', 'email': None, 'user': None},
+    # A minor whose tutor relations have no primary one: get_main_tutor() promotes the first while the form is filled.
+    'formminor': {'id': uid(59), 'association': 'form', 'first': 'Leo', 'last': 'Piccolo', 'email': None, 'user': None},
     # Names with line breaks (pasted or imported data).
     'newline': {'id': uid(94), 'association': 'own', 'first': 'Lia', 'last': 'Bian\nchi', 'email': None, 'user': None},
     'separators': {'id': uid(95), 'association': 'own', 'first': 'Ωmega', 'last': 'Ne\r\nri\u2028x', 'email': None, 'user': None},
 }
 # Tutor relations (associate, tutor, primary).
-TUTORS = [{'associate': 'formfull', 'tutor': 'formtutor', 'primary': True}]
-FULL_NAMES = {'formfull': "Maria Chiara D'Angelò", 'formtutor': 'Paola Tutrice', 'formbare': 'Zoe None', 'mario': 'Mario Rossi', 'noemail': 'Anna Verdi', 'greek': 'Δημήτρης Παπαδόπουλος', 'odd': 'None  Neri',
+TUTORS = [{'associate': 'formfull', 'tutor': 'formtutor', 'primary': True},
+          {'associate': 'formminor', 'tutor': 'formtutor', 'primary': False},
+          {'associate': 'formminor', 'tutor': 'formbare', 'primary': False}]
+FULL_NAMES = {'formminor': 'Leo Piccolo', 'formfull': "Maria Chiara D'Angelò", 'formtutor': 'Paola Tutrice', 'formbare': 'Zoe None', 'mario': 'Mario Rossi', 'noemail': 'Anna Verdi', 'greek': 'Δημήτρης Παπαδόπουλος', 'odd': 'None  Neri',
               'athlete': 'Athlete Fixture', 'newline': 'Lia Bian\nchi', 'separators': 'Ωmega Ne\r\nri\u2028x'}
 ASSOCIATE_IDS = {**{k: v['id'] for k, v in ASSOCIATES.items()}, 'athlete': BASE_ATHLETE_ASSOCIATE}
 
@@ -125,6 +129,7 @@ SUBSCRIPTIONS = {
     'formfull': {'id': uid(56), 'association': 'form', 'associate': 'formfull', 'user': 'owner', 'group': None, 'document': None},
     'formbare': {'id': uid(57), 'association': 'form', 'associate': 'formbare', 'user': 'owner', 'group': None, 'document': None},
     'formnone': {'id': uid(58), 'association': 'form', 'associate': None, 'user': 'owner', 'group': None, 'document': None},
+    'formminor': {'id': uid(120), 'association': 'form', 'associate': 'formminor', 'user': 'owner', 'group': None, 'document': None},
     'newline': {'id': uid(96), 'association': 'own', 'associate': 'newline', 'user': 'owner', 'group': None, 'document': None},
     'separators': {'id': uid(97), 'association': 'own', 'associate': 'separators', 'user': 'owner', 'group': None, 'document': None},
 }
@@ -235,6 +240,8 @@ MEDICAL = {
     'biella_bare': {'id': uid(118), 'subscription': 'formbare', 'region': 'agonistica-piemonte-biella', 'date': None, 'document': None},
     'biella_noassociate': {'id': uid(119), 'subscription': 'formnone', 'region': 'agonistica-piemonte-biella', 'date': '2026-05-13',
                            'document': None},
+    'biella_minor': {'id': uid(121), 'subscription': 'formminor', 'region': 'agonistica-piemonte-biella', 'date': '2026-05-15',
+                     'document': None},
     'lombardia': {'id': uid(109), 'subscription': 'plain', 'region': 'agonistica-lombardia', 'date': '2026-05-14', 'document': None},
 }
 
@@ -279,11 +286,12 @@ def add(name, actor, path, status, response, *, method='GET', headers=None, body
     cases.append(case)
 
 
-def effect(filename, *, actor, celery=True, links=(), creates=(), mail=None, stored=False):
+def effect(filename, *, actor, celery=True, links=(), creates=(), mail=None, stored=False, promoted=()):
     """filename: the new Document; links: (model, label) rows whose FK becomes it;
-    creates: archive/subscriptionfile rows; mail: the receipt e-mail spec; stored: the view saved the PDF itself."""
+    creates: archive/subscriptionfile rows; mail: the receipt e-mail spec; stored: the view saved the PDF itself;
+    promoted: (associate, tutor) relations saved as primary after the Document."""
     return {'document': filename, 'actor': actor, 'storage_task': celery, 'links': [list(item) for item in links],
-            'creates': [dict(item) for item in creates], 'mail': mail, 'stored': stored}
+            'creates': [dict(item) for item in creates], 'mail': mail, 'stored': stored, 'promoted': [list(item) for item in promoted]}
 
 
 def common(route, name, key):
@@ -702,9 +710,10 @@ FORM_FULL = {**FORM_ASSOCIATION, 'associate.last_name': "  D'ANGELÒ", 'associat
 FORM_BARE = {**FORM_ASSOCIATION, 'associate.first_name': '  ZOE'}
 
 
-def form(name, key, values, query='', disposition='inline'):
+def form(name, key, values, query='', disposition='inline', promoted=()):
     add(name, 'owner', f"/document/medical-appointment/{M(key)}{query}", 200, FORM_PDF,
-        effect=effect(medical_name(key), actor='owner', celery=False, links=[('medicalappointments', key)], stored=True),
+        effect=effect(medical_name(key), actor='owner', celery=False, links=[('medicalappointments', key)], stored=True,
+                      promoted=promoted),
         disposition=f'{disposition}; filename=' + medical_name(key))
     cases[-1]['form'] = values
 
@@ -712,6 +721,10 @@ def form(name, key, values, query='', disposition='inline'):
 form('medical-form-biella', 'biella', FORM_FULL)
 form('medical-form-biella-again-download', 'biella', FORM_FULL, '?download=1', 'attachment')
 form('medical-form-biella-bare', 'biella_bare', FORM_BARE)
+FORM_MINOR = {**FORM_ASSOCIATION, 'associate.first_name': '  LEO', 'associate.last_name': '  PICCOLO',
+              'main_tutor.phone': '  +39 0151234567', 'main_tutor.email': '  TUTOR@EXAMPLE.TEST'}
+form('medical-form-biella-promotes-tutor', 'biella_minor', FORM_MINOR, promoted=[('formminor', 'formtutor')])
+form('medical-form-biella-promoted-tutor-again', 'biella_minor', FORM_MINOR)
 add('medical-form-without-associate', 'owner', f"/document/medical-appointment/{M('biella_noassociate')}", 500,
     exception("'NoneType' object has no attribute 'main_tutor'"),
     effect=effect(medical_name('biella_noassociate'), actor='owner', celery=False))

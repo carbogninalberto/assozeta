@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -392,6 +393,61 @@ func (r *DocumentRender) AppointmentFormTutor(ctx context.Context, associate str
 	}
 	tutor.Phone, tutor.Email = row.Phone, row.Email
 	return &tutor, nil
+}
+
+// PromoteAppointmentFormTutor is get_main_tutor() without a primary relation:
+// tutor_relations.first() saved with is_primary=True. The auditlog entry is
+// indexed through associate.sport_association, or the actor's association
+// when the associate has none.
+func (r *DocumentRender) PromoteAppointmentFormTutor(ctx context.Context, associate string, audit domain.LoginAuditContext,
+	at time.Time) (*domain.RenderFormTutor, error) {
+	var tutor *domain.RenderFormTutor
+	err := r.write(ctx, func(tx *sqlx.Tx) error {
+		var row struct {
+			ID          int64   `db:"id"`
+			Primary     bool    `db:"is_primary"`
+			Association *string `db:"association"`
+			Phone       *string `db:"phone"`
+			Email       *string `db:"email"`
+		}
+		err := tx.GetContext(ctx, &row, `SELECT r.id, r.is_primary, a.sport_association_id::text AS association, t.phone, t.email
+ FROM application_associatetutorrelation r JOIN application_associate a ON a.associate_id=r.associate_id
+ JOIN application_associate t ON t.associate_id=r.tutor_id
+ WHERE r.associate_id=$1::uuid ORDER BY r.is_primary DESC, r.id LIMIT 1 FOR UPDATE OF r`, associate)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		tutor = &domain.RenderFormTutor{Phone: row.Phone, Email: row.Email}
+		if row.Primary {
+			return nil
+		}
+		if _, err = tx.ExecContext(ctx, `UPDATE application_associatetutorrelation SET is_primary=true WHERE id=$1`, row.ID); err != nil {
+			return err
+		}
+		path, association := "associate.sport_association", row.Association
+		if association == nil && audit.ActorID != nil {
+			path = "actor.sport_association"
+			var id string
+			err = tx.GetContext(ctx, &id, `SELECT sport_association_id::text FROM application_sportassociation
+ WHERE user_id=$1 AND NOT deleted ORDER BY sport_association_id LIMIT 1`, *audit.ActorID)
+			if err == nil {
+				association = &id
+			} else if !errors.Is(err, sql.ErrNoRows) {
+				return err
+			}
+		}
+		key := strconv.FormatInt(row.ID, 10)
+		entry := modelAuditEntry{Model: "associatetutorrelation", Key: key, Representation: "AssociateTutorRelation object (" + key + ")",
+			Action: 1, Changes: map[string][2]string{"is_primary": {"False", "True"}}, Context: audit, At: at}
+		if association != nil {
+			entry.AssociationID, entry.ResolutionPath = association, &path
+		}
+		return appendModelAudit(ctx, tx, entry)
+	})
+	return tutor, err
 }
 
 func (r *DocumentRender) write(ctx context.Context, apply func(tx *sqlx.Tx) error) error {

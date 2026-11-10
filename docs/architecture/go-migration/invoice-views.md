@@ -76,13 +76,21 @@ random) and records the real outputs; `go test ./internal/fatturapa` requires id
 relation the first one (by id) is saved with `is_primary=True` and one auditlog update entry indexed through
 `associate.sport_association`, as in [document-views](document-views.md). Signed-in requests only.
 
+## Mention keys (v2-rest-docs)
+
+`invoice.number`, `invoice.creation_date`, `invoice.activity_fee`, `invoice.membership_fee` and `invoice.total_amount` resolve with
+`str()` of the stored values; names that are not attributes of the invoice, the payment or the associate read as the empty
+text. 92 cases; receipt `invoice-views-http-sweep-restdocs-3` (GitHub run 42910943209): 4 transports. Mutation (the activity fee read
+from the membership fee) CAUGHT.
+
 ## Not ported (refused with the 500 page; the views write nothing)
 
 - `get_main_tutor()` promotion on a request authorized only by the bypass header.
 - Stored JSON outside the handled shapes: a non-dict truthy subscription meta other than numbers/bools, a non-dict truthy payment
   meta or `course` on a course payment, a non-string meta `description`, non-string `payment_category_id` values, integers beyond
   int64 or float overflow in amounts, `lower()` of the few runes with special Python mappings.
-- Mention keys and markup outside the document-views subset; template inputs outside `djtemplate`.
+- Markup outside the document-views subset; template inputs outside `djtemplate`. Mention keys: the invoice's number, dates and
+  amounts (also through the legacy aliases) are read, and a name that is not an attribute reads as the empty text (see below).
 - FatturaPA shapes outside the proven subset (`fatturapa.ErrUnsupported`): list/dict line text, decimal strings with whitespace,
   underscores or non-ASCII digits, dates before year 1000, arithmetic beyond Decimal's 28-digit context.
 - `HEAD` and the slash-less paths.

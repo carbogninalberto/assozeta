@@ -60,7 +60,7 @@
    "website": "https://alfa.example.test",
    "sport": "Atletica",
    "abbreviated": "Alfa",
-   "document_header": "<p class=\"intestazione\">Spett.le <span class=\"mention\" data-type=\"mention\" key=\"sport_association.denomination\">@Denominazione</span> &amp; soci - CF <span data-type=\"mention\" class=\"mention\" key=\"sport_association.tax_code\">@cf</span><br>Data: @dataodierna, contatto <span class=\"mention\" data-type=\"mention\" key=\"sport_association.user.email\">@Email</span>, iscritto @nome</p>",
+   "document_header": "<p class=\"intestazione\">Spett.le <span class=\"mention\" data-type=\"mention\" key=\"sport_association.denomination\">@Denominazione</span> &amp; soci - CF <span data-type=\"mention\" class=\"mention\" key=\"sport_association.tax_code\">@cf</span><br>Data: @dataodierna, contatto <span class=\"mention\" data-type=\"mention\" key=\"sport_association.user.email\">@Email</span>, iscritto @nome<span class=\"mention\" data-type=\"mention\" key=\"subscription.tessera_vecchia\">@tessera</span><span class=\"mention\" data-type=\"mention\" key=\"sport_association.codice_coni\">@coni</span></p>",
    "invoice_footer": "<p>Grazie da @Denominazione — @listacorsi</p>\n<p>  </p>",
    "subscription_template": "subscription.html",
    "additional_sections": [
@@ -822,6 +822,28 @@
    "notes": null,
    "deleted": false,
    "group": null
+  },
+  "digits": {
+   "id": "a1000000-0000-4000-8000-000000985087",
+   "association": "alpha",
+   "instructor": "anna",
+   "amount": "6.00",
+   "date": null,
+   "signature": null,
+   "notes": null,
+   "deleted": false,
+   "group": null
+  },
+  "digitsmonth": {
+   "id": "a1000000-0000-4000-8000-000000985088",
+   "association": "alpha",
+   "instructor": "anna",
+   "amount": "6.00",
+   "date": null,
+   "signature": null,
+   "notes": null,
+   "deleted": false,
+   "group": null
   }
  },
  "hours": [
@@ -864,6 +886,22 @@
    "period",
    "2026-01-01",
    null
+  ],
+  [
+   "a1000000-0000-4000-8000-000000985095",
+   "anna",
+   "digits",
+   "period",
+   "2026-01-01",
+   "1٥/03/٢٠٢٦ al 2۹/03/202６"
+  ],
+  [
+   "a1000000-0000-4000-8000-000000985096",
+   "anna",
+   "digitsmonth",
+   "period",
+   "2026-01-01",
+   "15/0٣/2026 al 29/03/2026"
   ]
  ],
  "templates": {
@@ -910,6 +948,17 @@
    "custom_header": null,
    "custom_footer": "<p>Piè @email</p>",
    "template": "<p>Ciao @nome</p>"
+  },
+  "oldkeys": {
+   "id": "a1000000-0000-4000-8000-000000985104",
+   "association": "alpha",
+   "name": "Chiavi",
+   "header": false,
+   "footer": false,
+   "custom": false,
+   "custom_header": null,
+   "custom_footer": null,
+   "template": "<p>a<span class=\"mention\" data-type=\"mention\" key=\"sport_association.ragione_sociale\">@x</span>|<span class=\"mention\" data-type=\"mention\" key=\"sport_association.presidente.nome\">@x</span>|<span class=\"mention\" data-type=\"mention\" key=\"associate.soprannome\">@x</span>|<span class=\"mention\" data-type=\"mention\" key=\"associate.tessera.numero\">@x</span>|<span class=\"mention\" data-type=\"mention\" key=\"main_tutor.cellulare\">@x</span>|<span class=\"mention\" data-type=\"mention\" key=\"other.stagione\">@x</span>|<span class=\"mention\" data-type=\"mention\" key=\"other.stagione.anno\">@x</span>|<span class=\"mention\" data-type=\"mention\" key=\"associate.first_name\">@x</span>|<span class=\"mention\" data-type=\"mention\" key=\"other.today\">@x</span>|z</p>"
   }
  },
  "medical": {
@@ -12624,6 +12673,264 @@
    "promoted": []
   },
   {
+   "name": "document-views-compensation-period-other-digits",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000985087/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "renders": [],
+   "content_language": "it",
+   "promoted": [],
+   "html": {
+    "template": "document/application/compensation.html",
+    "language": "it",
+    "context": {
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "01234567890"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via Roma 1"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "str",
+            "v": "10100"
+           }
+          ],
+          [
+           "federation",
+           {
+            "t": "str",
+            "v": "FIDAL"
+           }
+          ],
+          [
+           "enroll_number",
+           {
+            "t": "str",
+            "v": "ab-12"
+           }
+          ],
+          [
+           "regulation",
+           {
+            "t": "str",
+            "v": "<p>Regolamento <b>interno</b></p>"
+           }
+          ],
+          [
+           "demand",
+           {
+            "t": "none"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "instructor",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "is_volunteer",
+           {
+            "t": "bool",
+            "v": false
+           }
+          ],
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Anna"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "D'Amico"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "dmcnna85l48l219q"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via Nizza"
+           }
+          ],
+          [
+           "civic_number",
+           {
+            "t": "str",
+            "v": "12/b"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "date",
+            "v": "1985-07-08"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "str",
+            "v": "Cuneo"
+           }
+          ],
+          [
+           "born_province",
+           {
+            "t": "str",
+            "v": "cn"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "str",
+            "v": "333"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "str",
+            "v": "anna@example.test"
+           }
+          ],
+          [
+           "study_title",
+           {
+            "t": "str",
+            "v": "Laurea"
+           }
+          ],
+          [
+           "role",
+           {
+            "t": "str",
+            "v": "Allenatrice"
+           }
+          ],
+          [
+           "stipulated_contract_in",
+           {
+            "t": "date",
+            "v": "2024-09-01"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "amount",
+        {
+         "t": "decimal",
+         "v": "6.00"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "signature",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ]
+      ]
+     },
+     "from_date": {
+      "t": "date",
+      "v": "2026-03-15"
+     },
+     "to_date": {
+      "t": "date",
+      "v": "2026-03-29"
+     }
+    }
+   }
+  },
+  {
+   "name": "document-views-compensation-period-month-other-digits",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000985088/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "renders": [],
+   "content_language": "en",
+   "promoted": []
+  },
+  {
    "name": "document-views-compensation-invalid-period",
    "actor": "owner",
    "method": "GET",
@@ -13307,6 +13614,66 @@
      "template": {
       "t": "str",
       "v": ""
+     },
+     "header": {
+      "t": "str",
+      "v": ""
+     },
+     "footer": {
+      "t": "str",
+      "v": ""
+     }
+    }
+   }
+  },
+  {
+   "name": "document-views-template-old-mention-keys",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000985104/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "renders": [],
+   "content_language": "en",
+   "promoted": [],
+   "html": {
+    "template": "document/application/model.html",
+    "language": "en",
+    "context": {
+     "template": {
+      "t": "str",
+      "v": "<p>a||||||||$today|z</p>"
+     },
+     "header": {
+      "t": "str",
+      "v": ""
+     },
+     "footer": {
+      "t": "str",
+      "v": ""
+     }
+    }
+   }
+  },
+  {
+   "name": "document-views-template-old-mention-keys-subscription",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000985104/view/?subscription_id=a1000000-0000-4000-8000-000000985030",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "renders": [],
+   "content_language": "en",
+   "promoted": [],
+   "html": {
+    "template": "document/application/model.html",
+    "language": "en",
+    "context": {
+     "template": {
+      "t": "str",
+      "v": "<p>a|||||||Mario|$today|z</p>"
      },
      "header": {
       "t": "str",

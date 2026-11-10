@@ -195,6 +195,11 @@ def seed_rows(source, created):
                                           end_date=day(row['end']), creation_date=moment(row['created']), status_flag=subscription.ACCEPTED))
     for row in source['drafts'].values():
         insert(draft, draft(associate_import_draft_id=row['id'], sport_association_id=row['association'], data=row['data']))
+    # The season start of one owner (its subscriptions' date defaults).
+    season = source['season']
+    from django.contrib.auth import get_user_model
+    contract.require(get_user_model().objects.filter(pk=ids[season['user']]).update(
+        subscription_start_day=season['day'], subscription_start_month=season['month']) == 1, 'seed.season-owner')
 
 
 # Rows the run creates: subscription files, archive rows, certificates, documents (in that order).

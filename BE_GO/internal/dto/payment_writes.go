@@ -327,6 +327,9 @@ type PythonDecimal struct {
 	Negative bool
 	Zero     bool
 	Text     string
+	// Signaling and Payload describe a NaN: sNaN, and its diagnostic digits without leading zeros.
+	Signaling bool
+	Payload   string
 }
 
 var pythonDecimalGrammar = regexp.MustCompile(`(?i)^([+-])?(?:(\d*)(?:\.(\d*))?(?:e([+-]?\d+))?|(inf|infinity)|(s?nan)\d*)$`)
@@ -362,7 +365,10 @@ func ParsePythonDecimal(text string) PythonDecimal {
 	case match[5] != "":
 		return PythonDecimal{Kind: "inf", Negative: negative}
 	case match[6] != "":
-		return PythonDecimal{Kind: "nan", Negative: negative}
+		rest := strings.ToLower(strings.TrimLeft(trimmed, "+-"))
+		signaling := strings.HasPrefix(rest, "s")
+		payload := strings.TrimLeft(strings.TrimPrefix(strings.TrimPrefix(rest, "s"), "nan"), "0")
+		return PythonDecimal{Kind: "nan", Negative: negative, Signaling: signaling, Payload: payload}
 	}
 	whole, fraction := match[2], match[3]
 	if whole == "" && fraction == "" {

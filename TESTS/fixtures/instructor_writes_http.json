@@ -397,8 +397,23 @@
    "notes": null,
    "calculation_data": []
   },
-  "c_zero_pct": {
+  "c_upper": {
    "id": "a1000000-0000-4000-8000-000000967019",
+   "instructor": "comp",
+   "date": "2026-09-17",
+   "hours": "3.00",
+   "amount": "30.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "10.00",
+   "percentage_billing": "0.00",
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": []
+  },
+  "c_zero_pct": {
+   "id": "a1000000-0000-4000-8000-000000967020",
    "instructor": "comp",
    "date": "2026-09-15",
    "hours": "1.00",
@@ -418,8 +433,132 @@
     }
    ]
   },
+  "c_special": {
+   "id": "a1000000-0000-4000-8000-000000967021",
+   "instructor": "comp",
+   "date": "2026-09-18",
+   "hours": "1.00",
+   "amount": "4.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "percentage",
+   "hourly_billing": "10.00",
+   "percentage_billing": "50.00",
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": [
+    {
+     "amount": "Infinity",
+     "full_athlete_name": "A",
+     "course": "C"
+    },
+    {
+     "amount": "-inf",
+     "full_athlete_name": "B",
+     "course": "C"
+    },
+    {
+     "amount": "NaN12",
+     "full_athlete_name": "D",
+     "course": "C"
+    },
+    {
+     "amount": "12345678901234567890123456789",
+     "full_athlete_name": "E",
+     "course": "C"
+    },
+    {
+     "amount": "12345678901234567890123456791",
+     "full_athlete_name": "F",
+     "course": "C"
+    },
+    {
+     "amount": "99999999999999999999999999999",
+     "full_athlete_name": "G",
+     "course": "C"
+    },
+    {
+     "amount": "1E+999999",
+     "full_athlete_name": "H",
+     "course": "C"
+    }
+   ]
+  },
+  "c_nan_plain": {
+   "id": "a1000000-0000-4000-8000-000000967022",
+   "instructor": "comp",
+   "date": "2026-09-19",
+   "hours": "1.00",
+   "amount": "6.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "percentage",
+   "hourly_billing": "10.00",
+   "percentage_billing": "0.00",
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": [
+    {
+     "amount": "sNaN7",
+     "full_athlete_name": "A",
+     "course": "C"
+    },
+    {
+     "amount": "-NaN",
+     "full_athlete_name": "B",
+     "course": "C"
+    }
+   ]
+  },
+  "c_snan": {
+   "id": "a1000000-0000-4000-8000-000000967023",
+   "instructor": "comp",
+   "date": "2026-09-20",
+   "hours": "1.00",
+   "amount": "5.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "percentage",
+   "hourly_billing": "10.00",
+   "percentage_billing": "50.00",
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": [
+    {
+     "amount": "1",
+     "full_athlete_name": "A",
+     "course": "C"
+    },
+    {
+     "amount": "sNaN",
+     "full_athlete_name": "B",
+     "course": "C"
+    }
+   ]
+  },
+  "c_overflow": {
+   "id": "a1000000-0000-4000-8000-000000967024",
+   "instructor": "comp",
+   "date": "2026-09-21",
+   "hours": "1.00",
+   "amount": "5.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "percentage",
+   "hourly_billing": "10.00",
+   "percentage_billing": "50.00",
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": [
+    {
+     "amount": "1E+1000001",
+     "full_athlete_name": "A",
+     "course": "C"
+    }
+   ]
+  },
   "c_bad": {
-   "id": "a1000000-0000-4000-8000-000000967020",
+   "id": "a1000000-0000-4000-8000-000000967025",
    "instructor": "comp",
    "date": "2026-09-16",
    "hours": "1.00",
@@ -434,7 +573,7 @@
    "calculation_data": null
   },
   "r_a": {
-   "id": "a1000000-0000-4000-8000-000000967021",
+   "id": "a1000000-0000-4000-8000-000000967026",
    "instructor": "removable",
    "date": "2026-09-01",
    "hours": "1.00",
@@ -449,7 +588,7 @@
    "calculation_data": []
   },
   "r_b": {
-   "id": "a1000000-0000-4000-8000-000000967022",
+   "id": "a1000000-0000-4000-8000-000000967027",
    "instructor": "removable",
    "date": "2026-09-02",
    "hours": "2.00",
@@ -464,7 +603,7 @@
    "calculation_data": []
   },
   "abroad_h": {
-   "id": "a1000000-0000-4000-8000-000000967023",
+   "id": "a1000000-0000-4000-8000-000000967028",
    "instructor": "abroad",
    "date": "2026-09-03",
    "hours": "1.00",
@@ -493,14 +632,14 @@
  },
  "reminders": {
   "m_a": {
-   "id": "a1000000-0000-4000-8000-000000967024",
+   "id": "a1000000-0000-4000-8000-000000967029",
    "instructor": "removable",
    "title": "Promemoria",
    "send_at": "2026-09-20T08:00:00Z",
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "m_b": {
-   "id": "a1000000-0000-4000-8000-000000967025",
+   "id": "a1000000-0000-4000-8000-000000967030",
    "instructor": "removable",
    "title": "Secondo",
    "send_at": "2026-09-21T08:00:00Z",
@@ -509,30 +648,30 @@
  },
  "subscriptions": {
   "s_remo": {
-   "id": "a1000000-0000-4000-8000-000000967026",
+   "id": "a1000000-0000-4000-8000-000000967031",
    "instructor": "removable"
   }
  },
  "courses": {
   "ca": {
-   "id": "a1000000-0000-4000-8000-000000967027",
+   "id": "a1000000-0000-4000-8000-000000967032",
    "title": "Corso A",
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "cb": {
-   "id": "a1000000-0000-4000-8000-000000967028",
+   "id": "a1000000-0000-4000-8000-000000967033",
    "title": "Basket",
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "cf": {
-   "id": "a1000000-0000-4000-8000-000000967029",
+   "id": "a1000000-0000-4000-8000-000000967034",
    "title": "Estero",
    "association": "a1000000-0000-4000-8000-000000701002"
   }
  },
  "registries": {
   "reg_a": {
-   "id": "a1000000-0000-4000-8000-000000967030",
+   "id": "a1000000-0000-4000-8000-000000967035",
    "course": "ca",
    "status": 2,
    "events": [
@@ -713,7 +852,7 @@
    ]
   },
   "reg_b": {
-   "id": "a1000000-0000-4000-8000-000000967031",
+   "id": "a1000000-0000-4000-8000-000000967036",
    "course": "cb",
    "status": 2,
    "events": [
@@ -751,7 +890,7 @@
    ]
   },
   "reg_draft": {
-   "id": "a1000000-0000-4000-8000-000000967032",
+   "id": "a1000000-0000-4000-8000-000000967037",
    "course": "ca",
    "status": 1,
    "events": [
@@ -768,7 +907,7 @@
    ]
   },
   "reg_dict": {
-   "id": "a1000000-0000-4000-8000-000000967033",
+   "id": "a1000000-0000-4000-8000-000000967038",
    "course": "cb",
    "status": 2,
    "events": {
@@ -776,7 +915,7 @@
    }
   },
   "reg_foreign": {
-   "id": "a1000000-0000-4000-8000-000000967034",
+   "id": "a1000000-0000-4000-8000-000000967039",
    "course": "cf",
    "status": 2,
    "events": [
@@ -803,7 +942,7 @@
    ]
   },
   "reg_report": {
-   "id": "a1000000-0000-4000-8000-000000967412",
+   "id": "a1000000-0000-4000-8000-000000967417",
    "course": "ca",
    "status": 2,
    "events": [
@@ -939,59 +1078,119 @@
      },
      "title": "Vuota",
      "event_id": "a1000000-0000-4000-8000-000000967410"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "title": "Id numerici",
+     "event_id": "a1000000-0000-4000-8000-000000967411"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "title": "Id decimale",
+     "event_id": "a1000000-0000-4000-8000-000000967412"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "title": "Id lista",
+     "event_id": "a1000000-0000-4000-8000-000000967413"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "title": "Id enorme",
+     "event_id": "a1000000-0000-4000-8000-000000967414"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "title": "Id negativo",
+     "event_id": "a1000000-0000-4000-8000-000000967415"
     }
    ]
   }
  },
  "people": {
   "mario": {
-   "id": "a1000000-0000-4000-8000-000000967413",
+   "id": "a1000000-0000-4000-8000-000000967418",
    "first_name": "Mario",
    "last_name": "Rossi"
   },
   "luisa": {
-   "id": "a1000000-0000-4000-8000-000000967414",
+   "id": "a1000000-0000-4000-8000-000000967419",
    "first_name": "Luisa",
    "last_name": null
   },
   "paolo": {
-   "id": "a1000000-0000-4000-8000-000000967415",
+   "id": "a1000000-0000-4000-8000-000000967420",
    "first_name": "Paolo",
    "last_name": "Bianchi"
   }
  },
  "course_subscriptions": {
   "cs_mario": {
-   "id": "a1000000-0000-4000-8000-000000967416",
+   "id": "a1000000-0000-4000-8000-000000967421",
    "person": "mario",
    "deleted": false
   },
   "cs_luisa": {
-   "id": "a1000000-0000-4000-8000-000000967417",
+   "id": "a1000000-0000-4000-8000-000000967422",
    "person": "luisa",
    "deleted": false
   },
   "cs_deleted": {
-   "id": "a1000000-0000-4000-8000-000000967418",
+   "id": "a1000000-0000-4000-8000-000000967423",
    "person": "paolo",
    "deleted": true
   },
   "cs_nosub": {
-   "id": "a1000000-0000-4000-8000-000000967419",
+   "id": "a1000000-0000-4000-8000-000000967424",
    "person": null,
    "deleted": false
   }
  },
  "days": {
   "r1": {
-   "id": "a1000000-0000-4000-8000-000000967420",
+   "id": "a1000000-0000-4000-8000-000000967425",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967401",
    "date": "2026-09-14T22:30:00Z",
    "title": "Lezione doppia",
    "attendees": [
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000967416"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967421"
     },
     {
      "course_subscription_id": "a1000000-0000-4000-8000-000000967499"
@@ -999,25 +1198,25 @@
    ],
    "expected_absences": [
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000967417"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967422"
     }
    ]
   },
   "r1b": {
-   "id": "a1000000-0000-4000-8000-000000967421",
+   "id": "a1000000-0000-4000-8000-000000967426",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967401",
    "date": "2026-09-14T21:59:00Z",
    "title": "Prima",
    "attendees": [
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000967419"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967424"
     }
    ],
    "expected_absences": []
   },
   "r2": {
-   "id": "a1000000-0000-4000-8000-000000967422",
+   "id": "a1000000-0000-4000-8000-000000967427",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967402",
    "date": "2026-09-16T06:00:00Z",
@@ -1026,7 +1225,7 @@
    "expected_absences": null
   },
   "r3": {
-   "id": "a1000000-0000-4000-8000-000000967423",
+   "id": "a1000000-0000-4000-8000-000000967428",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967403",
    "date": "2026-09-17T06:00:00Z",
@@ -1035,14 +1234,14 @@
    "expected_absences": null
   },
   "r4": {
-   "id": "a1000000-0000-4000-8000-000000967424",
+   "id": "a1000000-0000-4000-8000-000000967429",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967404",
    "date": "2026-09-18T06:00:00Z",
    "title": "Lista",
    "attendees": [
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000967418"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967423"
     },
     {
      "course_subscription_id": null
@@ -1051,20 +1250,20 @@
    "expected_absences": null
   },
   "r5": {
-   "id": "a1000000-0000-4000-8000-000000967425",
+   "id": "a1000000-0000-4000-8000-000000967430",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967405",
    "date": "2026-09-19T06:00:00Z",
    "title": "Maiuscolo",
    "attendees": [
     {
-     "course_subscription_id": "A1000000-0000-4000-8000-000000967416"
+     "course_subscription_id": "A1000000-0000-4000-8000-000000967421"
     }
    ],
    "expected_absences": null
   },
   "r10": {
-   "id": "a1000000-0000-4000-8000-000000967426",
+   "id": "a1000000-0000-4000-8000-000000967431",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967410",
    "date": "2026-09-20T06:00:00Z",
@@ -1073,7 +1272,7 @@
    "expected_absences": null
   },
   "nothing": {
-   "id": "a1000000-0000-4000-8000-000000967427",
+   "id": "a1000000-0000-4000-8000-000000967432",
    "registry": "reg_report",
    "event": null,
    "date": "2026-09-20T07:00:00Z",
@@ -1082,23 +1281,23 @@
    "expected_absences": null
   },
   "b1": {
-   "id": "a1000000-0000-4000-8000-000000967428",
+   "id": "a1000000-0000-4000-8000-000000967433",
    "registry": "reg_b",
-   "event": "a1000000-0000-4000-8000-000000967411",
+   "event": "a1000000-0000-4000-8000-000000967416",
    "date": "2026-09-21T15:00:00Z",
    "title": "Basket",
    "attendees": [
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000967417"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967422"
     },
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000967416"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967421"
     }
    ],
    "expected_absences": null
   },
   "err6": {
-   "id": "a1000000-0000-4000-8000-000000967429",
+   "id": "a1000000-0000-4000-8000-000000967434",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967406",
    "date": "2026-10-05T06:00:00Z",
@@ -1107,7 +1306,7 @@
    "expected_absences": null
   },
   "err7": {
-   "id": "a1000000-0000-4000-8000-000000967430",
+   "id": "a1000000-0000-4000-8000-000000967435",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967407",
    "date": "2026-10-06T06:00:00Z",
@@ -1116,7 +1315,7 @@
    "expected_absences": null
   },
   "err8": {
-   "id": "a1000000-0000-4000-8000-000000967431",
+   "id": "a1000000-0000-4000-8000-000000967436",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967408",
    "date": "2026-10-07T06:00:00Z",
@@ -1124,8 +1323,85 @@
    "attendees": null,
    "expected_absences": null
   },
+  "ids_mixed": {
+   "id": "a1000000-0000-4000-8000-000000967437",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967411",
+   "date": "2026-10-15T06:00:00Z",
+   "title": null,
+   "attendees": [
+    {
+     "course_subscription_id": 5
+    },
+    {
+     "course_subscription_id": true
+    },
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967421"
+    }
+   ],
+   "expected_absences": [
+    {
+     "course_subscription_id": 0
+    }
+   ]
+  },
+  "err_float": {
+   "id": "a1000000-0000-4000-8000-000000967438",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967412",
+   "date": "2026-10-16T06:00:00Z",
+   "title": null,
+   "attendees": [
+    {
+     "course_subscription_id": 1.5
+    }
+   ],
+   "expected_absences": null
+  },
+  "err_list": {
+   "id": "a1000000-0000-4000-8000-000000967439",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967413",
+   "date": "2026-10-17T06:00:00Z",
+   "title": null,
+   "attendees": [
+    {
+     "course_subscription_id": [
+      1
+     ]
+    }
+   ],
+   "expected_absences": null
+  },
+  "err_huge": {
+   "id": "a1000000-0000-4000-8000-000000967440",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967414",
+   "date": "2026-10-18T06:00:00Z",
+   "title": null,
+   "attendees": [
+    {
+     "course_subscription_id": 340282366920938463463374607431768211456
+    }
+   ],
+   "expected_absences": null
+  },
+  "err_negative": {
+   "id": "a1000000-0000-4000-8000-000000967441",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967415",
+   "date": "2026-10-19T06:00:00Z",
+   "title": null,
+   "attendees": [
+    {
+     "course_subscription_id": -1
+    }
+   ],
+   "expected_absences": null
+  },
   "err9": {
-   "id": "a1000000-0000-4000-8000-000000967432",
+   "id": "a1000000-0000-4000-8000-000000967442",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967409",
    "date": "2026-10-08T06:00:00Z",
@@ -1138,36 +1414,36 @@
    "expected_absences": null
   },
   "err_b2": {
-   "id": "a1000000-0000-4000-8000-000000967433",
+   "id": "a1000000-0000-4000-8000-000000967443",
    "registry": "reg_b",
-   "event": "a1000000-0000-4000-8000-000000967411",
+   "event": "a1000000-0000-4000-8000-000000967416",
    "date": "2026-10-12T06:00:00Z",
    "title": null,
    "attendees": null,
    "expected_absences": null
   },
   "err_e14": {
-   "id": "a1000000-0000-4000-8000-000000967434",
+   "id": "a1000000-0000-4000-8000-000000967444",
    "registry": "reg_a",
-   "event": "a1000000-0000-4000-8000-000000967411",
+   "event": "a1000000-0000-4000-8000-000000967416",
    "date": "2026-10-13T06:00:00Z",
    "title": null,
    "attendees": null,
    "expected_absences": null
   },
   "err_dict": {
-   "id": "a1000000-0000-4000-8000-000000967435",
+   "id": "a1000000-0000-4000-8000-000000967445",
    "registry": "reg_dict",
-   "event": "a1000000-0000-4000-8000-000000967411",
+   "event": "a1000000-0000-4000-8000-000000967416",
    "date": "2026-10-14T06:00:00Z",
    "title": null,
    "attendees": null,
    "expected_absences": null
   },
   "foreign": {
-   "id": "a1000000-0000-4000-8000-000000967436",
+   "id": "a1000000-0000-4000-8000-000000967446",
    "registry": "reg_foreign",
-   "event": "a1000000-0000-4000-8000-000000967411",
+   "event": "a1000000-0000-4000-8000-000000967416",
    "date": "2026-09-25T06:00:00Z",
    "title": null,
    "attendees": null,
@@ -1190,13 +1466,13 @@
        "lessons_count": 7,
        "courses": [
         {
-         "course_id": "a1000000-0000-4000-8000-000000967028",
+         "course_id": "a1000000-0000-4000-8000-000000967033",
          "course_title": "Basket",
          "lessons_count": 1,
          "hours": 2.0
         },
         {
-         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_id": "a1000000-0000-4000-8000-000000967032",
          "course_title": "Corso A",
          "lessons_count": 6,
          "hours": 7.25
@@ -1211,13 +1487,13 @@
        "lessons_count": 2,
        "courses": [
         {
-         "course_id": "a1000000-0000-4000-8000-000000967028",
+         "course_id": "a1000000-0000-4000-8000-000000967033",
          "course_title": "Basket",
          "lessons_count": 1,
          "hours": 1.5
         },
         {
-         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_id": "a1000000-0000-4000-8000-000000967032",
          "course_title": "Corso A",
          "lessons_count": 1,
          "hours": 1.25
@@ -1232,7 +1508,7 @@
        "lessons_count": 1,
        "courses": [
         {
-         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_id": "a1000000-0000-4000-8000-000000967032",
          "course_title": "Corso A",
          "lessons_count": 1,
          "hours": 1.33
@@ -1286,13 +1562,13 @@
        "lessons_count": 6,
        "courses": [
         {
-         "course_id": "a1000000-0000-4000-8000-000000967028",
+         "course_id": "a1000000-0000-4000-8000-000000967033",
          "course_title": "Basket",
          "lessons_count": 1,
          "hours": 2.0
         },
         {
-         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_id": "a1000000-0000-4000-8000-000000967032",
          "course_title": "Corso A",
          "lessons_count": 5,
          "hours": 5.25
@@ -1307,7 +1583,7 @@
        "lessons_count": 1,
        "courses": [
         {
-         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_id": "a1000000-0000-4000-8000-000000967032",
          "course_title": "Corso A",
          "lessons_count": 1,
          "hours": 1.25
@@ -1322,7 +1598,7 @@
        "lessons_count": 1,
        "courses": [
         {
-         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_id": "a1000000-0000-4000-8000-000000967032",
          "course_title": "Corso A",
          "lessons_count": 1,
          "hours": 1.33
@@ -1376,13 +1652,13 @@
        "lessons_count": 7,
        "courses": [
         {
-         "course_id": "a1000000-0000-4000-8000-000000967028",
+         "course_id": "a1000000-0000-4000-8000-000000967033",
          "course_title": "Basket",
          "lessons_count": 1,
          "hours": 2.0
         },
         {
-         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_id": "a1000000-0000-4000-8000-000000967032",
          "course_title": "Corso A",
          "lessons_count": 6,
          "hours": 6.25
@@ -1397,13 +1673,13 @@
        "lessons_count": 2,
        "courses": [
         {
-         "course_id": "a1000000-0000-4000-8000-000000967028",
+         "course_id": "a1000000-0000-4000-8000-000000967033",
          "course_title": "Basket",
          "lessons_count": 1,
          "hours": 1.5
         },
         {
-         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_id": "a1000000-0000-4000-8000-000000967032",
          "course_title": "Corso A",
          "lessons_count": 1,
          "hours": 1.25
@@ -1418,7 +1694,7 @@
        "lessons_count": 1,
        "courses": [
         {
-         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_id": "a1000000-0000-4000-8000-000000967032",
          "course_title": "Corso A",
          "lessons_count": 1,
          "hours": 1.33
@@ -1472,13 +1748,13 @@
        "lessons_count": 4,
        "courses": [
         {
-         "course_id": "a1000000-0000-4000-8000-000000967028",
+         "course_id": "a1000000-0000-4000-8000-000000967033",
          "course_title": "Basket",
          "lessons_count": 1,
          "hours": 2.0
         },
         {
-         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_id": "a1000000-0000-4000-8000-000000967032",
          "course_title": "Corso A",
          "lessons_count": 3,
          "hours": 4.0
@@ -1551,13 +1827,13 @@
        "lessons_count": 7,
        "courses": [
         {
-         "course_id": "a1000000-0000-4000-8000-000000967028",
+         "course_id": "a1000000-0000-4000-8000-000000967033",
          "course_title": "Basket",
          "lessons_count": 1,
          "hours": 2.0
         },
         {
-         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_id": "a1000000-0000-4000-8000-000000967032",
          "course_title": "Corso A",
          "lessons_count": 6,
          "hours": 7.25
@@ -1572,13 +1848,13 @@
        "lessons_count": 2,
        "courses": [
         {
-         "course_id": "a1000000-0000-4000-8000-000000967028",
+         "course_id": "a1000000-0000-4000-8000-000000967033",
          "course_title": "Basket",
          "lessons_count": 1,
          "hours": 1.5
         },
         {
-         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_id": "a1000000-0000-4000-8000-000000967032",
          "course_title": "Corso A",
          "lessons_count": 1,
          "hours": 1.25
@@ -1593,7 +1869,7 @@
        "lessons_count": 1,
        "courses": [
         {
-         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_id": "a1000000-0000-4000-8000-000000967032",
          "course_title": "Corso A",
          "lessons_count": 1,
          "hours": 1.33
@@ -1647,7 +1923,7 @@
        "lessons_count": 1,
        "courses": [
         {
-         "course_id": "a1000000-0000-4000-8000-000000967029",
+         "course_id": "a1000000-0000-4000-8000-000000967034",
          "course_title": "Estero",
          "lessons_count": 1,
          "hours": 1.5
@@ -1675,7 +1951,7 @@
      "lessons_count": 7,
      "courses": [
       {
-       "course_id": "a1000000-0000-4000-8000-000000967028",
+       "course_id": "a1000000-0000-4000-8000-000000967033",
        "course_title": "Basket",
        "lessons_count": 1,
        "lessons": [
@@ -1690,7 +1966,7 @@
        "hours": 2.0
       },
       {
-       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_id": "a1000000-0000-4000-8000-000000967032",
        "course_title": "Corso A",
        "lessons_count": 6,
        "lessons": [
@@ -1760,7 +2036,7 @@
      "lessons_count": 5,
      "courses": [
       {
-       "course_id": "a1000000-0000-4000-8000-000000967028",
+       "course_id": "a1000000-0000-4000-8000-000000967033",
        "course_title": "Basket",
        "lessons_count": 1,
        "lessons": [
@@ -1775,7 +2051,7 @@
        "hours": 2.0
       },
       {
-       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_id": "a1000000-0000-4000-8000-000000967032",
        "course_title": "Corso A",
        "lessons_count": 4,
        "lessons": [
@@ -1831,13 +2107,13 @@
      "lessons_count": 2,
      "courses": [
       {
-       "course_id": "a1000000-0000-4000-8000-000000967028",
+       "course_id": "a1000000-0000-4000-8000-000000967033",
        "course_title": "Basket",
        "lessons_count": 1,
        "hours": 1.5
       },
       {
-       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_id": "a1000000-0000-4000-8000-000000967032",
        "course_title": "Corso A",
        "lessons_count": 1,
        "hours": 1.25
@@ -1863,7 +2139,7 @@
      "lessons_count": 1,
      "courses": [
       {
-       "course_id": "a1000000-0000-4000-8000-000000967028",
+       "course_id": "a1000000-0000-4000-8000-000000967033",
        "course_title": "Basket",
        "lessons_count": 1,
        "hours": 1.0
@@ -1997,13 +2273,13 @@
      "lessons_count": 3,
      "courses": [
       {
-       "course_id": "a1000000-0000-4000-8000-000000967028",
+       "course_id": "a1000000-0000-4000-8000-000000967033",
        "course_title": "Basket",
        "lessons_count": 1,
        "hours": 2.0
       },
       {
-       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_id": "a1000000-0000-4000-8000-000000967032",
        "course_title": "Corso A",
        "lessons_count": 2,
        "hours": 2.0
@@ -2029,7 +2305,7 @@
      "lessons_count": 1,
      "courses": [
       {
-       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_id": "a1000000-0000-4000-8000-000000967032",
        "course_title": "Corso A",
        "lessons_count": 1,
        "hours": 1.33
@@ -2055,13 +2331,13 @@
      "lessons_count": 7,
      "courses": [
       {
-       "course_id": "a1000000-0000-4000-8000-000000967028",
+       "course_id": "a1000000-0000-4000-8000-000000967033",
        "course_title": "Basket",
        "lessons_count": 1,
        "hours": 2.0
       },
       {
-       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_id": "a1000000-0000-4000-8000-000000967032",
        "course_title": "Corso A",
        "lessons_count": 6,
        "hours": 7.25
@@ -2087,7 +2363,7 @@
      "lessons_count": 7,
      "courses": [
       {
-       "course_id": "a1000000-0000-4000-8000-000000967028",
+       "course_id": "a1000000-0000-4000-8000-000000967033",
        "course_title": "Basket",
        "lessons_count": 1,
        "lessons": [
@@ -2102,7 +2378,7 @@
        "hours": 2.0
       },
       {
-       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_id": "a1000000-0000-4000-8000-000000967032",
        "course_title": "Corso A",
        "lessons_count": 6,
        "lessons": [
@@ -2184,7 +2460,7 @@
      "lessons_count": 1,
      "courses": [
       {
-       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_id": "a1000000-0000-4000-8000-000000967032",
        "course_title": "Corso A",
        "lessons_count": 1,
        "hours": 1.33
@@ -2210,7 +2486,7 @@
      "lessons_count": 1,
      "courses": [
       {
-       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_id": "a1000000-0000-4000-8000-000000967032",
        "course_title": "Corso A",
        "lessons_count": 1,
        "lessons": [
@@ -3640,6 +3916,1256 @@
    "effect": null
   },
   {
+   "name": "instructor-writes-report-spelling-iso",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=2026-09-14&end_date=2026-09-30",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Maiuscolo",
+       "description": "http://example.test/lezione",
+       "date": "19/09/2026 08:00",
+       "attendees_count": 1,
+       "attendees": "Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Zero",
+       "description": "",
+       "date": "20/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Bruno",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lista",
+       "description": [
+        "a",
+        1
+       ],
+       "date": "18/09/2026 08:00",
+       "attendees_count": 2,
+       "attendees": "Atleta cancellato, Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Carlo",
+       "last_name": "Verdi",
+       "course": "Corso A",
+       "title": null,
+       "description": 42,
+       "date": "16/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Maiuscolo",
+         "http://example.test/lezione",
+         "19/09/2026 08:00",
+         {
+          "int": "1"
+         },
+         "Atleta cancellato",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Zero",
+         "",
+         "20/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Bruno",
+         "Rossi",
+         "Corso A",
+         "Lista",
+         {
+          "list": [
+           "a",
+           {
+            "int": "1"
+           }
+          ]
+         },
+         "18/09/2026 08:00",
+         {
+          "int": "2"
+         },
+         "Atleta cancellato, Atleta cancellato",
+         ""
+        ],
+        [
+         "Carlo",
+         "Verdi",
+         "Corso A",
+         null,
+         {
+          "int": "42"
+         },
+         "16/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        16,
+        29,
+        18,
+        24,
+        38,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-spelling-month-names",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=14%20Sep%202026&end_date=September%2030%2C%202026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Maiuscolo",
+       "description": "http://example.test/lezione",
+       "date": "19/09/2026 08:00",
+       "attendees_count": 1,
+       "attendees": "Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Zero",
+       "description": "",
+       "date": "20/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Bruno",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lista",
+       "description": [
+        "a",
+        1
+       ],
+       "date": "18/09/2026 08:00",
+       "attendees_count": 2,
+       "attendees": "Atleta cancellato, Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Carlo",
+       "last_name": "Verdi",
+       "course": "Corso A",
+       "title": null,
+       "description": 42,
+       "date": "16/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Maiuscolo",
+         "http://example.test/lezione",
+         "19/09/2026 08:00",
+         {
+          "int": "1"
+         },
+         "Atleta cancellato",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Zero",
+         "",
+         "20/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Bruno",
+         "Rossi",
+         "Corso A",
+         "Lista",
+         {
+          "list": [
+           "a",
+           {
+            "int": "1"
+           }
+          ]
+         },
+         "18/09/2026 08:00",
+         {
+          "int": "2"
+         },
+         "Atleta cancellato, Atleta cancellato",
+         ""
+        ],
+        [
+         "Carlo",
+         "Verdi",
+         "Corso A",
+         null,
+         {
+          "int": "42"
+         },
+         "16/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        16,
+        29,
+        18,
+        24,
+        38,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-spelling-two-digit-years",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=14/09/26&end_date=30/09/26",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Maiuscolo",
+       "description": "http://example.test/lezione",
+       "date": "19/09/2026 08:00",
+       "attendees_count": 1,
+       "attendees": "Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Zero",
+       "description": "",
+       "date": "20/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Bruno",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lista",
+       "description": [
+        "a",
+        1
+       ],
+       "date": "18/09/2026 08:00",
+       "attendees_count": 2,
+       "attendees": "Atleta cancellato, Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Carlo",
+       "last_name": "Verdi",
+       "course": "Corso A",
+       "title": null,
+       "description": 42,
+       "date": "16/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Maiuscolo",
+         "http://example.test/lezione",
+         "19/09/2026 08:00",
+         {
+          "int": "1"
+         },
+         "Atleta cancellato",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Zero",
+         "",
+         "20/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Bruno",
+         "Rossi",
+         "Corso A",
+         "Lista",
+         {
+          "list": [
+           "a",
+           {
+            "int": "1"
+           }
+          ]
+         },
+         "18/09/2026 08:00",
+         {
+          "int": "2"
+         },
+         "Atleta cancellato, Atleta cancellato",
+         ""
+        ],
+        [
+         "Carlo",
+         "Verdi",
+         "Corso A",
+         null,
+         {
+          "int": "42"
+         },
+         "16/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        16,
+        29,
+        18,
+        24,
+        38,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-spelling-times",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=14/09/2026%2010%3A30&end_date=30/09/2026%2023%3A59%3A59",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Maiuscolo",
+       "description": "http://example.test/lezione",
+       "date": "19/09/2026 08:00",
+       "attendees_count": 1,
+       "attendees": "Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Zero",
+       "description": "",
+       "date": "20/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Bruno",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lista",
+       "description": [
+        "a",
+        1
+       ],
+       "date": "18/09/2026 08:00",
+       "attendees_count": 2,
+       "attendees": "Atleta cancellato, Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Carlo",
+       "last_name": "Verdi",
+       "course": "Corso A",
+       "title": null,
+       "description": 42,
+       "date": "16/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Maiuscolo",
+         "http://example.test/lezione",
+         "19/09/2026 08:00",
+         {
+          "int": "1"
+         },
+         "Atleta cancellato",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Zero",
+         "",
+         "20/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Bruno",
+         "Rossi",
+         "Corso A",
+         "Lista",
+         {
+          "list": [
+           "a",
+           {
+            "int": "1"
+           }
+          ]
+         },
+         "18/09/2026 08:00",
+         {
+          "int": "2"
+         },
+         "Atleta cancellato, Atleta cancellato",
+         ""
+        ],
+        [
+         "Carlo",
+         "Verdi",
+         "Corso A",
+         null,
+         {
+          "int": "42"
+         },
+         "16/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        16,
+        29,
+        18,
+        24,
+        38,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-spelling-swapped-month",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=09/14/2026&end_date=30/09/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Maiuscolo",
+       "description": "http://example.test/lezione",
+       "date": "19/09/2026 08:00",
+       "attendees_count": 1,
+       "attendees": "Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Zero",
+       "description": "",
+       "date": "20/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Bruno",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lista",
+       "description": [
+        "a",
+        1
+       ],
+       "date": "18/09/2026 08:00",
+       "attendees_count": 2,
+       "attendees": "Atleta cancellato, Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Carlo",
+       "last_name": "Verdi",
+       "course": "Corso A",
+       "title": null,
+       "description": 42,
+       "date": "16/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Maiuscolo",
+         "http://example.test/lezione",
+         "19/09/2026 08:00",
+         {
+          "int": "1"
+         },
+         "Atleta cancellato",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Zero",
+         "",
+         "20/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Bruno",
+         "Rossi",
+         "Corso A",
+         "Lista",
+         {
+          "list": [
+           "a",
+           {
+            "int": "1"
+           }
+          ]
+         },
+         "18/09/2026 08:00",
+         {
+          "int": "2"
+         },
+         "Atleta cancellato, Atleta cancellato",
+         ""
+        ],
+        [
+         "Carlo",
+         "Verdi",
+         "Corso A",
+         null,
+         {
+          "int": "42"
+         },
+         "16/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        16,
+        29,
+        18,
+        24,
+        38,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
    "name": "instructor-writes-report-rome-midnight",
    "actor": "owner",
    "method": "GET",
@@ -4030,6 +5556,116 @@
    "effect": null
   },
   {
+   "name": "instructor-writes-report-numeric-attendee-ids",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=15/10/2026&end_date=15/10/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": null,
+       "description": "",
+       "date": "15/10/2026 08:00",
+       "attendees_count": 3,
+       "attendees": "Atleta cancellato, Atleta cancellato, Mario Rossi",
+       "expected_absences": "Atleta cancellato"
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         null,
+         "",
+         "15/10/2026 08:00",
+         {
+          "int": "3"
+         },
+         "Atleta cancellato, Atleta cancellato, Mario Rossi",
+         "Atleta cancellato"
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        8,
+        13,
+        18,
+        24,
+        51,
+        19
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-float-id-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=16/10/2026&end_date=16/10/2026",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-list-id-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=17/10/2026&end_date=17/10/2026",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-huge-id-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=18/10/2026&end_date=18/10/2026",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-negative-id-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=19/10/2026&end_date=19/10/2026",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
    "name": "instructor-writes-report-unmatched-event",
    "actor": "owner",
    "method": "GET",
@@ -4331,7 +5967,7 @@
     "actor": "full_collaborator",
     "rows": {
      "Instructor": {
-      "a1000000-0000-4000-8000-000000967035": {
+      "a1000000-0000-4000-8000-000000967040": {
        "user_id": "a1000000-0000-4000-8000-000000700001",
        "first_name": "Giulia",
        "last_name": "Bianchi",
@@ -4363,7 +5999,7 @@
     "audit": [
      {
       "model": "Instructor",
-      "key": "a1000000-0000-4000-8000-000000967035",
+      "key": "a1000000-0000-4000-8000-000000967040",
       "action": 0,
       "changes": "$created",
       "index": {
@@ -4375,7 +6011,7 @@
     ]
    },
    "body": {
-    "instructor_id": "A1000000-0000-4000-8000-000000967035",
+    "instructor_id": "A1000000-0000-4000-8000-000000967040",
     "first_name": " Giulia ",
     "last_name": "Bianchi",
     "email": "",
@@ -4907,7 +6543,7 @@
     "actor": "owner",
     "rows": {
      "Instructor": {
-      "a1000000-0000-4000-8000-000000967036": {
+      "a1000000-0000-4000-8000-000000967041": {
        "$copy": "plain",
        "last_name": "Copia"
       }
@@ -4917,7 +6553,7 @@
     "audit": [
      {
       "model": "Instructor",
-      "key": "a1000000-0000-4000-8000-000000967036",
+      "key": "a1000000-0000-4000-8000-000000967041",
       "action": 1,
       "changes": "$created",
       "overrides": {},
@@ -4928,7 +6564,7 @@
      },
      {
       "model": "Instructor",
-      "key": "a1000000-0000-4000-8000-000000967036",
+      "key": "a1000000-0000-4000-8000-000000967041",
       "action": 0,
       "changes": "$created",
       "overrides": {},
@@ -4940,7 +6576,7 @@
     ]
    },
    "body": {
-    "instructor_id": "a1000000-0000-4000-8000-000000967036",
+    "instructor_id": "a1000000-0000-4000-8000-000000967041",
     "first_name": "Paolo",
     "last_name": "Copia"
    }
@@ -5456,7 +7092,7 @@
    "effect": null,
    "body": {
     "hours": [
-     "a1000000-0000-4000-8000-000000967023"
+     "a1000000-0000-4000-8000-000000967028"
     ]
    }
   },
@@ -5637,7 +7273,7 @@
      "a1000000-0000-4000-8000-000000967016",
      "a1000000-0000-4000-8000-000000967017",
      "a1000000-0000-4000-8000-000000967999",
-     "a1000000-0000-4000-8000-000000967023"
+     "a1000000-0000-4000-8000-000000967028"
     ],
     "payment_date": "2026-09-30T10:00:00.25+02:00"
    }
@@ -5812,7 +7448,7 @@
      },
      {
       "model": "InstructorHours",
-      "key": "a1000000-0000-4000-8000-000000967019",
+      "key": "a1000000-0000-4000-8000-000000967020",
       "action": 1,
       "changes": {
        "payment": [
@@ -5844,8 +7480,404 @@
    },
    "body": {
     "hours": [
-     "a1000000-0000-4000-8000-000000967019",
+     "a1000000-0000-4000-8000-000000967020",
      "a1000000-0000-4000-8000-000000967018"
+    ]
+   }
+  },
+  {
+   "name": "instructor-writes-comp-group-upper-case",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {
+    "X-Group-Id": "A1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "compensation created."
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "Payment": {
+      "$new": {
+       "type": "default",
+       "subject": 0,
+       "amount": "30.00",
+       "payment_date": "$now",
+       "paid": false,
+       "expense": true,
+       "description": "Compensi e Rimborsi Spese per Carlo Verdi",
+       "payment_category_id": "$compensation-category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": null,
+       "supplier_id": null,
+       "instructor_id": "a1000000-0000-4000-8000-000000967009",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": null,
+       "notes": "Compenso per il giorno 2026-09-17, ore 3.00 con importo totale di 30.00€\n",
+       "custom_accounts_id": "$default-bank-account",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": "a1000000-0000-4000-8000-000000714001",
+       "course": null
+      }
+     },
+     "InstructorHours": {
+      "c_upper": {
+       "payment_id": "$new"
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Payment",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "direct"
+      },
+      "overrides": {
+       "notes": null,
+       "group": "A1000000-0000-4000-8000-000000714001"
+      }
+     },
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000967019",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "$new"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     },
+     {
+      "model": "Payment",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "notes": [
+        "None",
+        "Compenso per il giorno 2026-09-17, ore 3.00 con importo totale di 30.00€\n"
+       ],
+       "group": [
+        "a1000000-0000-4000-8000-000000714001",
+        "A1000000-0000-4000-8000-000000714001"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "direct"
+      }
+     }
+    ]
+   },
+   "body": {
+    "hours": [
+     "a1000000-0000-4000-8000-000000967019"
+    ]
+   }
+  },
+  {
+   "name": "instructor-writes-comp-special-decimals",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "compensation created."
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "Payment": {
+      "$new": {
+       "type": "default",
+       "subject": 0,
+       "amount": "10.00",
+       "payment_date": "$now",
+       "paid": false,
+       "expense": true,
+       "description": "Compensi e Rimborsi Spese per Carlo Verdi",
+       "payment_category_id": "$compensation-category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": null,
+       "supplier_id": null,
+       "instructor_id": "a1000000-0000-4000-8000-000000967009",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": null,
+       "notes": "Compenso per il giorno 2026-09-18, importo di 4.00€\nNote: -\nNel dettaglio:\n\n1° Pagamento\nAtleta: A \nCorso: C\nImporto: Infinity € * 50.00 % = Infinity €\n\n2° Pagamento\nAtleta: B \nCorso: C\nImporto: -Infinity € * 50.00 % = -Infinity €\n\n3° Pagamento\nAtleta: D \nCorso: C\nImporto: NaN12 € * 50.00 % = NaN12 €\n\n4° Pagamento\nAtleta: E \nCorso: C\nImporto: 12345678901234567890123456789 € * 50.00 % = 6172839450617283945061728394 €\n\n5° Pagamento\nAtleta: F \nCorso: C\nImporto: 12345678901234567890123456791 € * 50.00 % = 6172839450617283945061728396 €\n\n6° Pagamento\nAtleta: G \nCorso: C\nImporto: 99999999999999999999999999999 € * 50.00 % = 5.000000000000000000000000000E+28 €\n\n7° Pagamento\nAtleta: H \nCorso: C\nImporto: 1E+999999 € * 50.00 % = 5.0E+999998 €\n\n\n ---------------- \n\nCompenso per il giorno 2026-09-19, importo di 6.00€\nNote: -\nNel dettaglio:\n\n1° Pagamento\nAtleta: A \nCorso: C\nImporto: sNaN7 € * 0.00 % = sNaN7 €\n\n2° Pagamento\nAtleta: B \nCorso: C\nImporto: -NaN € * 0.00 % = -NaN €\n\n",
+       "custom_accounts_id": "$default-bank-account",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": null
+      }
+     },
+     "InstructorHours": {
+      "c_special": {
+       "payment_id": "$new"
+      },
+      "c_nan_plain": {
+       "payment_id": "$new"
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Payment",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "direct"
+      },
+      "overrides": {
+       "notes": null
+      }
+     },
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000967021",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "$new"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     },
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000967022",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "$new"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     },
+     {
+      "model": "Payment",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "notes": [
+        "None",
+        "Compenso per il giorno 2026-09-18, importo di 4.00€\nNote: -\nNel dettaglio:\n\n1° Pagamento\nAtleta: A \nCorso: C\nImporto: Infinity € * 50.00 % = Infinity €\n\n2° Pagamento\nAtleta: B \nCorso: C\nImporto: -Infinity € * 50.00 % = -Infinity €\n\n3° Pagamento\nAtleta: D \nCorso: C\nImporto: NaN12 € * 50.00 % = NaN12 €\n\n4° Pagamento\nAtleta: E \nCorso: C\nImporto: 12345678901234567890123456789 € * 50.00 % = 6172839450617283945061728394 €\n\n5° Pagamento\nAtleta: F \nCorso: C\nImporto: 12345678901234567890123456791 € * 50.00 % = 6172839450617283945061728396 €\n\n6° Pagamento\nAtleta: G \nCorso: C\nImporto: 99999999999999999999999999999 € * 50.00 % = 5.000000000000000000000000000E+28 €\n\n7° Pagamento\nAtleta: H \nCorso: C\nImporto: 1E+999999 € * 50.00 % = 5.0E+999998 €\n\n\n ---------------- \n\nCompenso per il giorno 2026-09-19, importo di 6.00€\nNote: -\nNel dettaglio:\n\n1° Pagamento\nAtleta: A \nCorso: C\nImporto: sNaN7 € * 0.00 % = sNaN7 €\n\n2° Pagamento\nAtleta: B \nCorso: C\nImporto: -NaN € * 0.00 % = -NaN €\n\n"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "direct"
+      }
+     }
+    ]
+   },
+   "body": {
+    "hours": [
+     "a1000000-0000-4000-8000-000000967021",
+     "a1000000-0000-4000-8000-000000967022"
+    ]
+   }
+  },
+  {
+   "name": "instructor-writes-comp-signalling-nan-keeps-saved-work",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "Payment": {
+      "$new": {
+       "type": "default",
+       "subject": 0,
+       "amount": "5.00",
+       "payment_date": "$now",
+       "paid": false,
+       "expense": true,
+       "description": "Compensi e Rimborsi Spese per Carlo Verdi",
+       "payment_category_id": "$compensation-category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": null,
+       "supplier_id": null,
+       "instructor_id": "a1000000-0000-4000-8000-000000967009",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": null,
+       "notes": null,
+       "custom_accounts_id": "$default-bank-account",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": null
+      }
+     },
+     "InstructorHours": {
+      "c_snan": {
+       "payment_id": "$new"
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Payment",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "direct"
+      },
+      "overrides": {
+       "notes": null
+      }
+     },
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000967023",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "$new"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     }
+    ]
+   },
+   "body": {
+    "hours": [
+     "a1000000-0000-4000-8000-000000967023"
+    ]
+   }
+  },
+  {
+   "name": "instructor-writes-comp-overflow-keeps-saved-work",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "Payment": {
+      "$new": {
+       "type": "default",
+       "subject": 0,
+       "amount": "5.00",
+       "payment_date": "$now",
+       "paid": false,
+       "expense": true,
+       "description": "Compensi e Rimborsi Spese per Carlo Verdi",
+       "payment_category_id": "$compensation-category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": null,
+       "supplier_id": null,
+       "instructor_id": "a1000000-0000-4000-8000-000000967009",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": null,
+       "notes": null,
+       "custom_accounts_id": "$default-bank-account",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": null
+      }
+     },
+     "InstructorHours": {
+      "c_overflow": {
+       "payment_id": "$new"
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Payment",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "direct"
+      },
+      "overrides": {
+       "notes": null
+      }
+     },
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000967024",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "$new"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     }
+    ]
+   },
+   "body": {
+    "hours": [
+     "a1000000-0000-4000-8000-000000967024"
     ]
    }
   },
@@ -5912,7 +7944,7 @@
      },
      {
       "model": "InstructorHours",
-      "key": "a1000000-0000-4000-8000-000000967020",
+      "key": "a1000000-0000-4000-8000-000000967025",
       "action": 1,
       "changes": {
        "payment": [
@@ -5929,7 +7961,7 @@
    },
    "body": {
     "hours": [
-     "a1000000-0000-4000-8000-000000967020"
+     "a1000000-0000-4000-8000-000000967025"
     ],
     "payment_date": 123
    }
@@ -6200,28 +8232,28 @@
     "audit": [
      {
       "model": "InstructorHours",
-      "key": "a1000000-0000-4000-8000-000000967022",
+      "key": "a1000000-0000-4000-8000-000000967027",
       "action": 2,
       "changes": "$deleted",
       "index": null
      },
      {
       "model": "InstructorHours",
-      "key": "a1000000-0000-4000-8000-000000967021",
+      "key": "a1000000-0000-4000-8000-000000967026",
       "action": 2,
       "changes": "$deleted",
       "index": null
      },
      {
       "model": "Reminders",
-      "key": "a1000000-0000-4000-8000-000000967025",
+      "key": "a1000000-0000-4000-8000-000000967030",
       "action": 2,
       "changes": "$deleted",
       "index": null
      },
      {
       "model": "Reminders",
-      "key": "a1000000-0000-4000-8000-000000967024",
+      "key": "a1000000-0000-4000-8000-000000967029",
       "action": 2,
       "changes": "$deleted",
       "index": {

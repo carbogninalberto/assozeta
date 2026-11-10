@@ -2999,6 +2999,200 @@
    }
   },
   {
+   "name": "invoice-sync-print-update-plain-cancelled-as-file-is-truthy",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998013",
+     "document_token": "a1000000-0000-4000-8000-000000998003",
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 22,
+     "archived": false,
+     "cancelled": true,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": "a1000000-0000-4000-8000-000000998002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": [
+      "a1000000-0000-4000-8000-000000998004"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_plain": {
+      "number": 22,
+      "cancelled": true,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998013",
+      "action": 1,
+      "changes": {
+       "number": [
+        "15",
+        "22"
+       ],
+       "cancelled": [
+        "False",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998013?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "raw_body": "--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"number\"\r\n\r\n22\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"cancelled\"; filename=\"c.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicesyncboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicesyncboundary"
+  },
+  {
+   "name": "invoice-sync-print-update-number-as-file-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "raw_body": "--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"number\"; filename=\"n.txt\"\r\nContent-Type: text/plain\r\n\r\n23\r\n--invoicesyncboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicesyncboundary"
+  },
+  {
+   "name": "invoice-sync-print-update-tutor-as-file-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "raw_body": "--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"number\"\r\n\r\n24\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"selected_tutor\"; filename=\"t.txt\"\r\nContent-Type: text/plain\r\n\r\na1000000-0000-4000-8000-000000998008\r\n--invoicesyncboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicesyncboundary"
+  },
+  {
+   "name": "invoice-sync-print-update-other-payment-date-as-file-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998014/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998014",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento con causale <b>Quote &lt;sync&gt; &amp; co</b> per l'associazione <b>Message reads own</b>.",
+     "number": 25,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": "a1000000-0000-4000-8000-000000998008",
+     "group": null,
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_other": {
+      "number": 25,
+      "cancelled": false,
+      "description": "Ricevuta di pagamento con causale <b>Quote &lt;sync&gt; &amp; co</b> per l'associazione <b>Message reads own</b>.",
+      "selected_tutor_id": "a1000000-0000-4000-8000-000000998008"
+     }
+    },
+    "payments": {
+     "p_other": {}
+    },
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998014",
+      "action": 1,
+      "changes": {
+       "number": [
+        "21",
+        "25"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998014?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "raw_body": "--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"number\"\r\n\r\n25\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"selected_tutor\"\r\n\r\na1000000-0000-4000-8000-000000998008\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"payment_date\"; filename=\"d.txt\"\r\nContent-Type: text/plain\r\n\r\n2026-09-09\r\n--invoicesyncboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicesyncboundary"
+  },
+  {
    "name": "invoice-sync-print-update-subscription-subject-invalid-date-ignored",
    "actor": "owner",
    "method": "PATCH",

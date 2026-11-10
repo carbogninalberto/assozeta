@@ -423,7 +423,7 @@ func compensationDetails(notes *strings.Builder, hour domain.InstructorHour) (bo
 	if hour.PercentageBilling != nil {
 		percentageText = *hour.PercentageBilling
 		value, outcome := dto.ParseInstructorDecimal(*hour.PercentageBilling)
-		if outcome != dto.DecimalFinite {
+		if outcome != dto.DecimalFinite || value.Special != "" {
 			return false, domain.ErrInstructorWritesNotPorted
 		}
 		if !value.IsZero() {
@@ -449,7 +449,11 @@ func compensationDetails(notes *strings.Builder, hour domain.InstructorHour) (bo
 		}
 		result := amount
 		if percentage != nil {
-			if result, ok = amount.Times(*percentage); !ok {
+			var outcome dto.TimesResult
+			switch result, outcome = amount.Times(*percentage); outcome {
+			case dto.TimesInvalid, dto.TimesOverflow:
+				return true, nil // the trapped signal raises
+			case dto.TimesNotPorted:
 				return false, domain.ErrInstructorWritesNotPorted
 			}
 		}
@@ -467,27 +471,24 @@ func compensationDetails(notes *strings.Builder, hour domain.InstructorHour) (bo
 	return false, nil
 }
 
-// compensationGroup is GroupAwareManager.create's raw X-Group-Id.
-func compensationGroup(ctx context.Context, tx domain.InstructorWritesTransaction, header string) (*string, error) {
+// compensationGroup is GroupAwareManager.create's raw X-Group-Id: the column keeps its uuid, the instance keeps the text as sent
+// (the create entry and the later save write it).
+func compensationGroup(ctx context.Context, tx domain.InstructorWritesTransaction, header string) (stored, sent *string, err error) {
 	if header == "" {
-		return nil, nil
+		return nil, nil, nil
 	}
 	group := supplierGroup(header)
 	if group == nil {
-		return nil, errInstructorWritesServer
-	}
-	if *group != header {
-		// A non-canonical spelling would be audited as sent.
-		return nil, domain.ErrInstructorWritesNotPorted
+		return nil, nil, errInstructorWritesServer
 	}
 	exists, err := tx.GroupExists(ctx, *group)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if !exists {
-		return nil, errInstructorWritesServer
+		return nil, nil, errInstructorWritesServer
 	}
-	return group, nil
+	return group, &header, nil
 }
 
 // Compensation follows instructor_hours_add_compensation.
@@ -584,7 +585,7 @@ func (s *InstructorWrites) Compensation(ctx context.Context, identity domain.Res
 	if err != nil {
 		return err
 	}
-	groupID, err := compensationGroup(ctx, tx, group)
+	groupID, sentGroup, err := compensationGroup(ctx, tx, group)
 	if err != nil {
 		return err
 	}
@@ -604,6 +605,9 @@ func (s *InstructorWrites) Compensation(ctx context.Context, identity domain.Res
 	}
 	if memory != stored {
 		changes["amount"] = [2]string{"None", memory}
+	}
+	if sentGroup != nil && *sentGroup != *groupID {
+		changes["group"] = [2]string{"None", *sentGroup}
 	}
 	if err := s.append(ctx, tx, domain.InstructorWritesAudit{Model: "Payment", Key: payment.ID, Action: 0, Changes: changes}, &association,
 		"direct", audit); err != nil {
@@ -632,6 +636,9 @@ func (s *InstructorWrites) Compensation(ctx context.Context, identity domain.Res
 	update := map[string][2]string{"notes": {"None", notes}}
 	if memory != stored {
 		update["amount"] = [2]string{stored, memory}
+	}
+	if sentGroup != nil && *sentGroup != *groupID {
+		update["group"] = [2]string{*groupID, *sentGroup}
 	}
 	if err := tx.SetPaymentNotes(ctx, payment.ID, notes); err != nil {
 		return err

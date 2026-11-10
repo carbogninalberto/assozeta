@@ -4457,6 +4457,28 @@
    "celery": []
   },
   {
+   "name": "invoice-core-list-search-infinite-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list?query%5BgeneralSearch%5D=inf",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "celery": []
+  },
+  {
+   "name": "invoice-core-list-search-negative-infinity-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list?query%5BgeneralSearch%5D=-Infinity",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "celery": []
+  },
+  {
    "name": "invoice-core-list-search-associate",
    "actor": "owner",
    "method": "GET",
