@@ -79,6 +79,38 @@
    "role": 2,
    "is_active": true,
    "deleted": false
+  },
+  "social_inactive": {
+   "user_id": "a1000000-0000-4000-8000-000000760005",
+   "username": "OAUTH-SOCIAL-INACTIVE",
+   "email": "social.inactive@example.test",
+   "first_name": "Ina",
+   "last_name": "Ttiva",
+   "role": 2,
+   "is_active": false,
+   "deleted": false
+  },
+  "social_otp": {
+   "user_id": "a1000000-0000-4000-8000-000000760006",
+   "username": "OAUTH-SOCIAL-OTP",
+   "email": "social.otp@example.test",
+   "first_name": "Otto",
+   "last_name": "Codice",
+   "role": 2,
+   "is_active": true,
+   "deleted": false,
+   "two_fa": true,
+   "two_fa_secret": "JBSWY3DPEHPK3PXP"
+  },
+  "social_deleted": {
+   "user_id": "a1000000-0000-4000-8000-000000760007",
+   "username": "OAUTH-SOCIAL-DELETED",
+   "email": "social.deleted@example.test",
+   "first_name": "Del",
+   "last_name": "Social",
+   "role": 1,
+   "is_active": true,
+   "deleted": true
   }
  },
  "scheduled": "2026-01-05",
@@ -153,6 +185,38 @@
    "expiration_date": "2099-01-01T00:00:00Z",
    "collaborator_role": 3,
    "collaborator_permissions": null
+  },
+  "social_kept": {
+   "collaboration_invite_id": "a1000000-0000-4000-8000-000000761080",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "email": "collab.kept@example.test",
+   "token": "oauth-invite-social-kept",
+   "expiration_date": "2099-01-01T00:00:00Z",
+   "collaborator_role": 3,
+   "collaborator_permissions": [
+    "association.members.read"
+   ]
+  },
+  "social_expired": {
+   "collaboration_invite_id": "a1000000-0000-4000-8000-000000761090",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "email": "collab.social.expired@example.test",
+   "token": "oauth-invite-social-expired",
+   "expiration_date": "2020-01-01T00:00:00Z",
+   "collaborator_role": 1,
+   "collaborator_permissions": null
+  },
+  "social_valid": {
+   "collaboration_invite_id": "a1000000-0000-4000-8000-000000761100",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "email": "collab.social@example.test",
+   "token": "oauth-invite-social-valid",
+   "expiration_date": "2099-01-01T00:00:00Z",
+   "collaborator_role": 3,
+   "collaborator_permissions": [
+    "association.members.read",
+    "association.members.update"
+   ]
   }
  },
  "partials": {
@@ -179,6 +243,10 @@
   "transfer": {
    "id": 990006,
    "email": "transfer.raise@example.test"
+  },
+  "social": {
+   "id": 990007,
+   "email": "social.partial@example.test"
   }
  },
  "reset_tokens": {
@@ -194,6 +262,10 @@
   "sport_association": "a1000000-0000-4000-8000-000000701001",
   "emit_only_on_approval": true,
   "customized_template": null
+ },
+ "access": {
+  "token": "oauth-social-access",
+  "email": "social.access@example.test"
  },
  "cases": [
   {
@@ -2465,7 +2537,7 @@
    }
   },
   {
-   "name": "oauth-accounts-signup-google-not-configured",
+   "name": "oauth-accounts-signup-google-rejected-token",
    "actor": "anonymous",
    "method": "POST",
    "path": "/oauth2/signup",
@@ -2475,6 +2547,10 @@
     "error": "Invalid social token"
    },
    "effect": null,
+   "provider": [
+    "google-certs",
+    "google-tokeninfo"
+   ],
    "body": {
     "sport_association": false,
     "first_name": "Nome",
@@ -2487,7 +2563,7 @@
    }
   },
   {
-   "name": "oauth-accounts-signup-apple-not-configured",
+   "name": "oauth-accounts-signup-apple-rejected-token",
    "actor": "anonymous",
    "method": "POST",
    "path": "/oauth2/signup",
@@ -2497,6 +2573,9 @@
     "error": "Invalid social token"
    },
    "effect": null,
+   "provider": [
+    "apple-keys"
+   ],
    "body": {
     "sport_association": false,
     "first_name": "Nome",
@@ -2843,6 +2922,7 @@
    "response": "$signup",
    "effect": {
     "kind": "signup",
+    "social": false,
     "user": {
      "first_name": "Mario",
      "last_name": "D'Arco <it>",
@@ -2965,6 +3045,7 @@
    "response": "$signup",
    "effect": {
     "kind": "signup",
+    "social": false,
     "user": {
      "first_name": "12",
      "last_name": "1.5",
@@ -3064,6 +3145,7 @@
    "response": "$signup",
    "effect": {
     "kind": "signup",
+    "social": false,
     "user": {
      "first_name": "Nome",
      "last_name": "Cognome",
@@ -3164,6 +3246,7 @@
    "response": "$signup",
    "effect": {
     "kind": "signup",
+    "social": false,
     "user": {
      "first_name": "Nome",
      "last_name": "Cognome",
@@ -3260,6 +3343,7 @@
    "response": "<stable-server-error-page>",
    "effect": {
     "kind": "signup",
+    "social": false,
     "user": {
      "first_name": "Nome",
      "last_name": "Cognome",
@@ -3300,6 +3384,7 @@
    "response": "$signup",
    "effect": {
     "kind": "signup",
+    "social": false,
     "user": {
      "first_name": "Nome",
      "last_name": "Cognome",
@@ -3419,6 +3504,7 @@
    "response": "$signup",
    "effect": {
     "kind": "signup",
+    "social": false,
     "user": {
      "first_name": "Nome",
      "last_name": "Cognome",
@@ -3521,6 +3607,7 @@
    "response": "$signup",
    "effect": {
     "kind": "signup",
+    "social": false,
     "user": {
      "first_name": "Nome",
      "last_name": "Cognome",
@@ -3617,6 +3704,7 @@
    "response": "<stable-server-error-page>",
    "effect": {
     "kind": "signup",
+    "social": false,
     "user": {
      "first_name": "Nome",
      "last_name": "Cognome",
@@ -3667,6 +3755,2192 @@
     "email": "persona18@example.test",
     "username": "persona-18",
     "password": "Valid-Pass1!"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-wrong-signature",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "google-certs",
+    "google-tokeninfo"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona20@example.test",
+       "email_verified": true
+      },
+      "wrong_signature": true
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-expired",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "google-certs",
+    "google-tokeninfo"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona20@example.test",
+       "email_verified": true
+      },
+      "expired": true
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-other-client",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "google-certs",
+    "google-tokeninfo"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona20@example.test",
+       "email_verified": true
+      },
+      "audience": "other-client"
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-apple-wrong-signature",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "apple-keys"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "apple",
+      "claims": {
+       "email": "persona20@example.test",
+       "email_verified": "true"
+      },
+      "wrong_signature": true
+     }
+    },
+    "backend": "apple-id"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-apple-expired",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "apple-keys"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "apple",
+      "claims": {
+       "email": "persona20@example.test",
+       "email_verified": "true"
+      },
+      "expired": true
+     }
+    },
+    "backend": "apple"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-apple-other-client",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "apple-keys"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "apple",
+      "claims": {
+       "email": "persona20@example.test",
+       "email_verified": "true"
+      },
+      "audience": "other-client"
+     }
+    },
+    "backend": "apple"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-disposable-body-email",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "You are nasty 🖕( •_• )🖕"
+   },
+   "effect": null,
+   "provider": [],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@yopmail.com",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona20@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-unverified",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona20@example.test",
+       "email_verified": false
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-verification-missing",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona20@example.test"
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-verification-null",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona20@example.test",
+       "email_verified": null
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-verification-text-false",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona20@example.test",
+       "email_verified": "false"
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-verification-number",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona20@example.test",
+       "email_verified": 1
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-email-missing",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-email-empty",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-email-number",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": 17,
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-access-token-without-verification",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "google-certs",
+    "google-tokeninfo",
+    "google-userinfo"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": "oauth-social-access",
+    "backend": "google"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-apple-unverified-text",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "apple-keys"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "apple",
+      "claims": {
+       "email": "persona20@example.test",
+       "email_verified": "false"
+      }
+     }
+    },
+    "backend": "apple-id"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-apple-unverified",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "apple-keys"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "apple",
+      "claims": {
+       "email": "persona20@example.test",
+       "email_verified": false
+      }
+     }
+    },
+    "backend": "apple-id"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-apple-verification-missing",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "apple-keys"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "apple",
+      "claims": {
+       "email": "persona20@example.test"
+      }
+     }
+    },
+    "backend": "apple"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-apple-verification-other-case",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "apple-keys"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "apple",
+      "claims": {
+       "email": "persona20@example.test",
+       "email_verified": "True"
+      }
+     }
+    },
+    "backend": "apple"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-unverified-existing-owner",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "message-reads-700001@example.test",
+       "email_verified": false
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-unverified-existing-owner-with-invite",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "MESSAGE-READS-700001@EXAMPLE.TEST",
+       "email_verified": false
+      }
+     }
+    },
+    "backend": "google-oauth2",
+    "collaboratorToken": "oauth-invite-social-kept"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-apple-unverified-existing-athlete",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid social token"
+   },
+   "effect": null,
+   "provider": [
+    "apple-keys"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "apple",
+      "claims": {
+       "email": "message-reads-700004@example.test",
+       "email_verified": "false"
+      }
+     }
+    },
+    "backend": "apple",
+    "collaboratorToken": "oauth-invite-social-kept"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-existing-owner",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signin",
+    "user": "a1000000-0000-4000-8000-000000700001"
+   },
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "message-reads-700001@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-existing-owner-with-invite",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signin",
+    "user": "a1000000-0000-4000-8000-000000700001"
+   },
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "x",
+    "last_name": "y",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "password": "Valid-Pass1!",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "MESSAGE-READS-700001@EXAMPLE.TEST",
+       "email_verified": true,
+       "given_name": "Altro",
+       "family_name": "Nome"
+      }
+     }
+    },
+    "backend": "google-identity",
+    "collaboratorToken": "oauth-invite-social-kept"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-existing-owner-unknown-invite",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signin",
+    "user": "a1000000-0000-4000-8000-000000700001"
+   },
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "message-reads-700001@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google",
+    "collaboratorToken": "oauth-invite-unknown"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-apple-existing-athlete",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signin",
+    "user": "a1000000-0000-4000-8000-000000700004"
+   },
+   "provider": [
+    "apple-keys"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "apple",
+      "claims": {
+       "email": "message-reads-700004@example.test",
+       "email_verified": "true"
+      }
+     }
+    },
+    "backend": "apple-id"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-apple-existing-collaborator",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signin",
+    "user": "a1000000-0000-4000-8000-000000700002"
+   },
+   "provider": [
+    "apple-keys"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "apple",
+      "claims": {
+       "email": "message-reads-700002@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "apple"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-existing-owner-bearer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signin",
+    "user": "a1000000-0000-4000-8000-000000700004"
+   },
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "message-reads-700004@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-existing-inactive",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "invalid credentials"
+   },
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "Social.Inactive@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-existing-shared-email",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "invalid credentials"
+   },
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "shared.reset@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-existing-otp-required",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "msg": "OTP code required."
+   },
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "social.otp@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-existing-otp-short",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "msg": "OTP code required."
+   },
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "social.otp@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2",
+    "otp": "12345"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-existing-otp-number",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "social.otp@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2",
+    "otp": 123456
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-existing-otp-wrong",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "msg": "OTP code not valid."
+   },
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "social.otp@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2",
+    "otp": "abcdef"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-apple-existing-otp-valid",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signin",
+    "user": "a1000000-0000-4000-8000-000000760006"
+   },
+   "provider": [
+    "apple-keys"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona20@example.test",
+    "username": "persona-20",
+    "token": {
+     "$social": {
+      "provider": "apple",
+      "claims": {
+       "email": "social.otp@example.test",
+       "email_verified": "true"
+      }
+     }
+    },
+    "backend": "apple",
+    "otp": {
+     "$totp": "social_otp"
+    }
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-collaborator-invite-not-found",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Collaboration invite not found."
+   },
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona21@example.test",
+    "username": "persona-21",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona21@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2",
+    "collaboratorToken": "oauth-invite-unknown"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-collaborator-invite-expired",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Collaboration invite expired."
+   },
+   "effect": {
+    "kind": "removed",
+    "partial": null,
+    "invite": "social_expired"
+   },
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona21@example.test",
+    "username": "persona-21",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona21@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2",
+    "collaboratorToken": "oauth-invite-social-expired"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-username-number",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona21@example.test",
+    "username": 21,
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona21@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-username-conflict",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona21@example.test",
+    "username": "conflict-user",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona21@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-athlete",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signup",
+    "social": true,
+    "user": {
+     "first_name": "Zoë",
+     "last_name": "D'Arco <it>",
+     "username": "SOCIAL-NUOVO",
+     "email": "Social.New@example.test",
+     "phone": null,
+     "role": 2,
+     "connected_user_id": null,
+     "collaborator_role": 1,
+     "collaborator_permissions": null
+    },
+    "password": null,
+    "actor": null,
+    "index": null,
+    "partial": "social",
+    "invite": null,
+    "response": true,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Benvenuto"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": "Zoë",
+          "last_name": "D'Arco <it>",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "social.new@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": "Zoë",
+          "last_name": "D'Arco <it>",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ]
+      ]
+     }
+    ]
+   },
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "ignored",
+    "last_name": "ignored",
+    "email": "Social.Partial@example.test",
+    "username": "social-nuovo",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "Social.New@Example.TEST",
+       "email_verified": true,
+       "given_name": "Zoë",
+       "family_name": "D'Arco <it>"
+      }
+     }
+    },
+    "backend": "google-oauth2",
+    "unknown": 1
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-athlete-again",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signin",
+    "user": "$created:oauth-accounts-signup-social-google-athlete"
+   },
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona22@example.test",
+    "username": "persona-22",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "social.new@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-google-names-from-body",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signup",
+    "social": true,
+    "user": {
+     "first_name": " Body ",
+     "last_name": "Sent",
+     "username": "PERSONA-23",
+     "email": "persona23@example.test",
+     "phone": null,
+     "role": 2,
+     "connected_user_id": null,
+     "collaborator_role": 1,
+     "collaborator_permissions": null
+    },
+    "password": null,
+    "actor": null,
+    "index": null,
+    "partial": null,
+    "invite": null,
+    "response": true,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Benvenuto"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": " Body ",
+          "last_name": "Sent",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "persona23@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": " Body ",
+          "last_name": "Sent",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ]
+      ]
+     }
+    ]
+   },
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": " Body ",
+    "last_name": "Sent",
+    "email": "persona23@example.test",
+    "username": "persona-23",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona23@example.test",
+       "email_verified": true,
+       "given_name": "",
+       "family_name": null
+      }
+     }
+    },
+    "backend": "google"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-apple-text-claim",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signup",
+    "social": true,
+    "user": {
+     "first_name": "",
+     "last_name": "",
+     "username": "PERSONA-24",
+     "email": "persona24@example.test",
+     "phone": null,
+     "role": 2,
+     "connected_user_id": null,
+     "collaborator_role": 1,
+     "collaborator_permissions": null
+    },
+    "password": null,
+    "actor": null,
+    "index": null,
+    "partial": null,
+    "invite": null,
+    "response": true,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Benvenuto"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": "",
+          "last_name": "",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "persona24@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": "",
+          "last_name": "",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ]
+      ]
+     }
+    ]
+   },
+   "provider": [
+    "apple-keys"
+   ],
+   "body": {
+    "sport_association": false,
+    "email": "persona24@example.test",
+    "username": "persona-24",
+    "token": {
+     "$social": {
+      "provider": "apple",
+      "claims": {
+       "email": "persona24@example.test",
+       "email_verified": "true"
+      }
+     }
+    },
+    "backend": "apple-id"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-apple-boolean-claim-owner-bearer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signup",
+    "social": true,
+    "user": {
+     "first_name": "Nome",
+     "last_name": "Cognome",
+     "username": "PERSONA-25",
+     "email": "persona25@example.test",
+     "phone": null,
+     "role": 2,
+     "connected_user_id": null,
+     "collaborator_role": 1,
+     "collaborator_permissions": null
+    },
+    "password": null,
+    "actor": "owner",
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "actor.sport_association"
+    ],
+    "partial": null,
+    "invite": null,
+    "response": true,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Benvenuto"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": "Nome",
+          "last_name": "Cognome",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "persona25@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": "Nome",
+          "last_name": "Cognome",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ]
+      ]
+     }
+    ]
+   },
+   "provider": [
+    "apple-keys"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona25@example.test",
+    "username": "persona-25",
+    "token": {
+     "$social": {
+      "provider": "apple",
+      "claims": {
+       "email": "persona25@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "apple"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-apple-private-relay",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signup",
+    "social": true,
+    "user": {
+     "first_name": "Nome",
+     "last_name": "Cognome",
+     "username": "PERSONA-26",
+     "email": "r4nd0mrelay@privaterelay.appleid.com",
+     "phone": null,
+     "role": 2,
+     "connected_user_id": null,
+     "collaborator_role": 1,
+     "collaborator_permissions": null
+    },
+    "password": null,
+    "actor": null,
+    "index": null,
+    "partial": null,
+    "invite": null,
+    "response": true,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Benvenuto"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": "Nome",
+          "last_name": "Cognome",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "r4nd0mrelay@privaterelay.appleid.com"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": "Nome",
+          "last_name": "Cognome",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ]
+      ]
+     }
+    ]
+   },
+   "provider": [
+    "apple-keys"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona26@example.test",
+    "username": "persona-26",
+    "token": {
+     "$social": {
+      "provider": "apple",
+      "claims": {
+       "email": "r4nd0mrelay@privaterelay.appleid.com",
+       "email_verified": "true",
+       "is_private_email": "true"
+      }
+     }
+    },
+    "backend": "apple-id"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-deleted-account-email",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signup",
+    "social": true,
+    "user": {
+     "first_name": "Nome",
+     "last_name": "Cognome",
+     "username": "PERSONA-27",
+     "email": "social.deleted@example.test",
+     "phone": null,
+     "role": 2,
+     "connected_user_id": null,
+     "collaborator_role": 1,
+     "collaborator_permissions": null
+    },
+    "password": null,
+    "actor": null,
+    "index": null,
+    "partial": null,
+    "invite": null,
+    "response": true,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Benvenuto"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": "Nome",
+          "last_name": "Cognome",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "social.deleted@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": "Nome",
+          "last_name": "Cognome",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ]
+      ]
+     }
+    ]
+   },
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona27@example.test",
+    "username": "persona-27",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "social.deleted@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-collaborator",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signup",
+    "social": true,
+    "user": {
+     "first_name": "Colla",
+     "last_name": "Boratore",
+     "username": "PERSONA-28",
+     "email": "collab.social@example.test",
+     "phone": null,
+     "role": 3,
+     "connected_user_id": "a1000000-0000-4000-8000-000000700001",
+     "collaborator_role": 3,
+     "collaborator_permissions": [
+      "association.members.read",
+      "association.members.update"
+     ]
+    },
+    "password": null,
+    "actor": null,
+    "index": null,
+    "partial": null,
+    "invite": "social_valid",
+    "response": true,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Benvenuto"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": "Colla",
+          "last_name": "Boratore",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "collab.social@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": "Colla",
+          "last_name": "Boratore",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ]
+      ]
+     }
+    ]
+   },
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona28@example.test",
+    "username": "persona-28",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "collab.social@example.test",
+       "email_verified": true,
+       "given_name": "Colla",
+       "family_name": "Boratore"
+      }
+     }
+    },
+    "backend": "google-oauth2",
+    "collaboratorToken": "oauth-invite-social-valid"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-collaborator-invite-used",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Collaboration invite not found."
+   },
+   "effect": null,
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona29@example.test",
+    "username": "persona-29",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona29@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2",
+    "collaboratorToken": "oauth-invite-social-valid"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-transfer-raises",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "signup",
+    "social": true,
+    "user": {
+     "first_name": "Nome",
+     "last_name": "Cognome",
+     "username": "PERSONA-30",
+     "email": "persona30@example.test",
+     "phone": null,
+     "role": 2,
+     "connected_user_id": null,
+     "collaborator_role": 1,
+     "collaborator_permissions": null
+    },
+    "password": null,
+    "actor": null,
+    "index": null,
+    "partial": null,
+    "invite": null,
+    "response": false,
+    "celery": []
+   },
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona30@example.test",
+    "username": "persona-30",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona30@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2",
+    "subscription_transfer": true,
+    "subscription_transfer_token": "b2000000-0000-4000-8000-000000000001"
    }
   }
  ]

@@ -19,6 +19,7 @@ from zoneinfo import ZoneInfo
 
 from TESTS.http_client import Client
 from TESTS.contracts import http_family as family
+from TESTS.contracts import xlsx
 from TESTS.contracts.http_family import require  # noqa: F401  (runner interface)
 from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, ResponseFailure, difference, substitute
 
@@ -96,6 +97,16 @@ def bind_symbols(expected, actual, binds):
         binds.setdefault(expected, actual)
 
 
+def today(value, day):
+    if isinstance(value, dict):
+        return {key: today(item, day) for key, item in value.items()}
+    if isinstance(value, list):
+        return [today(item, day) for item in value]
+    if isinstance(value, str):
+        return value.replace('$today', day.strftime('%d/%m/%Y'))
+    return value
+
+
 def assert_case(case, base_url, *, token, sessions):
     headers = {'Accept-Language': 'en', 'Accept': 'application/json', 'X-Correlation-ID': case['name'],
                **substitute(case['headers'], sessions)}
@@ -103,7 +114,9 @@ def assert_case(case, base_url, *, token, sessions):
     if 'raw_body' in case:
         body = case['raw_body'].encode()
         headers['Content-Type'] = case['content_type']
+    before, started = datetime.now(timezone.utc).date(), datetime.now(timezone.utc)
     status, raw, received = Client(base_url, token).request(case['method'], case['path'], body, headers, raw=True, include_headers=True)
+    finished, after = datetime.now(timezone.utc), datetime.now(timezone.utc).date()
 
     def check(condition, code):
         if not condition:
@@ -131,6 +144,15 @@ def assert_case(case, base_url, *, token, sessions):
     binds = BINDINGS[case['name']] = {}
     bind_symbols(expected, actual, binds)
     expected = normalized(materialized(expected, binds, datetime.now(timezone.utc)))
-    check(actual == expected, 'response.body' + difference(expected, actual))
+    # '$today' is the %d/%m/%Y date of date.today() (UTC) before or after the request; '{"$xlsx": spec}' is a workbook
+    # checked part by part with the opt-in XLSX standard of TESTS/contracts/xlsx.py within the request window.
+    reasons = []
+    for day in dict.fromkeys((before, after)):
+        dated, reason = xlsx.resolve(today(expected, day), actual, started, finished)
+        if reason is None and actual == dated:
+            break
+        reasons.append(f'response.xlsx: {reason}'[:600] if reason else 'response.body' + difference(dated, actual))
+    else:
+        check(False, reasons[-1])
     check(received.get('Content-Type', '').split(';')[0] == 'application/json', 'response.type')
     return status

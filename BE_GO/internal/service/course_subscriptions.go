@@ -170,7 +170,8 @@ func (s *CourseSubscriptions) List(ctx context.Context, identity domain.Resolved
 		}
 	}
 	if export {
-		return nil, ErrCourseSubscriptionExportUnsupported
+		// The handler reads request.data next, then calls Export.
+		return nil, &CourseSubscriptionExport{query: query}
 	}
 	rows, err := tx.CourseSubscriptions(ctx, query)
 	if err != nil {

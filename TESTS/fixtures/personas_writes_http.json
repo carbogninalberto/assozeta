@@ -2004,6 +2004,117 @@
    "family": null,
    "id": "a1000000-0000-4000-8000-000000677055",
    "created": "2024-02-26T07:00:00Z"
+  },
+  "pic_denied": {
+   "picture_path": "https://cdn.example.test/fermo.jpg",
+   "first_name": "Fermo",
+   "last_name": "Fotonegata",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677056",
+   "created": "2024-02-27T07:00:00Z"
+  },
+  "pic_other": {
+   "picture_path": "https://cdn.example.test/fedra.jpg",
+   "first_name": "Fedra",
+   "last_name": "Fotoaltrui",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677057",
+   "created": "2024-02-28T07:00:00Z"
+  },
+  "pic_text": {
+   "picture_path": null,
+   "first_name": "Folco",
+   "last_name": "Fototesto",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677058",
+   "created": "2024-03-01T07:00:00Z"
   }
  },
  "relations": {
@@ -2057,16 +2168,16 @@
   }
  },
  "medical": {
-  "id": "a1000000-0000-4000-8000-000000677056",
+  "id": "a1000000-0000-4000-8000-000000677059",
   "expiration": "2030-01-31"
  },
  "tag": {
-  "id": "a1000000-0000-4000-8000-000000677057",
+  "id": "a1000000-0000-4000-8000-000000677060",
   "name": "Agonisti"
  },
  "subscriptions": {
   "cur": {
-   "id": "a1000000-0000-4000-8000-000000677058",
+   "id": "a1000000-0000-4000-8000-000000677061",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2020-01-01",
    "end": "2099-12-31",
@@ -2087,7 +2198,7 @@
    "draft": false
   },
   "old": {
-   "id": "a1000000-0000-4000-8000-000000677059",
+   "id": "a1000000-0000-4000-8000-000000677062",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2019-01-01",
    "end": "2019-12-31",
@@ -2095,7 +2206,7 @@
    "signature_storage_key": "private/key.png"
   },
   "gone": {
-   "id": "a1000000-0000-4000-8000-000000677060",
+   "id": "a1000000-0000-4000-8000-000000677063",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2018-01-01",
    "end": "2018-12-31",
@@ -2103,7 +2214,7 @@
    "deleted": true
   },
   "grouped": {
-   "id": "a1000000-0000-4000-8000-000000677061",
+   "id": "a1000000-0000-4000-8000-000000677064",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2017-01-01",
    "end": "2017-12-31",
@@ -2112,7 +2223,7 @@
    "archived": true
   },
   "future": {
-   "id": "a1000000-0000-4000-8000-000000677062",
+   "id": "a1000000-0000-4000-8000-000000677065",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2099-01-01",
    "end": "2099-12-31",
@@ -2120,7 +2231,7 @@
    "trial": true
   },
   "lone_past": {
-   "id": "a1000000-0000-4000-8000-000000677063",
+   "id": "a1000000-0000-4000-8000-000000677066",
    "associate": "a1000000-0000-4000-8000-000000677050",
    "start": "2018-01-01",
    "end": "2018-12-31",
@@ -2134,7 +2245,7 @@
    ]
   },
   "far": {
-   "id": "a1000000-0000-4000-8000-000000677064",
+   "id": "a1000000-0000-4000-8000-000000677067",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2020-01-01",
    "end": "2099-12-31",
@@ -2142,7 +2253,7 @@
    "association": "a1000000-0000-4000-8000-000000701002"
   },
   "hilde": {
-   "id": "a1000000-0000-4000-8000-000000677065",
+   "id": "a1000000-0000-4000-8000-000000677068",
    "associate": "a1000000-0000-4000-8000-000000677051",
    "start": "2020-01-01",
    "end": "2099-12-31",
@@ -2154,8 +2265,7 @@
   "tutor_relations": "application.AssociateTutorRelation.None",
   "tutored_relations": "application.AssociateTutorRelation.None"
  },
- "acl_denied": "acl-refused-folder",
- "picture_base": "https://bakney-object-spaces.fra1.cdn.digitaloceanspaces.com",
+ "acl_denied": "a1000000-0000-4000-8000-000000677056",
  "cases": [
   {
    "name": "personas-writes-add-anonymous",
@@ -11894,12 +12004,12 @@
    "response": {
     "data": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677058",
+      "subscription_id": "a1000000-0000-4000-8000-000000677061",
       "active": true,
       "is_current": true,
       "is_next_year": false,
       "current_year": "corrente",
-      "medical": "a1000000-0000-4000-8000-000000677056",
+      "medical": "a1000000-0000-4000-8000-000000677059",
       "medical_expiration_date": "2030-01-31",
       "age": {
        "$age": "1990-01-01"
@@ -11975,11 +12085,11 @@
       "payment": null,
       "group": null,
       "tags": [
-       "a1000000-0000-4000-8000-000000677057"
+       "a1000000-0000-4000-8000-000000677060"
       ]
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677059",
+      "subscription_id": "a1000000-0000-4000-8000-000000677062",
       "active": false,
       "is_current": false,
       "is_next_year": false,
@@ -12060,7 +12170,7 @@
       "tags": []
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677061",
+      "subscription_id": "a1000000-0000-4000-8000-000000677064",
       "active": false,
       "is_current": false,
       "is_next_year": false,
@@ -12141,7 +12251,7 @@
       "tags": []
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677062",
+      "subscription_id": "a1000000-0000-4000-8000-000000677065",
       "active": false,
       "is_current": false,
       "is_next_year": true,
@@ -12253,12 +12363,12 @@
    "response": {
     "data": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677058",
+      "subscription_id": "a1000000-0000-4000-8000-000000677061",
       "active": true,
       "is_current": true,
       "is_next_year": false,
       "current_year": "corrente",
-      "medical": "a1000000-0000-4000-8000-000000677056",
+      "medical": "a1000000-0000-4000-8000-000000677059",
       "medical_expiration_date": "2030-01-31",
       "age": {
        "$age": "1990-01-01"
@@ -12334,11 +12444,11 @@
       "payment": null,
       "group": null,
       "tags": [
-       "a1000000-0000-4000-8000-000000677057"
+       "a1000000-0000-4000-8000-000000677060"
       ]
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677059",
+      "subscription_id": "a1000000-0000-4000-8000-000000677062",
       "active": false,
       "is_current": false,
       "is_next_year": false,
@@ -12419,7 +12529,7 @@
       "tags": []
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677061",
+      "subscription_id": "a1000000-0000-4000-8000-000000677064",
       "active": false,
       "is_current": false,
       "is_next_year": false,
@@ -12500,7 +12610,7 @@
       "tags": []
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677062",
+      "subscription_id": "a1000000-0000-4000-8000-000000677065",
       "active": false,
       "is_current": false,
       "is_next_year": true,
@@ -12615,12 +12725,12 @@
    "response": {
     "data": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677058",
+      "subscription_id": "a1000000-0000-4000-8000-000000677061",
       "active": true,
       "is_current": true,
       "is_next_year": false,
       "current_year": "corrente",
-      "medical": "a1000000-0000-4000-8000-000000677056",
+      "medical": "a1000000-0000-4000-8000-000000677059",
       "medical_expiration_date": "2030-01-31",
       "age": {
        "$age": "1990-01-01"
@@ -12696,11 +12806,11 @@
       "payment": null,
       "group": null,
       "tags": [
-       "a1000000-0000-4000-8000-000000677057"
+       "a1000000-0000-4000-8000-000000677060"
       ]
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677059",
+      "subscription_id": "a1000000-0000-4000-8000-000000677062",
       "active": false,
       "is_current": false,
       "is_next_year": false,
@@ -12781,7 +12891,7 @@
       "tags": []
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677061",
+      "subscription_id": "a1000000-0000-4000-8000-000000677064",
       "active": false,
       "is_current": false,
       "is_next_year": false,
@@ -12862,7 +12972,7 @@
       "tags": []
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677062",
+      "subscription_id": "a1000000-0000-4000-8000-000000677065",
       "active": false,
       "is_current": false,
       "is_next_year": true,
@@ -12974,7 +13084,7 @@
    "response": {
     "data": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677063",
+      "subscription_id": "a1000000-0000-4000-8000-000000677066",
       "active": false,
       "is_current": false,
       "is_next_year": false,
@@ -13090,7 +13200,7 @@
    "response": {
     "data": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677061",
+      "subscription_id": "a1000000-0000-4000-8000-000000677064",
       "active": false,
       "is_current": false,
       "is_next_year": false,
@@ -13199,7 +13309,7 @@
    "response": {
     "data": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677061",
+      "subscription_id": "a1000000-0000-4000-8000-000000677064",
       "active": false,
       "is_current": false,
       "is_next_year": false,
@@ -13280,7 +13390,7 @@
       "tags": []
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677062",
+      "subscription_id": "a1000000-0000-4000-8000-000000677065",
       "active": false,
       "is_current": false,
       "is_next_year": true,
@@ -13390,7 +13500,7 @@
    "response": {
     "data": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677062",
+      "subscription_id": "a1000000-0000-4000-8000-000000677065",
       "active": false,
       "is_current": false,
       "is_next_year": true,
@@ -13542,7 +13652,7 @@
    "response": {
     "data": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677064",
+      "subscription_id": "a1000000-0000-4000-8000-000000677067",
       "active": true,
       "is_current": true,
       "is_next_year": false,
@@ -13933,7 +14043,7 @@
    },
    "pictures": {
     "$pic1": {
-     "folder": "None",
+     "folder": "$a24",
      "body_b64": "iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
     }
    },
@@ -13944,7 +14054,7 @@
    ]
   },
   {
-   "name": "personas-writes-add-picture-associate-id-folder",
+   "name": "personas-writes-add-picture-body-associate-id",
    "actor": "owner",
    "method": "POST",
    "path": "/personas/add",
@@ -14136,7 +14246,7 @@
    },
    "pictures": {
     "$pic2": {
-     "folder": "a1000000-0000-4000-8000-000000677999",
+     "folder": "$a25",
      "body_b64": "/9j/4CBzZWNvbmQgcGljdHVyZSA/Pn4="
     }
    },
@@ -14144,6 +14254,615 @@
     "HEAD $pic2",
     "PUT $pic2",
     "ACL $pic2"
+   ]
+  },
+  {
+   "name": "personas-writes-add-picture-body-associate-id-seeded",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "associate_id": "$a26",
+    "full_name": "Fedora None",
+    "is_minor_now": true,
+    "is_tutor": false,
+    "age": 0,
+    "family_members": [],
+    "tutors": [],
+    "picture_path": "$pic3",
+    "first_name": "Fedora",
+    "last_name": null,
+    "sex": "A",
+    "tax_code": null,
+    "born_date": null,
+    "born_city": null,
+    "address_city": null,
+    "address": null,
+    "address_cap": null,
+    "nationality": "Italiana",
+    "nationality_residence": "Italia",
+    "email": null,
+    "phone": null,
+    "phone_2": null,
+    "phone_3": null,
+    "phone_4": null,
+    "phone_label": null,
+    "phone_2_label": null,
+    "phone_3_label": null,
+    "phone_4_label": null,
+    "is_minor": false,
+    "disabled": false,
+    "draft": false,
+    "deleted": false,
+    "family_role": null,
+    "id_number": null,
+    "migrated": false,
+    "notes": null,
+    "creation_date": "$now26",
+    "user": "a1000000-0000-4000-8000-000000700001",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": null,
+    "family": null
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "ref": "$a26",
+      "action": 0,
+      "changes": {
+       "associate_id": [
+        "None",
+        "$a26"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "family": [
+        "None",
+        "None"
+       ],
+       "picture_path": [
+        "None",
+        "$pic3"
+       ],
+       "first_name": [
+        "None",
+        "Fedora"
+       ],
+       "sex": [
+        "None",
+        "A"
+       ],
+       "nationality": [
+        "None",
+        "Italiana"
+       ],
+       "nationality_residence": [
+        "None",
+        "Italia"
+       ],
+       "is_minor": [
+        "None",
+        "False"
+       ],
+       "disabled": [
+        "None",
+        "False"
+       ],
+       "draft": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "migrated": [
+        "None",
+        "False"
+       ],
+       "creation_date": [
+        "None",
+        "$now26"
+       ],
+       "tutor_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ],
+       "tutored_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "created": [
+     {
+      "picture_path": "$pic3",
+      "first_name": "Fedora",
+      "last_name": null,
+      "sex": "A",
+      "tax_code": null,
+      "born_date": null,
+      "born_city": null,
+      "address_city": null,
+      "address": null,
+      "address_cap": null,
+      "nationality": "Italiana",
+      "nationality_residence": "Italia",
+      "email": null,
+      "phone": null,
+      "phone_2": null,
+      "phone_3": null,
+      "phone_4": null,
+      "phone_label": null,
+      "phone_2_label": null,
+      "phone_3_label": null,
+      "phone_4_label": null,
+      "is_minor": false,
+      "disabled": false,
+      "draft": false,
+      "deleted": false,
+      "family_role": null,
+      "id_number": null,
+      "migrated": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "family": null,
+      "id": "$a26",
+      "created": "$now26"
+     }
+    ],
+    "changed": {},
+    "relations_created": [],
+    "relations_deleted": [],
+    "relations_changed": {}
+   },
+   "body": {
+    "associate_id": "a1000000-0000-4000-8000-000000677055",
+    "first_name": "Fedora",
+    "picture_path": "data:image/png;base64,iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
+   },
+   "pictures": {
+    "$pic3": {
+     "folder": "$a26",
+     "body_b64": "iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
+    }
+   },
+   "storage": [
+    "HEAD $pic3",
+    "PUT $pic3",
+    "ACL $pic3"
+   ]
+  },
+  {
+   "name": "personas-writes-add-picture-body-associate-id-path-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "associate_id": "$a27",
+    "full_name": "Felice None",
+    "is_minor_now": true,
+    "is_tutor": false,
+    "age": 0,
+    "family_members": [],
+    "tutors": [],
+    "picture_path": "$pic4",
+    "first_name": "Felice",
+    "last_name": null,
+    "sex": "A",
+    "tax_code": null,
+    "born_date": null,
+    "born_city": null,
+    "address_city": null,
+    "address": null,
+    "address_cap": null,
+    "nationality": "Italiana",
+    "nationality_residence": "Italia",
+    "email": null,
+    "phone": null,
+    "phone_2": null,
+    "phone_3": null,
+    "phone_4": null,
+    "phone_label": null,
+    "phone_2_label": null,
+    "phone_3_label": null,
+    "phone_4_label": null,
+    "is_minor": false,
+    "disabled": false,
+    "draft": false,
+    "deleted": false,
+    "family_role": null,
+    "id_number": null,
+    "migrated": false,
+    "notes": null,
+    "creation_date": "$now27",
+    "user": "a1000000-0000-4000-8000-000000700001",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": null,
+    "family": null
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "ref": "$a27",
+      "action": 0,
+      "changes": {
+       "associate_id": [
+        "None",
+        "$a27"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "family": [
+        "None",
+        "None"
+       ],
+       "picture_path": [
+        "None",
+        "$pic4"
+       ],
+       "first_name": [
+        "None",
+        "Felice"
+       ],
+       "sex": [
+        "None",
+        "A"
+       ],
+       "nationality": [
+        "None",
+        "Italiana"
+       ],
+       "nationality_residence": [
+        "None",
+        "Italia"
+       ],
+       "is_minor": [
+        "None",
+        "False"
+       ],
+       "disabled": [
+        "None",
+        "False"
+       ],
+       "draft": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "migrated": [
+        "None",
+        "False"
+       ],
+       "creation_date": [
+        "None",
+        "$now27"
+       ],
+       "tutor_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ],
+       "tutored_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "created": [
+     {
+      "picture_path": "$pic4",
+      "first_name": "Felice",
+      "last_name": null,
+      "sex": "A",
+      "tax_code": null,
+      "born_date": null,
+      "born_city": null,
+      "address_city": null,
+      "address": null,
+      "address_cap": null,
+      "nationality": "Italiana",
+      "nationality_residence": "Italia",
+      "email": null,
+      "phone": null,
+      "phone_2": null,
+      "phone_3": null,
+      "phone_4": null,
+      "phone_label": null,
+      "phone_2_label": null,
+      "phone_3_label": null,
+      "phone_4_label": null,
+      "is_minor": false,
+      "disabled": false,
+      "draft": false,
+      "deleted": false,
+      "family_role": null,
+      "id_number": null,
+      "migrated": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "family": null,
+      "id": "$a27",
+      "created": "$now27"
+     }
+    ],
+    "changed": {},
+    "relations_created": [],
+    "relations_deleted": [],
+    "relations_changed": {}
+   },
+   "body": {
+    "associate_id": "../../other/folder",
+    "first_name": "Felice",
+    "picture_path": "data:image/jpeg;base64,/9j/4CBzZWNvbmQgcGljdHVyZSA/Pn4="
+   },
+   "pictures": {
+    "$pic4": {
+     "folder": "$a27",
+     "body_b64": "/9j/4CBzZWNvbmQgcGljdHVyZSA/Pn4="
+    }
+   },
+   "storage": [
+    "HEAD $pic4",
+    "PUT $pic4",
+    "ACL $pic4"
+   ]
+  },
+  {
+   "name": "personas-writes-add-picture-body-associate-id-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "associate_id": "$a28",
+    "full_name": "Fedele None",
+    "is_minor_now": true,
+    "is_tutor": false,
+    "age": 0,
+    "family_members": [],
+    "tutors": [],
+    "picture_path": "$pic5",
+    "first_name": "Fedele",
+    "last_name": null,
+    "sex": "A",
+    "tax_code": null,
+    "born_date": null,
+    "born_city": null,
+    "address_city": null,
+    "address": null,
+    "address_cap": null,
+    "nationality": "Italiana",
+    "nationality_residence": "Italia",
+    "email": null,
+    "phone": null,
+    "phone_2": null,
+    "phone_3": null,
+    "phone_4": null,
+    "phone_label": null,
+    "phone_2_label": null,
+    "phone_3_label": null,
+    "phone_4_label": null,
+    "is_minor": false,
+    "disabled": false,
+    "draft": false,
+    "deleted": false,
+    "family_role": null,
+    "id_number": null,
+    "migrated": false,
+    "notes": null,
+    "creation_date": "$now28",
+    "user": "a1000000-0000-4000-8000-000000700001",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": null,
+    "family": null
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "ref": "$a28",
+      "action": 0,
+      "changes": {
+       "associate_id": [
+        "None",
+        "$a28"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "family": [
+        "None",
+        "None"
+       ],
+       "picture_path": [
+        "None",
+        "$pic5"
+       ],
+       "first_name": [
+        "None",
+        "Fedele"
+       ],
+       "sex": [
+        "None",
+        "A"
+       ],
+       "nationality": [
+        "None",
+        "Italiana"
+       ],
+       "nationality_residence": [
+        "None",
+        "Italia"
+       ],
+       "is_minor": [
+        "None",
+        "False"
+       ],
+       "disabled": [
+        "None",
+        "False"
+       ],
+       "draft": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "migrated": [
+        "None",
+        "False"
+       ],
+       "creation_date": [
+        "None",
+        "$now28"
+       ],
+       "tutor_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ],
+       "tutored_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "created": [
+     {
+      "picture_path": "$pic5",
+      "first_name": "Fedele",
+      "last_name": null,
+      "sex": "A",
+      "tax_code": null,
+      "born_date": null,
+      "born_city": null,
+      "address_city": null,
+      "address": null,
+      "address_cap": null,
+      "nationality": "Italiana",
+      "nationality_residence": "Italia",
+      "email": null,
+      "phone": null,
+      "phone_2": null,
+      "phone_3": null,
+      "phone_4": null,
+      "phone_label": null,
+      "phone_2_label": null,
+      "phone_3_label": null,
+      "phone_4_label": null,
+      "is_minor": false,
+      "disabled": false,
+      "draft": false,
+      "deleted": false,
+      "family_role": null,
+      "id_number": null,
+      "migrated": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "family": null,
+      "id": "$a28",
+      "created": "$now28"
+     }
+    ],
+    "changed": {},
+    "relations_created": [],
+    "relations_deleted": [],
+    "relations_changed": {}
+   },
+   "body": {
+    "associate_id": 7,
+    "first_name": "Fedele",
+    "picture_path": "data:image/png;base64,iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
+   },
+   "pictures": {
+    "$pic5": {
+     "folder": "$a28",
+     "body_b64": "iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
+    }
+   },
+   "storage": [
+    "HEAD $pic5",
+    "PUT $pic5",
+    "ACL $pic5"
    ]
   },
   {
@@ -14168,18 +14887,32 @@
     "first_name": "Falco",
     "email": "nope",
     "picture_path": "data:image/png;base64,iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
+   }
+  },
+  {
+   "name": "personas-writes-add-picture-then-invalid-with-associate-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "email": [
+     "Enter a valid email address."
+    ]
    },
-   "pictures": {
-    "$pic3": {
-     "folder": "None",
-     "body_b64": "iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
-    }
-   },
-   "storage": [
-    "HEAD $pic3",
-    "PUT $pic3",
-    "ACL $pic3"
-   ]
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "body": {
+    "associate_id": "a1000000-0000-4000-8000-000000677055",
+    "first_name": "Falco",
+    "email": "nope",
+    "picture_path": "data:image/png;base64,iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
+   }
   },
   {
    "name": "personas-writes-add-picture-incorrect-padding",
@@ -14252,718 +14985,15 @@
    "headers": {},
    "status": 201,
    "response": {
-    "associate_id": "$a26",
+    "associate_id": "$a29",
     "full_name": "Frida None",
     "is_minor_now": true,
     "is_tutor": false,
     "age": 0,
     "family_members": [],
     "tutors": [],
-    "picture_path": "$pic4",
-    "first_name": "Frida",
-    "last_name": null,
-    "sex": "A",
-    "tax_code": null,
-    "born_date": null,
-    "born_city": null,
-    "address_city": null,
-    "address": null,
-    "address_cap": null,
-    "nationality": "Italiana",
-    "nationality_residence": "Italia",
-    "email": null,
-    "phone": null,
-    "phone_2": null,
-    "phone_3": null,
-    "phone_4": null,
-    "phone_label": null,
-    "phone_2_label": null,
-    "phone_3_label": null,
-    "phone_4_label": null,
-    "is_minor": false,
-    "disabled": false,
-    "draft": false,
-    "deleted": false,
-    "family_role": null,
-    "id_number": null,
-    "migrated": false,
-    "notes": null,
-    "creation_date": "$now26",
-    "user": "a1000000-0000-4000-8000-000000700001",
-    "sport_association": "a1000000-0000-4000-8000-000000701001",
-    "group": null,
-    "family": null
-   },
-   "allow": [
-    "DELETE",
-    "OPTIONS",
-    "POST"
-   ],
-   "effect": {
-    "actor": "owner",
-    "audit": [
-     {
-      "model": "associate",
-      "ref": "$a26",
-      "action": 0,
-      "changes": {
-       "associate_id": [
-        "None",
-        "$a26"
-       ],
-       "user": [
-        "None",
-        "a1000000-0000-4000-8000-000000700001"
-       ],
-       "sport_association": [
-        "None",
-        "a1000000-0000-4000-8000-000000701001"
-       ],
-       "group": [
-        "None",
-        "None"
-       ],
-       "family": [
-        "None",
-        "None"
-       ],
-       "picture_path": [
-        "None",
-        "$pic4"
-       ],
-       "first_name": [
-        "None",
-        "Frida"
-       ],
-       "sex": [
-        "None",
-        "A"
-       ],
-       "nationality": [
-        "None",
-        "Italiana"
-       ],
-       "nationality_residence": [
-        "None",
-        "Italia"
-       ],
-       "is_minor": [
-        "None",
-        "False"
-       ],
-       "disabled": [
-        "None",
-        "False"
-       ],
-       "draft": [
-        "None",
-        "False"
-       ],
-       "deleted": [
-        "None",
-        "False"
-       ],
-       "migrated": [
-        "None",
-        "False"
-       ],
-       "creation_date": [
-        "None",
-        "$now26"
-       ],
-       "tutor_relations": [
-        "None",
-        "application.AssociateTutorRelation.None"
-       ],
-       "tutored_relations": [
-        "None",
-        "application.AssociateTutorRelation.None"
-       ]
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "direct"
-      ]
-     }
-    ],
-    "created": [
-     {
-      "picture_path": "$pic4",
-      "first_name": "Frida",
-      "last_name": null,
-      "sex": "A",
-      "tax_code": null,
-      "born_date": null,
-      "born_city": null,
-      "address_city": null,
-      "address": null,
-      "address_cap": null,
-      "nationality": "Italiana",
-      "nationality_residence": "Italia",
-      "email": null,
-      "phone": null,
-      "phone_2": null,
-      "phone_3": null,
-      "phone_4": null,
-      "phone_label": null,
-      "phone_2_label": null,
-      "phone_3_label": null,
-      "phone_4_label": null,
-      "is_minor": false,
-      "disabled": false,
-      "draft": false,
-      "deleted": false,
-      "family_role": null,
-      "id_number": null,
-      "migrated": false,
-      "notes": null,
-      "user": "a1000000-0000-4000-8000-000000700001",
-      "association": "a1000000-0000-4000-8000-000000701001",
-      "group": null,
-      "family": null,
-      "id": "$a26",
-      "created": "$now26"
-     }
-    ],
-    "changed": {},
-    "relations_created": [],
-    "relations_deleted": [],
-    "relations_changed": {}
-   },
-   "body": {
-    "first_name": "Frida",
-    "picture_path": "data:image/png;base64,iVBORw0KGg \nogcGVyc29u!YXMgcGljdHVyZSBmaXh0dXJlIP/+"
-   },
-   "pictures": {
-    "$pic4": {
-     "folder": "None",
-     "body_b64": "iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
-    }
-   },
-   "storage": [
-    "HEAD $pic4",
-    "PUT $pic4",
-    "ACL $pic4"
-   ]
-  },
-  {
-   "name": "personas-writes-add-picture-without-comma",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/personas/add",
-   "headers": {},
-   "status": 201,
-   "response": {
-    "associate_id": "$a27",
-    "full_name": "Fulgenzio None",
-    "is_minor_now": true,
-    "is_tutor": false,
-    "age": 0,
-    "family_members": [],
-    "tutors": [],
-    "picture_path": "$pic5",
-    "first_name": "Fulgenzio",
-    "last_name": null,
-    "sex": "A",
-    "tax_code": null,
-    "born_date": null,
-    "born_city": null,
-    "address_city": null,
-    "address": null,
-    "address_cap": null,
-    "nationality": "Italiana",
-    "nationality_residence": "Italia",
-    "email": null,
-    "phone": null,
-    "phone_2": null,
-    "phone_3": null,
-    "phone_4": null,
-    "phone_label": null,
-    "phone_2_label": null,
-    "phone_3_label": null,
-    "phone_4_label": null,
-    "is_minor": false,
-    "disabled": false,
-    "draft": false,
-    "deleted": false,
-    "family_role": null,
-    "id_number": null,
-    "migrated": false,
-    "notes": null,
-    "creation_date": "$now27",
-    "user": "a1000000-0000-4000-8000-000000700001",
-    "sport_association": "a1000000-0000-4000-8000-000000701001",
-    "group": null,
-    "family": null
-   },
-   "allow": [
-    "DELETE",
-    "OPTIONS",
-    "POST"
-   ],
-   "effect": {
-    "actor": "owner",
-    "audit": [
-     {
-      "model": "associate",
-      "ref": "$a27",
-      "action": 0,
-      "changes": {
-       "associate_id": [
-        "None",
-        "$a27"
-       ],
-       "user": [
-        "None",
-        "a1000000-0000-4000-8000-000000700001"
-       ],
-       "sport_association": [
-        "None",
-        "a1000000-0000-4000-8000-000000701001"
-       ],
-       "group": [
-        "None",
-        "None"
-       ],
-       "family": [
-        "None",
-        "None"
-       ],
-       "picture_path": [
-        "None",
-        "$pic5"
-       ],
-       "first_name": [
-        "None",
-        "Fulgenzio"
-       ],
-       "sex": [
-        "None",
-        "A"
-       ],
-       "nationality": [
-        "None",
-        "Italiana"
-       ],
-       "nationality_residence": [
-        "None",
-        "Italia"
-       ],
-       "is_minor": [
-        "None",
-        "False"
-       ],
-       "disabled": [
-        "None",
-        "False"
-       ],
-       "draft": [
-        "None",
-        "False"
-       ],
-       "deleted": [
-        "None",
-        "False"
-       ],
-       "migrated": [
-        "None",
-        "False"
-       ],
-       "creation_date": [
-        "None",
-        "$now27"
-       ],
-       "tutor_relations": [
-        "None",
-        "application.AssociateTutorRelation.None"
-       ],
-       "tutored_relations": [
-        "None",
-        "application.AssociateTutorRelation.None"
-       ]
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "direct"
-      ]
-     }
-    ],
-    "created": [
-     {
-      "picture_path": "$pic5",
-      "first_name": "Fulgenzio",
-      "last_name": null,
-      "sex": "A",
-      "tax_code": null,
-      "born_date": null,
-      "born_city": null,
-      "address_city": null,
-      "address": null,
-      "address_cap": null,
-      "nationality": "Italiana",
-      "nationality_residence": "Italia",
-      "email": null,
-      "phone": null,
-      "phone_2": null,
-      "phone_3": null,
-      "phone_4": null,
-      "phone_label": null,
-      "phone_2_label": null,
-      "phone_3_label": null,
-      "phone_4_label": null,
-      "is_minor": false,
-      "disabled": false,
-      "draft": false,
-      "deleted": false,
-      "family_role": null,
-      "id_number": null,
-      "migrated": false,
-      "notes": null,
-      "user": "a1000000-0000-4000-8000-000000700001",
-      "association": "a1000000-0000-4000-8000-000000701001",
-      "group": null,
-      "family": null,
-      "id": "$a27",
-      "created": "$now27"
-     }
-    ],
-    "changed": {},
-    "relations_created": [],
-    "relations_deleted": [],
-    "relations_changed": {}
-   },
-   "body": {
-    "first_name": "Fulgenzio",
-    "picture_path": "base64AAAAAA"
-   },
-   "pictures": {
-    "$pic5": {
-     "folder": "None",
-     "body_b64": "base64AAAAAA"
-    }
-   },
-   "storage": [
-    "HEAD $pic5",
-    "PUT $pic5",
-    "ACL $pic5"
-   ]
-  },
-  {
-   "name": "personas-writes-add-picture-empty",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/personas/add",
-   "headers": {},
-   "status": 201,
-   "response": {
-    "associate_id": "$a28",
-    "full_name": "Filippo None",
-    "is_minor_now": true,
-    "is_tutor": false,
-    "age": 0,
-    "family_members": [],
-    "tutors": [],
     "picture_path": "$pic6",
-    "first_name": "Filippo",
-    "last_name": null,
-    "sex": "A",
-    "tax_code": null,
-    "born_date": null,
-    "born_city": null,
-    "address_city": null,
-    "address": null,
-    "address_cap": null,
-    "nationality": "Italiana",
-    "nationality_residence": "Italia",
-    "email": null,
-    "phone": null,
-    "phone_2": null,
-    "phone_3": null,
-    "phone_4": null,
-    "phone_label": null,
-    "phone_2_label": null,
-    "phone_3_label": null,
-    "phone_4_label": null,
-    "is_minor": false,
-    "disabled": false,
-    "draft": false,
-    "deleted": false,
-    "family_role": null,
-    "id_number": null,
-    "migrated": false,
-    "notes": null,
-    "creation_date": "$now28",
-    "user": "a1000000-0000-4000-8000-000000700001",
-    "sport_association": "a1000000-0000-4000-8000-000000701001",
-    "group": null,
-    "family": null
-   },
-   "allow": [
-    "DELETE",
-    "OPTIONS",
-    "POST"
-   ],
-   "effect": {
-    "actor": "owner",
-    "audit": [
-     {
-      "model": "associate",
-      "ref": "$a28",
-      "action": 0,
-      "changes": {
-       "associate_id": [
-        "None",
-        "$a28"
-       ],
-       "user": [
-        "None",
-        "a1000000-0000-4000-8000-000000700001"
-       ],
-       "sport_association": [
-        "None",
-        "a1000000-0000-4000-8000-000000701001"
-       ],
-       "group": [
-        "None",
-        "None"
-       ],
-       "family": [
-        "None",
-        "None"
-       ],
-       "picture_path": [
-        "None",
-        "$pic6"
-       ],
-       "first_name": [
-        "None",
-        "Filippo"
-       ],
-       "sex": [
-        "None",
-        "A"
-       ],
-       "nationality": [
-        "None",
-        "Italiana"
-       ],
-       "nationality_residence": [
-        "None",
-        "Italia"
-       ],
-       "is_minor": [
-        "None",
-        "False"
-       ],
-       "disabled": [
-        "None",
-        "False"
-       ],
-       "draft": [
-        "None",
-        "False"
-       ],
-       "deleted": [
-        "None",
-        "False"
-       ],
-       "migrated": [
-        "None",
-        "False"
-       ],
-       "creation_date": [
-        "None",
-        "$now28"
-       ],
-       "tutor_relations": [
-        "None",
-        "application.AssociateTutorRelation.None"
-       ],
-       "tutored_relations": [
-        "None",
-        "application.AssociateTutorRelation.None"
-       ]
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "direct"
-      ]
-     }
-    ],
-    "created": [
-     {
-      "picture_path": "$pic6",
-      "first_name": "Filippo",
-      "last_name": null,
-      "sex": "A",
-      "tax_code": null,
-      "born_date": null,
-      "born_city": null,
-      "address_city": null,
-      "address": null,
-      "address_cap": null,
-      "nationality": "Italiana",
-      "nationality_residence": "Italia",
-      "email": null,
-      "phone": null,
-      "phone_2": null,
-      "phone_3": null,
-      "phone_4": null,
-      "phone_label": null,
-      "phone_2_label": null,
-      "phone_3_label": null,
-      "phone_4_label": null,
-      "is_minor": false,
-      "disabled": false,
-      "draft": false,
-      "deleted": false,
-      "family_role": null,
-      "id_number": null,
-      "migrated": false,
-      "notes": null,
-      "user": "a1000000-0000-4000-8000-000000700001",
-      "association": "a1000000-0000-4000-8000-000000701001",
-      "group": null,
-      "family": null,
-      "id": "$a28",
-      "created": "$now28"
-     }
-    ],
-    "changed": {},
-    "relations_created": [],
-    "relations_deleted": [],
-    "relations_changed": {}
-   },
-   "body": {
-    "first_name": "Filippo",
-    "picture_path": "data:image/png;base64,"
-   },
-   "pictures": {
-    "$pic6": {
-     "folder": "None",
-     "body_b64": ""
-    }
-   },
-   "storage": [
-    "HEAD $pic6",
-    "PUT $pic6",
-    "ACL $pic6"
-   ]
-  },
-  {
-   "name": "personas-writes-add-picture-acl-refused",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/personas/add",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "picture_path": "Error processing image: An error occurred (AccessDenied) when calling the PutObjectAcl operation: Access Denied."
-   },
-   "allow": [
-    "DELETE",
-    "OPTIONS",
-    "POST"
-   ],
-   "effect": null,
-   "body": {
-    "associate_id": "acl-refused-folder",
-    "first_name": "Fermo",
-    "picture_path": "data:image/png;base64,iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
-   },
-   "pictures": {
-    "$pic7": {
-     "folder": "acl-refused-folder",
-     "body_b64": "iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
-    }
-   },
-   "storage": [
-    "HEAD $pic7",
-    "PUT $pic7",
-    "ACL $pic7 denied"
-   ]
-  },
-  {
-   "name": "personas-writes-add-picture-athlete",
-   "actor": "athlete",
-   "method": "POST",
-   "path": "/personas/add",
-   "headers": {},
-   "status": 403,
-   "response": {
-    "detail": "User is not a sport association"
-   },
-   "allow": [
-    "DELETE",
-    "OPTIONS",
-    "POST"
-   ],
-   "effect": null,
-   "body": {
-    "first_name": "Atleta",
-    "picture_path": "data:image/png;base64,iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
-   }
-  },
-  {
-   "name": "personas-writes-add-picture-tutor-picture-kept",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/personas/add",
-   "headers": {},
-   "status": 201,
-   "response": {
-    "associate_id": "$a29",
-    "full_name": "Fiore None",
-    "is_minor_now": true,
-    "is_tutor": false,
-    "age": 0,
-    "family_members": [],
-    "tutors": [
-     {
-      "tutor": {
-       "associate_id": "$a30",
-       "full_name": "Fosco None",
-       "tutors": [],
-       "picture_path": "data:image/png;base64,QUJD",
-       "first_name": "Fosco",
-       "last_name": null,
-       "sex": "A",
-       "tax_code": null,
-       "born_date": null,
-       "born_city": null,
-       "address_city": null,
-       "address": null,
-       "address_cap": null,
-       "nationality": "Italiana",
-       "nationality_residence": "Italia",
-       "email": null,
-       "phone": null,
-       "phone_2": null,
-       "phone_3": null,
-       "phone_4": null,
-       "phone_label": null,
-       "phone_2_label": null,
-       "phone_3_label": null,
-       "phone_4_label": null,
-       "is_minor": false,
-       "disabled": false,
-       "draft": false,
-       "deleted": false,
-       "family_role": null,
-       "id_number": null,
-       "migrated": false,
-       "notes": null,
-       "creation_date": "$now30",
-       "user": null,
-       "sport_association": null,
-       "group": null,
-       "family": null
-      },
-      "is_primary": true
-     }
-    ],
-    "picture_path": "$pic8",
-    "first_name": "Fiore",
+    "first_name": "Frida",
     "last_name": null,
     "sex": "A",
     "tax_code": null,
@@ -15032,11 +15062,11 @@
        ],
        "picture_path": [
         "None",
-        "$pic8"
+        "$pic6"
        ],
        "first_name": [
         "None",
-        "Fiore"
+        "Frida"
        ],
        "sex": [
         "None",
@@ -15087,7 +15117,126 @@
        "a1000000-0000-4000-8000-000000701001",
        "direct"
       ]
-     },
+     }
+    ],
+    "created": [
+     {
+      "picture_path": "$pic6",
+      "first_name": "Frida",
+      "last_name": null,
+      "sex": "A",
+      "tax_code": null,
+      "born_date": null,
+      "born_city": null,
+      "address_city": null,
+      "address": null,
+      "address_cap": null,
+      "nationality": "Italiana",
+      "nationality_residence": "Italia",
+      "email": null,
+      "phone": null,
+      "phone_2": null,
+      "phone_3": null,
+      "phone_4": null,
+      "phone_label": null,
+      "phone_2_label": null,
+      "phone_3_label": null,
+      "phone_4_label": null,
+      "is_minor": false,
+      "disabled": false,
+      "draft": false,
+      "deleted": false,
+      "family_role": null,
+      "id_number": null,
+      "migrated": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "family": null,
+      "id": "$a29",
+      "created": "$now29"
+     }
+    ],
+    "changed": {},
+    "relations_created": [],
+    "relations_deleted": [],
+    "relations_changed": {}
+   },
+   "body": {
+    "first_name": "Frida",
+    "picture_path": "data:image/png;base64,iVBORw0KGg \nogcGVyc29u!YXMgcGljdHVyZSBmaXh0dXJlIP/+"
+   },
+   "pictures": {
+    "$pic6": {
+     "folder": "$a29",
+     "body_b64": "iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
+    }
+   },
+   "storage": [
+    "HEAD $pic6",
+    "PUT $pic6",
+    "ACL $pic6"
+   ]
+  },
+  {
+   "name": "personas-writes-add-picture-without-comma",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "associate_id": "$a30",
+    "full_name": "Fulgenzio None",
+    "is_minor_now": true,
+    "is_tutor": false,
+    "age": 0,
+    "family_members": [],
+    "tutors": [],
+    "picture_path": "$pic7",
+    "first_name": "Fulgenzio",
+    "last_name": null,
+    "sex": "A",
+    "tax_code": null,
+    "born_date": null,
+    "born_city": null,
+    "address_city": null,
+    "address": null,
+    "address_cap": null,
+    "nationality": "Italiana",
+    "nationality_residence": "Italia",
+    "email": null,
+    "phone": null,
+    "phone_2": null,
+    "phone_3": null,
+    "phone_4": null,
+    "phone_label": null,
+    "phone_2_label": null,
+    "phone_3_label": null,
+    "phone_4_label": null,
+    "is_minor": false,
+    "disabled": false,
+    "draft": false,
+    "deleted": false,
+    "family_role": null,
+    "id_number": null,
+    "migrated": false,
+    "notes": null,
+    "creation_date": "$now30",
+    "user": "a1000000-0000-4000-8000-000000700001",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": null,
+    "family": null
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": {
+    "actor": "owner",
+    "audit": [
      {
       "model": "associate",
       "ref": "$a30",
@@ -15096,6 +15245,557 @@
        "associate_id": [
         "None",
         "$a30"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "family": [
+        "None",
+        "None"
+       ],
+       "picture_path": [
+        "None",
+        "$pic7"
+       ],
+       "first_name": [
+        "None",
+        "Fulgenzio"
+       ],
+       "sex": [
+        "None",
+        "A"
+       ],
+       "nationality": [
+        "None",
+        "Italiana"
+       ],
+       "nationality_residence": [
+        "None",
+        "Italia"
+       ],
+       "is_minor": [
+        "None",
+        "False"
+       ],
+       "disabled": [
+        "None",
+        "False"
+       ],
+       "draft": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "migrated": [
+        "None",
+        "False"
+       ],
+       "creation_date": [
+        "None",
+        "$now30"
+       ],
+       "tutor_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ],
+       "tutored_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "created": [
+     {
+      "picture_path": "$pic7",
+      "first_name": "Fulgenzio",
+      "last_name": null,
+      "sex": "A",
+      "tax_code": null,
+      "born_date": null,
+      "born_city": null,
+      "address_city": null,
+      "address": null,
+      "address_cap": null,
+      "nationality": "Italiana",
+      "nationality_residence": "Italia",
+      "email": null,
+      "phone": null,
+      "phone_2": null,
+      "phone_3": null,
+      "phone_4": null,
+      "phone_label": null,
+      "phone_2_label": null,
+      "phone_3_label": null,
+      "phone_4_label": null,
+      "is_minor": false,
+      "disabled": false,
+      "draft": false,
+      "deleted": false,
+      "family_role": null,
+      "id_number": null,
+      "migrated": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "family": null,
+      "id": "$a30",
+      "created": "$now30"
+     }
+    ],
+    "changed": {},
+    "relations_created": [],
+    "relations_deleted": [],
+    "relations_changed": {}
+   },
+   "body": {
+    "first_name": "Fulgenzio",
+    "picture_path": "base64AAAAAA"
+   },
+   "pictures": {
+    "$pic7": {
+     "folder": "$a30",
+     "body_b64": "base64AAAAAA"
+    }
+   },
+   "storage": [
+    "HEAD $pic7",
+    "PUT $pic7",
+    "ACL $pic7"
+   ]
+  },
+  {
+   "name": "personas-writes-add-picture-empty",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "associate_id": "$a31",
+    "full_name": "Filippo None",
+    "is_minor_now": true,
+    "is_tutor": false,
+    "age": 0,
+    "family_members": [],
+    "tutors": [],
+    "picture_path": "$pic8",
+    "first_name": "Filippo",
+    "last_name": null,
+    "sex": "A",
+    "tax_code": null,
+    "born_date": null,
+    "born_city": null,
+    "address_city": null,
+    "address": null,
+    "address_cap": null,
+    "nationality": "Italiana",
+    "nationality_residence": "Italia",
+    "email": null,
+    "phone": null,
+    "phone_2": null,
+    "phone_3": null,
+    "phone_4": null,
+    "phone_label": null,
+    "phone_2_label": null,
+    "phone_3_label": null,
+    "phone_4_label": null,
+    "is_minor": false,
+    "disabled": false,
+    "draft": false,
+    "deleted": false,
+    "family_role": null,
+    "id_number": null,
+    "migrated": false,
+    "notes": null,
+    "creation_date": "$now31",
+    "user": "a1000000-0000-4000-8000-000000700001",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": null,
+    "family": null
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "ref": "$a31",
+      "action": 0,
+      "changes": {
+       "associate_id": [
+        "None",
+        "$a31"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "family": [
+        "None",
+        "None"
+       ],
+       "picture_path": [
+        "None",
+        "$pic8"
+       ],
+       "first_name": [
+        "None",
+        "Filippo"
+       ],
+       "sex": [
+        "None",
+        "A"
+       ],
+       "nationality": [
+        "None",
+        "Italiana"
+       ],
+       "nationality_residence": [
+        "None",
+        "Italia"
+       ],
+       "is_minor": [
+        "None",
+        "False"
+       ],
+       "disabled": [
+        "None",
+        "False"
+       ],
+       "draft": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "migrated": [
+        "None",
+        "False"
+       ],
+       "creation_date": [
+        "None",
+        "$now31"
+       ],
+       "tutor_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ],
+       "tutored_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "created": [
+     {
+      "picture_path": "$pic8",
+      "first_name": "Filippo",
+      "last_name": null,
+      "sex": "A",
+      "tax_code": null,
+      "born_date": null,
+      "born_city": null,
+      "address_city": null,
+      "address": null,
+      "address_cap": null,
+      "nationality": "Italiana",
+      "nationality_residence": "Italia",
+      "email": null,
+      "phone": null,
+      "phone_2": null,
+      "phone_3": null,
+      "phone_4": null,
+      "phone_label": null,
+      "phone_2_label": null,
+      "phone_3_label": null,
+      "phone_4_label": null,
+      "is_minor": false,
+      "disabled": false,
+      "draft": false,
+      "deleted": false,
+      "family_role": null,
+      "id_number": null,
+      "migrated": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "family": null,
+      "id": "$a31",
+      "created": "$now31"
+     }
+    ],
+    "changed": {},
+    "relations_created": [],
+    "relations_deleted": [],
+    "relations_changed": {}
+   },
+   "body": {
+    "first_name": "Filippo",
+    "picture_path": "data:image/png;base64,"
+   },
+   "pictures": {
+    "$pic8": {
+     "folder": "$a31",
+     "body_b64": ""
+    }
+   },
+   "storage": [
+    "HEAD $pic8",
+    "PUT $pic8",
+    "ACL $pic8"
+   ]
+  },
+  {
+   "name": "personas-writes-add-picture-athlete",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/personas/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "body": {
+    "first_name": "Atleta",
+    "picture_path": "data:image/png;base64,iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
+   }
+  },
+  {
+   "name": "personas-writes-add-picture-tutor-picture-kept",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "associate_id": "$a32",
+    "full_name": "Fiore None",
+    "is_minor_now": true,
+    "is_tutor": false,
+    "age": 0,
+    "family_members": [],
+    "tutors": [
+     {
+      "tutor": {
+       "associate_id": "$a33",
+       "full_name": "Fosco None",
+       "tutors": [],
+       "picture_path": "data:image/png;base64,QUJD",
+       "first_name": "Fosco",
+       "last_name": null,
+       "sex": "A",
+       "tax_code": null,
+       "born_date": null,
+       "born_city": null,
+       "address_city": null,
+       "address": null,
+       "address_cap": null,
+       "nationality": "Italiana",
+       "nationality_residence": "Italia",
+       "email": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "is_minor": false,
+       "disabled": false,
+       "draft": false,
+       "deleted": false,
+       "family_role": null,
+       "id_number": null,
+       "migrated": false,
+       "notes": null,
+       "creation_date": "$now33",
+       "user": null,
+       "sport_association": null,
+       "group": null,
+       "family": null
+      },
+      "is_primary": true
+     }
+    ],
+    "picture_path": "$pic9",
+    "first_name": "Fiore",
+    "last_name": null,
+    "sex": "A",
+    "tax_code": null,
+    "born_date": null,
+    "born_city": null,
+    "address_city": null,
+    "address": null,
+    "address_cap": null,
+    "nationality": "Italiana",
+    "nationality_residence": "Italia",
+    "email": null,
+    "phone": null,
+    "phone_2": null,
+    "phone_3": null,
+    "phone_4": null,
+    "phone_label": null,
+    "phone_2_label": null,
+    "phone_3_label": null,
+    "phone_4_label": null,
+    "is_minor": false,
+    "disabled": false,
+    "draft": false,
+    "deleted": false,
+    "family_role": null,
+    "id_number": null,
+    "migrated": false,
+    "notes": null,
+    "creation_date": "$now32",
+    "user": "a1000000-0000-4000-8000-000000700001",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": null,
+    "family": null
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "ref": "$a32",
+      "action": 0,
+      "changes": {
+       "associate_id": [
+        "None",
+        "$a32"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "family": [
+        "None",
+        "None"
+       ],
+       "picture_path": [
+        "None",
+        "$pic9"
+       ],
+       "first_name": [
+        "None",
+        "Fiore"
+       ],
+       "sex": [
+        "None",
+        "A"
+       ],
+       "nationality": [
+        "None",
+        "Italiana"
+       ],
+       "nationality_residence": [
+        "None",
+        "Italia"
+       ],
+       "is_minor": [
+        "None",
+        "False"
+       ],
+       "disabled": [
+        "None",
+        "False"
+       ],
+       "draft": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "migrated": [
+        "None",
+        "False"
+       ],
+       "creation_date": [
+        "None",
+        "$now32"
+       ],
+       "tutor_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ],
+       "tutored_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "ref": "$a33",
+      "action": 0,
+      "changes": {
+       "associate_id": [
+        "None",
+        "$a33"
        ],
        "user": [
         "None",
@@ -15155,7 +15855,7 @@
        ],
        "creation_date": [
         "None",
-        "$now30"
+        "$now33"
        ],
        "tutor_relations": [
         "None",
@@ -15173,20 +15873,20 @@
      },
      {
       "model": "associatetutorrelation",
-      "ref": "$r31",
+      "ref": "$r34",
       "action": 0,
       "changes": {
        "id": [
         "None",
-        "$r31"
+        "$r34"
        ],
        "associate": [
         "None",
-        "$a29"
+        "$a32"
        ],
        "tutor": [
         "None",
-        "$a30"
+        "$a33"
        ],
        "is_primary": [
         "None",
@@ -15201,7 +15901,7 @@
     ],
     "created": [
      {
-      "picture_path": "$pic8",
+      "picture_path": "$pic9",
       "first_name": "Fiore",
       "last_name": null,
       "sex": "A",
@@ -15234,8 +15934,8 @@
       "association": "a1000000-0000-4000-8000-000000701001",
       "group": null,
       "family": null,
-      "id": "$a29",
-      "created": "$now29"
+      "id": "$a32",
+      "created": "$now32"
      },
      {
       "picture_path": "data:image/png;base64,QUJD",
@@ -15271,16 +15971,16 @@
       "association": null,
       "group": null,
       "family": null,
-      "id": "$a30",
-      "created": "$now30"
+      "id": "$a33",
+      "created": "$now33"
      }
     ],
     "changed": {},
     "relations_created": [
      {
-      "id": "$r31",
-      "associate": "$a29",
-      "tutor": "$a30",
+      "id": "$r34",
+      "associate": "$a32",
+      "tutor": "$a33",
       "primary": true
      }
     ],
@@ -15302,15 +16002,15 @@
     ]
    },
    "pictures": {
-    "$pic8": {
-     "folder": "None",
+    "$pic9": {
+     "folder": "$a32",
      "body_b64": "iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
     }
    },
    "storage": [
-    "HEAD $pic8",
-    "PUT $pic8",
-    "ACL $pic8"
+    "HEAD $pic9",
+    "PUT $pic9",
+    "ACL $pic9"
    ]
   },
   {
@@ -15328,7 +16028,7 @@
     "age": 0,
     "family_members": [],
     "tutors": [],
-    "picture_path": "$pic9",
+    "picture_path": "$pic10",
     "first_name": "Fosca",
     "last_name": "Fotografata",
     "sex": "A",
@@ -15378,7 +16078,7 @@
       "changes": {
        "picture_path": [
         "https://cdn.example.test/fosca-old.jpg",
-        "$pic9"
+        "$pic10"
        ],
        "notes": [
         "None",
@@ -15394,7 +16094,7 @@
     "created": [],
     "changed": {
      "pic_upd": {
-      "picture_path": "$pic9",
+      "picture_path": "$pic10",
       "notes": "nuova foto"
      }
     },
@@ -15410,15 +16110,15 @@
     "tutors_data": []
    },
    "pictures": {
-    "$pic9": {
+    "$pic10": {
      "folder": "a1000000-0000-4000-8000-000000677052",
      "body_b64": "/9j/4CBzZWNvbmQgcGljdHVyZSA/Pn4="
     }
    },
    "storage": [
-    "HEAD $pic9",
-    "PUT $pic9",
-    "ACL $pic9"
+    "HEAD $pic10",
+    "PUT $pic10",
+    "ACL $pic10"
    ]
   },
   {
@@ -15531,7 +16231,7 @@
     "age": 0,
     "family_members": [],
     "tutors": [],
-    "picture_path": "$pic10",
+    "picture_path": "$pic11",
     "first_name": "Fulvio",
     "last_name": "Fotocollaborato",
     "sex": "A",
@@ -15581,7 +16281,7 @@
       "changes": {
        "picture_path": [
         "None",
-        "$pic10"
+        "$pic11"
        ]
       },
       "index": [
@@ -15593,7 +16293,7 @@
     "created": [],
     "changed": {
      "pic_collab": {
-      "picture_path": "$pic10"
+      "picture_path": "$pic11"
      }
     },
     "relations_created": [],
@@ -15604,15 +16304,15 @@
     "picture_path": "data:image/png;base64,iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
    },
    "pictures": {
-    "$pic10": {
-     "folder": "None",
+    "$pic11": {
+     "folder": "a1000000-0000-4000-8000-000000677053",
      "body_b64": "iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
     }
    },
    "storage": [
-    "HEAD $pic10",
-    "PUT $pic10",
-    "ACL $pic10"
+    "HEAD $pic11",
+    "PUT $pic11",
+    "ACL $pic11"
    ]
   },
   {
@@ -15633,7 +16333,7 @@
     "age": 0,
     "family_members": [],
     "tutors": [],
-    "picture_path": "$pic11",
+    "picture_path": "$pic12",
     "first_name": "Flora Anna",
     "last_name": "Fotomodulo",
     "sex": "A",
@@ -15683,7 +16383,7 @@
       "changes": {
        "picture_path": [
         "None",
-        "$pic11"
+        "$pic12"
        ],
        "first_name": [
         "Flora",
@@ -15699,7 +16399,7 @@
     "created": [],
     "changed": {
      "pic_form": {
-      "picture_path": "$pic11",
+      "picture_path": "$pic12",
       "first_name": "Flora Anna"
      }
     },
@@ -15710,15 +16410,215 @@
    "raw_body": "associate_id=a1000000-0000-4000-8000-000000677054&first_name=Flora+Anna&picture_path=data%3Aimage%2Fjpeg%3Bbase64%2C%2F9j%2F4CBzZWNvbmQgcGljdHVyZSA%2FPn4%3D",
    "content_type": "application/x-www-form-urlencoded",
    "pictures": {
-    "$pic11": {
+    "$pic12": {
      "folder": "a1000000-0000-4000-8000-000000677054",
      "body_b64": "/9j/4CBzZWNvbmQgcGljdHVyZSA/Pn4="
     }
    },
    "storage": [
-    "HEAD $pic11",
-    "PUT $pic11",
-    "ACL $pic11"
+    "HEAD $pic12",
+    "PUT $pic12",
+    "ACL $pic12"
+   ]
+  },
+  {
+   "name": "personas-writes-update-picture-body-associate-id-other",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas/a1000000-0000-4000-8000-000000677057/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "associate_id": "a1000000-0000-4000-8000-000000677057",
+    "full_name": "Fedra Fotoaltrui",
+    "is_minor_now": true,
+    "is_tutor": false,
+    "age": 0,
+    "family_members": [],
+    "tutors": [],
+    "picture_path": "$pic13",
+    "first_name": "Fedra",
+    "last_name": "Fotoaltrui",
+    "sex": "A",
+    "tax_code": null,
+    "born_date": null,
+    "born_city": null,
+    "address_city": null,
+    "address": null,
+    "address_cap": null,
+    "nationality": "Italiana",
+    "nationality_residence": "Italia",
+    "email": null,
+    "phone": null,
+    "phone_2": null,
+    "phone_3": null,
+    "phone_4": null,
+    "phone_label": null,
+    "phone_2_label": null,
+    "phone_3_label": null,
+    "phone_4_label": null,
+    "is_minor": false,
+    "disabled": false,
+    "draft": false,
+    "deleted": false,
+    "family_role": null,
+    "id_number": null,
+    "migrated": false,
+    "notes": null,
+    "creation_date": "2024-02-28T07:00:00Z",
+    "user": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": null,
+    "family": null
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "PATCH"
+   ],
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "ref": "pic_other",
+      "action": 1,
+      "changes": {
+       "picture_path": [
+        "https://cdn.example.test/fedra.jpg",
+        "$pic13"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "created": [],
+    "changed": {
+     "pic_other": {
+      "picture_path": "$pic13"
+     }
+    },
+    "relations_created": [],
+    "relations_deleted": [],
+    "relations_changed": {}
+   },
+   "body": {
+    "associate_id": "a1000000-0000-4000-8000-000000677055",
+    "picture_path": "data:image/png;base64,iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
+   },
+   "pictures": {
+    "$pic13": {
+     "folder": "a1000000-0000-4000-8000-000000677057",
+     "body_b64": "iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
+    }
+   },
+   "storage": [
+    "HEAD $pic13",
+    "PUT $pic13",
+    "ACL $pic13"
+   ]
+  },
+  {
+   "name": "personas-writes-update-picture-body-associate-id-path-text",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas/a1000000-0000-4000-8000-000000677058/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "associate_id": "a1000000-0000-4000-8000-000000677058",
+    "full_name": "Folco Fototesto",
+    "is_minor_now": true,
+    "is_tutor": false,
+    "age": 0,
+    "family_members": [],
+    "tutors": [],
+    "picture_path": "$pic14",
+    "first_name": "Folco",
+    "last_name": "Fototesto",
+    "sex": "A",
+    "tax_code": null,
+    "born_date": null,
+    "born_city": null,
+    "address_city": null,
+    "address": null,
+    "address_cap": null,
+    "nationality": "Italiana",
+    "nationality_residence": "Italia",
+    "email": null,
+    "phone": null,
+    "phone_2": null,
+    "phone_3": null,
+    "phone_4": null,
+    "phone_label": null,
+    "phone_2_label": null,
+    "phone_3_label": null,
+    "phone_4_label": null,
+    "is_minor": false,
+    "disabled": false,
+    "draft": false,
+    "deleted": false,
+    "family_role": null,
+    "id_number": null,
+    "migrated": false,
+    "notes": null,
+    "creation_date": "2024-03-01T07:00:00Z",
+    "user": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": null,
+    "family": null
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "PATCH"
+   ],
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "ref": "pic_text",
+      "action": 1,
+      "changes": {
+       "picture_path": [
+        "None",
+        "$pic14"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "created": [],
+    "changed": {
+     "pic_text": {
+      "picture_path": "$pic14"
+     }
+    },
+    "relations_created": [],
+    "relations_deleted": [],
+    "relations_changed": {}
+   },
+   "body": {
+    "associate_id": "../a1000000-0000-4000-8000-000000677055",
+    "picture_path": "data:image/jpeg;base64,/9j/4CBzZWNvbmQgcGljdHVyZSA/Pn4="
+   },
+   "pictures": {
+    "$pic14": {
+     "folder": "a1000000-0000-4000-8000-000000677058",
+     "body_b64": "/9j/4CBzZWNvbmQgcGljdHVyZSA/Pn4="
+    }
+   },
+   "storage": [
+    "HEAD $pic14",
+    "PUT $pic14",
+    "ACL $pic14"
    ]
   },
   {
@@ -15743,17 +16643,38 @@
     "associate_id": "a1000000-0000-4000-8000-000000677055",
     "sex": "X",
     "picture_path": "data:image/png;base64,iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
+   }
+  },
+  {
+   "name": "personas-writes-update-picture-acl-refused",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas/a1000000-0000-4000-8000-000000677056/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "picture_path": "Error processing image: An error occurred (AccessDenied) when calling the PutObjectAcl operation: Access Denied."
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "PATCH"
+   ],
+   "effect": null,
+   "body": {
+    "first_name": "Fermo Maria",
+    "picture_path": "data:image/png;base64,iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
    },
    "pictures": {
-    "$pic12": {
-     "folder": "a1000000-0000-4000-8000-000000677055",
+    "$pic15": {
+     "folder": "a1000000-0000-4000-8000-000000677056",
      "body_b64": "iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
     }
    },
    "storage": [
-    "HEAD $pic12",
-    "PUT $pic12",
-    "ACL $pic12"
+    "HEAD $pic15",
+    "PUT $pic15",
+    "ACL $pic15 denied"
    ]
   },
   {

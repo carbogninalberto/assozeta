@@ -19,7 +19,20 @@ type UnsupportedSocialBackend struct{ Value string }
 
 func (*UnsupportedSocialBackend) Error() string { return "unsupported social backend" }
 
-type SocialIdentity struct{ Email any }
+// SocialIdentity is the provider's user_info: values as the provider sent them.
+// Login reads Email; signup also reads the verification claim and the names.
+type SocialIdentity struct{ Email, EmailVerified, FirstName, LastName any }
+
+// VerifiedEmail is SocialAuthService.has_verified_email: a non-empty string
+// e-mail whose email_verified is True or the string "true" (Apple sends either).
+func (i SocialIdentity) VerifiedEmail() (string, bool) {
+	email, ok := i.Email.(string)
+	if !ok || email == "" {
+		return "", false
+	}
+	return email, i.EmailVerified == true || i.EmailVerified == "true"
+}
+
 type SocialTokenVerifier interface {
 	Verify(context.Context, string, any) (SocialIdentity, bool, error)
 }

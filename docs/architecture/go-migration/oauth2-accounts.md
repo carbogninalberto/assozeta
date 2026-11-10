@@ -68,9 +68,8 @@ In Django's order:
    `raise ValidationError` without a message (500).
 3. `collaboratorToken` present: role collaborator. `subscription_transfer` with `subscription_transfer_token`: a truthy token
    that `UUIDField` rejects raises (500), whatever the flag.
-4. `token`, `username` and `backend` present: the social path. Other backends 400 `{'error': 'Unsupported backend: <str(backend)>'}`;
-   Google/Apple with no configured client id (`provider_client_id`) 401 `{'error': 'Invalid social token'}` (a view response:
-   no Bearer challenge).
+4. `token`, `username` and `backend` present: the social path (next section). Other backends 400
+   `{'error': 'Unsupported backend: <str(backend)>'}`.
 5. `UserSerializerSignup`: first/last name (150, blank allowed), email (254, `EmailValidator`), phone (20, null/blank allowed),
    username (required; `UnicodeUsernameValidator`, the `UniqueValidator` on all users with an exact match, max length, null
    characters — every validator's message is listed), password (`RegexField`, trimmed before the pattern). Errors:
@@ -87,10 +86,36 @@ In Django's order:
     address; for collaborators `user_data.sport_association` is replaced by the association serialized again (with
     `empty_sections`) and `user_data.requires_welcome` is false. An owner without a live association: 500 after the user is created.
 
+## signup (social path)
+
+After steps 1–3 above, with `token`, `username` and `backend` in the body:
+
+1. `SocialAuthService.verify_google_token` (`google-oauth2`, `google-identity`, `google`) or `verify_apple_token` (`apple-id`,
+   `apple`): Google's certificates and `verify_oauth2_token` with the configured client id, falling back to token info and user info;
+   Apple's keys and PyJWT (`RS256`, audience, issuer). No configured client id, or a token the provider rejects: 401
+   `{'error': 'Invalid social token'}` (a view response: no Bearer challenge). Go uses the login route's provider clients
+   (`pkg/social`, `service.SocialProviders`), which the composition root now shares with this route.
+2. `SocialAuthService.has_verified_email`: the identity's e-mail is a non-empty string and `email_verified` is `True` or the string
+   `'true'` (Apple sends the claim as text or as a boolean; a private relay address is a verified address like any other and becomes
+   the account's e-mail). Otherwise the same 401. Go: `SocialIdentity.VerifiedEmail`.
+3. Live accounts with that e-mail (`iexact`, by `user_id`). When there is one, `_existing_account_signin` applies the login rules and
+   writes nothing: more than one account or an inactive one is 401 `{'error': 'invalid credentials'}`; `two_fa` follows the login
+   view's check (`'otp' in data and len(data['otp']) == 6`, else `OTP code required.`; a wrong code `OTP code not valid.`; a value
+   without a length raises); then the tokens and `build_login_response` for the stored account with the collaborator override
+   (`_signup_content`). No row changes, no invite is consumed and no e-mail is sent. Go: `existingAccountSignin` with the login
+   candidates query and `SecondFactor`.
+4. No account: `collaboratorToken` goes through `_accept_collaboration_invite`, the same lookup, deletion and expiry check as the
+   password path (not found 400, expired 400 after the deletion, a null expiry raises).
+5. `create_user`: names from the identity or else the body as sent (default `''`), `data['username'].upper()` (not a string or
+   empty: 500 after step 4), the identity's e-mail through `normalize_email`, no usable password (`!` and 40 random characters),
+   the role and, for collaborators, the invite's owner, collaborator role and permissions. A username conflict is a 500.
+6. The shared tail: the `UserPartial` of the body's e-mail is deleted (after the user, unlike the password path), a subscription
+   transfer raises (the user is kept), then tokens, response and the welcome e-mail as in the password path.
+
 ## Not ported (Go answers the 500 page before any write)
 
-- signup social path with a configured Google or Apple client id: token verification calls the provider (Google certificates or
-  token info, Apple keys).
+- signup social path: an identity or body first/last name that is not a string, and a non-ASCII identity e-mail or username when
+  a new account would be created (Python's Unicode `lower()`/`upper()`).
 - signup e-mails with non-ASCII characters (Python's Unicode `lower()`) and usernames with non-ASCII characters (Python's
   Unicode `\w` and `upper()`).
 - reset passwords with NUL characters or lone surrogates.
@@ -109,6 +134,31 @@ responses are verified with SimpleJWT and compared with Django's `build_login_re
 
 Shared changes: `http_family.assert_case` takes an optional `challenged` predicate (default: every 401);
 `family_harness.fixture_context_for` purges with each model's own seeded keys; `modelAuditEntry.ObjectID`.
+
+### Social signup (sec-oauth-signup)
+
+The fixture has 159 cases (50 new). `service_context` now also owns the login family's provider stub
+(`TESTS/adapters/django/login_provider_proxy.py`: a CONNECT proxy with a private certificate authority answering Google's
+certificates, token info and user info and Apple's keys), the proxy and CA settings both servers read, and the Google and Apple
+client ids. Tokens (`{'$social': ...}`) are signed with the stub's key when the request is sent and one-time codes (`{'$totp': ...}`)
+come from the seeded secret; every case must make exactly its authored provider requests. The two cases that ran without a
+configured client id now send a token the provider rejects (same request and answer); the unconfigured answer stays covered by
+`service/social_providers_test.go`. New cases: rejected tokens (signature, expiry, client id) for both providers, every
+`email_verified` shape, missing and non-string e-mails, a Google access token whose user info carries no verification, existing
+owner / athlete / collaborator sign-in with and without a `collaboratorToken`, inactive and shared-e-mail accounts, the OTP
+answers, invites (unknown, expired, used, valid), names from the identity or the body, a private relay address, a deleted
+account's e-mail, username conflicts and the transfer path. A `signin` effect requires that nothing changes and nothing is sent.
+
+- Django tests first: `application.tests.test_signup_policy.SocialSignupTests` (10 tests; 23 failures and errors before the change).
+- RED (`secoauth-red-r2`): Django 159/159; Go 500 on `oauth-accounts-signup-google-rejected-token`.
+- GREEN (`secoauth-versioned-r1`, after the base merge; natively `secoauth-native-r1`): 159/159 on native Django, native Go, Caddy
+  `/api/v1` and `/api/v2`.
+- Mutations: accepting any `email_verified` value fails Go on `oauth-accounts-signup-social-google-unverified`
+  (`secoauth-mutation-verified-r1`, CAUGHT); writing the role while reading the second factor of an existing account fails Go on
+  `oauth-accounts-signup-social-google-existing-owner` (`state.no-effect`, `secoauth-mutation-role-r1`, CAUGHT).
+- `go test ./internal/service ./internal/handler ./internal/repository ./pkg/social ./cmd/...`.
+
+### First port
 
 - RED (`native-r1`): Django 109/109; Go 404 on the first case.
 - GREEN (`versioned-r2`): 109/109 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.

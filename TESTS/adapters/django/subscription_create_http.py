@@ -191,11 +191,15 @@ def seed_rows(source, created):
     for row in source['subscriptions'].values():
         association = row.get('association', ids['own_association'])
         owner = ids['owner'] if association == ids['own_association'] else ids['foreign_owner']
+        # Optional authored columns: the account, the role, the JSON fields and the creation date.
+        extra = {name: row[name] for name in ('role', 'custom_data', 'additional_fields') if name in row}
+        if 'created' in row:
+            extra['creation_date'] = datetime.fromisoformat(row['created'].replace('Z', '+00:00'))
         insert(Subscription, Subscription(
-            subscription_id=row['id'], sport_association_id=association, user_id=owner,
+            subscription_id=row['id'], sport_association_id=association, user_id=ids[row['user']] if 'user' in row else owner,
             associate_id=source['associates'][row['associate']]['id'], start_date=resolve_date(row['start']),
             end_date=resolve_date(row['end']), archived=row['archived'], subscription_number=row['number'], status_flag=4,
-            medical_id=source['certificates'][row['medical']]['id'] if row.get('medical') else None))
+            medical_id=source['certificates'][row['medical']]['id'] if row.get('medical') else None, **extra))
     for row in source['payments'].values():
         insert(Payment, Payment(payment_id=row['id'], associate_id=source['associates'][row['associate']]['id'],
                                 sport_association_id=ids['own_association'], user_id=ids['owner'], subject=Payment.SUBSCRIPTION,

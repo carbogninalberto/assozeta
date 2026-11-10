@@ -95,13 +95,18 @@ func (s *SubscriptionReads) searchAssociation(ctx context.Context, association s
 
 // athleteList is get_optimized_subscriptions(request.user):
 // SubscriptionSerializerAthleteOptimizedList of the athlete's own and
-// same-tax-code subscriptions (group-aware, soft-deleted included) by -creation_date.
-func (s *SubscriptionReads) athleteList(ctx context.Context, user string, group *string) (any, error) {
+// same-tax-code subscriptions (group-aware, soft-deleted included) by
+// -creation_date; an association-scoped session keeps to scoped_queryset's
+// subscriptions (request.user carries the session's association).
+func (s *SubscriptionReads) athleteList(ctx context.Context, identity domain.ResolvedIdentity, group *string) (any, error) {
 	if s.athletes == nil {
 		return nil, domain.ErrSubscriptionReadsNotPorted
 	}
-	ids, err := s.store.AllowedForAthlete(ctx, user, group, nil)
+	ids, err := s.store.AllowedForAthlete(ctx, identity.ScopeUser.ID, group, paymentReadsScope(identity))
 	if err != nil {
+		return nil, err
+	}
+	if ids, err = s.sessionVisible(ctx, identity, group, ids); err != nil {
 		return nil, err
 	}
 	rows, err := s.rows(ctx, ids, group)
