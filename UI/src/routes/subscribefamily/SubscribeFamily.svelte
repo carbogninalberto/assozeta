@@ -14,6 +14,7 @@
     } from 'phosphor-svelte';
     import {apiFetch} from 'utils/ApiMiddleware';
     import {applyWizardChoices, hasLoggedInSession, resumeAfterAccountLogin} from 'utils/accountSession.js';
+    import {familyPayLocation} from 'utils/familyPayment.js';
     import {register, init, _, waitLocale, locale} from 'svelte-i18n';
     import Step0 from './wizard/Step0.svelte';
     import Step1 from './wizard/Step1.svelte';
@@ -185,6 +186,8 @@
 
         if (!res.error) {
             toast.success('Nuova iscrizione creata con successo.');
+            // The answer lists the payments of the family: one opens its pay page, several the cart checkout.
+            const payLocation = familyPayLocation(res?.response, window.location.href);
             setTimeout(() => {
                 if (hasLoggedInSession()) {
                     // check the role from the localstorage "role"
@@ -192,15 +195,10 @@
                         // redirect to the page #/members/list
                         history.pushState(null, '', '/#/members/list');
                     } else {
-                        // check if payment online:
-                        // /#/stripe/pay/{payment_id}
+                        // check if payment online
                         if (wizardData.sportAssociationData.user.online_payments) {
-                            if (res?.response?.payment_id) {
-                                history.pushState(
-                                    null,
-                                    '',
-                                    `/#/stripe/pay/${res?.response?.payment_id}?redir=${window.location.href}`
-                                );
+                            if (payLocation) {
+                                history.pushState(null, '', payLocation);
                             } else {
                                 window.location.reload();
                             }
@@ -209,18 +207,12 @@
                         }
                     }
                 } else {
-                    // check if payment online:
-                    // /#/stripe/pay/{payment_id}
-                    //debugger;
+                    // check if payment online
                     if (wizardData.sportAssociationData.user.online_payments) {
-                        if (res?.response?.payment_id) {
-                            history.pushState(
-                                null,
-                                '',
-                                `/#/stripe/pay/${res?.response?.payment_id}?redir=${window.location.href}`
-                            );
+                        if (payLocation) {
+                            history.pushState(null, '', payLocation);
                         } else {
-                            // If payment_id is empty, reload the page
+                            // Nothing to pay: reload the page
                             window.location.reload();
                         }
                     } else {
