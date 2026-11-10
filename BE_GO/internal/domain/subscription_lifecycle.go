@@ -89,14 +89,21 @@ type SubscriptionLifecycleTransaction interface {
 	// RangePayments is Payment.objects (live, group-aware) of the association
 	// and associate created within [from, to], unarchived and unpaid, in physical order.
 	RangePayments(ctx context.Context, association string, associate *string, from, to time.Time, group *string) ([]string, error)
-	// SubscriptionReferenced reports rows of models other than course
-	// subscriptions and tag links that cascade from the subscription.
-	SubscriptionReferenced(ctx context.Context, id string) (bool, error)
 	// DeletePayments is payment.delete() / QuerySet.delete() with Payment's pre_delete.
 	DeletePayments(ctx context.Context, ids []string, audit CourseSubscriptionAudit) error
 	// DeleteLoopInstallment is installment.payment.delete(), then
-	// installment.payment = None and installment.delete().
-	DeleteLoopInstallment(ctx context.Context, installment SubscriptionLifecycleInstallment, audit CourseSubscriptionAudit) error
+	// installment.payment = None and installment.delete(); invoice is the
+	// payment's invoice_id still held in memory after its invoice was deleted.
+	DeleteLoopInstallment(ctx context.Context, installment SubscriptionLifecycleInstallment, invoice *string, audit CourseSubscriptionAudit) error
+	// DeleteInvoice is payment.invoice.delete(): the Collector from the invoice
+	// (its rows, the many-to-many rows, Payment.invoice set NULL).
+	DeleteInvoice(ctx context.Context, invoice string, audit CourseSubscriptionAudit) error
+	// DeleteInvoicedPayment is payment.delete() of an instance whose invoice
+	// was deleted: auditlog renders the invoice_id still held in memory.
+	DeleteInvoicedPayment(ctx context.Context, payment, invoice string, audit CourseSubscriptionAudit) error
+	// AppendHiddenPaymentUpdate is auditlog's update entry for a payment
+	// Payment.objects does not find: the diff against None of the stored row.
+	AppendHiddenPaymentUpdate(ctx context.Context, payment, association string, audit CourseSubscriptionAudit) error
 	DeleteInstallmentsOf(ctx context.Context, row string, audit CourseSubscriptionAudit) error
 	// DeleteSubscription is subscription.delete(): the collector with its cascades.
 	DeleteSubscription(ctx context.Context, id string, audit CourseSubscriptionAudit) error

@@ -9,6 +9,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentobjects"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -23,4 +24,11 @@ func composeSubscriptionSign(cfg config.Config, db *sqlx.DB, tasks celery.Publis
 	signs := service.NewSubscriptionSigns(repository.NewSubscriptionSigns(db), objects,
 		service.SubscriptionSignSettings{UseObjectACL: cfg.Storage.UseObjectACL, PublicBaseURL: cfg.Storage.PublicBaseURL}, tasks, time.Now, nil)
 	return handler.NewSubscriptionSignHandler(signs, actors, identities, audit, operations)
+}
+
+// subscriptionLifecycleSignatures is the subscription delete's signature
+// clean-up: the reference check of the sign repository and the default storage.
+type subscriptionLifecycleSignatures struct {
+	*repository.SubscriptionSigns
+	*documentobjects.S3
 }
