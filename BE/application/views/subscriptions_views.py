@@ -2724,7 +2724,16 @@ def subscription_import_upload(request):
     # Handle new file upload
     if 'associates_file' in data.keys():
         associates_file = data['associates_file']
+        limit = SubscriptionImportService.upload_limit()
+        if getattr(associates_file, 'size', 0) > limit:
+            return Response({'msg': SubscriptionImportService.too_large_message(limit)},
+                            status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
         document, file_path = SubscriptionImportService.upload_and_store_file(associates_file, sport_association)
+        # Uploads that were never imported leave with the next upload, once past their retention time.
+        try:
+            SubscriptionImportService.remove_expired_uploads(sport_association)
+        except Exception as e:
+            logger.exception(e)
         file_info['document_id'] = document.document_id
 
         rows_data_df = get_pandas_df_from_file(file_path)
@@ -2736,25 +2745,38 @@ def subscription_import_upload(request):
 
     # Handle existing document mapping
     elif 'document_id' in data.keys() and 'map' in data.keys():
-        file_path = SubscriptionImportService.retrieve_document_path(data['document_id'], sport_association)
+        document, file_path = SubscriptionImportService.retrieve_document(data['document_id'], sport_association)
 
-        rows_data_df = get_pandas_df_from_file(file_path)
+        rows_data_df = get_pandas_df_from_file(file_path, SubscriptionImportService.text_columns(data['map']))
         if rows_data_df is None:
             raise ValidationError('Cannot extract dataframe')
 
         file_info['columns'] = rows_data_df.columns.tolist()
 
+        # The rows are imported together: a failure leaves no draft and no certificate.
+        imported = False
         try:
             SubscriptionImportService.manage_import_status(sport_association, action='start')
-            objects_to_create = SubscriptionImportService.process_import_rows(
-                rows_data_df, data, sport_association, request.user
-            )
-            AssociateImportDraft.objects.bulk_create(objects_to_create)
+            with transaction.atomic():
+                objects_to_create = SubscriptionImportService.process_import_rows(
+                    rows_data_df, data, sport_association, request.user
+                )
+                AssociateImportDraft.objects.bulk_create(objects_to_create)
+            imported = True
             logger.info("subscription_import_upload - end")
         except Exception as e:
             logger.exception(e)
         finally:
             SubscriptionImportService.manage_import_status(sport_association, action='end')
+
+        if not imported:
+            return Response({'msg': SubscriptionImportService.FAILED_MESSAGE}, status=status.HTTP_400_BAD_REQUEST)
+
+        # The upload has served its purpose.
+        try:
+            SubscriptionImportService.remove_upload(document, file_path)
+        except Exception as e:
+            logger.exception(e)
 
     else:
         raise TypeError("associates_file key not present!")
@@ -2883,16 +2905,25 @@ def subscription_delete_document(request, uid, subscription_file_id):
     return Response({'msg': 'subscription file deleted'}, status=status.HTTP_200_OK)
 
 
-def get_pandas_df_from_file(associates_file):
+def _import_cell_text(value):
+    """A number of a column read as text, as its text; any other cell as it is."""
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return str(value)
+    return value
+
+
+def get_pandas_df_from_file(associates_file, text_columns=()):
+    """The file's frame. text_columns keep their values as written: no numeric reading."""
     opened_file = default_storage.open(associates_file, 'rb')
     rows_data_df = None
     if associates_file.lower().endswith('.csv'):
-        rows_data_df = pandas.read_csv(opened_file, delimiter=';')
+        rows_data_df = pandas.read_csv(opened_file, delimiter=';', dtype={column: str for column in text_columns})
     elif associates_file.lower().endswith(('xls', 'xlsx', 'xlsm', 'xlsb', 'odf', 'ods', 'odt')):
+        converters = {column: _import_cell_text for column in text_columns}
         try:
-            rows_data_df = pandas.read_excel(opened_file, engine="openpyxl")
+            rows_data_df = pandas.read_excel(opened_file, engine="openpyxl", converters=converters)
         except Exception:
-            rows_data_df = pandas.read_excel(opened_file, engine="xlrd")
+            rows_data_df = pandas.read_excel(opened_file, engine="xlrd", converters=converters)
     else:
         raise TypeError("file extension not recognized!")
 
