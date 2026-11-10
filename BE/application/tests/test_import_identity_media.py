@@ -282,6 +282,33 @@ class AssociationImportIdentityTests(TestCase):
         self.assertEqual(existing_owner.password, existing_password)
         self.assertTrue(existing_owner.check_password('ExistingOwner!123'))
 
+    def test_existing_owner_without_password_needs_no_recovery_password_and_keeps_it_unusable(self):
+        owner_id = uuid.uuid4()
+        User.original_objects.create_user(
+            user_id=owner_id, username='existing-owner', email='existing-owner@example.com',
+            password=None, role=User.ASSOCIATION,
+        )
+        association = self._association_record(uuid.uuid4(), owner_id)
+        users = [
+            self._user_record(owner_id, 'archived-owner', 'archived-owner@example.com', role=User.ASSOCIATION,
+                              password=make_password('Archived!123')),
+        ]
+
+        with tempfile.NamedTemporaryFile(suffix='.zip') as archive:
+            self._write_archive(archive.name, association, users)
+            validation = ImportValidator(archive.name).validate_all()
+            self.assertTrue(validation.is_valid, validation.errors)
+            self.assertFalse(validation.info['owner_user']['requires_recovery_password'])
+            service = AssociationImportService(archive.name, ImportOptions(owner_password='Recovery!123'))
+            self.assertTrue(service.validate().is_valid)
+            imported = service.import_all()
+
+        owner = User.original_objects.get(pk=owner_id)
+        self.assertEqual(imported.user, owner)
+        self.assertFalse(owner.has_usable_password())
+        self.assertFalse(owner.check_password('Archived!123'))
+        self.assertFalse(owner.check_password('Recovery!123'))
+
     def test_export_includes_password_hashes_for_all_users(self):
         owner = User.objects.create_user(
             username='owner@example.com',
@@ -361,7 +388,7 @@ class AssociationImportIdentityTests(TestCase):
         self.assertFalse(imported.enable_quotes_management)
         self.assertEqual(imported.president_last_name, 'Lovelace')
 
-    def test_shared_user_reuse_by_exact_uuid_does_not_overwrite_credentials_or_profile(self):
+    def test_existing_account_of_another_owner_stops_the_import_unchanged(self):
         owner_id = uuid.uuid4()
         shared_id = uuid.uuid4()
         association_id = uuid.uuid4()
@@ -369,12 +396,11 @@ class AssociationImportIdentityTests(TestCase):
             user_id=shared_id,
             username='existing-shared',
             email='existing-shared@example.com',
-            password='KeepMe!123',
+            password=None,
             role=User.COLLABORATOR,
             first_name='Existing',
-            two_fa=True,
-            is_staff=True,
         )
+        before = User.original_objects.values().get(pk=shared_id)
         association = self._association_record(association_id, owner_id)
         users = [
             self._user_record(owner_id, 'owner', 'owner@example.com', role=User.ASSOCIATION),
@@ -384,49 +410,64 @@ class AssociationImportIdentityTests(TestCase):
                 'archived-shared@example.com',
                 role=User.ATHLETE,
                 first_name='Archived',
-                two_fa=False,
-                is_staff=False,
                 password=make_password('Archived!123'),
             ),
         ]
+        expected = (
+            f"User UUID collision: {shared_id} already exists and is not linked to the archive owner"
+        )
 
-        self._import_archive(association, users)
+        with tempfile.NamedTemporaryFile(suffix='.zip') as archive:
+            self._write_archive(archive.name, association, users)
+            validation = ImportValidator(archive.name).validate_all()
+            service = AssociationImportService(archive.name, ImportOptions(owner_password='Recovery!123'))
+            service_validation = service.validate()
+            with self.assertRaisesMessage(ValueError, expected):
+                service.import_all()
 
+        self.assertIn(expected, validation.errors)
+        self.assertEqual(service_validation.errors, [expected])
+        self.assertEqual(User.original_objects.values().get(pk=shared_id), before)
         existing_shared.refresh_from_db()
-        self.assertEqual(existing_shared.username, 'existing-shared')
-        self.assertEqual(existing_shared.email, 'existing-shared@example.com')
-        self.assertEqual(existing_shared.first_name, 'Existing')
-        self.assertEqual(existing_shared.role, User.COLLABORATOR)
-        self.assertTrue(existing_shared.two_fa)
-        self.assertTrue(existing_shared.is_staff)
-        self.assertTrue(existing_shared.check_password('KeepMe!123'))
+        self.assertFalse(existing_shared.has_usable_password())
+        self.assertFalse(User.original_objects.filter(pk=owner_id).exists())
+        self.assertFalse(SportAssociation.original_objects.filter(pk=association_id).exists())
 
-    def test_reused_user_without_usable_password_adopts_archived_hash(self):
+    def test_collaborator_of_the_archive_owner_is_reused_with_its_own_credentials(self):
         owner_id = uuid.uuid4()
         association_id = uuid.uuid4()
-        with_hash_id, without_hash_id = uuid.uuid4(), uuid.uuid4()
-        for user_id in (with_hash_id, without_hash_id):
-            User.original_objects.create_user(
-                user_id=user_id, username=f'existing-{user_id}', email=f'{user_id}@example.com',
-                password=None, role=User.ATHLETE, first_name='Existing',
-            )
-        archived_hash = make_password('Archived!123')
+        owner = User.original_objects.create_user(
+            user_id=owner_id, username='existing-owner', email='existing-owner@example.com',
+            password='ExistingOwner!123', role=User.ASSOCIATION,
+        )
+        with_password_id, without_password_id = uuid.uuid4(), uuid.uuid4()
+        User.original_objects.create_user(
+            user_id=with_password_id, username='linked', email='linked@example.com',
+            password='KeepMe!123', role=User.COLLABORATOR, first_name='Existing', connected_user=owner,
+        )
+        User.original_objects.create_user(
+            user_id=without_password_id, username='linked-unusable', email='linked-unusable@example.com',
+            password=None, role=User.COLLABORATOR, connected_user=owner,
+        )
         association = self._association_record(association_id, owner_id)
         users = [
             self._user_record(owner_id, 'owner', 'owner@example.com', role=User.ASSOCIATION),
-            self._user_record(with_hash_id, 'archived', 'archived@example.com',
-                              first_name='Archived', password=archived_hash),
-            self._user_record(without_hash_id, 'archived-unusable', 'archived-unusable@example.com',
-                              password=make_password(None)),
+            self._user_record(with_password_id, 'archived', 'archived@example.com', role=User.ATHLETE,
+                              first_name='Archived', password=make_password('Archived!123')),
+            self._user_record(without_password_id, 'archived-unusable', 'archived-unusable@example.com',
+                              password=make_password('ArchivedToo!123')),
         ]
 
-        self._import_archive(association, users)
+        imported, _service = self._import_archive(association, users)
 
-        adopted = User.original_objects.get(pk=with_hash_id)
-        self.assertEqual(adopted.password, archived_hash)
-        self.assertTrue(adopted.check_password('Archived!123'))
-        self.assertEqual(adopted.first_name, 'Existing')
-        self.assertFalse(User.original_objects.get(pk=without_hash_id).has_usable_password())
+        self.assertEqual(imported.user_id, owner_id)
+        linked = User.original_objects.get(pk=with_password_id)
+        self.assertTrue(linked.check_password('KeepMe!123'))
+        self.assertEqual(linked.first_name, 'Existing')
+        self.assertEqual(linked.role, User.COLLABORATOR)
+        unusable = User.original_objects.get(pk=without_password_id)
+        self.assertFalse(unusable.has_usable_password())
+        self.assertFalse(unusable.check_password('ArchivedToo!123'))
 
     def test_import_fails_when_source_owner_already_owns_a_different_association(self):
         owner_id = uuid.uuid4()
@@ -456,7 +497,7 @@ class AssociationImportIdentityTests(TestCase):
             with self.assertRaisesMessage(ValueError, 'already owns another SportAssociation'):
                 service.import_all()
 
-    def test_role_association_shared_user_can_become_second_import_owner_once(self):
+    def test_role_association_shared_user_can_become_second_import_owner_once_keeping_its_credentials(self):
         owner_a_id = uuid.uuid4()
         owner_b_id = uuid.uuid4()
         association_a_id = uuid.uuid4()
@@ -518,7 +559,10 @@ class AssociationImportIdentityTests(TestCase):
         self.assertEqual(imported_b.user_id, owner_b_id)
         self.assertEqual(imported_b.user, shared_user)
         self.assertEqual(User.original_objects.filter(user_id=owner_b_id).count(), 1)
-        self.assertTrue(shared_user.check_password('RecoveryB!123'))
+        # An existing account keeps its own credentials; the recovery
+        # password only applies to an owner account the import creates.
+        self.assertFalse(shared_user.has_usable_password())
+        self.assertFalse(shared_user.check_password('RecoveryB!123'))
         self.assertEqual(shared_user.username, 'owner-b')
         self.assertEqual(shared_user.email, 'owner-b@example.com')
         self.assertEqual(shared_user.first_name, 'Owner')
@@ -550,7 +594,6 @@ class AssociationImportIdentityTests(TestCase):
 
         shared_user.refresh_from_db()
         self.assertEqual(shared_user.password, encoded_password_after_b)
-        self.assertTrue(shared_user.check_password('RecoveryB!123'))
         self.assertFalse(shared_user.check_password('RecoveryC!123'))
         self.assertEqual(SportAssociation.original_objects.filter(user=shared_user).count(), 1)
 

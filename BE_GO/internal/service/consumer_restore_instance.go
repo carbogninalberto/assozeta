@@ -521,6 +521,10 @@ func (s *ConsumerRestoreInstance) prepareReplacement(ctx context.Context, call *
 	for _, rows := range archive.records {
 		replacement.total += len(rows)
 	}
+	replacement.replacedUsers = map[string]bool{}
+	for _, id := range backup.identityList["User"] {
+		replacement.replacedUsers[id] = true
+	}
 	run := &consumerImportRun{s: s.imports, ctx: ctx, path: call.uploadTemp, replace: replacement, stats: celery.Dict{}}
 	opened, err := consumerImportOpenArchive(call.uploadTemp)
 	if err != nil {
@@ -875,6 +879,9 @@ func (p *restoreProgress) publish(ctx context.Context, event restoreProgressEven
 // restoreReplacement is ReplacementImporter's state and overrides.
 type restoreReplacement struct {
 	target, owner string
+	// replacedUsers are the accounts of the replaced association (the
+	// safety backup's User keys).
+	replacedUsers map[string]bool
 	missing       map[string]map[string]bool
 	media         map[string]string
 	processed     map[string]bool

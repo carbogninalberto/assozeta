@@ -99,12 +99,16 @@ registration in `cmd/celery-consumer/consumer_restore.go`.
    archive delete (audited, indexed), document delete (audited).
 4. The model files: for each `EXPORT_ORDER` entry, Django's queryset (`get_queryset_for_model`, iterated through a
    server-side cursor in chunks of 1000 with the M2M prefetch per chunk) serialized by `serialize_record`
-   (`_meta.get_fields()` order, exclusions, FK ids as `str(id) if id else None`, reverse one-to-one as `None`, UUID/
+   (`_meta.get_fields()` order, exclusions — User `password`, `two_fa_secret`, `stripe_account_id`,
+   `integration_google_state`, `integration_google_credentials`; Payment `payment_intent_id`; CommunicationConfiguration
+   `email_smtp_password` —, FK ids as `str(id) if id else None`, reverse one-to-one as `None`, UUID/
    Decimal as `str`, datetimes `isoformat()`, dates and times through DjangoJSONEncoder (times cut to milliseconds),
    jsonb values in jsonb order with Python's float repr, `_m2m_<name>` lists, and the archived password of credential
    accounts when `is_restorable_password_hash`), `json.dump(ensure_ascii=False)` joined by `,` inside `[` `]`.
    `TESTS/adapters/go/association_export_plan.py` generates `internal/associationexport/plan.json` (keys, columns,
-   kinds, the compiled SQL with placeholder ids, prefetch queries, document attributes); Go runs the same statements
+   kinds, the compiled SQL with placeholder ids, prefetch queries, document attributes). Every query selects the
+   association's own records: the association row by key, instructors and collaboration invites stored on the owner
+   account, module responses to the association's modules, signatures of the owner and of subscribed members. Go runs the same statements
    with the simple protocol, so rows keep PostgreSQL's unordered scan order. The harness fails when the plan is stale.
 5. Attachments: the collected documents (Django's annotated query; `filepath` or the reconstructed
    `<str(creation_date.timestamp())>/<id>/<filename>`) copied to `files/<category>/<id>/<filename or 'file'>`, missing
@@ -159,7 +163,9 @@ compressed bytes and CRC of every member except `manifest.json`, whose JSON is c
 normalized). 8 scenarios: a rich association (members, a deleted associate, tags, subscription with JSON data and a
 signature, payments with attachments and a deleted payment, invoice PDF, medical certificate, folder, reminder with a
 time, course with location, archived documents, a reconstructed path, a missing object, an empty file name, four old
-exports → two deleted); an association without other data; a missing user; a missing association (error e-mail); an
+exports → two deleted; mail settings, and instructors, invites, module responses, signatures and a second association
+of a collaborator next to the exported ones — the authored check reads the archive: one association, the owner's
+records only, no mail-server password); an association without other data; a missing user; a missing association (error e-mail); an
 MD5 credential hash handed off; an export document referenced by a payment handed off; a pending restore (RETRY Busy,
 deferral +15 s, the prepared files removed); an unknown keyword handed off.
 
@@ -192,12 +198,15 @@ LogEntry and its index); registration in `cmd/celery-consumer/consumer_restore.g
    `skipped_records` (the retired sections, its `ValueError`s reported as `Error validating export file: ...`), the export
    format, `_load_source_identity` (exactly one association record, its `user_id` matching exactly one user record, the
    `ValueError` texts), an existing association with the same key, an existing owner account that owns another
-   association, and whether a usable owner hash or the recovery password is available. Errors give the result
+   association, whether a usable owner hash, an existing owner account or the recovery password is available, and every
+   archived user (other than the owner) that already exists here without being linked to the archive owner
+   (`connected_user`), in key order: `User UUID collision: <id> already exists and is not linked to the archive owner`.
+   Errors give the result
    `{"success": false, "error": "Validazione fallita: [...]"}` (Python list repr).
-3. `import_all()` inside one `transaction.atomic`: the owner (reused by key, its password replaced when unusable; or
+3. `import_all()` inside one `transaction.atomic`: the owner (reused by key with its own credentials; or
    created from the sanitized record), the association, every IMPORT_ORDER file (manifest file names first), with the
-   importer's own rules: keys preserved, non-User key collisions raising, existing users reused by key (adopting an
-   archived hash when theirs is unusable), FK resolution against imported objects and the flat key mapping, deferral of
+   importer's own rules: keys preserved, non-User key collisions raising, existing users linked to the archive owner
+   reused by key with their own credentials (any other existing user raises the collision error), FK resolution against imported objects and the flat key mapping, deferral of
    FKs to models not imported yet and of pending self references, `references missing` warnings, M2M lists deferred,
    `Associate.sport_association` forced, folders parent-first with django-mptt tree fields, messages through the raw
    save. Pass 2 updates deferred FKs (`QuerySet.update`, no audit); pass 3 sets M2M relations; `check_constraints()`;
@@ -283,9 +292,11 @@ subscription with JSON data, tags and a signature, VAT, category, signature, fiv
 description rules and the default category, invoice, a three-level folder tree plus a second root, reminder with a
 time, course with location, instructor with documents, message and message transaction, five media files) and
 rewritten for the variants. Compared: every row of every managed model and auto-created through table, the audit
-entries and index rows, the TaskResult, the broker and every bucket object. 17 scenarios: import into an instance with
-other data; an existing owner account reused; the recovery password hashing a new owner; validation failures (existing
-association, no hash and no recovery password, truncated archive, no manifest, no association file); rolled-back
+entries and index rows, the TaskResult, the broker and every bucket object. 20 scenarios: import into an instance with
+other data; an existing owner account reused with its own credentials, also without an archived hash or recovery
+password; an account linked to the archive owner reused with its own credentials; the recovery password hashing a new
+owner; validation failures (existing association, an existing account not linked to the archive owner, no hash and no
+recovery password, truncated archive, no manifest, no association file); rolled-back
 imports (circular folders, an existing tag key); handoffs (undecodable data file, course subscriptions, a key the
 constraint check rejects, a wrong media CRC, a missing staged object, an unknown keyword); a pending restore deferring
 the import.
@@ -339,7 +350,9 @@ it. Go: `internal/service/consumer_restore_instance.go` (task, replacement hooks
 8. `replace()` in one transaction: `Collector.delete()` (pre_delete receivers, fast deletes, SET_NULL, deletes, auditlog
    delete entries and index rows), `import_all()` as `ReplacementImporter` (local association and owner keys, the archived
    association saved with `force_update` — no audit entry: the fresh instance is still `_state.adding` —, optional links
-   cleared, staged keys on every imported document and subscription), `restore_user_links` (detachment rows, deactivated
+   cleared, staged keys on every imported document and subscription; archived accounts that exist here are reused, and
+   only those of the replaced association — the safety backup's users — take an archived hash when theirs is unusable),
+   `restore_user_links` (detachment rows, deactivated
    collaborators, recovered detachments, owner payment categories), the relation check, then the `completed` receipt
    inside the transaction. After the commit: `cache.clear()`, progress `completed`, `cleanup(op)`, `prune_storage()`.
 
@@ -380,7 +393,8 @@ backup is written by Django's own export from an earlier state of the instance's
 (renamed tag, other payments and documents, an extra connected collaborator, another denomination) and an earlier
 completed restore leaves a recovery archive and a staged attachment to prune. Compared: every managed row and through
 table, audit entries and index rows, TaskResult, broker, cache and every bucket object, the recovery archive member by
-member. 22 scenarios: a full replacement; a completed receipt delivered again; a receipt under review; a missing
+member. 23 scenarios: a full replacement; accounts without a usable password (a member of the replaced association
+takes the archived hash, a former collaborator's account outside it keeps its own); a completed receipt delivered again; a receipt under review; a missing
 receipt; a held lock and a busy barrier (RETRY +10 s); three attempts; another version; an owner who no longer
 administers; a second association; a changed upload; a truncated archive; another manifest version; a manifest naming
 another association; unconfirmed and confirmed missing attachments; circular folders rolled back; a value the database

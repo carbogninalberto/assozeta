@@ -239,11 +239,13 @@ class AssociationExportService:
         (Document, '99_documents'),
     ]
 
-    # Fields to exclude from export (sensitive data)
+    # Fields to exclude from export (sensitive data). Every name must be a
+    # concrete field of the model, otherwise the value would be exported.
     EXCLUDED_FIELDS = {
-        'User': ['password', 'two_fa_secret', 'stripe_account_id', 'integration_google_credentials'],
+        'User': ['password', 'two_fa_secret', 'stripe_account_id', 'integration_google_state',
+                 'integration_google_credentials'],
         'Payment': ['payment_intent_id'],
-        'CommunicationConfiguration': ['smtp_password'],
+        'CommunicationConfiguration': ['email_smtp_password'],
     }
 
     # Models with soft delete - need to use original_objects or all_objects
@@ -376,6 +378,10 @@ class AssociationExportService:
         """Filter queryset by association based on model relationships."""
         model_name = model_class.__name__
 
+        # The association itself: only the exported one.
+        if model_name == 'SportAssociation':
+            return qs.filter(sport_association_id=self.sport_association.sport_association_id)
+
         # User model - get owner, collaborators, athlete users, and users referenced by signatures
         # Must check before generic sport_association check (User has reverse relation from SportAssociation)
         if model_name == 'User':
@@ -388,7 +394,6 @@ class AssociationExportService:
             # Note: Signature model only has user FK (no associate FK)
             signature_user_ids = Signature.objects.filter(
                 models.Q(user=owner) |
-                models.Q(user__connected_user=owner) |
                 models.Q(user_id__in=athlete_user_ids)
             ).values_list('user_id', flat=True).distinct()
             medical_ids = Subscription.objects.filter(
@@ -441,7 +446,7 @@ class AssociationExportService:
             ).values_list('medical_id', flat=True).distinct()
             return qs.filter(medical_id__in=medical_ids)
 
-        # Signature - include signatures from owner, collaborators, and subscription users
+        # Signature - include signatures from the owner and subscription users
         if model_name == 'Signature':
             owner = self.sport_association.user
             # Get athlete user IDs from subscriptions
@@ -451,8 +456,21 @@ class AssociationExportService:
             # Signature model only has user FK (no associate FK)
             return qs.filter(
                 models.Q(user=owner) |
-                models.Q(user__connected_user=owner) |
                 models.Q(user_id__in=athlete_user_ids)
+            )
+
+        # Instructors and collaboration invites are stored on the owner account
+        # (collaborators act as the owner).
+        if model_name in ('Instructor', 'CollaborationInvites'):
+            return qs.filter(user=self.sport_association.user)
+
+        # Module responses: only answers to this association's modules.
+        if model_name == 'ModuleResponses':
+            owner = self.sport_association.user
+            return qs.filter(
+                models.Q(user=owner) |
+                models.Q(user__connected_user=owner),
+                module__sport_association=self.sport_association,
             )
 
         # Models with user FK (to association owner and collaborators)

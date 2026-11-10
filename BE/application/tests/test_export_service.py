@@ -47,7 +47,7 @@ class AssociationExportPasswordTests(TestCase):
         self.assertEqual(data['password'], stored_hash)
         self.assertIn('password', self.service.EXCLUDED_FIELDS['User'])
         self.assertIn('payment_intent_id', self.service.EXCLUDED_FIELDS['Payment'])
-        self.assertIn('smtp_password', self.service.EXCLUDED_FIELDS['CommunicationConfiguration'])
+        self.assertIn('email_smtp_password', self.service.EXCLUDED_FIELDS['CommunicationConfiguration'])
         self.assertNotIn('two_fa_secret', data)
         self.assertNotIn('stripe_account_id', data)
         self.assertNotIn('integration_google_credentials', data)
@@ -219,3 +219,89 @@ class AssociationExportSharedCategoryTests(TestCase):
         self.assertIn(shared.pk, categories)
         self.assertNotIn(unused.pk, categories)
         self.assertIn(vat.pk, self.exported_ids(VatManagement))
+
+
+class AssociationExportFieldSelectionTests(TestCase):
+    """Account and mail-server credentials stay out of the archive."""
+
+    def setUp(self):
+        self.owner = create_test_user(role=User.ASSOCIATION)
+        self.association = create_test_sport_association(user=self.owner)
+        self.service = AssociationExportService(self.association.sport_association_id)
+
+    def test_every_left_out_field_names_a_model_field(self):
+        models = {item[0].__name__: item[0] for item in AssociationExportService.EXPORT_ORDER}
+        for model_name, fields in AssociationExportService.EXCLUDED_FIELDS.items():
+            concrete = {field.name for field in models[model_name]._meta.concrete_fields}
+            for field_name in fields:
+                self.assertIn(field_name, concrete, f'{model_name}.{field_name}')
+
+    def test_mail_server_password_is_left_out(self):
+        from communications.models import CommunicationConfiguration
+        configuration = CommunicationConfiguration.objects.create(
+            sport_association=self.association, email_smtp_host='smtp.example.test', email_smtp_port=587,
+            email_smtp_user='sender@example.test', email_smtp_password='mail-server-password')
+
+        data = self.service.serialize_record(configuration)
+
+        self.assertNotIn('email_smtp_password', data)
+        self.assertEqual(data['email_smtp_user'], 'sender@example.test')
+        with tempfile.TemporaryDirectory() as output_dir:
+            self.service.export_model_to_json(CommunicationConfiguration, output_dir, '21_communication_config')
+            with open(os.path.join(output_dir, 'data', '21_communication_config.json'), encoding='utf-8') as source:
+                content = source.read()
+        self.assertNotIn('mail-server-password', content)
+        self.assertIn('smtp.example.test', content)
+
+    def test_google_link_state_is_left_out(self):
+        self.owner.integration_google_state = 'pending-google-link'
+        self.owner.save(update_fields=['integration_google_state'])
+
+        data = self.service.serialize_record(self.owner)
+
+        self.assertNotIn('integration_google_state', data)
+
+
+class AssociationExportOwnRecordsTests(TestCase):
+    """Export only the association's own records, also when a collaborator runs another association."""
+
+    def setUp(self):
+        from application.models.modules_models import Module, ModuleResponses
+        from application.models.user_models import CollaborationInvites, Instructor, UsersOnboarding
+        self.owner = create_test_user(role=User.ASSOCIATION)
+        self.association = create_test_sport_association(user=self.owner)
+        self.collaborator = create_test_user(role=User.COLLABORATOR, connected_user=self.owner)
+        self.other = create_test_sport_association(user=self.collaborator)
+        self.own_instructor = Instructor.objects.create(user=self.owner, first_name='Own', last_name='Coach')
+        self.other_instructor = Instructor.objects.create(user=self.collaborator, first_name='Other', last_name='Coach')
+        self.own_invite = CollaborationInvites.objects.create(user=self.owner, email='own@example.test')
+        self.other_invite = CollaborationInvites.objects.create(user=self.collaborator, email='other@example.test')
+        own_module = Module.objects.create(sport_association=self.association, title='Own module')
+        other_module = Module.objects.create(sport_association=self.other, title='Other module')
+        self.own_response = ModuleResponses.objects.create(module=own_module, user=self.collaborator, response={'a': 1})
+        self.other_response = ModuleResponses.objects.create(module=other_module, user=self.collaborator, response={'b': 2})
+        self.owner_signature = Signature.objects.create(user=self.owner, signature='owner')
+        self.collaborator_signature = Signature.objects.create(user=self.collaborator, signature='elsewhere')
+        self.onboarding = UsersOnboarding.objects.create(user=self.collaborator)
+        self.service = AssociationExportService(self.association.sport_association_id)
+
+    def exported_ids(self, model_class):
+        qs = self.service.get_queryset_for_model(model_class)
+        return set(qs.values_list(model_class._meta.pk.name, flat=True))
+
+    def test_only_the_exported_association_is_written(self):
+        from application.models.user_models import SportAssociation
+        self.assertEqual(self.exported_ids(SportAssociation), {self.association.pk})
+
+    def test_records_of_the_collaborators_other_association_are_left_out(self):
+        from application.models.modules_models import ModuleResponses
+        from application.models.user_models import CollaborationInvites, Instructor
+        self.assertEqual(self.exported_ids(Instructor), {self.own_instructor.pk})
+        self.assertEqual(self.exported_ids(CollaborationInvites), {self.own_invite.pk})
+        self.assertEqual(self.exported_ids(ModuleResponses), {self.own_response.pk})
+        self.assertEqual(self.exported_ids(Signature), {self.owner_signature.pk})
+
+    def test_collaborator_account_and_settings_are_still_exported(self):
+        from application.models.user_models import UsersOnboarding
+        self.assertIn(self.collaborator.pk, self.exported_ids(User))
+        self.assertIn(self.onboarding.pk, self.exported_ids(UsersOnboarding))

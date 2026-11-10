@@ -5,13 +5,14 @@
    "password",
    "two_fa_secret",
    "stripe_account_id",
+   "integration_google_state",
    "integration_google_credentials"
   ],
   "Payment": [
    "payment_intent_id"
   ],
   "CommunicationConfiguration": [
-   "smtp_password"
+   "email_smtp_password"
   ]
  },
  "models": [
@@ -320,13 +321,10 @@
    "pk": "sport_association_id",
    "pk_kind": "uuid",
    "query": {
-    "sql": "SELECT \"application_sportassociation\".\"sport_association_id\", \"application_sportassociation\".\"user_id\", \"application_sportassociation\".\"denomination\", \"application_sportassociation\".\"address_city\", \"application_sportassociation\".\"address\", \"application_sportassociation\".\"address_cap\", \"application_sportassociation\".\"tax_code\", \"application_sportassociation\".\"email\", \"application_sportassociation\".\"phone\", \"application_sportassociation\".\"regulation\", \"application_sportassociation\".\"demand\", \"application_sportassociation\".\"additional_sections\", \"application_sportassociation\".\"logo\", \"application_sportassociation\".\"subscription_fee\", \"application_sportassociation\".\"multiple_subscription_fee\", \"application_sportassociation\".\"subscription_fee_plans\", \"application_sportassociation\".\"membership_fee\", \"application_sportassociation\".\"multiple_membership_fee\", \"application_sportassociation\".\"membership_fee_plans\", \"application_sportassociation\".\"custom_subscription_form_data\", \"application_sportassociation\".\"document_header\", \"application_sportassociation\".\"invoice_footer\", \"application_sportassociation\".\"enable_quotes_management\", \"application_sportassociation\".\"configuration\", \"application_sportassociation\".\"reviewed\", \"application_sportassociation\".\"affiliate_code\", \"application_sportassociation\".\"affiliate_code_stripe\", \"application_sportassociation\".\"deleted\", \"application_sportassociation\".\"review_url\", \"application_sportassociation\".\"review_url_enabled\", \"application_sportassociation\".\"crm_user_id\", \"application_sportassociation\".\"crm_contact_id\", \"application_sportassociation\".\"president_signature\", \"application_sportassociation\".\"stamp\", \"application_sportassociation\".\"president_first_name\", \"application_sportassociation\".\"president_last_name\", \"application_sportassociation\".\"enroll_number\", \"application_sportassociation\".\"federation\", \"application_sportassociation\".\"sport\", \"application_sportassociation\".\"enabled_for\", \"application_sportassociation\".\"checkout_info\", \"application_sportassociation\".\"additional_fields\", \"application_sportassociation\".\"stripe_available_methods\", \"application_sportassociation\".\"iban\", \"application_sportassociation\".\"website\", \"application_sportassociation\".\"abbreviated\", \"application_sportassociation\".\"vat_number\", \"application_sportassociation\".\"whatsapp\", \"application_sportassociation\".\"imported_from_associami\", \"application_sportassociation\".\"extra_text_invoices\", \"application_sportassociation\".\"show_regulation_to_members\", \"application_sportassociation\".\"show_regulation_to_both\", \"application_sportassociation\".\"show_regulation_to_athletes\", \"application_sportassociation\".\"show_demand_to_members\", \"application_sportassociation\".\"show_demand_to_both\", \"application_sportassociation\".\"show_demand_to_athletes\", \"application_sportassociation\".\"invoice_template\", \"application_sportassociation\".\"subscription_template\", \"application_sportassociation\".\"notes\" FROM \"application_sportassociation\" INNER JOIN \"bakney_user\" ON (\"application_sportassociation\".\"user_id\" = \"bakney_user\".\"user_id\") WHERE (\"application_sportassociation\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s)",
+    "sql": "SELECT \"application_sportassociation\".\"sport_association_id\", \"application_sportassociation\".\"user_id\", \"application_sportassociation\".\"denomination\", \"application_sportassociation\".\"address_city\", \"application_sportassociation\".\"address\", \"application_sportassociation\".\"address_cap\", \"application_sportassociation\".\"tax_code\", \"application_sportassociation\".\"email\", \"application_sportassociation\".\"phone\", \"application_sportassociation\".\"regulation\", \"application_sportassociation\".\"demand\", \"application_sportassociation\".\"additional_sections\", \"application_sportassociation\".\"logo\", \"application_sportassociation\".\"subscription_fee\", \"application_sportassociation\".\"multiple_subscription_fee\", \"application_sportassociation\".\"subscription_fee_plans\", \"application_sportassociation\".\"membership_fee\", \"application_sportassociation\".\"multiple_membership_fee\", \"application_sportassociation\".\"membership_fee_plans\", \"application_sportassociation\".\"custom_subscription_form_data\", \"application_sportassociation\".\"document_header\", \"application_sportassociation\".\"invoice_footer\", \"application_sportassociation\".\"enable_quotes_management\", \"application_sportassociation\".\"configuration\", \"application_sportassociation\".\"reviewed\", \"application_sportassociation\".\"affiliate_code\", \"application_sportassociation\".\"affiliate_code_stripe\", \"application_sportassociation\".\"deleted\", \"application_sportassociation\".\"review_url\", \"application_sportassociation\".\"review_url_enabled\", \"application_sportassociation\".\"crm_user_id\", \"application_sportassociation\".\"crm_contact_id\", \"application_sportassociation\".\"president_signature\", \"application_sportassociation\".\"stamp\", \"application_sportassociation\".\"president_first_name\", \"application_sportassociation\".\"president_last_name\", \"application_sportassociation\".\"enroll_number\", \"application_sportassociation\".\"federation\", \"application_sportassociation\".\"sport\", \"application_sportassociation\".\"enabled_for\", \"application_sportassociation\".\"checkout_info\", \"application_sportassociation\".\"additional_fields\", \"application_sportassociation\".\"stripe_available_methods\", \"application_sportassociation\".\"iban\", \"application_sportassociation\".\"website\", \"application_sportassociation\".\"abbreviated\", \"application_sportassociation\".\"vat_number\", \"application_sportassociation\".\"whatsapp\", \"application_sportassociation\".\"imported_from_associami\", \"application_sportassociation\".\"extra_text_invoices\", \"application_sportassociation\".\"show_regulation_to_members\", \"application_sportassociation\".\"show_regulation_to_both\", \"application_sportassociation\".\"show_regulation_to_athletes\", \"application_sportassociation\".\"show_demand_to_members\", \"application_sportassociation\".\"show_demand_to_both\", \"application_sportassociation\".\"show_demand_to_athletes\", \"application_sportassociation\".\"invoice_template\", \"application_sportassociation\".\"subscription_template\", \"application_sportassociation\".\"notes\" FROM \"application_sportassociation\" WHERE \"application_sportassociation\".\"sport_association_id\" = %s",
     "params": [
      {
-      "symbol": "owner"
-     },
-     {
-      "symbol": "owner"
+      "symbol": "association"
      }
     ]
    },
@@ -574,11 +572,6 @@
      "kind": "bool"
     },
     {
-     "key": "integration_google_state",
-     "column": "integration_google_state",
-     "kind": "text"
-    },
-    {
      "key": "integration_google_auto_sync",
      "column": "integration_google_auto_sync",
      "kind": "bool"
@@ -700,7 +693,7 @@
    "pk": "user_id",
    "pk_kind": "uuid",
    "query": {
-    "sql": "SELECT \"bakney_user\".\"password\", \"bakney_user\".\"last_login\", \"bakney_user\".\"is_superuser\", \"bakney_user\".\"username\", \"bakney_user\".\"first_name\", \"bakney_user\".\"last_name\", \"bakney_user\".\"email\", \"bakney_user\".\"is_staff\", \"bakney_user\".\"is_active\", \"bakney_user\".\"date_joined\", \"bakney_user\".\"user_id\", \"bakney_user\".\"role\", \"bakney_user\".\"avatar_image\", \"bakney_user\".\"phone\", \"bakney_user\".\"two_fa\", \"bakney_user\".\"two_fa_secret\", \"bakney_user\".\"stripe_account_id\", \"bakney_user\".\"stripe_on_boarding_completed\", \"bakney_user\".\"enumerate_invoices\", \"bakney_user\".\"online_payments\", \"bakney_user\".\"balance_sheet_year\", \"bakney_user\".\"balance_sheet_start_day\", \"bakney_user\".\"balance_sheet_start_month\", \"bakney_user\".\"temporary_invoice_deletion\", \"bakney_user\".\"auto_archive\", \"bakney_user\".\"auto_mark_attendance\", \"bakney_user\".\"full_installments_plan\", \"bakney_user\".\"payment_date_equal_invoice_date\", \"bakney_user\".\"starting_number_invoices\", \"bakney_user\".\"connected_user_id\", \"bakney_user\".\"auto_paid_payment\", \"bakney_user\".\"tables_settings\", \"bakney_user\".\"deleted\", \"bakney_user\".\"delete_on\", \"bakney_user\".\"collaborator_role\", \"bakney_user\".\"collaborator_permissions\", \"bakney_user\".\"dark_mode\", \"bakney_user\".\"integration_google_state\", \"bakney_user\".\"integration_google_credentials\", \"bakney_user\".\"integration_google_auto_sync\", \"bakney_user\".\"dashboard_layout\", \"bakney_user\".\"subscription_duration_equal_sport_year\", \"bakney_user\".\"subscription_duration\", \"bakney_user\".\"membership_duration\", \"bakney_user\".\"subscription_start_day\", \"bakney_user\".\"subscription_start_month\", \"bakney_user\".\"custom_end_date\", \"bakney_user\".\"subscription_end_day\", \"bakney_user\".\"subscription_end_month\", \"bakney_user\".\"membership_starting_number\", \"bakney_user\".\"default_membership_type\", \"bakney_user\".\"lead_sport_association_role\", \"bakney_user\".\"lead_sport_association_size\", \"bakney_user\".\"lead_sport_market_channel\", \"bakney_user\".\"disable_account_creation\", \"bakney_user\".\"force_account_creation\", \"bakney_user\".\"medical_certificate_notifications\", \"bakney_user\".\"hide_category_name\", \"bakney_user\".\"show_zero_payments\", \"bakney_user\".\"imported_from_associami\", \"bakney_user\".\"default_payment_category_id\", \"bakney_user\".\"default_payment_category_courses_id\" FROM \"bakney_user\" WHERE (\"bakney_user\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s OR \"bakney_user\".\"user_id\" IN (SELECT DISTINCT U0.\"user_id\" AS \"user_id\" FROM \"application_subscription\" U0 WHERE U0.\"sport_association_id\" = %s) OR \"bakney_user\".\"user_id\" IN (SELECT DISTINCT V0.\"user_id\" AS \"user_id\" FROM \"application_signature\" V0 INNER JOIN \"bakney_user\" V1 ON (V0.\"user_id\" = V1.\"user_id\") WHERE (V0.\"user_id\" = %s OR V1.\"connected_user_id\" = %s OR V0.\"user_id\" IN (SELECT DISTINCT U0.\"user_id\" AS \"user_id\" FROM \"application_subscription\" U0 WHERE U0.\"sport_association_id\" = %s))) OR \"bakney_user\".\"user_id\" IN (SELECT DISTINCT V0.\"user_id\" AS \"user_id\" FROM \"application_medicalcertificate\" V0 WHERE (V0.\"medical_id\" IN (SELECT DISTINCT U0.\"medical_id\" AS \"medical_id\" FROM \"application_subscription\" U0 WHERE (U0.\"medical_id\" IS NOT NULL AND U0.\"sport_association_id\" = %s)) AND V0.\"user_id\" IS NOT NULL)))",
+    "sql": "SELECT \"bakney_user\".\"password\", \"bakney_user\".\"last_login\", \"bakney_user\".\"is_superuser\", \"bakney_user\".\"username\", \"bakney_user\".\"first_name\", \"bakney_user\".\"last_name\", \"bakney_user\".\"email\", \"bakney_user\".\"is_staff\", \"bakney_user\".\"is_active\", \"bakney_user\".\"date_joined\", \"bakney_user\".\"user_id\", \"bakney_user\".\"role\", \"bakney_user\".\"avatar_image\", \"bakney_user\".\"phone\", \"bakney_user\".\"two_fa\", \"bakney_user\".\"two_fa_secret\", \"bakney_user\".\"stripe_account_id\", \"bakney_user\".\"stripe_on_boarding_completed\", \"bakney_user\".\"enumerate_invoices\", \"bakney_user\".\"online_payments\", \"bakney_user\".\"balance_sheet_year\", \"bakney_user\".\"balance_sheet_start_day\", \"bakney_user\".\"balance_sheet_start_month\", \"bakney_user\".\"temporary_invoice_deletion\", \"bakney_user\".\"auto_archive\", \"bakney_user\".\"auto_mark_attendance\", \"bakney_user\".\"full_installments_plan\", \"bakney_user\".\"payment_date_equal_invoice_date\", \"bakney_user\".\"starting_number_invoices\", \"bakney_user\".\"connected_user_id\", \"bakney_user\".\"auto_paid_payment\", \"bakney_user\".\"tables_settings\", \"bakney_user\".\"deleted\", \"bakney_user\".\"delete_on\", \"bakney_user\".\"collaborator_role\", \"bakney_user\".\"collaborator_permissions\", \"bakney_user\".\"dark_mode\", \"bakney_user\".\"integration_google_state\", \"bakney_user\".\"integration_google_credentials\", \"bakney_user\".\"integration_google_auto_sync\", \"bakney_user\".\"dashboard_layout\", \"bakney_user\".\"subscription_duration_equal_sport_year\", \"bakney_user\".\"subscription_duration\", \"bakney_user\".\"membership_duration\", \"bakney_user\".\"subscription_start_day\", \"bakney_user\".\"subscription_start_month\", \"bakney_user\".\"custom_end_date\", \"bakney_user\".\"subscription_end_day\", \"bakney_user\".\"subscription_end_month\", \"bakney_user\".\"membership_starting_number\", \"bakney_user\".\"default_membership_type\", \"bakney_user\".\"lead_sport_association_role\", \"bakney_user\".\"lead_sport_association_size\", \"bakney_user\".\"lead_sport_market_channel\", \"bakney_user\".\"disable_account_creation\", \"bakney_user\".\"force_account_creation\", \"bakney_user\".\"medical_certificate_notifications\", \"bakney_user\".\"hide_category_name\", \"bakney_user\".\"show_zero_payments\", \"bakney_user\".\"imported_from_associami\", \"bakney_user\".\"default_payment_category_id\", \"bakney_user\".\"default_payment_category_courses_id\" FROM \"bakney_user\" WHERE (\"bakney_user\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s OR \"bakney_user\".\"user_id\" IN (SELECT DISTINCT U0.\"user_id\" AS \"user_id\" FROM \"application_subscription\" U0 WHERE U0.\"sport_association_id\" = %s) OR \"bakney_user\".\"user_id\" IN (SELECT DISTINCT V0.\"user_id\" AS \"user_id\" FROM \"application_signature\" V0 WHERE (V0.\"user_id\" = %s OR V0.\"user_id\" IN (SELECT DISTINCT U0.\"user_id\" AS \"user_id\" FROM \"application_subscription\" U0 WHERE U0.\"sport_association_id\" = %s))) OR \"bakney_user\".\"user_id\" IN (SELECT DISTINCT V0.\"user_id\" AS \"user_id\" FROM \"application_medicalcertificate\" V0 WHERE (V0.\"medical_id\" IN (SELECT DISTINCT U0.\"medical_id\" AS \"medical_id\" FROM \"application_subscription\" U0 WHERE (U0.\"medical_id\" IS NOT NULL AND U0.\"sport_association_id\" = %s)) AND V0.\"user_id\" IS NOT NULL)))",
     "params": [
      {
       "symbol": "owner"
@@ -710,9 +703,6 @@
      },
      {
       "symbol": "association"
-     },
-     {
-      "symbol": "owner"
      },
      {
       "symbol": "owner"
@@ -972,11 +962,8 @@
    "pk": "collaboration_invite_id",
    "pk_kind": "uuid",
    "query": {
-    "sql": "SELECT \"application_collaborationinvites\".\"collaboration_invite_id\", \"application_collaborationinvites\".\"user_id\", \"application_collaborationinvites\".\"email\", \"application_collaborationinvites\".\"creation_date\", \"application_collaborationinvites\".\"accepted\", \"application_collaborationinvites\".\"expiration_date\", \"application_collaborationinvites\".\"token\", \"application_collaborationinvites\".\"collaborator_role\", \"application_collaborationinvites\".\"collaborator_permissions\" FROM \"application_collaborationinvites\" INNER JOIN \"bakney_user\" ON (\"application_collaborationinvites\".\"user_id\" = \"bakney_user\".\"user_id\") WHERE (\"application_collaborationinvites\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s)",
+    "sql": "SELECT \"application_collaborationinvites\".\"collaboration_invite_id\", \"application_collaborationinvites\".\"user_id\", \"application_collaborationinvites\".\"email\", \"application_collaborationinvites\".\"creation_date\", \"application_collaborationinvites\".\"accepted\", \"application_collaborationinvites\".\"expiration_date\", \"application_collaborationinvites\".\"token\", \"application_collaborationinvites\".\"collaborator_role\", \"application_collaborationinvites\".\"collaborator_permissions\" FROM \"application_collaborationinvites\" WHERE \"application_collaborationinvites\".\"user_id\" = %s",
     "params": [
-     {
-      "symbol": "owner"
-     },
      {
       "symbol": "owner"
      }
@@ -2188,11 +2175,6 @@
      "kind": "text"
     },
     {
-     "key": "email_smtp_password",
-     "column": "email_smtp_password",
-     "kind": "text"
-    },
-    {
      "key": "email_sender_name",
      "column": "email_sender_name",
      "kind": "text"
@@ -2237,7 +2219,60 @@
     "daily_email_balance"
    ],
    "m2m": [],
-   "document_attributes": []
+   "document_attributes": [],
+   "recovery_fields": [
+    {
+     "key": "communication_configuration_id",
+     "column": "communication_configuration_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "email_smtp_host",
+     "column": "email_smtp_host",
+     "kind": "text"
+    },
+    {
+     "key": "email_smtp_port",
+     "column": "email_smtp_port",
+     "kind": "int"
+    },
+    {
+     "key": "email_smtp_user",
+     "column": "email_smtp_user",
+     "kind": "text"
+    },
+    {
+     "key": "email_smtp_password",
+     "column": "email_smtp_password",
+     "kind": "text"
+    },
+    {
+     "key": "email_sender_name",
+     "column": "email_sender_name",
+     "kind": "text"
+    },
+    {
+     "key": "email_encryption",
+     "column": "email_encryption",
+     "kind": "text"
+    },
+    {
+     "key": "daily_email_limit",
+     "column": "daily_email_limit",
+     "kind": "int"
+    },
+    {
+     "key": "daily_email_balance",
+     "column": "daily_email_balance",
+     "kind": "int"
+    }
+   ]
   },
   {
    "model": "NotificationTemplates",
@@ -2432,11 +2467,8 @@
    "pk": "instructor_id",
    "pk_kind": "uuid",
    "query": {
-    "sql": "SELECT \"application_instructor\".\"instructor_id\", \"application_instructor\".\"user_id\", \"application_instructor\".\"first_name\", \"application_instructor\".\"last_name\", \"application_instructor\".\"email\", \"application_instructor\".\"born_date\", \"application_instructor\".\"born_city\", \"application_instructor\".\"born_province\", \"application_instructor\".\"tax_code\", \"application_instructor\".\"address_city\", \"application_instructor\".\"address\", \"application_instructor\".\"address_province\", \"application_instructor\".\"civic_number\", \"application_instructor\".\"study_title\", \"application_instructor\".\"role\", \"application_instructor\".\"phone\", \"application_instructor\".\"phone_2\", \"application_instructor\".\"phone_3\", \"application_instructor\".\"phone_4\", \"application_instructor\".\"draft\", \"application_instructor\".\"associated_user_id\", \"application_instructor\".\"is_volunteer\", \"application_instructor\".\"stipulated_contract_in\", \"application_instructor\".\"default_hourly_billing\", \"application_instructor\".\"default_percentage_billing\" FROM \"application_instructor\" INNER JOIN \"bakney_user\" ON (\"application_instructor\".\"user_id\" = \"bakney_user\".\"user_id\") WHERE (\"application_instructor\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s)",
+    "sql": "SELECT \"application_instructor\".\"instructor_id\", \"application_instructor\".\"user_id\", \"application_instructor\".\"first_name\", \"application_instructor\".\"last_name\", \"application_instructor\".\"email\", \"application_instructor\".\"born_date\", \"application_instructor\".\"born_city\", \"application_instructor\".\"born_province\", \"application_instructor\".\"tax_code\", \"application_instructor\".\"address_city\", \"application_instructor\".\"address\", \"application_instructor\".\"address_province\", \"application_instructor\".\"civic_number\", \"application_instructor\".\"study_title\", \"application_instructor\".\"role\", \"application_instructor\".\"phone\", \"application_instructor\".\"phone_2\", \"application_instructor\".\"phone_3\", \"application_instructor\".\"phone_4\", \"application_instructor\".\"draft\", \"application_instructor\".\"associated_user_id\", \"application_instructor\".\"is_volunteer\", \"application_instructor\".\"stipulated_contract_in\", \"application_instructor\".\"default_hourly_billing\", \"application_instructor\".\"default_percentage_billing\" FROM \"application_instructor\" WHERE \"application_instructor\".\"user_id\" = %s",
     "params": [
-     {
-      "symbol": "owner"
-     },
      {
       "symbol": "owner"
      }
@@ -4197,11 +4229,8 @@
    "pk": "signature_id",
    "pk_kind": "uuid",
    "query": {
-    "sql": "SELECT \"application_signature\".\"signature_id\", \"application_signature\".\"user_id\", \"application_signature\".\"signature\" FROM \"application_signature\" INNER JOIN \"bakney_user\" ON (\"application_signature\".\"user_id\" = \"bakney_user\".\"user_id\") WHERE (\"application_signature\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s OR \"application_signature\".\"user_id\" IN (SELECT DISTINCT U0.\"user_id\" AS \"user_id\" FROM \"application_subscription\" U0 WHERE U0.\"sport_association_id\" = %s))",
+    "sql": "SELECT \"application_signature\".\"signature_id\", \"application_signature\".\"user_id\", \"application_signature\".\"signature\" FROM \"application_signature\" WHERE (\"application_signature\".\"user_id\" = %s OR \"application_signature\".\"user_id\" IN (SELECT DISTINCT U0.\"user_id\" AS \"user_id\" FROM \"application_subscription\" U0 WHERE U0.\"sport_association_id\" = %s))",
     "params": [
-     {
-      "symbol": "owner"
-     },
      {
       "symbol": "owner"
      },
@@ -6066,13 +6095,16 @@
    "pk": "module_response_id",
    "pk_kind": "uuid",
    "query": {
-    "sql": "SELECT \"application_moduleresponses\".\"module_response_id\", \"application_moduleresponses\".\"module_id\", \"application_moduleresponses\".\"creation_date\", \"application_moduleresponses\".\"progressive_response_number\", \"application_moduleresponses\".\"queue_position\", \"application_moduleresponses\".\"response\", \"application_moduleresponses\".\"approved\", \"application_moduleresponses\".\"user_id\", \"application_moduleresponses\".\"payment_id\" FROM \"application_moduleresponses\" INNER JOIN \"bakney_user\" ON (\"application_moduleresponses\".\"user_id\" = \"bakney_user\".\"user_id\") WHERE (\"application_moduleresponses\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s)",
+    "sql": "SELECT \"application_moduleresponses\".\"module_response_id\", \"application_moduleresponses\".\"module_id\", \"application_moduleresponses\".\"creation_date\", \"application_moduleresponses\".\"progressive_response_number\", \"application_moduleresponses\".\"queue_position\", \"application_moduleresponses\".\"response\", \"application_moduleresponses\".\"approved\", \"application_moduleresponses\".\"user_id\", \"application_moduleresponses\".\"payment_id\" FROM \"application_moduleresponses\" INNER JOIN \"bakney_user\" ON (\"application_moduleresponses\".\"user_id\" = \"bakney_user\".\"user_id\") INNER JOIN \"application_module\" ON (\"application_moduleresponses\".\"module_id\" = \"application_module\".\"module_id\") WHERE ((\"application_moduleresponses\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s) AND \"application_module\".\"sport_association_id\" = %s)",
     "params": [
      {
       "symbol": "owner"
      },
      {
       "symbol": "owner"
+     },
+     {
+      "symbol": "association"
      }
     ]
    },

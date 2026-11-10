@@ -457,7 +457,7 @@ func (r *consumerImportRun) validate() ([]string, error) {
 	}
 	existing := sql.NullString{}
 	found := true
-	err = r.s.db.GetContext(r.ctx, &existing, `SELECT "password" FROM "bakney_user" WHERE "user_id" = $1::uuid`, r.ownerUserID)
+	err = r.s.db.GetContext(r.ctx, &existing, `SELECT "user_id"::text FROM "bakney_user" WHERE "user_id" = $1::uuid`, r.ownerUserID)
 	if errors.Is(err, sql.ErrNoRows) {
 		found = false
 	} else if err != nil {
@@ -472,21 +472,51 @@ func (r *consumerImportRun) validate() ([]string, error) {
 			errorsList = append(errorsList, "Owner user already owns another SportAssociation: "+conflict)
 		}
 	}
+	// An existing owner account keeps its own credentials.
 	archived, err := consumerImportRestorable(importGetValue(owner, "password"))
 	if err != nil {
 		return nil, err
 	}
-	available := archived
-	if !available && found {
-		if available, err = consumerImportRestorable(existing.String); err != nil {
-			return nil, err
-		}
-	}
-	if !available && r.password == "" {
+	if !archived && !found && r.password == "" {
 		errorsList = append(errorsList, "Owner recovery password is required because the archive does not contain a supported "+
 			"usable password hash")
 	}
+	unlinked, err := r.unlinkedUsers()
+	if err != nil {
+		return nil, err
+	}
+	for _, id := range unlinked {
+		errorsList = append(errorsList, consumerImportUnlinkedUser(id))
+	}
 	return errorsList, nil
+}
+
+// consumerImportUnlinkedUser is unlinked_user_message.
+func consumerImportUnlinkedUser(id string) string {
+	return "User UUID collision: " + id + " already exists and is not linked to the archive owner"
+}
+
+// unlinkedUsers is unlinked_existing_user_ids(source user keys, owner): the
+// archive's users that already exist here without being the archive owner's
+// collaborators, by key.
+func (r *consumerImportRun) unlinkedUsers() ([]string, error) {
+	ids := []string{}
+	for id := range r.sourcePKs["User"] {
+		if id == r.ownerUserID {
+			continue
+		}
+		if !importeffects.CanonicalUUID(id) {
+			return nil, errConsumerImportUnsupported
+		}
+		ids = append(ids, id)
+	}
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	out := []string{}
+	err := r.s.db.SelectContext(r.ctx, &out, `SELECT "user_id"::text FROM "bakney_user" WHERE "user_id" = ANY($1::text[]::uuid[])
+ AND "connected_user_id" IS DISTINCT FROM $2::uuid ORDER BY "user_id" ASC`, ids, r.ownerUserID)
+	return out, err
 }
 
 func importGetValue(object domain.RequestObject, key string) any {
@@ -872,22 +902,25 @@ func (r *consumerImportRun) importAll() error {
 	return r.importFiles()
 }
 
-func (r *consumerImportRun) loadUser(id string) (*importeffects.Instance, string, bool, error) {
-	var row struct {
-		Password  sql.NullString `db:"password"`
-		FirstName sql.NullString `db:"first_name"`
-		LastName  sql.NullString `db:"last_name"`
-	}
-	err := r.effects.Tx.GetContext(r.ctx, &row, `SELECT "password", "first_name", "last_name" FROM "bakney_user" WHERE "user_id" = $1::uuid`, id)
+// consumerImportUser is the stored state of an existing account.
+type consumerImportUser struct {
+	Password  sql.NullString `db:"password"`
+	Connected sql.NullString `db:"connected_user_id"`
+}
+
+func (r *consumerImportRun) loadUser(id string) (*importeffects.Instance, consumerImportUser, bool, error) {
+	var row consumerImportUser
+	err := r.effects.Tx.GetContext(r.ctx, &row, `SELECT "password", "connected_user_id"::text AS "connected_user_id" FROM "bakney_user"
+ WHERE "user_id" = $1::uuid`, id)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, "", false, nil
+		return nil, row, false, nil
 	}
 	if err != nil {
-		return nil, "", false, err
+		return nil, row, false, err
 	}
 	model := r.s.plan.Model("User")
 	instance := &importeffects.Instance{Model: model, Values: map[string]importeffects.Value{"user_id": importeffects.UUIDValue(id)}}
-	return instance, row.Password.String, true, nil
+	return instance, row, true, nil
 }
 
 // ownerPasswordHash is _owner_password_hash.
@@ -953,7 +986,7 @@ func (r *consumerImportRun) createOwnerUser() error {
 	if !importeffects.CanonicalUUID(id) {
 		return errConsumerImportUnsupported
 	}
-	existing, password, found, err := r.loadUser(id)
+	existing, _, found, err := r.loadUser(id)
 	if err != nil {
 		return err
 	}
@@ -971,19 +1004,7 @@ func (r *consumerImportRun) createOwnerUser() error {
 			return importError("Owner user " + id + " already owns another SportAssociation (" + conflict + "); cannot import a second " +
 				"association for the same owner user")
 		}
-		restorable, err := consumerImportRestorable(password)
-		if err != nil {
-			return err
-		}
-		if !restorable {
-			hash, err := r.ownerPasswordHash(owner)
-			if err != nil {
-				return err
-			}
-			if err := r.effects.UpdatePassword(r.ctx, r.s.plan.Model("User"), id, hash); err != nil {
-				return err
-			}
-		}
+		// The existing account keeps its own credentials.
 		user = existing
 		r.reusedUserPKs[old] = true
 	} else {
@@ -1275,12 +1296,17 @@ func (r *consumerImportRun) createModelInstance(model *importeffects.Model, data
 		if !ok || !importeffects.CanonicalUUID(idText) {
 			return nil, errConsumerImportUnsupported
 		}
-		existing, password, found, err := r.loadUser(idText)
+		existing, stored, found, err := r.loadUser(idText)
 		if err != nil {
 			return nil, err
 		}
 		if found {
-			current, err := consumerImportRestorable(password)
+			// _may_reuse_existing_user: the import reuses only the archive
+			// owner's collaborators; a restore reuses every archived account.
+			if r.replace == nil && (!stored.Connected.Valid || stored.Connected.String != r.ownerUserID) {
+				return nil, importError(consumerImportUnlinkedUser(idText))
+			}
+			current, err := consumerImportRestorable(stored.Password.String)
 			if err != nil {
 				return nil, err
 			}
@@ -1289,7 +1315,9 @@ func (r *consumerImportRun) createModelInstance(model *importeffects.Model, data
 			if err != nil {
 				return nil, err
 			}
-			if !current && restorable {
+			// _takes_archived_password: only accounts of the replaced
+			// association; every other account keeps its credentials.
+			if r.replace != nil && r.replace.replacedUsers[idText] && !current && restorable {
 				if err := r.effects.UpdatePassword(r.ctx, model, idText, archived.(string)); err != nil {
 					return nil, err
 				}
