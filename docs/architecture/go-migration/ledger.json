@@ -4267,21 +4267,21 @@
         "docs/architecture/go-migration/association-transfer.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 235/235; Go 500 on the first case.",
+          "result": "RED: Django 246/246; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-red-r1/results.json",
           "receipt_sha256": "a100a2011ce0c5bc88ded8c3bbbd56d67cfa7c2acb119f5b0689073b1d18eb65"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 235/235 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact storage, cache, Celery, audit and index effects.",
-          "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "c0ae27a7f2090363f916ef5ea029e84d62bad171d8af37d111501052d82ac943"
+          "result": "GREEN: 246/246 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-fix132-green/results.json",
+          "receipt_sha256": "2830bcc9cc7a70720111e592578aae67b9b142c035f341f21895613d3f59527c"
         },
         {
-          "revision": "repr of a single argument applied to the classes Celery creates instead of the builtin KeyError (service/association_transfer.go, celeryExceptionText)",
-          "result": "Mutation control: fails Go on association-transfer-import-status-owner-failed-key (response): CAUGHT.",
-          "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "8c9e30fa7119cbbbf3b35a812bc9249460618b3547227c00071ba6fcd8494ebb"
+          "revision": "committing change with the import registration check skipped",
+          "result": "Mutation control: import/status answers the stored row of an unregistered id.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-fix132-mut1/results.json",
+          "receipt_sha256": "5ac5458aa8e335325bf676b59ee5db9e2486b2915913fbb07f782febec0ad791"
         }
       ],
       "notes": [
@@ -4352,21 +4352,21 @@
         "docs/architecture/go-migration/association-transfer.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 235/235; Go 500 on the first case.",
+          "result": "RED: Django 246/246; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-red-r1/results.json",
           "receipt_sha256": "a100a2011ce0c5bc88ded8c3bbbd56d67cfa7c2acb119f5b0689073b1d18eb65"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 235/235 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact storage, cache, Celery, audit and index effects.",
-          "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "c0ae27a7f2090363f916ef5ea029e84d62bad171d8af37d111501052d82ac943"
+          "result": "GREEN: 246/246 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-fix132-green/results.json",
+          "receipt_sha256": "2830bcc9cc7a70720111e592578aae67b9b142c035f341f21895613d3f59527c"
         },
         {
-          "revision": "repr of a single argument applied to the classes Celery creates instead of the builtin KeyError (service/association_transfer.go, celeryExceptionText)",
-          "result": "Mutation control: fails Go on association-transfer-import-status-owner-failed-key (response): CAUGHT.",
-          "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "8c9e30fa7119cbbbf3b35a812bc9249460618b3547227c00071ba6fcd8494ebb"
+          "revision": "committing change with the import registration check skipped",
+          "result": "Mutation control: import/status answers the stored row of an unregistered id.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-fix132-mut1/results.json",
+          "receipt_sha256": "5ac5458aa8e335325bf676b59ee5db9e2486b2915913fbb07f782febec0ad791"
         }
       ],
       "notes": [
@@ -4438,21 +4438,21 @@
         "docs/architecture/go-migration/association-transfer.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 235/235; Go 500 on the first case.",
+          "result": "RED: Django 246/246; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-red-r1/results.json",
           "receipt_sha256": "a100a2011ce0c5bc88ded8c3bbbd56d67cfa7c2acb119f5b0689073b1d18eb65"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 235/235 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact storage, cache, Celery, audit and index effects.",
-          "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "c0ae27a7f2090363f916ef5ea029e84d62bad171d8af37d111501052d82ac943"
+          "result": "GREEN: 246/246 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-fix132-green/results.json",
+          "receipt_sha256": "2830bcc9cc7a70720111e592578aae67b9b142c035f341f21895613d3f59527c"
         },
         {
-          "revision": "repr of a single argument applied to the classes Celery creates instead of the builtin KeyError (service/association_transfer.go, celeryExceptionText)",
-          "result": "Mutation control: fails Go on association-transfer-import-status-owner-failed-key (response): CAUGHT.",
-          "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "8c9e30fa7119cbbbf3b35a812bc9249460618b3547227c00071ba6fcd8494ebb"
+          "revision": "committing change with the import registration check skipped",
+          "result": "Mutation control: import/status answers the stored row of an unregistered id.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-fix132-mut1/results.json",
+          "receipt_sha256": "5ac5458aa8e335325bf676b59ee5db9e2486b2915913fbb07f782febec0ad791"
         }
       ],
       "notes": [
@@ -4523,21 +4523,21 @@
         "docs/architecture/go-migration/association-transfer.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 235/235; Go 500 on the first case.",
+          "result": "RED: Django 246/246; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-red-r1/results.json",
           "receipt_sha256": "a100a2011ce0c5bc88ded8c3bbbd56d67cfa7c2acb119f5b0689073b1d18eb65"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 235/235 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact storage, cache, Celery, audit and index effects.",
-          "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "c0ae27a7f2090363f916ef5ea029e84d62bad171d8af37d111501052d82ac943"
+          "result": "GREEN: 246/246 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-fix132-green/results.json",
+          "receipt_sha256": "2830bcc9cc7a70720111e592578aae67b9b142c035f341f21895613d3f59527c"
         },
         {
-          "revision": "repr of a single argument applied to the classes Celery creates instead of the builtin KeyError (service/association_transfer.go, celeryExceptionText)",
-          "result": "Mutation control: fails Go on association-transfer-import-status-owner-failed-key (response): CAUGHT.",
-          "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "8c9e30fa7119cbbbf3b35a812bc9249460618b3547227c00071ba6fcd8494ebb"
+          "revision": "committing change with the import registration check skipped",
+          "result": "Mutation control: import/status answers the stored row of an unregistered id.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-fix132-mut1/results.json",
+          "receipt_sha256": "5ac5458aa8e335325bf676b59ee5db9e2486b2915913fbb07f782febec0ad791"
         }
       ],
       "notes": [
@@ -4609,21 +4609,21 @@
         "docs/architecture/go-migration/association-transfer.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 235/235; Go 500 on the first case.",
+          "result": "RED: Django 246/246; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-red-r1/results.json",
           "receipt_sha256": "a100a2011ce0c5bc88ded8c3bbbd56d67cfa7c2acb119f5b0689073b1d18eb65"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 235/235 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact storage, cache, Celery, audit and index effects.",
-          "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "c0ae27a7f2090363f916ef5ea029e84d62bad171d8af37d111501052d82ac943"
+          "result": "GREEN: 246/246 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-fix132-green/results.json",
+          "receipt_sha256": "2830bcc9cc7a70720111e592578aae67b9b142c035f341f21895613d3f59527c"
         },
         {
-          "revision": "repr of a single argument applied to the classes Celery creates instead of the builtin KeyError (service/association_transfer.go, celeryExceptionText)",
-          "result": "Mutation control: fails Go on association-transfer-import-status-owner-failed-key (response): CAUGHT.",
-          "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "8c9e30fa7119cbbbf3b35a812bc9249460618b3547227c00071ba6fcd8494ebb"
+          "revision": "committing change with the import registration check skipped",
+          "result": "Mutation control: import/status answers the stored row of an unregistered id.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-fix132-mut1/results.json",
+          "receipt_sha256": "5ac5458aa8e335325bf676b59ee5db9e2486b2915913fbb07f782febec0ad791"
         }
       ],
       "notes": [
@@ -5021,21 +5021,21 @@
         "docs/architecture/go-migration/association-transfer.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 235/235; Go 500 on the first case.",
+          "result": "RED: Django 246/246; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-red-r1/results.json",
           "receipt_sha256": "a100a2011ce0c5bc88ded8c3bbbd56d67cfa7c2acb119f5b0689073b1d18eb65"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 235/235 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact storage, cache, Celery, audit and index effects.",
-          "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "c0ae27a7f2090363f916ef5ea029e84d62bad171d8af37d111501052d82ac943"
+          "result": "GREEN: 246/246 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-fix132-green/results.json",
+          "receipt_sha256": "2830bcc9cc7a70720111e592578aae67b9b142c035f341f21895613d3f59527c"
         },
         {
-          "revision": "repr of a single argument applied to the classes Celery creates instead of the builtin KeyError (service/association_transfer.go, celeryExceptionText)",
-          "result": "Mutation control: fails Go on association-transfer-import-status-owner-failed-key (response): CAUGHT.",
-          "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "8c9e30fa7119cbbbf3b35a812bc9249460618b3547227c00071ba6fcd8494ebb"
+          "revision": "committing change with the import registration check skipped",
+          "result": "Mutation control: import/status answers the stored row of an unregistered id.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-fix132-mut1/results.json",
+          "receipt_sha256": "5ac5458aa8e335325bf676b59ee5db9e2486b2915913fbb07f782febec0ad791"
         }
       ],
       "notes": [
@@ -5107,21 +5107,21 @@
         "docs/architecture/go-migration/association-transfer.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 235/235; Go 500 on the first case.",
+          "result": "RED: Django 246/246; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-red-r1/results.json",
           "receipt_sha256": "a100a2011ce0c5bc88ded8c3bbbd56d67cfa7c2acb119f5b0689073b1d18eb65"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 235/235 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact storage, cache, Celery, audit and index effects.",
-          "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "c0ae27a7f2090363f916ef5ea029e84d62bad171d8af37d111501052d82ac943"
+          "result": "GREEN: 246/246 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-fix132-green/results.json",
+          "receipt_sha256": "2830bcc9cc7a70720111e592578aae67b9b142c035f341f21895613d3f59527c"
         },
         {
-          "revision": "repr of a single argument applied to the classes Celery creates instead of the builtin KeyError (service/association_transfer.go, celeryExceptionText)",
-          "result": "Mutation control: fails Go on association-transfer-import-status-owner-failed-key (response): CAUGHT.",
-          "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "8c9e30fa7119cbbbf3b35a812bc9249460618b3547227c00071ba6fcd8494ebb"
+          "revision": "committing change with the import registration check skipped",
+          "result": "Mutation control: import/status answers the stored row of an unregistered id.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-fix132-mut1/results.json",
+          "receipt_sha256": "5ac5458aa8e335325bf676b59ee5db9e2486b2915913fbb07f782febec0ad791"
         }
       ],
       "notes": [
@@ -5192,21 +5192,21 @@
         "docs/architecture/go-migration/association-transfer.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 235/235; Go 500 on the first case.",
+          "result": "RED: Django 246/246; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-red-r1/results.json",
           "receipt_sha256": "a100a2011ce0c5bc88ded8c3bbbd56d67cfa7c2acb119f5b0689073b1d18eb65"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 235/235 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact storage, cache, Celery, audit and index effects.",
-          "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "c0ae27a7f2090363f916ef5ea029e84d62bad171d8af37d111501052d82ac943"
+          "result": "GREEN: 246/246 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-fix132-green/results.json",
+          "receipt_sha256": "2830bcc9cc7a70720111e592578aae67b9b142c035f341f21895613d3f59527c"
         },
         {
-          "revision": "repr of a single argument applied to the classes Celery creates instead of the builtin KeyError (service/association_transfer.go, celeryExceptionText)",
-          "result": "Mutation control: fails Go on association-transfer-import-status-owner-failed-key (response): CAUGHT.",
-          "artifact": "quality-reports/go-migration/association-transfer-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "8c9e30fa7119cbbbf3b35a812bc9249460618b3547227c00071ba6fcd8494ebb"
+          "revision": "committing change with the import registration check skipped",
+          "result": "Mutation control: import/status answers the stored row of an unregistered id.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-fix132-mut1/results.json",
+          "receipt_sha256": "5ac5458aa8e335325bf676b59ee5db9e2486b2915913fbb07f782febec0ad791"
         }
       ],
       "notes": [
@@ -5438,15 +5438,15 @@
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact day, holding, audit and index effects.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "0719e5b3145085e2bb71e4d9a2e4a6b42c22faa048704cd1ac6a46354f48e506"
+          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-fix132-green/results.json",
+          "receipt_sha256": "fa8f381de8944a4941d1d730bc104ce122b3ce870575330cb9263403ff13e52e"
         },
         {
-          "revision": "storing the day even when the UUID field rejects the event id (service/course_attendance.go, extendedProps)",
-          "result": "Mutation control: fails Go on course-attendance-attendees-old-event-ids (state.days): CAUGHT.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "c1aefc6a1f7a6c1e6bdc28a957ad69dd802f6ed06402946afb3714502eaae0f6"
+          "revision": "committing change with the listing link of a valid event id skipped",
+          "result": "Mutation control: fails Go on the day left unlinked.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-fix132-mut1/results.json",
+          "receipt_sha256": "61cc48eeec348b0ae30f722b061439fa57b2eb1a01f8541a9e8e4f770b264936"
         }
       ],
       "notes": [
@@ -10502,15 +10502,15 @@
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact day, holding, audit and index effects.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "0719e5b3145085e2bb71e4d9a2e4a6b42c22faa048704cd1ac6a46354f48e506"
+          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-fix132-green/results.json",
+          "receipt_sha256": "fa8f381de8944a4941d1d730bc104ce122b3ce870575330cb9263403ff13e52e"
         },
         {
-          "revision": "storing the day even when the UUID field rejects the event id (service/course_attendance.go, extendedProps)",
-          "result": "Mutation control: fails Go on course-attendance-attendees-old-event-ids (state.days): CAUGHT.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "c1aefc6a1f7a6c1e6bdc28a957ad69dd802f6ed06402946afb3714502eaae0f6"
+          "revision": "committing change with the listing link of a valid event id skipped",
+          "result": "Mutation control: fails Go on the day left unlinked.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-fix132-mut1/results.json",
+          "receipt_sha256": "61cc48eeec348b0ae30f722b061439fa57b2eb1a01f8541a9e8e4f770b264936"
         }
       ],
       "notes": [
@@ -10593,15 +10593,15 @@
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact day, holding, audit and index effects.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "0719e5b3145085e2bb71e4d9a2e4a6b42c22faa048704cd1ac6a46354f48e506"
+          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-fix132-green/results.json",
+          "receipt_sha256": "fa8f381de8944a4941d1d730bc104ce122b3ce870575330cb9263403ff13e52e"
         },
         {
-          "revision": "storing the day even when the UUID field rejects the event id (service/course_attendance.go, extendedProps)",
-          "result": "Mutation control: fails Go on course-attendance-attendees-old-event-ids (state.days): CAUGHT.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "c1aefc6a1f7a6c1e6bdc28a957ad69dd802f6ed06402946afb3714502eaae0f6"
+          "revision": "committing change with the listing link of a valid event id skipped",
+          "result": "Mutation control: fails Go on the day left unlinked.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-fix132-mut1/results.json",
+          "receipt_sha256": "61cc48eeec348b0ae30f722b061439fa57b2eb1a01f8541a9e8e4f770b264936"
         }
       ],
       "notes": [
@@ -25232,15 +25232,15 @@
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact day, holding, audit and index effects.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "0719e5b3145085e2bb71e4d9a2e4a6b42c22faa048704cd1ac6a46354f48e506"
+          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-fix132-green/results.json",
+          "receipt_sha256": "fa8f381de8944a4941d1d730bc104ce122b3ce870575330cb9263403ff13e52e"
         },
         {
-          "revision": "storing the day even when the UUID field rejects the event id (service/course_attendance.go, extendedProps)",
-          "result": "Mutation control: fails Go on course-attendance-attendees-old-event-ids (state.days): CAUGHT.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "c1aefc6a1f7a6c1e6bdc28a957ad69dd802f6ed06402946afb3714502eaae0f6"
+          "revision": "committing change with the listing link of a valid event id skipped",
+          "result": "Mutation control: fails Go on the day left unlinked.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-fix132-mut1/results.json",
+          "receipt_sha256": "61cc48eeec348b0ae30f722b061439fa57b2eb1a01f8541a9e8e4f770b264936"
         }
       ],
       "notes": [
@@ -25608,21 +25608,21 @@
         "docs/architecture/go-migration/subscription-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 159/159; Go 500 on the first case.",
+          "result": "RED: Django 160/160; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-red-r1/results.json",
           "receipt_sha256": "1a8d2e54113815ab2a49d3be8c03862c7aab3bbfacdf883d6dff8f7b86c2c285"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects.",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "39e85aaa2e155cc80d87aa014d989fe6a8e47eae4d906d0d1b3b9452b22d0d3a"
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-fix132-green/results.json",
+          "receipt_sha256": "092fcda2ba7735f8e6a21737e8c294f06668ea9b2212d97cf6d3cad564da5cb5"
         },
         {
-          "revision": "the stale file's delete entry written with a diff of the document only (service/subscription_misc.go, DeleteDocument)",
-          "result": "Mutation control: fails Go on subscription-misc-delete-document-of-two-files (audit.changes): CAUGHT.",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "77e794e0430253969aae2d9f8af006adaac079e09adc7bf8a6ffa196c1bdd8cf"
+          "revision": "committing change with an extra delete entry for the link of a shared document",
+          "result": "Mutation control: fails Go on the audit entry count of delete-document-of-two-files.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-fix132-mut3/results.json",
+          "receipt_sha256": "297a95c3a9cad14980de9ba31675a69d163f8fd5965cd9300e2b0dc5f0f0cb77"
         }
       ],
       "notes": [
@@ -27621,21 +27621,21 @@
         "docs/architecture/go-migration/subscription-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 159/159; Go 500 on the first case.",
+          "result": "RED: Django 160/160; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-red-r1/results.json",
           "receipt_sha256": "1a8d2e54113815ab2a49d3be8c03862c7aab3bbfacdf883d6dff8f7b86c2c285"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects.",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "39e85aaa2e155cc80d87aa014d989fe6a8e47eae4d906d0d1b3b9452b22d0d3a"
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-fix132-green/results.json",
+          "receipt_sha256": "092fcda2ba7735f8e6a21737e8c294f06668ea9b2212d97cf6d3cad564da5cb5"
         },
         {
-          "revision": "the stale file's delete entry written with a diff of the document only (service/subscription_misc.go, DeleteDocument)",
-          "result": "Mutation control: fails Go on subscription-misc-delete-document-of-two-files (audit.changes): CAUGHT.",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "77e794e0430253969aae2d9f8af006adaac079e09adc7bf8a6ffa196c1bdd8cf"
+          "revision": "committing change with an extra delete entry for the link of a shared document",
+          "result": "Mutation control: fails Go on the audit entry count of delete-document-of-two-files.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-fix132-mut3/results.json",
+          "receipt_sha256": "297a95c3a9cad14980de9ba31675a69d163f8fd5965cd9300e2b0dc5f0f0cb77"
         }
       ],
       "notes": [
@@ -27724,21 +27724,21 @@
         "docs/architecture/go-migration/subscription-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 159/159; Go 500 on the first case.",
+          "result": "RED: Django 160/160; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-red-r1/results.json",
           "receipt_sha256": "1a8d2e54113815ab2a49d3be8c03862c7aab3bbfacdf883d6dff8f7b86c2c285"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects.",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "39e85aaa2e155cc80d87aa014d989fe6a8e47eae4d906d0d1b3b9452b22d0d3a"
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-fix132-green/results.json",
+          "receipt_sha256": "092fcda2ba7735f8e6a21737e8c294f06668ea9b2212d97cf6d3cad564da5cb5"
         },
         {
-          "revision": "the stale file's delete entry written with a diff of the document only (service/subscription_misc.go, DeleteDocument)",
-          "result": "Mutation control: fails Go on subscription-misc-delete-document-of-two-files (audit.changes): CAUGHT.",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "77e794e0430253969aae2d9f8af006adaac079e09adc7bf8a6ffa196c1bdd8cf"
+          "revision": "committing change with an extra delete entry for the link of a shared document",
+          "result": "Mutation control: fails Go on the audit entry count of delete-document-of-two-files.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-fix132-mut3/results.json",
+          "receipt_sha256": "297a95c3a9cad14980de9ba31675a69d163f8fd5965cd9300e2b0dc5f0f0cb77"
         }
       ],
       "notes": [
@@ -27827,21 +27827,21 @@
         "docs/architecture/go-migration/subscription-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 159/159; Go 500 on the first case.",
+          "result": "RED: Django 160/160; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-red-r1/results.json",
           "receipt_sha256": "1a8d2e54113815ab2a49d3be8c03862c7aab3bbfacdf883d6dff8f7b86c2c285"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects.",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "39e85aaa2e155cc80d87aa014d989fe6a8e47eae4d906d0d1b3b9452b22d0d3a"
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-fix132-green/results.json",
+          "receipt_sha256": "092fcda2ba7735f8e6a21737e8c294f06668ea9b2212d97cf6d3cad564da5cb5"
         },
         {
-          "revision": "the stale file's delete entry written with a diff of the document only (service/subscription_misc.go, DeleteDocument)",
-          "result": "Mutation control: fails Go on subscription-misc-delete-document-of-two-files (audit.changes): CAUGHT.",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "77e794e0430253969aae2d9f8af006adaac079e09adc7bf8a6ffa196c1bdd8cf"
+          "revision": "committing change with an extra delete entry for the link of a shared document",
+          "result": "Mutation control: fails Go on the audit entry count of delete-document-of-two-files.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-fix132-mut3/results.json",
+          "receipt_sha256": "297a95c3a9cad14980de9ba31675a69d163f8fd5965cd9300e2b0dc5f0f0cb77"
         }
       ],
       "notes": [
@@ -27930,21 +27930,21 @@
         "docs/architecture/go-migration/subscription-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 159/159; Go 500 on the first case.",
+          "result": "RED: Django 160/160; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-red-r1/results.json",
           "receipt_sha256": "1a8d2e54113815ab2a49d3be8c03862c7aab3bbfacdf883d6dff8f7b86c2c285"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects.",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "39e85aaa2e155cc80d87aa014d989fe6a8e47eae4d906d0d1b3b9452b22d0d3a"
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-fix132-green/results.json",
+          "receipt_sha256": "092fcda2ba7735f8e6a21737e8c294f06668ea9b2212d97cf6d3cad564da5cb5"
         },
         {
-          "revision": "the stale file's delete entry written with a diff of the document only (service/subscription_misc.go, DeleteDocument)",
-          "result": "Mutation control: fails Go on subscription-misc-delete-document-of-two-files (audit.changes): CAUGHT.",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "77e794e0430253969aae2d9f8af006adaac079e09adc7bf8a6ffa196c1bdd8cf"
+          "revision": "committing change with an extra delete entry for the link of a shared document",
+          "result": "Mutation control: fails Go on the audit entry count of delete-document-of-two-files.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-fix132-mut3/results.json",
+          "receipt_sha256": "297a95c3a9cad14980de9ba31675a69d163f8fd5965cd9300e2b0dc5f0f0cb77"
         }
       ],
       "notes": [
@@ -29437,21 +29437,21 @@
         "docs/architecture/go-migration/subscription-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 159/159; Go 500 on the first case.",
+          "result": "RED: Django 160/160; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-red-r1/results.json",
           "receipt_sha256": "1a8d2e54113815ab2a49d3be8c03862c7aab3bbfacdf883d6dff8f7b86c2c285"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects.",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-green-r3/results.json",
-          "receipt_sha256": "39e85aaa2e155cc80d87aa014d989fe6a8e47eae4d906d0d1b3b9452b22d0d3a"
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-fix132-green/results.json",
+          "receipt_sha256": "092fcda2ba7735f8e6a21737e8c294f06668ea9b2212d97cf6d3cad564da5cb5"
         },
         {
-          "revision": "the stale file's delete entry written with a diff of the document only (service/subscription_misc.go, DeleteDocument)",
-          "result": "Mutation control: fails Go on subscription-misc-delete-document-of-two-files (audit.changes): CAUGHT.",
-          "artifact": "quality-reports/go-migration/subscription-misc-http-v2restc-mutation-r1/results.json",
-          "receipt_sha256": "77e794e0430253969aae2d9f8af006adaac079e09adc7bf8a6ffa196c1bdd8cf"
+          "revision": "committing change with an extra delete entry for the link of a shared document",
+          "result": "Mutation control: fails Go on the audit entry count of delete-document-of-two-files.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-fix132-mut3/results.json",
+          "receipt_sha256": "297a95c3a9cad14980de9ba31675a69d163f8fd5965cd9300e2b0dc5f0f0cb77"
         }
       ],
       "notes": [
