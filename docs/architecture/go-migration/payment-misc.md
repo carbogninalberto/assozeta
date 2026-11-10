@@ -126,3 +126,4 @@ CURRENT_HOST print requests (invoice-sync-print's stub). RED `v2pay-red-r1`: Dja
 `apply-june-member-account-mail`. GREEN `v2pay-versioned-r1`: 90/90 on native Django, native Go, Caddy `/api/v1` and
 `/api/v2`. Mutation `v2pay-mutation-r1` (Signature user always the scope user) CAUGHT on
 `sign-collaborator-stores-signature-default-category`.
+After merging `codex/go-backend-parity` (`d91ea696`): GREEN `v2pay-final-r1` 90/90 on the four transports.

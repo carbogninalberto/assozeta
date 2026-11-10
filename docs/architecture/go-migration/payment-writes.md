@@ -135,3 +135,4 @@ default storage and checks each case's Documents, payment links, objects (key, b
 `v2pay-red-r2`: Django 128/128, Go 500 on `add-attachment`. GREEN `v2pay-versioned-r2`: 128/128 on the four transports.
 Mutation `v2pay-mutation-r4` (indexing the Document create through the scope user instead of the actor) CAUGHT on
 `update-attachment-then-missing-keys`.
+After merging `codex/go-backend-parity` (`d91ea696`): GREEN `v2pay-final-r1` 128/128 on the four transports; documents-writes 124/124 re-run (`v2pay-rerun-r1`, shared `composeDocumentStorage`).
