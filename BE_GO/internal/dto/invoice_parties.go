@@ -47,7 +47,12 @@ type InvoicePartyRelated struct {
 
 // PythonAuditStr is smart_str(value) of a raw request value assigned to a
 // model attribute (auditlog's diff side).
-func PythonAuditStr(value any) string { return PythonStr(value) }
+func PythonAuditStr(value any) string {
+	if upload, ok := value.(domain.RequestUpload); ok {
+		return upload.Name // str() of an uploaded file is its name
+	}
+	return PythonStr(value)
+}
 
 // DjangoBooleanToPython is models.BooleanField.to_python for a non-null
 // field: (value, ok); nil means None (the NOT NULL constraint then fails).

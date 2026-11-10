@@ -176,11 +176,6 @@ func (s *InvoiceSyncUpdates) Update(ctx context.Context, identity domain.Resolve
 	if !ok {
 		return nil, domain.ErrPaymentStateServer
 	}
-	for _, field := range object {
-		if _, upload := field.Value.(domain.RequestUpload); upload {
-			return nil, domain.ErrPaymentStateNotPorted
-		}
-	}
 	numberValue, present := object.Lookup("number")
 	if !present {
 		return nil, domain.ErrPaymentStateServer
