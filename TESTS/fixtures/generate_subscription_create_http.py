@@ -32,6 +32,7 @@ Response {"status": "success", "payment_id": ..., "amount": float or 0}.
 
 Run with ``python3 -I``.
 """
+import base64
 import json
 from pathlib import Path
 
@@ -72,6 +73,24 @@ SUBSCRIPTIONS = {
     'text_number': {'id': next(ids), 'associate': 'archived', 'start': '2020-01-01', 'end': '2020-12-31', 'archived': True,
                     'number': '5000A'},
 }
+# The quick re-subscription (m=only_associate): members with older subscriptions and certificates.
+ASSOCIATES['quick'] = {'id': next(ids), 'association': OWN, 'first': 'Quinto', 'last': 'Rapido', 'tax_code': 'RPDQNT80A01H501U',
+                       'born': '1980-01-01', 'user': 'owner', 'email': None}
+ASSOCIATES['quick_plan'] = {'id': next(ids), 'association': OWN, 'first': 'Pia', 'last': 'Pianificata', 'tax_code': 'PNFPIA80A41H501V',
+                            'born': '1980-01-01', 'user': 'owner', 'email': None}
+ASSOCIATES['quick_abroad'] = {'id': next(ids), 'association': FOREIGN, 'first': 'Elio', 'last': 'Estero', 'tax_code': 'STRLEI80A01H501W',
+                              'born': '1980-01-01', 'user': 'foreign_owner', 'email': None}
+ASSOCIATES['quick_no_account'] = {'id': next(ids), 'association': OWN, 'first': 'Sara', 'last': 'Senzaconto', 'tax_code': 'SNZSRA80A41H501X',
+                                  'born': '1980-01-01', 'user': None, 'email': None}
+CERTIFICATES['quick_older'] = {'id': next(ids), 'user': 'owner', 'expiration': '2025-06-30'}
+CERTIFICATES['quick_latest'] = {'id': next(ids), 'user': 'owner', 'expiration': '2026-06-30'}
+CERTIFICATES['quick_undated'] = {'id': next(ids), 'user': 'owner'}
+SUBSCRIPTIONS['quick_2024'] = {'id': next(ids), 'associate': 'quick', 'start': '2024-01-01', 'end': '2024-12-31', 'archived': False,
+                               'number': '3', 'medical': 'quick_older'}
+SUBSCRIPTIONS['quick_2023'] = {'id': next(ids), 'associate': 'quick', 'start': '2023-01-01', 'end': '2023-12-31', 'archived': True,
+                               'number': '2', 'medical': 'quick_latest'}
+SUBSCRIPTIONS['quick_2022'] = {'id': next(ids), 'associate': 'quick', 'start': '2022-01-01', 'end': '2022-12-31', 'archived': True,
+                               'number': '1', 'medical': 'quick_undated'}
 PAYMENTS = {
     # An unpaid subscription payment of today with the amount the next case charges: reused.
     'reusable': {'id': next(ids), 'associate': 'payer', 'amount': '25.00', 'paid': False, 'date': '$today'},
@@ -447,6 +466,188 @@ wizard('wizard-uploaded-certificate-italian-date', person('Dina', 'Datata', 'DTT
 wizard('wizard-uploaded-certificate-invalid-date-kept', person('Kai', 'Tenuto', 'TNTKAI90C01H501K'), 'Kai Tenuto',
        {'medical_id': CERTIFICATES['kept']['id'], 'filename': 'c.pdf', 'certificate_expring_date': 'Invalid date'},
        medical={'label': 'kept', 'columns': {}, 'audit': {}, 'index': None}, medical_id=CERTIFICATES['kept']['id'])
+
+
+# --- The wizard in a modal: sport_association names an association by its owner's username ----------------
+# For an owner it is not an athlete request: User.objects.get(username=...) and its association replace
+# request.user's when found (the own username: the same association); a miss keeps request.user's.
+for label, username, first in (('own-username', 'message-reads-700001', 'Mara'), ('unknown-username', 'nessuno', 'Nina')):
+    data = person(first, 'Modale', f'MDL{first[:3].upper()}90C41H501K')
+    add('modal-' + label, 'owner', 200, SUCCESS(25.0), body=request(data, sport_association=username),
+        setup={'association': {'multiple_membership_fee': False, 'enable_quotes_management': True, 'membership_fee': None,
+                               'multiple_subscription_fee': False}, 'owner': {'subscription_duration': 2, 'membership_duration': 2}},
+        effect=success('owner', f'{first} Modale', associate=created_associate(data), payment=new_payment('25.00', audit_amount='25.0'),
+                       subscription=dict(PLAIN), membership=dict(MEMBER)))
+
+# --- The quick re-subscription (?m=only_associate) --------------------------------------------------------
+# The members list renews a member with {'associate': id[, 'plan_id']}. _prepare_subscription_request sets
+# data['sport_association'] to the owner's association; _handle_quick_subscription reads the association and
+# scoped_queryset(Associate.objects).get(associate_id=...) (not deleted; only an impersonation scope filters the
+# association), then in one transaction create_quick_subscription: the fee (the association's subscription_fee, or
+# with multiple fees the plan whose id equals plan_id, else the first plan's fee with the last plan's data), a payment
+# for request.user (always, whatever the amount; the courses default category, else the named one; no payment date),
+# the certificate of the associate's subscriptions with the latest expiration, Subscription.objects.create (not
+# signed, the account of the associate, meta {'plan_id': ...}, number 0); an associate without an account is an
+# AttributeError (500). On commit: new_subscription, print_document_subscription and the notification (the
+# association of request.user, an owner). Response {'status': 'success', 'payment_id': ...}.
+QUICK_SETUP = {'association': {'multiple_subscription_fee': False, 'subscription_fee': '25.00', 'enable_quotes_management': False},
+               'owner': {'subscription_duration': 2}}
+
+
+def quick(actor, label, full_name, *, payment, subscription, headers=None, setup=None, plan=None):
+    body = {'associate': ASSOCIATES[label]['id']}
+    if plan is not None:
+        body['plan_id'] = plan
+    audit = [{'model': 'payment', 'action': 0, 'ref': 'payment', 'changes': {'amount': ['None', payment.pop('$audit')]}, 'index': [OWN, 'direct']},
+             {'model': 'subscription', 'action': 0, 'ref': 'subscription', 'changes': {}, 'index': [OWN, 'direct']}]
+    columns = {'payment_date': None, 'meta_payment_categories': None, 'meta': None, **payment}
+    add('quick-' + label.replace('_', '-'), actor, 200, {'status': 'success', 'payment_id': '$new'}, query='?m=only_associate', body=body,
+        headers=headers, setup=setup,
+        effect={'actor': actor, 'associate': {'match': label, 'columns': {}}, 'payment': {'match': 'new', 'columns': columns},
+                'subscription': {'type': 2, 'role': 1, 'status_flag': 1, 'meta': {'plan_id': plan}, 'subscription_number': '0',
+                                 'subscription_type': None, **SEASON, **subscription},
+                'broadcast_created': False, 'audit': audit,
+                'celery': [{'task': 'check_workflows_trigger', 'args': [],
+                            'kwargs': [['trigger_type', 'new_subscription'], ['sport_association_id', {'uuid': OWN}],
+                                       ['subscription_id', '$subscription_uuid']]},
+                           {'task': 'print_document_subscription', 'args': ['$subscription', '$authorization'], 'kwargs': []}],
+                'notification': {'msg': f'Nuova Iscrizione aggiunta per {full_name}.', 'association': OWN}})
+
+
+add('quick-associate-malformed-server-error', 'owner', 500, SERVER, query='?m=only_associate', body={'associate': 'non-un-id'},
+    setup=QUICK_SETUP)
+add('quick-associate-unknown-server-error', 'owner', 500, SERVER, query='?m=only_associate', body={'associate': UNKNOWN})
+add('quick-associate-null-server-error', 'owner', 500, SERVER, query='?m=only_associate', body={'associate': None})
+# The payment is written, then associate.user.user_id raises: everything rolls back.
+add('quick-associate-without-account-server-error', 'owner', 500, SERVER, query='?m=only_associate',
+    body={'associate': ASSOCIATES['quick_no_account']['id']})
+add('quick-duplicate-current', 'owner', 409, {'msg': 'Questa iscrizione esiste già.', 'code': '409', 'ref': 'subscription_duplicate'},
+    query='?m=only_associate', body={'associate': ASSOCIATES['current']['id']})
+quick('owner', 'quick', 'Quinto Rapido', payment={'amount': '25.00', '$audit': '25.00'},
+      subscription={'medical_id': CERTIFICATES['quick_latest']['id']})
+quick('full_collaborator', 'quick_plan', 'Pia Pianificata', setup={'association': {'multiple_subscription_fee': True}}, plan='plan-base',
+      payment={'amount': '40.00', '$audit': '40', 'meta': {'subscription_data': {'subscription_fee': 40, 'name': 'Piano base', 'id': 'plan-base'}}},
+      subscription={})
+# Outside a session the associate is resolved by its id. An unknown plan: the first plan's fee, the last plan's data.
+quick('owner', 'quick_abroad', 'Elio Estero', plan='nessuno',
+      setup={'association': {'subscription_fee_plans': [{'id': 'p1', 'name': 'Uno', 'subscription_fee': '30'},
+                                                        {'id': 'p2', 'name': 'Due', 'subscription_fee': 45}]}},
+      payment={'amount': '30.00', '$audit': '30', 'meta': {'subscription_data': {'subscription_fee': 45, 'name': 'Due', 'id': 'p2'}}},
+      subscription={'user_id': IDS['foreign_owner']})
+
+
+# --- The wizard's signature and the "new member" account ---------------------------------------------------
+# With there_is_signature and data: Signature.objects.create(signature=data, user=user) after the associate (create
+# entry, indexed through the actor's association), the subscription PENDING (2), and after Subscription.objects.create
+# set_signature_from_base64(data): an http(s) URL is kept as signature_url; otherwise the text after the first ',' through
+# base64.b64decode(validate=True) (invalid: 400 'Firma non valida.', rolled back) is stored at
+# '<AWS_LOCATION>/subscriptions/<id>/signature_<timestamp>.png' and save(update_fields=[signature_url, signature_storage_key])
+# writes the name and the public URL (update entry).
+# new_user_account.new_member: the live user with new_member_info's e-mail (first by key) becomes create_subscription's
+# user; without one UserSerializer(raise_exception) creates the account (create_user with a token_hex username: create
+# entry; then first_name[:3] + last_name[:3] + 8 random upper-case characters and set_password: the username update
+# entry) and the welcome e-mail with the password is queued on commit before the other tasks. That user owns the
+# associate, the payment, the signature and the subscription and gets the notification; an athlete user also queues
+# send_email_template to the owner after the notification.
+SIGNATURE_PNG = b'\x89PNG\r\n\x1a\nfirma creazione'
+SIGNATURE_B64 = base64.b64encode(SIGNATURE_PNG).decode()
+ATHLETE_EMAIL = 'message-reads-700004@example.test'
+
+
+def signature_entries(effect, *, upload):
+    """Signature create after the associate entries; the subscription update after its create entry."""
+    audit = effect['audit']
+    position = max(i for i, e in enumerate(audit) if e['model'] == 'associate') + 1
+    audit.insert(position, {'model': 'signature', 'action': 0, 'ref': 'signature', 'changes': {}, 'index': [OWN, 'actor.sport_association']})
+    changes = {'signature_url': ['None', '$signature_url']}
+    if upload:
+        changes['signature_storage_key'] = ['None', '$signature_key']
+    position = next(i for i, e in enumerate(audit) if e['model'] == 'subscription')
+    # The create entry was written before the signature fields were set.
+    audit[position] = {**audit[position], 'changes': {**audit[position]['changes'], 'signature_url': None,
+                                                       **({'signature_storage_key': None} if upload else {})}}
+    audit.insert(position + 1, {'model': 'subscription', 'action': 1, 'ref': 'subscription', 'changes': changes, 'index': [OWN, 'direct']})
+
+
+signer = person('Sofia', 'Firmata', 'FRMSFO90C41H501K')
+effect = success('owner', 'Sofia Firmata', associate=created_associate(signer), payment=new_payment('25.00', audit_amount='25.0'),
+                 subscription={**PLAIN, 'status_flag': 2, 'signature_url': '$signature_url', 'signature_storage_key': '$signature_key'},
+                 membership=dict(MEMBER))
+effect['signature'] = {'user': 'owner', 'data': 'data:image/png;base64,' + SIGNATURE_B64}
+effect['stored'] = SIGNATURE_B64
+signature_entries(effect, upload=True)
+add('signature-upload', 'owner', 200, SUCCESS(25.0), setup={'association': {**BASE_SETTINGS['association'], 'multiple_membership_fee': False}},
+    body=request(signer, signature={'there_is_signature': True, 'data': ' data:image/png;base64,' + SIGNATURE_B64 + ' '}), effect=effect)
+
+linked = person('Ugo', 'Collegato', 'CLLUGO90C01H501K')
+effect = success('owner', 'Ugo Collegato', associate=created_associate(linked), payment=new_payment('25.00', audit_amount='25.0'),
+                 subscription={**PLAIN, 'status_flag': 2, 'signature_url': 'https://firme.example.test/ugo.png'}, membership=dict(MEMBER))
+effect['signature'] = {'user': 'owner', 'data': 'https://firme.example.test/ugo.png'}
+signature_entries(effect, upload=False)
+effect['audit'] = [{**e, 'changes': {'signature_url': ['None', 'https://firme.example.test/ugo.png']}} if e['model'] == 'subscription'
+                   and e['action'] == 1 else e for e in effect['audit']]
+add('signature-url', 'owner', 200, SUCCESS(25.0),
+    body=request(linked, signature={'there_is_signature': True, 'data': 'https://firme.example.test/ugo.png'}), effect=effect)
+add('signature-invalid-base64', 'owner', 400, {'msg': 'Firma non valida.', 'code': '400', 'ref': 'invalid_signature'},
+    body=request(person('Ivo', 'Firmaerrata', 'FRMVIO90C01H501K'), signature={'there_is_signature': True, 'data': 'data:image/png;base64,@@@'}))
+
+add('new-member-info-missing-server-error', 'owner', 500, SERVER,
+    body=request(person('Nico', 'Senzadati', 'SNZNCO90C01H501K'), account={'new_member': True}))
+add('new-member-invalid-email', 'owner', 400, {'email': ['Enter a valid email address.']},
+    body=request(person('Nico', 'Errato', 'RRTNCO90C01H501K'),
+                 account={'new_member': True, 'new_member_info': {'first_name': 'Nico', 'last_name': 'Errato', 'email': 'non-valida'}}))
+
+
+def member_effect(full_name, data, *, member, member_label, new_user=None, welcome=False, signature=None):
+    effect = success('owner', full_name, associate=created_associate(data, user_id=member),
+                     payment=new_payment('25.00', audit_amount='25.0'),
+                     subscription={**PLAIN, 'user_id': member, **({'status_flag': 2, 'signature_url': signature} if signature else {})},
+                     membership=dict(MEMBER))
+    effect['member'] = member
+    for entry in effect['audit']:
+        if entry['model'] == 'associate' and entry['action'] == 1:
+            entry['changes'] = {'user': ['None', member]}
+    # The notification goes to the member: its broadcast rows are created once.
+    effect['audit'] = [e for e in effect['audit'] if e.get('app') != 'notifications']
+    effect['audit'] += [{'model': model, 'action': 0, 'ref': model, 'changes': {}, 'app': 'notifications', 'index': [OWN, 'actor.sport_association']}
+                        for model in ('notificationsbroadcast', 'usernotificationsbroadcast')]
+    effect['broadcast_created'] = True
+    effect['notification']['user'] = member_label
+    if new_user:
+        effect['new_user'] = new_user
+        effect['audit'][:0] = [{'model': 'user', 'action': 0, 'ref': 'new_user', 'changes': {}, 'index': [OWN, 'actor.sport_association']},
+                               {'model': 'user', 'action': 1, 'ref': 'new_user', 'changes': {'username': ['$token_username', '$username']},
+                                'index': [OWN, 'actor.sport_association']}]
+    if signature:
+        effect['signature'] = {'user': member_label, 'data': signature}
+        signature_entries(effect, upload=False)
+        effect['audit'] = [{**e, 'changes': {'signature_url': ['None', signature]}} if e['model'] == 'subscription' and e['action'] == 1 else e
+                           for e in effect['audit']]
+    first, last = data['first_name'], data['last_name']
+    athlete = {'task': 'send_email_template', 'args': [], 'kwargs': [
+        ['recipient_list', ['message-reads-700001@example.test']],
+        ['subject', f"[$denomination] Ricordati di approvare l'iscrizione di {first} {last}"],
+        ['template', 'email/account/email_new_subscription.html'],
+        ['data', {'athlete_first_name': first, 'athlete_last_name': last, 'sport_association': {'denomination': '$denomination'},
+                  'app_host': '$app_url', 'settings': {'WHITELABEL_NAME': '$whitelabel_name', 'IS_WHITELABEL': '$is_whitelabel'}}],
+        ['sport_association_id', {'uuid': OWN}]]}
+    effect['celery'] = (['$welcome'] if welcome else []) + effect['celery'] + [athlete]
+    return effect
+
+
+fresh = person('Nadia', 'Nuovissima', 'NVSNDA90C41H501K')
+add('new-member-account', 'owner', 200, SUCCESS(25.0),
+    body=request(fresh, account={'new_member': True, 'new_member_info': {'first_name': 'Nadia', 'last_name': 'Nuovissima', 'phone': '3330001111',
+                                                                         'email': 'Nadia.Nuova@Example.TEST'}},
+                 signature={'there_is_signature': True, 'data': 'https://firme.example.test/nadia.png'}),
+    effect=member_effect('Nadia Nuovissima', fresh, member='$new_user', member_label='$new_user', welcome=True,
+                         new_user={'prefix': 'NadNuo', 'email': 'Nadia.Nuova@example.test', 'first_name': 'Nadia', 'last_name': 'Nuovissima',
+                                   'phone': '3330001111'},
+                         signature='https://firme.example.test/nadia.png'))
+known_member = person('Elsa', 'Esistente', 'SSTLSE90C41H501K')
+add('new-member-existing-email', 'owner', 200, SUCCESS(25.0),
+    body=request(known_member, account={'new_member': True, 'new_member_info': {'first_name': 'X', 'last_name': 'Y', 'email': ATHLETE_EMAIL}}),
+    effect=member_effect('Elsa Esistente', known_member, member=IDS['athlete'], member_label='athlete'))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

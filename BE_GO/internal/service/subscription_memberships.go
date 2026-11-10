@@ -12,9 +12,16 @@ import (
 )
 
 type SubscriptionMemberships struct {
-	store domain.SubscriptionMembershipStore
-	now   func() time.Time
-	ids   func() string
+	store   domain.SubscriptionMembershipStore
+	now     func() time.Time
+	ids     func() string
+	uploads *DocumentUploads
+}
+
+// WithUploads enables documents_data (the document storage of documents-writes).
+func (s *SubscriptionMemberships) WithUploads(uploads *DocumentUploads) *SubscriptionMemberships {
+	s.uploads = uploads
+	return s
 }
 
 func NewSubscriptionMemberships(store domain.SubscriptionMembershipStore, now func() time.Time, ids func() string) *SubscriptionMemberships {
@@ -221,24 +228,63 @@ func (s *SubscriptionMemberships) validate(ctx context.Context, tx domain.Subscr
 	return nil
 }
 
-// subscriptionMembershipDocuments walks _handle_documents without writing.
-// The first item that raises decides the failure returned after the save; an
-// item that would upload first is refused before any write.
-func subscriptionMembershipDocuments(write dto.SubscriptionMembershipWrite) (error, error) {
+// subscriptionMembershipDocuments checks documents_data before any write:
+// multipart bodies and items whose upload the port does not reproduce are
+// refused.
+func (s *SubscriptionMemberships) subscriptionMembershipDocuments(write dto.SubscriptionMembershipWrite) (error, error) {
 	if write.FormDocuments {
 		return nil, ErrSubscriptionMembershipUploadUnsupported
 	}
 	for _, item := range write.Documents {
 		switch dto.CourseLocationDocument(item) {
-		case dto.CourseLocationDocumentMissingKey:
-			return ErrSubscriptionMembershipDocumentKey, nil
-		case dto.CourseLocationDocumentUndecodable:
-			return ErrSubscriptionMembershipDocumentDecode, nil
-		default:
+		case dto.CourseLocationDocumentMissingKey, dto.CourseLocationDocumentUndecodable:
+			return nil, nil // raised in order after the save
+		}
+		if s.uploads == nil {
+			return nil, ErrSubscriptionMembershipUploadUnsupported
+		}
+		filename, _ := item.Lookup("filename")
+		if _, ok := storedText(filename); !ok {
 			return nil, ErrSubscriptionMembershipUploadUnsupported
 		}
 	}
 	return nil, nil
+}
+
+// handleDocuments is _handle_documents after the save, item by item (not
+// atomic): Document.objects.create, default_storage.save, then the link; the
+// first item without both keys raises the 400, an undecodable one the 500,
+// and the work before it stays.
+func (s *SubscriptionMemberships) handleDocuments(ctx context.Context, tx domain.SubscriptionMembershipTransaction, membership string,
+	write dto.SubscriptionMembershipWrite, audit domain.LoginAuditContext) (int, error) {
+	added := 0
+	for _, item := range write.Documents {
+		switch dto.CourseLocationDocument(item) {
+		case dto.CourseLocationDocumentMissingKey:
+			return added, ErrSubscriptionMembershipDocumentKey
+		case dto.CourseLocationDocumentUndecodable:
+			return added, ErrSubscriptionMembershipDocumentDecode
+		}
+		value, _ := item.Lookup("document")
+		content, err := dto.PythonB64Decode(value)
+		if err != nil {
+			return added, ErrSubscriptionMembershipDocumentDecode
+		}
+		raw, _ := item.Lookup("filename")
+		filename, _ := storedText(raw)
+		document := s.uploads.newDocument(filename)
+		if err = tx.CreateMembershipDocument(ctx, document, audit, document.Created); err != nil {
+			return added, err
+		}
+		if err = s.uploads.save(ctx, document, content); err != nil {
+			return added, err
+		}
+		if err = tx.LinkMembershipDocument(ctx, membership, document.ID); err != nil {
+			return added, err
+		}
+		added++
+	}
+	return added, nil
 }
 
 func applySubscriptionMembershipWrite(row *domain.SubscriptionMembership, write dto.SubscriptionMembershipWrite) {
@@ -363,7 +409,7 @@ func (s *SubscriptionMemberships) Add(ctx context.Context, identity domain.Resol
 	if err = s.validate(ctx, tx, association, write, invalid, nil, supplierGroup(request.GroupHeader)); err != nil {
 		return nil, err
 	}
-	failure, refused := subscriptionMembershipDocuments(write)
+	_, refused := s.subscriptionMembershipDocuments(write)
 	if refused != nil {
 		return nil, refused
 	}
@@ -377,7 +423,8 @@ func (s *SubscriptionMemberships) Add(ctx context.Context, identity domain.Resol
 	if err = tx.CreateMembership(ctx, row, paymentCategoryAuditContext(identity, audit), at); err != nil {
 		return nil, err
 	}
-	return s.finish(ctx, tx, row, true, failure)
+	added, failure := s.handleDocuments(ctx, tx, row.ID, write, paymentCategoryAuditContext(identity, audit))
+	return s.finish(ctx, tx, row, added == 0, failure)
 }
 
 // Update follows SubscriptionMembershipViewSet.update (partial).
@@ -399,7 +446,7 @@ func (s *SubscriptionMemberships) Update(ctx context.Context, identity domain.Re
 	if write.ID != nil && *write.ID != current.ID {
 		return nil, ErrSubscriptionMembershipPrimaryKeyChange
 	}
-	failure, refused := subscriptionMembershipDocuments(write)
+	_, refused := s.subscriptionMembershipDocuments(write)
 	if refused != nil {
 		return nil, refused
 	}
@@ -410,6 +457,7 @@ func (s *SubscriptionMemberships) Update(ctx context.Context, identity domain.Re
 	if err = tx.SaveMembership(ctx, row, subscriptionMembershipChanges(old, row), paymentCategoryAuditContext(identity, audit), at); err != nil {
 		return nil, err
 	}
+	_, failure := s.handleDocuments(ctx, tx, row.ID, write, paymentCategoryAuditContext(identity, audit))
 	return s.finish(ctx, tx, row, false, failure)
 }
 
@@ -477,7 +525,7 @@ func (s *SubscriptionMemberships) Create(ctx context.Context, identity domain.Re
 	if associationErr != nil {
 		return nil, associationErr
 	}
-	failure, refused := subscriptionMembershipDocuments(write)
+	_, refused := s.subscriptionMembershipDocuments(write)
 	if refused != nil {
 		return nil, refused
 	}
@@ -492,7 +540,8 @@ func (s *SubscriptionMemberships) Create(ctx context.Context, identity domain.Re
 	if err = tx.CreateMembership(ctx, row, paymentCategoryAuditContext(identity, audit), at); err != nil {
 		return nil, err
 	}
-	return s.finish(ctx, tx, row, true, failure)
+	added, failure := s.handleDocuments(ctx, tx, row.ID, write, paymentCategoryAuditContext(identity, audit))
+	return s.finish(ctx, tx, row, added == 0, failure)
 }
 
 // Retrieve is the router detail route's stock retrieve: get_object() (with

@@ -57,7 +57,8 @@ func (h *SubscriptionRenewHandler) serve(c echo.Context, operation, name string,
 		return err
 	}
 	defer release()
-	input := service.SubscriptionCreateRequest{Body: write.Body, Form: write.Form, Group: request.Header.Get("X-Group-Id"), Audit: write.Audit}
+	input := service.SubscriptionCreateRequest{Body: write.Body, Form: write.Form, Group: request.Header.Get("X-Group-Id"), Audit: write.Audit,
+		Language: djangoReadRouteLocale{}.Language(request)}
 	if values, present := request.Header[http.CanonicalHeaderKey("Authorization")]; present && len(values) > 0 {
 		value := values[0]
 		input.Authorization = &value
@@ -86,6 +87,10 @@ func createFailure(c echo.Context, err error) error {
 			body[name] = messages
 		}
 		return c.JSON(400, body)
+	case errors.Is(err, service.ErrSubscriptionCreateSignatureInvalid):
+		return c.JSON(400, map[string]string{"msg": "Firma non valida.", "code": "400", "ref": "invalid_signature"})
+	case errors.Is(err, service.ErrSubscriptionCreateStorage):
+		return c.JSON(503, map[string]string{"msg": "Storage temporaneamente non disponibile.", "code": "503", "ref": "signature_storage"})
 	case errors.Is(err, domain.ErrSubscriptionCreateDuplicate):
 		return c.JSON(409, map[string]string{"msg": "Questa iscrizione esiste già.", "code": "409", "ref": "subscription_duplicate"})
 	case errors.As(err, &denied):

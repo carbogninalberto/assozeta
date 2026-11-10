@@ -72,6 +72,10 @@ Receipts are `quality-reports/go-migration/<family>-http-v2sub-*`; each family d
 | subscription-reads | `GET`/`POST subscription/list` (athlete) | every athlete request | 261 cases; RED `v2sub-red-r2` Django 261/261, Go 500; GREEN `v2sub-versioned-r1` 4 transports; mutation `v2sub-mutation-r1` (ascending order) CAUGHT |
 | subscription-reads | `GET subscription/<uid>/info` | subscription without `document_pdf` (now publishes `print_document_subscription`) | same run |
 | subscription-renew | `POST subscription/renew` | payment clean-up meets an unpaid invoiced payment | 55 cases; RED `v2sub-red-r1` Django 55/55, Go 500; GREEN `v2sub-versioned-r1` 4 transports; mutation `v2sub-mutation-r1` (invoiced payments excluded) CAUGHT |
+| subscription-create | `POST subscription/add?m=only_associate`, `POST subscription/add` with an owner's `sport_association` | quick re-subscription; the wizard in a modal (v2-sub-create) | 55 cases; RED `v2create-red-r5` Django 55/55, Go 500; GREEN `v2create-versioned-r1` 4 transports; mutation `v2create-mutation-r1` (fallback plan data) CAUGHT; subscription-renew re-run 62/62 |
+| subscription-create | `POST subscription/add` | owner wizard: signature upload; "new member" account and welcome e-mail (v2-sub-create) | 62 cases; RED `v2create-red-r12` Django 62/62, Go 500; GREEN `v2create-versioned-r2` 4 transports; mutation `v2create-mutation-r3` (signature user) CAUGHT; subscription-renew 62/62, subscription-sign 47/47 re-run |
+| subscription-memberships | `POST subscription/memberships/add`, `PATCH …/<pk>/update` | `documents_data` uploads (v2-sub-create) | 88 cases; RED `v2create-red-r2` Django 88/88, Go 500; GREEN `v2create-versioned-r1` 4 transports; mutation `v2create-mutation-r1` (document link skipped) CAUGHT |
+| subscription-renew | `POST subscription/renew` | athlete session (v2-sub-create) | 62 cases; RED `v2create-red-r2` Django 62/62, Go 500; GREEN `v2create-versioned-r1` 4 transports; mutation `v2create-mutation-r1` (athlete kept as request.user) CAUGHT |
 | subscription-transfer | `POST subscription/<uid>/transfer` (e-mail branch) | tutor/associate names starting with non-ASCII letters; non-ASCII e-mail domain | 31 cases; RED `v2sub-red-r1` Django 31/31, Go 500; GREEN `v2sub-versioned-r1` 4 transports 31/31; mutation `v2sub-mutation-r1` (no NFKC) CAUGHT |
 
 ### Ported in the v2-payments-2 change
@@ -130,12 +134,10 @@ Notes for the remaining payment items:
 ### subscription-create / subscription-import-upload / subscription-memberships
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST subscription/add | owner wizard: a typed certificate date without an upload (placeholder PNG drawn with PIL: image rendering, refused by the porting rules); signature; "new member" | `routes/association/Members/add/AddMember.svelte:104-139` | `service/subscription_create.go:148,156,164` | expensive (image) / medium / medium |
+| POST subscription/add | owner wizard: a typed certificate date without an upload (placeholder PNG drawn with PIL: image rendering, refused by the porting rules) | `routes/association/Members/add/AddMember.svelte:104-139` | `service/subscription_create.go` (`subscriptionCreateRefuse`) | expensive (image) |
 | POST subscription/add | public forms: anonymous, `sport_association`, preregistration, family wizard | `Subscribe.svelte:124,147,167`, `SubscribeMultiple.svelte:183`, `SubscribeFamily.svelte:136-181` | `service/subscription_create.go:91,102,132,141` | expensive |
-| POST subscription/add?m=only_associate | quick re-subscription | `MembersList.svelte:1564`, `MembersBook.svelte:1318` | `service/subscription_create.go:121` | medium |
 | POST subscription/import/upload | final mapping step (every import) | `routes/association/Members/import/ImportMembers.svelte:46-52` | `service/subscription_import_upload.go:200` | expensive |
 | POST subscription/import/upload | Excel file | `import/sections/Section1.svelte:33-37` | `service/subscription_import_upload.go:210` | expensive |
-| subscription/memberships add/update | with documents | `AddEditMembershipsModal.svelte:30-47` | `service/subscription_memberships.go:228,237` | medium |
 
 ### subscription-reads / subscription-lifecycle / subscription-renew / subscription-transfer / subscription-medical
 | Route | Condition | UI call | Go site | Cost |
@@ -143,7 +145,6 @@ Notes for the remaining payment items:
 | POST subscription/list | current-view print `format` pdf/excel | `components/modals/CurrentViewPrintingModal.svelte:31,41` | `service/subscription_reads.go:345` | excel medium, pdf expensive |
 | list, list/all, info, calendar | staff impersonating an athlete with an association scope | athlete pages while impersonating | `service/subscription_reads.go:252,547,800,1054` | medium |
 | POST .../medical-certificate/set-certificate-expiration | member without a certificate | `Members/detail/sections/modals/AddMedicalCertificate.svelte:51` | `service/subscription_medical.go:389` | medium |
-| POST subscription/renew | athlete session | `activities/subscription/partials/subscription-element.svelte:231` | `service/subscription_renew.go:53` | medium |
 | POST subscription/renew | member with courses (pre-filled) | `Members/modals/RenewalModal.svelte:58` | `service/subscription_renew.go:96` | medium-expensive |
 | GET subscription card, validate-token-link | unknown token while a Bakney pairing is active | `Tessera.svelte:54`, `SubscribeMultiple.svelte:222` | `service/subscription_card.go:61`, `service/subscription_misc.go:318` | medium |
 
@@ -152,7 +153,6 @@ Why these stay (v2-subscriptions):
 - association-scoped athlete sessions: needs scoped_queryset's family boundary on every related read (subscriptions, course
   subscriptions, installments, files, registries); impersonation-only.
 - set-certificate-expiration without a certificate: Django draws a PNG with PIL/FreeType; not byte-reproducible, refused before any write.
-- renew by an athlete: runs create_subscription with an athlete requester (subscription-create internals, owned elsewhere).
 - renew with courses: add_course_to_subscription inside the renewal transaction; the course-enrolment port has its own
   transaction and data handling, so it needs a shared refactor.
 - card / validate-token-link: source_token asks the paired authority (`public-token`); needs a stub authority in both fixtures.
@@ -823,11 +823,11 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 |---|---|---|---|---|
 | POST subscription/add | `medical_certificate.certificate_expring_date` not null | `service/subscription_create.go:164` | **A** | `routes/association/Members/add/AddMember.svelte:106-117` always sends it (it defaults to today in `sections/Section4.svelte:75-76`). The owner "add member" wizard is refused. Cost: medium (expiration update / placeholder image). |
 | POST subscription/add | anonymous request or body with `sport_association` | `service/subscription_create.go:91,102` | **A** | Public forms `routes/subscribe/Subscribe.svelte:124,167`, `subscribe-multiple/SubscribeMultiple.svelte:183`, `subscribefamily/SubscribeFamily.svelte:136,181`. Also `AddMember.svelte:124-125` in modal mode. Cost: expensive (anonymous path + user creation). |
-| POST subscription/add?m=only_associate with `associate` | quick re-subscription | `service/subscription_create.go:121` | **A** | `routes/association/Members/MembersList.svelte:1564`, `MembersBook.svelte:1318`. Cost: medium. |
+| POST subscription/add?m=only_associate with `associate` | quick re-subscription | ported (v2-sub-create) | **ported** | `routes/association/Members/MembersList.svelte:1564`, `MembersBook.svelte:1318`. Cost: medium. |
 | POST subscription/add | `is_family_wizard: true` | `service/subscription_create.go:132` | **A** | `SubscribeFamily.svelte:146`. Cost: expensive. |
 | POST subscription/add | `preregistration: true` | `service/subscription_create.go:141` | **A** | `Subscribe.svelte:147-148` (route `/subscribe/:user/:preregistration`). |
-| POST subscription/add | `new_user_account.new_member` true | `service/subscription_create.go:148` | **A** | Toggle in the AddMember wizard (`AddMember.svelte:44,338`). Cost: medium (account + welcome e-mail). |
-| POST subscription/add | `signature` with data | `service/subscription_create.go:156` | **A** | AddMember signature step (`sections/Section3.svelte:11-26`). Cost: medium (storage upload). |
+| POST subscription/add | `new_user_account.new_member` true | ported (v2-sub-create) | **ported** | Toggle in the AddMember wizard (`AddMember.svelte:44,338`). Cost: medium (account + welcome e-mail). |
+| POST subscription/add | `signature` with data | ported (v2-sub-create) | **ported** | AddMember signature step (`sections/Section3.svelte:11-26`). Cost: medium (storage upload). |
 | POST subscription/add | truthy `custom_data.type_of_associate` | `service/subscription_create.go:172` | B | No UI writer found in `routes/association/Members/add`. legacy: low. |
 | POST subscription/add | non-empty X-Group-Id, form bodies, born-date formats, non-ASCII sex/tax code, duplicate tax-code ties, tutor edge cases, fee/amount formats | `service/subscription_create.go:322-1014`, `subscription_create_python.go:110-245` | B | Mostly exotic or legacy duplicates. Tutor edge cases (an associate that already has tutors) are reachable once the A gates are lifted. Re-check then. |
 
@@ -839,7 +839,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### subscription-memberships.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/memberships/add, PATCH …/<pk>/update | `documents_data` that would upload | `service/subscription_memberships.go:228,237` (`ErrSubscriptionMembershipUploadUnsupported`) | **A** | `routes/association/Members/detail/sections/modals/AddEditMembershipsModal.svelte:30-47` builds `documents_data` `{document: base64, filename}` from attached files, then sends at `:61-74,97`. Cost: medium. |
+| POST subscription/memberships/add, PATCH …/<pk>/update | `documents_data` that would upload | ported (v2-sub-create) | **ported** | `routes/association/Members/detail/sections/modals/AddEditMembershipsModal.svelte:30-47` builds `documents_data` `{document: base64, filename}` from attached files, then sends at `:61-74,97`. Cost: medium. |
 | update | changed `subscription_membership_id` | | B | The hidden input carries the same id (`AddEditMembershipsModal.svelte:158`). Only a change is refused. |
 | add | multipart with files | | B | The UI sends JSON. |
 
@@ -919,7 +919,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### subscription-renew.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/renew | renewal by an athlete | `service/subscription_renew.go:52-53`, `domain.ErrSubscriptionCreateNotPorted` | **A** | The athlete area renews through `RenewalModal` (`routes/activities/subscription/partials/subscription-element.svelte:231`), which POSTs to `SUBSCRIPTION.RENEW` (`Members/modals/RenewalModal.svelte:65`) |
+| POST subscription/renew | renewal by an athlete | ported (v2-sub-create) | **ported** | The athlete area renews through `RenewalModal` (`routes/activities/subscription/partials/subscription-element.svelte:231`), which POSTs to `SUBSCRIPTION.RENEW` (`Members/modals/RenewalModal.svelte:65`) |
 | same | renewal with non-empty `courses` | `:96` | **A** | `RenewalModal.svelte:58` sends `courses: formData.renewal_info?.courses`. `partials/course-selection.svelte:17-29` pre-fills it with the member's current courses from info. Any member enrolled in a course hits it. Django `subscriptions_views.py:247` (`add_course_to_subscription`) |
 | same | renewal payment clean-up meets an unpaid payment with an invoice | `:119` | **ported** (v2-subscriptions) | data from payment cancel (top) in the new period |
 | same | `X-Group-Id` non-empty; form body | `:53` | B | UI sends JSON and never sets a group |
