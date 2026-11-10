@@ -17,6 +17,7 @@ from rest_framework.decorators import api_view, permission_classes
 
 from application.models.carnet_models import CarnetSubscription
 from application.utils.attendance_utils import get_extended_prop_for_attendance_day
+from application.utils.subscriptions_utils import family_tax_codes
 from core.middleware import IsAuthenticated
 from rest_framework.response import Response
 from application.models import AttendanceRegistry, AttendanceDay
@@ -747,9 +748,7 @@ def statistic_athlete_dashboard(request):
         )
 
         # Get unique tax codes from associates of user's subscriptions
-        tax_codes = user_subscriptions.filter(
-            associate__tax_code__isnull=False
-        ).values_list('associate__tax_code', flat=True).distinct()
+        tax_codes = family_tax_codes(user_subscriptions)
 
         # Family subscriptions remain visible, but only inside this self-hosted association.
         subscriptions = scoped_queryset(request, Subscription.objects).filter(
@@ -1127,8 +1126,7 @@ def attendance_day_mark_absent(request, uid):
         pk=course_subscription_id, course=attendance_day.attendance_registry.course,
         subscription__sport_association=attendance_day.attendance_registry.course.sport_association)
     if request.user.role == User.ATHLETE:
-        tax_codes = Subscription.objects.filter(user=request.user, sport_association=association).exclude(
-            associate__tax_code__isnull=True).exclude(associate__tax_code='').values('associate__tax_code')
+        tax_codes = family_tax_codes(Subscription.objects.filter(user=request.user, sport_association=association))
         course_subscriptions = course_subscriptions.filter(
             Q(subscription__user=request.user) | Q(subscription__associate__user=request.user) |
             Q(subscription__associate__tax_code__in=tax_codes))

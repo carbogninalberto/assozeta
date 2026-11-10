@@ -37,7 +37,7 @@ from application.printing_tasks import print_document_medical_appointment
 from application.signals import subscription_signed, subscription_approved
 from application.utils.printing import current_view_subscriptions
 from application.utils.subscriptions_utils import create_subscription, get_optimized_subscriptions, \
-    add_course_to_subscription, smart_search, cleanup_storage_keys
+    add_course_to_subscription, smart_search, cleanup_storage_keys, family_tax_codes
 from application.services.subscription_service import (
     SubscriptionService, TagService, MedicalCertificateService, SubscriptionImportService
 )
@@ -1713,9 +1713,7 @@ def subscription_info(request, uid):
     if request.user.role == User.ATHLETE:
         # Get unique tax codes from associates of user's subscriptions
         user_subscriptions = scoped_queryset(request, Subscription.objects).filter(user=request.user)
-        tax_codes = user_subscriptions.filter(
-            associate__tax_code__isnull=False
-        ).values_list('associate__tax_code', flat=True).distinct()
+        tax_codes = family_tax_codes(user_subscriptions)
 
         # Get all subscription IDs for users with those tax codes, plus original user subscriptions
         allowed_subscription_ids = list(scoped_queryset(request, Subscription.objects).filter(
