@@ -178,16 +178,11 @@ class Payment(GroupModelMixin):
 
     def save(self, *args, **kwargs):
 
-        # payment category, set default to PaymentCategory.objects.filter(
-        #             name__iexact='entrate e proventi da attività tipiche').first(),
+        # default payment category, taken from the payment's association (see default_for)
         # NOTE: in order to make default_payment_categories customizable we can duplicate the
         # defaults one and add the sport_association
         if self.payment_category is None:
-            try:
-                self.payment_category = PaymentCategory.objects.filter(
-                    name__iexact='entrate e proventi da attività tipiche').first()
-            except PaymentCategory.DoesNotExist:
-                pass
+            self.payment_category = PaymentCategory.default_for(self.sport_association_id)
         if self.description is None:
             description = self.get_course_carnet_name()
 
@@ -335,6 +330,19 @@ class PaymentCategory(models.Model):
         indexes = [
             models.Index(fields=['payment_category_id', 'sport_association']),
         ]
+
+    DEFAULT_NAME = 'entrate e proventi da attività tipiche'
+
+    @classmethod
+    def default_for(cls, sport_association):
+        """The default payment category for a payment of `sport_association` (instance or id).
+
+        The lowest-key category named DEFAULT_NAME (case-insensitive) among the association's
+        own categories and the global ones; None when there is none.
+        """
+        association = getattr(sport_association, 'pk', sport_association)
+        return cls.objects.filter(Q(sport_association_id=association) | Q(sport_association__isnull=True),
+                                  name__iexact=cls.DEFAULT_NAME).order_by('pk').first()
 
     @classmethod
     def get_all_categories(cls, sport_association):

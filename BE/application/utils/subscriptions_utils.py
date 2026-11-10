@@ -574,8 +574,7 @@ def get_membership_fee(data, sport_association: SportAssociation, subscription_t
                 membership_category = PaymentCategory.objects.filter(
                     payment_category_id=sport_association.user.default_payment_category.payment_category_id).first()
             else:
-                membership_category = PaymentCategory.objects.filter(
-                    name__iexact='entrate e proventi da attività tipiche').first()
+                membership_category = PaymentCategory.default_for(sport_association)
             # create categories
             meta_payment_categories = [
                 {
@@ -599,8 +598,7 @@ def get_membership_fee(data, sport_association: SportAssociation, subscription_t
                 membership_category = PaymentCategory.objects.filter(
                     payment_category_id=sport_association.user.default_payment_category.payment_category_id).first()
             else:
-                membership_category = PaymentCategory.objects.filter(
-                    name__iexact='entrate e proventi da attività tipiche').first()
+                membership_category = PaymentCategory.default_for(sport_association)
             # create categories
             meta_payment_categories = [
                 {
@@ -1020,8 +1018,7 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
             payment_category = PaymentCategory.objects.filter(
                 payment_category_id=sport_association.user.default_payment_category.payment_category_id).first()
         else:
-            payment_category = PaymentCategory.objects.filter(
-                name__iexact='entrate e proventi da attività tipiche').first()
+            payment_category = PaymentCategory.default_for(sport_association)
 
         if fee_amount > 0 or sport_association.user.show_zero_payments:
             payment_date = timezone.now().date()
@@ -1344,8 +1341,7 @@ def add_course_to_subscription(course, sub, sport_association, data=None, is_ath
         payment_category = PaymentCategory.objects.filter(
             payment_category_id=sport_association.user.default_payment_category_courses.payment_category_id).first()
     else:
-        payment_category = PaymentCategory.objects.filter(
-            name__iexact='entrate e proventi da attività tipiche').first()
+        payment_category = PaymentCategory.default_for(sport_association)
 
     if 'one_fee_payment' in data and data['one_fee_payment'] and\
             course.one_fee > 0:
@@ -1485,8 +1481,7 @@ def add_course_subscription(course_subscription: CourseSubscription, sport_assoc
         payment_category = PaymentCategory.objects.filter(
             payment_category_id=sport_association.user.default_payment_category_courses.payment_category_id).first()
     else:
-        payment_category = PaymentCategory.objects.filter(
-            name__iexact='entrate e proventi da attività tipiche').first()
+        payment_category = PaymentCategory.default_for(sport_association)
 
     if course.course_type == Course.DEFAULT_TYPE:
         if data and data.get('one_fee_payment') and course.one_fee > 0:
