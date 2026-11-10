@@ -69,7 +69,7 @@ var instanceBootstrapSQL = `SELECT c.name,c.abbreviation,c.primary_color,c.suppo
  COALESCE(c.integration_settings IN ('null'::jsonb,'{}'::jsonb,'[]'::jsonb,'false'::jsonb,'0'::jsonb,'""'::jsonb),TRUE) AS integrations_empty,
  ` + publicIntegrationProjection() + ` AS public_integrations,
  c.google_client_id,c.apple_client_id,c.meta_title,c.meta_description,c.is_reseller,c.self_hosted,c.support_multiple_associations,
- c.show_course_athletes,c.show_minor_exemption,c.show_tutorial,c.setup_provenance,c.onboarding_completed_at,
+ c.show_course_athletes,c.show_minor_exemption,c.show_tutorial,c.ui_api_version,c.setup_provenance,c.onboarding_completed_at,
  a.sport_association_id::text AS association_id,a.denomination AS association_name,a.user_id::text AS owner_id
  FROM instance_instanceconfiguration c
  LEFT JOIN application_sportassociation a ON a.sport_association_id=c.primary_association_id

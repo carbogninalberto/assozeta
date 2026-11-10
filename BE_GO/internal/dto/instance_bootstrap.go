@@ -44,6 +44,8 @@ type InstanceFeatures struct {
 	FamilyRegistration          bool `json:"familyRegistration"`
 	FederationRegistration      bool `json:"federationRegistration"`
 	MultipleRegistration        bool `json:"multipleRegistration"`
+	// UIAPIVersion is the API the web interface calls: v1 (/api) or v2 (/api/v2).
+	UIAPIVersion string `json:"uiApiVersion"`
 }
 type InstanceSetup struct {
 	Provenance         string `json:"provenance"`

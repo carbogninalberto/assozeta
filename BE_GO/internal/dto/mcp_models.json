@@ -19657,6 +19657,31 @@
      "help_text": ""
     },
     {
+     "name": "ui_api_version",
+     "class": "CharField",
+     "relation": false,
+     "concrete": true,
+     "attname": "ui_api_version",
+     "column": "ui_api_version",
+     "internal": "CharField",
+     "null": false,
+     "blank": false,
+     "has_default": true,
+     "max_length": 2,
+     "verbose_name": "ui api version",
+     "help_text": "",
+     "choices": [
+      [
+       "v1",
+       "Django API (v1)"
+      ],
+      [
+       "v2",
+       "Go API (v2, beta)"
+      ]
+     ]
+    },
+    {
      "name": "is_reseller",
      "class": "BooleanField",
      "relation": false,

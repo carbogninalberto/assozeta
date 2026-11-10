@@ -6,7 +6,7 @@
     import {readStoredStatus, applicationReady} from './independentStatus.js';
     import {createCompletionRefresh, mergeRunnerStatus, restartResult} from './updateStatus.js';
     import {v4 as uuidv4} from 'uuid';
-    import {SquaresFour, Archive, ArrowsClockwise, GearSix, IdentificationCard, EnvelopeSimple, Plugs, Robot, LinkSimple, Power} from 'phosphor-svelte';
+    import {SquaresFour, Archive, ArrowsClockwise, GearSix, IdentificationCard, EnvelopeSimple, Plugs, Robot, LinkSimple, Power, Flask} from 'phosphor-svelte';
     import './selfInstance.css';
     import InstanceBanner from './InstanceBanner.svelte';
     import InstanceMenu from './InstanceMenu.svelte';
@@ -19,6 +19,7 @@
     import InstanceIntegrations from './InstanceIntegrations.svelte';
     import InstanceIntegration from './InstanceIntegration.svelte';
     import BakneyPairing from './BakneyPairing.svelte';
+    import InstanceApiVersion from './InstanceApiVersion.svelte';
 
     export let changes = false;
     const endpoint = `${getApiHost()}/instance`;
@@ -26,7 +27,7 @@
     // Top-level tabs; settings has its own sub-sections. The URL keeps the
     // sub-section id (tab=email…) so earlier links keep working.
     const tabs = [['overview', 'Panoramica', SquaresFour], ['backups', 'Backup', Archive], ['updates', 'Aggiornamenti', ArrowsClockwise], ['settings', 'Impostazioni', GearSix]];
-    const settingsSections = [['branding', 'Identità', IdentificationCard], ['email', 'Email', EnvelopeSimple], ['integrations', 'Integrazioni', Plugs], ['ai', 'Bot AI', Robot], ['pairing', 'Bakney', LinkSimple]];
+    const settingsSections = [['branding', 'Identità', IdentificationCard], ['email', 'Email', EnvelopeSimple], ['integrations', 'Integrazioni', Plugs], ['ai', 'Bot AI', Robot], ['pairing', 'Bakney', LinkSimple], ['api', 'API (beta)', Flask]];
     const settingsIds = settingsSections.map(([id]) => id);
     let tab = 'overview';
     let settingsSection = 'branding';
@@ -72,6 +73,7 @@
     let integrationChanges = false;
     let integrationBusy = false;
     let pairingBusy = false;
+    let apiBusy = false;
 
     let diagnostics;
     let diagnosticError = '';
@@ -108,9 +110,9 @@
     let simulationTimer;
     const completionRefresh = createCompletionRefresh();
 
-    $: settingsDirty = {branding: logoChanges, email: emailChanges, integrations: integrationChanges, ai: aiChanges, pairing: false};
+    $: settingsDirty = {branding: logoChanges, email: emailChanges, integrations: integrationChanges, ai: aiChanges, pairing: false, api: false};
     $: changes = aiChanges || integrationChanges || emailChanges || logoChanges;
-    $: settingsBusy = logoBusy || emailBusy || aiBusy || integrationBusy || pairingBusy;
+    $: settingsBusy = logoBusy || emailBusy || aiBusy || integrationBusy || pairingBusy || apiBusy;
     $: active = simulation || runner.active || (restartRequestId ? {kind: 'restart', stage: 'queued'} : null);
     $: locked = apiUnavailable || !!active || starting;
     $: restartBlocked = info?.mode !== 'production' ? 'Disponibile solo in produzione.'
@@ -454,6 +456,9 @@
                         </div>
                         <div id="instance-settings-panel-pairing" role="tabpanel" aria-labelledby="instance-settings-pairing" hidden={settingsSection !== 'pairing'}>
                             {#if settingsSection === 'pairing'}<BakneyPairing {request} bind:busy={pairingBusy} disabled={locked} />{/if}
+                        </div>
+                        <div id="instance-settings-panel-api" role="tabpanel" aria-labelledby="instance-settings-api" hidden={settingsSection !== 'api'}>
+                            <InstanceApiVersion {request} config={info.config} bind:busy={apiBusy} disabled={locked} onSaved={config => info = {...info, config}} />
                         </div>
                     </div>
                 </div>

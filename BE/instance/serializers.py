@@ -137,6 +137,7 @@ class InstanceConfigSerializer(serializers.ModelSerializer):
             'familyRegistration': settings.FAMILY_REGISTRATION_ENABLED,
             'federationRegistration': settings.FEDERATION_REGISTRATION_ENABLED,
             'multipleRegistration': settings.MULTIPLE_REGISTRATION_ENABLED,
+            'uiApiVersion': obj.ui_api_version,
         }
 
     def get_setup(self, obj):
@@ -291,3 +292,14 @@ class InstanceReconfigureSerializer(serializers.ModelSerializer):
 
         instance.save(update_fields=sorted(updated_fields))
         return instance
+
+
+class InstanceAdminSerializer(InstanceReconfigureSerializer):
+    """Owner administration body: branding and the web UI API version."""
+    uiApiVersion = serializers.ChoiceField(
+        choices=[choice for choice, _ in InstanceConfiguration.UI_API_VERSION_CHOICES],
+        source='ui_api_version', required=False,
+    )
+
+    class Meta(InstanceReconfigureSerializer.Meta):
+        fields = ['oem', 'uiApiVersion']

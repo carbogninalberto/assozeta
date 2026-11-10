@@ -1,4 +1,5 @@
 <script>
+    import {rewriteApiUrl} from 'utils/apiVersion.js';
     import moment from 'moment';
     import swal from 'sweetalert2';
     import {createEventDispatcher, onMount} from 'svelte';
@@ -261,11 +262,11 @@
                             Scarica
                         </a>
                         <a
-                            href={__bakney.env.API.DOCUMENT.RETRIEVE +
+                            href={rewriteApiUrl(__bakney.env.API.DOCUMENT.RETRIEVE +
                                 '/' +
                                 info.medical_document +
                                 '?token=' +
-                                $sessionToken}
+                                $sessionToken)}
                             target="_blank"
                             data-toggle="tooltip"
                             title="Anteprima certificato medico"

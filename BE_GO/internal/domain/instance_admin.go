@@ -37,3 +37,11 @@ type InstanceAdminUpdate struct {
 	IntegrationSettings json.RawMessage
 	UpdatedAt           *time.Time
 }
+
+// InstanceUIAPIVersionChange is the UPDATE log entry InstanceAdminView.put
+// writes when the web UI API version changes.
+type InstanceUIAPIVersionChange struct {
+	ActorID, Previous, Version string
+	Audit                      LoginAuditContext
+	At                         time.Time
+}

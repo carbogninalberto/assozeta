@@ -64,6 +64,53 @@ func InstanceAdminKeysEqual(body any, key string) (bool, error) {
 	return false, ErrInstanceAdminUnhashable
 }
 
+// InstanceAdminKeysWithin is `keys = set(request.data); keys and keys <=
+// allowed`. A list holding a list or a dictionary, or a non-iterable body, is
+// the TypeError of set() (ErrInstanceAdminUnhashable).
+func InstanceAdminKeysWithin(body any, allowed ...string) (bool, error) {
+	member := func(text string) bool {
+		for _, key := range allowed {
+			if text == key {
+				return true
+			}
+		}
+		return false
+	}
+	switch v := body.(type) {
+	case domain.RequestObject:
+		for _, field := range v {
+			if !member(field.Name) {
+				return false, nil
+			}
+		}
+		return len(v) > 0, nil
+	case []any:
+		within := len(v) > 0
+		for _, item := range v {
+			switch item.(type) {
+			case domain.RequestObject, []any:
+				return false, ErrInstanceAdminUnhashable
+			}
+			if text, ok := item.(string); !ok || !member(text) {
+				within = false
+			}
+		}
+		return within, nil
+	case string:
+		// A set of characters: within only when every character is a key.
+		if v == "" {
+			return false, nil
+		}
+		for _, r := range v {
+			if !member(string(r)) {
+				return false, nil
+			}
+		}
+		return true, nil
+	}
+	return false, ErrInstanceAdminUnhashable
+}
+
 type drfText struct {
 	max        int
 	allowBlank bool
@@ -218,20 +265,60 @@ func instanceAdminObject(body any) (domain.RequestObject, error) {
 
 var instanceAdminColor = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
 
-// InstanceAdminBranding is InstanceReconfigureSerializer(config, data,
-// partial=True) for a body whose only key is 'oem': the edited model columns.
-func InstanceAdminBranding(body any) (map[string]string, error) {
+// InstanceAdminUIAPIVersions are InstanceConfiguration.UI_API_VERSION_CHOICES.
+var InstanceAdminUIAPIVersions = []string{"v1", "v2"}
+
+// InstanceAdminEdit is InstanceAdminSerializer(config, data, partial=True)
+// (InstanceReconfigureSerializer restricted to 'oem' and 'uiApiVersion'):
+// the edited model columns. Field errors of both keys are reported together.
+func InstanceAdminEdit(body any) (map[string]string, error) {
 	object, err := instanceAdminObject(body)
 	if err != nil {
 		return nil, err
 	}
-	oem, _ := object.Lookup("oem")
+	values, errs := map[string]string{}, map[string]any{}
+	if oem, present := object.Lookup("oem"); present {
+		columns, invalid := instanceAdminOEM(oem)
+		if invalid != nil {
+			errs["oem"] = invalid
+		}
+		for column, value := range columns {
+			values[column] = value
+		}
+	}
+	if version, present := object.Lookup("uiApiVersion"); present {
+		// ChoiceField: null is not allowed; otherwise str(data) must be a choice.
+		switch {
+		case version == nil:
+			errs["uiApiVersion"] = []string{PaymentCategoryValidationNull}
+		default:
+			text := PythonStr(version)
+			valid := false
+			for _, choice := range InstanceAdminUIAPIVersions {
+				valid = valid || text == choice
+			}
+			if valid {
+				values["ui_api_version"] = text
+			} else {
+				errs["uiApiVersion"] = []string{"choice:" + text}
+			}
+		}
+	}
+	if len(errs) > 0 {
+		return nil, &InstanceAdminInvalid{Body: errs}
+	}
+	return values, nil
+}
+
+// instanceAdminOEM is the nested OEMInputSerializer (partial): the edited
+// columns, or its error structure.
+func instanceAdminOEM(oem any) (map[string]string, any) {
 	if oem == nil {
-		return nil, &InstanceAdminInvalid{Body: map[string]any{"oem": []string{PaymentCategoryValidationNull}}}
+		return nil, []string{PaymentCategoryValidationNull}
 	}
 	nested, ok := oem.(domain.RequestObject)
 	if !ok {
-		return nil, &InstanceAdminInvalid{Body: map[string]any{"oem": map[string]any{"non_field_errors": []string{"dictionary:" + pythonTypeName(oem)}}}}
+		return nil, map[string]any{"non_field_errors": []string{"dictionary:" + pythonTypeName(oem)}}
 	}
 	email := func(text string) []string {
 		if !SupplierEmail(text) {
@@ -268,7 +355,7 @@ func InstanceAdminBranding(body any) (map[string]string, error) {
 		values[spec.column] = text
 	}
 	if len(errs) > 0 {
-		return nil, &InstanceAdminInvalid{Body: map[string]any{"oem": errs}}
+		return nil, errs
 	}
 	return values, nil
 }
