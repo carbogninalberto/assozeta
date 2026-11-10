@@ -25009,7 +25009,8 @@
         "BE_GO/internal/repository/subscription_reads_athlete.go",
         "BE_GO/internal/service/subscription_reads_athlete.go",
         "BE_GO/internal/service/subscription_reads_export.go",
-        "BE_GO/internal/repository/family_tax_codes.go"
+        "BE_GO/internal/repository/family_tax_codes.go",
+        "BE_GO/internal/repository/scoped_resources.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -25032,7 +25033,7 @@
         "errors": "401; 403 administrator without impersonation or registry permission; 405 other methods; 400 malformed uid; 500 owner without live association or a malformed registry event.",
         "authentication": "DRF IsAuthenticated (JWT/session) plus IsAssociationUser | IsAthleteUser.",
         "permissions": "Registry association.members.read; athlete view for association-scoped sessions.",
-        "resource_scope": "The athlete's own or the scoped association's group-aware subscription; the registries of its live course subscriptions' courses.",
+        "resource_scope": "The athlete's own or the scoped association's group-aware subscription; the registries of its live course subscriptions' courses. In an association-scoped athlete session (an owner viewing as an athlete) scoped_queryset keeps the read to the session's subscriptions: the association's group-aware rows of the athlete and of its live, group-aware members that are the athlete's or carry a filled-in tax code of the athlete's subscriptions there.",
         "side_effects": "None.",
         "transaction": "Autocommit reads.",
         "execution_owner": "django"
@@ -25047,25 +25048,25 @@
         "docs/architecture/go-migration/subscription-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 296/296; Go 200 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-red/results.json",
-          "receipt_sha256": "be60f7b66e3646ca5b0ac99a857a022d4df50deb5377d60cd0189b3eb1f83006"
+          "result": "RED: Django 331/331; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-famvis-red-r1/results.json",
+          "receipt_sha256": "2eb05374ca51a03e214303ec08f898e4f85f94129d7f67315b7e9d26f66056a7"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 296/296 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-green/results.json",
-          "receipt_sha256": "def6e8375954c92e0a56547eaa1aae4e82aeb290e73f2c2a8ee08931bfa5bc21"
+          "result": "GREEN: 331/331 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-famvis-green-r1/results.json",
+          "receipt_sha256": "35c734668b417be703ba858a4d7204446f6bd68db887dbe79cce9141e9baf431"
         },
         {
-          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
-          "result": "Mutation control: fails Go on subscription-reads-info-athlete-blank-tax-code-other-user (200 instead of 403).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-mutation/results.json",
-          "receipt_sha256": "f6b371ee1912dcf8fd6bdfc3a41915d750b777840f7ef7fd7baff85b9e78de83"
+          "revision": "committing change with the athlete list not asking the session boundary (sessionVisible skipped)",
+          "result": "Mutation control: fails Go on subscription-reads-list-session-athlete (response.body: rows outside the session listed).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-famvis-mutation-r1/results.json",
+          "receipt_sha256": "0f1a36fd5ccbef4cd25cb83c5a35f1bacac45046fdc3bb3bce9114f789e66e6b"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; the POST pdf export stays refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go). Association-scoped athlete sessions on list, list/all, info and calendar keep scoped_queryset's boundary through the shared scoped resources reader (famvis)."
       ]
     },
     {
@@ -25459,7 +25460,8 @@
         "BE_GO/internal/repository/subscription_reads_athlete.go",
         "BE_GO/internal/service/subscription_reads_athlete.go",
         "BE_GO/internal/service/subscription_reads_export.go",
-        "BE_GO/internal/repository/family_tax_codes.go"
+        "BE_GO/internal/repository/family_tax_codes.go",
+        "BE_GO/internal/repository/scoped_resources.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -25482,7 +25484,7 @@
         "errors": "401; 403 administrator without impersonation or registry permission; 405 other methods; 400 malformed uid; 403 'Subscription not found.' / 'Sport association not found.' (athletes) or 'User not allowed.'; 404 {'msg': 'Subscription not found.'}; 500 owner without live association, subscription without associate.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.members.read; athlete view for association-scoped sessions.",
-        "resource_scope": "The group-aware subscription of the scoped association (athletes: their own subscriptions and those sharing a filled-in tax code with one of them).",
+        "resource_scope": "The group-aware subscription of the scoped association (athletes: their own subscriptions and those sharing a filled-in tax code with one of them). In an association-scoped athlete session (an owner viewing as an athlete) scoped_queryset keeps the read to the session's subscriptions: the association's group-aware rows of the athlete and of its live, group-aware members that are the athlete's or carry a filled-in tax code of the athlete's subscriptions there.",
         "side_effects": "None in the ported paths (the Celery print task path is refused). Without document_pdf: print_document_subscription.delay(str(id), Authorization header) on the Celery broker.",
         "transaction": "Autocommit reads.",
         "execution_owner": "django"
@@ -25497,25 +25499,25 @@
         "docs/architecture/go-migration/subscription-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 296/296; Go 200 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-red/results.json",
-          "receipt_sha256": "be60f7b66e3646ca5b0ac99a857a022d4df50deb5377d60cd0189b3eb1f83006"
+          "result": "RED: Django 331/331; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-famvis-red-r1/results.json",
+          "receipt_sha256": "2eb05374ca51a03e214303ec08f898e4f85f94129d7f67315b7e9d26f66056a7"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 296/296 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-green/results.json",
-          "receipt_sha256": "def6e8375954c92e0a56547eaa1aae4e82aeb290e73f2c2a8ee08931bfa5bc21"
+          "result": "GREEN: 331/331 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-famvis-green-r1/results.json",
+          "receipt_sha256": "35c734668b417be703ba858a4d7204446f6bd68db887dbe79cce9141e9baf431"
         },
         {
-          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
-          "result": "Mutation control: fails Go on subscription-reads-info-athlete-blank-tax-code-other-user (200 instead of 403).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-mutation/results.json",
-          "receipt_sha256": "f6b371ee1912dcf8fd6bdfc3a41915d750b777840f7ef7fd7baff85b9e78de83"
+          "revision": "committing change with the athlete list not asking the session boundary (sessionVisible skipped)",
+          "result": "Mutation control: fails Go on subscription-reads-list-session-athlete (response.body: rows outside the session listed).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-famvis-mutation-r1/results.json",
+          "receipt_sha256": "0f1a36fd5ccbef4cd25cb83c5a35f1bacac45046fdc3bb3bce9114f789e66e6b"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; the POST pdf export stays refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go). Association-scoped athlete sessions on list, list/all, info and calendar keep scoped_queryset's boundary through the shared scoped resources reader (famvis)."
       ]
     },
     {
@@ -27616,7 +27618,8 @@
         "BE_GO/internal/repository/subscription_reads_athlete.go",
         "BE_GO/internal/service/subscription_reads_athlete.go",
         "BE_GO/internal/service/subscription_reads_export.go",
-        "BE_GO/internal/repository/family_tax_codes.go"
+        "BE_GO/internal/repository/family_tax_codes.go",
+        "BE_GO/internal/repository/scoped_resources.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -27640,7 +27643,7 @@
         "errors": "400 POST body parse error; 401; 403 administrator without impersonation or registry permission; 405 other methods; 500 owner without live association, unknown field or ordering, malformed tag id, invalid int() values, missing or unknown POST format, export row without associate, POST format pdf (not ported); 404 Invalid page.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.members.read (GET and POST); athlete view for association-scoped sessions.",
-        "resource_scope": "Group-aware subscriptions of the scoped live association (unarchived), soft-deleted rows included; the field mode by the user's association. Athletes: their own subscriptions and those sharing a filled-in tax code with one of them.",
+        "resource_scope": "Group-aware subscriptions of the scoped live association (unarchived), soft-deleted rows included; the field mode by the user's association. Athletes: their own subscriptions and those sharing a filled-in tax code with one of them. In an association-scoped athlete session (an owner viewing as an athlete) scoped_queryset keeps the read to the session's subscriptions: the association's group-aware rows of the athlete and of its live, group-aware members that are the athlete's or carry a filled-in tax code of the athlete's subscriptions there.",
         "side_effects": "None.",
         "transaction": "Autocommit reads.",
         "execution_owner": "django"
@@ -27655,25 +27658,25 @@
         "docs/architecture/go-migration/subscription-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 296/296; Go 200 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-red/results.json",
-          "receipt_sha256": "be60f7b66e3646ca5b0ac99a857a022d4df50deb5377d60cd0189b3eb1f83006"
+          "result": "RED: Django 331/331; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-famvis-red-r1/results.json",
+          "receipt_sha256": "2eb05374ca51a03e214303ec08f898e4f85f94129d7f67315b7e9d26f66056a7"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 296/296 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-green/results.json",
-          "receipt_sha256": "def6e8375954c92e0a56547eaa1aae4e82aeb290e73f2c2a8ee08931bfa5bc21"
+          "result": "GREEN: 331/331 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-famvis-green-r1/results.json",
+          "receipt_sha256": "35c734668b417be703ba858a4d7204446f6bd68db887dbe79cce9141e9baf431"
         },
         {
-          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
-          "result": "Mutation control: fails Go on subscription-reads-info-athlete-blank-tax-code-other-user (200 instead of 403).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-mutation/results.json",
-          "receipt_sha256": "f6b371ee1912dcf8fd6bdfc3a41915d750b777840f7ef7fd7baff85b9e78de83"
+          "revision": "committing change with the athlete list not asking the session boundary (sessionVisible skipped)",
+          "result": "Mutation control: fails Go on subscription-reads-list-session-athlete (response.body: rows outside the session listed).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-famvis-mutation-r1/results.json",
+          "receipt_sha256": "0f1a36fd5ccbef4cd25cb83c5a35f1bacac45046fdc3bb3bce9114f789e66e6b"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; the POST pdf export stays refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go). Association-scoped athlete sessions on list, list/all, info and calendar keep scoped_queryset's boundary through the shared scoped resources reader (famvis)."
       ]
     },
     {
@@ -27704,7 +27707,8 @@
         "BE_GO/internal/repository/subscription_reads_athlete.go",
         "BE_GO/internal/service/subscription_reads_athlete.go",
         "BE_GO/internal/service/subscription_reads_export.go",
-        "BE_GO/internal/repository/family_tax_codes.go"
+        "BE_GO/internal/repository/family_tax_codes.go",
+        "BE_GO/internal/repository/scoped_resources.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -27727,7 +27731,7 @@
         "errors": "401; 403 administrator without impersonation or registry permission; 403 {'msg': 'not allowed'} athletes without sport_association; 405 other methods; 500 owner without live association, malformed UUID parameters, a row without associate.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.members.read; athlete view for association-scoped sessions.",
-        "resource_scope": "Athletes: their group-aware subscriptions in sport_association; others: the scoped association's unarchived group-aware subscriptions.",
+        "resource_scope": "Athletes: their group-aware subscriptions in sport_association; others: the scoped association's unarchived group-aware subscriptions. In an association-scoped athlete session (an owner viewing as an athlete) scoped_queryset keeps the read to the session's subscriptions: the association's group-aware rows of the athlete and of its live, group-aware members that are the athlete's or carry a filled-in tax code of the athlete's subscriptions there.",
         "side_effects": "None.",
         "transaction": "Autocommit reads.",
         "execution_owner": "django"
@@ -27742,25 +27746,25 @@
         "docs/architecture/go-migration/subscription-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 296/296; Go 200 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-red/results.json",
-          "receipt_sha256": "be60f7b66e3646ca5b0ac99a857a022d4df50deb5377d60cd0189b3eb1f83006"
+          "result": "RED: Django 331/331; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-famvis-red-r1/results.json",
+          "receipt_sha256": "2eb05374ca51a03e214303ec08f898e4f85f94129d7f67315b7e9d26f66056a7"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 296/296 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-green/results.json",
-          "receipt_sha256": "def6e8375954c92e0a56547eaa1aae4e82aeb290e73f2c2a8ee08931bfa5bc21"
+          "result": "GREEN: 331/331 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-famvis-green-r1/results.json",
+          "receipt_sha256": "35c734668b417be703ba858a4d7204446f6bd68db887dbe79cce9141e9baf431"
         },
         {
-          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
-          "result": "Mutation control: fails Go on subscription-reads-info-athlete-blank-tax-code-other-user (200 instead of 403).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-mutation/results.json",
-          "receipt_sha256": "f6b371ee1912dcf8fd6bdfc3a41915d750b777840f7ef7fd7baff85b9e78de83"
+          "revision": "committing change with the athlete list not asking the session boundary (sessionVisible skipped)",
+          "result": "Mutation control: fails Go on subscription-reads-list-session-athlete (response.body: rows outside the session listed).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-famvis-mutation-r1/results.json",
+          "receipt_sha256": "0f1a36fd5ccbef4cd25cb83c5a35f1bacac45046fdc3bb3bce9114f789e66e6b"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; the POST pdf export stays refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go). Association-scoped athlete sessions on list, list/all, info and calendar keep scoped_queryset's boundary through the shared scoped resources reader (famvis)."
       ]
     },
     {
@@ -27791,7 +27795,8 @@
         "BE_GO/internal/repository/subscription_reads_athlete.go",
         "BE_GO/internal/service/subscription_reads_athlete.go",
         "BE_GO/internal/service/subscription_reads_export.go",
-        "BE_GO/internal/repository/family_tax_codes.go"
+        "BE_GO/internal/repository/family_tax_codes.go",
+        "BE_GO/internal/repository/scoped_resources.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -27829,25 +27834,25 @@
         "docs/architecture/go-migration/subscription-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 296/296; Go 200 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-red/results.json",
-          "receipt_sha256": "be60f7b66e3646ca5b0ac99a857a022d4df50deb5377d60cd0189b3eb1f83006"
+          "result": "RED: Django 331/331; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-famvis-red-r1/results.json",
+          "receipt_sha256": "2eb05374ca51a03e214303ec08f898e4f85f94129d7f67315b7e9d26f66056a7"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 296/296 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-green/results.json",
-          "receipt_sha256": "def6e8375954c92e0a56547eaa1aae4e82aeb290e73f2c2a8ee08931bfa5bc21"
+          "result": "GREEN: 331/331 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-famvis-green-r1/results.json",
+          "receipt_sha256": "35c734668b417be703ba858a4d7204446f6bd68db887dbe79cce9141e9baf431"
         },
         {
-          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
-          "result": "Mutation control: fails Go on subscription-reads-info-athlete-blank-tax-code-other-user (200 instead of 403).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-mutation/results.json",
-          "receipt_sha256": "f6b371ee1912dcf8fd6bdfc3a41915d750b777840f7ef7fd7baff85b9e78de83"
+          "revision": "committing change with the athlete list not asking the session boundary (sessionVisible skipped)",
+          "result": "Mutation control: fails Go on subscription-reads-list-session-athlete (response.body: rows outside the session listed).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-famvis-mutation-r1/results.json",
+          "receipt_sha256": "0f1a36fd5ccbef4cd25cb83c5a35f1bacac45046fdc3bb3bce9114f789e66e6b"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; the POST pdf export stays refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go). Association-scoped athlete sessions on list, list/all, info and calendar keep scoped_queryset's boundary through the shared scoped resources reader (famvis)."
       ]
     },
     {
