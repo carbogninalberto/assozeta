@@ -32,8 +32,11 @@ type paraLine struct {
 // paragraph is platypus.Paragraph for text without markup: one fragment in
 // the style's font (reportlab's "kind 0" lines).
 type paragraph struct {
-	style  paraStyle
-	text   string
+	style paraStyle
+	text  string
+	// words are the words of a part of a split paragraph (text is unused).
+	words  []string
+	broken bool // a line ends inside a long word
 	lines  []paraLine
 	width  float64
 	height float64
@@ -125,17 +128,23 @@ func (p *paragraph) splitWord(word string, lineWidth float64, maxWidth float64) 
 // breakLines is Paragraph.breakLines for one fragment (both line widths are
 // the available width: the styles have no indents).
 func (p *paragraph) breakLines(maxWidth float64) {
-	p.lines = nil
-	text := strings.Trim(p.text, rlSpaces)
-	if text == "" {
-		return
+	p.lines, p.broken = nil, false
+	var words []paraWord
+	if p.words != nil {
+		for _, word := range p.words {
+			words = append(words, paraWord{text: word})
+		}
+	} else {
+		text := strings.Trim(p.text, rlSpaces)
+		if text == "" {
+			return
+		}
+		for _, word := range paraSplit(text) {
+			words = append(words, paraWord{text: word})
+		}
 	}
 	f := fontsByName[p.style.fontName]
 	size := p.style.fontSize
-	var words []paraWord
-	for _, word := range paraSplit(text) {
-		words = append(words, paraWord{text: word})
-	}
 	spaceWidth := stringWidth(" ", f, size)
 	shrink := 0.05 * spaceWidth
 	var line []string
@@ -153,7 +162,7 @@ func (p *paragraph) breakLines(maxWidth float64) {
 		if newWidth > limWidth && !forced {
 			if !word.split && wordWidth > maxWidth {
 				words = append(p.splitWord(word.text, currentWidth+spaceWidth, maxWidth), words...)
-				forced = true
+				forced, p.broken = true, true
 				continue
 			}
 		}
@@ -191,9 +200,11 @@ func (p *paragraph) wrap(c *canvas, availWidth, availHeight float64) (float64, f
 }
 
 // split is Paragraph.split: nothing when fewer than two lines fit, the whole
-// paragraph when all do. A paragraph cut between two pages is not ported.
+// paragraph when all do, else the lines that fit and the rest as two
+// paragraphs of those words (no orphan line; a last line alone is allowed).
+// A paragraph with a long word cut over several lines is not split here.
 func (p *paragraph) split(c *canvas, availWidth, availHeight float64) []flowable {
-	if p.text == "" || availWidth < fuzz || availHeight < fuzz {
+	if (p.text == "" && p.words == nil) || availWidth < fuzz || availHeight < fuzz {
 		return nil
 	}
 	p.wrap(c, availWidth, availHeight)
@@ -204,8 +215,19 @@ func (p *paragraph) split(c *canvas, availWidth, availHeight float64) []flowable
 	if len(p.lines) <= s {
 		return []flowable{p}
 	}
-	c.err = ErrNotPorted
-	return nil
+	if p.broken {
+		c.err = ErrNotPorted
+		return nil
+	}
+	first, rest := &paragraph{style: p.style, words: []string{}}, &paragraph{style: p.style, words: []string{}}
+	for i, line := range p.lines {
+		if i < s {
+			first.words = append(first.words, line.words...)
+		} else {
+			rest.words = append(rest.words, line.words...)
+		}
+	}
+	return []flowable{first, rest}
 }
 
 // minWidth is Paragraph.minWidth: the widest word.

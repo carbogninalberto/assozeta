@@ -25,6 +25,10 @@ SOURCES = ('TESTS/fixtures/templates_reports_http.json', 'TESTS/contracts/test_t
            'BE/application/models/user_models.py', 'BE/application/models/report_models.py',
            'BE/application/mcp_server/server.py', 'BE/application/mcp_server/query_builder.py',
            'BE/application/mcp_server/security.py', 'BE/application/mcp_server/schema.py',
+           'BE/application/mcp_server/attendance.py', 'BE/application/mcp_server/exporters/__init__.py',
+           'BE/application/mcp_server/exporters/csv_exporter.py', 'BE/application/mcp_server/exporters/xlsx_exporter.py',
+           'BE/application/mcp_server/exporters/pdf_exporter.py', 'BE/application/mixin.py', 'TESTS/contracts/pdf.py',
+           'TESTS/contracts/xlsx.py',
            'BE/instance/integration_configuration.py', 'BE/application/tenant_scope.py',
            'BE/application/audit_resolvers.py', 'BE/application/permissions_registry.py', 'BE/core/middleware.py')
 TEMPLATE, REPORT = 'application.SportAssociationModuleTemplates', 'application.SavedReport'
@@ -39,7 +43,8 @@ def moment(value):
 def seed_fixture(apps, private_work, raw):
     from auditlog.context import disable_auditlog
     from django.db import transaction
-    from application.models import SportAssociationModuleTemplates, Tags, PaymentCategory, Carnet
+    from application.models import (Associate, AttendanceDay, AttendanceRegistry, Carnet, Course, CourseSubscription, PaymentCategory,
+                                    SportAssociationModuleTemplates, Subscription, Tags)
     from application.models.report_models import SavedReport
     from TESTS.adapters.django.historical_read_cache import snapshot_historical_read_cache
     source = contract.load_source()
@@ -66,6 +71,24 @@ def seed_fixture(apps, private_work, raw):
             create(Carnet, Carnet(carnet_id=v['id'], title=v['title'], description=v['description'], sport_association_id=v['association'],
                    lessons_number=v['lessons'], fee=Decimal(v['fee']), public=v['public'], meta=v['meta']))
             Carnet._base_manager.filter(pk=v['id']).update(creation_date=moment(v['created']))
+        for n, v in enumerate(seed['people'].values()):
+            create(Associate, Associate(associate_id=v['id'], sport_association_id=ids['own_association'], first_name=v['first'],
+                                        last_name=v['last'], sex='M', tax_code=f'RPTRPT80A{n + 10}H501U', is_minor=False))
+            create(Subscription, Subscription(subscription_id=v['subscription'], sport_association_id=ids['own_association'],
+                                              user_id=ids['owner'], associate_id=v['id'], status_flag=Subscription.ACCEPTED))
+        for v in seed['courses'].values():
+            create(Course, Course(course_id=v['id'], sport_association_id=v['association'], title=v['title'], deleted=v['deleted'],
+                                  group_id=v['group'], fee=Decimal('50.00')))
+        for v in seed['enrolled'].values():
+            create(CourseSubscription, CourseSubscription(
+                course_subscription_id=v['id'], course_id=seed['courses'][v['course']]['id'], deleted=v['deleted'],
+                subscription_id=seed['people'][v['person']]['subscription'] if v['person'] else None))
+        for v in seed['registries'].values():
+            create(AttendanceRegistry, AttendanceRegistry(attendance_registry_id=v['id'], course_id=seed['courses'][v['course']]['id'],
+                                                          events=[], status=AttendanceRegistry.PUBLISHED))
+        for v in seed['days'].values():
+            create(AttendanceDay, AttendanceDay(attendance_day_id=v['id'], attendance_registry_id=seed['registries'][v['registry']]['id'],
+                                                title='Lezione', date=moment(v['date']), attendees=v['attendees']))
         for v in seed['reports'].values():
             create(SavedReport, SavedReport(saved_report_id=v['id'], sport_association_id=v['association'], created_by_id=ids[v['creator']],
                    name=v['name'], description=v['description'], tool_name=v['tool'], params=v['params'], ui_config=v['ui'],

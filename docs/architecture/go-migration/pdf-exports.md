@@ -64,7 +64,7 @@ paragraphs:
 - `platypus.Paragraph` for plain text: reportlab's whitespace cleaning, line breaking with the 5 % space shrinkage, long
   words split character by character, left-aligned or centred lines in one text object (`Td` offsets, `Tw` for a shrunk
   line), `spaceBefore`/`spaceAfter` inside a cell and in the frame, and a paragraph that moves to the next page when
-  fewer than two lines fit;
+  fewer than two lines fit, or is cut there when more do;
 - `platypus.Image` of a JPEG: the file is embedded as it is (ASCII85 + DCT) with its size and colour space, drawn through
   a form object listed in the resources of the page that uses it. reportlab names the object `FormXob.<md5 of the RGB
   pixels PIL decodes>`; another JPEG decoder does not give the same pixels bit for bit, so Go names it after the file's
@@ -72,8 +72,10 @@ paragraphs:
   dictionary, placement) is compared exactly.
 
 Refused (`ErrNotPorted`, the callers answer the 500 page before any write): paragraph text containing `&`, `<` or a soft
-hyphen (reportlab's markup parser and its multi-fragment layout are not ported), a paragraph that would be cut between two
-pages, and a logo that is not an 8-bit grey or colour JPEG in strict base64.
+hyphen (reportlab's markup parser and its multi-fragment layout are not ported), a paragraph cut between two pages when one
+of its lines ends inside a long word, and a logo that is not an 8-bit grey or colour JPEG in strict base64. Any other
+paragraph too long for the page is cut as `Paragraph.split` cuts it: the lines that fit stay (never one alone), the rest
+continues as a paragraph of the remaining words.
 
 A document reportlab fails to build is `ErrLayout`, which each caller answers as Django answers an exception of the export:
 a row taller than a page (`LayoutError`), a list value in a cell (reportlab takes it for a list of flowables), rows of
@@ -86,7 +88,7 @@ their decoded form in `BE_GO/internal/pdfexport/testdata/golden.json`; `go test 
 and compares it byte for byte in that form (people, no rows, every value type, escapes and substitution fonts, several pages,
 a page filled exactly, A3, A2, wider than A2, a row taller than the page, alignment, portrait; balance sheets without a logo,
 with colour and grey JPEG logos, on several pages, with long, unbroken, empty and multi-line denominations, substitution
-fonts in the header, and the closing line on a page of its own: 35 documents), and checks the digest of a document against
+fonts in the header, and the closing line on a page of its own: 35 documents, 66 with the saved-report ones below), and checks the digest of a document against
 reportlab's invariant one. `refusal_test.go` pins the refused inputs.
 
 ## Evidence
@@ -97,10 +99,19 @@ Go, Caddy `/api/v1` and `/api/v2` (`v2pdf-versioned-r2`, after merging `codex/go
 earlier refusal and a mutation control (see the family docs). `xlsxexport` gained `Value.PythonStr`; payment-export 87/87
 and misc-exports 70/70 re-run natively (`v2pdf-rerun-r1`).
 
-## Not ported: the saved-report files
+## The saved-report documents
 
-`saved-reports/<pk>/run` with the tools `export_data`, `export_multi_sheet` and `get_attendance_matrix` stays refused
-(`dto/report_tools.go`). Their PDFs put a `Paragraph` in every table cell and let reportlab size the columns
-(`Table._calcPreliminaryWidths`), repeat the header row, and for the attendance matrix draw rotated date headers with a
-custom flowable; their workbooks are styled openpyxl sheets and the CSV is the csv module's. None of that is in
-`pdfexport` or `xlsxexport` yet.
+`pdfexport.ReportTable{Headers, Rows, Title, Footer, TextBefore, TextAfter}` is the saved-report `PDFExporter` and
+`pdfexport.Attendance{Courses}` is `export_attendance_matrix_pdf` (templates-reports.md, "File tools"):
+
+- a `Paragraph` in every cell and no column widths: `Table._calcPreliminaryWidths` (`widths.go`) starts every column from the
+  widest word plus the paddings, shares spare width towards equal columns (the least disappointed first) and shrinks every
+  column by the same ratio when the page is too narrow;
+- `repeatRows=1`: the header row and its commands are repeated on every part of a split table (`ROWBACKGROUNDS` included);
+- `Spacer` and `PageBreak` between the texts, the tables and the courses, 40 points of top margin;
+- the attendance header: fixed widths and the `VerticalText` flowable (a 90 degree rotation multiplied into the translation
+  reportlab already wrote, then the text).
+
+Contract engines `report_table` and `attendance` (`TESTS/contracts/pdf.py`); 31 more golden documents (one, many and
+squeezed columns, wrapped cells, several pages, A3, A2, a row taller than the page, the texts, texts cut over two and over
+many pages, one and several courses, more dates than the page holds).

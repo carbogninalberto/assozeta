@@ -29,7 +29,11 @@ var (
 )
 
 // ReportToolError is a tool result carrying 'error' (the view's 400).
-type ReportToolError struct{ Message string }
+type ReportToolError struct {
+	Message string
+	// Result is the whole result when it carries more than 'error'.
+	Result domain.RequestObject
+}
 
 func (e *ReportToolError) Error() string { return e.Message }
 

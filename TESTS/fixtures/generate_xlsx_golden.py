@@ -330,6 +330,144 @@ all_data('all-specials', [('Iscrizioni', [['h'], [' lead'], ['a & <b>'], ['x' * 
 all_data('all-illegal', [('Iscrizioni', [['h'], ['a\x07b']]), ('Pagamenti', [['h']])])
 all_data('all-wide', [('Iscrizioni', [[f'h{n}' for n in range(60)], [str(n) for n in range(60)]]), ('Pagamenti', [[]])])
 
+# ---------------------------------------------------------------- saved reports (pandas + openpyxl)
+# XLSXExporter (application/mcp_server/exporters/xlsx_exporter.py) and the attendance workbooks
+# (application/mcp_server/attendance.py), loaded from the Django sources without Django.
+import importlib.util
+import re
+import sys
+import types
+
+for package in ('application', 'application.mcp_server'):
+    sys.modules.setdefault(package, types.ModuleType(package))
+
+
+def django_module(name, relative):
+    spec = importlib.util.spec_from_file_location(name, ROOT / 'BE' / relative)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+django_module('application.mcp_server.exporters', 'application/mcp_server/exporters/__init__.py')
+XLSX_EXPORTER = django_module('application.mcp_server.exporters.xlsx_exporter', 'application/mcp_server/exporters/xlsx_exporter.py').XLSXExporter()
+ATTENDANCE = {'io': io, 're': re, 'Alignment': openpyxl.styles.Alignment, '_UNSAFE_SHEET_RE': re.compile(r'[<>:"/\\|?*\x00-\x1f\[\]]')}
+for function in ('_col_letter', '_auto_width', '_sanitize_sheet_name', '_export_single_course_xlsx', '_export_multi_course_xlsx',
+                 '_export_multi_sheet_xlsx'):
+    django_function('application/mcp_server/attendance.py', function, ATTENDANCE)
+
+sys.path.insert(0, str(ROOT))
+from TESTS.contracts import xlsx as CONTRACT  # noqa: E402
+
+
+def same_as_contract(data, spec):
+    """The contract's own builder must give the workbook Django's code gives."""
+    assert CONTRACT.difference(data, CONTRACT.build(spec), __import__('datetime').datetime(2000, 1, 1).astimezone(),
+                               __import__('datetime').datetime(2100, 1, 1).astimezone()) is None, spec
+    return data
+
+
+def sheet_rows(labels, rows):
+    keys = [f'k{n}' for n in range(len(labels))]
+    return keys, [dict(zip(keys, [decode(value) for value in row])) for row in rows], dict(zip(keys, labels))
+
+
+def report_xlsx(name, title, labels, rows, sheet_name=None):
+    payload = {'title': title, 'columns': labels, 'rows': rows}
+    keys, data, mapping = sheet_rows(labels, rows)
+
+    def build():
+        out = XLSX_EXPORTER.export(data, 'file', title=title, column_labels=mapping)[0]
+        return same_as_contract(out, {'engine': 'report_sheets', 'sheets': [{'title': sheet_name or title, 'columns': labels, 'rows': rows}]})
+    case(name, 'report_xlsx', payload, build)
+
+
+def report_sheets(name, *sheets, names=None):
+    payload = {'sheets': [{'title': title, 'columns': labels, 'rows': rows} for title, labels, rows in sheets]}
+    prepared = []
+    for title, labels, rows in sheets:
+        keys, data, mapping = sheet_rows(labels, rows)
+        prepared.append({'data': data, 'title': title, 'column_labels': mapping})
+
+    def build():
+        out = XLSX_EXPORTER.export_multi_sheet(prepared, 'file')[0]
+        if names:
+            same_as_contract(out, {'engine': 'report_sheets', 'sheets': [
+                {'title': final, 'columns': labels, 'rows': rows} for final, (_, labels, rows) in zip(names, sheets)]})
+        return out
+    case(name, 'report_sheets', payload, build)
+
+
+def matrix(title, dates, rows):
+    return {'course': title, 'dates': dates, 'rows': [{'name': person, 'attendance': marks, 'present_count': marks.count('P')}
+                                                      for person, marks in rows]}
+
+
+def attendance(name, mode, *courses):
+    payload = {'mode': mode, 'courses': list(courses)}
+
+    def build():
+        if mode == 'single':
+            out = ATTENDANCE['_export_single_course_xlsx'](courses[0])[0]
+        else:
+            full = {'multi': True, 'courses': list(courses)}
+            out = ATTENDANCE['_export_multi_course_xlsx' if mode == 'flat' else '_export_multi_sheet_xlsx'](full)[0]
+        return same_as_contract(out, {'engine': 'attendance', **payload})
+    case(name, 'attendance', payload, build)
+
+
+report_xlsx('rx-basic', 'Tags', ['tag_name', 'creation_date'], [['Nuoto', '15/09/2026 08:30'], ['nuoto agonistico', '01/10/2026 00:00']])
+report_xlsx('rx-numbers', 'Carnet', ['Titolo', 'Lezioni', 'Quota', 'Codice', 'Misto', 'Vuoti'],
+            [['Dieci', I(10), F(80.0), '00100', I(1), ''], ['Cinque', I(5), F(45.5), '3331234567', 'x', ''], ['', I(0), F(0.0), '12', '', '']])
+report_xlsx('rx-floats-integral', 'Quote', ['q', 'r'], [[F(80.0), F(1.5)], [F(45.0), I(2)]])
+report_xlsx('rx-numeric-strings', 'N', ['a', 'b', 'c'], [['1', '1.5', ' 7 '], ['2', '2e3', '0x10'], ['-3', '.5', '1_000']])
+report_xlsx('rx-long-title', 'T' * 40, ['a'], [['x']], sheet_name='T' * 31)
+report_xlsx('rx-title-invalid', 'a/b', ['a'], [['x']])
+report_xlsx('rx-title-brackets', 'a[b]', ['a'], [['x']])
+report_xlsx('rx-title-quote', "'a'", ['a'], [['x']])
+report_xlsx('rx-title-specials', 'A & <B> "c" è', ['a & <b>'], [['x & <y> "z"'], [' spazi ']])
+report_xlsx('rx-dup-labels', 'Dup', ['Nome', 'Tag', 'Nome'], [['x' * 60, '1', 'assegnato'], ['y', '2', '']])
+report_xlsx('rx-wide', 'Wide', [f'colonna {n}' for n in range(30)], [[str(n) * (n % 5 + 1) for n in range(30)], ['x'] * 30])
+report_xlsx('rx-long-values', 'Long', ['a', 'b'], [['x' * 80, I(123456789012)], ['y', I(-5)]])
+report_xlsx('rx-formula-error', 'F', ['a'], [['=1+1'], ['#N/A'], ['=']])
+report_xlsx('rx-illegal', 'F', ['a'], [['a\x07b']])
+report_xlsx('rx-dict', 'F', ['a', 'b'], [[{'dict': [['colore', 'blu']]}, 'x']])
+report_xlsx('rx-list', 'F', ['a', 'b'], [[{'list': ['a', 'b']}, 'x']])
+report_xlsx('rx-list-empty', 'F', ['a', 'b'], [[{'list': []}, 'x'], ['', 'y']])
+report_xlsx('rx-many-rows', 'Righe', ['n', 's'], [[I(n), f'riga {n}'] for n in range(40)])
+report_sheets('rs-two', ('Tags', ['Nome'], [['Nuoto'], ['Calcio']]), ('Carnet', ['Titolo', 'Lezioni'], [['Dieci', I(10)]]),
+              names=['Tags', 'Carnet'])
+report_sheets('rs-dup-titles', ('Tags', ['a'], [['1']]), ('Tags', ['a'], [['x']]), ('Tags', ['b'], [['y']]),
+              names=['Tags', 'Tags (2)', 'Tags (3)'])
+report_sheets('rs-dup-long', ('L' * 40, ['a'], [['1']]), ('L' * 35, ['a'], [['x']]), names=['L' * 31, 'L' * 27 + ' (2)'])
+report_sheets('rs-collision', ('Tags', ['a'], [['1']]), ('Tags (2)', ['b', 'c'], [['x', 'y']]), ('Tags', ['c'], [['z']]))
+report_sheets('rs-case', ('Tags', ['a'], [['1']]), ('tags', ['b'], [['x']]))
+report_sheets('rs-empty-title', ('', ['a'], [['1']]))
+report_sheets('rs-title-invalid', ('ok', ['a'], [['1']]), ('a:b', ['a'], [['1']]))
+
+DAYS = ['01/09/2026', '08/09/2026', '15/09/2026']
+attendance('ax-single', 'single', matrix('Nuoto', DAYS, [('Rossi Mario', ['P', '', 'P']), ('Bianchi Anna', ['', '', ''])]))
+attendance('ax-single-long', 'single', matrix('Corso di nuoto agonistico per adulti e ragazzi', DAYS[:1],
+                                              [('Cognome molto lungo ' * 3, ['P'])]))
+attendance('ax-single-many-dates', 'single', matrix('Nuoto', ['%02d/%02d/2026' % (d % 28 + 1, d // 28 + 1) for d in range(60)],
+                                                    [('Rossi Mario', ['P'] * 60)]))
+attendance('ax-single-no-rows', 'single', matrix('Nuoto', DAYS, []))
+attendance('ax-single-dup-date', 'single', matrix('Nuoto', ['01/09/2026', '01/09/2026', '08/09/2026'], [('Rossi Mario', ['P', '', 'P'])]))
+attendance('ax-single-dup-dates', 'single', matrix('Nuoto', ['01/09/2026'] * 4, [('Rossi Mario', ['P', '', 'P', ''])]))
+attendance('ax-single-title-invalid', 'single', matrix('Nuoto 1/2', DAYS, [('Rossi Mario', ['P', '', 'P'])]))
+attendance('ax-single-specials', 'single', matrix('Città & <sport>', DAYS[:1], [('=Rossi', ['P']), (' Bianchi & C ', [''])]))
+attendance('ax-flat', 'flat', matrix('Calcio', DAYS[:2], [('Rossi Mario', ['P', '']), ('Verdi Luca', ['P', 'P'])]),
+           matrix('Nuoto', DAYS[1:], [('Bianchi Anna', ['', 'P'])]))
+attendance('ax-flat-dup-date', 'flat', matrix('Calcio', ['01/09/2026', '01/09/2026'], [('Rossi Mario', ['P', ''])]),
+           matrix('Nuoto', DAYS, [('Bianchi Anna', ['', 'P', 'P'])]))
+attendance('ax-flat-no-rows', 'flat', matrix('Calcio', DAYS, []), matrix('Nuoto', DAYS, []))
+attendance('ax-flat-one-empty', 'flat', matrix('Calcio', DAYS, []), matrix('Nuoto', DAYS[:1], [('Bianchi Anna', ['P'])]))
+attendance('ax-sheets', 'sheets', matrix('Calcio', DAYS[:2], [('Rossi Mario', ['P', ''])]), matrix('Nuoto', DAYS, [('Bianchi Anna', ['', 'P', 'P'])]))
+attendance('ax-sheets-names', 'sheets', matrix('Nuoto: A/B [x]', DAYS[:1], [('a', ['P'])]), matrix('Nuoto- A-B -x', DAYS[:1], [('b', [''])]),
+           matrix('///', DAYS[:1], [('c', ['P'])]), matrix('N' * 40, DAYS[:1], [('d', ['P'])]), matrix('N' * 33, DAYS[:1], [('e', ['P'])]))
+attendance('ax-sheets-no-rows', 'sheets', matrix('Calcio', DAYS, [('Rossi Mario', ['P', '', ''])]), matrix('Nuoto', DAYS, []))
+
 OUTPUT.parent.mkdir(parents=True, exist_ok=True)
 OUTPUT.write_text(json.dumps({'versions': {'pandas': pandas.__version__, 'openpyxl': openpyxl.__version__,
                                            'xlsxwriter': xlsxwriter.__version__},

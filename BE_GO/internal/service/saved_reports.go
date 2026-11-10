@@ -180,6 +180,12 @@ func (s *SavedReports) Update(ctx context.Context, identity domain.ResolvedIdent
 // It returns the 200 result; tool exceptions are dto.ErrReportFailed and a
 // result with 'error' is *dto.ReportToolError.
 func (s *SavedReports) Run(ctx context.Context, identity domain.ResolvedIdentity, raw string, body any) (any, error) {
+	return s.RunGroup(ctx, identity, raw, body, "")
+}
+
+// RunGroup is Run for a request with the X-Group-Id header value group: the
+// file tools resolve courses through the group-aware manager.
+func (s *SavedReports) RunGroup(ctx context.Context, identity domain.ResolvedIdentity, raw string, body any, group string) (any, error) {
 	association, _, err := s.scope(ctx, identity)
 	if err != nil {
 		return nil, err
@@ -215,6 +221,13 @@ func (s *SavedReports) Run(ctx context.Context, identity domain.ResolvedIdentity
 	}
 	// {**report.params, **overrides}: later keys replace values in place.
 	merged := dto.PythonDict(append(append(domain.RequestObject{}, params...), overrides...))
+	switch row.ToolName {
+	case "export_data", "export_multi_sheet", "get_attendance_matrix":
+		if _, present := merged.Lookup("sport_association_id"); present {
+			return nil, dto.ErrReportFailed // multiple values for keyword argument
+		}
+		return s.runFileTool(ctx, row.ToolName, merged, association, supplierGroup(group))
+	}
 	var timeout int64
 	plan, err := dto.PlanReportTool(row.ToolName, merged, association, func() (dto.ReportSettings, error) {
 		settings, err := s.reportSettings(ctx)

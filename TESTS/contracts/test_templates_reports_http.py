@@ -1,7 +1,17 @@
-"""Independently authored templates/<pk>/update and saved-reports/<pk>/run HTTP expectations; no Django imports."""
+"""Independently authored templates/<pk>/update and saved-reports/<pk>/run HTTP expectations; no Django imports.
+
+A run that answers a file is authored as ``{'$file': {'type': content type,
+'disposition': Content-Disposition, ...}}`` with one of ``'csv': text`` (the
+UTF-8 text after the byte order mark, compared byte for byte), ``'xlsx':
+spec`` (TESTS/contracts/xlsx.py) or ``'pdf': spec`` (TESTS/contracts/pdf.py);
+the workbook and the document are built here with the same libraries and
+compared by their opt-in standards within the request window.
+"""
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
+from TESTS.contracts import pdf, xlsx
 from TESTS.http_client import Client
 from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, ResponseFailure, difference, require, substitute
 
@@ -24,7 +34,9 @@ def assert_case(case, base_url, *, token, sessions):
     if 'raw_body' in case:
         body = case['raw_body'].encode()
         headers['Content-Type'] = case['content_type']
+    started = datetime.now(timezone.utc)
     status, raw, received = Client(base_url, token).request(case['method'], case['path'], body, headers, raw=True, include_headers=True)
+    finished = datetime.now(timezone.utc)
 
     def check(condition, code):
         if not condition:
@@ -40,6 +52,20 @@ def assert_case(case, base_url, *, token, sessions):
     check(received.get('WWW-Authenticate') == ('Bearer realm="api"' if status == 401 else None), 'response.authentication')
     if case['response'] == '<empty>':
         check(raw == b'' and received.get('Content-Type') is None, 'response.empty')
+        return status
+    if isinstance(case['response'], dict) and set(case['response']) == {'$file'}:
+        expected = case['response']['$file']
+        check(received.get('Content-Type') == expected['type'], 'response.file-type')
+        check(received.get('Content-Disposition') == expected['disposition'], 'response.file-disposition')
+        check(isinstance(raw, bytes) and len(raw) > 0, 'response.file-empty')
+        if 'csv' in expected:
+            check(raw == b'\xef\xbb\xbf' + expected['csv'].encode(), 'response.file-csv')
+        elif 'xlsx' in expected:
+            reason = xlsx.difference(xlsx.build(expected['xlsx']), raw, started, finished)
+            check(reason is None, f'response.file-xlsx: {reason}'[:600])
+        else:
+            reason = pdf.matches_bytes(expected['pdf'], raw, started, finished)
+            check(reason is None, f'response.file-pdf: {reason}'[:600])
         return status
     try:
         actual = json.loads(raw)

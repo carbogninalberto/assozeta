@@ -84,10 +84,53 @@ Ported in `BE_GO/internal/dto/report_tools.go` for the whitelisted models
   (`PaymentCategory.type`).
 - `get_schema`: the `{"error": "Model <name> not found"}` answer.
 
+## File tools: export_data, export_multi_sheet, get_attendance_matrix
+
+The run view answers a result with `data_base64` as an `HttpResponse` of the
+file with the tool's content type and `Content-Disposition: attachment;
+filename="<name>"` (ISO-8859-1 bytes, or one MIME word when the name does not
+fit), a result with `error` as a 400 with the whole result (`count`, `course`,
+`matches` included), and every exception as the JSON 500. Go runs the tool
+functions of `service/business_mcp_query.go` (the ones the MCP server uses)
+with the files switched on (`service/report_files.go`):
+
+- `export_data`: the format check (`Unsupported format: ...`), the query
+  (`offset` is not forwarded), `No data to export`, then
+  `format_export_data` (identifier and flag columns left out, `Vero`/`Falso`,
+  `DD/MM/YYYY[ HH:MM]`, empty for null) and the exporter: the CSV with its
+  byte order mark; `XLSXExporter` (one sheet named `title[:31]`, numeric
+  conversion, `Int64` for whole numbers, widths `min(longest + 2, 50)`); the
+  `PDFExporter` (a paragraph in every cell, reportlab's own column widths, the
+  header row repeated, A4/A3/A2 by the number of columns, `header_text or
+  title`, the footer, the texts before and after). The file is
+  `sanitize_text(title or model_name).<format>`.
+- `export_multi_sheet`: the queries in order (`Sheet n: model_name is
+  required` after the earlier sheets ran), sheets without rows skipped, sheet
+  names cut to 31 characters and numbered ` (n)` when repeated, the file
+  `sanitize_text(filename).xlsx`.
+- `get_attendance_matrix`: the course by id, by name (`icontains`) or every
+  course with a registry, through the group-aware manager (the request's
+  `X-Group-Id`); days ordered by date within `date_from`/`date_to` (values
+  `strptime` rejects are no bound); enrolments named `last first` (their own
+  id without a subscription) and sorted by the lower-cased name. Without
+  `export` the preview; with it the workbook (one course, every course in one
+  sheet with a `Corso` column, or one sheet per course with `multi_sheet`) or,
+  for `format: pdf`, the document with the dates written bottom to top and a
+  page per course.
+
+The documents are compared by the decoded-document and part-by-part standards
+(pdf-exports.md, xlsx-exports.md). The MCP server and the assistant keep
+refusing the XLSX and PDF results (their result dictionaries are not covered
+by this route). An enrolment without a subscription is now listed in the
+matrix for the MCP server as well.
+
 ## Not ported (refused with the HTML 500 page before any query)
 
-- File tools: `export_data`, `export_multi_sheet`, `get_attendance_matrix`
-  (CSV/XLSX/PDF generation and base64 downloads).
+- In the file tools (below): a `format`, title, label or text argument that is
+  not a string, a cell holding a list or dict in the CSV, text that looks like
+  an ISO date and time in another spelling than `isoformat()`'s, a sheet
+  without columns, a generated sheet name equal to an earlier one, a course
+  without a title, and the paragraph inputs `pdfexport` refuses (pdf-exports.md).
 - `get_schema` for a whitelisted model or the full schema (static model
   metadata).
 - The other whitelisted models; relation traversal (`a__b`), reverse
@@ -114,3 +157,14 @@ the changes). RED: Django 84/84 and Go 404 on the first case before any Go
 code. GREEN: native Django, native Go, Caddy `/api/v1` and `/api/v2` pass
 84/84 with exact template, audit, index and report effects. Dropping the
 nullable `IS NOT NULL` from `exclude` fails the run.
+
+File tools (`v2rep-*` receipts): the fixture has 125 cases (41 more run
+cases over the same tags, categories and carnets plus seeded courses,
+registries, days and enrolments). RED `v2rep-red-r1`: Django 124/124, Go the
+500 page on the first file case; RED `v2rep-red-r2` (the texts longer than a
+page): Django 125/125, Go 500 on `run-export-pdf-texts-over-pages`. GREEN
+`v2rep-versioned-r2`: native Django, native Go, Caddy `/api/v1` and `/api/v2`
+125/125. Mutations CAUGHT: `v2rep-mutation-r1` (one sheet per course swapped
+with the single sheet, `run-attendance-export-xlsx-all`) and
+`v2rep-mutation-r2` (one line too many kept on the first page of a cut
+paragraph, `run-export-pdf-texts-over-pages`).

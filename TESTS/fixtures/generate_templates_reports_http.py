@@ -77,6 +77,29 @@ CARNETS = {
     'foreign': carnet(FOREIGN, 'Estero', '99.00', 3, created='2026-06-15T10:00:00+00:00'),
 }
 
+# Attendance data of get_attendance_matrix: people, courses, registries and days.
+PEOPLE = {key: {'id': next(ids), 'subscription': next(ids), 'first': first, 'last': last} for key, (first, last) in {
+    'rossi': ('Mario', 'Rossi'), 'bianchi': ('Anna', 'Bianchi'), 'verdi': ('Luca', 'verdi'), 'deluca': ('Ugo', 'de Luca'),
+    'acca': ('Zoe', 'ÀCCA')}.items()}
+COURSES = {key: {'id': next(ids), 'association': association, 'title': title, 'deleted': deleted, 'group': group}
+           for key, (association, title, deleted, group) in {
+    'nuoto': (OWN, 'Nuoto', False, None), 'calcio': (OWN, 'Calcio a 5', False, IDS['own_group']), 'baby': (OWN, 'Nuoto baby', False, None),
+    'tennis': (OWN, 'Tennis', False, None), 'old': (OWN, 'Vecchio corso', True, None), 'foreign': (FOREIGN, 'Nuoto estero', False, None)}.items()}
+ENROLLED = {key: {'id': next(ids), 'course': course, 'person': person, 'deleted': deleted} for key, (course, person, deleted) in {
+    'n_rossi': ('nuoto', 'rossi', False), 'n_bianchi': ('nuoto', 'bianchi', False), 'n_verdi': ('nuoto', 'verdi', False),
+    'n_acca': ('nuoto', 'acca', True), 'n_none': ('nuoto', None, False), 'c_rossi': ('calcio', 'rossi', False),
+    'c_deluca': ('calcio', 'deluca', False), 'c_acca': ('calcio', 'acca', False), 'b_rossi': ('baby', 'rossi', False),
+    'o_rossi': ('old', 'rossi', False), 'f_rossi': ('foreign', 'rossi', False)}.items()}
+E = {key: value['id'] for key, value in ENROLLED.items()}
+REGISTRIES = {key: {'id': next(ids), 'course': key} for key in ('nuoto', 'calcio', 'baby', 'old', 'foreign')}
+DAYS = {key: {'id': next(ids), 'registry': registry, 'date': date, 'attendees': attendees} for key, (registry, date, attendees) in {
+    'n1': ('nuoto', '2026-09-01T18:00:00+00:00', [{'course_subscription_id': E['n_rossi']}, {'course_subscription_id': E['n_verdi']}]),
+    'n2': ('nuoto', '2026-09-08T23:30:00+00:00', [E['n_bianchi'], E['n_acca']]),
+    'n3': ('nuoto', '2026-09-15T18:00:00+00:00', None),
+    'c1': ('calcio', '2026-09-01T17:00:00+00:00', [{'course_subscription_id': E['c_rossi']}, {'course_subscription_id': E['c_deluca']}]),
+    'c2': ('calcio', '2026-10-06T17:00:00+00:00', [{'course_subscription_id': E['c_acca']}, {'other': 1}]),
+    'o1': ('old', '2026-09-01T18:00:00+00:00', []), 'f1': ('foreign', '2026-09-01T18:00:00+00:00', [])}.items()}
+
 REPORTS = {}
 
 
@@ -317,11 +340,184 @@ run('aggregate-group-boolean-filtered', 'aggregate_data', {'model_name': 'Carnet
 # get_schema
 run('schema-unknown-model', 'get_schema', {'model_name': 'Nope'}, 400, {'error': 'Model Nope not found'})
 
+# ---------------------------------------------------------------------------
+# The file tools: export_data, export_multi_sheet, get_attendance_matrix
+# ---------------------------------------------------------------------------
+import sys  # noqa: E402
+from email.header import Header  # noqa: E402
+
+XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+
+def disposition(filename):
+    """Django's header value: ISO-8859-1 when it fits, else one MIME word."""
+    value = f'attachment; filename="{filename}"'
+    try:
+        value.encode('latin-1')
+    except UnicodeEncodeError:
+        return Header(value, 'utf-8', maxlinelen=sys.maxsize).encode()
+    return value
+
+
+def download(filename, kind, **content):
+    return {'$file': {'type': kind, 'disposition': disposition(filename), **content}}
+
+
+I = lambda n: {'int': str(n)}
+F = lambda x: {'float': repr(float(x))}
+
+run('export-missing-model-error', 'export_data', {'format': 'csv'}, 500, FAILED)
+run('export-unsupported-format', 'export_data', {'model_name': 'Tags', 'format': 'doc'}, 400,
+    {'error': 'Unsupported format: doc. Use: csv, xlsx, pdf'})
+run('export-no-data', 'export_data', {'model_name': 'Tags', 'filters': {'tag_name': 'zzz'}, 'format': 'pdf'}, 400,
+    {'error': 'No data to export', 'count': 0})
+run('export-unknown-filter-error', 'export_data', {'model_name': 'Tags', 'filters': {'colour': 'x'}}, 500, FAILED)
+run('export-csv-tags', 'export_data', {'model_name': 'Tags', 'fields': ['tag_name', 'creation_date'], 'order_by': ['tag_name'], 'offset': 1},
+    200, download('Tags.csv', 'text/csv; charset=utf-8', csv='tag_name,creation_date\r\nCalcio & Basket,01/09/2026 10:00\r\n'
+                  'Nuoto,15/09/2026 08:30\r\nnuoto agonistico,01/10/2026 00:00\r\n'))
+# Every allowed field: the identifier columns are left out of the file; labels and quoting.
+run('export-csv-title-labels', 'export_data', {'model_name': 'Tags', 'title': 'Elenco: "tag" <1>', 'filters': {'tag_name__icontains': 'nuoto'},
+    'order_by': ['-tag_name'], 'column_labels': {'tag_name': 'Nome, tag', 'creation_date': 'Creato "il"', 'altro': 'x'}}, 200,
+    download('Elenco- -tag- -1.csv', 'text/csv; charset=utf-8',
+             csv='"Nome, tag","Creato ""il"""\r\nnuoto agonistico,01/10/2026 00:00\r\nNuoto,15/09/2026 08:30\r\n'))
+run('export-csv-numbers-booleans', 'export_data', {'model_name': 'Carnet', 'fields': ['title', 'lessons_number', 'fee', 'public', 'description'],
+    'order_by': ['lessons_number']}, 200, download('Carnet.csv', 'text/csv; charset=utf-8',
+    csv='title,lessons_number,fee,public,description\r\n,0,0.0,Vero,\r\nCinque,5,45.5,Falso,\r\nDieci ingressi,10,80.0,Vero,Pacchetto\r\n'))
+CARNET_ROWS = [['', I(0), F(0.0), 'Vero', ''], ['Cinque', I(5), F(45.5), 'Falso', ''], ['Dieci ingressi', I(10), F(80.0), 'Vero', 'Pacchetto']]
+run('export-xlsx-carnets', 'export_data', {'model_name': 'Carnet', 'format': 'xlsx',
+    'fields': ['title', 'lessons_number', 'fee', 'public', 'description'], 'order_by': ['lessons_number']}, 200,
+    download('Carnet.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Carnet', 'columns': ['title', 'lessons_number', 'fee', 'public', 'description'], 'rows': CARNET_ROWS}]}))
+LONG_TITLE = 'Carnet attivi 2026 con un titolo più lungo di trentuno'
+run('export-xlsx-override-title-json', 'export_data', {'model_name': 'Carnet', 'title': LONG_TITLE, 'fields': ['title', 'meta'],
+    'filters': {'lessons_number': 10}, 'column_labels': {'title': 'Titolo'}}, 200,
+    download(LONG_TITLE + '.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': LONG_TITLE[:31], 'columns': ['Titolo', 'meta'], 'rows': [['Dieci ingressi', {'dict': [['colore', 'blu']]}]]}]}),
+    overrides={'format': 'xlsx'})
+run('export-xlsx-sheet-name-error', 'export_data', {'model_name': 'Tags', 'format': 'xlsx', 'title': 'a/b'}, 500, FAILED)
+run('export-pdf-tags', 'export_data', {'model_name': 'Tags', 'format': 'pdf', 'fields': ['tag_name', 'creation_date'],
+    'filters': {'tag_name__icontains': 'nuoto'}, 'order_by': ['tag_name']}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={'engine': 'report_table', 'headers': ['tag_name', 'creation_date'], 'title': 'Tags',
+             'rows': [['Nuoto', '15/09/2026 08:30'], ['nuoto agonistico', '01/10/2026 00:00']]}))
+run('export-pdf-categories-texts', 'export_data', {'model_name': 'PaymentCategory', 'format': 'pdf', 'title': 'Categorie €',
+    'fields': ['name', 'type', 'expense', 'creation_date'], 'order_by': ['name'], 'column_labels': {'name': 'Nome', 'type': 'Tipo'},
+    'header_text': 'Intestazione', 'footer_text': 'ASD Aurora', 'text_before': 'Elenco delle categorie.', 'text_after': 'Fine.'}, 200,
+    download('Categorie €.pdf', 'application/pdf', pdf={'engine': 'report_table', 'headers': ['Nome', 'Tipo', 'expense', 'creation_date'],
+             'title': 'Intestazione', 'footer_text': 'ASD Aurora', 'text_before': 'Elenco delle categorie.', 'text_after': 'Fine.',
+             'rows': [['Affitto', 'Commerciale', 'Vero', '01/02/2026 09:00'], ['Eventi', 'Istituzionale', 'Vero', '01/04/2026 09:00'],
+                      ['Quote', 'Istituzionale', 'Falso', '10/01/2026 09:00'], ['Sponsor', '3', 'Falso', '01/03/2026 09:00']]}))
+run('export-pdf-numbers', 'export_data', {'model_name': 'Carnet', 'format': 'pdf', 'fields': ['title', 'lessons_number', 'fee', 'public', 'description'],
+    'order_by': ['lessons_number']}, 200, download('Carnet.pdf', 'application/pdf', pdf={
+        'engine': 'report_table', 'headers': ['title', 'lessons_number', 'fee', 'public', 'description'], 'title': 'Carnet',
+        'rows': [['', '0', '0.0', 'Vero', ''], ['Cinque', '5', '45.5', 'Falso', ''], ['Dieci ingressi', '10', '80.0', 'Vero', 'Pacchetto']]}))
+# Texts longer than a page: the paragraphs continue on the next one.
+LONG_TEXT = ' '.join(['il corso di nuoto agonistico per adulti si tiene nella piscina comunale ogni settimana'] * 110)
+run('export-pdf-texts-over-pages', 'export_data', {'model_name': 'Tags', 'format': 'pdf', 'fields': ['tag_name'],
+    'filters': {'tag_name__icontains': 'nuoto'}, 'order_by': ['tag_name'], 'text_before': LONG_TEXT, 'text_after': LONG_TEXT}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={'engine': 'report_table', 'headers': ['tag_name'], 'title': 'Tags',
+             'rows': [['Nuoto'], ['nuoto agonistico']], 'text_before': LONG_TEXT, 'text_after': LONG_TEXT}))
+
+run('sheets-missing-error', 'export_multi_sheet', {'filename': 'x'}, 500, FAILED)
+run('sheets-none', 'export_multi_sheet', {'sheets': []}, 400, {'error': 'No sheets specified'})
+run('sheets-model-required', 'export_multi_sheet', {'sheets': [{'model_name': 'Tags'}, {'title': 'x'}]}, 400,
+    {'error': 'Sheet 2: model_name is required'})
+run('sheets-no-data', 'export_multi_sheet', {'sheets': [{'model_name': 'Tags', 'filters': {'tag_name': 'zzz'}}]}, 400,
+    {'error': 'No data to export from any sheet', 'count': 0})
+run('sheets-unknown-model-error', 'export_multi_sheet', {'sheets': [{'model_name': 'Tags'}, {'model_name': 'Nope'}]}, 500, FAILED)
+run('sheets-two', 'export_multi_sheet', {'sheets': [
+    {'model_name': 'Tags', 'fields': ['tag_name'], 'order_by': ['tag_name'], 'filters': {'tag_name__icontains': 'nuoto'}},
+    {'model_name': 'Carnet', 'title': 'Carnet attivi', 'fields': ['title', 'lessons_number'], 'order_by': ['lessons_number'],
+     'column_labels': {'lessons_number': 'Lezioni'}},
+    {'model_name': 'Tags', 'filters': {'tag_name': 'zzz'}}]}, 200,
+    download('Export.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': ['tag_name'], 'rows': [['Nuoto'], ['nuoto agonistico']]},
+        {'title': 'Carnet attivi', 'columns': ['title', 'Lezioni'], 'rows': [['', I(0)], ['Cinque', I(5)], ['Dieci ingressi', I(10)]]}]}))
+run('sheets-repeated-titles-filename', 'export_multi_sheet', {'filename': 'Report: tag/2026', 'sheets': [
+    {'model_name': 'Tags', 'fields': ['tag_name'], 'order_by': ['tag_name'], 'limit': 1},
+    {'model_name': 'Tags', 'fields': ['tag_name'], 'order_by': ['-tag_name'], 'limit': 1}]}, 200,
+    download('Report- tag-2026.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': ['tag_name'], 'rows': [['Calcio & Basket']]},
+        {'title': 'Tags (2)', 'columns': ['tag_name'], 'rows': [['nuoto agonistico']]}]}))
+
+
+def matrix(course, low=None, high=None):
+    """The matrix _build_single_course_matrix answers for a seeded course."""
+    days = sorted((d for d in DAYS.values() if d['registry'] == course and (low is None or d['date'][:10] >= low)
+                   and (high is None or d['date'][:10] <= high)), key=lambda d: d['date'])
+    names = {}
+    for row in ENROLLED.values():
+        if row['course'] == course and not row['deleted']:
+            # An enrolment without a subscription is named by its own id.
+            person = PEOPLE.get(row['person'])
+            names[row['id']] = f"{person['last']} {person['first']}" if person else row['id']
+    present = [{item['course_subscription_id'] if isinstance(item, dict) and 'course_subscription_id' in item else item
+                for item in day['attendees'] or [] if not isinstance(item, dict) or 'course_subscription_id' in item} for day in days]
+    rows = [{'name': names[key], 'attendance': ['P' if key in marks else '' for marks in present],
+             'present_count': sum(key in marks for marks in present)} for key in sorted(names, key=lambda key: names[key].lower())]
+    return {'course': COURSES[course]['title'], 'dates': [f"{d['date'][8:10]}/{d['date'][5:7]}/{d['date'][:4]}" for d in days], 'rows': rows}
+
+
+NOTE = 'Anteprima dei primi 10 iscritti. Usa export=true per generare il file Excel completo.'
+
+
+def preview(course, low=None, high=None):
+    m = matrix(course, low, high)
+    return {'data': {'course': m['course'], 'dates': m['dates'], 'total_enrolled': len(m['rows']), 'total_dates': len(m['dates']),
+                     'preview': [{'name': r['name'], 'present_count': r['present_count'], 'total_days': len(m['dates'])} for r in m['rows']],
+                     'note': NOTE}}
+
+
+NO_DAYS = 'Nessuna giornata di presenza trovata per questo corso nel periodo indicato.'
+CID = lambda key: COURSES[key]['id']
+run('attendance-preview-course', 'get_attendance_matrix', {'course_id': CID('nuoto')}, 200, preview('nuoto'))
+run('attendance-preview-dates-ignored', 'get_attendance_matrix', {'course_id': CID('nuoto'), 'date_from': 'ieri', 'date_to': 20260915}, 200,
+    preview('nuoto'))
+run('attendance-preview-period', 'get_attendance_matrix', {'course_name': 'CALC', 'date_from': '2026-09-02', 'date_to': '2026-12-31'}, 200,
+    preview('calcio', '2026-09-02', '2026-12-31'))
+MULTI = [matrix('calcio'), matrix('nuoto')]
+run('attendance-preview-all', 'get_attendance_matrix', {}, 200, {'data': {
+    'multi': True, 'courses': [{'course': m['course'], 'total_enrolled': len(m['rows']), 'total_dates': len(m['dates'])} for m in MULTI],
+    'summary': {'total_courses': 2, 'total_enrolled': sum(len(m['rows']) for m in MULTI), 'total_dates': sum(len(m['dates']) for m in MULTI)},
+    'note': 'Usa export=true per generare un unico file Excel con tutti i corsi (include colonna Corso).'}})
+run('attendance-course-missing', 'get_attendance_matrix', {'course_id': IDS['missing']}, 400,
+    {'error': f'Corso non trovato con ID: {IDS["missing"]}'})
+run('attendance-course-deleted', 'get_attendance_matrix', {'course_id': CID('old'), 'export': True}, 400,
+    {'error': f'Corso non trovato con ID: {CID("old")}'})
+run('attendance-course-foreign', 'get_attendance_matrix', {'course_id': CID('foreign')}, 400,
+    {'error': f'Corso non trovato con ID: {CID("foreign")}'})
+run('attendance-course-invalid-error', 'get_attendance_matrix', {'course_id': 'nope'}, 500, FAILED)
+run('attendance-name-none', 'get_attendance_matrix', {'course_name': 'zzz'}, 400, {'error': 'Nessun corso trovato con nome: zzz'})
+run('attendance-no-registry', 'get_attendance_matrix', {'course_id': CID('tennis'), 'export': True}, 400, {'error': NO_DAYS, 'course': 'Tennis'})
+run('attendance-no-days', 'get_attendance_matrix', {'course_id': CID('baby')}, 400, {'error': NO_DAYS, 'course': 'Nuoto baby'})
+run('attendance-no-days-in-period', 'get_attendance_matrix', {'course_id': CID('nuoto'), 'date_from': '2027-01-01'}, 400,
+    {'error': NO_DAYS, 'course': 'Nuoto'})
+run('attendance-none-in-period', 'get_attendance_matrix', {'date_to': '2020-01-01', 'export': True}, 400,
+    {'error': 'Nessun dato di presenza trovato per nessun corso nel periodo indicato.'})
+run('attendance-export-xlsx-course', 'get_attendance_matrix', {'course_name': 'calc', 'export': True}, 200,
+    download('Presenze - Calcio a 5.xlsx', XLSX, xlsx={'engine': 'attendance', 'mode': 'single', 'courses': [matrix('calcio')]}))
+run('attendance-export-pdf-course-period', 'get_attendance_matrix', {'course_id': CID('nuoto'), 'export': 1, 'format': 'pdf',
+    'date_from': '2026-09-02', 'date_to': '2026-09-15'}, 200,
+    download('Presenze - Nuoto.pdf', 'application/pdf', pdf={'engine': 'attendance', 'courses': [matrix('nuoto', '2026-09-02', '2026-09-15')]}))
+run('attendance-export-xlsx-all', 'get_attendance_matrix', {'export': True, 'format': 'csv'}, 200,
+    download('Presenze - tutti i corsi.xlsx', XLSX, xlsx={'engine': 'attendance', 'mode': 'flat', 'courses': MULTI}))
+run('attendance-export-xlsx-sheets', 'get_attendance_matrix', {'export': True, 'multi_sheet': True}, 200,
+    download('Presenze - tutti i corsi.xlsx', XLSX, xlsx={'engine': 'attendance', 'mode': 'sheets', 'courses': MULTI}))
+run('attendance-export-pdf-all', 'get_attendance_matrix', {'export': True, 'format': 'pdf', 'multi_sheet': True}, 200,
+    download('Presenze - tutti i corsi.pdf', 'application/pdf', pdf={'engine': 'attendance', 'courses': MULTI}))
+# Course.objects follows the request's group: only the course of that group is left.
+report('attendance_group', 'get_attendance_matrix', {})
+add('run-attendance-group-header', 'owner', 'POST', RUN('attendance_group'), 200, preview('calcio'), body={},
+    headers={'X-Group-Id': IDS['own_group']})
+add('run-attendance-group-header-export', 'owner', 'POST', RUN('attendance_group'), 200,
+    download('Presenze - Calcio a 5.pdf', 'application/pdf', pdf={'engine': 'attendance', 'courses': [matrix('calcio')]}),
+    body={'overrides': {'export': True, 'format': 'pdf'}}, headers={'X-Group-Id': IDS['own_group']})
+
 # DELETE on the run route deletes the report (the viewset's delete()).
 add('run-delete-method-deletes', 'owner', 'DELETE', RUN('remove'), 204, '<empty>', effect={'kind': 'report-delete', 'label': 'remove'})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Template update and saved report run authored sequence', 'ids': IDS,
-                              'seed': {'templates': TEMPLATES, 'tags': TAGS, 'categories': CATEGORIES, 'carnets': CARNETS, 'reports': REPORTS},
+                              'seed': {'templates': TEMPLATES, 'tags': TAGS, 'categories': CATEGORIES, 'carnets': CARNETS, 'reports': REPORTS,
+                                       'people': PEOPLE, 'courses': COURSES, 'enrolled': ENROLLED, 'registries': REGISTRIES, 'days': DAYS},
                               'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')
