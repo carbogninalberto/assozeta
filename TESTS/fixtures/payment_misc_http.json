@@ -919,6 +919,35 @@
    "deleted": false,
    "group_id": null,
    "course": null
+  },
+  "sign_uncategorized": {
+   "id": "a1000000-0000-4000-8000-000000993301",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": null,
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
   }
  },
  "cases": [
@@ -3808,16 +3837,11 @@
    "method": "POST",
    "path": "/payment/sign",
    "headers": {},
-   "status": 200,
+   "status": 403,
    "response": {
-    "status": "success"
+    "detail": "User not allowed."
    },
-   "effect": {
-    "actor": "owner",
-    "created": [],
-    "changed": {},
-    "audit": []
-   },
+   "effect": null,
    "prints": [],
    "body": {
     "payment_id": "a1000000-0000-4000-8000-000000993063",
@@ -3828,21 +3852,91 @@
    }
   },
   {
+   "name": "payment-misc-sign-foreign-payment-with-signature",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993063",
+    "signature": {
+     "there_is_signature": true,
+     "data": "firma"
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-foreign-payment-invalid-signature",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993063",
+    "signature": "x"
+   }
+  },
+  {
    "name": "payment-misc-sign-athlete",
    "actor": "athlete",
    "method": "POST",
    "path": "/payment/sign",
    "headers": {},
-   "status": 200,
+   "status": 403,
    "response": {
-    "status": "success"
+    "detail": "User is not a sport association"
    },
-   "effect": {
-    "actor": "athlete",
-    "created": [],
-    "changed": {},
-    "audit": []
-   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993060",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-athlete-missing-payment",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "payment not found"
+   ],
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000720009",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
    "prints": [],
    "body": {
     "payment_id": "a1000000-0000-4000-8000-000000993060",
@@ -3972,7 +4066,7 @@
     "actor": "full_collaborator",
     "created": [],
     "changed": {
-     "sign_abroad": {
+     "sign_uncategorized": {
       "signature_id": "$signature",
       "payment_category_id": "$default_category"
      }
@@ -3999,7 +4093,7 @@
       "index": null
      },
      {
-      "key": "sign_abroad",
+      "key": "sign_uncategorized",
       "action": 1,
       "changes": {
        "signature": [
@@ -4012,7 +4106,7 @@
        ]
       },
       "index": [
-       "a1000000-0000-4000-8000-000000701002",
+       "a1000000-0000-4000-8000-000000701001",
        "direct"
       ]
      }
@@ -4026,7 +4120,7 @@
    },
    "prints": [
     {
-     "path": "/document/compensation/a1000000-0000-4000-8000-000000993063",
+     "path": "/document/compensation/a1000000-0000-4000-8000-000000993301",
      "reply": {
       "status": 200,
       "body": "ok"
@@ -4034,7 +4128,7 @@
     }
    ],
    "body": {
-    "payment_id": "a1000000-0000-4000-8000-000000993063",
+    "payment_id": "a1000000-0000-4000-8000-000000993301",
     "signature": {
      "there_is_signature": "true",
      "data": "firma"

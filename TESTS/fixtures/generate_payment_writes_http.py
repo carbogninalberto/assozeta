@@ -23,7 +23,8 @@ description defaults and the create audit entry (indexed through the actor's
 association), then attachments_data (an item without document/filename keys
 raises ValidationError: 400 with the payment kept). The view then sets user,
 association and the complex_item party (Istruttori, Fornitori, Iscrizioni,
-Persone: a failing lookup is a 500 after the create) and saves again (audited
+Persone: a failing lookup is a 500 after the create; a party of another
+association is 403 'User not allowed.', the created payment kept) and saves again (audited
 update, indexed directly). The response is PaymentSerializer of the in-memory
 payment (a float amount quantized half-even). Paid payments (auto_paid_payment)
 are not ported and not authored.
@@ -51,7 +52,8 @@ private MinIO: each case's new objects must be exactly its authored documents.
 payment/bulk-add (POST): athletes 403 without a body, the association, then
 the view's own checks (400 messages), the live group-aware associates of the
 association (unknown ids are reported by str(); nothing valid: 200), the
-defaults computed by the view and one atomic bulk_create (no save(), no
+defaults computed by the view (the category among the association's own or
+shared categories, the account among its own) and one atomic bulk_create (no save(), no
 signals, no audit, no group). Run with ``python3 -I``.
 """
 import base64
@@ -95,6 +97,13 @@ SUBSCRIPTIONS = {
 INSTRUCTOR = {'id': next(ids), 'first_name': 'Anna è', 'last_name': 'Bianchi', 'email': 'anna@example.test', 'tax_code': 'BNCNNA80A41H501X',
               'default_hourly_billing': '12.50'}
 SUPPLIER = {'id': next(ids), 'name': 'Fornitore è', 'vat_number': '01234567890', 'email': 'fornitore@example.test'}
+# Parties of the other association (payment parties only apply to the caller's association).
+FOREIGN_PARTIES = {
+    'subscription': {'id': 'a1000000-0000-4000-8000-000000988301', 'associate': 'abroad', 'association': FOREIGN, 'created': '2026-08-01T10:00:00Z'},
+    'instructor': {'id': 'a1000000-0000-4000-8000-000000988302', 'user': IDS['foreign_owner'], 'first_name': 'Klaus', 'last_name': 'Weber'},
+    'supplier': {'id': 'a1000000-0000-4000-8000-000000988303', 'name': 'Fornitore estero', 'vat_number': '09999999999',
+                 'email': 'fornitore-estero@example.test', 'association': FOREIGN},
+}
 OWNER_USER = {'first_name': 'Message', 'last_name': 'Fixture', 'email': 'message-reads-700001@example.test', 'phone': None,
               'username': 'message-reads-700001', 'role': 1}
 
@@ -548,6 +557,14 @@ added('add-without-complex-item-server-error', 'owner', {'creation_date': '2026-
                                                          'description': 'Persa'},
       {**unfinished, 'creation_date': '2026-03-23T00:00:00Z', 'amount': '9.00', 'description': 'Persa'}, status=500, response=SERVER,
       finish=False)
+# A party of another association: 403 after serializer.save() (the created payment stays, like a failing lookup).
+for group, key, party in [('Persone', 'associate_id', A('abroad')), ('Iscrizioni', 'subscription_id', FOREIGN_PARTIES['subscription']['id']),
+                          ('Istruttori', 'instructor_id', FOREIGN_PARTIES['instructor']['id']),
+                          ('Fornitori', 'supplier_id', FOREIGN_PARTIES['supplier']['id'])]:
+    added(f'add-foreign-party-{group.lower()}-denied', 'owner', {'creation_date': '2026-03-25', 'payment_date': None, 'amount': '10',
+                                                               'description': 'Estero', 'complex_item': {'group': group, key: party}},
+          {**unfinished, 'creation_date': '2026-03-25T00:00:00Z', 'amount': '10.00', 'description': 'Estero'}, status=403, response=DENIED,
+          finish=False)
 added('add-attachment-without-keys', 'owner', {'creation_date': '2026-03-24', 'payment_date': None, 'amount': '11', 'description': 'Allegato',
                                                'attachments_data': [{'name': 'ricevuta.pdf'}], 'complex_item': None},
       {**unfinished, 'creation_date': '2026-03-24T00:00:00Z', 'amount': '11.00', 'description': 'Allegato'}, status=400,
@@ -585,6 +602,15 @@ add('update-missing-party-server-error', 'owner', UPDATE('up_plain'), 500, SERVE
     body={'complex_item': {'group': 'Istruttori', 'instructor_id': IDS['missing']}}, effect=effect('owner'))
 add('update-missing-subscription-server-error', 'owner', UPDATE('up_plain'), 500, SERVER, method='PATCH',
     body={'subscription_id': IDS['missing']}, effect=effect('owner'))
+# A party of another association: 403 before the save.
+for group, key, party in [('Persone', 'associate_id', A('abroad')), ('Iscrizioni', 'subscription_id', FOREIGN_PARTIES['subscription']['id']),
+                          ('Istruttori', 'instructor_id', FOREIGN_PARTIES['instructor']['id']),
+                          ('Fornitori', 'supplier_id', FOREIGN_PARTIES['supplier']['id'])]:
+    add(f'update-foreign-party-{group.lower()}-denied', 'owner', UPDATE('up_party'), 403, DENIED, method='PATCH',
+        body={'complex_item': {'group': group, key: party}}, effect=effect('owner'))
+add('update-foreign-subscription-id-denied', 'owner', UPDATE('up_subscription'), 403, DENIED, method='PATCH',
+    body={'complex_item': {'group': 'Persone', 'associate_id': A('luca')}, 'subscription_id': FOREIGN_PARTIES['subscription']['id']},
+    effect=effect('owner'))
 add('update-meta-without-amount-server-error', 'owner', UPDATE('up_plain'), 500, SERVER, method='PATCH',
     body={'meta_payment_categories': []}, effect=effect('owner'))
 add('update-transfer-without-description-server-error', 'owner', UPDATE('up_transfer'), 500, SERVER, method='PATCH',
@@ -746,6 +772,13 @@ bulk('bulk-add-unmatched-references', 'owner', {'associate_ids': [A('mario')], '
                                                 'payment_date': '2026-05-02T10:00:00+02:00', 'meta_payment_categories': None},
      ['mario'], {'subject': 1, 'paid': True, 'description': 'Iscrizione', 'payment_category_id': None, 'custom_accounts_id': None,
                  'payment_date': '2026-05-02T08:00:00Z', 'creation_date': '$now', 'meta_payment_categories': None})
+# The category comes from the association's own or shared categories (another association's: none).
+bulk('bulk-add-foreign-category', 'owner', {'associate_ids': [A('mario')], 'amount': 1, 'creation_date': '2026-05-07',
+                                            'payment_category': CATEGORIES['foreign']['id']},
+     ['mario'], {'amount': '1.00', 'creation_date': '2026-05-07T00:00:00Z', 'payment_category_id': None})
+bulk('bulk-add-shared-category', 'owner', {'associate_ids': [A('mario')], 'amount': 2, 'creation_date': '2026-05-08',
+                                           'payment_category': CATEGORIES['global']['id']},
+     ['mario'], {'amount': '2.00', 'creation_date': '2026-05-08T00:00:00Z', 'payment_category_id': CATEGORIES['global']['id']})
 bulk('bulk-add-group', 'owner', {'associate_ids': [A('grouped'), A('mario')], 'amount': 3, 'subject': 0, 'creation_date': '2026-5-3',
                                  'payment_date': '2026-05-04', 'paid': 'f'},
      ['grouped'], {'amount': '3.00', 'creation_date': '2026-05-03T00:00:00Z', 'payment_date': '2026-05-04T00:00:00Z'}, headers=GROUP,
@@ -766,6 +799,7 @@ add('bulk-add-invalid-payment-date-server-error', 'owner', BULK, 500, SERVER,
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Payment add, update and bulk add authored sequence with payment and audit effects',
                               'ids': IDS, 'categories': CATEGORIES, 'accounts': ACCOUNTS, 'associates': ASSOCIATES,
-                              'subscriptions': SUBSCRIPTIONS, 'instructor': INSTRUCTOR, 'supplier': SUPPLIER, 'payments': PAYMENTS, 'invoice': INVOICE,
+                              'subscriptions': SUBSCRIPTIONS, 'instructor': INSTRUCTOR, 'supplier': SUPPLIER,
+                              'foreign_parties': FOREIGN_PARTIES, 'payments': PAYMENTS, 'invoice': INVOICE,
                               'location': 'payment-writes-media', 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')
