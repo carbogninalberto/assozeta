@@ -158,4 +158,5 @@ under an `X-Group-Id` header. RED `v2doc2-red-r1`: Django 84/84, Go 200 on
 and `/api/v2`. Mutation `v2doc2-mutation-r2`: the rule requiring both a transfer
 and a payment fails `account-with-transfers-refused`. Re-run green
 (`v2doc2-rerun-r1`): balance-accounts 25/25, balance-account-writes 29/29,
-balance-transfer-writes 30/30.
+balance-transfer-writes 30/30. Final run on the current base, with the PDF export
+cases (`v2doc2-final-r1`): 93/93 on the four transports.

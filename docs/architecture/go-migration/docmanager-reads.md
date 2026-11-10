@@ -152,4 +152,4 @@ invoice (the invoice), the `X-Group-Id` count, a `filepath` document and an invo
 Django 170/170, Go the 500 page on `reprint-subscription-first-try`. GREEN `v2doc2-versioned-r1`: 170/170 on native
 Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `v2doc2-mutation-r1`: storing under the document's
 `filepath` fails `reprint-filepath-first-try` (`celery.headers:0`). Re-run green (`v2doc2-rerun-r1`): document-render
-and documents-writes.
+and documents-writes. Final run on the current base (`v2doc2-final-r1`): 170/170 on the four transports.
