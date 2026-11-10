@@ -6441,26 +6441,28 @@
         "target": "full_events_calendar",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_calendar.go",
         "BE_GO/internal/dto/course_calendar.go",
         "BE_GO/internal/dto/course_calendar_test.go",
-        "BE_GO/internal/repository/course_calendar.go",
-        "BE_GO/internal/service/course_calendar.go",
         "BE_GO/internal/handler/course_calendar.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/course_calendar.go",
+        "BE_GO/internal/service/course_attendance.go",
+        "BE_GO/internal/service/course_calendar.go",
+        "BE_GO/internal/service/statistic_today_lessons.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
-        "application_course",
-        "application_sportassociation",
-        "bakney_user",
-        "application_instructor",
-        "application_attendanceregistry",
         "application_attendanceday",
+        "application_attendanceregistry",
+        "application_course",
+        "application_globalcalendarevents",
+        "application_instructor",
         "application_reminders",
-        "application_globalcalendarevents"
+        "application_sportassociation",
+        "bakney_user"
       ],
       "contract": {
         "methods": [
@@ -6473,8 +6475,8 @@
           "/api/calendar/events"
         ],
         "request": "Query start, end, get_lesson, event_id; X-Group-Id.",
-        "response": "200 {'data': {'events': [...]}} (registry events with className, attendace_day_id, course, description, id; then global events).",
-        "errors": "400 Invalid calendar date; 401; 403 registry / IsAssociationUser / scoped session; 405; 500 no association, malformed stored events, lesson details (not ported).",
+        "response": "200 {'data': {'events': [...]}} (registry events with className, attendace_day_id, lesson (get_lesson), course, description, id; then global events).",
+        "errors": "400 Invalid calendar date; 401; 403 registry / IsAssociationUser / scoped session; 405; 500 no association, malformed stored events, a registry start strptime rejects while rendering a lesson.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.calendar.read; IsAssociationUser; global events need association.events.read for restricted collaborators.",
         "resource_scope": "The scope user's association, live group-aware courses; instructor collaborators see their events only.",
@@ -6489,21 +6491,28 @@
         "TESTS/adapters/django/course_calendar_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-calendar.md",
         {
-          "command": "python tools/go-migration/family.py run course-calendar --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-calendar-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "6ee065faac0696cd16d4a5dc7021cc5d2ffe42385b682dde4858ee39e4524d8a",
-          "scope": "HTTP family course-calendar: 160/160 cases on native Django and native Go, 160/160 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 164/164; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-red/results.json",
+          "receipt_sha256": "c5e3ca242d692f71efa6b0d56be0c3141be9dd8c28372d58d4264b894ebab7f2"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 164/164 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-green/results.json",
+          "receipt_sha256": "4dd052b22c84360205a6f4f3552371239a83c8e19b76d7fe88afdfc213680111"
+        },
+        {
+          "revision": "committing change with the lesson read without the registry events",
+          "result": "Mutation control: fails Go on course-calendar-events-lesson (lesson extended_props).",
+          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-mutation-lesson/results.json",
+          "receipt_sha256": "455a0fa00f8848769494e565761fa0ea4663c96dc17d767359511f8aa4109a59"
         }
       ],
       "notes": [
-        "Implementing: course calendar read, calendar update POST (the association's reminders and request.user's instructors) (not atomic, partial writes kept) and DELETE (atomic), the full events listing (get_lesson=false) with the global calendar created on first read, and global calendar actions with reminders, auditlog entries and index rows on four transports. Not ported, refused with the 500 page before any write: lesson details (get_lesson true with a matching attendance day), POST payloads with non-string event ids, list/string extendedProps or non-string starts, non-list stored events, datetimes outside UTC years 1..9999; calendar/events/export has no Go route.",
-        "Implementing evidence: docs/architecture/go-migration/course-calendar.md",
-        "Implementing evidence: RED: Django 160/160; Go fails state.reminders-new-row on the first case. (quality-reports/go-migration/course-calendar-http-red-sync1/results.json)",
-        "Implementing evidence: GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/course-calendar-http-versioned-sync1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on course-calendar-update-other-association-reminder-kept (state.reminders-new-row). (quality-reports/go-migration/course-calendar-http-mutation-sync1/results.json)"
+        "Implementing: API v2: get_lesson (the default) on calendar/events renders get_extended_prop_for_attendance_day of the matched day in the view's transaction. Still refused: stored shapes the attendance port refuses."
       ]
     },
     {
@@ -6605,26 +6614,28 @@
         "target": "full_events_calendar_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_calendar.go",
         "BE_GO/internal/dto/course_calendar.go",
         "BE_GO/internal/dto/course_calendar_test.go",
-        "BE_GO/internal/repository/course_calendar.go",
-        "BE_GO/internal/service/course_calendar.go",
         "BE_GO/internal/handler/course_calendar.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/course_calendar.go",
+        "BE_GO/internal/service/course_attendance.go",
+        "BE_GO/internal/service/course_calendar.go",
+        "BE_GO/internal/service/statistic_today_lessons.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
-        "application_course",
-        "application_sportassociation",
-        "bakney_user",
-        "application_instructor",
-        "application_attendanceregistry",
         "application_attendanceday",
+        "application_attendanceregistry",
+        "application_course",
+        "application_globalcalendarevents",
+        "application_instructor",
         "application_reminders",
-        "application_globalcalendarevents"
+        "application_sportassociation",
+        "bakney_user"
       ],
       "contract": {
         "methods": [
@@ -6653,21 +6664,28 @@
         "TESTS/adapters/django/course_calendar_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-calendar.md",
         {
-          "command": "python tools/go-migration/family.py run course-calendar --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-calendar-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "6ee065faac0696cd16d4a5dc7021cc5d2ffe42385b682dde4858ee39e4524d8a",
-          "scope": "HTTP family course-calendar: 160/160 cases on native Django and native Go, 160/160 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 164/164; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-red/results.json",
+          "receipt_sha256": "c5e3ca242d692f71efa6b0d56be0c3141be9dd8c28372d58d4264b894ebab7f2"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 164/164 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-green/results.json",
+          "receipt_sha256": "4dd052b22c84360205a6f4f3552371239a83c8e19b76d7fe88afdfc213680111"
+        },
+        {
+          "revision": "committing change with the lesson read without the registry events",
+          "result": "Mutation control: fails Go on course-calendar-events-lesson (lesson extended_props).",
+          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-mutation-lesson/results.json",
+          "receipt_sha256": "455a0fa00f8848769494e565761fa0ea4663c96dc17d767359511f8aa4109a59"
         }
       ],
       "notes": [
-        "Implementing: course calendar read, calendar update POST (the association's reminders and request.user's instructors) (not atomic, partial writes kept) and DELETE (atomic), the full events listing (get_lesson=false) with the global calendar created on first read, and global calendar actions with reminders, auditlog entries and index rows on four transports. Not ported, refused with the 500 page before any write: lesson details (get_lesson true with a matching attendance day), POST payloads with non-string event ids, list/string extendedProps or non-string starts, non-list stored events, datetimes outside UTC years 1..9999; calendar/events/export has no Go route.",
-        "Implementing evidence: docs/architecture/go-migration/course-calendar.md",
-        "Implementing evidence: RED: Django 160/160; Go fails state.reminders-new-row on the first case. (quality-reports/go-migration/course-calendar-http-red-sync1/results.json)",
-        "Implementing evidence: GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/course-calendar-http-versioned-sync1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on course-calendar-update-other-association-reminder-kept (state.reminders-new-row). (quality-reports/go-migration/course-calendar-http-mutation-sync1/results.json)"
+        "Implementing: API v2: get_lesson (the default) on calendar/events renders get_extended_prop_for_attendance_day of the matched day in the view's transaction. Still refused: stored shapes the attendance port refuses."
       ]
     },
     {
@@ -9416,28 +9434,28 @@
         "target": "course_installment_make_payment",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_enrolment.go",
         "BE_GO/internal/dto/course_enrolment.go",
+        "BE_GO/internal/handler/course_enrolment.go",
         "BE_GO/internal/repository/course_enrolment.go",
         "BE_GO/internal/service/course_enrolment.go",
-        "BE_GO/internal/service/course_enrolment_overview.go",
-        "BE_GO/internal/handler/course_enrolment.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/course_enrolment_overview.go"
       ],
       "dependencies": [
-        "BE/application/views/course_views.py",
-        "BE/application/serializers/courses_serializers.py",
-        "BE/application/serializers/payment_serializers.py",
-        "BE/application/utils/subscriptions_utils.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/mixin.py",
         "BE/application/models/courses_models.py",
         "BE/application/models/payment_models.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/serializers/courses_serializers.py",
+        "BE/application/serializers/payment_serializers.py",
         "BE/application/signals.py",
-        "BE/application/mixin.py",
         "BE/application/tenant_scope.py",
-        "BE/application/impersonation_scope.py",
-        "BE/application/permissions_registry.py"
+        "BE/application/utils/subscriptions_utils.py",
+        "BE/application/views/course_views.py"
       ],
       "contract": {
         "methods": [
@@ -9466,21 +9484,28 @@
         "TESTS/adapters/django/course_enrolment_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-enrolment.md",
         {
-          "command": "python tools/go-migration/family.py run course-enrolment --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "fae9a7cfd1ad193d7598362adb4cca1d4b2f452e8a8f1c392d6811a5345777ab",
-          "scope": "HTTP family course-enrolment: 80/80 cases on native Django and native Go, 80/80 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 102/102; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-red2/results.json",
+          "receipt_sha256": "143cb5ea0fa290bfa46ba0bce30cf9e48728d6cfdee4b71303c189907a8fc525"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-green/results.json",
+          "receipt_sha256": "79e3d4c38cf7564edde1fbab4acbe5eea6b5a9c4dcef4587e13e49b934de0abe"
+        },
+        {
+          "revision": "committing change with quote cents rounded half down",
+          "result": "Mutation control: fails Go on course-enrolment-add-quote-amount-three-decimals (state.created-unmatched).",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-mutation-half-down/results.json",
+          "receipt_sha256": "95033c4d279f45347b7daad1856e9917e1037700bc2a5301ffa455600ee22f92"
         }
       ],
       "notes": [
-        "Implementing: course-subscriptions/add (atomic, single and list bodies, field and membership validate() errors, serializer create with body or planned events, add_course_subscription one-fee/fee/multi/quote payments, membership_created_callback), course-overview add (non-atomic add_course_to_subscription with quote selection, one-fee/quote/installment/fee payments) and the installment payment, with audit and index effects on four transports. Not ported (500 before any write): association-scoped impersonation sessions, non-canonical X-Group-Id, HTML form bodies, non-object overview bodies, the athlete membership prefill of the overview add, quote amounts other than plain decimals (7.2) and non-object payment_category or non-string quote ids/values, payments rendered with an instructor or invoice. new_course_subscription_callback has no sender and is not reached.",
-        "Implementing evidence: docs/architecture/go-migration/course-enrolment.md",
-        "Implementing evidence: RED: Django 80/80; Go 404 on the first case. (quality-reports/go-migration/course-enrolment-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 80/80 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course subscription, payment, installment, membership link, audit and index effects. (quality-reports/go-migration/course-enrolment-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on course-enrolment-make-payment-group-header-hides (200 instead of 500). (quality-reports/go-migration/course-enrolment-http-mutation-r1/results.json)"
+        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add."
       ]
     },
     {
@@ -9498,29 +9523,32 @@
         "target": "CourseSubscriptionViewSet.as_view({'delete': 'delete'})",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_subscriptions.go",
         "BE_GO/internal/dto/course_subscriptions.go",
-        "BE_GO/internal/repository/course_subscriptions.go",
-        "BE_GO/internal/service/course_subscriptions.go",
-        "BE_GO/internal/service/course_subscription_update.go",
         "BE_GO/internal/handler/course_subscriptions.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/course_subscription_events.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/repository/payment_state.go",
+        "BE_GO/internal/service/course_subscription_events.go",
+        "BE_GO/internal/service/course_subscription_update.go",
+        "BE_GO/internal/service/course_subscriptions.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "application_associate",
+        "application_carnetsubscription_course_subscription",
+        "application_course",
         "application_coursesubscription",
         "application_coursesubscription_membership_payments",
         "application_coursesubscriptioninstallment",
+        "application_medicalcertificate",
         "application_payment",
         "application_payment_attachments",
-        "application_carnetsubscription_course_subscription",
-        "application_course",
-        "application_subscription",
-        "application_associate",
-        "application_medicalcertificate",
         "application_paymentcategory",
+        "application_subscription",
         "docmanager_document"
       ],
       "contract": {
@@ -9550,21 +9578,28 @@
         "TESTS/adapters/django/course_subscriptions_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-subscriptions.md",
         {
-          "command": "python tools/go-migration/family.py run course-subscriptions --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-subscriptions-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "c923cba5903e5453ce922f6563beecb63f555c754bab01bf17cab0fee06e4f77",
-          "scope": "HTTP family course-subscriptions: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 114/114; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-red/results.json",
+          "receipt_sha256": "dddcf139ae7f805f030b2dc3663610290174e12a96b699f26a83a1d29ac6707e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-green/results.json",
+          "receipt_sha256": "3f36d301cbdc0be5f07df0e5db06749667834b2e7c3d370b416ca3e6a77f62f5"
+        },
+        {
+          "revision": "committing change with the instalment label numbered from 0",
+          "result": "Mutation control: fails Go on course-subscriptions-update-events (state.created-unmatched).",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-mutation-rata/results.json",
+          "receipt_sha256": "14225ceec8c8402f419fa923aec03fe3e58f06a1598cb50df8bbb23c3527ee7c"
         }
       ],
       "notes": [
-        "Implementing: list rendering (nested subscription, Rome-dated medical label, group-aware installments and membership payments through PaymentSerializer, carnets), partial update with the membership validate() and current-payment period sync, the soft delete and bulk hard delete with the installment/payment pre_delete signal cascades, viewset DELETE routing and audit (including CourseSubscription's __dict__ object_repr) on four transports; course-subscriptions/add, the PDF/Excel export, non-null events, HTML-form JSON fields, primary-key changes, membership payments with an instructor or invoice and soft deletes sharing the row's payment with an installment are refused (500) before any write.",
-        "Implementing evidence: docs/architecture/go-migration/course-subscriptions.md",
-        "Implementing evidence: RED: Django 107/107; Go 404 on the first case. (quality-reports/go-migration/course-subscriptions-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/course-subscriptions-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on course-subscriptions-delete-group-installments. (quality-reports/go-migration/course-subscriptions-http-mutation-r2/results.json)"
+        "Implementing: API v2: installment edits through events (dropped installments with paid-payment relabel and pre_delete, new event payments and installments, atomic) and membership payments with a nested invoice or instructor are ported. Still refused: the list export (pdf/excel), events given as an object or string, shared payments among dropped installments, a changed primary key, form JSON fields."
       ]
     },
     {
@@ -9582,29 +9617,32 @@
         "target": "CourseSubscriptionViewSet.as_view({'patch': 'update'})",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_subscriptions.go",
         "BE_GO/internal/dto/course_subscriptions.go",
-        "BE_GO/internal/repository/course_subscriptions.go",
-        "BE_GO/internal/service/course_subscriptions.go",
-        "BE_GO/internal/service/course_subscription_update.go",
         "BE_GO/internal/handler/course_subscriptions.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/course_subscription_events.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/repository/payment_state.go",
+        "BE_GO/internal/service/course_subscription_events.go",
+        "BE_GO/internal/service/course_subscription_update.go",
+        "BE_GO/internal/service/course_subscriptions.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "application_associate",
+        "application_carnetsubscription_course_subscription",
+        "application_course",
         "application_coursesubscription",
         "application_coursesubscription_membership_payments",
         "application_coursesubscriptioninstallment",
+        "application_medicalcertificate",
         "application_payment",
         "application_payment_attachments",
-        "application_carnetsubscription_course_subscription",
-        "application_course",
-        "application_subscription",
-        "application_associate",
-        "application_medicalcertificate",
         "application_paymentcategory",
+        "application_subscription",
         "docmanager_document"
       ],
       "contract": {
@@ -9635,21 +9673,28 @@
         "TESTS/adapters/django/course_subscriptions_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-subscriptions.md",
         {
-          "command": "python tools/go-migration/family.py run course-subscriptions --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-subscriptions-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "c923cba5903e5453ce922f6563beecb63f555c754bab01bf17cab0fee06e4f77",
-          "scope": "HTTP family course-subscriptions: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 114/114; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-red/results.json",
+          "receipt_sha256": "dddcf139ae7f805f030b2dc3663610290174e12a96b699f26a83a1d29ac6707e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-green/results.json",
+          "receipt_sha256": "3f36d301cbdc0be5f07df0e5db06749667834b2e7c3d370b416ca3e6a77f62f5"
+        },
+        {
+          "revision": "committing change with the instalment label numbered from 0",
+          "result": "Mutation control: fails Go on course-subscriptions-update-events (state.created-unmatched).",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-mutation-rata/results.json",
+          "receipt_sha256": "14225ceec8c8402f419fa923aec03fe3e58f06a1598cb50df8bbb23c3527ee7c"
         }
       ],
       "notes": [
-        "Implementing: list rendering (nested subscription, Rome-dated medical label, group-aware installments and membership payments through PaymentSerializer, carnets), partial update with the membership validate() and current-payment period sync, the soft delete and bulk hard delete with the installment/payment pre_delete signal cascades, viewset DELETE routing and audit (including CourseSubscription's __dict__ object_repr) on four transports; course-subscriptions/add, the PDF/Excel export, non-null events, HTML-form JSON fields, primary-key changes, membership payments with an instructor or invoice and soft deletes sharing the row's payment with an installment are refused (500) before any write.",
-        "Implementing evidence: docs/architecture/go-migration/course-subscriptions.md",
-        "Implementing evidence: RED: Django 107/107; Go 404 on the first case. (quality-reports/go-migration/course-subscriptions-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/course-subscriptions-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on course-subscriptions-delete-group-installments. (quality-reports/go-migration/course-subscriptions-http-mutation-r2/results.json)"
+        "Implementing: API v2: installment edits through events (dropped installments with paid-payment relabel and pre_delete, new event payments and installments, atomic) and membership payments with a nested invoice or instructor are ported. Still refused: the list export (pdf/excel), events given as an object or string, shared payments among dropped installments, a changed primary key, form JSON fields."
       ]
     },
     {
@@ -9667,28 +9712,28 @@
         "target": "CourseSubscriptionViewSet.as_view({'post': 'add'})",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_enrolment.go",
         "BE_GO/internal/dto/course_enrolment.go",
+        "BE_GO/internal/handler/course_enrolment.go",
         "BE_GO/internal/repository/course_enrolment.go",
         "BE_GO/internal/service/course_enrolment.go",
-        "BE_GO/internal/service/course_enrolment_overview.go",
-        "BE_GO/internal/handler/course_enrolment.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/course_enrolment_overview.go"
       ],
       "dependencies": [
-        "BE/application/views/course_views.py",
-        "BE/application/serializers/courses_serializers.py",
-        "BE/application/serializers/payment_serializers.py",
-        "BE/application/utils/subscriptions_utils.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/mixin.py",
         "BE/application/models/courses_models.py",
         "BE/application/models/payment_models.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/serializers/courses_serializers.py",
+        "BE/application/serializers/payment_serializers.py",
         "BE/application/signals.py",
-        "BE/application/mixin.py",
         "BE/application/tenant_scope.py",
-        "BE/application/impersonation_scope.py",
-        "BE/application/permissions_registry.py"
+        "BE/application/utils/subscriptions_utils.py",
+        "BE/application/views/course_views.py"
       ],
       "contract": {
         "methods": [
@@ -9718,21 +9763,28 @@
         "TESTS/adapters/django/course_enrolment_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-enrolment.md",
         {
-          "command": "python tools/go-migration/family.py run course-enrolment --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "fae9a7cfd1ad193d7598362adb4cca1d4b2f452e8a8f1c392d6811a5345777ab",
-          "scope": "HTTP family course-enrolment: 80/80 cases on native Django and native Go, 80/80 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 102/102; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-red2/results.json",
+          "receipt_sha256": "143cb5ea0fa290bfa46ba0bce30cf9e48728d6cfdee4b71303c189907a8fc525"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-green/results.json",
+          "receipt_sha256": "79e3d4c38cf7564edde1fbab4acbe5eea6b5a9c4dcef4587e13e49b934de0abe"
+        },
+        {
+          "revision": "committing change with quote cents rounded half down",
+          "result": "Mutation control: fails Go on course-enrolment-add-quote-amount-three-decimals (state.created-unmatched).",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-mutation-half-down/results.json",
+          "receipt_sha256": "95033c4d279f45347b7daad1856e9917e1037700bc2a5301ffa455600ee22f92"
         }
       ],
       "notes": [
-        "Implementing: course-subscriptions/add (atomic, single and list bodies, field and membership validate() errors, serializer create with body or planned events, add_course_subscription one-fee/fee/multi/quote payments, membership_created_callback), course-overview add (non-atomic add_course_to_subscription with quote selection, one-fee/quote/installment/fee payments) and the installment payment, with audit and index effects on four transports. Not ported (500 before any write): association-scoped impersonation sessions, non-canonical X-Group-Id, HTML form bodies, non-object overview bodies, the athlete membership prefill of the overview add, quote amounts other than plain decimals (7.2) and non-object payment_category or non-string quote ids/values, payments rendered with an instructor or invoice. new_course_subscription_callback has no sender and is not reached.",
-        "Implementing evidence: docs/architecture/go-migration/course-enrolment.md",
-        "Implementing evidence: RED: Django 80/80; Go 404 on the first case. (quality-reports/go-migration/course-enrolment-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 80/80 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course subscription, payment, installment, membership link, audit and index effects. (quality-reports/go-migration/course-enrolment-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on course-enrolment-make-payment-group-header-hides (200 instead of 500). (quality-reports/go-migration/course-enrolment-http-mutation-r1/results.json)"
+        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add."
       ]
     },
     {
@@ -9750,29 +9802,32 @@
         "target": "CourseSubscriptionViewSet.as_view({'delete': 'bulk_delete'})",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_subscriptions.go",
         "BE_GO/internal/dto/course_subscriptions.go",
-        "BE_GO/internal/repository/course_subscriptions.go",
-        "BE_GO/internal/service/course_subscriptions.go",
-        "BE_GO/internal/service/course_subscription_update.go",
         "BE_GO/internal/handler/course_subscriptions.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/course_subscription_events.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/repository/payment_state.go",
+        "BE_GO/internal/service/course_subscription_events.go",
+        "BE_GO/internal/service/course_subscription_update.go",
+        "BE_GO/internal/service/course_subscriptions.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "application_associate",
+        "application_carnetsubscription_course_subscription",
+        "application_course",
         "application_coursesubscription",
         "application_coursesubscription_membership_payments",
         "application_coursesubscriptioninstallment",
+        "application_medicalcertificate",
         "application_payment",
         "application_payment_attachments",
-        "application_carnetsubscription_course_subscription",
-        "application_course",
-        "application_subscription",
-        "application_associate",
-        "application_medicalcertificate",
         "application_paymentcategory",
+        "application_subscription",
         "docmanager_document"
       ],
       "contract": {
@@ -9802,21 +9857,28 @@
         "TESTS/adapters/django/course_subscriptions_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-subscriptions.md",
         {
-          "command": "python tools/go-migration/family.py run course-subscriptions --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-subscriptions-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "c923cba5903e5453ce922f6563beecb63f555c754bab01bf17cab0fee06e4f77",
-          "scope": "HTTP family course-subscriptions: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 114/114; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-red/results.json",
+          "receipt_sha256": "dddcf139ae7f805f030b2dc3663610290174e12a96b699f26a83a1d29ac6707e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-green/results.json",
+          "receipt_sha256": "3f36d301cbdc0be5f07df0e5db06749667834b2e7c3d370b416ca3e6a77f62f5"
+        },
+        {
+          "revision": "committing change with the instalment label numbered from 0",
+          "result": "Mutation control: fails Go on course-subscriptions-update-events (state.created-unmatched).",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-mutation-rata/results.json",
+          "receipt_sha256": "14225ceec8c8402f419fa923aec03fe3e58f06a1598cb50df8bbb23c3527ee7c"
         }
       ],
       "notes": [
-        "Implementing: list rendering (nested subscription, Rome-dated medical label, group-aware installments and membership payments through PaymentSerializer, carnets), partial update with the membership validate() and current-payment period sync, the soft delete and bulk hard delete with the installment/payment pre_delete signal cascades, viewset DELETE routing and audit (including CourseSubscription's __dict__ object_repr) on four transports; course-subscriptions/add, the PDF/Excel export, non-null events, HTML-form JSON fields, primary-key changes, membership payments with an instructor or invoice and soft deletes sharing the row's payment with an installment are refused (500) before any write.",
-        "Implementing evidence: docs/architecture/go-migration/course-subscriptions.md",
-        "Implementing evidence: RED: Django 107/107; Go 404 on the first case. (quality-reports/go-migration/course-subscriptions-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/course-subscriptions-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on course-subscriptions-delete-group-installments. (quality-reports/go-migration/course-subscriptions-http-mutation-r2/results.json)"
+        "Implementing: API v2: installment edits through events (dropped installments with paid-payment relabel and pre_delete, new event payments and installments, atomic) and membership payments with a nested invoice or instructor are ported. Still refused: the list export (pdf/excel), events given as an object or string, shared payments among dropped installments, a changed primary key, form JSON fields."
       ]
     },
     {
@@ -9834,29 +9896,32 @@
         "target": "CourseSubscriptionViewSet.as_view({'get': 'list', 'post': 'list'})",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_subscriptions.go",
         "BE_GO/internal/dto/course_subscriptions.go",
-        "BE_GO/internal/repository/course_subscriptions.go",
-        "BE_GO/internal/service/course_subscriptions.go",
-        "BE_GO/internal/service/course_subscription_update.go",
         "BE_GO/internal/handler/course_subscriptions.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/course_subscription_events.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/repository/payment_state.go",
+        "BE_GO/internal/service/course_subscription_events.go",
+        "BE_GO/internal/service/course_subscription_update.go",
+        "BE_GO/internal/service/course_subscriptions.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "application_associate",
+        "application_carnetsubscription_course_subscription",
+        "application_course",
         "application_coursesubscription",
         "application_coursesubscription_membership_payments",
         "application_coursesubscriptioninstallment",
+        "application_medicalcertificate",
         "application_payment",
         "application_payment_attachments",
-        "application_carnetsubscription_course_subscription",
-        "application_course",
-        "application_subscription",
-        "application_associate",
-        "application_medicalcertificate",
         "application_paymentcategory",
+        "application_subscription",
         "docmanager_document"
       ],
       "contract": {
@@ -9889,21 +9954,28 @@
         "TESTS/adapters/django/course_subscriptions_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-subscriptions.md",
         {
-          "command": "python tools/go-migration/family.py run course-subscriptions --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-subscriptions-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "c923cba5903e5453ce922f6563beecb63f555c754bab01bf17cab0fee06e4f77",
-          "scope": "HTTP family course-subscriptions: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 114/114; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-red/results.json",
+          "receipt_sha256": "dddcf139ae7f805f030b2dc3663610290174e12a96b699f26a83a1d29ac6707e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-green/results.json",
+          "receipt_sha256": "3f36d301cbdc0be5f07df0e5db06749667834b2e7c3d370b416ca3e6a77f62f5"
+        },
+        {
+          "revision": "committing change with the instalment label numbered from 0",
+          "result": "Mutation control: fails Go on course-subscriptions-update-events (state.created-unmatched).",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-mutation-rata/results.json",
+          "receipt_sha256": "14225ceec8c8402f419fa923aec03fe3e58f06a1598cb50df8bbb23c3527ee7c"
         }
       ],
       "notes": [
-        "Implementing: list rendering (nested subscription, Rome-dated medical label, group-aware installments and membership payments through PaymentSerializer, carnets), partial update with the membership validate() and current-payment period sync, the soft delete and bulk hard delete with the installment/payment pre_delete signal cascades, viewset DELETE routing and audit (including CourseSubscription's __dict__ object_repr) on four transports; course-subscriptions/add, the PDF/Excel export, non-null events, HTML-form JSON fields, primary-key changes, membership payments with an instructor or invoice and soft deletes sharing the row's payment with an installment are refused (500) before any write.",
-        "Implementing evidence: docs/architecture/go-migration/course-subscriptions.md",
-        "Implementing evidence: RED: Django 107/107; Go 404 on the first case. (quality-reports/go-migration/course-subscriptions-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/course-subscriptions-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on course-subscriptions-delete-group-installments. (quality-reports/go-migration/course-subscriptions-http-mutation-r2/results.json)"
+        "Implementing: API v2: installment edits through events (dropped installments with paid-payment relabel and pre_delete, new event payments and installments, atomic) and membership payments with a nested invoice or instructor are ported. Still refused: the list export (pdf/excel), events given as an object or string, shared payments among dropped installments, a changed primary key, form JSON fields."
       ]
     },
     {
@@ -10089,26 +10161,28 @@
         "target": "calendar",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_calendar.go",
         "BE_GO/internal/dto/course_calendar.go",
         "BE_GO/internal/dto/course_calendar_test.go",
-        "BE_GO/internal/repository/course_calendar.go",
-        "BE_GO/internal/service/course_calendar.go",
         "BE_GO/internal/handler/course_calendar.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/course_calendar.go",
+        "BE_GO/internal/service/course_attendance.go",
+        "BE_GO/internal/service/course_calendar.go",
+        "BE_GO/internal/service/statistic_today_lessons.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
-        "application_course",
-        "application_sportassociation",
-        "bakney_user",
-        "application_instructor",
-        "application_attendanceregistry",
         "application_attendanceday",
+        "application_attendanceregistry",
+        "application_course",
+        "application_globalcalendarevents",
+        "application_instructor",
         "application_reminders",
-        "application_globalcalendarevents"
+        "application_sportassociation",
+        "bakney_user"
       ],
       "contract": {
         "methods": [
@@ -10137,21 +10211,28 @@
         "TESTS/adapters/django/course_calendar_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-calendar.md",
         {
-          "command": "python tools/go-migration/family.py run course-calendar --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-calendar-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "6ee065faac0696cd16d4a5dc7021cc5d2ffe42385b682dde4858ee39e4524d8a",
-          "scope": "HTTP family course-calendar: 160/160 cases on native Django and native Go, 160/160 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 164/164; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-red/results.json",
+          "receipt_sha256": "c5e3ca242d692f71efa6b0d56be0c3141be9dd8c28372d58d4264b894ebab7f2"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 164/164 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-green/results.json",
+          "receipt_sha256": "4dd052b22c84360205a6f4f3552371239a83c8e19b76d7fe88afdfc213680111"
+        },
+        {
+          "revision": "committing change with the lesson read without the registry events",
+          "result": "Mutation control: fails Go on course-calendar-events-lesson (lesson extended_props).",
+          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-mutation-lesson/results.json",
+          "receipt_sha256": "455a0fa00f8848769494e565761fa0ea4663c96dc17d767359511f8aa4109a59"
         }
       ],
       "notes": [
-        "Implementing: course calendar read, calendar update POST (the association's reminders and request.user's instructors) (not atomic, partial writes kept) and DELETE (atomic), the full events listing (get_lesson=false) with the global calendar created on first read, and global calendar actions with reminders, auditlog entries and index rows on four transports. Not ported, refused with the 500 page before any write: lesson details (get_lesson true with a matching attendance day), POST payloads with non-string event ids, list/string extendedProps or non-string starts, non-list stored events, datetimes outside UTC years 1..9999; calendar/events/export has no Go route.",
-        "Implementing evidence: docs/architecture/go-migration/course-calendar.md",
-        "Implementing evidence: RED: Django 160/160; Go fails state.reminders-new-row on the first case. (quality-reports/go-migration/course-calendar-http-red-sync1/results.json)",
-        "Implementing evidence: GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/course-calendar-http-versioned-sync1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on course-calendar-update-other-association-reminder-kept (state.reminders-new-row). (quality-reports/go-migration/course-calendar-http-mutation-sync1/results.json)"
+        "Implementing: API v2: get_lesson (the default) on calendar/events renders get_extended_prop_for_attendance_day of the matched day in the view's transaction. Still refused: stored shapes the attendance port refuses."
       ]
     },
     {
@@ -10169,26 +10250,28 @@
         "target": "calendar_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_calendar.go",
         "BE_GO/internal/dto/course_calendar.go",
         "BE_GO/internal/dto/course_calendar_test.go",
-        "BE_GO/internal/repository/course_calendar.go",
-        "BE_GO/internal/service/course_calendar.go",
         "BE_GO/internal/handler/course_calendar.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/repository/course_calendar.go",
+        "BE_GO/internal/service/course_attendance.go",
+        "BE_GO/internal/service/course_calendar.go",
+        "BE_GO/internal/service/statistic_today_lessons.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
-        "application_course",
-        "application_sportassociation",
-        "bakney_user",
-        "application_instructor",
-        "application_attendanceregistry",
         "application_attendanceday",
+        "application_attendanceregistry",
+        "application_course",
+        "application_globalcalendarevents",
+        "application_instructor",
         "application_reminders",
-        "application_globalcalendarevents"
+        "application_sportassociation",
+        "bakney_user"
       ],
       "contract": {
         "methods": [
@@ -10218,21 +10301,28 @@
         "TESTS/adapters/django/course_calendar_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-calendar.md",
         {
-          "command": "python tools/go-migration/family.py run course-calendar --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-calendar-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "6ee065faac0696cd16d4a5dc7021cc5d2ffe42385b682dde4858ee39e4524d8a",
-          "scope": "HTTP family course-calendar: 160/160 cases on native Django and native Go, 160/160 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 164/164; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-red/results.json",
+          "receipt_sha256": "c5e3ca242d692f71efa6b0d56be0c3141be9dd8c28372d58d4264b894ebab7f2"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 164/164 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-green/results.json",
+          "receipt_sha256": "4dd052b22c84360205a6f4f3552371239a83c8e19b76d7fe88afdfc213680111"
+        },
+        {
+          "revision": "committing change with the lesson read without the registry events",
+          "result": "Mutation control: fails Go on course-calendar-events-lesson (lesson extended_props).",
+          "artifact": "quality-reports/go-migration/course-calendar-http-v2c-mutation-lesson/results.json",
+          "receipt_sha256": "455a0fa00f8848769494e565761fa0ea4663c96dc17d767359511f8aa4109a59"
         }
       ],
       "notes": [
-        "Implementing: course calendar read, calendar update POST (the association's reminders and request.user's instructors) (not atomic, partial writes kept) and DELETE (atomic), the full events listing (get_lesson=false) with the global calendar created on first read, and global calendar actions with reminders, auditlog entries and index rows on four transports. Not ported, refused with the 500 page before any write: lesson details (get_lesson true with a matching attendance day), POST payloads with non-string event ids, list/string extendedProps or non-string starts, non-list stored events, datetimes outside UTC years 1..9999; calendar/events/export has no Go route.",
-        "Implementing evidence: docs/architecture/go-migration/course-calendar.md",
-        "Implementing evidence: RED: Django 160/160; Go fails state.reminders-new-row on the first case. (quality-reports/go-migration/course-calendar-http-red-sync1/results.json)",
-        "Implementing evidence: GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/course-calendar-http-versioned-sync1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on course-calendar-update-other-association-reminder-kept (state.reminders-new-row). (quality-reports/go-migration/course-calendar-http-mutation-sync1/results.json)"
+        "Implementing: API v2: get_lesson (the default) on calendar/events renders get_extended_prop_for_attendance_day of the matched day in the view's transaction. Still refused: stored shapes the attendance port refuses."
       ]
     },
     {
@@ -10250,26 +10340,26 @@
         "target": "course_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_writes.go",
         "BE_GO/internal/dto/course_writes.go",
+        "BE_GO/internal/handler/course_writes.go",
         "BE_GO/internal/repository/course_writes.go",
         "BE_GO/internal/service/course_writes.go",
-        "BE_GO/internal/service/course_writes_overview.go",
-        "BE_GO/internal/handler/course_writes.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/course_writes_overview.go"
       ],
       "dependencies": [
         "BE_GO/internal/domain/course_subscriptions.go",
-        "BE_GO/internal/repository/course_subscriptions.go",
         "BE_GO/internal/dto/course_subscriptions.go",
-        "BE_GO/internal/repository/carnet_writes.go",
-        "BE_GO/internal/repository/model_delete_audit.go",
-        "BE_GO/internal/repository/model_audit.go",
         "BE_GO/internal/dto/drf_numeric.go",
         "BE_GO/internal/dto/invoice_parties.go",
-        "BE_GO/internal/handler/payment_categories.go"
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/model_delete_audit.go"
       ],
       "contract": {
         "methods": [
@@ -10298,21 +10388,28 @@
         "TESTS/adapters/django/course_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-writes.md",
         {
-          "command": "python tools/go-migration/family.py run course-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "dcaeba56523b61ca416095c2d93ceceddd0a779a34fa97199781551a2970b789",
-          "scope": "HTTP family course-writes: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 119/119; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-v2c-red/results.json",
+          "receipt_sha256": "676b40b23e0e2690b59b7b7af07748877a592536ece5b9af8e431ce3c10ba81c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 119/119 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-writes-http-v2c-green/results.json",
+          "receipt_sha256": "afbe9df5272ad63007d94399017369be2a80f62593289ce3b11e2ebefbb7c574"
+        },
+        {
+          "revision": "committing change with the session association filter inverted",
+          "result": "Mutation control: fails Go on course-writes-delete-impersonated-collaborator (500).",
+          "artifact": "quality-reports/go-migration/course-writes-http-v2c-mutation-scope/results.json",
+          "receipt_sha256": "4df66158e1366570c909ba9a490ed4439ed9ba2f956e68331a2fae6683bdbbc7"
         }
       ],
       "notes": [
-        "Implementing: course add/update/delete (update only for the caller's association's course, locations of the association or already linked, subscriptions within the association, title rewrite of the association's payments) and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and athlete overview updates whose subscription has no association.",
-        "Implementing evidence: docs/architecture/go-migration/course-writes.md",
-        "Implementing evidence: RED: Django 104/104; Go fails state.unchanged:application.Payment on the first case. (quality-reports/go-migration/course-writes-http-red-sync1/results.json)",
-        "Implementing evidence: GREEN: 104/104 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects. (quality-reports/go-migration/course-writes-http-versioned-sync1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on course-writes-update-full (state.unchanged:application.Payment). (quality-reports/go-migration/course-writes-http-mutation-sync1/results.json)"
+        "Implementing: API v2: association-scoped impersonation sessions on course add/update/delete and overview update/delete are ported (scoped lookups, audit session context)."
       ]
     },
     {
@@ -10545,28 +10642,28 @@
         "target": "course_overview_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_enrolment.go",
         "BE_GO/internal/dto/course_enrolment.go",
+        "BE_GO/internal/handler/course_enrolment.go",
         "BE_GO/internal/repository/course_enrolment.go",
         "BE_GO/internal/service/course_enrolment.go",
-        "BE_GO/internal/service/course_enrolment_overview.go",
-        "BE_GO/internal/handler/course_enrolment.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/course_enrolment_overview.go"
       ],
       "dependencies": [
-        "BE/application/views/course_views.py",
-        "BE/application/serializers/courses_serializers.py",
-        "BE/application/serializers/payment_serializers.py",
-        "BE/application/utils/subscriptions_utils.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/mixin.py",
         "BE/application/models/courses_models.py",
         "BE/application/models/payment_models.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/serializers/courses_serializers.py",
+        "BE/application/serializers/payment_serializers.py",
         "BE/application/signals.py",
-        "BE/application/mixin.py",
         "BE/application/tenant_scope.py",
-        "BE/application/impersonation_scope.py",
-        "BE/application/permissions_registry.py"
+        "BE/application/utils/subscriptions_utils.py",
+        "BE/application/views/course_views.py"
       ],
       "contract": {
         "methods": [
@@ -10595,21 +10692,28 @@
         "TESTS/adapters/django/course_enrolment_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-enrolment.md",
         {
-          "command": "python tools/go-migration/family.py run course-enrolment --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "fae9a7cfd1ad193d7598362adb4cca1d4b2f452e8a8f1c392d6811a5345777ab",
-          "scope": "HTTP family course-enrolment: 80/80 cases on native Django and native Go, 80/80 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 102/102; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-red2/results.json",
+          "receipt_sha256": "143cb5ea0fa290bfa46ba0bce30cf9e48728d6cfdee4b71303c189907a8fc525"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-green/results.json",
+          "receipt_sha256": "79e3d4c38cf7564edde1fbab4acbe5eea6b5a9c4dcef4587e13e49b934de0abe"
+        },
+        {
+          "revision": "committing change with quote cents rounded half down",
+          "result": "Mutation control: fails Go on course-enrolment-add-quote-amount-three-decimals (state.created-unmatched).",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-mutation-half-down/results.json",
+          "receipt_sha256": "95033c4d279f45347b7daad1856e9917e1037700bc2a5301ffa455600ee22f92"
         }
       ],
       "notes": [
-        "Implementing: course-subscriptions/add (atomic, single and list bodies, field and membership validate() errors, serializer create with body or planned events, add_course_subscription one-fee/fee/multi/quote payments, membership_created_callback), course-overview add (non-atomic add_course_to_subscription with quote selection, one-fee/quote/installment/fee payments) and the installment payment, with audit and index effects on four transports. Not ported (500 before any write): association-scoped impersonation sessions, non-canonical X-Group-Id, HTML form bodies, non-object overview bodies, the athlete membership prefill of the overview add, quote amounts other than plain decimals (7.2) and non-object payment_category or non-string quote ids/values, payments rendered with an instructor or invoice. new_course_subscription_callback has no sender and is not reached.",
-        "Implementing evidence: docs/architecture/go-migration/course-enrolment.md",
-        "Implementing evidence: RED: Django 80/80; Go 404 on the first case. (quality-reports/go-migration/course-enrolment-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 80/80 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course subscription, payment, installment, membership link, audit and index effects. (quality-reports/go-migration/course-enrolment-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on course-enrolment-make-payment-group-header-hides (200 instead of 500). (quality-reports/go-migration/course-enrolment-http-mutation-r1/results.json)"
+        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add."
       ]
     },
     {
@@ -10627,26 +10731,26 @@
         "target": "course_overview_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_writes.go",
         "BE_GO/internal/dto/course_writes.go",
+        "BE_GO/internal/handler/course_writes.go",
         "BE_GO/internal/repository/course_writes.go",
         "BE_GO/internal/service/course_writes.go",
-        "BE_GO/internal/service/course_writes_overview.go",
-        "BE_GO/internal/handler/course_writes.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/course_writes_overview.go"
       ],
       "dependencies": [
         "BE_GO/internal/domain/course_subscriptions.go",
-        "BE_GO/internal/repository/course_subscriptions.go",
         "BE_GO/internal/dto/course_subscriptions.go",
-        "BE_GO/internal/repository/carnet_writes.go",
-        "BE_GO/internal/repository/model_delete_audit.go",
-        "BE_GO/internal/repository/model_audit.go",
         "BE_GO/internal/dto/drf_numeric.go",
         "BE_GO/internal/dto/invoice_parties.go",
-        "BE_GO/internal/handler/payment_categories.go"
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/model_delete_audit.go"
       ],
       "contract": {
         "methods": [
@@ -10675,21 +10779,28 @@
         "TESTS/adapters/django/course_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-writes.md",
         {
-          "command": "python tools/go-migration/family.py run course-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "dcaeba56523b61ca416095c2d93ceceddd0a779a34fa97199781551a2970b789",
-          "scope": "HTTP family course-writes: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 119/119; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-v2c-red/results.json",
+          "receipt_sha256": "676b40b23e0e2690b59b7b7af07748877a592536ece5b9af8e431ce3c10ba81c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 119/119 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-writes-http-v2c-green/results.json",
+          "receipt_sha256": "afbe9df5272ad63007d94399017369be2a80f62593289ce3b11e2ebefbb7c574"
+        },
+        {
+          "revision": "committing change with the session association filter inverted",
+          "result": "Mutation control: fails Go on course-writes-delete-impersonated-collaborator (500).",
+          "artifact": "quality-reports/go-migration/course-writes-http-v2c-mutation-scope/results.json",
+          "receipt_sha256": "4df66158e1366570c909ba9a490ed4439ed9ba2f956e68331a2fae6683bdbbc7"
         }
       ],
       "notes": [
-        "Implementing: course add/update/delete (update only for the caller's association's course, locations of the association or already linked, subscriptions within the association, title rewrite of the association's payments) and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and athlete overview updates whose subscription has no association.",
-        "Implementing evidence: docs/architecture/go-migration/course-writes.md",
-        "Implementing evidence: RED: Django 104/104; Go fails state.unchanged:application.Payment on the first case. (quality-reports/go-migration/course-writes-http-red-sync1/results.json)",
-        "Implementing evidence: GREEN: 104/104 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects. (quality-reports/go-migration/course-writes-http-versioned-sync1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on course-writes-update-full (state.unchanged:application.Payment). (quality-reports/go-migration/course-writes-http-mutation-sync1/results.json)"
+        "Implementing: API v2: association-scoped impersonation sessions on course add/update/delete and overview update/delete are ported (scoped lookups, audit session context)."
       ]
     },
     {
@@ -10707,26 +10818,26 @@
         "target": "course_overview_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_writes.go",
         "BE_GO/internal/dto/course_writes.go",
+        "BE_GO/internal/handler/course_writes.go",
         "BE_GO/internal/repository/course_writes.go",
         "BE_GO/internal/service/course_writes.go",
-        "BE_GO/internal/service/course_writes_overview.go",
-        "BE_GO/internal/handler/course_writes.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/course_writes_overview.go"
       ],
       "dependencies": [
         "BE_GO/internal/domain/course_subscriptions.go",
-        "BE_GO/internal/repository/course_subscriptions.go",
         "BE_GO/internal/dto/course_subscriptions.go",
-        "BE_GO/internal/repository/carnet_writes.go",
-        "BE_GO/internal/repository/model_delete_audit.go",
-        "BE_GO/internal/repository/model_audit.go",
         "BE_GO/internal/dto/drf_numeric.go",
         "BE_GO/internal/dto/invoice_parties.go",
-        "BE_GO/internal/handler/payment_categories.go"
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/model_delete_audit.go"
       ],
       "contract": {
         "methods": [
@@ -10755,21 +10866,28 @@
         "TESTS/adapters/django/course_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-writes.md",
         {
-          "command": "python tools/go-migration/family.py run course-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "dcaeba56523b61ca416095c2d93ceceddd0a779a34fa97199781551a2970b789",
-          "scope": "HTTP family course-writes: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 119/119; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-v2c-red/results.json",
+          "receipt_sha256": "676b40b23e0e2690b59b7b7af07748877a592536ece5b9af8e431ce3c10ba81c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 119/119 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-writes-http-v2c-green/results.json",
+          "receipt_sha256": "afbe9df5272ad63007d94399017369be2a80f62593289ce3b11e2ebefbb7c574"
+        },
+        {
+          "revision": "committing change with the session association filter inverted",
+          "result": "Mutation control: fails Go on course-writes-delete-impersonated-collaborator (500).",
+          "artifact": "quality-reports/go-migration/course-writes-http-v2c-mutation-scope/results.json",
+          "receipt_sha256": "4df66158e1366570c909ba9a490ed4439ed9ba2f956e68331a2fae6683bdbbc7"
         }
       ],
       "notes": [
-        "Implementing: course add/update/delete (update only for the caller's association's course, locations of the association or already linked, subscriptions within the association, title rewrite of the association's payments) and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and athlete overview updates whose subscription has no association.",
-        "Implementing evidence: docs/architecture/go-migration/course-writes.md",
-        "Implementing evidence: RED: Django 104/104; Go fails state.unchanged:application.Payment on the first case. (quality-reports/go-migration/course-writes-http-red-sync1/results.json)",
-        "Implementing evidence: GREEN: 104/104 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects. (quality-reports/go-migration/course-writes-http-versioned-sync1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on course-writes-update-full (state.unchanged:application.Payment). (quality-reports/go-migration/course-writes-http-mutation-sync1/results.json)"
+        "Implementing: API v2: association-scoped impersonation sessions on course add/update/delete and overview update/delete are ported (scoped lookups, audit session context)."
       ]
     },
     {
@@ -10858,26 +10976,26 @@
         "target": "course_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_writes.go",
         "BE_GO/internal/dto/course_writes.go",
+        "BE_GO/internal/handler/course_writes.go",
         "BE_GO/internal/repository/course_writes.go",
         "BE_GO/internal/service/course_writes.go",
-        "BE_GO/internal/service/course_writes_overview.go",
-        "BE_GO/internal/handler/course_writes.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/course_writes_overview.go"
       ],
       "dependencies": [
         "BE_GO/internal/domain/course_subscriptions.go",
-        "BE_GO/internal/repository/course_subscriptions.go",
         "BE_GO/internal/dto/course_subscriptions.go",
-        "BE_GO/internal/repository/carnet_writes.go",
-        "BE_GO/internal/repository/model_delete_audit.go",
-        "BE_GO/internal/repository/model_audit.go",
         "BE_GO/internal/dto/drf_numeric.go",
         "BE_GO/internal/dto/invoice_parties.go",
-        "BE_GO/internal/handler/payment_categories.go"
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/model_delete_audit.go"
       ],
       "contract": {
         "methods": [
@@ -10906,21 +11024,28 @@
         "TESTS/adapters/django/course_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-writes.md",
         {
-          "command": "python tools/go-migration/family.py run course-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "dcaeba56523b61ca416095c2d93ceceddd0a779a34fa97199781551a2970b789",
-          "scope": "HTTP family course-writes: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 119/119; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-v2c-red/results.json",
+          "receipt_sha256": "676b40b23e0e2690b59b7b7af07748877a592536ece5b9af8e431ce3c10ba81c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 119/119 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-writes-http-v2c-green/results.json",
+          "receipt_sha256": "afbe9df5272ad63007d94399017369be2a80f62593289ce3b11e2ebefbb7c574"
+        },
+        {
+          "revision": "committing change with the session association filter inverted",
+          "result": "Mutation control: fails Go on course-writes-delete-impersonated-collaborator (500).",
+          "artifact": "quality-reports/go-migration/course-writes-http-v2c-mutation-scope/results.json",
+          "receipt_sha256": "4df66158e1366570c909ba9a490ed4439ed9ba2f956e68331a2fae6683bdbbc7"
         }
       ],
       "notes": [
-        "Implementing: course add/update/delete (update only for the caller's association's course, locations of the association or already linked, subscriptions within the association, title rewrite of the association's payments) and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and athlete overview updates whose subscription has no association.",
-        "Implementing evidence: docs/architecture/go-migration/course-writes.md",
-        "Implementing evidence: RED: Django 104/104; Go fails state.unchanged:application.Payment on the first case. (quality-reports/go-migration/course-writes-http-red-sync1/results.json)",
-        "Implementing evidence: GREEN: 104/104 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects. (quality-reports/go-migration/course-writes-http-versioned-sync1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on course-writes-update-full (state.unchanged:application.Payment). (quality-reports/go-migration/course-writes-http-mutation-sync1/results.json)"
+        "Implementing: API v2: association-scoped impersonation sessions on course add/update/delete and overview update/delete are ported (scoped lookups, audit session context)."
       ]
     },
     {
@@ -10938,26 +11063,26 @@
         "target": "course_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_writes.go",
         "BE_GO/internal/dto/course_writes.go",
+        "BE_GO/internal/handler/course_writes.go",
         "BE_GO/internal/repository/course_writes.go",
         "BE_GO/internal/service/course_writes.go",
-        "BE_GO/internal/service/course_writes_overview.go",
-        "BE_GO/internal/handler/course_writes.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/course_writes_overview.go"
       ],
       "dependencies": [
         "BE_GO/internal/domain/course_subscriptions.go",
-        "BE_GO/internal/repository/course_subscriptions.go",
         "BE_GO/internal/dto/course_subscriptions.go",
-        "BE_GO/internal/repository/carnet_writes.go",
-        "BE_GO/internal/repository/model_delete_audit.go",
-        "BE_GO/internal/repository/model_audit.go",
         "BE_GO/internal/dto/drf_numeric.go",
         "BE_GO/internal/dto/invoice_parties.go",
-        "BE_GO/internal/handler/payment_categories.go"
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/model_delete_audit.go"
       ],
       "contract": {
         "methods": [
@@ -10986,21 +11111,28 @@
         "TESTS/adapters/django/course_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-writes.md",
         {
-          "command": "python tools/go-migration/family.py run course-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "dcaeba56523b61ca416095c2d93ceceddd0a779a34fa97199781551a2970b789",
-          "scope": "HTTP family course-writes: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 119/119; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-v2c-red/results.json",
+          "receipt_sha256": "676b40b23e0e2690b59b7b7af07748877a592536ece5b9af8e431ce3c10ba81c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 119/119 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-writes-http-v2c-green/results.json",
+          "receipt_sha256": "afbe9df5272ad63007d94399017369be2a80f62593289ce3b11e2ebefbb7c574"
+        },
+        {
+          "revision": "committing change with the session association filter inverted",
+          "result": "Mutation control: fails Go on course-writes-delete-impersonated-collaborator (500).",
+          "artifact": "quality-reports/go-migration/course-writes-http-v2c-mutation-scope/results.json",
+          "receipt_sha256": "4df66158e1366570c909ba9a490ed4439ed9ba2f956e68331a2fae6683bdbbc7"
         }
       ],
       "notes": [
-        "Implementing: course add/update/delete (update only for the caller's association's course, locations of the association or already linked, subscriptions within the association, title rewrite of the association's payments) and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and athlete overview updates whose subscription has no association.",
-        "Implementing evidence: docs/architecture/go-migration/course-writes.md",
-        "Implementing evidence: RED: Django 104/104; Go fails state.unchanged:application.Payment on the first case. (quality-reports/go-migration/course-writes-http-red-sync1/results.json)",
-        "Implementing evidence: GREEN: 104/104 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects. (quality-reports/go-migration/course-writes-http-versioned-sync1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on course-writes-update-full (state.unchanged:application.Payment). (quality-reports/go-migration/course-writes-http-mutation-sync1/results.json)"
+        "Implementing: API v2: association-scoped impersonation sessions on course add/update/delete and overview update/delete are ported (scoped lookups, audit session context)."
       ]
     },
     {
@@ -11102,14 +11234,17 @@
         "target": "CourseLocationViewSet.as_view({'delete': 'delete'})",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/documents_writes.go",
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_location_writes.go",
         "BE_GO/internal/dto/course_location_write.go",
+        "BE_GO/internal/handler/course_location_writes.go",
+        "BE_GO/internal/repository/course_location_documents.go",
         "BE_GO/internal/repository/course_location_writes.go",
         "BE_GO/internal/service/course_location_writes.go",
-        "BE_GO/internal/handler/course_location_writes.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/documents_writes.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, tenant scope and audit index",
@@ -11143,21 +11278,28 @@
         "TESTS/adapters/django/course_location_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-locations.md",
         {
-          "command": "python tools/go-migration/family.py run course-location-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-location-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "783541fccea551b43a32e5f1fc91de31c6cd7e4a1f1039f7018ad983f676a618",
-          "scope": "HTTP family course-location-writes: 47/47 cases on native Django and native Go, 47/47 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 51/51; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-v2c-red/results.json",
+          "receipt_sha256": "232e3279c59edc0569e26e78c048be2103074c372054a7ab018051046dbc00d9"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 51/51 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects (rows, links, audit, stored objects).",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-v2c-green/results.json",
+          "receipt_sha256": "14bea28a72e536be5c7a0a37b4cd3368d4f712f384ab2f8937ef45703b288ab6"
+        },
+        {
+          "revision": "committing change with the stored document not linked to the location",
+          "result": "Mutation control: fails Go on course-location-writes-add-with-documents (response.uploaded-document).",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-v2c-mutation-upload/results.json",
+          "receipt_sha256": "4a265d11717c79693304389480b9a9016df9150f88c9b21255c4fda00560c137"
         }
       ],
       "notes": [
-        "Implementing: DRF field validation, tenant-scoped association, viewset DELETE routing, non-atomic documents_data failures and audit on four transports; document uploads to storage are not ported.",
-        "Implementing evidence: docs/architecture/go-migration/course-locations.md",
-        "Implementing evidence: RED: Django 47/47; Go 404 on the first case. (quality-reports/go-migration/course-location-writes-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 47/47 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/course-location-writes-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on the first add whose document lacks its keys. (quality-reports/go-migration/course-location-writes-http-mutation-r1/results.json)"
+        "Implementing: API v2: documents_data uploads (Document with audit, default_storage.save on the document storage, the M2M link; not atomic after the location save) are ported. Still refused: indexed form keys, filenames that are not plain storable text of at most 255 characters or that Storage.save rejects, a changed course_location_id."
       ]
     },
     {
@@ -11175,14 +11317,17 @@
         "target": "CourseLocationViewSet.as_view({'patch': 'update'})",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/documents_writes.go",
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_location_writes.go",
         "BE_GO/internal/dto/course_location_write.go",
+        "BE_GO/internal/handler/course_location_writes.go",
+        "BE_GO/internal/repository/course_location_documents.go",
         "BE_GO/internal/repository/course_location_writes.go",
         "BE_GO/internal/service/course_location_writes.go",
-        "BE_GO/internal/handler/course_location_writes.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/documents_writes.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, tenant scope and audit index",
@@ -11217,21 +11362,28 @@
         "TESTS/adapters/django/course_location_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-locations.md",
         {
-          "command": "python tools/go-migration/family.py run course-location-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-location-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "783541fccea551b43a32e5f1fc91de31c6cd7e4a1f1039f7018ad983f676a618",
-          "scope": "HTTP family course-location-writes: 47/47 cases on native Django and native Go, 47/47 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 51/51; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-v2c-red/results.json",
+          "receipt_sha256": "232e3279c59edc0569e26e78c048be2103074c372054a7ab018051046dbc00d9"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 51/51 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects (rows, links, audit, stored objects).",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-v2c-green/results.json",
+          "receipt_sha256": "14bea28a72e536be5c7a0a37b4cd3368d4f712f384ab2f8937ef45703b288ab6"
+        },
+        {
+          "revision": "committing change with the stored document not linked to the location",
+          "result": "Mutation control: fails Go on course-location-writes-add-with-documents (response.uploaded-document).",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-v2c-mutation-upload/results.json",
+          "receipt_sha256": "4a265d11717c79693304389480b9a9016df9150f88c9b21255c4fda00560c137"
         }
       ],
       "notes": [
-        "Implementing: DRF field validation, tenant-scoped association, viewset DELETE routing, non-atomic documents_data failures and audit on four transports; document uploads to storage are not ported.",
-        "Implementing evidence: docs/architecture/go-migration/course-locations.md",
-        "Implementing evidence: RED: Django 47/47; Go 404 on the first case. (quality-reports/go-migration/course-location-writes-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 47/47 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/course-location-writes-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on the first add whose document lacks its keys. (quality-reports/go-migration/course-location-writes-http-mutation-r1/results.json)"
+        "Implementing: API v2: documents_data uploads (Document with audit, default_storage.save on the document storage, the M2M link; not atomic after the location save) are ported. Still refused: indexed form keys, filenames that are not plain storable text of at most 255 characters or that Storage.save rejects, a changed course_location_id."
       ]
     },
     {
@@ -11249,14 +11401,17 @@
         "target": "CourseLocationViewSet.as_view({'post': 'add'})",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/documents_writes.go",
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/course_location_writes.go",
         "BE_GO/internal/dto/course_location_write.go",
+        "BE_GO/internal/handler/course_location_writes.go",
+        "BE_GO/internal/repository/course_location_documents.go",
         "BE_GO/internal/repository/course_location_writes.go",
         "BE_GO/internal/service/course_location_writes.go",
-        "BE_GO/internal/handler/course_location_writes.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/documents_writes.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, tenant scope and audit index",
@@ -11280,7 +11435,7 @@
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.courses.create.",
         "resource_scope": "The owner's association locations; sport_association is tenant-scoped (a foreign one is DRF's generic 403).",
-        "side_effects": "Creates the location (create entry); document uploads are not ported (refused before any write).",
+        "side_effects": "Creates the location (create entry), then per documents_data item a Document (create entry), its stored object and the link.",
         "transaction": "Not atomic: a documents_data failure after the save keeps the saved location.",
         "execution_owner": "django"
       },
@@ -11291,21 +11446,28 @@
         "TESTS/adapters/django/course_location_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-locations.md",
         {
-          "command": "python tools/go-migration/family.py run course-location-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-location-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "783541fccea551b43a32e5f1fc91de31c6cd7e4a1f1039f7018ad983f676a618",
-          "scope": "HTTP family course-location-writes: 47/47 cases on native Django and native Go, 47/47 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 51/51; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-v2c-red/results.json",
+          "receipt_sha256": "232e3279c59edc0569e26e78c048be2103074c372054a7ab018051046dbc00d9"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 51/51 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects (rows, links, audit, stored objects).",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-v2c-green/results.json",
+          "receipt_sha256": "14bea28a72e536be5c7a0a37b4cd3368d4f712f384ab2f8937ef45703b288ab6"
+        },
+        {
+          "revision": "committing change with the stored document not linked to the location",
+          "result": "Mutation control: fails Go on course-location-writes-add-with-documents (response.uploaded-document).",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-v2c-mutation-upload/results.json",
+          "receipt_sha256": "4a265d11717c79693304389480b9a9016df9150f88c9b21255c4fda00560c137"
         }
       ],
       "notes": [
-        "Implementing: DRF field validation, tenant-scoped association, viewset DELETE routing, non-atomic documents_data failures and audit on four transports; document uploads to storage are not ported.",
-        "Implementing evidence: docs/architecture/go-migration/course-locations.md",
-        "Implementing evidence: RED: Django 47/47; Go 404 on the first case. (quality-reports/go-migration/course-location-writes-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 47/47 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/course-location-writes-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on the first add whose document lacks its keys. (quality-reports/go-migration/course-location-writes-http-mutation-r1/results.json)"
+        "Implementing: API v2: documents_data uploads (Document with audit, default_storage.save on the document storage, the M2M link; not atomic after the location save) are ported. Still refused: indexed form keys, filenames that are not plain storable text of at most 255 characters or that Storage.save rejects, a changed course_location_id."
       ]
     },
     {
@@ -33352,7 +33514,7 @@
         "target": "InstanceAdminView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -33367,7 +33529,15 @@
         "BE_GO/internal/repository/instance_bootstrap.go",
         "BE_GO/internal/dto/instance_admin_ui_api_test.go",
         "BE_GO/internal/handler/instance_admin_ui_api_test.go",
-        "BE_GO/internal/repository/instance_backup_actions.go"
+        "BE_GO/internal/repository/instance_backup_actions.go",
+        "BE_GO/internal/service/instance_diagnostics.go",
+        "BE_GO/internal/service/instance_outbound.go",
+        "BE_GO/internal/handler/instance_outbound.go",
+        "BE_GO/cmd/server/instance_outbound.go",
+        "BE_GO/internal/celery/pidbox.go",
+        "BE_GO/internal/instanceprobe/health.go",
+        "BE_GO/pkg/storage/documentobjects/probe.go",
+        "BE_GO/internal/config/parseaddr.go"
       ],
       "dependencies": [
         "Existing identity resolution (administration paths never impersonate) and the instance bootstrap service (InstanceConfigSerializer, is_instance_administrator)",
@@ -33377,7 +33547,10 @@
         "core.settings: SECRET_KEY, APP_URL/APP_HOST, ASSOZETA_VERSION, ASSOZETA_DEPLOYMENT_MODE, EMAIL_*, WHITELABEL_NAME, AI_*, MCP_AGENT_*, STRIPE_*, SOCIAL_AUTH_GOOGLE_OAUTH2_KEY, SOCIAL_AUTH_APPLE_ID_CLIENT",
         "BE/instance/migrations/0009_ui_api_version.py",
         "auditlog_logentry",
-        "application_auditlogindex"
+        "application_auditlogindex",
+        "Celery remote control over the broker (kombu Redis transport: celery.pidbox fanout, reply.celery.pidbox queues), answered by the Celery worker",
+        "Django cache key :1:instance:scheduler:heartbeat written by instance.scheduler.InstanceScheduler",
+        "Update runner socket (ASSOZETA_UPDATER_DIRECTORY) in production mode; PUPPETEER_HOST/PORT renderer; AWS_* storage settings; ASSOZETA_DIAGNOSTICS_API_URL (Go, default http://127.0.0.1:<GO_LISTEN_ADDR port>)"
       ],
       "contract": {
         "methods": [
@@ -33394,7 +33567,7 @@
         "request": "PUT: JSON body whose keys are a non-empty subset of {'oem', 'uiApiVersion'}: 'oem' ({name, abbreviation, primaryColor, supportEmail}, partial) and 'uiApiVersion' (ChoiceField v1/v2, source ui_api_version).",
         "response": "GET 200 {'config': InstanceConfigSerializer (features.uiApiVersion included), 'running_version', 'configured_version', 'mode'}; PUT 200 {'config': ...}.",
         "errors": "401; 403 'Only the instance owner or an administrator can administer this installation.', 'Esci dall’impersonificazione per accedere all’amministrazione.'; 405; 400 ['Only instance branding can be edited here.'] nested oem field errors and uiApiVersion '\"<str(value)>\" is not a valid choice.' / 'This field may not be null.' (reported together); 500 number/null/unhashable body.",
-        "authentication": "DRF authentication (JWT/session); administration path, no impersonation.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsInstanceOwner: active, non-deleted superuser or primary-association owner of a self-hosted configuration (the authenticated actor).",
         "resource_scope": "The singleton InstanceConfiguration.",
         "side_effects": "PUT saves the edited OEM columns, ui_api_version and updated_at; a changed ui_api_version writes one auditlog UPDATE entry on the configuration {'ui_api_version': [previous, new]} with additional_data {'actor_id'} and its AuditLogIndex row (actor.sport_association).",
@@ -33405,35 +33578,31 @@
         "TESTS/fixtures/instance_admin_http.json",
         "TESTS/fixtures/generate_instance_admin_http.py",
         "TESTS/contracts/test_instance_admin_http.py",
-        "TESTS/adapters/django/instance_admin_http.py",
-        "BE/instance/tests/test_administration.py",
-        "TESTS/adapters/django/ui_api_version_browser.py",
-        "TESTS/browser/ui-api-version.mjs"
+        "TESTS/adapters/django/instance_admin_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/instance-admin.md",
         {
-          "command": "python tools/go-migration/family.py run instance-admin --versioned --label verified-e91e32ab",
-          "revision": "5047cc710b08d57d92ba08e3027e41e37b967655",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-admin-http-verified-e91e32ab/results.json",
-          "receipt_sha256": "5410bc2fe355c3ea0b03d3f3d547600facc91cd0f5399d274c2153e8a29a1f0a",
-          "scope": "HTTP family instance-admin: 164/164 cases on native Django and native Go, 164/164 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 172/172; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-admin-http-diag-red/results.json",
+          "receipt_sha256": "520600dc45bdf2bac637524676972fbc92623b958203715d8fce9469d3c7d70d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects, outbound requests, pidbox broadcasts and cache cleanup.",
+          "artifact": "quality-reports/go-migration/instance-admin-http-diag-green/results.json",
+          "receipt_sha256": "1b1d8f113db8bd4c45954c9b5ea0f74e8aab5cc29d6ae89bd678c10db16d65c9"
+        },
+        {
+          "revision": "committing change with a worker answer counted when its 'ok' is any non-empty string instead of 'pong'",
+          "result": "Mutation control: fails Go on instance-admin-diagnostics-run-odd-answers (response.body:checks[4]:status).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-diag-mutation/results.json",
+          "receipt_sha256": "6e6f1bd45139ff4b1e8a8983c20e4ae97e77a00b31e751cddee7301e52118690"
         }
       ],
       "notes": [
-        "Implementing: IsInstanceOwner on the authenticated actor before method dispatch, branding-only PUT, email and integration settings with revision checks, Fernet-encrypted secrets retained or cleared, diagnostics snapshot and leased POST, development-mode updates and restarts, Cache-Control no-store on email/integration responses, on four transports; diagnostics runs once a lease can be claimed, updates/restarts in production mode, form or multipart bodies, non-ASCII AI base URLs and unsupported stored JSON shapes are refused before any write; admin/releases, admin/logo and the email/integration test routes stay on Django.",
-        "uiApiVersion (web UI API version, beta) is editable here next to 'oem'; a change is audited. See docs/architecture/go-migration/ui-api-version.md.",
-        "Implementing evidence: docs/architecture/go-migration/instance-admin.md",
-        "Implementing evidence: RED: Django 141/141; Go 404 on the first case. (quality-reports/go-migration/instance-admin-http-native-r1/results.json)",
-        "Implementing evidence: GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects (stored secrets checked by decryption). (quality-reports/go-migration/instance-admin-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-admin-email-put-replace-password (state.diagnostic_results). (quality-reports/go-migration/instance-admin-http-mutation-r1/results.json)",
-        "Implementing evidence: passed: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 (quality-reports/go-migration/instance-admin-http-versioned-r1/results.json)",
-        "Implementing evidence: GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2; Django source of these views unchanged by the merge. (quality-reports/go-migration/instance-reverify-admin-green/results.json)",
-        "Implementing evidence: docs/architecture/go-migration/ui-api-version.md",
-        "Implementing evidence: RED: Django 164/164; Go fails instance-admin-owner-admin (response.body:config:features:keys). (quality-reports/go-migration/instance-admin-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 164/164 on native Django, native Go, Caddy /api/v1 and /api/v2, with exact InstanceConfiguration, auditlog and AuditLogIndex effects. (quality-reports/go-migration/instance-admin-http-versioned-g1/results.json)",
-        "Implementing evidence: Mutation control CAUGHT: Go fails instance-admin-ui-version-enable (audit.count). (quality-reports/go-migration/instance-admin-http-mutation-g1/results.json)",
-        "Implementing evidence: Browser: built UI behind the shipped Caddyfile; v1 calls only /api, the owner toggle enables v2, the same and a new browser call only /api/v2 (Django observer: no API request except first-visit bootstrap reads), ?api=v1 and a failing readiness probe stay on /api, switching off returns to /api; audit entries [v1,v2] and [v2,v1]. Known v2 gap: statistic/dashboard?widget=todaylessons refused by Go. (quality-reports/go-migration/ui-v2-browser/results.json)"
+        "Implementing: IsInstanceOwner on the authenticated actor before method dispatch, branding-only PUT, email and integration settings with revision checks, Fernet-encrypted secrets, diagnostics snapshot and the full POST run (lease, ten probes with run_probe's deadline and sanitizing, email revision race, 429), WHITELABEL_NAME/EMAIL_HOST_USER through a port of Python 3.13 strict parseaddr, on four transports; form or multipart bodies, non-ASCII AI base URLs, a non-integer EMAIL_PORT and unsupported stored JSON shapes are refused before any write."
       ]
     },
     {
@@ -35163,7 +35332,7 @@
         "target": "DiagnosticsView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -35175,14 +35344,31 @@
         "BE_GO/internal/service/instance_admin.go",
         "BE_GO/internal/handler/instance_admin.go",
         "BE_GO/internal/service/instance_bootstrap.go",
-        "BE_GO/internal/repository/instance_bootstrap.go"
+        "BE_GO/internal/repository/instance_bootstrap.go",
+        "BE_GO/internal/dto/instance_admin_ui_api_test.go",
+        "BE_GO/internal/handler/instance_admin_ui_api_test.go",
+        "BE_GO/internal/repository/instance_backup_actions.go",
+        "BE_GO/internal/service/instance_diagnostics.go",
+        "BE_GO/internal/service/instance_outbound.go",
+        "BE_GO/internal/handler/instance_outbound.go",
+        "BE_GO/cmd/server/instance_outbound.go",
+        "BE_GO/internal/celery/pidbox.go",
+        "BE_GO/internal/instanceprobe/health.go",
+        "BE_GO/pkg/storage/documentobjects/probe.go",
+        "BE_GO/internal/config/parseaddr.go"
       ],
       "dependencies": [
         "Existing identity resolution (administration paths never impersonate) and the instance bootstrap service (InstanceConfigSerializer, is_instance_administrator)",
         "instance_instanceconfiguration",
         "application_sportassociation",
         "bakney_user",
-        "core.settings: SECRET_KEY, APP_URL/APP_HOST, ASSOZETA_VERSION, ASSOZETA_DEPLOYMENT_MODE, EMAIL_*, WHITELABEL_NAME, AI_*, MCP_AGENT_*, STRIPE_*, SOCIAL_AUTH_GOOGLE_OAUTH2_KEY, SOCIAL_AUTH_APPLE_ID_CLIENT"
+        "core.settings: SECRET_KEY, APP_URL/APP_HOST, ASSOZETA_VERSION, ASSOZETA_DEPLOYMENT_MODE, EMAIL_*, WHITELABEL_NAME, AI_*, MCP_AGENT_*, STRIPE_*, SOCIAL_AUTH_GOOGLE_OAUTH2_KEY, SOCIAL_AUTH_APPLE_ID_CLIENT",
+        "BE/instance/migrations/0009_ui_api_version.py",
+        "auditlog_logentry",
+        "application_auditlogindex",
+        "Celery remote control over the broker (kombu Redis transport: celery.pidbox fanout, reply.celery.pidbox queues), answered by the Celery worker",
+        "Django cache key :1:instance:scheduler:heartbeat written by instance.scheduler.InstanceScheduler",
+        "Update runner socket (ASSOZETA_UPDATER_DIRECTORY) in production mode; PUPPETEER_HOST/PORT renderer; AWS_* storage settings; ASSOZETA_DIAGNOSTICS_API_URL (Go, default http://127.0.0.1:<GO_LISTEN_ADDR port>)"
       ],
       "contract": {
         "methods": [
@@ -35197,13 +35383,13 @@
           "/api/instance/admin/diagnostics"
         ],
         "request": "POST: no body read.",
-        "response": "GET 200 snapshot(config) with Cache-Control: no-store; POST 429 with Retry-After: 45 while a lease is active.",
-        "errors": "401; 403; 405; 500 (Go) when a lease could be claimed (outbound probes not ported).",
-        "authentication": "DRF authentication (JWT/session); administration path, no impersonation.",
+        "response": "GET 200 snapshot(config) with Cache-Control: no-store; POST 200 snapshot(config) after the run, with Cache-Control: no-store; 429 {error} with Retry-After: 45 while a lease is active or the row is locked.",
+        "errors": "401; 403; 405; 429; 500 (Go) for stored JSON shapes snapshot() does not interpret (checked before the lease) and production mode without an update runner client.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsInstanceOwner (authenticated actor).",
         "resource_scope": "The singleton InstanceConfiguration.",
-        "side_effects": "None in Go (Django's lease write and probe results are not ported).",
-        "transaction": "Lease read with select_for_update(nowait=True).",
+        "side_effects": "POST: claim_operation lease (diagnostic_results.operation_leases.diagnostics = now + 45 s); the ten probes (public URL and API health, SELECT 1, S3 list, Celery pidbox ping over the broker, scheduler heartbeat in Django's cache, renderer health, email configuration, update runner status/diagnostics in production); diagnostic_results.checks and checked_at saved under select_for_update, the email check left out when email_revision changed during the run.",
+        "transaction": "Lease claim with select_for_update(nowait=True); probes outside a transaction (4 at a time, 10 s deadline each, sanitized results); save under select_for_update.",
         "execution_owner": "django"
       },
       "tests": [
@@ -35213,23 +35399,28 @@
         "TESTS/adapters/django/instance_admin_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/instance-admin.md",
         {
-          "command": "python tools/go-migration/family.py run instance-admin --versioned --label verified-e91e32ab",
-          "revision": "5047cc710b08d57d92ba08e3027e41e37b967655",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-admin-http-verified-e91e32ab/results.json",
-          "receipt_sha256": "5410bc2fe355c3ea0b03d3f3d547600facc91cd0f5399d274c2153e8a29a1f0a",
-          "scope": "HTTP family instance-admin: 164/164 cases on native Django and native Go, 164/164 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 172/172; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-admin-http-diag-red/results.json",
+          "receipt_sha256": "520600dc45bdf2bac637524676972fbc92623b958203715d8fce9469d3c7d70d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects, outbound requests, pidbox broadcasts and cache cleanup.",
+          "artifact": "quality-reports/go-migration/instance-admin-http-diag-green/results.json",
+          "receipt_sha256": "1b1d8f113db8bd4c45954c9b5ea0f74e8aab5cc29d6ae89bd678c10db16d65c9"
+        },
+        {
+          "revision": "committing change with a worker answer counted when its 'ok' is any non-empty string instead of 'pong'",
+          "result": "Mutation control: fails Go on instance-admin-diagnostics-run-odd-answers (response.body:checks[4]:status).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-diag-mutation/results.json",
+          "receipt_sha256": "6e6f1bd45139ff4b1e8a8983c20e4ae97e77a00b31e751cddee7301e52118690"
         }
       ],
       "notes": [
-        "Implementing: IsInstanceOwner on the authenticated actor before method dispatch, branding-only PUT, email and integration settings with revision checks, Fernet-encrypted secrets retained or cleared, diagnostics snapshot and leased POST, development-mode updates and restarts, Cache-Control no-store on email/integration responses, on four transports; diagnostics runs once a lease can be claimed, updates/restarts in production mode, form or multipart bodies, non-ASCII AI base URLs and unsupported stored JSON shapes are refused before any write; admin/releases, admin/logo and the email/integration test routes stay on Django.",
-        "Implementing evidence: docs/architecture/go-migration/instance-admin.md",
-        "Implementing evidence: RED: Django 141/141; Go 404 on the first case. (quality-reports/go-migration/instance-admin-http-native-r1/results.json)",
-        "Implementing evidence: GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects (stored secrets checked by decryption). (quality-reports/go-migration/instance-admin-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-admin-email-put-replace-password (state.diagnostic_results). (quality-reports/go-migration/instance-admin-http-mutation-r1/results.json)",
-        "Implementing evidence: passed: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 (quality-reports/go-migration/instance-admin-http-versioned-r1/results.json)",
-        "Implementing evidence: GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2; Django source of these views unchanged by the merge. (quality-reports/go-migration/instance-reverify-admin-green/results.json)"
+        "Implementing: IsInstanceOwner on the authenticated actor before method dispatch, branding-only PUT, email and integration settings with revision checks, Fernet-encrypted secrets, diagnostics snapshot and the full POST run (lease, ten probes with run_probe's deadline and sanitizing, email revision race, 429), WHITELABEL_NAME/EMAIL_HOST_USER through a port of Python 3.13 strict parseaddr, on four transports; form or multipart bodies, non-ASCII AI base URLs, a non-integer EMAIL_PORT and unsupported stored JSON shapes are refused before any write."
       ]
     },
     {
@@ -35247,7 +35438,7 @@
         "target": "EmailSettingsView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -35259,14 +35450,31 @@
         "BE_GO/internal/service/instance_admin.go",
         "BE_GO/internal/handler/instance_admin.go",
         "BE_GO/internal/service/instance_bootstrap.go",
-        "BE_GO/internal/repository/instance_bootstrap.go"
+        "BE_GO/internal/repository/instance_bootstrap.go",
+        "BE_GO/internal/dto/instance_admin_ui_api_test.go",
+        "BE_GO/internal/handler/instance_admin_ui_api_test.go",
+        "BE_GO/internal/repository/instance_backup_actions.go",
+        "BE_GO/internal/service/instance_diagnostics.go",
+        "BE_GO/internal/service/instance_outbound.go",
+        "BE_GO/internal/handler/instance_outbound.go",
+        "BE_GO/cmd/server/instance_outbound.go",
+        "BE_GO/internal/celery/pidbox.go",
+        "BE_GO/internal/instanceprobe/health.go",
+        "BE_GO/pkg/storage/documentobjects/probe.go",
+        "BE_GO/internal/config/parseaddr.go"
       ],
       "dependencies": [
         "Existing identity resolution (administration paths never impersonate) and the instance bootstrap service (InstanceConfigSerializer, is_instance_administrator)",
         "instance_instanceconfiguration",
         "application_sportassociation",
         "bakney_user",
-        "core.settings: SECRET_KEY, APP_URL/APP_HOST, ASSOZETA_VERSION, ASSOZETA_DEPLOYMENT_MODE, EMAIL_*, WHITELABEL_NAME, AI_*, MCP_AGENT_*, STRIPE_*, SOCIAL_AUTH_GOOGLE_OAUTH2_KEY, SOCIAL_AUTH_APPLE_ID_CLIENT"
+        "core.settings: SECRET_KEY, APP_URL/APP_HOST, ASSOZETA_VERSION, ASSOZETA_DEPLOYMENT_MODE, EMAIL_*, WHITELABEL_NAME, AI_*, MCP_AGENT_*, STRIPE_*, SOCIAL_AUTH_GOOGLE_OAUTH2_KEY, SOCIAL_AUTH_APPLE_ID_CLIENT",
+        "BE/instance/migrations/0009_ui_api_version.py",
+        "auditlog_logentry",
+        "application_auditlogindex",
+        "Celery remote control over the broker (kombu Redis transport: celery.pidbox fanout, reply.celery.pidbox queues), answered by the Celery worker",
+        "Django cache key :1:instance:scheduler:heartbeat written by instance.scheduler.InstanceScheduler",
+        "Update runner socket (ASSOZETA_UPDATER_DIRECTORY) in production mode; PUPPETEER_HOST/PORT renderer; AWS_* storage settings; ASSOZETA_DIAGNOSTICS_API_URL (Go, default http://127.0.0.1:<GO_LISTEN_ADDR port>)"
       ],
       "contract": {
         "methods": [
@@ -35284,7 +35492,7 @@
         "request": "PUT: EmailSettingsSerializer (revision, host, port, security, username, password?, clear_password, from_email, sender_name); DELETE: {'revision'}.",
         "response": "public_email(config) (+ last_test on GET); Cache-Control: no-store on every response.",
         "errors": "401; 403; 405; 400 field/non-field errors, ['This field may not be null.'] without revision, {'error'} unreadable retained password or password without TLS; 409 stale revision; 500 non-dict DELETE body.",
-        "authentication": "DRF authentication (JWT/session); administration path, no impersonation.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsInstanceOwner (authenticated actor).",
         "resource_scope": "The singleton InstanceConfiguration (select_for_update).",
         "side_effects": "Stores email_settings, the Fernet-encrypted password, email_revision + 1, diagnostic_results without the email check and email_test, updated_at.",
@@ -35298,23 +35506,28 @@
         "TESTS/adapters/django/instance_admin_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/instance-admin.md",
         {
-          "command": "python tools/go-migration/family.py run instance-admin --versioned --label verified-e91e32ab",
-          "revision": "5047cc710b08d57d92ba08e3027e41e37b967655",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-admin-http-verified-e91e32ab/results.json",
-          "receipt_sha256": "5410bc2fe355c3ea0b03d3f3d547600facc91cd0f5399d274c2153e8a29a1f0a",
-          "scope": "HTTP family instance-admin: 164/164 cases on native Django and native Go, 164/164 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 172/172; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-admin-http-diag-red/results.json",
+          "receipt_sha256": "520600dc45bdf2bac637524676972fbc92623b958203715d8fce9469d3c7d70d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects, outbound requests, pidbox broadcasts and cache cleanup.",
+          "artifact": "quality-reports/go-migration/instance-admin-http-diag-green/results.json",
+          "receipt_sha256": "1b1d8f113db8bd4c45954c9b5ea0f74e8aab5cc29d6ae89bd678c10db16d65c9"
+        },
+        {
+          "revision": "committing change with a worker answer counted when its 'ok' is any non-empty string instead of 'pong'",
+          "result": "Mutation control: fails Go on instance-admin-diagnostics-run-odd-answers (response.body:checks[4]:status).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-diag-mutation/results.json",
+          "receipt_sha256": "6e6f1bd45139ff4b1e8a8983c20e4ae97e77a00b31e751cddee7301e52118690"
         }
       ],
       "notes": [
-        "Implementing: IsInstanceOwner on the authenticated actor before method dispatch, branding-only PUT, email and integration settings with revision checks, Fernet-encrypted secrets retained or cleared, diagnostics snapshot and leased POST, development-mode updates and restarts, Cache-Control no-store on email/integration responses, on four transports; diagnostics runs once a lease can be claimed, updates/restarts in production mode, form or multipart bodies, non-ASCII AI base URLs and unsupported stored JSON shapes are refused before any write; admin/releases, admin/logo and the email/integration test routes stay on Django.",
-        "Implementing evidence: docs/architecture/go-migration/instance-admin.md",
-        "Implementing evidence: RED: Django 141/141; Go 404 on the first case. (quality-reports/go-migration/instance-admin-http-native-r1/results.json)",
-        "Implementing evidence: GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects (stored secrets checked by decryption). (quality-reports/go-migration/instance-admin-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-admin-email-put-replace-password (state.diagnostic_results). (quality-reports/go-migration/instance-admin-http-mutation-r1/results.json)",
-        "Implementing evidence: passed: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 (quality-reports/go-migration/instance-admin-http-versioned-r1/results.json)",
-        "Implementing evidence: GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2; Django source of these views unchanged by the merge. (quality-reports/go-migration/instance-reverify-admin-green/results.json)"
+        "Implementing: IsInstanceOwner on the authenticated actor before method dispatch, branding-only PUT, email and integration settings with revision checks, Fernet-encrypted secrets, diagnostics snapshot and the full POST run (lease, ten probes with run_probe's deadline and sanitizing, email revision race, 429), WHITELABEL_NAME/EMAIL_HOST_USER through a port of Python 3.13 strict parseaddr, on four transports; form or multipart bodies, non-ASCII AI base URLs, a non-integer EMAIL_PORT and unsupported stored JSON shapes are refused before any write."
       ]
     },
     {
@@ -35411,7 +35624,7 @@
         "target": "IntegrationSettingsView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -35423,14 +35636,31 @@
         "BE_GO/internal/service/instance_admin.go",
         "BE_GO/internal/handler/instance_admin.go",
         "BE_GO/internal/service/instance_bootstrap.go",
-        "BE_GO/internal/repository/instance_bootstrap.go"
+        "BE_GO/internal/repository/instance_bootstrap.go",
+        "BE_GO/internal/dto/instance_admin_ui_api_test.go",
+        "BE_GO/internal/handler/instance_admin_ui_api_test.go",
+        "BE_GO/internal/repository/instance_backup_actions.go",
+        "BE_GO/internal/service/instance_diagnostics.go",
+        "BE_GO/internal/service/instance_outbound.go",
+        "BE_GO/internal/handler/instance_outbound.go",
+        "BE_GO/cmd/server/instance_outbound.go",
+        "BE_GO/internal/celery/pidbox.go",
+        "BE_GO/internal/instanceprobe/health.go",
+        "BE_GO/pkg/storage/documentobjects/probe.go",
+        "BE_GO/internal/config/parseaddr.go"
       ],
       "dependencies": [
         "Existing identity resolution (administration paths never impersonate) and the instance bootstrap service (InstanceConfigSerializer, is_instance_administrator)",
         "instance_instanceconfiguration",
         "application_sportassociation",
         "bakney_user",
-        "core.settings: SECRET_KEY, APP_URL/APP_HOST, ASSOZETA_VERSION, ASSOZETA_DEPLOYMENT_MODE, EMAIL_*, WHITELABEL_NAME, AI_*, MCP_AGENT_*, STRIPE_*, SOCIAL_AUTH_GOOGLE_OAUTH2_KEY, SOCIAL_AUTH_APPLE_ID_CLIENT"
+        "core.settings: SECRET_KEY, APP_URL/APP_HOST, ASSOZETA_VERSION, ASSOZETA_DEPLOYMENT_MODE, EMAIL_*, WHITELABEL_NAME, AI_*, MCP_AGENT_*, STRIPE_*, SOCIAL_AUTH_GOOGLE_OAUTH2_KEY, SOCIAL_AUTH_APPLE_ID_CLIENT",
+        "BE/instance/migrations/0009_ui_api_version.py",
+        "auditlog_logentry",
+        "application_auditlogindex",
+        "Celery remote control over the broker (kombu Redis transport: celery.pidbox fanout, reply.celery.pidbox queues), answered by the Celery worker",
+        "Django cache key :1:instance:scheduler:heartbeat written by instance.scheduler.InstanceScheduler",
+        "Update runner socket (ASSOZETA_UPDATER_DIRECTORY) in production mode; PUPPETEER_HOST/PORT renderer; AWS_* storage settings; ASSOZETA_DIAGNOSTICS_API_URL (Go, default http://127.0.0.1:<GO_LISTEN_ADDR port>)"
       ],
       "contract": {
         "methods": [
@@ -35448,7 +35678,7 @@
         "request": "provider in ai, stripe, google, apple; PUT: the provider serializer (revision, enabled, provider fields, clear_secrets); DELETE: {'revision'}.",
         "response": "public_integration(provider, config); Cache-Control: no-store on every response.",
         "errors": "401; 403; 405; 404 unknown provider (after permission and dispatch); 400 field, non-field, retained-secret and enable errors; 409 stale revision.",
-        "authentication": "DRF authentication (JWT/session); administration path, no impersonation.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsInstanceOwner (authenticated actor).",
         "resource_scope": "The singleton InstanceConfiguration (select_for_update).",
         "side_effects": "integration_settings[provider] = {'revision': revision + 1, 'settings': value with Fernet-encrypted secrets | None}, updated_at.",
@@ -35462,23 +35692,28 @@
         "TESTS/adapters/django/instance_admin_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/instance-admin.md",
         {
-          "command": "python tools/go-migration/family.py run instance-admin --versioned --label verified-e91e32ab",
-          "revision": "5047cc710b08d57d92ba08e3027e41e37b967655",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-admin-http-verified-e91e32ab/results.json",
-          "receipt_sha256": "5410bc2fe355c3ea0b03d3f3d547600facc91cd0f5399d274c2153e8a29a1f0a",
-          "scope": "HTTP family instance-admin: 164/164 cases on native Django and native Go, 164/164 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 172/172; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-admin-http-diag-red/results.json",
+          "receipt_sha256": "520600dc45bdf2bac637524676972fbc92623b958203715d8fce9469d3c7d70d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects, outbound requests, pidbox broadcasts and cache cleanup.",
+          "artifact": "quality-reports/go-migration/instance-admin-http-diag-green/results.json",
+          "receipt_sha256": "1b1d8f113db8bd4c45954c9b5ea0f74e8aab5cc29d6ae89bd678c10db16d65c9"
+        },
+        {
+          "revision": "committing change with a worker answer counted when its 'ok' is any non-empty string instead of 'pong'",
+          "result": "Mutation control: fails Go on instance-admin-diagnostics-run-odd-answers (response.body:checks[4]:status).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-diag-mutation/results.json",
+          "receipt_sha256": "6e6f1bd45139ff4b1e8a8983c20e4ae97e77a00b31e751cddee7301e52118690"
         }
       ],
       "notes": [
-        "Implementing: IsInstanceOwner on the authenticated actor before method dispatch, branding-only PUT, email and integration settings with revision checks, Fernet-encrypted secrets retained or cleared, diagnostics snapshot and leased POST, development-mode updates and restarts, Cache-Control no-store on email/integration responses, on four transports; diagnostics runs once a lease can be claimed, updates/restarts in production mode, form or multipart bodies, non-ASCII AI base URLs and unsupported stored JSON shapes are refused before any write; admin/releases, admin/logo and the email/integration test routes stay on Django.",
-        "Implementing evidence: docs/architecture/go-migration/instance-admin.md",
-        "Implementing evidence: RED: Django 141/141; Go 404 on the first case. (quality-reports/go-migration/instance-admin-http-native-r1/results.json)",
-        "Implementing evidence: GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects (stored secrets checked by decryption). (quality-reports/go-migration/instance-admin-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-admin-email-put-replace-password (state.diagnostic_results). (quality-reports/go-migration/instance-admin-http-mutation-r1/results.json)",
-        "Implementing evidence: passed: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 (quality-reports/go-migration/instance-admin-http-versioned-r1/results.json)",
-        "Implementing evidence: GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2; Django source of these views unchanged by the merge. (quality-reports/go-migration/instance-reverify-admin-green/results.json)"
+        "Implementing: IsInstanceOwner on the authenticated actor before method dispatch, branding-only PUT, email and integration settings with revision checks, Fernet-encrypted secrets, diagnostics snapshot and the full POST run (lease, ten probes with run_probe's deadline and sanitizing, email revision race, 429), WHITELABEL_NAME/EMAIL_HOST_USER through a port of Python 3.13 strict parseaddr, on four transports; form or multipart bodies, non-ASCII AI base URLs, a non-integer EMAIL_PORT and unsupported stored JSON shapes are refused before any write."
       ]
     },
     {
