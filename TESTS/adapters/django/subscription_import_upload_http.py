@@ -13,15 +13,23 @@ for subscription-import/<association id>/<str(creation_date.timestamp())>/
 CacheControl; a 200 names that Document. Created
 objects are removed once verified, so the bucket ends at its baseline; an
 upload marked 'keep' leaves its object for the imports that name it, and the
-case that lists it in 'release' removes it.
+case that lists it in 'release' removes it. Both servers run with the
+fixture's 'limit' as SUBSCRIPTION_IMPORT_MAX_UPLOAD_BYTES. The 'expired'
+uploads are seeded in their association's import folder with their creation
+date: the upload that lists them removes their Documents (auditlog delete
+entries, after the create) and their objects.
 
 An import ('kind': 'import') is checked against the seeded
 AssociateImportDraftStatus rows (the association's IMPORTING ones are deleted,
 one is created and deleted), the MedicalCertificate rows it keeps, the
 AssociateImportDraft rows bulk_create stores (no audit entries) and the
 auditlog entries in order: status deletes, status create, each certificate's
-create with its update or delete, status delete.
+create with its update or delete, status delete, then the delete of the
+upload's Document, whose object is gone too ('$document:<label>-imported'
+keeps naming it). A 'failed' import leaves the statuses' entries only: no
+certificate, no draft, and the upload stays.
 """
+from contextlib import contextmanager
 from datetime import date, datetime, timedelta, timezone
 import base64
 import ipaddress
@@ -45,9 +53,28 @@ DRAFT, STATUS, CERTIFICATE = 'application.AssociateImportDraft', 'application.As
 MANAGED = (DOCUMENT, DRAFT, STATUS, CERTIFICATE, harness.AUDIT, harness.INDEX)
 # label -> object key of the kept uploads.
 KEPT = {}
+# label -> object key of the seeded uploads past their retention.
+EXPIRED = {}
 # SportAssociation.objects.filter(user=actor).first(): a collaborator owns none.
 ACTOR_ASSOCIATION = {'owner': 'own_association', 'admin': 'admin_association', 'foreign_owner': 'foreign_association'}
-service_context = uploads.service_context
+
+
+@contextmanager
+def service_context(report, log):
+    """documents-writes' storage, with the fixture's upload limit on both servers."""
+    from django.test.utils import override_settings
+    limit = contract.load_source()['limit']
+    assert isinstance(limit, int) and limit > 0, 'fixture.limit'
+    saved = os.environ.get('GO_FIXTURE_ENVIRONMENT')
+    os.environ['GO_FIXTURE_ENVIRONMENT'] = json.dumps({**json.loads(saved or '{}'), 'SUBSCRIPTION_IMPORT_MAX_UPLOAD_BYTES': str(limit)})
+    try:
+        with uploads.service_context(report, log), override_settings(SUBSCRIPTION_IMPORT_MAX_UPLOAD_BYTES=limit):
+            yield
+    finally:
+        if saved is None:
+            os.environ.pop('GO_FIXTURE_ENVIRONMENT', None)
+        else:
+            os.environ['GO_FIXTURE_ENVIRONMENT'] = saved
 
 
 def document_model():
@@ -78,6 +105,16 @@ def seed_rows(source, created):
     uploads.STORAGE['client'].put_object(Bucket=uploads.BUCKET, Key=key, Body=base64.b64decode(stored['body_b64']),
                                          ContentType=stored['content_type'])
     KEPT['stored'], contract.DOCUMENTS['stored'] = key, stored['id']
+    EXPIRED.clear()
+    assert source['expired'], 'fixture.expired'
+    for label, row in source['expired'].items():
+        moment = datetime.fromisoformat(row['created'].replace('Z', '+00:00'))
+        document._base_manager.bulk_create([document(document_id=row['id'], token=row['token'], filename=row['filename'],
+                                                     creation_date=moment)])
+        created.append((document, row['id']))
+        EXPIRED[label] = import_key(moment, row['association'], row['id'], row['filename'])
+        uploads.STORAGE['client'].put_object(Bucket=uploads.BUCKET, Key=EXPIRED[label], Body=base64.b64decode(row['body_b64']),
+                                             ContentType=row['content_type'])
 
 
 def import_key(created, association, document_id, filename):
@@ -103,6 +140,14 @@ def placed(value, certificates):
     return value
 
 
+def document_delete_changes(row):
+    """auditlog's changes for Document.delete() of a stored row."""
+    created = datetime.fromisoformat(str(row['creation_date']).replace('Z', '+00:00'))
+    return {'document_id': [str(row['document_id']), 'None'], 'creation_date': [auditlog_moment(created), 'None'],
+            'filename': [row['filename'], 'None'], 'token': [str(row['token']), 'None'],
+            'customer_invoice_pdf': ['application.CustomerInvoice.None', 'None']}
+
+
 def release(effect):
     for label in effect.get('release', ()):
         uploads.STORAGE['client'].delete_object(Bucket=uploads.BUCKET, Key=KEPT.pop(label))
@@ -115,8 +160,17 @@ def assert_import(case, before, after, source, context, added, indexes):
     ids, fixture, effect = source['ids'], context['fixture'], case['effect']
     own, owner, actor = ids['own_association'], ids['owner'], ids[effect['actor']]
     window = (context['prepared']['started'], datetime.now(timezone.utc) + timedelta(seconds=1))
-    require(before[DOCUMENT] == after[DOCUMENT] and uploads.listing() == context['prepared']['objects'], 'state.documents')
-    types = {ct['model']: ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'application'}
+    upload, failed = effect['document'], effect['failed']
+    old_documents, new_documents = keyed(before[DOCUMENT], 'document_id'), keyed(after[DOCUMENT], 'document_id')
+    document_id = contract.DOCUMENTS[upload]
+    require(document_id in old_documents, 'fixture.document-row')
+    if failed:
+        require(before[DOCUMENT] == after[DOCUMENT] and uploads.listing() == context['prepared']['objects'], 'state.documents')
+    else:
+        # The upload is removed: its Document and its object.
+        require(new_documents == {k: v for k, v in old_documents.items() if k != document_id}, 'state.document-removed')
+        require(uploads.listing() == context['prepared']['objects'] - {KEPT[upload]}, 'storage.upload-removed')
+    types = {ct['model']: ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] in ('application', 'docmanager')}
     users = keyed(before['application.User'], 'user_id')
     additional = None
     if effect['session']:
@@ -178,6 +232,7 @@ def assert_import(case, before, after, source, context, added, indexes):
     actor_association = ids[ACTOR_ASSOCIATION[effect['actor']]] if effect['actor'] in ACTOR_ASSOCIATION else None
     actor_path = 'actor.sport_association' if actor_association else None
     certificates = {}
+    require(not failed or not effect['steps'] and not effect['drafts'], 'fixture.failed-import')
     for step in effect['steps']:
         key, changes = entry('MedicalCertificate', 0, actor_association, actor_path)
         require(set(changes) == {'medical_id', 'document', 'user', 'creation_date', 'competitive_medical_certificate'}
@@ -206,6 +261,11 @@ def assert_import(case, before, after, source, context, added, indexes):
     require(again == status and changes == {'associate_import_draft_status_id': [status, 'None'], 'sport_association': [own, 'None'],
                                             'doing': ['True', 'None'], 'status_type': ['1', 'None'],
                                             'creation_date': [status_created, 'None']}, 'audit.status-end')
+    if not failed:
+        again, changes = entry('Document', 2, actor_association, actor_path)
+        require(again == document_id and changes == document_delete_changes(old_documents[document_id]), 'audit.document-delete')
+        KEPT.pop(upload)
+        contract.DOCUMENTS[upload + '-imported'] = contract.DOCUMENTS.pop(upload)
     require(next(events, None) is None, 'audit.count')
     require(len(indexes) == seen_indexes, 'index.count')
 
@@ -231,36 +291,57 @@ def assert_effect(case, before, after, source, context):
     window = (context['prepared']['started'], datetime.now(timezone.utc) + timedelta(seconds=1))
     objects = uploads.listing() - context['prepared']['objects']
     old, new = keyed(before[DOCUMENT], 'document_id'), keyed(after[DOCUMENT], 'document_id')
-    require(all(new.get(k) == v for k, v in old.items()), 'state.kept')
+    effect = case['effect']
+    if effect and effect.get('kind') == 'import':
+        added, indexes = harness.audit_delta(contract, before, after)
+        assert_import(case, before, after, source, context, added, indexes)
+        return
+    # The seeded uploads past their retention that this upload removes: Documents and objects.
+    expired = {} if not effect else {source['expired'][label]['id']: label for label in effect.get('expired', ())}
+    require(set(expired) <= set(old), 'fixture.expired-row')
+    require(all(new.get(k) == v for k, v in old.items() if k not in expired) and not set(expired) & set(new), 'state.kept')
     fresh = [new[k] for k in set(new) - set(old)]
     added, indexes = harness.audit_delta(contract, before, after)
-    effect = case['effect']
+    gone = context['prepared']['objects'] - uploads.listing()
+    require(gone == {EXPIRED[label] for label in expired.values()}, 'storage.expired-removed')
     if effect is None or effect.get('kind') == 'release':
         require(not fresh and not added and not indexes and not objects, 'state.no-effect')
         require(all(before[k] == after[k] for k in (DRAFT, STATUS, CERTIFICATE)), 'state.no-import-effect')
         release(effect or {})
         return
-    if effect.get('kind') == 'import':
-        assert_import(case, before, after, source, context, added, indexes)
-        release(effect)
-        return
     require(all(before[k] == after[k] for k in (DRAFT, STATUS, CERTIFICATE)), 'state.no-import-effect')
     label = ACTOR_ASSOCIATION.get(effect['actor'])
-    require(len(fresh) == 1 and len(added) == 1 and len(indexes) == (1 if label else 0), 'state.document-count')
+    require(len(fresh) == 1 and len(added) == 1 + len(expired) and len(indexes) == (len(added) if label else 0), 'state.document-count')
+    added = sorted(added, key=lambda event: event['id'])
     row, event = fresh[0], added[0]
+    users = keyed(before['application.User'], 'user_id')
+    types = {ct['model']: ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'docmanager'}
+    removed = set()
+    for deletion in added[1:]:
+        # Document.delete() of each expired upload, after the create.
+        pk = deletion['object_pk']
+        require(pk in expired and pk not in removed and deletion['content_type_id'] == types['document'] and deletion['action'] == 2
+                and deletion['object_repr'] == f'Document object ({pk})' and deletion['changes'] == document_delete_changes(old[pk]),
+                'audit.expired-delete')
+        removed.add(pk)
+        require(deletion['actor_id'] == ids[effect['actor']] and deletion['actor_email'] == users[ids[effect['actor']]]['email']
+                and deletion['cid'] == case['name'] and deletion['changes_text'] == '', 'audit.expired-context')
+        index = indexes.get(str(deletion['id']))
+        require(label is None or (index is not None and index['sport_association_id'] == ids[label]
+                                  and index['resolution_path'] == 'actor.sport_association'), 'index.expired')
+    for name in expired.values():
+        EXPIRED.pop(name)
     key, token = uploads.uuid4_text(str(row['document_id'])), uploads.uuid4_text(str(row['token']))
     created = datetime.fromisoformat(str(row['creation_date']).replace('Z', '+00:00'))
     require(window[0] <= created <= window[1] and row['filename'] == effect['filename'] and row['filepath'] is None
             and row['file_size_bytes'] is None, 'state.document')
     if case['status'] == 200:
         require(contract.RESPONSE.get('document_id') == key, 'response.document-id')
-    types = {ct['model']: ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'docmanager'}
     require(event['content_type_id'] == types['document'] and event['action'] == 0 and event['object_pk'] == key
             and event['object_repr'] == f'Document object ({key})', 'audit.identity')
     require(event['changes'] == {'document_id': ['None', key], 'creation_date': ['None', auditlog_moment(created)],
                                  'filename': ['None', effect['filename']], 'token': ['None', token],
                                  'customer_invoice_pdf': ['None', 'application.CustomerInvoice.None']}, 'audit.changes')
-    users = keyed(before['application.User'], 'user_id')
     actor = ids[effect['actor']]
     require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor')
     additional = None

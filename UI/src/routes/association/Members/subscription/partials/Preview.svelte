@@ -1,10 +1,29 @@
 <script>
+    import {onMount} from 'svelte';
     import {rewriteApiUrl} from 'utils/apiVersion.js';
+    import {framedDocument} from 'utils/framedDocument.js';
 	import { X } from 'lucide-svelte';
     import Portal from 'svelte-portal';
     export let userData;
 
     let downloading = false;
+    let previewHtml = '';
+    let previewError = false;
+
+    // The preview needs the session: the page is fetched with it and shown from memory.
+    onMount(async () => {
+        const address = rewriteApiUrl(
+            `${__bakney.env.API.DOCUMENT.SUBSCRIPTION_PREVIEW}?sport_association_id=${userData?.sport_association?.sport_association_id}`
+        );
+        try {
+            const res = await fetch(address, {method: 'GET'});
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            previewHtml = framedDocument(await res.text(), new URL(address, window.location.href).href);
+        } catch (error) {
+            console.error(error);
+            previewError = true;
+        }
+    });
 
     function printPreview() {
         let printContents = document.getElementById('previewIframe');
@@ -55,12 +74,17 @@
                     </button>
                 </div>
                 <div class="modal-body px-0 pb-0" style="min-height:70vh">
+                    {#if previewError}
+                        <div class="alert alert-danger m-4" role="alert">
+                            L'anteprima non è disponibile. Chiudi e riprova.
+                        </div>
+                    {/if}
                     <iframe
                         id="previewIframe"
                         scrolling="yes"
                         style="min-height:75vh;background: var(--bg-surface-secondary) !important; border: 1px solid var(--border-color) !important; border-radius: 1rem;"
                         title="Anteprima modulo d'iscrizione"
-                        src={rewriteApiUrl(`${__bakney.env.API.DOCUMENT.SUBSCRIPTION_PREVIEW}?sport_association_id=${userData?.sport_association?.sport_association_id}`)}
+                        srcdoc={previewHtml}
                         frameborder="0"
                         width="100%"
                         height="100%" />

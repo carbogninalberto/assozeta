@@ -29,6 +29,7 @@ import openpyxl
 import pandas
 
 ROOT = Path(__file__).resolve().parents[3]
+TEXT_OUTPUT = Path(__file__).resolve().parents[3] / 'BE_GO/internal/pandasxlsx/testdata/pandas_text_frames.json.gz'
 OUTPUT = ROOT / 'BE_GO/internal/pandasxlsx/testdata/pandas_frames.json.gz'
 D = datetime.datetime
 
@@ -310,7 +311,7 @@ def value(item):
     if isinstance(item, str):
         return ['s', item]
     if isinstance(item, numpy.integer):
-        return ['other', type(item).__name__]
+        return ['i', str(int(item))]  # the import takes its Python number (item())
     if isinstance(item, int):
         return ['i', str(item)]
     if isinstance(item, float):
@@ -329,6 +330,35 @@ def outcome(data):
     if not all(isinstance(column, str) for column in columns):
         return {'other': 'columns'}
     return {'columns': columns, 'rows': [[value(row[column]) for column in columns] for _, row in frame.iterrows()]}
+
+
+def import_cell_text(item):
+    """The view's converter of the columns read as text (_import_cell_text)."""
+    if isinstance(item, (int, float)) and not isinstance(item, bool):
+        return str(item)
+    return item
+
+
+def text_outcome(data, plain):
+    """The frame read with the text converter on every other column of the plain reading."""
+    text = plain['columns'][::2]
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            frame = pandas.read_excel(io.BytesIO(data), engine='openpyxl', converters={column: import_cell_text for column in text})
+    except Exception as error:
+        return {'text': text, 'error': type(error).__name__}
+    columns = frame.columns.tolist()
+    if not all(isinstance(column, str) for column in columns):
+        return {'text': text, 'other': 'columns'}
+    return {'text': text, 'columns': columns, 'rows': [[value(row[column]) for column in columns] for _, row in frame.iterrows()]}
+
+
+def packed(payload):
+    buffer = io.BytesIO()
+    with gzip.GzipFile(filename='', mode='wb', fileobj=buffer, compresslevel=9, mtime=0) as stream:
+        stream.write(json.dumps(payload, ensure_ascii=False, separators=(',', ':')).encode())
+    return buffer.getvalue()
 
 
 def main():
@@ -352,6 +382,11 @@ def main():
         kind = 'error:' + case['error'] if 'error' in case else 'other' if 'other' in case else 'frame'
         kinds[kind] = kinds.get(kind, 0) + 1
     print(len(cases), 'cases', kinds, len(buffer.getvalue()), 'bytes')
+    # The same workbooks read with the text converter on every other column (ReadText).
+    texts = [{'input': case['input'], **text_outcome(base64.b64decode(case['input']), case)} for case in cases if 'columns' in case]
+    assert len(texts) >= 500, len(texts)
+    TEXT_OUTPUT.write_bytes(packed({'pandas': pandas.__version__, 'openpyxl': openpyxl.__version__, 'cases': texts}))
+    print(len(texts), 'text cases', sum('rows' in case for case in texts), 'frames')
 
 
 if __name__ == '__main__':

@@ -14537,6 +14537,1134 @@
    }
   },
   {
+   "name": "course-list-pdf-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Tipologia",
+       "Visibilità",
+       "Data inizio",
+       "Data fine",
+       "Data creazione",
+       "In evidenza",
+       "Strutture",
+       "Iscritti",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Nuoto è",
+        "Quote multiple",
+        "Visibile",
+        "10/09/2026",
+        "30/06/2027",
+        "01/09/2026",
+        "In evidenza",
+        "Piscina, None",
+        {
+         "int": "2"
+        },
+        "Agonistico è, Base"
+       ],
+       [
+        "Gruppo",
+        "Default",
+        "Visibile",
+        "-",
+        "-",
+        "01/08/2026",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        "Base"
+       ],
+       [
+        "Tennis_base",
+        "Abbonamento",
+        "Sconosciuto",
+        "-",
+        "-",
+        "01/01/2026",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        ""
+       ],
+       [
+        "Yoga 50%",
+        "Default",
+        "Non visibile",
+        "-",
+        "-",
+        "31/12/2025",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        "Agonistico è"
+       ],
+       [
+        null,
+        "Default",
+        "Visibile",
+        "-",
+        "-",
+        "01/03/2000",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        ""
+       ]
+      ],
+      "title": "Corsi filtrati (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Corsi filtrati - Message reads own.pdf"
+   },
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-list-pdf-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/course/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Tipologia",
+       "Visibilità",
+       "Data inizio",
+       "Data fine",
+       "Data creazione",
+       "In evidenza",
+       "Strutture",
+       "Iscritti",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Nuoto è",
+        "Quote multiple",
+        "Visibile",
+        "10/09/2026",
+        "30/06/2027",
+        "01/09/2026",
+        "In evidenza",
+        "Piscina, None",
+        {
+         "int": "2"
+        },
+        "Agonistico è, Base"
+       ],
+       [
+        "Gruppo",
+        "Default",
+        "Visibile",
+        "-",
+        "-",
+        "01/08/2026",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        "Base"
+       ],
+       [
+        "Tennis_base",
+        "Abbonamento",
+        "Sconosciuto",
+        "-",
+        "-",
+        "01/01/2026",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        ""
+       ],
+       [
+        "Yoga 50%",
+        "Default",
+        "Non visibile",
+        "-",
+        "-",
+        "31/12/2025",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        "Agonistico è"
+       ],
+       [
+        null,
+        "Default",
+        "Visibile",
+        "-",
+        "-",
+        "01/03/2000",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        ""
+       ]
+      ],
+      "title": "Corsi filtrati (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Corsi filtrati - Message reads own.pdf"
+   },
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-list-pdf-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/course/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Tipologia",
+       "Visibilità",
+       "Data inizio",
+       "Data fine",
+       "Data creazione",
+       "In evidenza",
+       "Strutture",
+       "Iscritti",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Nuoto è",
+        "Quote multiple",
+        "Visibile",
+        "10/09/2026",
+        "30/06/2027",
+        "01/09/2026",
+        "In evidenza",
+        "Piscina, None",
+        {
+         "int": "2"
+        },
+        "Agonistico è, Base"
+       ],
+       [
+        "Gruppo",
+        "Default",
+        "Visibile",
+        "-",
+        "-",
+        "01/08/2026",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        "Base"
+       ],
+       [
+        "Tennis_base",
+        "Abbonamento",
+        "Sconosciuto",
+        "-",
+        "-",
+        "01/01/2026",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        ""
+       ],
+       [
+        "Yoga 50%",
+        "Default",
+        "Non visibile",
+        "-",
+        "-",
+        "31/12/2025",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        "Agonistico è"
+       ],
+       [
+        null,
+        "Default",
+        "Visibile",
+        "-",
+        "-",
+        "01/03/2000",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        ""
+       ]
+      ],
+      "title": "Corsi filtrati (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Corsi filtrati - Message reads own.pdf"
+   },
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-list-pdf-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/course/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Tipologia",
+       "Visibilità",
+       "Data inizio",
+       "Data fine",
+       "Data creazione",
+       "In evidenza",
+       "Strutture",
+       "Iscritti",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Estero",
+        "Default",
+        "Visibile",
+        "-",
+        "-",
+        "01/07/2026",
+        "-",
+        "",
+        {
+         "int": "0"
+        },
+        "Estero"
+       ],
+       [
+        "Bozza",
+        "Default",
+        "Non visibile",
+        "-",
+        "-",
+        "01/06/2026",
+        "-",
+        "",
+        {
+         "int": "0"
+        },
+        ""
+       ]
+      ],
+      "title": "Corsi filtrati (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Corsi filtrati - Message reads foreign.pdf"
+   },
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-list-pdf-form-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Tipologia",
+       "Visibilità",
+       "Data inizio",
+       "Data fine",
+       "Data creazione",
+       "In evidenza",
+       "Strutture",
+       "Iscritti",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Nuoto è",
+        "Quote multiple",
+        "Visibile",
+        "10/09/2026",
+        "30/06/2027",
+        "01/09/2026",
+        "In evidenza",
+        "Piscina, None",
+        {
+         "int": "2"
+        },
+        "Agonistico è, Base"
+       ],
+       [
+        "Gruppo",
+        "Default",
+        "Visibile",
+        "-",
+        "-",
+        "01/08/2026",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        "Base"
+       ],
+       [
+        "Tennis_base",
+        "Abbonamento",
+        "Sconosciuto",
+        "-",
+        "-",
+        "01/01/2026",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        ""
+       ],
+       [
+        "Yoga 50%",
+        "Default",
+        "Non visibile",
+        "-",
+        "-",
+        "31/12/2025",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        "Agonistico è"
+       ],
+       [
+        null,
+        "Default",
+        "Visibile",
+        "-",
+        "-",
+        "01/03/2000",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        ""
+       ]
+      ],
+      "title": "Corsi filtrati (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Corsi filtrati - Message reads own.pdf"
+   },
+   "raw_body": "format=pdf",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-list-pdf-ignores-pagination",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/list?pagination%5Bperpage%5D=1&pagination%5Bpage%5D=0",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Tipologia",
+       "Visibilità",
+       "Data inizio",
+       "Data fine",
+       "Data creazione",
+       "In evidenza",
+       "Strutture",
+       "Iscritti",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Nuoto è",
+        "Quote multiple",
+        "Visibile",
+        "10/09/2026",
+        "30/06/2027",
+        "01/09/2026",
+        "In evidenza",
+        "Piscina, None",
+        {
+         "int": "2"
+        },
+        "Agonistico è, Base"
+       ],
+       [
+        "Gruppo",
+        "Default",
+        "Visibile",
+        "-",
+        "-",
+        "01/08/2026",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        "Base"
+       ],
+       [
+        "Tennis_base",
+        "Abbonamento",
+        "Sconosciuto",
+        "-",
+        "-",
+        "01/01/2026",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        ""
+       ],
+       [
+        "Yoga 50%",
+        "Default",
+        "Non visibile",
+        "-",
+        "-",
+        "31/12/2025",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        "Agonistico è"
+       ],
+       [
+        null,
+        "Default",
+        "Visibile",
+        "-",
+        "-",
+        "01/03/2000",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        ""
+       ]
+      ],
+      "title": "Corsi filtrati (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Corsi filtrati - Message reads own.pdf"
+   },
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-list-pdf-group-own",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/list",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Tipologia",
+       "Visibilità",
+       "Data inizio",
+       "Data fine",
+       "Data creazione",
+       "In evidenza",
+       "Strutture",
+       "Iscritti",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Gruppo",
+        "Default",
+        "Visibile",
+        "-",
+        "-",
+        "01/08/2026",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        "Base"
+       ]
+      ],
+      "title": "Corsi filtrati (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Corsi filtrati - Message reads own.pdf"
+   },
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-list-pdf-group-foreign-empty",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/list",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Tipologia",
+       "Visibilità",
+       "Data inizio",
+       "Data fine",
+       "Data creazione",
+       "In evidenza",
+       "Strutture",
+       "Iscritti",
+       "Tag"
+      ],
+      "rows": [],
+      "title": "Corsi filtrati (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Corsi filtrati - Message reads own.pdf"
+   },
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-list-pdf-search",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/list?query%5BgeneralSearch%5D=NUOTO",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Tipologia",
+       "Visibilità",
+       "Data inizio",
+       "Data fine",
+       "Data creazione",
+       "In evidenza",
+       "Strutture",
+       "Iscritti",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Nuoto è",
+        "Quote multiple",
+        "Visibile",
+        "10/09/2026",
+        "30/06/2027",
+        "01/09/2026",
+        "In evidenza",
+        "Piscina, None",
+        {
+         "int": "2"
+        },
+        "Agonistico è, Base"
+       ],
+       [
+        "Tennis_base",
+        "Abbonamento",
+        "Sconosciuto",
+        "-",
+        "-",
+        "01/01/2026",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        ""
+       ]
+      ],
+      "title": "Corsi filtrati (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Corsi filtrati - Message reads own.pdf"
+   },
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-list-pdf-tags-or-duplicates",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/list?query%5Btags%5D=a1000000-0000-4000-8000-000000630001%2Ca1000000-0000-4000-8000-000000630002",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Tipologia",
+       "Visibilità",
+       "Data inizio",
+       "Data fine",
+       "Data creazione",
+       "In evidenza",
+       "Strutture",
+       "Iscritti",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Nuoto è",
+        "Quote multiple",
+        "Visibile",
+        "10/09/2026",
+        "30/06/2027",
+        "01/09/2026",
+        "In evidenza",
+        "Piscina, None",
+        {
+         "int": "2"
+        },
+        "Agonistico è, Base"
+       ],
+       [
+        "Nuoto è",
+        "Quote multiple",
+        "Visibile",
+        "10/09/2026",
+        "30/06/2027",
+        "01/09/2026",
+        "In evidenza",
+        "Piscina, None",
+        {
+         "int": "2"
+        },
+        "Agonistico è, Base"
+       ],
+       [
+        "Gruppo",
+        "Default",
+        "Visibile",
+        "-",
+        "-",
+        "01/08/2026",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        "Base"
+       ],
+       [
+        "Yoga 50%",
+        "Default",
+        "Non visibile",
+        "-",
+        "-",
+        "31/12/2025",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        "Agonistico è"
+       ]
+      ],
+      "title": "Corsi filtrati (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Corsi filtrati - Message reads own.pdf"
+   },
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-list-pdf-sort-title-asc",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/list?sort%5Bfield%5D=title&sort%5Bsort%5D=asc",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Tipologia",
+       "Visibilità",
+       "Data inizio",
+       "Data fine",
+       "Data creazione",
+       "In evidenza",
+       "Strutture",
+       "Iscritti",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Gruppo",
+        "Default",
+        "Visibile",
+        "-",
+        "-",
+        "01/08/2026",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        "Base"
+       ],
+       [
+        "Nuoto è",
+        "Quote multiple",
+        "Visibile",
+        "10/09/2026",
+        "30/06/2027",
+        "01/09/2026",
+        "In evidenza",
+        "Piscina, None",
+        {
+         "int": "2"
+        },
+        "Agonistico è, Base"
+       ],
+       [
+        "Tennis_base",
+        "Abbonamento",
+        "Sconosciuto",
+        "-",
+        "-",
+        "01/01/2026",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        ""
+       ],
+       [
+        "Yoga 50%",
+        "Default",
+        "Non visibile",
+        "-",
+        "-",
+        "31/12/2025",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        "Agonistico è"
+       ],
+       [
+        null,
+        "Default",
+        "Visibile",
+        "-",
+        "-",
+        "01/03/2000",
+        "-",
+        "",
+        {
+         "int": "1"
+        },
+        ""
+       ]
+      ],
+      "title": "Corsi filtrati (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Corsi filtrati - Message reads own.pdf"
+   },
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-list-pdf-sort-unknown-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/list?sort%5Bfield%5D=nope&sort%5Bsort%5D=asc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-list-pdf-sort-unknown-transform",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/list?sort%5Bfield%5D=title__nope&sort%5Bsort%5D=asc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-list-pdf-format-case-sensitive",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "body": {
+    "format": "PDF"
+   }
+  },
+  {
+   "name": "course-list-pdf-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/course/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.courses.read"
+   },
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-list-pdf-athlete-lists",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/course/list?sport_association_id=a1000000-0000-4000-8000-000000701001",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000630007",
+      "athletes": null,
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630001",
+        "tag_name": "Agonistico è"
+       },
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000630005",
+        "title": "Piscina",
+        "address": "Via 1"
+       },
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000630006",
+        "title": null,
+        "address": null
+       }
+      ],
+      "status_flag": 2,
+      "course_type": 2,
+      "creation_date": "2026-09-01T08:00:00.123456Z",
+      "title": "Nuoto è",
+      "description": "Lungo\ntesto",
+      "multi_payments": true,
+      "fee": "12.50",
+      "events": {
+       "days": [
+        1,
+        "lun"
+       ],
+       "note": null
+      },
+      "one_fee_payment": true,
+      "one_fee": "3.00",
+      "google_calendar_id": "cal-1",
+      "google_background_color": "#abcdef",
+      "multiple_quotes": [
+       {
+        "amount": 5,
+        "label": "Prima"
+       }
+      ],
+      "start_date": "2026-09-10T07:30:00Z",
+      "end_date": "2027-06-30T18:00:00.500000Z",
+      "pinned": true,
+      "billed_duration_is_sport_season": true,
+      "billed_frequency": null,
+      "billed_from_subscription_date": true,
+      "billed_from_day_of_month": 28,
+      "auto_renewal": true,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000630008",
+      "athletes": null,
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000630002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [],
+      "status_flag": 2,
+      "course_type": 1,
+      "creation_date": "2026-08-01T10:00:00Z",
+      "title": "Gruppo",
+      "description": "Testo",
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": "a1000000-0000-4000-8000-000000714001"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000630011",
+      "athletes": null,
+      "tags": [],
+      "locations": [],
+      "status_flag": 2,
+      "course_type": 1,
+      "creation_date": "2000-03-01T12:00:00Z",
+      "title": null,
+      "description": null,
+      "multi_payments": false,
+      "fee": null,
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": null,
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null
+     }
+    ]
+   },
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-list-pdf-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/course/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
    "name": "course-list-athlete-missing-association",
    "actor": "athlete",
    "method": "GET",

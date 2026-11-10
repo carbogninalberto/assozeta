@@ -37,19 +37,72 @@ var subscriptionImportSpacedMoment = regexp.MustCompile(`^([0-9]{4}-[0-9]{2}-[0-
 var subscriptionImportDateWords = []string{"jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "mon", "tue",
 	"wed", "thu", "fri", "sat", "sun"}
 
-// subscriptionImportUnstorable is a cell json.dumps cannot encode: a
-// Timestamp or a datetime.
-type subscriptionImportUnstorable struct{ text string }
+// subscriptionImportMoment is a date cell: a Timestamp or a datetime, with
+// its str().
+type subscriptionImportMoment struct {
+	text string
+	at   time.Time
+}
 
-// subscriptionImportDate is dateutil.parser.parse(text).date() on the ported
-// forms (dto.DateutilDate, and 'YYYY-MM-DD HH:MM:SS[.ffffff]' as str() of a
-// datetime). parsed is false where parse raises; other text is refused.
+// subscriptionImportTextFields is SubscriptionImportService.TEXT_FIELDS: the
+// fields whose columns are read as text.
+var subscriptionImportTextFields = map[string]bool{"tax_code": true, "address_cap": true, "phone": true, "subscription_number": true}
+
+// subscriptionImportTextColumns is text_columns(map): the columns the map
+// gives to the fields read as text.
+func subscriptionImportTextColumns(mapping any) map[string]bool {
+	columns := map[string]bool{}
+	keys, isObject := mapping.(domain.RequestObject)
+	if !isObject {
+		return columns
+	}
+	for _, entry := range subscriptionImportUnique(keys) {
+		field := subscriptionImportFields[dto.PythonStrip(strings.ReplaceAll(entry.Name, "tutore", ""))]
+		if column, isText := entry.Value.(string); isText && subscriptionImportTextFields[field] {
+			columns[column] = true
+		}
+	}
+	return columns
+}
+
+var subscriptionImportSlashes = regexp.MustCompile(`^([0-9]{1,2})/([0-9]{1,2})/([0-9]{4})$`)
+
+// subscriptionImportDayFirst is dateutil.parser.parse(text, dayfirst=True)
+// for A/B/YYYY: A is the day unless B is no month while A is one.
+func subscriptionImportDayFirst(match []string) (time.Time, dto.DateutilResult) {
+	first, _ := strconv.Atoi(match[1])
+	second, _ := strconv.Atoi(match[2])
+	year, _ := strconv.Atoi(match[3])
+	day, month := first, second
+	if first <= 12 && second > 12 {
+		month, day = first, second
+	}
+	if year < 1000 {
+		return time.Time{}, dto.DateutilUnsupported
+	}
+	date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
+	if month < 1 || month > 12 || date.Day() != day || int(date.Month()) != month {
+		return time.Time{}, dto.DateutilFailed
+	}
+	return date, dto.DateutilParsed
+}
+
+// subscriptionImportDate is import_date(text): dateutil.parser.parse with the
+// day first unless the text starts with the year, on the ported forms
+// (dto.DateutilDate's year-first ones, 'YYYY-MM-DD HH:MM:SS[.ffffff]' as
+// str() of a datetime, and A/B/YYYY). parsed is false where parse raises;
+// other text is refused.
 func subscriptionImportDate(text string) (date time.Time, parsed bool, err error) {
 	candidate := text
 	if match := subscriptionImportSpacedMoment.FindStringSubmatch(text); match != nil {
 		candidate = match[1] + "T" + match[2]
 	}
-	date, result := dto.DateutilDate(candidate)
+	var result dto.DateutilResult
+	if match := subscriptionImportSlashes.FindStringSubmatch(candidate); match != nil {
+		date, result = subscriptionImportDayFirst(match)
+	} else {
+		date, result = dto.DateutilDate(candidate)
+	}
 	switch result {
 	case dto.DateutilParsed:
 		return date, true, nil
@@ -86,7 +139,7 @@ func subscriptionImportCell(value pandasxlsx.Value) any {
 	case pandasxlsx.Float:
 		return value.F
 	case pandasxlsx.Time:
-		return subscriptionImportUnstorable{text: value.TimeText()}
+		return subscriptionImportMoment{text: value.TimeText(), at: value.T}
 	case pandasxlsx.NaT:
 		return nil
 	}
@@ -101,7 +154,7 @@ func subscriptionImportTruthy(value any) (truthy bool, text string, err error) {
 		return false, "", nil
 	case string:
 		return typed != "", typed, nil
-	case subscriptionImportUnstorable:
+	case subscriptionImportMoment:
 		return true, typed.text, nil
 	case json.Number:
 		if typed == "0" {
@@ -142,8 +195,7 @@ func subscriptionImportUnique(object domain.RequestObject) domain.RequestObject 
 
 // subscriptionImportPlan is process_import_rows over the frame: the
 // certificates in the order they are created and the drafts bulk_create
-// stores. An exception the view swallows keeps the certificates created
-// before it and drops every draft.
+// stores. An exception rolls the rows back: the effects are Failed.
 func (s *SubscriptionImportUpload) subscriptionImportPlan(frame *pandasxlsx.Frame, data domain.RequestObject) (domain.SubscriptionImportEffects, error) {
 	effects := domain.SubscriptionImportEffects{StatusID: s.uploads.ids()}
 	columns := make(map[string]int, len(frame.Columns))
@@ -155,17 +207,20 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(frame *pandasxlsx.Fram
 	static, hasStatic := data.Lookup("unmapped_static")
 	staticTutor, hasStaticTutor := data.Lookup("unmapped_static_tutor")
 	now := s.uploads.now()
-	storable := true
+	failed := func() (domain.SubscriptionImportEffects, error) {
+		effects.Failed, effects.Certificates, effects.Drafts = true, nil, nil
+		return effects, nil
+	}
 	for _, cells := range frame.Rows {
 		keys, isObject := mapping.(domain.RequestObject)
 		if !isObject {
-			return effects, nil // data['map'].keys()
+			return failed() // data['map'].keys()
 		}
 		row := subscriptionImportRow{associate: domain.RequestObject{}, tutor: domain.RequestObject{}}
 		for _, entry := range subscriptionImportUnique(keys) {
 			field, known := subscriptionImportFields[dto.PythonStrip(strings.ReplaceAll(entry.Name, "tutore", ""))]
 			if !known {
-				return effects, nil // KeyError
+				return failed() // KeyError
 			}
 			var value any
 			switch column := entry.Value.(type) {
@@ -175,7 +230,7 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(frame *pandasxlsx.Fram
 					value = subscriptionImportCell(cells[index])
 				}
 			case domain.RequestObject, []any:
-				return effects, nil // unhashable in row.keys()
+				return failed() // unhashable in row.keys()
 			default:
 				// A number or a boolean is no column name.
 			}
@@ -216,20 +271,17 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(frame *pandasxlsx.Fram
 							{Name: "certificate_expring_date", Value: date.Format("02/01/2006")}}
 					}
 					effects.Certificates = append(effects.Certificates, certificate)
-					if _, cell := value.(subscriptionImportUnstorable); cell && parsed {
-						// stored_certificate_date: a date cell is stored as day/month/year.
-						value = date.Format("02/01/2006")
-					}
 				}
+			}
+			if moment, cell := value.(subscriptionImportMoment); cell {
+				// stored_value: a date cell is stored as day/month/year.
+				value = moment.at.Format("02/01/2006")
 			}
 			target := &row.associate
 			if strings.Contains(entry.Name, "tutore") {
 				target = &row.tutor
 			}
 			if value != nil {
-				if _, unstorable := value.(subscriptionImportUnstorable); unstorable {
-					storable = false
-				}
 				subscriptionImportSet(target, field, value)
 			} else if hasDefaults {
 				object, isObject := defaults.(domain.RequestObject)
@@ -261,7 +313,7 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(frame *pandasxlsx.Fram
 		if hasStatic {
 			object, isObject := static.(domain.RequestObject)
 			if !isObject {
-				return effects, nil // .items()
+				return failed() // .items()
 			}
 			for _, field := range object {
 				subscriptionImportSet(&row.associate, field.Name, field.Value)
@@ -270,7 +322,7 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(frame *pandasxlsx.Fram
 		if hasStaticTutor && len(row.tutor) > 0 {
 			object, isObject := staticTutor.(domain.RequestObject)
 			if !isObject {
-				return effects, nil
+				return failed()
 			}
 			for _, field := range object {
 				subscriptionImportSet(&row.tutor, field.Name, field.Value)
@@ -288,7 +340,7 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(frame *pandasxlsx.Fram
 			code, _ := row.associate.Lookup("tax_code")
 			text, isText := code.(string)
 			if !isText {
-				return effects, nil // re.search on a value that is not text
+				return failed() // re.search on a value that is not text
 			}
 			for _, r := range text {
 				if r > unicode.MaxASCII {
@@ -303,10 +355,6 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(frame *pandasxlsx.Fram
 			stored = append(stored, domain.RequestField{Name: "medical_certificate", Value: row.medical})
 		}
 		effects.Drafts = append(effects.Drafts, domain.SubscriptionImportDraft{ID: s.uploads.ids(), Data: stored, Valid: valid})
-	}
-	if !storable {
-		effects.Drafts = nil // json.dumps raises inside bulk_create
-		return effects, nil
 	}
 	for index := range effects.Drafts {
 		effects.Drafts[index].JSON = dto.PythonJSONDumps(effects.Drafts[index].Data)

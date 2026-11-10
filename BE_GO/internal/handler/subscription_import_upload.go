@@ -44,9 +44,14 @@ func (h *SubscriptionImportUploadHandler) Upload(c echo.Context) error {
 	}
 	defer release()
 	result, err := h.imports.Upload(ctx, *identity, body, audit)
+	var large *service.SubscriptionImportTooLarge
 	switch {
 	case err == nil:
 		return c.Blob(http.StatusOK, echo.MIMEApplicationJSON, dto.PythonJSONDumpsCompact(result))
+	case errors.As(err, &large):
+		return c.JSON(http.StatusRequestEntityTooLarge, map[string]string{"msg": large.Message()})
+	case errors.Is(err, service.ErrSubscriptionImportFailed):
+		return c.JSON(http.StatusBadRequest, map[string]string{"msg": service.SubscriptionImportFailedMessage})
 	case errors.Is(err, service.ErrSubscriptionImportUnauthorized):
 		return c.NoContent(http.StatusUnauthorized)
 	case errors.Is(err, service.ErrSubscriptionImportNotPorted):

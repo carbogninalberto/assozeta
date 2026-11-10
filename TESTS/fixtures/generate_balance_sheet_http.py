@@ -277,7 +277,7 @@ def comma(value):
     return f'{value:.2f}'.replace('.', ',')
 
 
-def export(label, denomination='Message reads own'):
+def export(label, denomination='Message reads own', fmt='excel'):
     """{'file': get_excel_base64(descriptions, institutional, commercial, totals), 'filename': ...} of export_balance_sheet."""
     data, rows = STATE[label]['data'], []
     blank = lambda text='': rows.append([text, '', '', ''])
@@ -304,6 +304,27 @@ def export(label, denomination='Message reads own'):
     for title, key in (('Banca', 'bank'), ('Cassa', 'cash'), ('Altro', 'other'), ('Totale', 'total')):
         rows.append([title, '', '', comma(data[key])])
     columns = ['Descrizione', 'Istituzionale (€)', 'Commerciale (€)', 'Totale (€)']
+    if fmt == 'pdf':
+        # generate_pdf_from_data(rows, columns, title=..., align=..., header=custom_header, isA3=True, landscape=False,
+        # additional_data=...): the seeded association has no logo and no address (the header's '[LOGO]' paragraph and
+        # ', , '), the balance year starts on 1 January (the balances are dated 31 December).
+        year = STATE[label]['year']
+        header = f"""
+        <div style="text-align: center;display:flex;justify-content: center;width: 200px;margin:auto; margin-bottom: 20px;">
+            <div style="text-align: center;">
+                <img src="None" style="height: 1000px;"/>
+            </div>
+            <div style="text-align: center;">
+                <h1 style="font-size: 20px;">{denomination}</h1>
+                <h2 style="font-size: 16px;">, , </h2>
+                <h3 style="font-size: 16px;">Approvato il ____/____/______</h3>
+            </div>
+        </div>
+        """
+        return {'file': {'$pdf': {'engine': 'data_table', 'columns': columns, 'rows': rows, 'title': f'Bilancio {year} al 31/12/{year}',
+                                  'align': ['LEFT', 'RIGHT', 'RIGHT', 'RIGHT'], 'header': header, 'is_a3': True, 'landscape': False,
+                                  'additional': [['balance_at_date', f'I saldi sono riportati al 31/12/{year}.']]}},
+                'filename': f'[$today] Bilancio {year} - {denomination}.pdf'}
     return {'file': {'$xlsx': {'engine': 'excel_utils', 'columns': columns, 'data': [list(column) for column in zip(*rows)]}},
             'filename': f"[$today] Bilancio {STATE[label]['year']} - {denomination}.xlsx"}
 
@@ -330,6 +351,27 @@ add('excel-invalid-date-server-error', 'owner', at('2025-02-30'), 500, SERVER, m
 add('excel-restricted-missing-permission', 'restricted_collaborator', at('2025-01-01'), 403,
     {'detail': 'Missing permission: bookeeping.management.balancesheet.update'}, method='POST', body=EXCEL)
 add('excel-athlete-forbidden', 'athlete', at('2025-01-01'), 403, FORBIDDEN, method='POST', body=EXCEL)
+# --- POST format pdf: the same rows as a reportlab document (TESTS/contracts/pdf.py) ----------------------------------------------------
+PDF = {'format': 'pdf'}
+effect = save('y2025', regenerate_2025(), 'owner')
+add('pdf-draft', 'owner', at('2025-01-01'), 200, export('y2025', fmt='pdf'), method='POST', body=PDF, effect=effect)
+effect = save('y2025', regenerate_2025('own_group'), 'full_collaborator')
+add('pdf-draft-group-full-collaborator', 'full_collaborator', at('2025-06-15'), 200, export('y2025', fmt='pdf'), method='POST', body=PDF,
+    headers={'X-Group-Id': IDS['own_group']}, effect=effect)
+effect = save('y2025', regenerate_2025(), 'owner')
+add('pdf-draft-form-body', 'owner', at('2025-06-15'), 200, export('y2025', fmt='pdf'), method='POST', raw_body='format=pdf',
+    content_type='application/x-www-form-urlencoded', effect=effect)
+effect = save('y2025', regenerate_2025(), 'owner')
+add('pdf-extra-keys-ignored', 'owner', at('2025-06-15'), 200, export('y2025', fmt='pdf'), method='POST',
+    body={'format': 'pdf', 'balance_sheet': {'draft': False, 'year': 1}}, effect=effect)
+add('pdf-format-case-sensitive-regenerates', 'owner', at('2025-01-01'), 200, body('y2025'), method='POST', body={'format': 'PDF'},
+    effect=save('y2025', regenerate_2025(), 'owner'))
+effect = save('y2021', totals({'note': 'x'}, '2021-12-31'), 'owner')
+add('pdf-export-error-after-save', 'owner', at('2021-06-01'), 500, SERVER, method='POST', body=PDF, effect=effect)
+add('pdf-invalid-date-server-error', 'owner', at('2025-02-30'), 500, SERVER, method='POST', body=PDF)
+add('pdf-restricted-missing-permission', 'restricted_collaborator', at('2025-01-01'), 403,
+    {'detail': 'Missing permission: bookeeping.management.balancesheet.update'}, method='POST', body=PDF)
+add('pdf-athlete-forbidden', 'athlete', at('2025-01-01'), 403, FORBIDDEN, method='POST', body=PDF)
 # The stored data has no 'incoming': the KeyError is swallowed, the totals are still written.
 effect = save('y2021', totals({'note': 'x'}, '2021-12-31'), 'owner')
 add('draft-generation-error-keeps-data', 'owner', at('2021-06-01'), 200, body('y2021'), effect=effect)

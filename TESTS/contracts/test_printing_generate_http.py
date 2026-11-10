@@ -6,7 +6,9 @@ request body and the expectation are the %d/%m/%Y dates of date.today()
 (UTC) plus the offset in days, read before and after the request (a run
 across midnight accepts either day). '{"$xlsx": spec}' is a workbook checked
 part by part with the opt-in XLSX standard of TESTS/contracts/xlsx.py within
-the request window; '<empty>' is a response without a body.
+the request window, '{"$pdf": spec}' a reportlab document checked with the
+opt-in PDF standard of TESTS/contracts/pdf.py; '<empty>' is a response
+without a body.
 """
 import json
 import re
@@ -14,7 +16,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from TESTS.contracts import http_family as family
-from TESTS.contracts import xlsx
+from TESTS.contracts import pdf, xlsx
 from TESTS.http_client import Client
 from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, ResponseFailure, difference, require, substitute
 
@@ -82,9 +84,11 @@ def assert_case(case, base_url, *, token, sessions):
     reasons = []
     for day in dict.fromkeys((before, after)):
         expected, reason = xlsx.resolve(dated(case['response'], day), actual, started, finished)
+        if reason is None:
+            expected, reason = pdf.resolve(expected, actual, started, finished)
         if reason is None and actual == expected:
             break
-        reasons.append(f'response.xlsx: {reason}'[:600] if reason else 'response.body' + difference(expected, actual))
+        reasons.append(f'response.file: {reason}'[:600] if reason else 'response.body' + difference(expected, actual))
     else:
         check(False, reasons[-1])
     check(received.get('Content-Type', '').split(';')[0] == 'application/json', 'response.type')

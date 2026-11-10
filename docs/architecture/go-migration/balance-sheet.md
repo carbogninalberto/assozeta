@@ -72,13 +72,38 @@ rejects, a balance year starting on 29 February) is a 500 after the save: the
 saved sheet and its audit entry stay. Go builds the workbook from the same
 in-memory data before saving, so a refusal happens before any write.
 
+## PDF export (POST with `format` `pdf`)
+
+The same flow with `generate_pdf_from_data` (`pdfexport.DataTable`, see
+[pdf-exports](pdf-exports.md)): 200 with `{'file': <base64 document>,
+'filename': '[<dd/mm/YYYY today>] Bilancio <year> - <denomination>.pdf'}`. The
+document is A3 portrait (larger when the table needs it), titled `Bilancio
+<year> al <dd/mm/YYYY>` (the day before the next balance year starts), and
+holds:
+
+- a header table read back from the HTML header the view composes: the logo
+  when the association's `logo` is a `data:image/jpeg;base64,` URL (drawn 100
+  points high), otherwise the paragraph `[LOGO]`; the denomination (Helvetica
+  Bold 20), `<city>, <postal code>, <address>` (16) and `Approvato il
+  ____/____/______` (16), each wrapped as reportlab wraps a paragraph. A
+  denomination with a line break does not match the view's pattern and is
+  replaced by `Associazione Sportiva`, as in Django;
+- the four columns (description left, amounts right) with the workbook's rows;
+- the centred line `I saldi sono riportati al <dd/mm/YYYY>.`.
+
+An exception of the export is the same 500 after the save as for `excel`.
+
 ## Not ported (refused before any write)
 
-- `format` `pdf` on a non-approved sheet: `export_balance_sheet` renders a
-  time-stamped PDF; Go answers 500 before generating (Django would write, then
-  export). `format` `excel` is ported (below), except a non-finite amount, a
-  description that is not text or null, and the workbook inputs `xlsxexport`
-  does not reproduce (`xlsx-exports.md`): those are refused before any write.
+- In the exports: a non-finite amount, a description that is not text or
+  null, and the workbook inputs `xlsxexport` does not reproduce
+  (`xlsx-exports.md`).
+- In the `pdf` export: a denomination, city, postal code or address containing
+  `&`, `<` or a soft hyphen (reportlab parses paragraph text as markup; only
+  plain text is ported), and a `data:image/jpeg;base64,` logo that is not a
+  grey or colour 8-bit JPEG in strict base64 (reportlab would decode other
+  images to pixels, or fall back to `[LOGO]` when PIL cannot open the data).
+  Go answers 500 before generating.
 - `CustomAccountSerializer.save` / `CustomAccountTransferSerializer.save` are not
   reached by these routes; they are exercised by the balance-account-writes and
   balance-transfer-writes families (account/transfer add and update).
@@ -108,6 +133,17 @@ the payments' delete receiver skipped leaves the instalment in place
 (`state.deleted:application.CourseSubscriptionInstallment`). Re-run green
 (`v2del-rerun-r1`): balance-account-writes 29/29, balance-transfer-writes 30/30,
 balance-accounts 25/25.
+
+PDF export: 9 more cases (89 in all with the account-delete ones; the seeded
+association has no logo and no address). RED `v2pdf-red-r1` (before the
+account-delete cases were merged): Django 86/86, Go 500 on `pdf-draft`. GREEN
+`v2pdf-versioned-r1` (86/86) and, after merging `codex/go-backend-parity`,
+`v2pdf-versioned-r2`: 89/89 on native Django, native Go, Caddy `/api/v1` and
+`/api/v2` with exact effects, each document compared in decoded form. Mutation
+`v2pdf-mutation-r1`: balances dated the first day of the next balance year
+instead of the day before fail `pdf-draft`. The logo, long and unbroken
+denominations, several pages and the closing line on a page of its own are
+covered by the golden documents of `BE_GO/internal/pdfexport`.
 
 Account delete rule (`v2doc2-*`): the view refuses an account in use, with the
 rule of the list's `deletable` flag. Django first: three tests in

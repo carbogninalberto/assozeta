@@ -133,7 +133,13 @@ func partName(base, target string) string {
 }
 
 // Read is pandas.read_excel(io.BytesIO(data), engine="openpyxl").
-func Read(data []byte) (*Frame, error) {
+func Read(data []byte) (*Frame, error) { return ReadText(data, nil) }
+
+// ReadText is Read with converters for the columns textual names: a number of
+// such a column is its str(), every other cell stays as it is, and the column
+// gets no numeric or boolean reading (read_excel(converters={column:
+// lambda value: str(value) if it is an int or a float else value})).
+func ReadText(data []byte, textual func(column string) bool) (*Frame, error) {
 	reader, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
 	if err != nil {
 		return nil, ErrInvalid
@@ -292,7 +298,7 @@ func Read(data []byte) (*Frame, error) {
 	if err != nil {
 		return nil, err
 	}
-	return build(rows)
+	return build(rows, textual)
 }
 
 type sheetCell struct {

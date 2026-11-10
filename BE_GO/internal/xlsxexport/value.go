@@ -63,3 +63,6 @@ func OptionalStr(text *string) Value {
 	}
 	return StrValue(*text)
 }
+
+// PythonStr is str() of the value.
+func (value Value) PythonStr() string { return pythonStrOf(value) }

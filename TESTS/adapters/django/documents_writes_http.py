@@ -25,6 +25,7 @@ import base64
 import json
 import os
 import pickle
+import time
 import uuid
 
 from TESTS.contracts import test_documents_writes_http as contract
@@ -60,6 +61,11 @@ MODELS = {'Document': ('docmanager', DOCUMENT), 'MedicalCertificate': ('applicat
 # The actor's own association (SportAssociation.objects.filter(user=actor).first()).
 ACTOR_ASSOCIATION = {'owner': 'own_association', 'admin': 'admin_association', 'foreign_owner': 'foreign_association'}
 SESSION_TTL = 3600
+CERTIFICATE_PATH = '/document/medical/certificate/'
+# MEDICAL_CERTIFICATE_MAX_UPLOAD_BYTES when the fixture names none: core.settings' default.
+CERTIFICATE_LIMIT = 10 * 1024 * 1024
+# MedicalCertificateUploadThrottle: DRF's cache key before the address, MEDICAL_CERTIFICATE_UPLOADS_PER_HOUR and its window.
+THROTTLE_KEY, THROTTLE_RATE, THROTTLE_WINDOW = 'throttle_medical-certificate-upload_', 60, 3600
 STORAGE = {}
 FOLDERS = {}
 
@@ -80,17 +86,68 @@ def service_context(report, log):
         storages = {'default': {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'},
                     'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}}
         STORAGE.update(client=client, location=source['location'], pending=0)
+        # The certificate upload limit of the run, on both servers (families sharing this storage have none).
+        limit = source.get('certificate_limit', CERTIFICATE_LIMIT)
+        saved = os.environ.get('GO_FIXTURE_ENVIRONMENT')
+        os.environ['GO_FIXTURE_ENVIRONMENT'] = json.dumps({**json.loads(saved or '{}'), 'MEDICAL_CERTIFICATE_MAX_UPLOAD_BYTES': str(limit)})
         try:
             with override_settings(STORAGES=storages, AWS_ACCESS_KEY_ID=access, AWS_SECRET_ACCESS_KEY=secret,
                                    AWS_STORAGE_BUCKET_NAME=BUCKET, AWS_S3_REGION_NAME='us-east-1', AWS_S3_ENDPOINT_URL=endpoint,
-                                   AWS_LOCATION=source['location'], AWS_S3_ADDRESSING_STYLE='path'):
+                                   AWS_LOCATION=source['location'], AWS_S3_ADDRESSING_STYLE='path',
+                                   MEDICAL_CERTIFICATE_MAX_UPLOAD_BYTES=limit):
                 yield
             # A failed workload is already reported; only complete runs must restore the bucket.
             if STORAGE['pending'] == 0:
                 contract.require(listing() == {SENTINEL[0]}, 'storage.objects-restored')
                 contract.require(client.get_object(Bucket=BUCKET, Key=SENTINEL[0])['Body'].read() == SENTINEL[1], 'storage.sentinel')
         finally:
+            if saved is None:
+                os.environ.pop('GO_FIXTURE_ENVIRONMENT', None)
+            else:
+                os.environ['GO_FIXTURE_ENVIRONMENT'] = saved
             STORAGE.clear()
+
+
+def client_ident(base_url):
+    """DRF get_ident: REMOTE_ADDR natively; behind Caddy the X-Forwarded-For it sets."""
+    from TESTS.http_client import Client
+    if '/api/v' not in base_url:
+        return '127.0.0.1'
+    gateway = base_url.rsplit('/api/v', 1)[0]
+    status, _body, headers = Client(gateway).request('GET', '/healthz', include_headers=True)
+    contract.require(status == 200 and headers.get('X-Fixture-Client-IP'), 'throttle.client-ip')
+    return headers['X-Fixture-Client-IP']
+
+
+def preload_throttle(case, ident):
+    """The address's certificate upload history before the request (DRF's cached list of timestamps)."""
+    from django.core.cache import cache
+    key = THROTTLE_KEY + ident
+    contract.require(cache.get(key) is None, 'throttle.clean')
+    spec = case.get('throttle')
+    if spec:
+        contract.require(case['path'] == CERTIFICATE_PATH, 'fixture.throttle-path')
+        cache.set(key, [time.time() - spec['age']] * spec['preload'], THROTTLE_WINDOW)
+
+
+def check_throttle(case, status, ident):
+    """Requests without an account that reach the throttle are recorded; a full history and accounts leave it as it was."""
+    from django.core.cache import cache
+    require = contract.require
+    key = THROTTLE_KEY + ident
+    history, spec = cache.get(key), case.get('throttle') or {'preload': 0, 'age': 0}
+    live = spec['preload'] if spec['age'] < THROTTLE_WINDOW else 0
+    counted = case['path'] == CERTIFICATE_PATH and case['actor'] == 'anonymous' and status != 401 and live < THROTTLE_RATE
+    require((status == 429) == (case['path'] == CERTIFICATE_PATH and case['actor'] == 'anonymous' and live >= THROTTLE_RATE),
+            'throttle.status')
+    if counted:
+        require(isinstance(history, list) and len(history) == live + 1 and all(type(item) is float for item in history)
+                and 0 <= time.time() - history[0] < 30 and history == sorted(history, reverse=True), 'throttle.recorded')
+    elif spec['preload']:
+        require(isinstance(history, list) and len(history) == spec['preload'] and len(set(history)) == 1, 'throttle.unchanged')
+    else:
+        require(history is None, 'throttle.not-reached')
+    cache.delete(key)
 
 
 def listing():
@@ -428,7 +485,9 @@ def run_workload(label, backend, base_url, fixture, apps, raw, observer):
     carnets.state_unchanged(fixture['baseline_state'], scopes_state(apps))
     results, context = [], {'remote': {}, 'fixture': fixture, 'folders': dict(FOLDERS)}
     STORAGE['pending'] += 1
+    ident = client_ident(base_url)
     for case in source['cases']:
+        preload_throttle(case, ident)
         before = scopes_state(apps)
         context['prepared'] = prepare(source)
         context['objects'] = listing()
@@ -440,6 +499,7 @@ def run_workload(label, backend, base_url, fixture, apps, raw, observer):
             window = (start, datetime.now(timezone.utc) + timedelta(seconds=1))
             after = scopes_state(apps)
             shared.assert_attribution(backend, case['method'], case['path'], status, observer.delta(cursor), case['name'])
+            check_throttle(case, status, ident)
             assert_effect(case, before, after, source, context, raw, window)
         except BaseException as error:
             error.case = f'{label}:{case["name"]}'

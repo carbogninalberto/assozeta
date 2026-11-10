@@ -1112,7 +1112,7 @@ DENOMINATION = {OWN: 'Message reads own', FOREIGN: 'Message reads foreign'}
 EXCEL = {'format': 'excel'}
 
 
-def export(labels, title='Iscrizioni filtrate', association=OWN, ordered=None):
+def export(labels, title='Iscrizioni filtrate', association=OWN, ordered=None, fmt='excel'):
     """{'file': get_excel_base64(*rows, columns=columns), 'filename': ...}; the view's rows put the creation date under
     'Certificato' and the certificate under 'Data creazione'."""
     rows = [SUBSCRIPTIONS[k] for k in (ordered if ordered is not None else by_created(labels))]
@@ -1126,6 +1126,11 @@ def export(labels, title='Iscrizioni filtrate', association=OWN, ordered=None):
             [USERS[row['user']]['username'] for row in rows],
             [', '.join(TAGS[t]['name'] for t in row['tags']) for row in rows]]
     columns = ['Tesserato', 'Email', 'Stato', 'Anno fiscale', 'Certificato', 'Data creazione', 'Utente', 'Tag']
+    if fmt == 'pdf':
+        # generate_pdf_from_data(zip(*rows), columns, title=...): the filename keeps the default title.
+        return {'file': {'$pdf': {'engine': 'data_table', 'columns': columns, 'rows': [list(row) for row in zip(*data)],
+                                  'title': f'{title} (giorno stampa $today)'}},
+                'filename': f'[$today] Iscrizioni filtrate - {DENOMINATION[association]}.pdf'}
     return {'file': {'$xlsx': {'engine': 'excel_utils', 'columns': columns, 'data': data}},
             'filename': f'[$today] {title} - {DENOMINATION[association]}.xlsx'}
 
@@ -1175,6 +1180,41 @@ excel('malformed-json', 'owner', '', 400, {'detail': 'JSON parse error - Expecti
 excel('filter-error-before-body', 'owner', '?query[from_age]=x', 500, SERVER, raw_body='nope', content_type='application/json')
 excel('mode-lists', 'owner', '?m=1', 200, mode_body(where(lambda r: r['status'] == 4)))
 excel('owner-without-association', 'owner_without_association', '', 500, SERVER)
+
+
+# --- subscription/list: POST pdf (the same rows as a reportlab table document, TESTS/contracts/pdf.py) ---
+PDF = {'format': 'pdf'}
+
+
+def pdf(name, actor, query, status, response, **options):
+    if 'raw_body' not in options:
+        options.setdefault('body', PDF)
+    add(f'list-pdf-{name}', actor, LIST + query, status, response, method='POST', **options)
+
+
+pdf('owner', 'owner', '', 200, export(own_listed(), fmt='pdf'))
+pdf('full-collaborator', 'full_collaborator', '', 200, export(own_listed(), fmt='pdf'))
+pdf('admin-impersonating-owner', 'admin', '', 200, export(own_listed(), fmt='pdf'), headers=ADMIN_OWNER)
+pdf('form-body', 'owner', '', 200, export(own_listed(), fmt='pdf'), raw_body='format=pdf', content_type='application/x-www-form-urlencoded')
+pdf('form-last-format', 'owner', '', 200, export(own_listed(), fmt='pdf'), raw_body='format=excel&format=pdf',
+    content_type='application/x-www-form-urlencoded')
+pdf('ignores-pagination', 'owner', '?pagination[perpage]=1&pagination[page]=9', 200, export(own_listed(), fmt='pdf'))
+pdf('group', 'owner', '', 200, export(own_listed(OWN_GROUP), fmt='pdf'), headers=GROUP)
+pdf('group-foreign-empty', 'owner', '', 200, export([], fmt='pdf'), headers={'X-Group-Id': FOREIGN_GROUP})
+pdf('type-athletes-title', 'owner', '?type=athletes', 200, export(where(lambda r: r['type'] in (2, 3)), 'Tesserati', fmt='pdf'))
+pdf('type-associates-title', 'owner', '?type=associates', 200, export(where(lambda r: r['type'] in (1, 2)), 'Libro Soci', fmt='pdf'))
+pdf('search', 'owner', '?query[generalSearch]=rossi', 200, export(searched(own_listed(), 'rossi'), fmt='pdf'))
+pdf('tags-any', 'owner', f"?query[tags]={T['master']['id']},{T['agonisti']['id']}", 200,
+    export(where(lambda r: bool(r['tags'])), fmt='pdf'))
+pdf('sort-lastname-asc', 'owner', '?query[current_year]=1&query[sort_lastname_asc_flag]=1', 200,
+    export(CURRENT, ordered=ordered_by(CURRENT, last), fmt='pdf'))
+pdf('sort-unknown', 'owner', '?sort[field]=nope', 500, SERVER)
+pdf('sort-relation-unknown', 'owner', '?sort[field]=user__nope', 500, SERVER)
+pdf('foreign-owner-row-without-associate', 'foreign_owner', '', 500, SERVER)
+pdf('foreign-owner-tag', 'foreign_owner', f"?query[tags]={T['estero']['id']}", 200,
+    export(where(lambda r: 'estero' in r['tags'], own_listed(association=FOREIGN)), association=FOREIGN, fmt='pdf'))
+pdf('format-case-sensitive', 'owner', '', 500, SERVER, body={'format': 'PDF'})
+pdf('owner-without-association', 'owner_without_association', '', 500, SERVER)
 
 
 # --- subscription/list: field extraction ---

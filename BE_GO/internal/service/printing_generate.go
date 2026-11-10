@@ -14,6 +14,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfexport"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 )
 
@@ -195,8 +196,9 @@ var printingBuilders = map[string]printingBuilder{
 }
 
 // finish is the builders' format branch: 'excel' is
-// generate_xlsx_from_data (get_excel_base64; None raises), 'pdf' renders
-// with reportlab (refused), anything else raises.
+// generate_xlsx_from_data (get_excel_base64; None raises), 'pdf' is
+// generate_pdf_from_data over the same columns turned into rows (an exception
+// of reportlab is the builder's failure), anything else raises.
 func (r *printingRun) finish(report *printingReport) (*printingReport, error) {
 	format, _ := printingLast(r.data, "format").(string)
 	denomination := "None"
@@ -216,9 +218,44 @@ func (r *printingRun) finish(report *printingReport) (*printingReport, error) {
 		report.filename = fmt.Sprintf("[%s] %s - %s.xlsx", printingDate(r.today), report.title, denomination)
 		return report, nil
 	case "pdf":
-		return nil, domain.ErrPrintingGenerateNotPorted
+		document, err := pdfexport.DataTable{Columns: report.columns, Rows: pdfexport.RowsOf(report.data),
+			Title: printingPDFTitle(report.title, r.today)}.Build(r.now)
+		switch {
+		case errors.Is(err, pdfexport.ErrNotPorted):
+			return nil, domain.ErrPrintingGenerateNotPorted
+		case err != nil:
+			return nil, errPrintingFailure
+		}
+		report.file = base64.StdEncoding.EncodeToString(document)
+		report.filename = fmt.Sprintf("[%s] %s - %s.pdf", printingDate(r.today), report.title, denomination)
+		return report, nil
 	}
 	return nil, errPrintingFailure // raise Exception('Format not valid')
+}
+
+// printingPDFTitle is the document title of a report's 'pdf' branch (the
+// filename keeps the report's own title).
+func printingPDFTitle(title string, today time.Time) string {
+	day := printingDate(today)
+	switch title {
+	case "Certificati medici in scadenza (entro 30 giorni)":
+		return "Certificati medici in scadenza (entro 30 giorni dal " + day + ")"
+	case "Certificati medici non presenti (esclusi soggetti esenti)":
+		return "Certificati medici non presenti esclusi soggetti esenti (giorno stampa " + day + ")"
+	case "Iscrizioni in scadenza (entro 30gg)":
+		return "Iscrizioni in scadenza entro 30gg (giorno stampa " + day + ")"
+	case "Tesseramenti in scadenza (entro 30gg o scaduti)":
+		return "Tesseramenti in scadenza entro 30gg o scaduti (giorno stampa " + day + ")"
+	case "Iscrizioni":
+		return title
+	case "Quote/Carnet corso non pagate":
+		return "Quote corso/carnet non pagate (giorno stampa " + day + ")"
+	case "Iscrizioni con tutti i pagamenti":
+		return "Iscrizioni con tutti i pagamenti (stampa " + day + ")"
+	}
+	// Certificati medici scaduti, Atleti esenti dai certificati medici,
+	// Quote associative non pagate, Pagamenti scaduti.
+	return title + " (giorno stampa " + day + ")"
 }
 
 // --- Python semantics of the request values and the rows -----------------------------------------------------

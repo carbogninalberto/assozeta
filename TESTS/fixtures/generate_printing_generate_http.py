@@ -24,8 +24,11 @@ update, kept when a later step raises). Dates are formatted %d/%m/%Y,
 ages are int(days / 365.25) against date.today() (UTC). The 'excel' format is
 get_excel_base64(*columns, columns=...) (compared with TESTS/contracts/xlsx.py)
 and the response is {'file': <base64>, 'filename': '[<today>] <title> -
-<denomination>.xlsx'}; any other format but 'pdf' raises after the rows are
-built. The 'pdf' format renders with reportlab and is not authored here.
+<denomination>.xlsx'}. The 'pdf' format is generate_pdf_from_data(rows,
+columns, title=...) with the same columns turned into rows (zip(*rows)): a
+reportlab table document compared with TESTS/contracts/pdf.py, under the same
+filename ending in .pdf and a title of its own per report. Any other format
+raises after the rows are built.
 
 The querysets have no ordering: the adapter analyzes the seeded tables so
 every transport plans them alike, and the rows come in insertion order.
@@ -278,6 +281,22 @@ def person_columns(people, phones):
 ILLEGAL = re.compile(r'[\000-\010]|[\013-\014]|[\016-\037]')
 
 
+# The document title of each report's 'pdf' branch (the filename keeps the workbook's title).
+PDF_TITLES = {
+    'expiring_medical_certificates': 'Certificati medici in scadenza (entro 30 giorni dal $today)',
+    'expired_medical_certificates': 'Certificati medici scaduti (giorno stampa $today)',
+    'empty_medical_certificates': 'Certificati medici non presenti esclusi soggetti esenti (giorno stampa $today)',
+    'exempt_medical_certificates': 'Atleti esenti dai certificati medici (giorno stampa $today)',
+    'expiring_subscriptions': 'Iscrizioni in scadenza entro 30gg (giorno stampa $today)',
+    'expiring_memberships': 'Tesseramenti in scadenza entro 30gg o scaduti (giorno stampa $today)',
+    'all_subscriptions': 'Iscrizioni',
+    'not_paid_quotes_subscriptions': 'Quote associative non pagate (giorno stampa $today)',
+    'not_paid_courses_subscriptions': 'Quote corso/carnet non pagate (giorno stampa $today)',
+    'expired_payments': 'Pagamenti scaduti (giorno stampa $today)',
+    'subscriptions_with_all_payments': 'Iscrizioni con tutti i pagamenti (stampa $today)',
+}
+
+
 def finish(data, association, title, columns, rows):
     fmt = data['format']
     if fmt == 'excel':
@@ -285,7 +304,11 @@ def finish(data, association, title, columns, rows):
             raise Failure('openpyxl IllegalCharacterError: get_excel_base64 returns None')
         return {'file': {'$xlsx': {'engine': 'excel_utils', 'columns': columns, 'data': rows}},
                 'filename': f'[$today] {title} - {DENOMINATION[association]}.xlsx'}
-    raise Failure('Format not valid' if fmt != 'pdf' else 'pdf is not authored')
+    if fmt == 'pdf':
+        return {'file': {'$pdf': {'engine': 'data_table', 'columns': columns, 'rows': [list(row) for row in zip(*rows)],
+                                  'title': PDF_TITLES[data['type']]}},
+                'filename': f'[$today] {title} - {DENOMINATION[association]}.pdf'}
+    raise Failure('Format not valid')
 
 
 MEDICAL_COLUMNS = ['Nome', 'Cognome', 'Email', 'Telefono', 'Tel. Tutore', 'Contatto', 'Data di nascita', 'età',
@@ -638,8 +661,28 @@ report('with-all-payments-no-subscriptions-invalid-period', 'owner', 'subscripti
        {'status': [], 'period': {'from_date': 'x'}})
 report('with-all-payments-foreign', 'foreign_owner', 'subscriptions_with_all_payments', D, association=FOREIGN)
 
+# --- the 'pdf' format: one document per report, after every promotion above has happened ------------------------------
+for kind in PDF_TITLES:
+    report(f"pdf-{kind.replace('_', '-')}", 'owner', kind, D, fmt='pdf')
+report('pdf-all-subscriptions-control-character', 'owner', 'all_subscriptions', {'status': [3]}, fmt='pdf')
+report('pdf-all-subscriptions-no-rows', 'owner', 'all_subscriptions', {'status': []}, fmt='pdf')
+report('pdf-all-subscriptions-group', 'owner', 'all_subscriptions', D, fmt='pdf', group='own_group', headers=OWN_GROUP_HEADER)
+report('pdf-all-subscriptions-collaborator', 'full_collaborator', 'all_subscriptions', D, fmt='pdf')
+report('pdf-all-subscriptions-without-birth-date', 'owner', 'all_subscriptions', {'status': [5]}, fmt='pdf')
+report('pdf-expired-payments-period', 'owner', 'expired_payments', {**D, 'period': {'from_date': '$date:-21', 'to_date': '$date:-1'}},
+       fmt='pdf')
+report('pdf-expired-payments-account-transfer', 'owner', 'expired_payments', {'status': [4, 5]}, fmt='pdf')
+report('pdf-with-all-payments-foreign', 'foreign_owner', 'subscriptions_with_all_payments', D, fmt='pdf', association=FOREIGN)
+report('pdf-not-paid-courses-foreign', 'foreign_owner', 'not_paid_courses_subscriptions', {'status': [4], 'year': 'corrente'},
+       fmt='pdf', association=FOREIGN)
+add('pdf-expiring-subscriptions-form', 'owner', 200, BUILDERS['expiring_subscriptions'](
+    {'type': 'expiring_subscriptions', 'format': 'pdf', 'filters': 'tutti'}, OWN, None),
+    raw_body='type=expiring_subscriptions&format=pdf&filters=tutti', content_type='application/x-www-form-urlencoded')
+report('pdf-format-case', 'owner', 'all_subscriptions', D, fmt='PDF')
+
 assert len({c['name'] for c in cases}) == len(cases)
-OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'printing/generate excel reports, tutor promotion and request validation',
+OUTPUT.write_text(json.dumps({'matrix_version': 1,
+                              'scope': 'printing/generate excel and pdf reports, tutor promotion and request validation',
                               'ids': IDS, 'associates': ASSOCIATES, 'relations': RELATIONS, 'certificates': CERTIFICATES,
                               'subscriptions': SUBSCRIPTIONS, 'memberships': MEMBERSHIPS, 'courses': COURSES, 'carnets': CARNETS,
                               'categories': CATEGORIES, 'accounts': ACCOUNTS, 'invoices': INVOICES, 'payments': PAYMENTS,

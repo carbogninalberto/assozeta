@@ -81,6 +81,10 @@ for `type=athletes`, `Libro Soci` for `type=associates`, else `Iscrizioni filtra
 and `presente`/`-` for the certificate under Data creazione. A row without associate, or with a status outside 1–5, is
 a 500.
 
+`format` `pdf` is `generate_pdf_from_data` of the same eight columns as rows (`pdfexport.DataTable`,
+[pdf-exports](pdf-exports.md)): the document is titled `<title> (giorno stampa <dd/mm/YYYY>)` and the file is always named
+`[<today>] Iscrizioni filtrate - <denomination>.pdf`. A member without e-mail is an empty cell.
+
 Row order: the subscriptions follow the list's own `ORDER BY` (the clause the paginated list uses, the authored rows have
 distinct keys). A subscription's tags come from `prefetch_related('tags')`, which Django sends without `ORDER BY`; Go
 sends the same statement (`ExportTags` in `repository/subscription_reads.go`: same tables, join and predicate), so both
@@ -151,9 +155,8 @@ resources reader (`repository.ScopedResources.Available`, kind `subscription`; `
 
 ## Not ported (refused with the 500 page)
 
-- The POST export of subscription/list with `format` `pdf` (a time-stamped PDF render). The Excel export is ported,
-  except workbook inputs `xlsxexport` does not reproduce (`xlsx-exports.md`) and exports sorted by an ordering compiled
-  with the rows.
+- In the POST export of subscription/list: workbook inputs `xlsxexport` does not reproduce (`xlsx-exports.md`) and exports
+  (both formats) sorted by an ordering compiled with the rows.
 - Orderings compiled with the rows (relations, paths, transforms, `?`, annotations), field-mode relation paths and
   transforms, and search terms with characters at or above U+0250 or U+0130 (personas-reads).
 
@@ -225,3 +228,11 @@ member, a member row subscribed by the owner and a course with a registry in the
 - Mutation (`famvis-mutation-r1`): the athlete list without the session's boundary fails `list-session-athlete` (CAUGHT).
 - Shared code: none changed (the reads call the existing scoped resources reader); subscription-lifecycle,
   subscription-renew, payment-reads and statistic-reads re-run natively (`famvis-rerun-r1`: 63/63, 75/75, 276/276, 87/87).
+
+PDF export of the list (19 more cases, 350 in all):
+
+- RED (`v2pdf-red-r1`): Django 350/350; Go answers 500 on `list-pdf-owner`.
+- GREEN (`v2pdf-versioned-r1` (and `v2pdf-versioned-r2` after merging `codex/go-backend-parity`)): 350/350 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, each document compared
+  in decoded form (`TESTS/contracts/pdf.py`).
+- Mutation (`v2pdf-mutation-r1`): a document titled with the default title instead of the view's fails
+  `list-pdf-type-athletes-title` (CAUGHT).
