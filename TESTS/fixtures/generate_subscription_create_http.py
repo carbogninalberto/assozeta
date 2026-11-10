@@ -82,6 +82,10 @@ ASSOCIATES['quick_abroad'] = {'id': next(ids), 'association': FOREIGN, 'first': 
                               'born': '1980-01-01', 'user': 'foreign_owner', 'email': None}
 ASSOCIATES['quick_no_account'] = {'id': next(ids), 'association': OWN, 'first': 'Sara', 'last': 'Senzaconto', 'tax_code': 'SNZSRA80A41H501X',
                                   'born': '1980-01-01', 'user': None, 'email': None}
+# Ids added later come from their own range so the earlier ones stay stable.
+extra_ids = iter(f'a1000000-0000-4000-8000-{939001 + n:012d}' for n in range(50))
+ASSOCIATES['quick_fallback'] = {'id': next(extra_ids), 'association': OWN, 'first': 'Fabio', 'last': 'Ripiego', 'tax_code': 'RPGFBA80A01H501Y',
+                                'born': '1980-01-01', 'user': 'athlete', 'email': None}
 CERTIFICATES['quick_older'] = {'id': next(ids), 'user': 'owner', 'expiration': '2025-06-30'}
 CERTIFICATES['quick_latest'] = {'id': next(ids), 'user': 'owner', 'expiration': '2026-06-30'}
 CERTIFICATES['quick_undated'] = {'id': next(ids), 'user': 'owner'}
@@ -478,6 +482,9 @@ for label, username, first in (('own-username', 'message-reads-700001', 'Mara'),
                                'multiple_subscription_fee': False}, 'owner': {'subscription_duration': 2, 'membership_duration': 2}},
         effect=success('owner', f'{first} Modale', associate=created_associate(data), payment=new_payment('25.00', audit_amount='25.0'),
                        subscription=dict(PLAIN), membership=dict(MEMBER)))
+# An association account only names its own association: another owner's username is 403 before any write.
+add('modal-foreign-username', 'owner', 403, {'detail': 'User not allowed.'},
+    body=request(person('Olga', 'Modale', 'MDLOLG90C41H501K'), sport_association='message-reads-700007'))
 
 # --- The quick re-subscription (?m=only_associate) --------------------------------------------------------
 # The members list renews a member with {'associate': id[, 'plan_id']}. _prepare_subscription_request sets
@@ -528,12 +535,15 @@ quick('owner', 'quick', 'Quinto Rapido', payment={'amount': '25.00', '$audit': '
 quick('full_collaborator', 'quick_plan', 'Pia Pianificata', setup={'association': {'multiple_subscription_fee': True}}, plan='plan-base',
       payment={'amount': '40.00', '$audit': '40', 'meta': {'subscription_data': {'subscription_fee': 40, 'name': 'Piano base', 'id': 'plan-base'}}},
       subscription={})
-# Outside a session the associate is resolved by its id. An unknown plan: the first plan's fee, the last plan's data.
-quick('owner', 'quick_abroad', 'Elio Estero', plan='nessuno',
+# Only the association's own members: another association's member is 403 after both lookups, before any write.
+add('quick-associate-of-another-association', 'owner', 403, {'detail': 'User not allowed.'}, query='?m=only_associate',
+    body={'associate': ASSOCIATES['quick_abroad']['id'], 'plan_id': 'nessuno'})
+# An unknown plan: the first plan's fee, the last plan's data.
+quick('owner', 'quick_fallback', 'Fabio Ripiego', plan='nessuno',
       setup={'association': {'subscription_fee_plans': [{'id': 'p1', 'name': 'Uno', 'subscription_fee': '30'},
                                                         {'id': 'p2', 'name': 'Due', 'subscription_fee': 45}]}},
       payment={'amount': '30.00', '$audit': '30', 'meta': {'subscription_data': {'subscription_fee': 45, 'name': 'Due', 'id': 'p2'}}},
-      subscription={'user_id': IDS['foreign_owner']})
+      subscription={'user_id': IDS['athlete']})
 
 
 # --- The wizard's signature and the "new member" account ---------------------------------------------------

@@ -1736,10 +1736,6 @@
      [
       "$renew_subscription",
       "tag_a"
-     ],
-     [
-      "$renew_subscription",
-      "tag_other"
      ]
     ],
     "audit": [

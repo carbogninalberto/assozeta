@@ -96,7 +96,8 @@ draft approval (`subscription-renew`).
 
 `?m=only_associate` with `associate` (the members list's renewal): `_prepare_subscription_request` sets `data['sport_association']`
 to the owner's association, then `_handle_quick_subscription`:
-- `Associate.objects.get(associate_id=...)`: a live row resolved by its id (a malformed id, `None` or an unknown row: 500);
+- `Associate.objects.get(associate_id=...)`: a live row resolved by its id (a malformed id, `None` or an unknown row: 500); the
+  quick re-subscription only uses the association's own members, for its own owner: otherwise DRF's 403 `User not allowed.`;
 - in one transaction, the association row locked, `create_quick_subscription`: the fee is the association's `subscription_fee`, or
   with multiple fees the plan whose `id` equals `plan_id` (its fee and `{'subscription_data': {subscription_fee, name, id}}` as the
   payment meta), else the first plan's fee with the last plan's data; a payment for `request.user` whatever the amount and whatever
@@ -108,7 +109,8 @@ to the owner's association, then `_handle_quick_subscription`:
 - on commit `new_subscription`, `print_document_subscription` and the notification. Response `{"status": "success", "payment_id": ...}`.
 
 An owner's body with `sport_association` (the wizard inside a modal) is not an athlete request: the username's association replaces
-`request.user`'s when found (the own username: the same one), a miss keeps it.
+`request.user`'s when found (the own username: the same one), a miss keeps it. An association account only names its own
+association: another association's username is DRF's 403 `User not allowed.`, before any write.
 
 ## The wizard's signature and new member account
 
@@ -132,7 +134,7 @@ An owner's body with `sport_association` (the wizard inside a modal) is not an a
 
 Refused with the 500 page before anything is committed:
 - anonymous requests (Django attributes them to the association named in `sport_association`), athlete requests with a
-  `sport_association` key, an owner naming another association, form bodies, a non-empty `X-Group-Id` (the managers' group filter
+  `sport_association` key, form bodies, a non-empty `X-Group-Id` (the managers' group filter
   and stored group);
 - the family wizard (`is_family_wizard: true`); in the quick subscription an impersonation session with an association scope, an
   owner with several associations, plan ids or fees of other shapes (booleans, containers, more than two decimals) and a
@@ -186,3 +188,12 @@ v2-sub-create: the wizard's signature and the new member account (62 cases).
 - Mutation (`v2create-mutation-r3`): the signature saved for `request.user` instead of the new member fails
   `subscription-create-new-member-account` (CAUGHT).
 - Re-run green: `subscription-renew` 62/62 (`v2create-rerun-create-r2`), `subscription-sign` 47/47 (`v2create-rerun-create-r1`).
+
+Own records only (64 cases).
+
+- RED (`secsub-red-r2`): Django 64/64; Go 500 on `subscription-create-modal-foreign-username`.
+- GREEN (`secsub-versioned-r2`): 64/64 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`secsub-mutation-r1`): the quick re-subscription without the own-member check fails
+  `subscription-create-quick-associate-of-another-association` (CAUGHT).
+- `subscription-renew` (only the association's own tags are set): GREEN `secsub-versioned-r1` 62/62 on four transports; mutation
+  `secsub-mutation-r1` (tags set by id alone) fails `subscription-renew-renew-basic` (CAUGHT).

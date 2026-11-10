@@ -129,6 +129,16 @@
    "born": "1980-01-01",
    "user": null,
    "email": null
+  },
+  "quick_fallback": {
+   "id": "a1000000-0000-4000-8000-000000939001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Fabio",
+   "last": "Ripiego",
+   "tax_code": "RPGFBA80A01H501Y",
+   "born": "1980-01-01",
+   "user": "athlete",
+   "email": null
   }
  },
  "certificates": {
@@ -5596,6 +5606,37 @@
    }
   },
   {
+   "name": "subscription-create-modal-foreign-username",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Olga",
+     "last_name": "Modale",
+     "tax_code": "MDLOLG90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "sport_association": "message-reads-700007"
+   },
+   "setup": null
+  },
+  {
    "name": "subscription-create-quick-associate-malformed-server-error",
    "actor": "owner",
    "method": "POST",
@@ -5903,7 +5944,24 @@
    }
   },
   {
-   "name": "subscription-create-quick-quick-abroad",
+   "name": "subscription-create-quick-associate-of-another-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add?m=only_associate",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "associate": "a1000000-0000-4000-8000-000000930017",
+    "plan_id": "nessuno"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-quick-quick-fallback",
    "actor": "owner",
    "method": "POST",
    "path": "/subscription/add?m=only_associate",
@@ -5916,7 +5974,7 @@
    "effect": {
     "actor": "owner",
     "associate": {
-     "match": "quick_abroad",
+     "match": "quick_fallback",
      "columns": {}
     },
     "payment": {
@@ -5945,7 +6003,7 @@
      "subscription_type": null,
      "start_date": "$season_start",
      "end_date": "$season_end",
-     "user_id": "a1000000-0000-4000-8000-000000700007"
+     "user_id": "a1000000-0000-4000-8000-000000700004"
     },
     "broadcast_created": false,
     "audit": [
@@ -6006,12 +6064,12 @@
      }
     ],
     "notification": {
-     "msg": "Nuova Iscrizione aggiunta per Elio Estero.",
+     "msg": "Nuova Iscrizione aggiunta per Fabio Ripiego.",
      "association": "a1000000-0000-4000-8000-000000701001"
     }
    },
    "body": {
-    "associate": "a1000000-0000-4000-8000-000000930017",
+    "associate": "a1000000-0000-4000-8000-000000939001",
     "plan_id": "nessuno"
    },
    "setup": {

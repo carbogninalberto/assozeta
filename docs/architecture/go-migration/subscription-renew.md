@@ -49,8 +49,8 @@
      entries in reverse key order indexed from the changes.
   2. When `'email' in data['user']` (dict key, list item or substring; other types are a `TypeError`), the first live user with
      that e-mail becomes the subscription's user: `save()` writes one update entry when it changes.
-  3. `data['tags']`: ids, or `{'tag_id'}` dicts when the first item is not a string. `Tags.objects.filter(tag_id__in=...)` resolves
-     the tags by id and links them; the through rows are not audited.
+  3. `data['tags']`: ids, or `{'tag_id'}` dicts when the first item is not a string. `Tags.objects.filter(tag_id__in=..., sport_association=...)`
+     links the association's own tags with those ids; the through rows are not audited.
   4. `data['courses']` with items: see Not ported.
 - Response `{"status": "success", "payment_id": <id or null>}`.
 

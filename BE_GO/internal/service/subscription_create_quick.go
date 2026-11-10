@@ -244,6 +244,10 @@ func (s *SubscriptionCreates) quick(ctx context.Context, identity domain.Resolve
 	if associate == nil {
 		return nil, domain.ErrSubscriptionCreateServer // DoesNotExist
 	}
+	// The quick re-subscription only uses the association's own members.
+	if associate.AssociationID == nil || *associate.AssociationID != association {
+		return nil, &domain.PermissionDenied{Detail: "User not allowed."}
+	}
 	fee, meta, err := subscriptionQuickFee(settings, data)
 	if err != nil {
 		return nil, err

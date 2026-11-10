@@ -97,7 +97,8 @@ func subscriptionAssociationGet(count int) error {
 
 // namedAssociation is create_subscription's data['sport_association']: the
 // association of the user with that username (str() of the value); a miss
-// keeps request.user's. Another association is not ported.
+// keeps request.user's. An association account only names its own
+// association: another one is DRF's 403.
 func (s *SubscriptionCreates) namedAssociation(ctx context.Context, tx domain.SubscriptionCreateTransaction, value any, own string) error {
 	if value == nil {
 		return nil // username=None matches no user
@@ -106,8 +107,11 @@ func (s *SubscriptionCreates) namedAssociation(ctx context.Context, tx domain.Su
 	if err != nil {
 		return err
 	}
-	if len(associations) > 1 || len(associations) == 1 && associations[0] != own {
+	if len(associations) > 1 {
 		return domain.ErrSubscriptionCreateNotPorted
+	}
+	if len(associations) == 1 && associations[0] != own {
+		return &domain.PermissionDenied{Detail: "User not allowed."}
 	}
 	return nil
 }
