@@ -195,7 +195,7 @@ the rows follow the querysets' unordered database order, which needs a determini
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | POST printing/generate | `format: 'pdf'` (modal default) | `components/modals/PrintingModal.svelte:80,110` | `service/printing_generate.go:218` | expensive |
-| POST balance-sheet | export pdf/excel of a draft | `BalanceSheetEditor.svelte:464-504` | `service/balance_sheet.go:261` | expensive |
+| POST balance-sheet | export pdf of a draft (excel is ported) | `BalanceSheetEditor.svelte:464-504` | `service/balance_sheet.go:267` | expensive |
 | DELETE balance-sheet/accounts/<uid>/delete | only soft-deleted/other-group payments | `routes/accounting/accounts/Accounts.svelte:166,192` | `service/balance_sheet.go:466` | medium |
 | POST saved-reports/<pk>/run | tools `export_data`, `export_multi_sheet`, `get_attendance_matrix` | `reports/SavedReports.svelte:177-190` | `dto/report_tools.go:71` | expensive |
 
@@ -275,7 +275,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### balance-sheet.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST balance-sheet | `format` `excel`/`pdf` on a non-approved (draft) sheet | service/balance_sheet.go:261 (`ErrBalanceSheetExportNotPorted`) | A | The always-visible "Esporta PDF/Excel" button (`src/routes/accounting/balanceSheet/BalanceSheetEditor.svelte:504`, `printBalanceSheet` :464-471) opens `src/components/modals/CurrentViewPrintingModal.svelte`, which POSTs `{"format": "pdf"|"excel"}` (:30-43) to `balance-sheet?currentDate=...`. For an approved sheet both backends return the stored data without a file. |
+| POST balance-sheet | `format` `pdf` on a non-approved (draft) sheet (`excel` is ported: balance-sheet.md, "Excel export") | service/balance_sheet.go:267 (`ErrBalanceSheetExportNotPorted`) | A | The always-visible "Esporta PDF/Excel" button (`src/routes/accounting/balanceSheet/BalanceSheetEditor.svelte:504`, `printBalanceSheet` :464-471) opens `src/components/modals/CurrentViewPrintingModal.svelte`, which POSTs `{"format": "pdf"|"excel"}` (:30-43) to `balance-sheet?currentDate=...`. For an approved sheet both backends return the stored data without a file. |
 | DELETE balance-sheet/accounts/<uid>/delete | any `application_payment` row references the account (soft-deleted or other-group included) | service/balance_sheet.go:466 (`ErrBalanceAccountPaymentsNotPorted`); query repository/balance_sheet.go:180 | A | UI enables delete when `row.deletable` (`src/routes/accounting/accounts/Accounts.svelte:166`, call at :192). `deletable` only counts live, group-filtered payments, so an account whose payments were all deleted from the payment list (soft delete, `views/payment_views.py:506`) or belong to another group shows as deletable and Go refuses. |
 
 ### balance-accounts.md

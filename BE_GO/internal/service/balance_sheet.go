@@ -16,8 +16,8 @@ var (
 	ErrBalanceSheetInvalid = errors.New("invalid balance sheet data")
 	// ErrBalanceSheetMissing is the POST's {'msg': 'No balance sheet found.'} (404).
 	ErrBalanceSheetMissing = errors.New("balance sheet not found")
-	// ErrBalanceSheetExportNotPorted refuses format excel/pdf before the
-	// generation writes: export_balance_sheet renders files (not ported).
+	// ErrBalanceSheetExportNotPorted refuses, before the generation writes,
+	// format pdf (a rendered file) and excel inputs Go does not reproduce.
 	ErrBalanceSheetExportNotPorted = errors.New("balance sheet export is not ported")
 	// ErrBalanceAccountNotDeletable is {'msg': 'This account is not deletable.'} (403).
 	ErrBalanceAccountNotDeletable = errors.New("custom account is not deletable")
@@ -25,6 +25,9 @@ var (
 	// payments reference: the cascade deletes them with their own signals
 	// (not ported).
 	ErrBalanceAccountPaymentsNotPorted = errors.New("deleting an account with payments is not ported")
+	// errBalanceSheetExportFailed is export_balance_sheet raising after the
+	// sheet was saved (500; the request is not atomic).
+	errBalanceSheetExportFailed = errors.New("balance sheet export failed after the save")
 	// errBalanceSheetPython is an exception the view does not handle (500).
 	errBalanceSheetPython = errors.New("balance sheet python error")
 )
@@ -136,7 +139,7 @@ func (s *BalanceSheetWrites) Sheet(ctx context.Context, identity domain.Resolved
 		result, err = run.reset(ctx)
 	}
 	if err != nil {
-		if errors.Is(err, domain.ErrBalanceSheetSaveFailed) {
+		if errors.Is(err, domain.ErrBalanceSheetSaveFailed) || errors.Is(err, errBalanceSheetExportFailed) {
 			// auditlog's pre_save entry stays: the request is not atomic.
 			if commit := tx.Commit(); commit != nil {
 				return nil, commit
@@ -257,8 +260,14 @@ func (r *sheetRun) generated(ctx context.Context, format any) (any, error) {
 		return map[string]any{"data": map[string]any{"available_years": years,
 			"balance_sheet": sheetView(pyCompact(stored), sheet.CreationDate, sheet.Year, false), "sport_association": profile}}, nil
 	}
-	if text, ok := format.(string); ok && (text == "excel" || text == "pdf") {
-		return nil, ErrBalanceSheetExportNotPorted
+	excel := false
+	if text, ok := format.(string); ok {
+		switch text {
+		case "pdf":
+			return nil, ErrBalanceSheetExportNotPorted
+		case "excel":
+			excel = true
+		}
 	}
 	var data any = balanceDefaultData()
 	if sheet != nil {
@@ -305,6 +314,15 @@ func (r *sheetRun) generated(ctx context.Context, format any) (any, error) {
 		}
 	}
 	dict.set("total", total)
+	// export_balance_sheet runs after the save on the same in-memory data:
+	// the workbook is built first so an input Go does not reproduce is
+	// refused before any write; a Python error is raised after the save.
+	var export *balanceSheetExport
+	if excel {
+		if export, err = r.export(ctx, dict, from.Year()); err != nil {
+			return nil, err
+		}
+	}
 	created := r.at
 	status := 1
 	if sheet == nil {
@@ -328,6 +346,12 @@ func (r *sheetRun) generated(ctx context.Context, format any) (any, error) {
 		if err = r.save(ctx, *sheet, sheet.Data, data, pyInt(from.Year()), sheet.StatusFlag); err != nil {
 			return nil, err
 		}
+	}
+	if export != nil {
+		if export.failed {
+			return nil, errBalanceSheetExportFailed
+		}
+		return export.body, nil
 	}
 	profile, err := r.profile(ctx)
 	if err != nil {

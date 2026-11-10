@@ -44,10 +44,29 @@ Django remains the production execution owner.
   the transfers referencing it are deleted, then the account, each with a delete
   entry indexed through `changes_json`.
 
+## Excel export (POST with `format` `excel`)
+
+On a non-approved sheet the view regenerates and saves the sheet as for GET,
+then answers `export_balance_sheet`: 200 with `{'file': <base64 workbook>,
+'filename': '[<dd/mm/YYYY today>] Bilancio <year> - <denomination>.xlsx'}`. An
+approved sheet is returned as stored, whatever the format. The workbook is
+`get_excel_base64` (`xlsxexport.PandasOpenpyxl`) of Descrizione, Istituzionale
+(€), Commerciale (€), Totale (€): the income entries and their totals, the
+expense entries and their totals, the management statement (income, minus
+expenses, balance) and the liquidity rows (bank, cash, other, total), amounts
+as `f"{x:.2f}"` with a comma. Rows follow the stored lists, so their order is
+the data's own. An exception in the export (a missing key, an amount `float()`
+rejects, a balance year starting on 29 February) is a 500 after the save: the
+saved sheet and its audit entry stay. Go builds the workbook from the same
+in-memory data before saving, so a refusal happens before any write.
+
 ## Not ported (refused before any write)
 
-- `format` `excel`/`pdf` on a non-approved sheet: `export_balance_sheet` renders
-  files; Go answers 500 before generating (Django would write, then export).
+- `format` `pdf` on a non-approved sheet: `export_balance_sheet` renders a
+  time-stamped PDF; Go answers 500 before generating (Django would write, then
+  export). `format` `excel` is ported (below), except a non-finite amount, a
+  description that is not text or null, and the workbook inputs `xlsxexport`
+  does not reproduce (`xlsx-exports.md`): those are refused before any write.
 - Deleting an account that any payment references: the cascade deletes payments
   with their own signals; Go answers 500.
 - `CustomAccountSerializer.save` / `CustomAccountTransferSerializer.save` are not
@@ -62,3 +81,9 @@ RED: Django 66/66, Go 404 (`native-r3`). GREEN: native Django, native Go, Caddy
 Mutation: including archived payments in the generation fails
 `draft-regenerated` (`mutation-r1`). Re-run green: balance-accounts,
 balance-archived, balance-account-writes, balance-transfer-writes, testimonials.
+
+Excel export: 11 more cases (77 in all). RED `v2xlsx-red-r2`: Django 77/77, Go
+500 on `excel-draft`. GREEN `v2xlsx-green-r1`: 77/77 on native Django, native
+Go, Caddy `/api/v1` and `/api/v2` with exact effects. Mutation
+`v2xlsx-mutation-r1`: the expenses of the management statement without their
+minus sign fail `excel-draft` (sheet1.xml differs).
