@@ -1,0 +1,457 @@
+{
+ "models": {
+  "application.CampsAndRetreatsSubscription": {
+   "content_type": "application.campsandretreatssubscription",
+   "pk": "camps_and_retreats_subscription_id",
+   "pk_type": "UUIDField",
+   "referrers": null,
+   "sport_association": null,
+   "table": "application_campsandretreatssubscription"
+  },
+  "application.CampsAndRetreatsSubscriptionPeriod": {
+   "content_type": "application.campsandretreatssubscriptionperiod",
+   "pk": "camps_and_retreats_subscription_period_id",
+   "pk_type": "UUIDField",
+   "referrers": null,
+   "sport_association": null,
+   "table": "application_campsandretreatssubscriptionperiod"
+  },
+  "application.CarnetSubscription": {
+   "content_type": "application.carnetsubscription",
+   "pk": "carnet_subscription_id",
+   "pk_type": "UUIDField",
+   "referrers": null,
+   "sport_association": null,
+   "table": "application_carnetsubscription"
+  },
+  "application.Course": {
+   "content_type": "application.course",
+   "pk": "course_id",
+   "pk_type": "UUIDField",
+   "referrers": null,
+   "sport_association": "sport_association_id",
+   "table": "application_course"
+  },
+  "application.CourseLocation": {
+   "content_type": "application.courselocation",
+   "pk": "course_location_id",
+   "pk_type": "UUIDField",
+   "referrers": [
+    {
+     "kind": "m2m",
+     "model": "application.Course",
+     "source": "course_id",
+     "target": "courselocation_id",
+     "through": "application_course_locations"
+    }
+   ],
+   "sport_association": "sport_association_id",
+   "table": "application_courselocation"
+  },
+  "application.CourseSubscription": {
+   "content_type": "application.coursesubscription",
+   "pk": "course_subscription_id",
+   "pk_type": "UUIDField",
+   "referrers": null,
+   "sport_association": null,
+   "table": "application_coursesubscription"
+  },
+  "application.CourseSubscriptionInstallment": {
+   "content_type": "application.coursesubscriptioninstallment",
+   "pk": "course_subscription_installment_id",
+   "pk_type": "UUIDField",
+   "referrers": null,
+   "sport_association": null,
+   "table": "application_coursesubscriptioninstallment"
+  },
+  "application.CustomerInvoice": {
+   "content_type": "application.customerinvoice",
+   "pk": "customer_invoice_id",
+   "pk_type": "UUIDField",
+   "referrers": [],
+   "sport_association": "sport_association_id",
+   "table": "application_customerinvoice"
+  },
+  "application.Instructor": {
+   "content_type": "application.instructor",
+   "pk": "instructor_id",
+   "pk_type": "UUIDField",
+   "referrers": [
+    {
+     "column": "instructor_id",
+     "kind": "fk",
+     "model": "application.InstructorHours"
+    },
+    {
+     "column": "instructor_id",
+     "kind": "fk",
+     "model": "application.Payment"
+    },
+    {
+     "column": "instructor_id",
+     "kind": "fk",
+     "model": "application.Subscription"
+    },
+    {
+     "column": "instructor_id",
+     "kind": "fk",
+     "model": "application.Reminders"
+    }
+   ],
+   "sport_association": null,
+   "table": "application_instructor"
+  },
+  "application.InstructorHours": {
+   "content_type": "application.instructorhours",
+   "pk": "instructor_hours_id",
+   "pk_type": "UUIDField",
+   "referrers": [],
+   "sport_association": null,
+   "table": "application_instructorhours"
+  },
+  "application.Invoice": {
+   "content_type": "application.invoice",
+   "pk": "invoice_id",
+   "pk_type": "UUIDField",
+   "referrers": [
+    {
+     "column": "invoice_id",
+     "kind": "fk",
+     "model": "application.InvoiceRows"
+    },
+    {
+     "column": "invoice_id",
+     "kind": "fk",
+     "model": "application.Payment"
+    }
+   ],
+   "sport_association": "sport_association_id",
+   "table": "application_invoice"
+  },
+  "application.InvoiceRows": {
+   "content_type": "application.invoicerows",
+   "pk": "invoice_row_id",
+   "pk_type": "UUIDField",
+   "referrers": null,
+   "sport_association": null,
+   "table": "application_invoicerows"
+  },
+  "application.InvoiceSuppliers": {
+   "content_type": "application.invoicesuppliers",
+   "pk": "invoice_supplier_id",
+   "pk_type": "UUIDField",
+   "referrers": [],
+   "sport_association": "sport_association_id",
+   "table": "application_invoicesuppliers"
+  },
+  "application.MedicalAppointments": {
+   "content_type": "application.medicalappointments",
+   "pk": "medical_appointments_id",
+   "pk_type": "UUIDField",
+   "referrers": [],
+   "sport_association": null,
+   "table": "application_medicalappointments"
+  },
+  "application.MedicalCertificate": {
+   "content_type": "application.medicalcertificate",
+   "pk": "medical_id",
+   "pk_type": "UUIDField",
+   "referrers": [
+    {
+     "column": "medical_id",
+     "kind": "fk",
+     "model": "application.Subscription"
+    }
+   ],
+   "sport_association": null,
+   "table": "application_medicalcertificate"
+  },
+  "application.ModuleResponses": {
+   "content_type": "application.moduleresponses",
+   "pk": "module_response_id",
+   "pk_type": "UUIDField",
+   "referrers": [],
+   "sport_association": null,
+   "table": "application_moduleresponses"
+  },
+  "application.Payment": {
+   "content_type": "application.payment",
+   "pk": "payment_id",
+   "pk_type": "UUIDField",
+   "referrers": [
+    {
+     "column": "payment_id",
+     "kind": "fk",
+     "model": "application.InstructorHours"
+    },
+    {
+     "column": "payment_id",
+     "kind": "fk",
+     "model": "application.InvoiceSuppliers"
+    },
+    {
+     "column": "payment_id",
+     "kind": "fk",
+     "model": "application.CustomerInvoice"
+    },
+    {
+     "column": "payment_id",
+     "kind": "fk",
+     "model": "application.Subscription"
+    },
+    {
+     "column": "payment_id",
+     "kind": "fk",
+     "model": "application.SubscriptionMembership"
+    },
+    {
+     "column": "payment_id",
+     "kind": "fk",
+     "model": "application.SoldProducts"
+    },
+    {
+     "column": "payment_id",
+     "kind": "fk",
+     "model": "application.CourseSubscription"
+    },
+    {
+     "kind": "m2m",
+     "model": "application.CourseSubscription",
+     "source": "coursesubscription_id",
+     "target": "payment_id",
+     "through": "application_coursesubscription_membership_payments"
+    },
+    {
+     "column": "payment_id",
+     "kind": "fk",
+     "model": "application.CourseSubscriptionInstallment"
+    },
+    {
+     "column": "payment_id",
+     "kind": "fk",
+     "model": "application.CampsAndRetreatsSubscriptionPeriod"
+    },
+    {
+     "column": "payment_id",
+     "kind": "fk",
+     "model": "application.CarnetSubscription"
+    },
+    {
+     "column": "payment_id",
+     "kind": "fk",
+     "model": "application.ModuleResponses"
+    }
+   ],
+   "sport_association": "sport_association_id",
+   "table": "application_payment"
+  },
+  "application.Reminders": {
+   "content_type": "application.reminders",
+   "pk": "reminders_id",
+   "pk_type": "UUIDField",
+   "referrers": null,
+   "sport_association": "sport_association_id",
+   "table": "application_reminders"
+  },
+  "application.SoldProducts": {
+   "content_type": "application.soldproducts",
+   "pk": "sold_product_id",
+   "pk_type": "UUIDField",
+   "referrers": null,
+   "sport_association": null,
+   "table": "application_soldproducts"
+  },
+  "application.SportAssociationDocumentsArchive": {
+   "content_type": "application.sportassociationdocumentsarchive",
+   "pk": "sport_association_documents_archive_id",
+   "pk_type": "UUIDField",
+   "referrers": [],
+   "sport_association": "sport_association_id",
+   "table": "application_sportassociationdocumentsarchive"
+  },
+  "application.Subscription": {
+   "content_type": "application.subscription",
+   "pk": "subscription_id",
+   "pk_type": "UUIDField",
+   "referrers": [
+    {
+     "column": "subscription_id",
+     "kind": "fk",
+     "model": "application.MedicalAppointments"
+    },
+    {
+     "column": "subscription_id",
+     "kind": "fk",
+     "model": "application.SubscriptionMembership"
+    },
+    {
+     "column": "subscription_id",
+     "kind": "fk",
+     "model": "application.SoldProducts"
+    },
+    {
+     "column": "subscription_id",
+     "kind": "fk",
+     "model": "application.SubscriptionToken"
+    },
+    {
+     "column": "subscription_id",
+     "kind": "fk",
+     "model": "application.SubscriptionFile"
+    },
+    {
+     "column": "subscription_id",
+     "kind": "fk",
+     "model": "application.SubscriptionTransfer"
+    },
+    {
+     "column": "subscription_id",
+     "kind": "fk",
+     "model": "application.CourseSubscription"
+    },
+    {
+     "column": "subscription_id",
+     "kind": "fk",
+     "model": "application.CampsAndRetreatsSubscription"
+    },
+    {
+     "column": "subscription_id",
+     "kind": "fk",
+     "model": "application.CarnetSubscription"
+    }
+   ],
+   "sport_association": "sport_association_id",
+   "table": "application_subscription"
+  },
+  "application.SubscriptionFile": {
+   "content_type": "application.subscriptionfile",
+   "pk": "subscription_file_id",
+   "pk_type": "UUIDField",
+   "referrers": [],
+   "sport_association": null,
+   "table": "application_subscriptionfile"
+  },
+  "application.SubscriptionMembership": {
+   "content_type": "application.subscriptionmembership",
+   "pk": "subscription_membership_id",
+   "pk_type": "UUIDField",
+   "referrers": [],
+   "sport_association": "sport_association_id",
+   "table": "application_subscriptionmembership"
+  },
+  "application.SubscriptionToken": {
+   "content_type": "application.subscriptiontoken",
+   "pk": "subscription_token_id",
+   "pk_type": "UUIDField",
+   "referrers": null,
+   "sport_association": null,
+   "table": "application_subscriptiontoken"
+  },
+  "application.SubscriptionTransfer": {
+   "content_type": "application.subscriptiontransfer",
+   "pk": "subscription_transfer_id",
+   "pk_type": "UUIDField",
+   "referrers": null,
+   "sport_association": null,
+   "table": "application_subscriptiontransfer"
+  },
+  "docmanager.Document": {
+   "content_type": "docmanager.document",
+   "pk": "document_id",
+   "pk_type": "UUIDField",
+   "referrers": [
+    {
+     "kind": "m2m",
+     "model": "application.Instructor",
+     "source": "instructor_id",
+     "target": "document_id",
+     "through": "application_instructor_documents"
+    },
+    {
+     "column": "document_id",
+     "kind": "fk",
+     "model": "application.InstructorHours"
+    },
+    {
+     "column": "document_id",
+     "kind": "fk",
+     "model": "application.SportAssociationDocumentsArchive"
+    },
+    {
+     "column": "document_pdf_id",
+     "kind": "fk",
+     "model": "application.Invoice"
+    },
+    {
+     "kind": "m2m",
+     "model": "application.Invoice",
+     "source": "invoice_id",
+     "target": "document_id",
+     "through": "application_invoice_attached_documents"
+    },
+    {
+     "column": "document_pdf_id",
+     "kind": "fk",
+     "model": "application.InvoiceSuppliers"
+    },
+    {
+     "column": "pdf_id",
+     "kind": "fk",
+     "model": "application.CustomerInvoice"
+    },
+    {
+     "kind": "m2m",
+     "model": "application.Payment",
+     "source": "payment_id",
+     "target": "document_id",
+     "through": "application_payment_attachments"
+    },
+    {
+     "column": "document_id",
+     "kind": "fk",
+     "model": "application.MedicalCertificate"
+    },
+    {
+     "column": "document_id",
+     "kind": "fk",
+     "model": "application.MedicalAppointments"
+    },
+    {
+     "column": "document_pdf_id",
+     "kind": "fk",
+     "model": "application.Subscription"
+    },
+    {
+     "kind": "m2m",
+     "model": "application.SubscriptionMembership",
+     "source": "subscriptionmembership_id",
+     "target": "document_id",
+     "through": "application_subscriptionmembership_attached_membership_docu749f"
+    },
+    {
+     "column": "document_id",
+     "kind": "fk",
+     "model": "application.SubscriptionFile"
+    },
+    {
+     "kind": "m2m",
+     "model": "application.CourseLocation",
+     "source": "courselocation_id",
+     "target": "document_id",
+     "through": "application_courselocation_documents"
+    },
+    {
+     "kind": "m2m",
+     "model": "application.ModuleResponses",
+     "source": "moduleresponses_id",
+     "target": "document_id",
+     "through": "application_moduleresponses_attachments"
+    }
+   ],
+   "sport_association": null,
+   "table": "docmanager_document"
+  }
+ },
+ "root": "docmanager.Document",
+ "scope": "docmanager.Document, its referrers and their referrers (application.document_scope)"
+}
