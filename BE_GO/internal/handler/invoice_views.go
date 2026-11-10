@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
 )
@@ -16,6 +17,14 @@ type InvoiceViewsHandler struct {
 	views      *service.InvoiceViews
 	actors     *service.ActorAuthentication
 	identities *service.IdentityResolver
+	audit      LoginAuditReader
+	operations *paymentcategorylifecycle.Lifecycle
+}
+
+// WithTutorPromotion: see DocumentViewsHandler.WithTutorPromotion.
+func (h *InvoiceViewsHandler) WithTutorPromotion(audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *InvoiceViewsHandler {
+	h.audit, h.operations = audit, operations
+	return h
 }
 
 func NewInvoiceViewsHandler(views *service.InvoiceViews, actors *service.ActorAuthentication,
@@ -54,9 +63,11 @@ func (h *InvoiceViewsHandler) serve(c echo.Context, view, operation, name string
 	default:
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
+	promotion, release := documentViewPromotion(c, h.audit, h.operations)
+	defer release()
 	reply, err := h.views.Render(request.Context(), *identity, service.DocumentViewRequest{
 		View: view, UID: c.Param("uid"), Path: request.URL.Path, Query: parseReferenceForm(request.URL.RawQuery),
-		Group: request.Header.Get("X-Group-Id"), Language: restLanguage(request),
+		Group: request.Header.Get("X-Group-Id"), Language: restLanguage(request), Promotion: promotion,
 	})
 	if err != nil {
 		if errors.Is(err, service.ErrDocumentViewNotPorted) {
