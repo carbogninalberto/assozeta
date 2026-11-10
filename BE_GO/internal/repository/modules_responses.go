@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"strconv"
+	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/jmoiron/sqlx"
@@ -32,14 +33,15 @@ func (r *ModulesResponses) ModuleByLink(ctx context.Context, link string) (*doma
 }
 
 // ResponseAttachments is attachments_docs of
-// ModuleResponses.objects.filter(module_response_id=...).first(): nil
+// ModuleResponses.objects.filter(module_response_id=..., module=module).first():
+// the public module page only reads responses of its own module; nil
 // without the row.
-func (r *ModulesResponses) ResponseAttachments(ctx context.Context, id string) (*string, error) {
+func (r *ModulesResponses) ResponseAttachments(ctx context.Context, id, module string) (*string, error) {
 	var docs string
 	err := r.db.GetContext(ctx, &docs, `SELECT COALESCE((SELECT json_agg(json_build_object('document_id', d.document_id, 'filename', d.filename))
    FROM application_moduleresponses_attachments t JOIN docmanager_document d ON d.document_id=t.document_id
    WHERE t.moduleresponses_id=r.module_response_id), '[]')::text
- FROM application_moduleresponses r WHERE r.module_response_id=$1`, id)
+ FROM application_moduleresponses r WHERE r.module_response_id=$1 AND r.module_id=$2`, id, module)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
@@ -334,6 +336,27 @@ func (t *modulesResponsesTransaction) DeleteDocument(ctx context.Context, respon
 		return err
 	}
 	return t.appendResponseAudit(ctx, "docmanager", "document", document, 2, changes, nil, audit)
+}
+
+// DeleteReferencedDocument is module_response.attachments.remove(document) and
+// document.delete() for a document rows of other tables reference: Django's
+// collector deletes it with the rows that cascade from it, clears the
+// nullable references and logs each deleted row.
+func (t *modulesResponsesTransaction) DeleteReferencedDocument(ctx context.Context, response, document string, audit domain.ModuleResponseAudit) error {
+	graph, err := documentDeleteGraph()
+	if err != nil {
+		return err
+	}
+	if _, err = t.tx.ExecContext(ctx, `DELETE FROM application_moduleresponses_attachments WHERE moduleresponses_id=$1 AND document_id=$2`,
+		response, document); err != nil {
+		return err
+	}
+	run := &collaboratorDeleteRun{tx: t.tx, graph: graph, audit: audit.Context, now: func() time.Time { return audit.At }}
+	rows, err := run.load(ctx, graph.Models[documentDeleteLabel], `t.document_id = $1::uuid FOR UPDATE`, document)
+	if err != nil {
+		return err
+	}
+	return run.Delete(ctx, documentDeleteLabel, rows)
 }
 
 // CreateDocument is Document.objects.create(filename=...) and its create

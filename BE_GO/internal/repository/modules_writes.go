@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -65,16 +66,22 @@ func moduleAudit(id string, action int, changes map[string][2]string, associatio
 	return entry
 }
 
-// CreateModule is Module.objects.create(...): the row and auditlog's create
-// entry, indexed through the direct resolver.
-func (t *modulesWriteTransaction) CreateModule(ctx context.Context, row domain.ModuleRow, audit domain.LoginAuditContext, at time.Time) error {
-	if _, err := t.tx.ExecContext(ctx, `INSERT INTO application_module (module_id, custom_link, sport_association_id, creation_date, title,
+// insertModule is the INSERT of one module row.
+func (t *modulesWriteTransaction) insertModule(ctx context.Context, row domain.ModuleRow) error {
+	_, err := t.tx.ExecContext(ctx, `INSERT INTO application_module (module_id, custom_link, sport_association_id, creation_date, title,
  require_approval, start_date, end_date, always_active, max_responses, queue_mode, only_users, payment_required, payment_data,
  response_message, allow_attachments, elements)
  VALUES ($1,$2,$3,$4,$5,$6,$7::date,$8::date,$9,$10,$11,$12,$13,$14::jsonb,$15,$16,$17::jsonb)`,
 		row.ID, row.CustomLink, row.AssociationID, row.CreationDate, row.Title, row.RequireApproval, row.StartDate, row.EndDate,
 		row.AlwaysActive, row.MaxResponses, row.QueueMode, row.OnlyUsers, row.PaymentRequired, row.PaymentData, row.ResponseMessage,
-		row.AllowAttachments, row.Elements); err != nil {
+		row.AllowAttachments, row.Elements)
+	return err
+}
+
+// CreateModule is Module.objects.create(...): the row and auditlog's create
+// entry, indexed through the direct resolver.
+func (t *modulesWriteTransaction) CreateModule(ctx context.Context, row domain.ModuleRow, audit domain.LoginAuditContext, at time.Time) error {
+	if err := t.insertModule(ctx, row); err != nil {
 		return err
 	}
 	changes, err := createdModelChanges(ctx, t.tx, "application_module", "module_id", row.ID)
@@ -82,6 +89,53 @@ func (t *modulesWriteTransaction) CreateModule(ctx context.Context, row domain.M
 		return err
 	}
 	return appendModelAudit(ctx, t.tx, moduleAudit(row.ID, 0, changes, row.AssociationID, "direct", audit, at))
+}
+
+// CopyModule is Model.save() of a loaded module under a key no row has: the
+// UPDATE matches nothing and the row is inserted. auditlog's pre_save finds no
+// row under the key and logs the whole row as an update (indexed from its
+// changes); post_save logs the create (indexed directly). When the database
+// refuses the insert (the copy repeats a custom link) the first entry stays
+// and conflict is the driver's text of the error.
+func (t *modulesWriteTransaction) CopyModule(ctx context.Context, row domain.ModuleRow, audit domain.LoginAuditContext, at time.Time) (string, error) {
+	const savepoint = "modules_copy"
+	if _, err := t.tx.ExecContext(ctx, `SAVEPOINT `+savepoint); err != nil {
+		return "", err
+	}
+	conflict := ""
+	if err := t.insertModule(ctx, row); err != nil {
+		var refused *pgconn.PgError
+		if !errors.As(err, &refused) || refused.Code != "23505" || row.CustomLink == nil {
+			return "", err
+		}
+		conflict = refused.Message + "\nDETAIL:  " + refused.Detail + "\n"
+		if _, err = t.tx.ExecContext(ctx, `ROLLBACK TO SAVEPOINT `+savepoint); err != nil {
+			return "", err
+		}
+		// The entry renders the values of the row that was not stored.
+		unlinked := row
+		unlinked.CustomLink = nil
+		if err = t.insertModule(ctx, unlinked); err != nil {
+			return "", err
+		}
+	}
+	changes, err := createdModelChanges(ctx, t.tx, "application_module", "module_id", row.ID)
+	if err != nil {
+		return "", err
+	}
+	if conflict != "" {
+		if _, err = t.tx.ExecContext(ctx, `ROLLBACK TO SAVEPOINT `+savepoint); err != nil {
+			return "", err
+		}
+		changes["custom_link"] = [2]string{"None", *row.CustomLink}
+	}
+	if err = appendModelAudit(ctx, t.tx, moduleAudit(row.ID, 1, changes, row.AssociationID, "changes_json.sport_association", audit, at)); err != nil {
+		return "", err
+	}
+	if conflict != "" {
+		return conflict, nil
+	}
+	return "", appendModelAudit(ctx, t.tx, moduleAudit(row.ID, 0, changes, row.AssociationID, "direct", audit, at))
 }
 
 // moduleAuditValues renders every stored field as auditlog's str() ('None' for null).

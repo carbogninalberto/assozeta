@@ -86,6 +86,9 @@ type ModulesResponsesTransaction interface {
 	DocumentExists(ctx context.Context, id string) (bool, error)
 	DocumentReferencedElsewhere(ctx context.Context, id string) (bool, error)
 	DeleteDocument(ctx context.Context, response, document string, audit ModuleResponseAudit) error
+	// DeleteReferencedDocument is DeleteDocument for a document rows of other
+	// tables reference: Django's collector deletes it with them.
+	DeleteReferencedDocument(ctx context.Context, response, document string, audit ModuleResponseAudit) error
 	CreateDocument(ctx context.Context, row ModuleDocumentCreate, audit ModuleResponseAudit) error
 	LinkDocument(ctx context.Context, response, document string) error
 	Commit() error

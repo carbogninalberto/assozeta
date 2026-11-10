@@ -180,7 +180,8 @@ def modules_custom_link_info(request, custom_link):
     # check if the is response_id in the query params
     response_id = request.query_params.get('response_id', None)
     if response_id is not None and is_valid_uuid(response_id):
-        response = ModuleResponses.objects.filter(module_response_id=response_id).first()
+        # The public module page only reads responses of its own module.
+        response = ModuleResponses.objects.filter(module_response_id=response_id, module=module).first()
         if response is not None:
             response_data = PublicModuleResponseSerializer(response).data
 

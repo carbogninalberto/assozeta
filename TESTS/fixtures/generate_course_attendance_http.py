@@ -471,6 +471,97 @@ add('mark-wrong-method', 'owner', mark_path('dario'), 405, method('GET'))
 add('mark-options', 'owner', mark_path('dario'), 200, {'name': 'Attendance Mark', 'description': '', 'renders': ['application/json'],
     'parses': ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data']}, method='OPTIONS')
 
+# ---------------------------------------------------------------------------
+# Events stored by older calendars: ids that are not UUID strings and
+# extendedProps / instructor values of other JSON types.
+# ---------------------------------------------------------------------------
+_old_ids = iter(f'a1000000-0000-4000-8000-{950401 + n:012d}' for n in range(100))
+old_new = lambda: next(_old_ids)
+
+
+def old_course(label, title, rows):
+    """rows: (day label, date, event or None, stored associated_event)."""
+    COURSES[label] = {'id': old_new(), 'association': OWN, 'title': title, 'deleted': False}
+    C[label] = COURSES[label]['id']
+    REGISTRIES[label] = {'id': old_new(), 'course': label, 'events': [event for _, _, event, _ in rows if event]}
+    R[label] = REGISTRIES[label]['id']
+    for day_label, date, _, linked in rows:
+        DAYS[day_label] = {'id': old_new(), 'registry': label, 'title': f'Giorno {day_label}', 'date': date, 'attendees': None,
+                           'expected_absences': None, 'associated_event': linked}
+        D[day_label] = DAYS[day_label]['id']
+
+
+def old_event(event_id, date, props=None):
+    event = {'event_id': event_id, 'title': 'Vecchia', 'start': date[:-1] + '.000Z', 'end': date[:11] + '10:00:00.000Z'}
+    if props is not None:
+        event['extendedProps'] = props
+    return event
+
+
+def old_listed(day, event=None, props=None):
+    row = DAYS[day]
+    ext = {}
+    if event is not None and 'extendedProps' in event:
+        ext = {'title': row['title'], 'allDay': False, 'extended_props': props, 'attendance_day_id': D[day],
+               'attendance_registry': R[row['registry']], 'date': row['date'], 'start': event['start'], 'end': event['end'],
+               'course_id': C[row['registry']], 'total_attendees': 0, 'total_expected_absences': 0, 'potential_attendees': [],
+               'total_expected_total': 0, 'attendees': [], 'expected_absences': []}
+    event = event or {}
+    return {'title': row['title'], 'allDay': False, 'extended_props': ext, 'attendance_day_id': D[day],
+            'attendance_registry': R[row['registry']], 'date': row['date'], 'start': event.get('start'), 'end': event.get('end'),
+            'attendees': [], 'expected_absences': []}
+
+
+week = lambda n: f'2020-06-{1 + 7 * n:02d}T09:00:00Z' if n < 5 else f'2020-07-{1 + 7 * (n - 5):02d}T09:00:00Z'
+BIG = 2 ** 128
+# (event id, stored extendedProps, rendered extended_props, str() in the audit diff, stored uuid when the save succeeds)
+OLD = [
+    ('vecchio-1', 'nota', 'nota', 'vecchio-1', None),
+    (7, ['a', {'b': 1}], ['a', {'b': 1}], '7', '00000000-0000-0000-0000-000000000007'),
+    (1.5, {'instructor': 'esterno'}, {'instructor': 'esterno'}, '1.5', None),
+    (['x'], {'instructor': ['esterno', ['x'], {'instructor_id': INSTRUCTOR['id']}]},
+     {'instructor': ['esterno', ['x'], {'instructor_id': INSTRUCTOR['id'], 'label': INSTRUCTOR_NAME}]}, "['x']", None),
+    (None, {'description': 'senza id'}, {'description': 'senza id'}, None, None),
+    ({'k': 1}, {'instructor': 0, 'description': 'd'}, {'instructor': 0, 'description': 'd'}, "{'k': 1}", None),
+    (True, {'instructor': {'name': 'n'}}, {'instructor': {'name': 'n'}}, 'True', '00000000-0000-0000-0000-000000000001'),
+    (BIG, {'instructor': []}, {'instructor': []}, str(BIG), None),
+]
+OLD_EVENTS = [old_event(event_id, week(n + 1), props) for n, (event_id, props, _, _, _) in enumerate(OLD)]
+# p0 is the first unlinked day and has no event at its hour, which stops map_unlinked_attendance.
+old_course('p', 'Storico', [('p0', week(0), None, None)] + [(f'p{n + 1}', week(n + 1), OLD_EVENTS[n], None) for n in range(len(OLD))])
+# The view replaces a missing expected_absences with [] before the save.
+EMPTIED = {'expected_absences': ['null', '[]']}
+old_saved = lambda n: OLD[n][4] is not None or OLD[n][0] is None
+OLD_AUDIT = [change('attendanceday', f'p{n + 1}', {**({'associated_event': ['None', text]} if text is not None else {}), **EMPTIED})
+             for n, (_, _, _, text, _) in enumerate(OLD) if old_saved(n)]
+# The listing links each unlinked day to its event: the UUID field takes integers; a day whose event id the field
+# rejects stays as stored, without a save or an audit entry.
+add('attendees-old-event-ids', 'owner', list_path('p'), 200,
+    {'data': {'events': [old_listed('p0')] + [old_listed(f'p{n + 1}', OLD_EVENTS[n], OLD[n][2]) for n in range(len(OLD))]}},
+    effect=effect(days={f'p{n + 1}': {'associated_event': OLD[n][4], 'expected_absences': []} for n in range(len(OLD)) if old_saved(n)},
+                  audit=OLD_AUDIT))
+# A day linked to an integer id no longer matches its event (str(uuid) != id); the days with rejected ids are listed
+# with their event again and nothing is written.
+add('attendees-old-event-ids-again', 'owner', list_path('p'), 200,
+    {'data': {'events': [old_listed('p0')] + [old_listed(f'p{n + 1}') if OLD[n][4] else old_listed(f'p{n + 1}', OLD_EVENTS[n], OLD[n][2])
+                                              for n in range(len(OLD))]}})
+# map_unlinked_attendance links through an integer id.
+old_course('q', 'Storico intero', [('q1', week(0), old_event(9, week(0)), None)])
+add('attendees-old-integer-id-mapped', 'owner', list_path('q'), 200, {'data': {'events': [old_listed('q1')]}},
+    effect=effect(days={'q1': {'associated_event': '00000000-0000-0000-0000-000000000009'}},
+                  audit=[change('attendanceday', 'q1', {'associated_event': ['None', '9']})]))
+add('attendees-old-integer-id-mapped-again', 'owner', list_path('q'), 200, {'data': {'events': [old_listed('q1')]}})
+# Shapes whose membership test or item access raises.
+for n, (label, props) in enumerate([('number-props', 5), ('text-props-naming-instructor', 'senza instructor'),
+                                    ('list-props-naming-instructor', ['instructor']),
+                                    ('text-instructor-naming-id', {'instructor': 'instructor_id esterno'}),
+                                    ('number-instructor', {'instructor': 3}), ('instructor-list-of-numbers', {'instructor': [5]}),
+                                    ('instructor-list-naming-id', {'instructor': ['instructor_id']}),
+                                    ('instructor-list-text-naming-id', {'instructor': ['x', 'instructor_id y']})]):
+    event_id = old_new()
+    old_course(f's{n}', f'Storico forma {n}', [(f's{n}', week(0), old_event(event_id, week(0), props), event_id)])
+    add(f'attendees-old-{label}', 'owner', list_path(f's{n}'), 500, SERVER)
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'Course attendance listing, update, subscription history and check-in with carnet and audit effects',

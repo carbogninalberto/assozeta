@@ -200,8 +200,28 @@ func (s *ModulesWrites) Update(ctx context.Context, identity domain.ResolvedIden
 		return nil, errModuleNested
 	}
 	if write.ID != nil && *write.ID != row.ID {
-		// Model.save() under a new pk inserts a copy (not ported).
-		return nil, domain.ErrModuleWriteNotPorted
+		// Model.save() under a key no row has inserts a copy with the validated
+		// values; the module the path names stays.
+		applyModuleWrite(row, write)
+		conflict, err := tx.CopyModule(ctx, *row, paymentCategoryAuditContext(identity, audit), s.at())
+		if err != nil {
+			return nil, err
+		}
+		if conflict != "" {
+			// The view answers str(e) of the database error; the first entry stays.
+			if err = tx.Commit(); err != nil {
+				return nil, err
+			}
+			return nil, &domain.ModuleUpdateFailure{Status: 500, Text: conflict}
+		}
+		data, err := s.serialized(ctx, identity, *row)
+		if err != nil {
+			return nil, err
+		}
+		if err = tx.Commit(); err != nil {
+			return nil, err
+		}
+		return map[string]any{"message": "Camp or retreat updated successfully", "camp_and_retreat": data}, nil
 	}
 	applyModuleWrite(row, write)
 	if err = tx.SaveModule(ctx, *row, paymentCategoryAuditContext(identity, audit), s.at()); err != nil {

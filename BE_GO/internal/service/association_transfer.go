@@ -57,6 +57,10 @@ const (
 	exportActivePrefix    = ":1:association-export-active:"
 	exportLastPrefix      = ":1:association-export-last:"
 	exportTaskOwnerPrefix = ":1:association-export-task:"
+	importTaskPrefix      = ":1:association-import-task:"
+	importTaskName        = "import_association_data"
+	// application.export_progress.TASK_FAILED_MESSAGE
+	taskFailedMessage = "Operazione non riuscita. Riprova più tardi o contatta il supporto."
 )
 
 // exportOwner is _check_export_permission then request.user.sport_association.
@@ -297,23 +301,38 @@ func (s *AssociationTransfer) ImportAllowed(ctx context.Context, identity domain
 
 var loneSurrogate = regexp.MustCompile(`(?i)\\ud[89a-f][0-9a-f]{2}`)
 
-// ImportStatus mirrors import_status: AsyncResult on the django-db result
-// backend. Exception states (FAILURE, REVOKED, RETRY), binary content and
-// results Celery's JSON decoder would transform are not ported.
+// ImportStatus mirrors import_status: only a task id start_import registered
+// (its cache entry) whose result row is not named after another task is
+// answered; any other id answers like one without a row. FAILURE and REVOKED
+// rows answer a fixed message (the stored result is not read), RETRY is not
+// ready. Other rows follow AsyncResult on the django-db result backend:
+// binary content and results Celery's JSON decoder would transform are not
+// ported.
 func (s *AssociationTransfer) ImportStatus(ctx context.Context, task string) (*AssociationTransferReply, error) {
 	if task == "" {
 		return transferError(400, exportTaskRequired), nil
+	}
+	pending := &AssociationTransferReply{Status: 200, Body: map[string]any{"task_id": task, "status": "PENDING", "ready": false}}
+	registered, err := s.store.CacheKeysExist(ctx, importTaskPrefix+task)
+	if err != nil {
+		return nil, err
+	}
+	if !registered {
+		return pending, nil
 	}
 	row, err := s.store.TaskResult(ctx, task)
 	if err != nil {
 		return nil, err
 	}
-	if row == nil {
-		return &AssociationTransferReply{Status: 200, Body: map[string]any{"task_id": task, "status": "PENDING", "ready": false}}, nil
+	if row == nil || (row.TaskName != nil && *row.TaskName != importTaskName) {
+		return pending, nil
 	}
 	switch row.Status {
-	case "FAILURE", "REVOKED", "RETRY":
-		return nil, domain.ErrAssociationTransferNotPorted
+	case "FAILURE", "REVOKED":
+		return &AssociationTransferReply{Status: 200, Body: map[string]any{"task_id": task, "status": row.Status, "ready": true,
+			"error": taskFailedMessage}}, nil
+	case "RETRY":
+		return &AssociationTransferReply{Status: 200, Body: map[string]any{"task_id": task, "status": row.Status, "ready": false}}, nil
 	}
 	if row.Encoding != "utf-8" {
 		return nil, domain.ErrAssociationTransferNotPorted

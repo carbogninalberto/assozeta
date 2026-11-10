@@ -19,10 +19,15 @@
 - **duplicate:** `is_valid_uuid` (400), then `Module.objects.filter(module_id=..., sport_association=request.user.sport_association).first()` (miss, another or a soft-deleted association, or no association: `404 {'error': 'module not found'}`; no association for the user: the 500 page). The clone copies every field except `module_id` (new), `creation_date` (now), `title` (`f'{title} (copia)'`, `None (copia)` for a null title) and `custom_link` (`uuid4().hex[:12]`); responses are not copied. One create entry; `201 {'data': ModulesSerializer(clone).data}`.
 - **delete:** no UUID check: after `request.user.sport_association` (athletes 403 even for a malformed id), the UUIDField lookup of a string it rejects is a Django ValidationError (the 500 page). The same filter (404 `module not found`), then `module.delete()`: the collector deletes the module's responses and their attachment links (documents stay) and the module; post_delete logs each response and the module. A response's entry cannot resolve through the deleted rows and carries no `sport_association`, so it is indexed under the actor's own association (`actor.sport_association`; none for a collaborator); the module's entry under `changes_json.sport_association`. `200 {'msg': 'module deleted'}`.
 
+## Update under a new key
+
+An update body with a `module_id` that no module has passes the UniqueValidator and `Model.save()` inserts a copy of the module with the
+validated values; the module the path names stays (ported in v2-rest-b3). A database conflict on the copy (the `custom_link` of another
+module is caught earlier by the validator) answers its text as `500 {'error': ...}`.
+
 ## Not ported
 
 Refused in Go with the 500 page before any write, and outside the authored sequence:
-- update with a `module_id` different from the module's own (it passes the UniqueValidator): `Model.save()` under the new pk inserts a copy of the module and leaves the original.
 - update with a nested `sport_association` dict that has keys (form keys `sport_association.<field>` included): the nested `SportAssociationSerializer` field validation is not ported (a valid dict ends in the nested-write assertion, an invalid one in its field errors; neither writes).
 - `{'error': str(e)}` texts of database exceptions inside `modules_update` (Go answers the 500 page).
 

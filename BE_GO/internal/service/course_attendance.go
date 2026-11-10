@@ -321,6 +321,31 @@ func (r *attendanceRun) saveDay(ctx context.Context, day domain.AttendanceDayRow
 	return r.tx.UpdateDay(ctx, day.ID, attendanceJSON(attendees), attendanceJSON(absences), event)
 }
 
+// attendanceEventLink is an event's event_id assigned to associated_event:
+// the value the UUID field stores (nil for None), str() of the value for the
+// audit diff, and valid=false when the field rejects it (ValidationError).
+func attendanceEventLink(value any) (prepared, raw *string, valid bool) {
+	switch v := value.(type) {
+	case nil:
+		return nil, nil, true
+	case string:
+		id, err := paymentInfoParseUUID(v)
+		if err != nil {
+			return nil, &v, false
+		}
+		text := id.String()
+		return &text, &v, true
+	}
+	text := dto.PythonStr(value)
+	switch value.(type) {
+	case bool, json.Number:
+		if id, err := dto.DjangoUUIDFromInt(value); err == nil {
+			return &id, &text, true
+		}
+	}
+	return nil, &text, false
+}
+
 func attendanceJSON(value any) *string {
 	if value == nil {
 		return nil
@@ -491,15 +516,15 @@ func (r *attendanceRun) mapUnlinked(ctx context.Context, registry domain.Attenda
 			if err != nil {
 				return err
 			}
-			prepared, err := calendarUUID(value)
-			if err != nil {
-				return err
+			// The lookup's UUID validation; integer ids are UUID(int=...).
+			prepared, text, valid := attendanceEventLink(value)
+			if !valid {
+				return errCalendarRaised
 			}
 			if prepared == nil {
 				// associated_event=None matches this unlinked day itself.
 				continue
 			}
-			text := value.(string)
 			exists, err := r.tx.DayWithEventExists(ctx, registry.ID, *prepared)
 			if err != nil {
 				return err
@@ -515,7 +540,7 @@ func (r *attendanceRun) mapUnlinked(ctx context.Context, registry domain.Attenda
 			if err != nil {
 				return err
 			}
-			if err = r.saveDay(ctx, *day, attendees, absences, prepared, &text); err != nil {
+			if err = r.saveDay(ctx, *day, attendees, absences, prepared, text); err != nil {
 				return err
 			}
 			linked = true
@@ -685,17 +710,12 @@ func (r *attendanceRun) extendedProps(ctx context.Context, registry domain.Atten
 				continue
 			}
 		} else if value, present := object.Lookup("event_id"); present {
-			// try: event.associated_event = e['event_id']; event.save() except: pass
-			text, ok := value.(string)
-			if !ok {
-				return nil, errCalendarNotPorted
-			}
-			prepared, err := calendarUUID(text)
-			if err != nil {
-				return nil, errCalendarNotPorted
-			}
-			if err = r.saveDay(ctx, day, attendees, *absences, prepared, &text); err != nil {
-				return nil, err
+			// try: to_python(e['event_id']); event.associated_event = e['event_id']; event.save() except: pass
+			// A value the field rejects leaves the day as stored: nothing is written.
+			if prepared, text, valid := attendanceEventLink(value); valid {
+				if err = r.saveDay(ctx, day, attendees, *absences, prepared, text); err != nil {
+					return nil, err
+				}
 			}
 		}
 		data, found = object, true
@@ -741,14 +761,15 @@ func (r *attendanceRun) instructorLabels(ctx context.Context, props any) (any, e
 	if !attendanceTruthy(props) {
 		return props, nil
 	}
+	// 'instructor' in extended_props: a key, a list item or a substring.
+	if has, err := attendanceIn(props, "instructor"); err != nil || !has {
+		return props, err
+	}
 	object, ok := props.(domain.RequestObject)
 	if !ok {
-		return nil, errCalendarNotPorted
+		return nil, errCalendarRaised
 	}
-	instructor, present := object.Lookup("instructor")
-	if !present {
-		return props, nil
-	}
+	instructor, _ := object.Lookup("instructor")
 	label := func(item domain.RequestObject) (domain.RequestObject, error) {
 		value, _ := item.Lookup("instructor_id")
 		prepared, err := calendarUUID(value)
@@ -761,38 +782,47 @@ func (r *attendanceRun) instructorLabels(ctx context.Context, props any) (any, e
 		}
 		return dto.PythonSet(dto.PythonCopy(item).(domain.RequestObject), "label", attendanceFullName(person.FirstName, person.LastName)), nil
 	}
-	switch v := instructor.(type) {
-	case domain.RequestObject:
-		if !attendanceHas(v, "instructor_id") {
-			return props, nil
-		}
-		updated, err := label(v)
+	if attendanceTruthy(instructor) {
+		has, err := attendanceIn(instructor, "instructor_id")
 		if err != nil {
 			return nil, err
 		}
-		return dto.PythonSet(dto.PythonCopy(object).(domain.RequestObject), "instructor", updated), nil
-	case []any:
-		list := dto.PythonCopy(v).([]any)
-		for i, item := range list {
-			switch entry := item.(type) {
-			case domain.RequestObject:
-				if attendanceHas(entry, "instructor_id") {
-					updated, err := label(entry)
-					if err != nil {
-						return nil, err
-					}
-					list[i] = updated
-				}
-			default:
-				return nil, errCalendarNotPorted
+		if has {
+			entry, ok := instructor.(domain.RequestObject)
+			if !ok {
+				return nil, errCalendarRaised
 			}
+			updated, err := label(entry)
+			if err != nil {
+				return nil, err
+			}
+			return dto.PythonSet(dto.PythonCopy(object).(domain.RequestObject), "instructor", updated), nil
 		}
-		return dto.PythonSet(dto.PythonCopy(object).(domain.RequestObject), "instructor", list), nil
 	}
-	if attendanceTruthy(instructor) {
-		return nil, errCalendarNotPorted
+	items, ok := instructor.([]any)
+	if !ok {
+		return props, nil
 	}
-	return props, nil
+	list := dto.PythonCopy(items).([]any)
+	for i, item := range list {
+		has, err := attendanceIn(item, "instructor_id")
+		if err != nil {
+			return nil, err
+		}
+		if !has {
+			continue
+		}
+		entry, ok := item.(domain.RequestObject)
+		if !ok {
+			return nil, errCalendarRaised
+		}
+		updated, err := label(entry)
+		if err != nil {
+			return nil, err
+		}
+		list[i] = updated
+	}
+	return dto.PythonSet(dto.PythonCopy(object).(domain.RequestObject), "instructor", list), nil
 }
 
 // ---------------------------------------------------------------------------

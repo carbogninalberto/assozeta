@@ -75,14 +75,15 @@ and `GET modules/<module_id>/export` (`modules_response_export`) are implemented
 
 ## Not ported (refused with the 500 page before any write)
 
-- export: list or object labels, integers beyond int64 and inputs the workbook writer refuses ([xlsx-exports](xlsx-exports.md)).
-- add and add-attachment with a form or multipart body (a QueryDict as the stored JSON value, or as request data).
-- add-attachment POST with a non-string `filename` or `base64`, or a filename that is empty, `.`/`..`, contains `/`, `\` or NUL, is
-  or longer than 255 characters; a storage name already taken when `AWS_S3_FILE_OVERWRITE` is off. Names ending in a
-  compression suffix (`.gz`, `.tgz`, `.Z`, ...) are ported: the object is stored with `mimetypes.guess_type`'s type of the inner
-  name and its encoding as `ContentEncoding` (`S3Storage._get_write_parameters`).
-- add-attachment DELETE with a non-string, non-null `document_id` (`UUID(int=...)`), or of a document that any other table references
-  (Django's collector would cascade or set null there).
+- export: integers beyond int64 and inputs the workbook writer refuses ([xlsx-exports](xlsx-exports.md)). List and object labels are
+  ported (the header cell is the value's text, the column width its item count); `props` that is not an object, and a label that is
+  null, a number or a boolean, answer the 500 page as Django does.
+- add-attachment with a storage name already taken when `AWS_S3_FILE_OVERWRITE` is off.
+- add-attachment DELETE with a non-string `document_id` that is not an integer.
+
+Ported in v2-rest-b3: add and add-attachment with form and multipart bodies (a multipart file part answers the 500 page, as the stored
+JSON cannot hold it), attachment names with separators or beyond the column size, non-string `filename` and `base64`, integer
+`document_id`, and the delete of a document other rows reference.
 
 Not authored: JSON floats at or above 1e16 in a response (auditlog renders the in-memory float, Go the stored number), DRF parse errors
 of malformed JSON bodies.

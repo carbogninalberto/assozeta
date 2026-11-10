@@ -21,7 +21,8 @@
 ## association/import/*
 
 - `SetupTokenOrAuthenticated`: with an `InstanceConfiguration` (first by id), only `request.user` as the primary association's owner, or a superuser, passes. The check uses the impersonated or collaborator-swapped user. Others get `403 Setup token missing or invalid.`, and anonymous requests get DRF's 401 with the Bearer challenge. The setup token is ignored when a configuration exists. DRF checks permissions before OPTIONS and before 405.
-- **status**: `task_id` is required (400). The view then reads `AsyncResult(task_id)` from the `django-db` result backend (`django_celery_results_taskresult`). Without a row the response is `{"task_id", "status": "PENDING", "ready": false}`. Non-ready states return the stored status. `SUCCESS` adds `ready: true` and `result`, the decoded JSON (an empty result is `null`). An undecodable result is the 500 page.
+- **status**: `task_id` is required (400). Only ids that import/start registered (cache key `association-import-task:<id>`, 24 h) are answered, and only when the stored row is not named after another task; any other id answers like one without a row: `{"task_id", "status": "PENDING", "ready": false}`. For a registered import the view reads the `django-db` result backend (`django_celery_results_taskresult`). `FAILURE` and `REVOKED` rows answer `ready: true` and a fixed message in `error` (the stored text goes to the server log only); `RETRY` is not ready. `SUCCESS` adds `ready: true` and `result`, the decoded JSON (an empty result is `null`). An undecodable result is the 500 page.
+- **export/status** (answered by Django only, see below) gives an export that did not complete the same fixed message; the stored text goes to the server log.
 - **validate / start**: `request.FILES.get('file')`. No body is `400 File ZIP richiesto`. A body of another media type is `415 Unsupported media type "<content type>" in request.`. A form body, or a multipart body without a `file` upload, is 400. A multipart part with an empty filename does not count as a file.
 
 ## Dispatching paths (Go)
@@ -37,12 +38,19 @@
 ## Not ported (explicit refusals, 500 page, before any write)
 
 - **status** when the task owner key exists. Django renders cached progress and the Celery result.
-- **active** when the snapshot's task row is `FAILURE`, `REVOKED` or `RETRY`, has a non-`utf-8` encoding or metadata Celery would merge (as for import/status), when a cached value is outside the unpickled subset, or when `task_id` is not a string.
+- **active** when a cached value is outside the unpickled subset, or when `task_id` is not a string. Only the stored status of the task row is read (`SUCCESS`, `FAILURE`, `REVOKED` are ready; no row is not ready).
 - **delete** of a document that other rows reference (Document.delete()'s collector), or whose `filepath` the storage key builder does not reproduce.
-- **import/status** for `FAILURE`, `REVOKED` and `RETRY` rows (Celery rebuilds the exception), for non-`utf-8` content encodings, and for metadata with a `status` key or children. Results that Celery's JSON decoder would transform are also refused: `__type__` objects, lone surrogate escapes, and floats beyond float64.
+- **import/status** for non-`utf-8` content encodings and for metadata with a `status` key or children. Results that Celery's JSON decoder would transform are also refused: `__type__` objects, lone surrogate escapes, and floats beyond float64.
 - **import/validate** inputs whose Python exception text would reach the answer: archives the ZIP reader port does not open, undecodable or non-object JSON, identifiers that are not strings or not UUIDs, model entries that are not objects, password hashes outside the PBKDF2 hashers, names longer than 255 bytes.
 - **import/start** when `owner_password` is a file part, or when the generated storage name exists with `AWS_S3_FILE_OVERWRITE` off. A failed Celery publish deletes the stored archive and answers the 500 page (Django answers its own JSON 500 with the exception text).
 - A `document_id` string containing `_`, `+` or whitespace, which Python's `int(hex, 16)` reads differently from a plain hex check.
+
+## Task rows in an exception state
+
+Import and export status answers for a task that did not complete never carry the stored exception text: `error` is a
+fixed message and the text goes to the server log. Go answers the same message without reading the stored result, so the
+code that rebuilt Celery exceptions is gone. import/status also answers only ids that import/start registered; export/active
+decides on the stored status alone.
 
 ## Evidence
 
@@ -52,7 +60,15 @@ RED: Django 146/146, Go 404 (`red`). GREEN: 146/146 on native Django, native Go,
 
 v2 admin change: the fixture has 210 cases (snapshot reads, deletes with storage and audit, export dispatch, setup-token permission, import validation over authored archives and import dispatch). The adapter now owns a private MinIO and the run's Celery broker; per case it can remove the `InstanceConfiguration`, preset cache entries and objects, and checks the exact cache keys (values unpickled, TTLs), objects (bytes and content type) and Celery messages afterwards. `TESTS/contracts/http_family.py` gained an additive `raw_b64` body. RED: Django 210/210, Go 500 on `association-transfer-active-owner-running` (`v2-admin-red`). GREEN: 210/210 on the four transports (`v2-admin-green`). Mutation: accepting a snapshot of another user fails `association-transfer-active-owner-snapshot-other-user` (`v2-admin-mutation-snapshot-owner`).
 
+Exception-state task rows (v2-rest-c): 235 cases (18 stored exceptions on import/status, the revoked row, four snapshots on
+export/active). RED: the documented refusal (`v2-refusals.md`, association-transfer, `legacy: yes` row). GREEN
+(`v2restc-green-r3`): 235/235 on the four transports. Mutation (`v2restc-mutation-r1`): the single-argument `repr` applied
+to the classes Celery creates instead of the builtin `KeyError` fails `association-transfer-import-status-owner-failed-key`.
+
 Legacy export sizes: 212 cases (a foreign export without a stored size, listed without and with its object). RED
 (`v2-admin-legacy-red`): Django 212/212, Go 500 on `association-transfer-list-foreign-owner`. GREEN
 (`v2-admin-legacy-green`): 212/212 on the four transports. Mutation (`v2-admin-mutation-size-save`): answering 0
 instead of the read size fails `association-transfer-list-foreign-legacy-size`.
+
+Task status answers (later change): the fixture now holds the unregistered ids, a registered id whose row is named after another
+task, and failed/revoked/retry rows answering the fixed message. This replaces the stored-exception cases of v2-rest-c.

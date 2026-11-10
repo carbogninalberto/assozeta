@@ -31,6 +31,7 @@ var modulesExportStandard = []string{"Data creazione", "Progressivo risposta", "
 // modulesExportColumn is one response column of the module's elements.
 type modulesExportColumn struct {
 	label string
+	width int // len(label): the characters of a string, the items of a list or object
 	name  any
 }
 
@@ -84,8 +85,12 @@ func (s *ModulesExport) Export(ctx context.Context, identity domain.ResolvedIden
 		frame.Columns = append(frame.Columns, column.label)
 	}
 	frame.Columns = append(frame.Columns, modulesExportStandard...)
-	for _, label := range frame.Columns {
-		frame.Widths = append(frame.Widths, float64(utf8.RuneCountInString(label)+10))
+	for index, label := range frame.Columns {
+		width := utf8.RuneCountInString(label)
+		if index < len(columns) {
+			width = columns[index].width
+		}
+		frame.Widths = append(frame.Widths, float64(width+10))
 	}
 	frame.Rows = rows
 	workbook, err := xlsxexport.PandasXlsxwriter(frame, s.now())
@@ -147,7 +152,7 @@ func modulesExportColumns(text *string) ([]modulesExportColumn, error) {
 		}
 		props, ok := propsValue.(domain.RequestObject)
 		if !ok {
-			return nil, domain.ErrModuleResponsesNotPorted // indexing a str, list or scalar
+			return nil, domain.ErrModulesExportServer // indexing a str, list or scalar
 		}
 		label, hasLabel := props.Lookup("label")
 		name, hasName := props.Lookup("name")
@@ -155,15 +160,20 @@ func modulesExportColumns(text *string) ([]modulesExportColumn, error) {
 			return nil, domain.ErrModulesExportServer
 		}
 		text, ok := label.(string)
+		width := utf8.RuneCountInString(text)
 		if !ok {
-			// len() of None, a number or a bool raises; list and dict labels are not ported.
-			switch label.(type) {
-			case []any, domain.RequestObject:
-				return nil, domain.ErrModuleResponsesNotPorted
+			// len() of None, a number or a bool raises; a list or an object is
+			// written as its text and sized by its item count.
+			switch typed := label.(type) {
+			case []any:
+				text, width = dto.PythonRepr(typed), len(typed)
+			case domain.RequestObject:
+				text, width = dto.PythonRepr(typed), modulesExportDistinct(typed)
+			default:
+				return nil, domain.ErrModulesExportServer
 			}
-			return nil, domain.ErrModulesExportServer
 		}
-		columns = append(columns, modulesExportColumn{label: text, name: name})
+		columns = append(columns, modulesExportColumn{label: text, width: width, name: name})
 	}
 	return columns, nil
 }
@@ -270,4 +280,13 @@ func modulesExportValue(value any) (xlsxexport.Value, error) {
 		return xlsxexport.ObjectValue(dto.PythonStr(typed)), nil
 	}
 	return xlsxexport.Value{}, domain.ErrModuleResponsesNotPorted
+}
+
+// modulesExportDistinct is len() of a JSON object: repeated keys count once.
+func modulesExportDistinct(object domain.RequestObject) int {
+	seen := map[string]bool{}
+	for _, field := range object {
+		seen[field.Name] = true
+	}
+	return len(seen)
 }

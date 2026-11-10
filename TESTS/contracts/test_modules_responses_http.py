@@ -57,8 +57,25 @@ def normalize(case, expected, actual):
     return ordered(expected), ordered(actual)
 
 
+BAD_REQUEST_DOCUMENT = (b'\n<!doctype html>\n<html lang="en">\n<head>\n  <title>Bad Request (400)</title>\n</head>\n<body>\n'
+                        b'  <h1>Bad Request (400)</h1><p></p>\n</body>\n</html>\n')
+
+
 def assert_case(case, base_url, *, token, sessions):
     RUNTIME['response'] = None
     RUNTIME['started'] = datetime.now(timezone.utc)
+    if case['response'] == '<bad-request-page>':
+        # Django's SuspiciousOperation answer (Storage.save refusing a name).
+        headers = {'Accept-Language': 'en', 'Accept': 'application/json', 'X-Correlation-ID': case['name'],
+                   **family.substitute(case['headers'], sessions)}
+        status, raw, received = family.Client(base_url, token).request(case['method'], case['path'], case.get('body'), headers, raw=True,
+                                                                       include_headers=True)
+        if not (type(status) is int and status == case['status']):
+            raise family.ResponseFailure('response.status', status)
+        if raw != BAD_REQUEST_DOCUMENT:
+            raise family.ResponseFailure('response.bad-request-document', status)
+        if received.get('Content-Type', '').split(';')[0] != 'text/html':
+            raise family.ResponseFailure('response.bad-request-type', status)
+        return status
     return family.assert_case(case, base_url, token=token, sessions=sessions, allowed=allowed, new=('module_response_id',),
                               normalize=normalize)

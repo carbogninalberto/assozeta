@@ -461,6 +461,46 @@ updated_period('owner', 'update-move-camp-and-nulls', 'august', {'camps_and_retr
 updated_period('owner', 'update-form', 'august', None, {'description': 'Form è', 'end': '2026-08-20T00:00:00Z', 'max': 3},
                form='description=Form+%C3%A8&end_date=2026-08-20T00%3A00%3A00Z&max_participants=3')
 
+# A body naming a key no row has: Model.save() inserts a copy with the validated values and the period the path names stays. auditlog's
+# pre_save finds no row under the new key and logs the whole row as an update (indexed through the actor), post_save logs the create.
+COPY_PERIOD, COPY_SERVICE = 'a1000000-0000-4000-8000-000000985090', 'a1000000-0000-4000-8000-000000985091'
+
+
+def copied_period(actor, name, label, body, values, new_id, *, links=None, status_fee=None):
+    base = STATE['periods'][label]
+    row = {**base, **values, 'id': new_id}
+    fee = repr(float(values['fee'])) if 'fee' in values else base['fee']
+    changes = {'camps_and_retreats_period_id': ['None', new_id], 'camps_and_retreats': ['None', CAMPS[row['camp']]['id']],
+               'start_date': ['None', naive(row['start'])], 'end_date': ['None', naive(row['end'])], 'fee': ['None', fee],
+               'created_at': ['None', naive(row['created'])]}
+    for field, value in (('title', row['title']), ('description', row['description']), ('max_participants', row['max'])):
+        if value is not None:
+            changes[field] = ['None', str(value)]
+    events = [audit('CampsAndRetreatsPeriod', new_id, 1, changes, OWN if actor == 'owner' else None,
+                    'actor.sport_association' if actor == 'owner' else None),
+              audit('CampsAndRetreatsPeriod', new_id, 0, changes, CAMPS[row['camp']]['association'], PERIOD_PATH)]
+    effect = {'actor': actor, 'rows': {PERIOD: {new_id: period_row(row)}}, 'audit': events}
+    STATE['periods']['copy_' + name], STATE['links']['copy_' + name] = row, links or []
+    if links:
+        effect['links'] = {PERIOD_LINK: {'add': [[new_id, SERVICES[s]['id']] for s in sorted(links)], 'remove': []}}
+    response = {'message': 'Updated successfully', 'period': period_data('copy_' + name)}
+    del STATE['periods']['copy_' + name], STATE['links']['copy_' + name]
+    add(name, actor, period_path(label, 'update'), 200, response, method='PATCH', body=body, effect=effect)
+
+
+copied_period('owner', 'update-new-key-copy', 'august', {'camps_and_retreats_period_id': COPY_PERIOD, 'title': 'Agosto bis', 'fee': '21',
+                                                         'camps_and_Retreats_period_services': [SERVICES['bus']['id']]},
+              {'title': 'Agosto bis', 'fee': '21.00'}, COPY_PERIOD, links=['bus'])
+add('update-new-key-taken', 'owner', period_path('august', 'update'), 400, {'error': repr_detail([('camps_and_retreats_period_id', [
+    ('camps and retreats period with this camps and retreats period id already exists.', 'unique')])])}, method='PATCH',
+    body={'camps_and_retreats_period_id': PERIODS['july']['id']})
+add('update-new-key-invalid', 'owner', period_path('august', 'update'), 400, {'error': repr_detail([('camps_and_retreats_period_id', [UUID_INVALID])])},
+    method='PATCH', body={'camps_and_retreats_period_id': 'x'})
+add('update-same-key-no-copy', 'owner', period_path('august', 'update'), 200,
+    {'message': 'Updated successfully', 'period': period_data('august')}, method='PATCH',
+    body={'camps_and_retreats_period_id': PERIODS['august']['id']},
+    effect={'actor': 'owner', 'rows': {PERIOD: {PERIODS['august']['id']: period_row(STATE['periods']['august'])}}, 'audit': []})
+
 # ---------------------------------------------------------------------------
 # periods/services/add
 # ---------------------------------------------------------------------------
@@ -660,6 +700,35 @@ updated_service('owner', 'services-update-deleted-payment', 'canoe', {'fee': '9.
 # With X-Group-Id the payment manager is group-aware: a payment outside that group is saved and audited the same way.
 updated_service('owner', 'services-update-other-group-payment', 'umbrella', {'fee': '6.00'}, {'fee': '6.00'},
                 headers={'X-Group-Id': IDS['own_group']})
+def copied_service(actor, name, label, body, values, new_id):
+    base = STATE['services'][label]
+    row = {**base, **values, 'id': new_id}
+    changes = {'camps_and_retreats_period_service_id': ['None', new_id], 'camps_and_retreats_period': ['None', PERIODS[row['period']]['id']],
+               'fee': ['None', row['fee']], 'payment_category': ['None', CATEGORIES[row['category']]['id'] if row['category'] else 'None'],
+               'created_at': ['None', naive(row['created'])]}
+    for field in ('title', 'description'):
+        if row[field] is not None:
+            changes[field] = ['None', row[field]]
+    events = [audit('CampsAndRetreatsPeriodsService', new_id, 1, changes, OWN if actor == 'owner' else None,
+                    'actor.sport_association' if actor == 'owner' else None),
+              audit('CampsAndRetreatsPeriodsService', new_id, 0, changes, CAMPS[PERIODS[row['period']]['camp']]['association'], SERVICE_PATH)]
+    rows = {SERVICE: {new_id: service_row(row)}}
+    # The walk reads the copy's key: no meta entry names it, the notes and amounts are recomputed.
+    STATE['services']['copy_' + name] = row
+    payment_effects('copy_' + name, rows, events)
+    response = {'message': 'Updated successfully', 'period': service_data('copy_' + name)}
+    del STATE['services']['copy_' + name]
+    add(name, actor, service_path(label, 'update'), 200, response, method='PATCH', body=body, effect={'actor': actor, 'rows': rows, 'audit': events})
+
+
+copied_service('owner', 'services-update-new-key-copy', 'bus', {'camps_and_retreats_period_service_id': COPY_SERVICE, 'title': 'Corriera',
+                                                                'fee': '4'},
+               {'title': 'Corriera', 'fee': '4.00'}, COPY_SERVICE)
+add('services-update-new-key-taken', 'owner', service_path('bus', 'update'), 400, {'error': repr_detail([(
+    'camps_and_retreats_period_service_id', [('camps and retreats periods service with this camps and retreats period service id already exists.',
+                                              'unique')])])}, method='PATCH',
+    body={'camps_and_retreats_period_service_id': SERVICES['kayak']['id']})
+
 # The walk raises on the payment without metas after the service was saved.
 guide = STATE['services']['guide']
 guide_before = service_audit_view(guide)

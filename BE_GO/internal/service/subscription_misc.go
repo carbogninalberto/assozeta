@@ -497,14 +497,16 @@ func (s *SubscriptionMisc) DeleteDocument(ctx context.Context, identity domain.R
 		}
 		return tx.Commit()
 	}
-	// Document.delete() collects every row that references the document;
-	// only the file's own cascade is ported.
+	// A document other rows still reference stays with them: only this link goes.
 	shared, err := tx.DocumentShared(ctx, row.DocumentID, row.ID)
 	if err != nil {
 		return err
 	}
 	if shared {
-		return domain.ErrSubscriptionMiscNotPorted
+		if _, err = tx.DeleteFile(ctx, row.ID, actorAssociation, auditContext, at); err != nil {
+			return err
+		}
+		return tx.Commit()
 	}
 	changes, err := tx.DeleteFile(ctx, row.ID, actorAssociation, auditContext, at)
 	if err != nil {

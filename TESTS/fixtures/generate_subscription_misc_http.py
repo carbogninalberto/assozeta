@@ -86,7 +86,7 @@ ASSOCIATES = {
 PAYMENTS = {'rossi': {'id': next(ids), 'association': OWN, 'associate': 'rossi', 'amount': '25.00', 'paid': True,
                       'created': '2020-02-01T08:00:00Z'}}
 DOCUMENTS = {label: {'id': next(ids), 'token': next(ids), 'filename': f'{label}.pdf', 'created': '2024-03-01T08:00:00Z'}
-             for label in ('privacy', 'impersonated', 'grouped', 'foreign')}
+             for label in ('privacy', 'impersonated', 'grouped', 'foreign', 'shared')}
 SUB_DEFAULTS = {'association': OWN, 'user': OWNER, 'associate': None, 'start': None, 'end': None, 'status': 4, 'type': 2, 'role': 1,
                 'custom_data': None, 'deleted': False, 'group': None, 'created': '2020-01-01T08:00:00Z'}
 
@@ -147,6 +147,10 @@ FILES = {
     'grouped': {'id': next(ids), 'subscription': 'd_grouped', 'document': 'grouped', 'created': '2024-03-02T10:00:00Z'},
     'foreign': {'id': next(ids), 'subscription': 'd_foreign', 'document': 'foreign', 'created': '2024-03-02T11:00:00Z'},
 }
+SHARED_IDS = iter(f'b3000000-0000-4000-8000-{n:012d}' for n in range(970901, 970910))
+# One document under two files (rows of an import).
+FILES['shared_own'] = {'id': next(SHARED_IDS), 'subscription': 'd_own', 'document': 'shared', 'created': '2024-03-02T12:00:00Z'}
+FILES['shared_grouped'] = {'id': next(SHARED_IDS), 'subscription': 'd_grouped', 'document': 'shared', 'created': '2024-03-02T13:00:00Z'}
 TOKENS = {label: next(ids) for label in ('olimpia', 'expired', 'abroad', 'unnamed', 'numbers', 'ali', 'empty')}
 LINKS = {
     'olimpia': {'id': next(ids), 'association': OWN, 'token': TOKENS['olimpia'], 'gym_name': 'Palestra Olimpia', 'expires': '2099-01-01T00:00:00Z'},
@@ -503,6 +507,13 @@ add('delete-association-scoped-session', 'owner', DELETE('d_own', F['impersonate
 add('delete-admin-impersonating-owner-grouped', 'admin', DELETE('d_grouped', F['grouped']), 200, DELETED, method='DELETE',
     headers={**ADMIN_OWNER, 'X-Group-Id': OWN_GROUP},
     effect={'kind': 'document', 'file': 'grouped', 'document': True, 'actor': 'admin', 'association': IDS['admin_association']})
+# A document another file references stays with it: only the caller's link goes.
+add('delete-document-of-two-files', 'owner', DELETE('d_own', F['shared_own']), 200, DELETED, method='DELETE',
+    effect={'kind': 'document', 'file': 'shared_own', 'document': False, 'actor': 'owner', 'association': OWN})
+add('delete-document-of-two-files-again', 'owner', DELETE('d_own', F['shared_own']), 500, SERVER, method='DELETE')
+# The last link takes the document with it.
+add('delete-document-of-two-files-last-link', 'owner', DELETE('d_grouped', F['shared_grouped']), 200, DELETED, method='DELETE',
+    effect={'kind': 'document', 'file': 'shared_grouped', 'document': True, 'actor': 'owner', 'association': OWN})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'subscription-misc', 'ids': IDS, 'users': USERS, 'statuses': STATUSES,

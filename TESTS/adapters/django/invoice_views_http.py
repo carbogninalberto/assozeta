@@ -5,8 +5,9 @@ seed_rows inserts (audit disabled) three associations with their owner users
 relation, a supplier, an instructor, courses, a carnet, subscriptions,
 memberships (one without a subscription), invoices with their payments, the
 course/installment/carnet subscriptions that link payments to subscriptions,
-and customer invoices. The views only read: every case must leave the
-complete model state unchanged.
+and customer invoices. A 'promoted' case saves the first tutor relation of an
+associate without a primary one (get_main_tutor) with its auditlog entry;
+every other case must leave the complete model state unchanged.
 
 RUNTIME['render'] renders a case's authored template context with Django's
 template engine (render_to_string under translation.override), converting the
@@ -175,7 +176,41 @@ def render_einvoice(source):
 
 
 fixture_context = harness.fixture_context_for(contract, seed_rows)
-_run_workload = harness.run_workload_for(contract)
+RELATION = 'application.AssociateTutorRelation'
+MANAGED = (RELATION, harness.AUDIT, harness.INDEX)
+
+
+def assert_effect(case, before, after, source, context):
+    """A 'promoted' case saves the associate's first tutor relation as primary with one auditlog update entry
+    indexed through associate.sport_association (every associate belongs to alpha)."""
+    from TESTS.adapters.django.workflow_writes_http import keyed, scalar
+    harness.require_unmanaged_unchanged(contract, before, after, MANAGED)
+    promoted = case.get('promoted') or []
+    if not promoted:
+        contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
+        return
+    old_r, new_r = keyed(before[RELATION], 'id'), keyed(after[RELATION], 'id')
+    expected_keys = []
+    for child, _ in promoted:
+        mine = sorted((r for r in old_r.values() if str(scalar(r['associate_id'])) == source['associates'][child]['id']),
+                      key=lambda r: int(r['id']))
+        contract.require(mine and not any(r['is_primary'] for r in mine), 'fixture.promotion-candidate')
+        expected_keys.append(str(mine[0]['id']))
+    contract.require(set(old_r) == set(new_r), 'state.relations-kept')
+    for key in old_r:
+        expected = {**old_r[key], 'is_primary': True} if key in expected_keys else old_r[key]
+        contract.require(new_r[key] == expected, 'state.relation-promoted' if key in expected_keys else 'state.relation-unchanged')
+    added, indexes = harness.audit_delta(contract, before, after)
+    contract.require(len(added) == len(promoted) and len(indexes) == len(promoted), 'audit.count')
+    added.sort(key=lambda event: event['id'])
+    for event, key, (child, actor) in zip(added, expected_keys, promoted):
+        harness.check_audit_event(contract, case, event, indexes, before=before, ids=source['ids'], model='AssociateTutorRelation',
+                                  key=key, action=1, changes={'is_primary': ['False', 'True']}, actor=actor,
+                                  association=source['associations']['alpha']['id'], path='associate.sport_association',
+                                  context=context)
+
+
+_run_workload = harness.run_workload_for(contract, assert_effect)
 
 
 def run_workload(label, backend, base_url, fixture, apps, raw, observer):
