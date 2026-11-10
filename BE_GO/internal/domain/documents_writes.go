@@ -83,6 +83,7 @@ type DocumentUploadTransaction interface {
 }
 
 type DocumentUploadStore interface {
+	MemberDocumentStore
 	BeginDocumentUpload(context.Context) (DocumentUploadTransaction, error)
 }
 

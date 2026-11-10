@@ -103,6 +103,7 @@ var (
 
 // DocumentRenderStore reads the rows the PDF views name and writes their effects.
 type DocumentRenderStore interface {
+	MemberDocumentStore
 	DocumentTokenRows(ctx context.Context, token string) (int, error)
 	ActorAssociation(ctx context.Context, user string) (*string, error)
 	OwnedAssociations(ctx context.Context, user string) ([]string, error)

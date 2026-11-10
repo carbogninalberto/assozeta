@@ -22,6 +22,7 @@ from core.settings import STORAGE_DIR
 import os
 from django.core.files.storage import default_storage
 
+from docmanager.access import require_document_access
 from docmanager.models import Document
 from docmanager.download_tokens import load_document_download_token
 
@@ -125,12 +126,14 @@ def retrieve_document(request, uid):
             # Token is not a valid UUID (e.g., JWT token), skip this lookup
             pass
 
+    by_account = False
     if document is None:
         # Support authenticated access via document ID and legacy related-resource IDs.
         if request.user and request.user.is_authenticated:
             document = _get_document_from_related_uid(uid)
             if document is None:
                 return Response({'error': 'Document not found.'}, status.HTTP_404_NOT_FOUND)
+            by_account = True
         else:
             return Response({'error': 'Invalid token. Not Authorized.'}, status.HTTP_401_UNAUTHORIZED)
 
@@ -150,6 +153,10 @@ def retrieve_document(request, uid):
                     {'error': 'Not authorized to access this export.'},
                     status.HTTP_403_FORBIDDEN,
                 )
+
+    if by_account:
+        # Without a document token, documents are served to the association's staff and to the member they belong to.
+        require_document_access(request, document)
 
     if getattr(request, 'impersonation_association', None):
         from application.impersonation_scope import visible_documents

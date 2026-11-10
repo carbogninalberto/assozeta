@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"time"
 
@@ -186,6 +187,10 @@ func (s *PaymentReads) athleteList(ctx context.Context, request PaymentReadsRequ
 		if _, err := a.renders.Render(ctx, identity, DocumentRenderRequest{Route: RenderInvoice, UID: *row.InvoiceID, Query: request.Query,
 			Authorization: request.Authorization, Group: request.GroupHeader,
 			Body: func() (any, bool, error) { return nil, false, nil }, Audit: request.Audit}); err != nil {
+			var denied *domain.PermissionDenied
+			if errors.As(err, &denied) {
+				continue // the view's 403 response is ignored like its other answers
+			}
 			return nil, err
 		}
 	}

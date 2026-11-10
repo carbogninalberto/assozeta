@@ -12,9 +12,14 @@ import (
 
 // DocumentRender reads the rows the PDF views of printing_views.py name and
 // writes their effects, each write committed on its own (Django autocommit).
-type DocumentRender struct{ db *sqlx.DB }
+type DocumentRender struct {
+	MemberDocuments
+	db *sqlx.DB
+}
 
-func NewDocumentRender(db *sqlx.DB) *DocumentRender { return &DocumentRender{db: db} }
+func NewDocumentRender(db *sqlx.DB) *DocumentRender {
+	return &DocumentRender{MemberDocuments: NewMemberDocuments(db), db: db}
+}
 
 var _ domain.DocumentRenderStore = (*DocumentRender)(nil)
 
