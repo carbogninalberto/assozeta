@@ -346,12 +346,12 @@ def enrolled(label):
     return sum(1 for row in COURSE_SUBSCRIPTIONS.values() if row['course'] == label and not row['deleted'])
 
 
-def export(labels, association=OWN):
+def export(labels, association=OWN, fmt='excel'):
     """{'file': get_excel_base64(*rows, columns=columns), 'filename': ...} of current_view_course."""
     rows = [COURSES[label] for label in labels]
     tags = [label for label, tag in TAGS.items() if tag['association'] == association]  # seed (heap) order
     columns = ['Nome', 'Tipologia', 'Visibilità', 'Data inizio', 'Data fine', 'Data creazione', 'In evidenza', 'Strutture',
-               'Iscritti', 'Tag'] + [TAGS[label]['name'] for label in tags]
+               'Iscritti', 'Tag']
     data = [[row['title'] for row in rows],
             [TYPE_LABEL.get(row['type'], 'Sconosciuto') for row in rows],
             [STATUS_LABEL.get(row['status'], 'Sconosciuto') for row in rows],
@@ -362,6 +362,13 @@ def export(labels, association=OWN):
             [', '.join(str(LOCATIONS[l]['title']) for l in row['locations']) for row in rows],
             [{'int': str(enrolled(label))} for label in labels],
             [', '.join(TAGS[t]['name'] for t in row['tags']) for row in rows]]
+    if fmt == 'pdf':
+        # generate_pdf_from_data(zip(*rows), columns, title='Corsi filtrati (giorno stampa <today>)'): the ten fixed
+        # columns, without the per-tag ones of the workbook.
+        return {'file': {'$pdf': {'engine': 'data_table', 'columns': columns, 'rows': [list(row) for row in zip(*data)],
+                                  'title': 'Corsi filtrati (giorno stampa $today)'}},
+                'filename': f'[$today] Corsi filtrati - {DENOMINATION[association]}.pdf'}
+    columns += [TAGS[label]['name'] for label in tags]
     data += [['assegnato' if tag in row['tags'] else '' for row in rows] for tag in tags]
     return {'file': {'$xlsx': {'engine': 'excel_utils', 'columns': columns, 'data': data}},
             'filename': f'[$today] Corsi filtrati - {DENOMINATION[association]}.xlsx'}
@@ -412,6 +419,33 @@ add('excel-restricted-collaborator', 'restricted_collaborator', None, 403, {'det
     method='POST', body=EXCEL)
 add('excel-athlete-lists', 'athlete', {'sport_association_id': OWN}, 200, listed(ACTIVE), method='POST', body=EXCEL)
 add('excel-owner-without-association', 'owner_without_association', None, 500, SERVER, method='POST', body=EXCEL)
+
+# POST pdf: the same rows as a reportlab table document (TESTS/contracts/pdf.py).
+PDF = {'format': 'pdf'}
+add('pdf-owner', 'owner', None, 200, export(ALL, fmt='pdf'), method='POST', body=PDF)
+add('pdf-full-collaborator', 'full_collaborator', None, 200, export(ALL, fmt='pdf'), method='POST', body=PDF)
+add('pdf-admin-impersonating-owner', 'admin', None, 200, export(ALL, fmt='pdf'), method='POST', body=PDF,
+    headers={'X-Impersonation-Id': '$session:admin_owner', 'User-Id': IDS['owner']})
+add('pdf-foreign-owner', 'foreign_owner', None, 200, export(['abroad', 'abroad_draft'], FOREIGN, fmt='pdf'),
+    method='POST', body=PDF)
+add('pdf-form-body', 'owner', None, 200, export(ALL, fmt='pdf'), method='POST', raw_body='format=pdf',
+    content_type='application/x-www-form-urlencoded')
+add('pdf-ignores-pagination', 'owner', {'pagination[perpage]': '1', 'pagination[page]': '0'}, 200, export(ALL, fmt='pdf'),
+    method='POST', body=PDF)
+add('pdf-group-own', 'owner', None, 200, export(['grouped'], fmt='pdf'), method='POST', body=PDF, headers=group('own_group'))
+add('pdf-group-foreign-empty', 'owner', None, 200, export([], fmt='pdf'), method='POST', body=PDF, headers=group('foreign_group'))
+add('pdf-search', 'owner', {'query[generalSearch]': 'NUOTO'}, 200, export(['full', 'internal'], fmt='pdf'), method='POST', body=PDF)
+add('pdf-tags-or-duplicates', 'owner', {'query[tags]': tag('t1', 't2')}, 200,
+    export(['full', 'full', 'grouped', 'draft'], fmt='pdf'), method='POST', body=PDF)
+add('pdf-sort-title-asc', 'owner', {'sort[field]': 'title', 'sort[sort]': 'asc'}, 200,
+    export(['grouped', 'full', 'internal', 'draft', 'old'], fmt='pdf'), method='POST', body=PDF)
+add('pdf-sort-unknown-field', 'owner', {'sort[field]': 'nope', 'sort[sort]': 'asc'}, 500, SERVER, method='POST', body=PDF)
+add('pdf-sort-unknown-transform', 'owner', {'sort[field]': 'title__nope', 'sort[sort]': 'asc'}, 500, SERVER, method='POST', body=PDF)
+add('pdf-format-case-sensitive', 'owner', None, 500, SERVER, method='POST', body={'format': 'PDF'})
+add('pdf-restricted-collaborator', 'restricted_collaborator', None, 403, {'detail': 'Missing permission: association.courses.read'},
+    method='POST', body=PDF)
+add('pdf-athlete-lists', 'athlete', {'sport_association_id': OWN}, 200, listed(ACTIVE), method='POST', body=PDF)
+add('pdf-owner-without-association', 'owner_without_association', None, 500, SERVER, method='POST', body=PDF)
 
 # Athletes.
 athlete_session = {'X-Impersonation-Id': '$session:owner_athlete', 'User-Id': IDS['athlete']}
