@@ -105,6 +105,14 @@ SUBSCRIPTION_PERIODS = {
     'june': {'id': next(ids), 'period': 'june', 'subscription': 'camp', 'payment': None, 'services': ['tent']},
     'sept': {'id': next(ids), 'period': 'sept', 'subscription': 'plain', 'payment': 'sept', 'services': ['guide']},
 }
+# A period whose only subscription period carries a soft-deleted unpaid payment (keys taken after the rows above).
+PERIODS['october'] = {'id': next(ids), 'camp': 'camp', 'start': '2026-10-01T07:00:00Z', 'end': '2026-10-05T07:00:00Z', 'title': 'Ottobre',
+                      'description': None, 'fee': '40.00', 'max': None, 'created': '2026-06-06T10:00:00Z'}
+SERVICES['canoe'] = {'id': next(ids), 'period': 'october', 'title': 'Canoa', 'description': None, 'fee': '8.00', 'category': None,
+                     'created': '2026-06-11T10:00:00Z'}
+PAYMENTS['gone'] = {'id': next(ids), 'amount': '48.00', 'paid': False, 'subject': 1, 'description': 'Ottobre', 'category': 'own',
+                    'notes': 'Note', 'meta': [meta('canoe', 8.0, None)], 'created': '2026-06-13T12:00:00Z', 'deleted': True}
+SUBSCRIPTION_PERIODS['october'] = {'id': next(ids), 'period': 'october', 'subscription': 'camp', 'payment': 'gone', 'services': ['canoe']}
 PERIOD_LINKS = {'july': ['kayak', 'umbrella'], 'june': ['tent'], 'august': ['snack']}
 
 PERIOD, SERVICE, SUBPERIOD, PAYMENT = ('application.CampsAndRetreatsPeriod', 'application.CampsAndRetreatsPeriodsService',
@@ -541,7 +549,20 @@ def dumps(value):
     return json.dumps(value, sort_keys=True)
 
 
-def payment_effects(label, rows, events):
+def hidden_payment(payment, amount, notes):
+    """auditlog reads the stored row through the soft-delete, group-aware manager, finds none and diffs the instance against None:
+    every field as on a create, action update, indexed through the entry's own sport_association."""
+    changes = {
+        'payment_id': payment['id'], 'sport_association': OWN, 'user': 'None', 'associate': 'None', 'instructor': 'None',
+        'supplier': 'None', 'invoice': 'None', 'group': 'None', 'signature': 'None', 'custom_accounts': 'None', 'payment_date': 'None',
+        'payment_category': CATEGORIES[payment['category']]['id'], 'subject': str(payment['subject']), 'description': payment['description'],
+        'paid': 'False', 'type': 'default', 'expense': 'False', 'archived': 'False', 'deleted': str(bool(payment.get('deleted'))), 'meta': 'null', 'course': 'null',
+        'creation_date': naive(payment['created']), 'amount': amount, 'notes': notes, 'meta_payment_categories': dumps(payment['meta'])}
+    return audit('Payment', payment['id'], 1, {field: ['None', value] for field, value in changes.items()}, OWN,
+                 'changes_json.sport_association')
+
+
+def payment_effects(label, rows, events, other_group=False):
     """The view's walk over the unpaid subscription periods of the service's period."""
     service = STATE['services'][label]
     for sp in SUBSCRIPTION_PERIODS.values():
@@ -555,7 +576,9 @@ def payment_effects(label, rows, events):
                 item['amount'] = float(service['fee'])
                 item['title'] = service['title']
                 item['payment_category_id'] = CATEGORIES[service['category']]['id'] if service['category'] else 'None'
-                if dumps(payment['meta']) != old:
+                if payment.get('deleted') or other_group:
+                    events.append(hidden_payment(payment, payment['amount'], payment['notes']))
+                elif dumps(payment['meta']) != old:
                     events.append(audit('Payment', payment['id'], 1, {'meta_payment_categories': [old, dumps(payment['meta'])]}, association,
                                         'direct'))
         period = STATE['periods'][sp['period']]
@@ -573,14 +596,16 @@ def payment_effects(label, rows, events):
             changes['amount'] = [payment['amount'], repr(amount)]
         if notes != payment['notes']:
             changes['notes'] = [text(payment['notes']), notes]
-        if changes:
+        if payment.get('deleted') or other_group:
+            events.append(hidden_payment(payment, repr(amount), notes))
+        elif changes:
             events.append(audit('Payment', payment['id'], 1, changes, association, 'direct'))
         payment['amount'], payment['notes'] = f'{amount:.2f}', notes
         rows.setdefault(PAYMENT, {})[payment['id']] = {'amount': payment['amount'], 'notes': notes,
                                                        'meta_payment_categories': copy.deepcopy(payment['meta'])}
 
 
-def updated_service(actor, name, label, body, values, *, form=None, walk=True):
+def updated_service(actor, name, label, body, values, *, form=None, walk=True, headers=None):
     row = STATE['services'][label]
     before = service_audit_view(row)
     row.update(values)
@@ -591,14 +616,14 @@ def updated_service(actor, name, label, body, values, *, form=None, walk=True):
                             SERVICE_PATH))
     rows = {SERVICE: {row['id']: service_row(row)}}
     if walk:
-        payment_effects(label, rows, events)
+        payment_effects(label, rows, events, other_group=bool(headers))
     effect = {'actor': actor, 'rows': rows, 'audit': events}
     response = {'message': 'Updated successfully', 'period': service_data(label)}
     if form:
         add(name, actor, service_path(label, 'update'), 200, response, method='PATCH', raw_body=form,
             content_type='application/x-www-form-urlencoded', effect=effect)
     else:
-        add(name, actor, service_path(label, 'update'), 200, response, method='PATCH', body=body, effect=effect)
+        add(name, actor, service_path(label, 'update'), 200, response, method='PATCH', body=body, headers=headers, effect=effect)
 
 
 add('services-update-restricted-missing-permission', 'restricted_collaborator', service_path('kayak', 'update'), 403, missing('update'),
@@ -629,6 +654,12 @@ updated_service('owner', 'services-update-move-period-recomputes', 'snack', {'ca
                 {'period': 'july'})
 updated_service('owner', 'services-update-form', 'kayak', None, {'fee': '16.00', 'category': None},
                 form='fee=16&payment_category=')
+# The walk also saves a soft-deleted payment: one update entry per save, each with every field against None.
+updated_service('owner', 'services-update-deleted-payment', 'canoe', {'fee': '9.50', 'title': 'Canoa doppia'},
+                {'fee': '9.50', 'title': 'Canoa doppia'})
+# With X-Group-Id the payment manager is group-aware: a payment outside that group is saved and audited the same way.
+updated_service('owner', 'services-update-other-group-payment', 'umbrella', {'fee': '6.00'}, {'fee': '6.00'},
+                headers={'X-Group-Id': IDS['own_group']})
 # The walk raises on the payment without metas after the service was saved.
 guide = STATE['services']['guide']
 guide_before = service_audit_view(guide)

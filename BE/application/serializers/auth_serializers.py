@@ -326,6 +326,8 @@ class UsersOnboardingSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsersOnboarding
         fields = "__all__"
+        # Only the checklist fields are written; the row keeps its id and user.
+        read_only_fields = ("users_onboarding_id", "user")
 
 class UserAuthSerializer(serializers.ModelSerializer):
     can_impersonate = serializers.SerializerMethodField()

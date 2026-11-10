@@ -427,9 +427,8 @@ add('onboarding-flags-saved', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
     effect=effect(flags_save({'create_membership': True, 'view_settings': True}, 'owner')))
 add('onboarding-flags-collaborator', 'full_collaborator', ONBOARD, 200, UPDATED, method='PATCH',
     body={'onboarding_data': {'show': 'false'}}, effect=effect(flags_save({'show': False}, 'full_collaborator')))
-# The checklist sends the whole stored row back (onboarding-checklist.svelte): the row's own
-# users_onboarding_id and user validate (UUIDField, UniqueValidator excluding the instance,
-# PrimaryKeyRelatedField) and the save keeps both, so only the flags are audited.
+# The checklist sends the whole stored row back (onboarding-checklist.svelte): users_onboarding_id
+# and user are read-only serializer fields, so the save keeps both and only the flags are audited.
 def ui_flags(**changes):
     row = {'users_onboarding_id': ONBOARDING, 'user': IDS['owner']}
     row.update(FLAGS)
@@ -450,6 +449,25 @@ add('onboarding-flags-ui-row-uppercase-ids', 'owner', ONBOARD, 200, UPDATED, met
 add('onboarding-flags-ui-row-invalid-flag', 'owner', ONBOARD, 400, {'error': repr_errors({
     'show': [('Must be a valid boolean.', 'invalid')]})}, method='PATCH', body={'onboarding_data': ui_flags(show='maybe')},
     effect=effect())
+# Onboarding update only changes the checklist fields of the caller's own row: any value sent for
+# users_onboarding_id or user is not read (no validation, no change, no added row).
+add('onboarding-flags-other-user-value', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'onboarding_data': ui_flags(user=IDS['foreign_owner'], show=False)},
+    effect=effect(flags_save({'show': False}, 'owner')))
+add('onboarding-flags-other-id-value', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'onboarding_data': ui_flags(users_onboarding_id=uid(91), show=True)},
+    effect=effect(flags_save({'show': True}, 'owner')))
+add('onboarding-flags-other-values-collaborator', 'full_collaborator', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'onboarding_data': {'users_onboarding_id': uid(92), 'user': IDS['athlete'], 'view_settings': False}},
+    effect=effect(flags_save({'view_settings': False}, 'full_collaborator')))
+add('onboarding-flags-other-values-unchanged', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'onboarding_data': ui_flags(users_onboarding_id=uid(93), user=IDS['foreign_owner'])}, effect=effect())
+add('onboarding-flags-identity-values-not-validated', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'onboarding_data': {'users_onboarding_id': 5, 'user': ['x'], 'view_settings': True}},
+    effect=effect(flags_save({'view_settings': True}, 'owner')))
+add('onboarding-flags-identity-values-null', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'onboarding_data': {'users_onboarding_id': None, 'user': None, 'download_invoice': False}},
+    effect=effect(flags_save({'download_invoice': False}, 'owner')))
 add('onboarding-flags-invalid', 'owner', ONBOARD, 400, {'error': repr_errors({
     'show': [('Must be a valid boolean.', 'invalid')], 'approve_payment': [('This field may not be null.', 'null')]})},
     method='PATCH', body={'onboarding_data': {'approve_payment': None, 'show': 'maybe'}}, effect=effect())

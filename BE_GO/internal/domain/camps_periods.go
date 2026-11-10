@@ -70,6 +70,10 @@ type CampsAudit struct {
 	Changes       map[string][2]string
 	AssociationID *string
 	Path          string
+	// Full marks an update entry of a payment its manager does not return:
+	// every field of the saved row against None. Changes then holds only the
+	// values the instance renders differently from the stored row.
+	Full bool
 }
 
 type CampsTransaction interface {
