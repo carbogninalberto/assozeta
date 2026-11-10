@@ -47,7 +47,7 @@ def document(label, created='2026-02-01T08:00:00Z'):
 
 
 DOCUMENTS = {label: document(label) for label in ('a1', 'a2', 'a3', 'bad', 'abroad', 'deleted', 'grouped', 'del1', 'del2', 'del3',
-                                                  'cert_remove', 'cert_shared', 'cert_copy')}
+                                                  'cert_remove', 'cert_shared', 'cert_copy', 'n2')}
 
 
 def certificate(user, expiration, *, notes=None, competitive=False, doc=None, created='2026-01-10T09:00:00Z'):
@@ -87,6 +87,7 @@ SUBSCRIPTIONS = {
     'main': subscription(OWN, medical='main'),
     'empty': subscription(OWN),
     'badregion': subscription(OWN),
+    'docless': subscription(OWN),
     'abroad': subscription(FOREIGN, user='foreign_owner', medical='abroad'),
     'deleted': subscription(OWN, medical='deleted', deleted=True),
     'grouped': subscription(OWN, medical='grouped', group='own_group'),
@@ -130,6 +131,10 @@ APPOINTMENTS = {
     'del1': appointment('del', 'agonistica-lombardia', 'del1', '2026-02-09', meta={'x': 'y'}, address='Via Po 2'),
     'del2': appointment('del', 'agonistica-sicilia', 'del2', '2026-02-10'),
     'del3': appointment('del', 'non-agonistica-emilia-romagna', 'del3', None),
+    # Rows without a document (a failed render, an older version): the list asks the renderer for each of them.
+    'n1': appointment('docless', 'agonistica', None, '2026-06-02', notes='Da stampare', meta={'ecg': True}),
+    'n2': appointment('docless', 'non-agonistica-sicilia', 'n2', '2026-05-20'),
+    'n3': appointment('docless', 'agonistica-piemonte-biella', None, '2026-04-01', sport='Nuoto'),
 }
 
 
@@ -165,9 +170,12 @@ SUBSCRIPTIONS['bare_collaborator'] = subscription(OWN, associate='niccolo')
 SUBSCRIPTIONS['bare_bad_date'] = subscription(OWN, associate='dario')
 
 
-def add(name, actor, path, status, response, *, method='POST', body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, path, status, response, *, method='POST', body=None, raw_body=None, content_type=None, headers=None, effect=None,
+        prints=None):
     case = {'name': f'subscription-medical-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect}
+    if prints:
+        case['prints'] = prints
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -202,7 +210,7 @@ REGIONS = {'agonistica': 'Visita Agonistica', 'non-agonistica-sicilia': 'Visita 
 
 def rendered(label):
     row = APPOINTMENTS[label]
-    doc = DOCUMENTS[row['document']]
+    doc = DOCUMENTS[row['document']] if row['document'] else {'token': None, 'id': None}
     return {'medical_appointments_id': row['id'], 'document_token': doc['token'], 'appointment_region': REGIONS[row['region']],
             'region': row['region'], 'date': row['date'], 'notes': row['notes'], 'sport': row['sport'], 'meta': row['meta'],
             'address': row['address'], 'creation_date': row['created'], 'subscription': SUBSCRIPTIONS[row['subscription']]['id'],
@@ -224,6 +232,14 @@ add('list-grouped-foreign-group-hides', 'owner', LIST('grouped'), 404, NO_SUB, m
 add('list-grouped-malformed-group-ignored', 'owner', LIST('grouped'), 200, listed('grouped'), method='GET', headers={'X-Group-Id': 'abc'})
 add('list-foreign-subscription', 'owner', LIST('abroad'), 404, NO_SUB, method='GET')
 add('list-foreign-owner', 'foreign_owner', LIST('abroad'), 200, listed('abroad'), method='GET')
+PRINT = lambda label, status=200: {'path': f"/document/medical-appointment/{APPOINTMENTS[label]['id']}",
+                                    'reply': {'status': status, 'body': 'ok' if status == 200 else 'renderer down'}}
+add('list-appointments-without-document', 'owner', LIST('docless'), 200, listed('n1', 'n2', 'n3'), method='GET',
+    prints=[PRINT('n1'), PRINT('n3')])
+add('list-appointments-without-document-renderer-fails', 'owner', LIST('docless'), 200, listed('n1', 'n2', 'n3'), method='GET',
+    prints=[PRINT('n1', 500), PRINT('n3', 500)])
+add('list-appointments-without-document-impersonated', 'admin', LIST('docless'), 200, listed('n1', 'n2', 'n3'), method='GET',
+    headers=ADMIN_OWNER, prints=[PRINT('n1'), PRINT('n3')])
 add('list-unknown', 'owner', LIST(UNKNOWN), 404, NO_SUB, method='GET')
 add('list-unknown-region-server-error', 'owner', LIST('badregion'), 500, SERVER, method='GET')
 add('list-malformed-uid', 'owner', LIST('abc'), 400, BAD_UUID, method='GET')

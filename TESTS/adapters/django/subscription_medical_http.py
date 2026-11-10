@@ -21,7 +21,10 @@ import uuid
 from contextlib import contextmanager
 from datetime import date, datetime
 
-from TESTS.contracts import test_subscription_medical_http as contract
+import types
+
+from TESTS.contracts import test_subscription_medical_http as base_contract
+from TESTS.adapters.django import invoice_sync_print_http as printing
 from TESTS.adapters.django import carnet_replace_http as replace
 from TESTS.adapters.django import carnet_subscription_topup_http as topup
 from TESTS.adapters.django import family_harness as harness
@@ -50,10 +53,50 @@ STATE = {}
 BUCKET, LOCATION = 'subscription-medical-fixture', 'subscription-medical'
 SENTINEL = ('subscription-medical/sentinel/keep.txt', b'sentinel')
 STORAGE = {}
+STUB = printing.STUB
+
+
+def _assert_case(case, base_url, *, token, sessions):
+    with STUB['lock']:
+        STUB['log'] = []
+        STUB['script'] = [item['reply'] for item in case.get('prints', [])]
+    STUB['token'] = token
+    return base_contract.assert_case(case, base_url, token=token, sessions=sessions)
+
+
+# The harness drives this proxy: the CURRENT_HOST stub is scripted for the request.
+contract = types.SimpleNamespace(load_source=base_contract.load_source, require=base_contract.require, assert_case=_assert_case,
+                                 ResponseFailure=base_contract.ResponseFailure)
+
+
+def check_prints(case):
+    """The print_document_medical_appointment requests: GET CURRENT_HOST/document/medical-appointment/<id>, requests' default
+    headers and the request's Authorization, no body."""
+    require = contract.require
+    with STUB['lock']:
+        log = list(STUB['log'])
+    expected = case.get('prints', [])
+    require(len(log) == len(expected), 'print.request-count')
+    headers = [('host', STUB['host']), ('user-agent', printing.USER_AGENT), ('accept-encoding', 'gzip, deflate'), ('accept', '*/*'),
+               ('connection', 'keep-alive')]
+    if STUB['token'] is not None:
+        headers.append(('authorization', 'Bearer ' + STUB['token']))
+    for index, (sent, spec) in enumerate(zip(log, expected)):
+        where = f':{index}'
+        require(sent['method'] == 'GET' and sent['path'] == spec['path'], 'print.request-line' + where)
+        require(sorted((name.lower(), value) for name, value in sent['headers']) == sorted(headers), 'print.headers' + where)
+        require(sent['body'] == b'', 'print.body' + where)
 
 
 @contextmanager
 def service_context(report, log):
+    with printing.service_context(report, log):
+        with _storage_context(report, log):
+            yield
+
+
+@contextmanager
+def _storage_context(report, log):
     """A private MinIO as both servers' default storage (the placeholder certificate image); PIL_PLACEHOLDER_ZLIB tells the
     Go server which zlib this interpreter's Pillow compresses PNGs with. The bucket keeps only the sentinel at the end."""
     import boto3
@@ -140,7 +183,7 @@ def seed_rows(source, created):
                                           status_flag=subscription.ACCEPTED))
     for row in source['appointments'].values():
         insert(appointment, appointment(medical_appointments_id=row['id'], subscription_id=source['subscriptions'][row['subscription']]['id'],
-                                        region=row['region'], document_id=source['documents'][row['document']]['id'], date=day(row['date']),
+                                        region=row['region'], document_id=source['documents'][row['document']]['id'] if row['document'] else None, date=day(row['date']),
                                         notes=row['notes'], sport=row['sport'], meta=row['meta'], address=row['address'],
                                         creation_date=moment(row['created'])))
     for row in source['drafts'].values():
@@ -204,6 +247,7 @@ def check_entries(case, added, indexes, expected, *, before, ids, actor, context
 def assert_effect(case, before, after, source, context):
     harness.require_unmanaged_unchanged(contract, before, after, MANAGED)
     effect = case['effect']
+    check_prints(case)
     if effect is None:
         contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
         contract.require(listing() == STATE['objects'], 'storage.no-effect')

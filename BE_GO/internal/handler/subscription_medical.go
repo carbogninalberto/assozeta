@@ -14,7 +14,7 @@ import (
 
 type SubscriptionMedicalService interface {
 	ParseUUID(raw string) (string, error)
-	List(ctx context.Context, identity domain.ResolvedIdentity, raw, group string) (domain.RequestObject, error)
+	List(ctx context.Context, identity domain.ResolvedIdentity, raw, group string, authorization *string) (domain.RequestObject, error)
 	Delete(ctx context.Context, identity domain.ResolvedIdentity, subscription, appointment string, audit domain.LoginAuditContext) error
 	Edit(ctx context.Context, identity domain.ResolvedIdentity, id, group string, body any, audit domain.LoginAuditContext) error
 	ExpirationTarget(ctx context.Context, identity domain.ResolvedIdentity, id, group string) error
@@ -77,7 +77,11 @@ func (h *SubscriptionMedicalHandler) List(c echo.Context) error {
 		return err
 	}
 	request := c.Request()
-	body, err := h.medical.List(request.Context(), *identity, c.Param("uid"), request.Header.Get("X-Group-Id"))
+	var authorization *string
+	if values, ok := request.Header["Authorization"]; ok && len(values) > 0 {
+		authorization = &values[0]
+	}
+	body, err := h.medical.List(request.Context(), *identity, c.Param("uid"), request.Header.Get("X-Group-Id"), authorization)
 	if err != nil {
 		return h.failure(c, err)
 	}

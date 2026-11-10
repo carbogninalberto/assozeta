@@ -479,7 +479,9 @@ func run() (runErr error) {
 	e.Any("/subscription/associates-draft/:uid/edit", associateDraftsHandler.Edit, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/associates-draft/:uid/delete", associateDraftsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	subscriptionMedicalHandler := handler.NewSubscriptionMedicalHandler(service.NewSubscriptionMedical(repository.NewSubscriptionMedical(db), time.Now,
-		uuid.NewString).WithPlaceholders(composeSubscriptionPlaceholders(cfg, db)), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+		uuid.NewString).WithPlaceholders(composeSubscriptionPlaceholders(cfg, db)).WithPrinter(service.NewInvoiceSyncPrint(
+		service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath), repository.NewRestoreStates(db), cfg.RestoreLockPath != ""),
+		os.Getenv("CURRENT_HOST"))), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/:uid/medical-appointments/list", subscriptionMedicalHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/import/upload", composeSubscriptionImportUpload(cfg, db, service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations).Upload, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/medical-appointments/:medical_appointments_id/delete", subscriptionMedicalHandler.Delete,

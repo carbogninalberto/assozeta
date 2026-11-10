@@ -587,7 +587,10 @@ func (s *DocumentUploads) UploadDocument(ctx context.Context, identity domain.Re
 		return domain.ErrDocumentWritesFailed // NOT NULL violation before any row exists
 	}
 	// A file sent as the filename is stored by its name (str() of the upload).
-	if file, isFile := value.(domain.RequestFile); isFile {
+	switch file := value.(type) {
+	case domain.RequestFile:
+		value = uploadedFileName(file.Name)
+	case domain.RequestUpload:
 		value = uploadedFileName(file.Name)
 	}
 	text, storable := storedText(value)
@@ -627,7 +630,8 @@ func (s *DocumentUploads) UploadDocument(ctx context.Context, identity domain.Re
 	if _, isText := value.(string); !isText {
 		return keep(domain.ErrDocumentWritesFailed) // os.path.join TypeError
 	}
-	if _, isFile := payload.(domain.RequestFile); isFile {
+	switch payload.(type) {
+	case domain.RequestFile, domain.RequestUpload:
 		return keep(domain.ErrDocumentWritesFailed) // b64decode of an uploaded file: TypeError
 	}
 	content, err := dto.PythonB64Decode(payload)
@@ -810,13 +814,13 @@ func (s *DocumentUploads) MedicalUpload(ctx context.Context, identity domain.Res
 	}
 	dates, err := ResolveSubscriptionDates(ctx, subscription.Target.Created, subscription.Target.Rule, subscription.Target.Dates)
 	if err != nil {
-		if commit := tx.Commit(); commit != nil {
-			return nil, commit
-		}
 		// Subscription.save() raised: the season error's text, after the certificate was stored.
 		var calendar *domain.CalendarDateError
 		if errors.As(err, &calendar) {
 			return nil, fail(calendar.Message)
+		}
+		if commit := tx.Commit(); commit != nil {
+			return nil, commit
 		}
 		return nil, errors.Join(domain.ErrDocumentWritesNotPorted, err)
 	}

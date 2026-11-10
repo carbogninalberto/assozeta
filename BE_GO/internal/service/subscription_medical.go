@@ -20,10 +20,17 @@ type SubscriptionMedical struct {
 	now          func() time.Time
 	ids          func() string
 	placeholders *SubscriptionPlaceholders
+	printer      MedicalAppointmentPrinter
 }
 
 func NewSubscriptionMedical(store domain.SubscriptionMedicalStore, now func() time.Time, ids func() string) *SubscriptionMedical {
 	return &SubscriptionMedical{store: store, now: now, ids: ids}
+}
+
+// WithPrinter enables the print request the list sends for an appointment without a document.
+func (s *SubscriptionMedical) WithPrinter(printer MedicalAppointmentPrinter) *SubscriptionMedical {
+	s.printer = printer
+	return s
 }
 
 // WithPlaceholders enables the placeholder certificate set-certificate-expiration
@@ -87,7 +94,7 @@ func (s *SubscriptionMedical) owner(ctx context.Context, identity domain.Resolve
 }
 
 // List follows subscription_medical_appointments_list.
-func (s *SubscriptionMedical) List(ctx context.Context, identity domain.ResolvedIdentity, raw, group string) (domain.RequestObject, error) {
+func (s *SubscriptionMedical) List(ctx context.Context, identity domain.ResolvedIdentity, raw, group string, authorization *string) (domain.RequestObject, error) {
 	id, err := s.ParseUUID(raw)
 	if err != nil {
 		return nil, err
@@ -111,7 +118,14 @@ func (s *SubscriptionMedical) List(ctx context.Context, identity domain.Resolved
 	data := domain.RequestObject{}
 	for index, row := range rows {
 		if row.Document == nil {
-			return nil, ErrSubscriptionMedicalNotPorted
+			// print_document_medical_appointment(id, authorization) is called directly: a GET to CURRENT_HOST whose
+			// reply is ignored; the row is serialized as loaded (document null).
+			if s.printer == nil {
+				return nil, ErrSubscriptionMedicalNotPorted
+			}
+			if err = s.printer.MedicalAppointment(ctx, row.ID, authorization); err != nil {
+				return nil, err
+			}
 		}
 		region, known := medicalAppointmentRegions[row.Region]
 		if !known {
@@ -128,7 +142,7 @@ func (s *SubscriptionMedical) List(ctx context.Context, identity domain.Resolved
 			{Name: "appointment_region", Value: region}, {Name: "region", Value: row.Region}, {Name: "date", Value: optionalValue(row.Date)},
 			{Name: "notes", Value: optionalValue(row.Notes)}, {Name: "sport", Value: optionalValue(row.Sport)}, {Name: "meta", Value: meta},
 			{Name: "address", Value: optionalValue(row.Address)}, {Name: "creation_date", Value: dto.DRFUTCDateTime(row.Created)},
-			{Name: "subscription", Value: row.Subscription}, {Name: "document", Value: *row.Document}}})
+			{Name: "subscription", Value: row.Subscription}, {Name: "document", Value: optionalValue(row.Document)}}})
 	}
 	return domain.RequestObject{{Name: "data", Value: data}}, nil
 }
