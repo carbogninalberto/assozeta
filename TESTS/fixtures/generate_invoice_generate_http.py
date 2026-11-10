@@ -517,6 +517,12 @@ add('approve-receipt-null', 'owner', APPROVE('p_invoiced'), 200, APPROVED('p_inv
     body={'generate_invoice': True, 'send_receipt_email': None}, effect=dispatch('p_invoiced', None))
 add('approve-form-body', 'full_collaborator', APPROVE('p_invoiced'), 200, APPROVED('p_invoiced'),
     raw_body='generate_invoice=0&send_receipt_email=yes', content_type=FORM, effect=dispatch('p_invoiced', 'yes', 'full_collaborator'))
+# send_receipt_email reaches the task as sent: floats, integers of any size, lists and objects included.
+for receipt_name, receipt_value in (('float', 1.5), ('float-exponent', 1e+22), ('float-small', 0.00001), ('float-negative-zero', -0.0),
+                                    ('large-integer', 123456789012345678901234567890), ('list', ['s\u00ec', 2, [None, True, 0.5]]),
+                                    ('object', {'b': 1, 'a': {'c': [1.25, 'x'], 'd': None}}), ('empty-list', [])):
+    add(f'approve-receipt-{receipt_name}', 'owner', APPROVE('p_invoiced'), 200, APPROVED('p_invoiced'),
+        body={'send_receipt_email': receipt_value}, effect=dispatch('p_invoiced', receipt_value))
 add('approve-admin-impersonating-owner', 'admin', APPROVE('p_invoiced'), 200, APPROVED('p_invoiced'), body={'send_receipt_email': False},
     headers=ADMIN_OWNER, effect=dispatch('p_invoiced', False, 'admin'))
 

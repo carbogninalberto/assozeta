@@ -413,6 +413,28 @@ Stored data and rare inputs (class B rows). Receipts are `quality-reports/go-mig
 
 Left refused: see "Not ported" in `subscription-lifecycle.md` (unreadable or group-hidden unpaid payments).
 
+### Ported in the rest-b1 change
+
+Receipts are `quality-reports/go-migration/<family>-http-restb1-*`.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| supplier-writes | `PATCH supplier/<uid>/update` (B) | new `supplier_id` in a body that also clears `sport_association` (the copy has no association; its entries are indexed through the actor's own association, if any) | 36 cases; GREEN `restb1-1` 4 transports; mutation `restb1-mutation-r1` CAUGHT |
+| invoice-generate (shared by payment-state, payment-misc) | `POST payment/<uid>/approve` (B) | `send_receipt_email` as a float, an integer beyond int64, a list or an object | 58 cases; GREEN `restb1-1` 4 transports; mutation `restb1-mutation-r1` CAUGHT |
+
+Left refused in the payment, stripe, supplier and invoice-send families, with the reason:
+- supplier deletes with a database reference other than the four Django declares: a migrated schema has no other.
+- paid flow for a request user that is not an owner or collaborator: needs an association owned by an account with another
+  role, and that role's own broadcast lookups.
+- partial-quotes odd fee and plan types: each type has its own lookup or insert failure in Django.
+- payment attachments outside the stored subset (non-string values, names the column or the storage rejects): each fails
+  after different partial writes; an existing key without overwrite gets a random name.
+- payment update form bodies and add multipart bodies with files: the serializer's form input rules are not ported.
+- athlete receipt whose filename is not a valid header value: Django stores the document and drops the failed response.
+- stripe: client encodings of floats and nested lists, mixed `payments` lists, non-string ids, a webhook `payment_intent`
+  that is a float, list or object (`str()` of a Stripe object), amounts beyond int64 cents, oversized webhook bodies.
+- `invoice/<uid>/send` with a payment date before year 1000: the year text is the platform's.
+
 ### Ported in the v2-rest-c change
 
 Old data and rare inputs (class B rows; the first row of each family is `legacy: yes`). Receipts are `quality-reports/go-migration/<family>-http-v2restc-*`; each
@@ -862,7 +884,7 @@ No refusals of its own (re-verification record). Nothing to classify.
 | POST payment/<uid>/generate-invoice | non-canonical `X-Group-Id` | `BE_GO/internal/service/invoice_generate.go:148-149`, `ErrPaymentStateNotPorted` | B | UI never sends `X-Group-Id`. cheap. |
 | same | float fee exact 2-place ties; non-finite sums | `service/invoice_generate.go:272-281` | B | Amounts are 2-decimal; exact binary ties need ≥3 decimals. legacy: no; cheap. |
 | same | `meta.subscription_data.name` not str/bool/int | `service/invoice_generate.go:455` | B | legacy: yes (imported/admin-edited meta); cheap. |
-| POST payment/<uid>/approve | `send_receipt_email` not None/bool/str/int64 | payment_state service | B | UI sends a bool (`accounting/payment/PaymentList.svelte:876,1195`). |
+| POST payment/<uid>/approve | `send_receipt_email` not None/bool/str/int64 | payment_state service | ported (rest-b1) | Every JSON value is passed to the task; an uploaded file stays refused. |
 | approve | no configured Celery producer | payment_state | C | Deployment always configures the broker. |
 
 ### instructor-writes.md
@@ -973,7 +995,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | GET payment/simulation/partial-quotes-apply | a member's own account to e-mail while the association has a `CommunicationConfiguration` | `service/payment_misc.go` (`Apply`, `ErrPaymentMiscNotPorted`) | A (ported in v2-payments-3) | Same UI call (`SubscriptionFeesPlanModal.svelte:46`). Without an SMTP configuration the e-mail is ported (published `send_mail_async`); with one Django sends on a `Timer` thread after a random delay. |
 | partial-quotes(-apply) | non-ASCII-digit dates and plan days/months, non-canonical X-Group-Id | `service/payment_misc.go` | ported (v2-rest-a) | See `payment-misc.md`. |
 | partial-quotes(-apply) | odd fee/plan types (fees that are not a number or decimal string, plan ids that are not strings or numbers, ints beyond int64) | `service/payment_misc.go` (`paymentMiscAmount`, `paymentMiscPattern`); `service/quote_assign.go` | B | The UI sends `?date=YYYY-MM-DD`. Plans come from template data. legacy: yes (old plan JSON). Cost: cheap. |
-| POST payment/<id>/approve (via payment-state) | `send_receipt_email` not None/bool/str/int64 | payment-state | B | Exotic. |
+| POST payment/<id>/approve (via payment-state) | `send_receipt_email` not None/bool/str/int64 | payment-state | ported (rest-b1) | See `invoice-generate.md`. |
 
 ### oauth2-accounts.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1256,7 +1278,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 |---|---|---|---|---|
 | GET supplier/list | ordering by a relation path `field__other` | `service/suppliers.go:17`, `ErrSupplierOrdering` | B | UI sortable columns are `name`, `email`, `address`, `tax_code` (`suppliers-and-customers/SuppliersAndCustomers.svelte:355-402`). legacy: no. Stays: paths through relations are open-ended and reverse ones repeat rows. |
 | DELETE supplier/<uid>/delete, bulk-delete | supplier referenced by a table other than payments, supplier invoices, subscriptions, sold products | service/supplier_writes.go | B | The four Django-referenced tables are handled. Other references need models outside the UI's supplier flows. legacy: yes (if any). medium |
-| PATCH supplier/<uid>/update | body changes `supplier_id` | `service/supplier_writes.go` | ported (v2-rest-b) | The copy under the new key is inserted as `Model.save()` does. Only a body that also clears `sport_association` stays refused (`ErrSupplierPrimaryKeyChange`). |
+| PATCH supplier/<uid>/update | body changes `supplier_id` | `service/supplier_writes.go` | ported (v2-rest-b) | The copy under the new key is inserted as `Model.save()` does. A body that also clears `sport_association` is ported in rest-b1 (the copy has no association). |
 
 ### ui-api-version.md
 | route | refusal condition | Go site | class | evidence / notes |

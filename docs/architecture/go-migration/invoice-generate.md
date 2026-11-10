@@ -106,3 +106,10 @@ the complete model state (payments, invoices, auditlog entries and index rows) a
   service and handler, Celery producer and harness).
 - `go test ./internal/celery` (golden `list-args`), `./internal/service` (lock/commit/publish order, fees, periods, escaping),
   `./internal/repository` (lock key).
+
+rest-b1: `send_receipt_email` reaches `print_document_invoice` as sent for every JSON value. The message body is kombu's
+JSON (floats as `repr`, an overflowing one as `Infinity`) and `argsrepr` is Celery's `saferepr` (`str(float)`, lists and
+objects to three levels). Eight more approve cases (58 in all): floats (plain, exponent, small, negative zero), an integer
+beyond int64, a nested list, a nested object and an empty list. RED is the documented refusal (v2-refusals.md,
+invoice-generate row "`send_receipt_email` not None/bool/str/int64"). GREEN `restb1-1` on the four transports; mutation
+`restb1-mutation-r1` (floats written without Python's float form) CAUGHT. Still refused: an uploaded file as the value.

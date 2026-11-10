@@ -120,8 +120,10 @@ untouched. Responses `{'message': 'All payments archived'}` / `{'message': 'All 
 
 ## Not ported (refused with a 500 before any write)
 
-- A paid flow whose request.user is not an owner or collaborator (no association id), and a `send_receipt_email` that
-  is not null, a boolean, a string or an int64. The other paid flow conversions are ported (v2-rest-a, below).
+- A paid flow whose request.user is not an owner or collaborator (no association id): it needs an association owned by
+  an account with another role. An uploaded file as `send_receipt_email`. Every JSON value of `send_receipt_email`
+  (floats, integers of any size, lists, objects) reaches the task as sent (rest-b1, see
+  [invoice-generate](invoice-generate.md)). The other paid flow conversions are ported (v2-rest-a, below).
 - Delete of an invoiced payment while the print task is deferred for maintenance (a pending restore or a busy operation
   lock: Django re-applies the task synchronously); the invoice save is already committed, as in Django.
 
