@@ -23436,7 +23436,11 @@
         "BE_GO/internal/xlsxexport/report.go",
         "BE_GO/internal/xlsxexport/openpyxl.go",
         "BE_GO/internal/xlsxexport/pandas.go",
-        "BE_GO/internal/pdfrender/header.go"
+        "BE_GO/internal/pdfrender/header.go",
+        "BE_GO/internal/service/report_iso_datetime.go",
+        "BE_GO/internal/dto/mcp_models.go",
+        "BE_GO/internal/dto/mcp_models.json",
+        "BE_GO/internal/dto/mcp_query.go"
       ],
       "dependencies": [
         "Existing identity, collaborator registry and association scope",
@@ -23461,7 +23465,7 @@
         "errors": "400 Unknown tool or a tool result with error (the whole result); 401; 403 unmapped or impersonation; 404 Report not found; 500 JSON tool exception; 500 HTML for lookup/merge exceptions, a file name the header refuses and not-ported tool inputs.",
         "authentication": "core.middleware.IsAuthenticated (identity resolution).",
         "permissions": "Unmapped in the registry.",
-        "resource_scope": "Owner association and created_by=request.user; tool queries scoped by the association and soft-delete flags; attendance courses through the group-aware manager (X-Group-Id).",
+        "resource_scope": "Owner association and created_by=request.user; tool queries scoped by the association and soft-delete flags; attendance courses through the group-aware manager (X-Group-Id); group-aware models also by the request's X-Group-Id (a UUID in any spelling; other values are no filter).",
         "side_effects": "None for POST (read-only queries with the statement timeout); DELETE removes the report.",
         "transaction": "Read-only queries; autocommit delete.",
         "execution_owner": "django"
@@ -23476,25 +23480,25 @@
         "docs/architecture/go-migration/templates-reports.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 125/125; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep-red-r2/results.json",
-          "receipt_sha256": "bf757794a353b32230e874872efce3dc6d50ce15bef72396ee3be0fe3ad9e990"
+          "result": "RED: Django 174/174; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep2-red-r1/results.json",
+          "receipt_sha256": "e36a33ac9cbec7d1fcc8e479e4f7817f10afd79344f08ccda59984c50eb2b4c8"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 125/125 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep-versioned-r2/results.json",
-          "receipt_sha256": "7c8654703922a5dd5f9a31667042026439e7d53d89257452f727d653db2cc0d0"
+          "result": "GREEN: 174/174 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep2-versioned-r2/results.json",
+          "receipt_sha256": "19a2b781085c8a3bbd287db83e1e2cbaf46017f0eee1a367c6f0d4a247527470"
         },
         {
-          "revision": "a paragraph cut between two pages keeps one line too many on the first page",
-          "result": "Mutation control: CAUGHT: fails Go on templates-reports-run-export-pdf-texts-over-pages (500 where Django answers the document). Earlier receipts of the same change: RED v2rep-red-r1 (Django 124/124, Go 500 on the first file case), mutation v2rep-mutation-r1 (attendance workbook layout swapped) CAUGHT on run-attendance-export-xlsx-all.",
-          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep-mutation-r2/results.json",
-          "receipt_sha256": "7e61d61f13b9e866721d5b35342e959831f795769db02e12a42045a7c84cb531"
+          "revision": "the default manager's X-Group-Id filter is dropped from the query tools",
+          "result": "Mutation control: CAUGHT: fails Go on templates-reports-run-query-courses-group-header (response.body:data:count: the courses of every group)",
+          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep2-mutation-r2/results.json",
+          "receipt_sha256": "cfa5cf87ac4edebe6a107fd8199ac18684448f2f049bb843e53fda6a9d01ac51"
         }
       ],
       "notes": [
-        "Implementing: Implementing: the file tools export_data (CSV, XLSX, PDF), export_multi_sheet and get_attendance_matrix (preview, XLSX, PDF) answer their download, their 400 result or the JSON 500 (templates-reports.md, \"File tools\"; decoded-document PDF parity in pdf-exports.md, part-by-part XLSX parity in xlsx-exports.md). Refused with the HTML 500 page: get_schema for whitelisted models and the full schema, whitelisted models other than Tags/PaymentCategory/Carnet in the query tools, relation traversal, reverse relations, joins, date-part transforms, JSON field filters, relation ordering/grouping, lookups outside the listed ones, boolean/float limits, non-canonical UUID spellings, out-of-range integers and decimals, unusual aggregate aliases, HTML references other than the common named ones; in the file tools a format, title, label or text argument that is not a string, a list or dict cell in the CSV, ISO date-time text in another spelling than isoformat(), a sheet without columns, a generated sheet name equal to an earlier one, a course without a title and the paragraph inputs pdfexport refuses (text with &, < or a soft hyphen; a cut paragraph with a line ending inside a long word). See docs/architecture/go-migration/templates-reports.md."
+        "Implementing: Implementing: group and unusual arguments of saved-reports/<pk>/run. The query tools and the queries of the file tools follow X-Group-Id on the group-aware models (Associate, Course, Invoice, Payment, Subscription) like Django's default managers; the file tools accept format, title, label and text arguments of other types, list or dict cells in the CSV, ISO date-time text in every spelling datetime.fromisoformat reads, sheets without columns, numbered sheet names equal to an earlier one and courses without a title. RED v2rep2-red-r1: Django 174/174, the earlier Go code fails on run-query-courses-group-header; the other new cases are documented refusals (v2-refusals.md, templates-reports rows). Not ported: workbook labels that are equal numbers or beyond 64 bits, the paragraph inputs pdfexport refuses, XLSX and PDF results on the MCP server. Related runs: mcp-server-tools-v2rep2-r2 135/135 (3 refused); native reruns of the families sharing xlsxexport and the query engine (v2rep2-related-r1, two repeated as v2rep2-related-r2)."
       ]
     },
     {
@@ -29819,7 +29823,11 @@
         "BE_GO/internal/xlsxexport/report.go",
         "BE_GO/internal/xlsxexport/openpyxl.go",
         "BE_GO/internal/xlsxexport/pandas.go",
-        "BE_GO/internal/pdfrender/header.go"
+        "BE_GO/internal/pdfrender/header.go",
+        "BE_GO/internal/service/report_iso_datetime.go",
+        "BE_GO/internal/dto/mcp_models.go",
+        "BE_GO/internal/dto/mcp_models.json",
+        "BE_GO/internal/dto/mcp_query.go"
       ],
       "dependencies": [
         "Existing identity, collaborator registry and association scope",
@@ -29859,25 +29867,25 @@
         "docs/architecture/go-migration/templates-reports.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 125/125; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep-red-r2/results.json",
-          "receipt_sha256": "bf757794a353b32230e874872efce3dc6d50ce15bef72396ee3be0fe3ad9e990"
+          "result": "RED: Django 174/174; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep2-red-r1/results.json",
+          "receipt_sha256": "e36a33ac9cbec7d1fcc8e479e4f7817f10afd79344f08ccda59984c50eb2b4c8"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 125/125 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep-versioned-r2/results.json",
-          "receipt_sha256": "7c8654703922a5dd5f9a31667042026439e7d53d89257452f727d653db2cc0d0"
+          "result": "GREEN: 174/174 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep2-versioned-r2/results.json",
+          "receipt_sha256": "19a2b781085c8a3bbd287db83e1e2cbaf46017f0eee1a367c6f0d4a247527470"
         },
         {
-          "revision": "a paragraph cut between two pages keeps one line too many on the first page",
-          "result": "Mutation control: CAUGHT: fails Go on templates-reports-run-export-pdf-texts-over-pages (500 where Django answers the document). Earlier receipts of the same change: RED v2rep-red-r1 (Django 124/124, Go 500 on the first file case), mutation v2rep-mutation-r1 (attendance workbook layout swapped) CAUGHT on run-attendance-export-xlsx-all.",
-          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep-mutation-r2/results.json",
-          "receipt_sha256": "7e61d61f13b9e866721d5b35342e959831f795769db02e12a42045a7c84cb531"
+          "revision": "the default manager's X-Group-Id filter is dropped from the query tools",
+          "result": "Mutation control: CAUGHT: fails Go on templates-reports-run-query-courses-group-header (response.body:data:count: the courses of every group)",
+          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep2-mutation-r2/results.json",
+          "receipt_sha256": "cfa5cf87ac4edebe6a107fd8199ac18684448f2f049bb843e53fda6a9d01ac51"
         }
       ],
       "notes": [
-        "Implementing: Implementing: the file tools export_data (CSV, XLSX, PDF), export_multi_sheet and get_attendance_matrix (preview, XLSX, PDF) answer their download, their 400 result or the JSON 500 (templates-reports.md, \"File tools\"; decoded-document PDF parity in pdf-exports.md, part-by-part XLSX parity in xlsx-exports.md). Refused with the HTML 500 page: get_schema for whitelisted models and the full schema, whitelisted models other than Tags/PaymentCategory/Carnet in the query tools, relation traversal, reverse relations, joins, date-part transforms, JSON field filters, relation ordering/grouping, lookups outside the listed ones, boolean/float limits, non-canonical UUID spellings, out-of-range integers and decimals, unusual aggregate aliases, HTML references other than the common named ones; in the file tools a format, title, label or text argument that is not a string, a list or dict cell in the CSV, ISO date-time text in another spelling than isoformat(), a sheet without columns, a generated sheet name equal to an earlier one, a course without a title and the paragraph inputs pdfexport refuses (text with &, < or a soft hyphen; a cut paragraph with a line ending inside a long word). See docs/architecture/go-migration/templates-reports.md."
+        "Implementing: Implementing: group and unusual arguments of saved-reports/<pk>/run. The query tools and the queries of the file tools follow X-Group-Id on the group-aware models (Associate, Course, Invoice, Payment, Subscription) like Django's default managers; the file tools accept format, title, label and text arguments of other types, list or dict cells in the CSV, ISO date-time text in every spelling datetime.fromisoformat reads, sheets without columns, numbered sheet names equal to an earlier one and courses without a title. RED v2rep2-red-r1: Django 174/174, the earlier Go code fails on run-query-courses-group-header; the other new cases are documented refusals (v2-refusals.md, templates-reports rows). Not ported: workbook labels that are equal numbers or beyond 64 bits, the paragraph inputs pdfexport refuses, XLSX and PDF results on the MCP server. Related runs: mcp-server-tools-v2rep2-r2 135/135 (3 refused); native reruns of the families sharing xlsxexport and the query engine (v2rep2-related-r1, two repeated as v2rep2-related-r2)."
       ]
     },
     {
