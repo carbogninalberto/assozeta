@@ -25,6 +25,7 @@ SOURCES = ('TESTS/fixtures/course_subscriptions_http.json', 'TESTS/contracts/tes
            'TESTS/adapters/django/course_subscriptions_http.py', 'TESTS/adapters/django/carnet_replace_http.py',
            'TESTS/adapters/django/course_writes_http.py',
            'BE/application/views/course_views.py', 'BE/application/serializers/courses_serializers.py',
+           'BE/application/utils/printing.py', 'BE/application/utils/excel_utils.py', 'TESTS/contracts/xlsx.py',
            'BE/application/serializers/payment_serializers.py', 'BE/application/serializers/subscriptions_serializers.py',
            'BE/application/serializers/user_serializers.py', 'BE/application/serializers/auth_serializers.py',
            'BE/application/models/courses_models.py', 'BE/application/models/payment_models.py',
@@ -63,7 +64,7 @@ def default_category():
 
 def seed_rows(source, created):
     from application.models import (Associate, Course, CourseSubscription, CourseSubscriptionInstallment, Instructor, Invoice,
-                                    MedicalCertificate, Payment, PaymentCategory, Subscription)
+                                    MedicalCertificate, Payment, PaymentCategory, Subscription, Tags)
     from application.models.carnet_models import Carnet, CarnetSubscription
     from docmanager.models import Document
     ids = source['ids']
@@ -90,6 +91,11 @@ def seed_rows(source, created):
                                           medical_id=source['medicals'][row['medical']]['id'] if row['medical'] else None,
                                           start_date=day(row['start']), end_date=day(row['end']), creation_date=moment(row['created']),
                                           group_id=group(row['group']), status_flag=Subscription.ACCEPTED))
+    for row in source['tags'].values():
+        insert(Tags, Tags(tag_id=row['id'], tag_name=row['name'], sport_association_id=row['association']))
+    for label, tags in source['subscription_tags'].items():
+        Subscription.tags.through.objects.bulk_create([Subscription.tags.through(
+            subscription_id=source['subscriptions'][label]['id'], tags_id=source['tags'][tag]['id']) for tag in tags])
     for row in source['courses'].values():
         insert(Course, Course(course_id=row['id'], sport_association_id=row['association'], course_type=row['type'], title=row['title'],
                               deleted=row['deleted'], group_id=group(row['group']), fee=Decimal('50.00')))
@@ -140,9 +146,23 @@ def seed_rows(source, created):
 base_fixture_context = harness.fixture_context_for(contract, seed_rows)
 
 
+# The tables the export reads without ORDER BY. The rows come back in the order the database stores them, so every
+# workload must start from the same stored layout and the same planner statistics: VACUUM before seeding returns the
+# space of the rows a previous workload deleted (new rows then take the same places as in a fresh table), and ANALYZE
+# after seeding gives the planner the same statistics whatever autovacuum did in the meantime.
+EXPORT_TABLES = ('application_coursesubscription', 'application_course', 'application_subscription', 'application_associate',
+                 'application_tags', 'application_subscription_tags', 'application_carnet', 'application_carnetsubscription',
+                 'application_carnetsubscription_course_subscription')
+
+
 @contextmanager
 def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute('VACUUM ' + ', '.join(EXPORT_TABLES))
     with base_fixture_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
+        with connection.cursor() as cursor:
+            cursor.execute('ANALYZE ' + ', '.join(EXPORT_TABLES))
         category, name = default_category()
         fixture['default_category'] = category
         from application.models import Payment
