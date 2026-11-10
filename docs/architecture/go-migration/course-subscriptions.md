@@ -5,7 +5,8 @@
 `CourseSubscription.delete()` soft delete and the course subscription, installment and payment `pre_delete` signals) are
 implemented in Go (`BE_GO/internal/{domain,dto,repository,handler}/course_subscriptions.go`,
 `BE_GO/internal/service/course_subscriptions.go` and `course_subscription_update.go`). Registry `association.courses.read`,
-`.update` and `.delete`. Django remains the execution owner. `course-subscriptions/add` and the list export are not ported.
+`.update` and `.delete`. Django remains the execution owner. `course-subscriptions/add` is another family
+([course-enrolment](course-enrolment.md)); the list's `excel` export is ported, its `pdf` export is not.
 
 ## Routing and lookups
 
@@ -42,6 +43,35 @@ implemented in Go (`BE_GO/internal/{domain,dto,repository,handler}/course_subscr
 
 `POST` runs the PDF/Excel export after building the same queryset: an unknown or missing `format` (or a body that is not a
 dict) is a 500, as in Django.
+
+## Excel export (`POST course-subscriptions/list`, `format: excel`)
+
+After the queryset is built (so a filter error comes first) the view reads `request.data` (a parse error is DRF's 400) and calls
+`current_view_course_subscription`: `data['format']` must be `pdf` or `excel` (anything else, a missing key or a body that is
+not an object is the 500 page). `excel` answers `{"file": <base64 workbook>, "filename": "[DD/MM/YYYY] <title> - <denomination>.xlsx"}`:
+
+- columns `Cognome`, `Nome`, `Nato il`, `Email`, `Telefono`, `Corso`, `Data creazione`, `Tags` (the subscription's tag names joined
+  with `, `), a `Carnet` column when a listed row has an enabled carnet subscription (`<title> (DD/MM/YYYY) - <left>/<total>`
+  per carnet, `-` for the rows without one), then one column per tag of the association (`assegnato` or empty);
+- a row without subscription, associate or birth date is the 500 page;
+- the carnet loop rebinds the function's `title`, so the filename carries the last carnet title it handled (else
+  `Iscrizioni ai corsi`);
+- the workbook is `get_excel_base64` (pandas with openpyxl, `xlsxexport.PandasOpenpyxl`).
+
+Row order. None of the export's statements has an ORDER BY: the rows, the tags and the carnets come in the order the database
+returns them. Go sends the statements the ORM compiles, with the same tables, join types, predicates and selected columns
+(`repository/course_subscriptions_export.go`): the nullable subscription is joined with `LEFT OUTER JOIN`, and with
+`INNER JOIN` when the request filters on `subscription_id` (the ORM demotes the join then). Both backends therefore get the same
+plan from the same database, and the plan decides the order.
+
+An earlier attempt saw one listing in another order on Go. The cause was not the statement: both backends got the same plan
+(`EXPLAIN` on both sides). The harness runs its workloads one after the other on one database, deleting and seeding the family's
+rows in between. The second seeding reused the space of the deleted rows, so the same rows were stored in another physical
+order, and an index or bitmap scan returns equal keys in stored order: Django itself returned the other order on that
+workload's data. Planner statistics could also appear between two workloads (autovacuum), changing the plan. The adapter now
+runs `VACUUM` on the export's tables before seeding and `ANALYZE` after it (`EXPORT_TABLES`), so every workload reads the same
+stored layout with the same statistics. The export cases still filter one course: across courses the order follows the join
+plan.
 
 ## Update (atomic, partial)
 
@@ -104,7 +134,8 @@ Membership payments render PaymentSerializer's nested `instructor` and `invoice`
 
 ## Not ported (refused before any write)
 
-- `POST course-subscriptions/add` (not routed in Go) and the list export for `pdf` and `excel` (500).
+- The list export for `pdf` (reportlab in process, time-stamped): 500. In the `excel` export a carnet `lessons_left` that is a
+  float or a container: 500.
 - Update: `events` given as an object or a string (Python iterates keys or characters), unmatched installments sharing one
   payment, a non-canonical `X-Group-Id` spelling with new events, a changed primary key (Model.save() would insert a copy)
   and HTML-form input for the JSON fields `multiple_quote` and `events`: 500.
@@ -138,3 +169,11 @@ installment again (a second entry each).
 - GREEN (`gaps-versioned-1`): 108/108 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`gaps-mutation-1`): skipping the signal's installment delete in the bulk delete fails
   `bulk-row-without-payment-installments` (CAUGHT).
+
+Excel export of the list (132 cases):
+
+- RED (`famwiz-red-r1`, the Go code of the previous commit): Django 132/132; Go 500 on `course-subscriptions-list-excel-course`.
+- GREEN natively (`famwiz-native-r1`): 132/132 on native Django and native Go, with the workbooks compared part by part.
+- Mutation (`famwiz-mutation-r1`): a filename that keeps the list title instead of the last carnet title fails
+  `course-subscriptions-list-excel-subscription-carnet-title` (CAUGHT).
+- The router family's fixture was regenerated (the shared seed has one more carnet subscription).

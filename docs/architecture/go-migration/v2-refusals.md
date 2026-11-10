@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard, below), **B 218** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard and 1 in the famwiz change (the preregistration that renews a subscription; also the excel half of the course-subscriptions export row), below), **B 218** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -140,8 +140,20 @@ Receipts are `quality-reports/go-migration/subscription-create-http-v2wiz-*` and
 | subscription-create | `POST subscription/add?m=only_associate` (B) | a member account naming an association and an associate (both lookups, then 403) | same run |
 | subscription-create, subscription-renew | `POST subscription/add`, `POST subscription/renew` | not a refusal: the certificate a registration links and the subscriptions a member account renews follow Django's rules | RED `secsub2-red-r2` / `secsub2-red-r3`; mutations `secsub2-mutation-r1` (create), `secsub2-mutation-r1` and `secsub2-mutation-r2` (renew) CAUGHT |
 
-Still refused on `subscription/add`: `type: grouped_subscriptions` in the family wizard (B: `MULTIPLE_REGISTRATION_ENABLED` is off by
-default) and a preregistration that renews a subscription (`subscription_id`, A).
+`type: grouped_subscriptions` in the family wizard and a preregistration that renews a subscription (`subscription_id`) are ported
+in the famwiz change, below.
+
+### Ported in the famwiz change
+
+Receipts are `quality-reports/go-migration/subscription-create-http-famwiz-*` and `course-subscriptions-http-famwiz-*`; details in
+`subscription-create.md` and `course-subscriptions.md`.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| subscription-create | `POST subscription/add` | not a refusal: the family wizard answered the 500 page after committing when the request created a payment. Django now reads the payments again before listing them (`BE/application/tests/test_family_wizard_response.py`), and Go answers the same 200 | 113 cases; RED `famwiz-red-r1` Django 113/113, Go 500; GREEN `famwiz-versioned-r1` 4 transports; mutation `famwiz-mutation-r1` (payments in reverse entry order) CAUGHT |
+| subscription-create | `POST subscription/add` | `preregistration: true` with a `subscription_id` (A): the registration takes the renewed subscription's person, certificate, custom data, role and number, and stays with its account | 125 cases; RED `famwiz-red-r4` Django 125/125, Go 500; GREEN `famwiz-native-r1` natively; mutation `famwiz-mutation-r2` (requester not compared) CAUGHT |
+| subscription-create | `POST subscription/add` | `is_family_wizard: true` with `type: grouped_subscriptions` (B): the club data of the account's latest matching subscription merged over every entry's custom data | 127 cases; RED `famwiz-red-r5` Django 127/127, Go 500; GREEN `famwiz-native-r2` natively; mutation `famwiz-mutation-r3` (`cap` read from `cap`) CAUGHT |
+| course-subscriptions | `POST course-subscriptions/list` | `format: excel` (A; the `pdf` format stays refused) | 132 cases; RED `famwiz-red-r1` Django 132/132, Go 500 |
 
 ### Ported in the v2-payments-3 change
 
@@ -190,7 +202,6 @@ No A item remains.
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | POST subscription/add | owner wizard: a typed certificate date without an upload (placeholder PNG drawn with PIL: image rendering, refused by the porting rules) | `routes/association/Members/add/AddMember.svelte:104-139` | `service/subscription_create.go` (`subscriptionCreateRefuse`) | expensive (image) |
-| POST subscription/add | a preregistration that renews a subscription (`subscription_id`); the family wizard is ported (v2-wizard) | `Subscribe.svelte:136` (`subscription_id`) | `service/subscription_create.go` (`createSubscription`) | medium |
 | POST subscription/import/upload | final mapping step (every import) | `routes/association/Members/import/ImportMembers.svelte:46-52` | `service/subscription_import_upload.go:200` | expensive |
 | POST subscription/import/upload | Excel file | `import/sections/Section1.svelte:33-37` | `service/subscription_import_upload.go:210` | expensive |
 
@@ -215,16 +226,15 @@ Why these stay (v2-subscriptions):
 ### course-subscriptions / course-enrolment / course-writes / course-list / course-locations / course-calendar
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST course-subscriptions/list | export pdf/excel | `course-subscriptions-list.svelte:575-588` | `service/course_subscriptions.go:177` | medium |
+| POST course-subscriptions/list | export pdf (excel is ported) | `course-subscriptions-list.svelte:575-588` | `service/course_subscriptions_export.go` (`Export`) | expensive |
 | POST course/list | print pdf (excel is ported) | `course/CourseList.svelte:806-812` | `service/course_list.go:359` | expensive |
 
 Still refused: the `pdf` format of both "Stampa vista corrente" exports (the modal's default; reportlab's in-process
-`generate_pdf_from_data`, time-stamped, not byte-reproducible) and the `excel` format of course-subscriptions/list.
-course/list `excel` is ported (course-list.md, "Excel export"). For course-subscriptions/list the rows follow the
-database's order of an unordered four-table statement: a Go port sending the same statement (tables, joins, predicates
-and selected columns) returned one authored three-row listing in another order than Django in the harness, so the order
-is not proven and Go keeps refusing. The port and its 19 authored cases are parked outside the repository until the
-order is characterized.
+`generate_pdf_from_data`, time-stamped, not byte-reproducible). The `excel` format of both is ported (course-list.md and
+course-subscriptions.md, "Excel export"). The course-subscriptions rows follow the database's order of statements without
+ORDER BY; Go sends the statements the ORM compiles (same joins, predicates and columns), and the different order an earlier
+attempt saw came from the harness storing the re-seeded rows in another physical order on its second workload, not from Go
+(course-subscriptions.md, "Row order").
 
 ### documents / docmanager / document-views
 | Route | Condition | UI call | Go site | Cost |
@@ -482,11 +492,11 @@ Coordination/status doc; no refusals. Nothing to classify.
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
 | POST course-subscriptions/add | "not routed in Go" | — | n/a | Superseded: now routed (`BE_GO/cmd/server/main.go:588`, `courseEnrolmentHandler.Add`, another family). |
-| POST course-subscriptions/list (export pdf/excel) | any POST (export) | `BE_GO/internal/service/course_subscriptions.go:177`, `ErrCourseSubscriptionExportUnsupported` | **A** | `routes/association/course/overview/partials/course-subscriptions-list.svelte:575-588` → `components/modals/CurrentViewPrintingModal.svelte:41` POST `{format:'pdf'|'excel'}`. |
+| POST course-subscriptions/list (export pdf/excel) | any POST (export) | `BE_GO/internal/service/course_subscriptions_export.go`, `ErrCourseSubscriptionExportUnsupported` | **A** for `pdf`; `excel` ported (famwiz) | `routes/association/course/overview/partials/course-subscriptions-list.svelte:575-588` → `components/modals/CurrentViewPrintingModal.svelte:41` POST `{format:'pdf'|'excel'}`. |
 | PATCH course-subscriptions/<pk>/update | `events` key present and non-null | `service/course_subscription_update.go:408-411`, `ErrCourseSubscriptionNotPorted` | ported | Ported (`course-subscriptions.md`, `v2c-green`). |
 | PATCH …/update | changed primary key | same site | B | UI never sends `course_subscription_id` in the body. legacy: no; cheap. |
 | PATCH …/update | HTML-form input for `multiple_quote`/`events` | `service/course_subscription_update.go:371` | B | UI sends JSON. legacy: no; cheap. |
-| GET/POST course-subscriptions/list | a rendered membership payment with `invoice_id` | `service/course_subscriptions.go:114-116` | ported | Ported for GET and update renders (`v2c-green`); the POST export stays refused. |
+| GET/POST course-subscriptions/list | a rendered membership payment with `invoice_id` | `service/course_subscriptions.go:114-116` | ported | Ported for GET and update renders (`v2c-green`); the export does not render payments. |
 | same | a rendered membership payment with `instructor_id` | same site | ported | Ported with the invoice case (`v2c-green`). |
 | DELETE course-subscriptions/<pk>/delete | row payment is also an unpaid installment's payment | `service/course_subscriptions.go:262` | B | No current writer shares one payment (`BE/application/views/course_views.py:118-148,985-1038` create separate payments). legacy: possible but unproven; medium. |
 
@@ -886,8 +896,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | POST subscription/add | `medical_certificate.certificate_expring_date` not null | `service/subscription_create.go:164` | **A** | `routes/association/Members/add/AddMember.svelte:106-117` always sends it (it defaults to today in `sections/Section4.svelte:75-76`). The owner "add member" wizard is refused. Cost: medium (expiration update / placeholder image). |
 | POST subscription/add | anonymous request or body with `sport_association` | `service/subscription_create.go:91,102` | **A** | Public forms `routes/subscribe/Subscribe.svelte:124,167`, `subscribe-multiple/SubscribeMultiple.svelte:183`, `subscribefamily/SubscribeFamily.svelte:136,181`. Also `AddMember.svelte:124-125` in modal mode. Cost: expensive (anonymous path + user creation). |
 | POST subscription/add?m=only_associate with `associate` | quick re-subscription | ported (v2-sub-create) | **ported** | `routes/association/Members/MembersList.svelte:1564`, `MembersBook.svelte:1318`. Cost: medium. |
-| POST subscription/add | `is_family_wizard: true` | ported (v2-wizard) | **ported** | `SubscribeFamily.svelte:146`. `type: grouped_subscriptions` stays refused (B). |
-| POST subscription/add | `preregistration: true` | `service/subscription_create.go:141` | **A** | `Subscribe.svelte:147-148` (route `/subscribe/:user/:preregistration`). |
+| POST subscription/add | `is_family_wizard: true` | ported (v2-wizard) | **ported** | `SubscribeFamily.svelte:146`. `type: grouped_subscriptions` is ported too (famwiz). |
+| POST subscription/add | `preregistration: true` | ported (v2-public-forms; with a `subscription_id` in famwiz) | **ported** | `Subscribe.svelte:147-148` (route `/subscribe/:user/:preregistration`). |
 | POST subscription/add | `new_user_account.new_member` true | ported (v2-sub-create) | **ported** | Toggle in the AddMember wizard (`AddMember.svelte:44,338`). Cost: medium (account + welcome e-mail). |
 | POST subscription/add | `signature` with data | ported (v2-sub-create) | **ported** | AddMember signature step (`sections/Section3.svelte:11-26`). Cost: medium (storage upload). |
 | POST subscription/add | truthy `custom_data.type_of_associate` | `service/subscription_create.go:172` | B | No UI writer found in `routes/association/Members/add`. legacy: low. |

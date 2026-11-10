@@ -91,9 +91,10 @@ def seed_rows(source, created):
                                           medical_id=source['medicals'][row['medical']]['id'] if row['medical'] else None,
                                           start_date=day(row['start']), end_date=day(row['end']), creation_date=moment(row['created']),
                                           group_id=group(row['group']), status_flag=Subscription.ACCEPTED))
-    for row in source['tags'].values():
+    # Tags are authored for the export only (the router family's fixture has none).
+    for row in source.get('tags', {}).values():
         insert(Tags, Tags(tag_id=row['id'], tag_name=row['name'], sport_association_id=row['association']))
-    for label, tags in source['subscription_tags'].items():
+    for label, tags in source.get('subscription_tags', {}).items():
         Subscription.tags.through.objects.bulk_create([Subscription.tags.through(
             subscription_id=source['subscriptions'][label]['id'], tags_id=source['tags'][tag]['id']) for tag in tags])
     for row in source['courses'].values():

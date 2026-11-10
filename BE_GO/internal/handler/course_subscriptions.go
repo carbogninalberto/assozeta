@@ -13,6 +13,7 @@ import (
 )
 
 type CourseSubscriptionService interface {
+	Export(ctx context.Context, export *service.CourseSubscriptionExport, data any) (map[string]any, error)
 	List(ctx context.Context, identity domain.ResolvedIdentity, request service.CourseSubscriptionRequest, export bool) (map[string]any, error)
 	DeleteWithoutPK(ctx context.Context, identity domain.ResolvedIdentity) error
 	Update(ctx context.Context, identity domain.ResolvedIdentity, raw string, request service.CourseSubscriptionRequest, body any, form bool,
@@ -233,13 +234,17 @@ func (h *CourseSubscriptionsHandler) List(c echo.Context) error {
 	case http.MethodOptions:
 		return h.options(c, courseSubscriptionListActions)
 	case http.MethodGet, http.MethodHead, http.MethodPost:
-		if request.Method == http.MethodPost {
-			// The export reads request.data (a parse error is DRF's 400).
-			if _, err := readMessageMutationsBody(c); err != nil {
-				return restError(c, err)
-			}
-		}
 		result, err := h.subscriptions.List(request.Context(), *identity, h.request(c), request.Method == http.MethodPost)
+		var export *service.CourseSubscriptionExport
+		if errors.As(err, &export) {
+			// The export reads request.data after the queryset is built (a
+			// parse error is DRF's 400), then current_view_course_subscription.
+			data, bodyErr := readMessageMutationsBody(c)
+			if bodyErr != nil {
+				return restError(c, bodyErr)
+			}
+			result, err = h.subscriptions.Export(request.Context(), export, data)
+		}
 		if err != nil {
 			return h.failure(c, err)
 		}

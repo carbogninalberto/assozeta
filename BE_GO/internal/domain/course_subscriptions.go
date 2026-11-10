@@ -196,6 +196,14 @@ type CourseSubscriptionTransaction interface {
 	Installments(ctx context.Context, rows []string, group *string) ([]CourseSubscriptionInstallmentItem, error)
 	MembershipPayments(ctx context.Context, rows []string, group *string) (map[string][]CourseSubscriptionPayment, error)
 	Carnets(ctx context.Context, rows []string) ([]CourseSubscriptionCarnet, error)
+	// The Export* reads are current_view_course_subscription's statements,
+	// sent as Django compiles them (course-subscriptions.md, "Excel export").
+	ExportRows(ctx context.Context, query CourseSubscriptionQuery) ([]CourseSubscriptionExportRow, error)
+	ExportAssociationTags(ctx context.Context, association string) ([]CourseSubscriptionExportTag, error)
+	ExportSubscriptionTags(ctx context.Context, subscription string) ([]CourseSubscriptionExportTag, error)
+	ExportCarnets(ctx context.Context, rows []string) ([]CourseSubscriptionExportCarnet, error)
+	ExportCarnetLinks(ctx context.Context, carnets []string) ([]CourseSubscriptionExportLink, error)
+	AssociationDenomination(ctx context.Context, association string) (*string, error)
 
 	Course(ctx context.Context, id string) (*CourseSubscriptionCourse, error)
 	SubscriptionVisible(ctx context.Context, id, association string, group *string) (bool, error)
@@ -235,4 +243,45 @@ type CourseSubscriptionTransaction interface {
 
 type CourseSubscriptionStore interface {
 	BeginCourseSubscription(context.Context) (CourseSubscriptionTransaction, error)
+}
+
+// CourseSubscriptionExportRow is one course subscription of the export with
+// its select_related subscription, associate and course.
+type CourseSubscriptionExportRow struct {
+	ID             string     `db:"course_subscription_id"`
+	CreationDate   time.Time  `db:"creation_date"`
+	SubscriptionID *string    `db:"subscription_id"`
+	AssociateID    *string    `db:"associate_id"`
+	LastName       *string    `db:"last_name"`
+	FirstName      *string    `db:"first_name"`
+	BornDate       *time.Time `db:"born_date"`
+	Email          *string    `db:"email"`
+	Phone          *string    `db:"phone"`
+	CourseTitle    *string    `db:"course_title"`
+}
+
+// CourseSubscriptionExportTag is one Tags row.
+type CourseSubscriptionExportTag struct {
+	ID            string    `db:"tag_id"`
+	Name          string    `db:"tag_name"`
+	AssociationID string    `db:"association"`
+	CreationDate  time.Time `db:"created"`
+}
+
+// CourseSubscriptionExportCarnet is one enabled CarnetSubscription row of the
+// export's carnet query (one row per matching course subscription link).
+type CourseSubscriptionExportCarnet struct {
+	ID           string    `db:"carnet_subscription_id"`
+	CreationDate time.Time `db:"creation_date"`
+	Meta         *string   `db:"meta"`
+	CarnetID     *string   `db:"carnet_id"`
+	Title        *string   `db:"title"`
+	Lessons      *int64    `db:"lessons_number"`
+}
+
+// CourseSubscriptionExportLink is one prefetched course subscription of a
+// carnet subscription.
+type CourseSubscriptionExportLink struct {
+	CarnetSubscriptionID string `db:"carnetsubscription_id"`
+	CourseSubscriptionID string `db:"course_subscription_id"`
 }
