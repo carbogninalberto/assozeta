@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port) and 2 in v2-misc-2, below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, below), **B 218** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -149,22 +149,28 @@ Receipts are `quality-reports/go-migration/<family>-http-v2misc2-*` (profile-mis
 | camps-periods | `PATCH camps-and-retreats/periods/services/<uid>/update` | payment walk over a soft-deleted or other-group unpaid payment (saved, each save audited as an update of every field against None, indexed through `changes_json.sport_association`) | 110 cases; RED `v2misc2-red-r2` Django 110/110, Go 500; GREEN `v2misc2-green-r2` 4 transports; mutation `v2misc2-mutation-r1` (final amount rendered from the stored decimal) CAUGHT |
 | profile-misc | `PATCH onboarding/update` | `onboarding_data` with a `users_onboarding_id` or `user` other than the row's own (both are read-only serializer fields now) | 107 cases; RED `seconb-red-r1` Django 107/107, Go 500; GREEN `seconb-green-r2` 4 transports; mutation `seconb-mutation-r1` (row id taken from the body) CAUGHT |
 
+### Ported in the v2-athlete-payments change
+
+Receipts are `quality-reports/go-migration/payment-reads-http-v2athpay-*`; details in `payment-reads.md`
+("payment/list for athletes").
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| payment-reads | `GET payment/list` | athlete session without `mode=compressed` (the athlete's payments page; with and without `course_subscription_id`) | 270 cases; RED `v2athpay-red-r3` Django 270/270, Go 500; GREEN `v2athpay-versioned-r1` 4 transports; mutation `v2athpay-mutation-r1` (zero course payments hidden whatever the owner's setting) CAUGHT; payment-writes, payment-misc, payment-state and document-render re-run (`v2athpay-rerun-r1`) |
+
+The athlete query (both variants), the installment and zero-amount exclusions, `PaymentCompressedSerializer` with
+`get_meta`, the online payment flags and the index-keyed response are new Go code; the receipts of paid invoiced payments
+without a PDF go through `DocumentRender.Render` (`invoice` route) in-process, checked against document-render's renderer
+stub and the Celery broker. Association-scoped athlete sessions keep `scoped_queryset`'s boundary.
+
 ## Remaining A items, per family
 
 UI paths under `UI/src/`, Go under `BE_GO/internal/`. Cost: cheap (hours), medium (a family change with new
 helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascades over many models).
 
 ### payment-writes / payment-state / payment-reads / payment-misc
-| Route | Condition | UI call | Go site | Cost |
-|---|---|---|---|---|
-| GET payment/list | athlete session (no `mode=compressed`) | `routes/activities/payment/PaymentList.svelte:36-38` | `service/payment_reads.go:349` | medium-expensive |
 
-Notes for the remaining payment item:
-- Athlete `payment/list`: its own query (the athlete's and the athlete's associates' income payments, the course
-  subscription variant, the installment and zero-amount exclusions), `PaymentCompressedSerializer` with `get_meta`, the
-  online payment flags, a response keyed by index, and `document_invoice` called in-process for each paid invoiced payment
-  without a PDF (Document, renderer request, `save_to_storage`, the invoice link: `DocumentRender.Render` with the
-  `invoice` route covers it). The fixture needs athlete-owned rows and document-render's renderer stub and Celery broker.
+No A item remains.
 
 ### subscription-create / subscription-import-upload / subscription-memberships
 | Route | Condition | UI call | Go site | Cost |
@@ -760,7 +766,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### payment-reads.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET payment/list (athlete, no `mode=compressed`) | athlete branch | `service/payment_reads.go:349` (`ErrPaymentReadsNotPorted`) | **A** | Athletes on `/payment/list` (`routes.js:389-393`) load `routes/activities/payment/PaymentList.svelte:36-38`, which calls `payment/list` without `mode`. |
+| GET payment/list (athlete, no `mode=compressed`) | athlete branch | `service/payment_reads_athlete.go` | **ported** (v2-athlete-payments) | Athletes on `/payment/list` (`routes.js:389-393`) load `routes/activities/payment/PaymentList.svelte:36-38`, which calls `payment/list` without `mode`. |
+| GET payment/list (athlete) | a receipt to generate whose filename is not a valid header value (denomination with control characters) | `service/document_render.go` (`ErrDocumentRenderNotPorted`) | B | Unusual data; Django stores the Document and ignores the failed response. legacy: possible; cheap. |
 | GET payment/list (association) | instructor payment with no InstructorHours document, or several hours rows | `service/payment_reads.go:494,497` | **A** | Compensations link several hours to one payment (`BE/application/views/instructor_views.py:397`, loop at ~`:445-448`). The document is not generated at creation because `payment = payment.save()` returns None (`:467-475`). The UI creates them from `routes/association/course/instructor/info/Instructor.svelte:358`, and Django fills the document lazily (`payment_views.py:1031-1045`). Cost: medium (compensation PDF, or render without it). |
 | GET payment/list | `sort[field]` = relation (`user`, …) | `service/payment_reads.go:424,725` | **A** | The "Informazioni" column has `field: 'user'` and no `sortable: false` (`routes/accounting/payment/PaymentList.svelte:227-236`). BKNDatatable treats columns as sortable unless `sortable === false` (`components/tables/BKNDatatable.svelte:736,787`). Clicking the header sends `sort[field]=user`. Cost: medium. |
 | GET payment/list | random ordering + text search | `service/payment_reads.go:430` | B | The UI never sends a random order. |

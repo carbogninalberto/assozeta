@@ -24,6 +24,8 @@ type PaymentReads struct {
 	printer *InvoiceSyncPrint
 	// fees computes payment_stats' stripe_charges when Stripe is configured.
 	fees *PaymentStatsStripe
+	// athletes serves payment_list's athlete branch.
+	athletes *paymentReadsAthlete
 }
 
 // WithCompensationPrint sets the eager print runner of payment_list.
@@ -43,6 +45,8 @@ type PaymentReadsRequest struct {
 	GroupHeader string
 	// Authorization is the raw Authorization header (nil when absent).
 	Authorization *string
+	// Audit is the auditlog context of the athlete list's receipts.
+	Audit domain.LoginAuditContext
 }
 
 func paymentReadsParam(query domain.RequestObject, name string) (string, bool) {
@@ -361,9 +365,7 @@ func (s *PaymentReads) List(ctx context.Context, request PaymentReadsRequest) (a
 		return domain.RequestObject{{Name: "data", Value: data}}, nil
 	}
 	if identity.ScopeUser.Role == domain.RoleAthlete {
-		// The athlete branch (exclusions, PaymentCompressedSerializer, online
-		// payment flags, invoice PDF generation) is not ported.
-		return nil, domain.ErrPaymentReadsNotPorted
+		return s.athleteList(ctx, request)
 	}
 	association, err := s.userAssociation(ctx, identity)
 	if err != nil {
