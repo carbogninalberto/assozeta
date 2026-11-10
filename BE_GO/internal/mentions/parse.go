@@ -27,7 +27,8 @@ func parse(s string) (*node, error) {
 	// bs4's already_closed_empty_element: a void element opened as <br>
 	// checks off a later <br/> or </br>, which then leaves its tag open.
 	alreadyClosed := map[string]int{}
-	// endData: a run of only ASCII spaces becomes "\n" (when it has one) or " ".
+	// endData: a run of only ASCII spaces becomes "\n" (when it has one) or " ",
+	// except inside an open <pre>.
 	endData := func() {
 		if !hasData {
 			return
@@ -35,7 +36,7 @@ func parse(s string) (*node, error) {
 		text := data.String()
 		data.Reset()
 		hasData = false
-		if strings.Trim(text, "\x20\x0a\x09\x0c\x0d") == "" {
+		if !current.preservesWhitespace() && strings.Trim(text, "\x20\x0a\x09\x0c\x0d") == "" {
 			if strings.Contains(text, "\n") {
 				text = "\n"
 			} else {

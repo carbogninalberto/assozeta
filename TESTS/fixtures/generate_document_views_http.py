@@ -131,6 +131,11 @@ ALPHA_HEADER_OUT = ('<p class="intestazione">Spett.le ASD Alfa &amp; Figli &amp;
 ALPHA_FOOTER = '<p>Grazie da @Denominazione — @listacorsi</p>\n<p>  </p>'
 
 
+# TipTap's CodeBlock: whitespace-only strings inside <pre> are kept, the ones outside collapse.
+FALLBACK_FOOTER = '<pre><code>Orari @nome:\n  lun   18-20\n\n  <b>  </b>\n</code></pre>\n<p>  </p>'
+FALLBACK_FOOTER_OUT = '<pre><code>Orari :\n  lun   18-20\n\n  <b>  </b>\n</code></pre>\n<p> </p>'
+
+
 def alpha_footer_out(courses):
     return f'<p>Grazie da @Denominazione — {courses}</p>\n<p> </p>'
 
@@ -165,7 +170,7 @@ ASSOCIATIONS = {
                  'denomination': 'Ripiego <srl>', 'tax_code': '22222222222', 'address': 'Piazza "Duomo"', 'address_city': "L'Aquila",
                  'address_cap': '67100', 'logo': '', 'regulation': '', 'demand': None, 'federation': '', 'enroll_number': None,
                  'iban': None, 'website': None, 'sport': None, 'abbreviated': None, 'document_header': '<p><br></p>',
-                 'invoice_footer': '', 'subscription_template': 'altro.html', 'additional_sections': [], 'additional_fields': [],
+                 'invoice_footer': FALLBACK_FOOTER, 'subscription_template': 'altro.html', 'additional_sections': [], 'additional_fields': [],
                  'regulation_flags': (False, True, False), 'demand_flags': (False, False, False)},
     'athleteowned': {'user': uid(9), 'id': uid(10), 'role': 'athlete', 'email': 'atleta-assoc@example.test', 'deleted': False,
                      'denomination': 'Associazione di un atleta', 'tax_code': '33333333333', 'address': None, 'address_city': None,
@@ -428,7 +433,7 @@ for name, actor, key, headers in (
     add(name, actor, path, 200, HTML, headers=headers,
         html=subscription_context(key, *ALPHA_SUB, uid_value=S(key).upper() if 'uppercase' in name else None))
 add('subscription-classic-template', 'owner', SUB('classic'), 200, HTML, html=subscription_context('classic', '', '<p>Grazie</p>'))
-add('subscription-fallback-template', 'owner', SUB('fallback'), 200, HTML, html=subscription_context('fallback', '<p><br/></p>', ''))
+add('subscription-fallback-template', 'owner', SUB('fallback'), 200, HTML, html=subscription_context('fallback', '<p><br/></p>', FALLBACK_FOOTER_OUT))
 add('subscription-scoped-athlete', 'owner', SUB('own'), 200, HTML, headers=SCOPED, html=subscription_context('own', '', ''))
 add('subscription-scoped-athlete-hidden', 'owner', SUB('mario'), 403, SCOPED_HIDDEN, headers=SCOPED)
 add('subscription-group-other', 'owner', SUB('group'), 500, SERVER, headers={'X-Group-Id': IDS['foreign_group']})
@@ -475,7 +480,7 @@ add('preview-anonymous', 'anonymous', f"{PREVIEW}?sport_association_id={A('alpha
 add('preview-owner-classic', 'owner', f"{PREVIEW}?sport_association_id={A('classic')}", 200, HTML,
     html=preview_context('classic', '', '<p>Grazie</p>'))
 add('preview-fallback-italian', 'anonymous', f"{PREVIEW}?sport_association_id={A('fallback')}&x=1", 200, HTML,
-    headers={'Accept-Language': 'it'}, language='it', html=preview_context('fallback', '<p><br/></p>', '', 'it'))
+    headers={'Accept-Language': 'it'}, language='it', html=preview_context('fallback', '<p><br/></p>', FALLBACK_FOOTER_OUT, 'it'))
 add('preview-repeated-parameter', 'anonymous', f"{PREVIEW}?sport_association_id={A('classic')}&sport_association_id={A('alpha')}", 200,
     HTML, html=preview_context('alpha', ALPHA_HEADER_OUT, alpha_footer_out('')))
 add('preview-without-association', 'owner', PREVIEW, 500, SERVER)
