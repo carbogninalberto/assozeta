@@ -29,6 +29,8 @@ Cross-cutting facts used for the classes:
 
 | Family | Route | Was refused | Evidence |
 |---|---|---|---|
+| subscription-import-upload | `POST subscription/import/upload` with an Excel file | always | fixture `subscription_import_upload_http.json` 44 cases; RED Django 44/44, Go 500 (`v2imp-red-r1`); GREEN 4 transports 44/44 (`v2imp-versioned-r1`); mutation (birth city overwritten from the tax code) CAUGHT (`v2imp-mutation-r1`) |
+| subscription-import-upload | `POST subscription/import/upload` `{document_id, map, default}` on a stored Excel workbook (the wizard's final step) | always | same run |
 | statistic-reads | `GET statistic/dashboard?widget=todaylessons` | always (`statistic_reads.go`, `ErrStatisticNotPorted`) | fixture `statistic_reads_http.json` 86 cases; RED Django 86/86, Go 500; GREEN 4 transports 86/86; mutation (case-sensitive `events` match) CAUGHT |
 | statistic-reads | `GET statistic/dashboard?widget=expiredPayments` | always | same run |
 | payment-writes | `PATCH payment/<id>/update` with the row's own `payment_id` (edit form) | always from the UI | `payment_writes_http.json` 124 cases; GREEN `v2gaps-versioned-r2` 4 transports; mutation `v2gaps-mutation-r1` CAUGHT |
@@ -226,8 +228,7 @@ No A item remains.
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | POST subscription/add | owner wizard: a typed certificate date without an upload (placeholder PNG drawn with PIL: image rendering, refused by the porting rules) | `routes/association/Members/add/AddMember.svelte:104-139` | `service/subscription_create.go` (`subscriptionCreateRefuse`) | expensive (image) |
-| POST subscription/import/upload | final mapping step (every import) | `routes/association/Members/import/ImportMembers.svelte:46-52` | `service/subscription_import_upload.go:200` | expensive |
-| POST subscription/import/upload | Excel file | `import/sections/Section1.svelte:33-37` | `service/subscription_import_upload.go:210` | expensive |
+| POST subscription/import/upload | final mapping step on a stored CSV file (Excel uploads and their final step are ported) | `routes/association/Members/import/ImportMembers.svelte:46-52` | `service/subscription_import_upload.go` (`importDocument`) | medium-expensive |
 
 ### subscription-reads / subscription-lifecycle / subscription-renew / subscription-transfer / subscription-medical
 | Route | Condition | UI call | Go site | Cost |
@@ -885,8 +886,11 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### subscription-import-upload.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/import/upload `{document_id, map, default}` | mapping/import of an existing document | `service/subscription_import_upload.go:200` | **A** | `routes/association/Members/import/ImportMembers.svelte:46-52` always takes this step to finish an import. Django: `subscriptions_views.py:2671`. Cost: expensive (codicefiscale decode, dateutil, pandas dtypes, drafts). |
-| same, multipart `associates_file` | Excel suffix (xls/xlsx/…) | `service/subscription_import_upload.go:210` | **A** | `sections/Section1.svelte:33-37` uploads the file. The dropzone accepts xlsx/xls (`:63`). Cost: expensive. |
+| POST subscription/import/upload `{document_id, map, default}` | import of a stored Excel workbook | ported (`importDocument`, `subscription_import_rows.go`) | ported | `routes/association/Members/import/ImportMembers.svelte:46-52`. Workbooks and values outside the subset in subscription-import-upload.md stay refused (B). |
+| same | the stored document is a CSV file | `service/subscription_import_upload.go` (`importDocument`) | **A** | The dropzone accepts `text/csv` (`sections/Section1.svelte:63`); the upload answers its columns and the final step is refused. Cost: medium-expensive (`read_csv`'s C parser typing of every value). |
+| same, multipart `associates_file` | Excel suffix (xls/xlsx/…) | ported (`pandasxlsx.Read`) | ported | `sections/Section1.svelte:33-37` uploads the file. A legacy `.xls` or an `.ods` file answers the 500 page on Django too. |
+| same | workbook with boolean, error, time-of-day or duration cells, the 1904 date system, a non-text header cell, only whole-number columns | `pandasxlsx.ErrUnsupported` | B | Member sheets carry names and text columns; these forms need a hand-made or converted sheet. Cost: medium. |
+| same | a non-zero number in a date column, or date text outside `YYYY-MM-DD`, with a time, `A/B/YYYY` | `service/subscription_import_rows.go` (`subscriptionImportDate`) | B | Date cells and the usual text forms are handled; `dd-mm-yyyy`, `dd.mm.yyyy` and month names are not. Cost: medium (more dateutil forms). |
 | same | CSV invalid UTF-8, NUL, bare CR, columns with İ/Σ | `service/subscription_import_upload.go:219-223` | B | A Latin-1 CSV exported from old Excel gives invalid UTF-8: user-producible but a minority. legacy: n/a. Cost: medium. |
 | same | file given as `document_id` | `service/subscription_import_upload.go:189` | B | The UI sends a string. |
 
