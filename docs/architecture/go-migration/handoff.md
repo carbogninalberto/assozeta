@@ -137,11 +137,19 @@ request with the case's method, path, status and correlation id.
 
 Receipts (`quality-reports/go-migration/django-handoff-http-<label>`):
 
-- RED `red-f2`, handoff off (`HANDOFF_FAMILY=off`): Django 10/10; Go answers the first refused case with 500.
-- GREEN `versioned-f2`, handoff on: django-native, go-native, caddy-v1 and caddy-v2 10/10 each.
-- Mutation `mutation-f2` (the replay forwards only `Authorization` and `X-Correlation-Id`): CAUGHT at
+- RED `red-f3`, handoff off (`HANDOFF_FAMILY=off`): Django 10/10; Go answers the first refused case with 500.
+- GREEN `versioned-f3`, handoff on: django-native, go-native, caddy-v1 and caddy-v2 10/10 each.
+- Mutation `mutation-f3` (the replay forwards only `Authorization` and `X-Correlation-Id`): CAUGHT at
   `response.headers` of the first handed-off case.
 
-SWEEP_PLACEHOLDER
+Existing families, handoff off (the harness default), `run --versioned`, four transports each:
+
+- Before the last merge of `codex/go-backend-parity` (label `handoff-f1`): 146 families green.
+- After it (label `handoff-f2`): the 40 families whose fixtures, adapters or Go files the merge changed, green:
+  balance-sheet, camps-periods, communications-send-email, communications-smtp, course-enrolment, course-list, docmanager-reads, document-render, document-views, documents-writes, impersonation-users, invoice-parties, invoice-sync-print, invoice-views, misc-routes, payment-misc, payment-reads, payment-state, payment-writes, personas-reads, personas-writes, profile-misc, statistic-reads, subscription-create, subscription-misc, subscription-reads, subscription-renew, subscription-sign, workflow-update, sso-pairing, documents-list, documents-delete, documents-move, documents-bulk-delete, router-documents, router-personas, misc-exports, payment-export, course-subscriptions, subscription-medical. The other 106 keep their `handoff-f1` result.
+- `router-memberships` fails on the Django side before Go is asked (its adapter reuses the subscription-memberships
+  effect check without that family's storage fixture); it is unrelated to the handoff.
+- `login`, `manual-reader`, `refresh` and `session` have their own drivers and are not run by `family.py`; their Go
+  packages pass `go test ./...`.
 
 `make selfhost-test` passes; `test_go_lifecycle.py` checks the compose default and that an empty value stays empty.
