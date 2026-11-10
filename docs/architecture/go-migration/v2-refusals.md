@@ -36,8 +36,9 @@ Cross-cutting facts used for the classes:
 | association-transfer | `POST association/export/start` | always | same run |
 | association-transfer | `POST association/import/validate`, `start` | with a file | same run |
 | association-transfer | `association/import/*` with `X-Setup-Token` | before an instance exists | same run |
+| instance-setup | `POST instance/configure` | `type: import` with a finished task | fixture `instance_setup_http.json` 99 cases; RED Django 99/99, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (`association_id` key ignored) CAUGHT |
 
-Details in `statistic-reads.md` and `association-transfer.md`.
+Details in `statistic-reads.md`, `association-transfer.md` and `instance-setup.md`.
 
 ## Remaining A items, per family
 
@@ -128,7 +129,6 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 ### association transfer, data restore, instance setup and administration
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST instance/configure | `type: import` | `SetupWizard.svelte:129-134` | `service/instance_setup.go:133-134` | medium |
 | POST instance/admin/data-restore | every upload | `DataImport.svelte:172-174` | `service/data_restore.go:407` | expensive |
 | POST admin/diagnostics | every run | `SelfInstance.svelte:155` | `service/instance_admin.go:1227` | expensive |
 | GET/POST admin/updates | production mode | `SelfInstance.svelte:249,307` | `service/instance_admin.go:183,194` | medium |
@@ -478,7 +478,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### instance-setup.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST instance/configure | `initialization.type: import` with a finished import task | `BE_GO/internal/service/instance_setup.go:133-134`, `ErrInstanceSetupRefused` | **A** | `routes/setup/SetupWizard.svelte:129-134` sends `{type:'import', importTaskId}` after `StepImport.svelte:103-119` polls the task to completion. Every "import" setup is refused. |
+| POST instance/configure | `initialization.type: import` with a finished import task | ported (`importedAssociation`, `CreateImported`); FAILURE/REVOKED rows and non-UUID ids stay refused (B) | ported | `routes/setup/SetupWizard.svelte:129-134` sends `{type:'import', importTaskId}` after `StepImport.svelte:103-119` polls the task to completion. Every "import" setup is refused. |
 | POST instance/configure | owner/support e-mail > 254 chars | `service/instance_setup.go:142` | B | Unusual input. cheap. |
 | configure/reconfigure | non-ASCII domain or e-mail domain, IDNA `clientPortal` | `service/instance_setup.go:122-123,208-209` | B | IDN domains are unusual. legacy: no; medium. |
 | logo, admin/logo | logo name exists again after the deletes (`AWS_S3_FILE_OVERWRITE=False`) | `service/instance_setup.go:283` | B | Only on a concurrent upload: names are `instance/logo.{png,jpg,webp}`, all deleted first (`:263-272`). cheap. |
