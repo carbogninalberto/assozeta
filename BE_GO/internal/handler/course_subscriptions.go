@@ -194,9 +194,13 @@ func (h *CourseSubscriptionsHandler) request(c echo.Context) service.CourseSubsc
 func (h *CourseSubscriptionsHandler) failure(c echo.Context, err error) error {
 	request := c.Request()
 	var invalid *service.CourseSubscriptionValidationError
+	var invalidEvent *service.CourseWritesEventInvalid
 	switch {
 	case errors.As(err, &invalid):
 		return c.JSON(400, courseSubscriptionMessages(request, invalid.Fields))
+	case errors.As(err, &invalidEvent):
+		// CourseEventsSerializer.is_valid(raise_exception=True) inside the update.
+		return c.JSON(400, courseWritesMessages(request, invalidEvent.Fields))
 	case errors.Is(err, domain.ErrCourseSubscriptionNotFound):
 		return c.JSON(404, map[string]string{"detail": "No CourseSubscription matches the given query."})
 	}

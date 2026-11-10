@@ -120,6 +120,7 @@ assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'DefaultRouter course-subscriptions list, retrieve, update and destroy routes',
                               'ids': IDS, 'category': CATEGORY, 'document': DOCUMENT, 'associates': ASSOCIATES, 'medicals': MEDICALS,
                               'subscriptions': SUBSCRIPTIONS, 'courses': COURSES, 'payments': PAYMENTS, 'course_subscriptions': CS,
-                              'installments': INSTALLMENTS, 'carnets': CARNETS, 'holdings': HOLDINGS, 'cases': cases},
+                              'installments': INSTALLMENTS, 'carnets': CARNETS, 'holdings': HOLDINGS, 'instructor': INSTRUCTOR,
+                              'invoice': INVOICE, 'cases': cases},
                              ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

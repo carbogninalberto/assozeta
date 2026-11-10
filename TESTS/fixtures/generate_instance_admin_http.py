@@ -11,9 +11,17 @@ keeps a model of the row and every write case states the complete expected
 managed fields. Secrets are synthetic placeholders; stored secrets are
 checked by decrypting them with the run's SECRET_KEY ({'$secret': plain}).
 The test environment is development mode with the tracked example
-environment (APP_URL https://example.org, ASSOZETA_VERSION latest, no SMTP or
-provider credentials). Run with ``python3 -I``.
+environment (APP_URL https://example.org, ASSOZETA_VERSION latest, no SMTP
+host or provider credentials), WHITELABEL_NAME 'A.S.D. Polisportiva "Città"
+(Aurora)' and EMAIL_HOST_USER 'segreteria@polisportiva.example' (the
+environment sender is parseaddr of DEFAULT_FROM_EMAIL). The diagnostics runs
+at the end script the services the probes reach (see the adapter): the
+public URL through an HTTPS proxy, the API on 127.0.0.1:8000 (Go's API probe
+target is set to the same stub), the renderer and S3 stubs, a pidbox worker
+on the broker and the scheduler heartbeat in Django's cache. Run with
+``python3 -I``.
 """
+import base64
 import copy
 import json
 from pathlib import Path
@@ -32,6 +40,10 @@ UPDATES, RESTARTS = '/instance/admin/updates', '/instance/admin/restarts'
 APP_URL = 'https://example.org'
 APPLICATION = 'Nuovi invii da API e worker; le connessioni già aperte terminano con la configurazione precedente.'
 NO_STORE = (EMAIL, '/instance/admin/integrations/')
+# parseaddr('A.S.D. Polisportiva "Città" (Aurora) <segreteria@polisportiva.example>'):
+# the quotes are dropped, the comment is kept after the phrase.
+ENV_USER = 'segreteria@polisportiva.example'
+ENV_SENDER = 'A.S.D. Polisportiva Città (Aurora)'
 REQUEST_ID = 'b2000000-0000-4000-8000-000000000001'
 
 
@@ -84,7 +96,7 @@ cases = []
 
 
 def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None,
-        effect=None, cache=None, retry=None, audit=None):
+        effect=None, cache=None, retry=None, audit=None, **probes):
     if cache is None:
         cache = 'no-store' if path.startswith(NO_STORE) and response != SERVER else None
     case = {'name': f'instance-admin-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
@@ -94,6 +106,7 @@ def add(name, actor, path, status, response, *, method='GET', body=None, raw_bod
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    case.update(probes)
     cases.append(case)
 
 
@@ -163,8 +176,8 @@ def public_email(get=False):
         credential_error = '$literal' in stored
         configured = stored != {'$secret': ''}
     else:
-        value = {'source': 'environment', 'host': '', 'port': 465, 'username': '', 'security': 'none', 'from_email': '',
-                 'sender_name': 'Assozeta', 'revision': revision}
+        value = {'source': 'environment', 'host': '', 'port': 465, 'username': ENV_USER, 'security': 'none',
+                 'from_email': ENV_USER, 'sender_name': ENV_SENDER, 'revision': revision}
         credential_error, configured = False, False
     body = {**value, 'password_configured': configured, 'credential_error': credential_error, 'restart_required': False,
             'application': APPLICATION}
@@ -621,6 +634,133 @@ add('integration-ai-disable-clear', 'owner', integration('ai'), 200, public_inte
     'query_timeout': 1, 'ws_rate_limit': 1000, 'ws_timeout': 1, 'history_cap': 1000, 'clear_secrets': ['api_key']}, effect=write())
 add('admin-final', 'admin', ADMIN, 200, admin_body())
 add('diagnostics-final', 'owner', DIAGNOSTICS, 200, diagnostics_body(), cache='no-store')
+
+# ---------------------------------------------------------------------------
+# admin/diagnostics POST runs. Before each run the case's setup replaces the
+# stored leases (and, where stated, the email settings). The ten probes run
+# with the scripted services; each result is {status, level, message,
+# checked_at}, stored in CHECKS order with id/label/core/section, together
+# with checked_at and the claimed lease (now + 45 s, '$lease45').
+# ---------------------------------------------------------------------------
+LEASE = '$lease45'
+GENERIC = ('failed', 'connectivity', 'Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.')
+HEALTH_FAILED = ('failed', 'connectivity', 'L’endpoint di salute non risponde con la versione attesa. Verifica URL, rete e reverse proxy.')
+PASSED = {
+    'public_url': ('passed', 'connectivity', 'URL pubblico raggiungibile con certificato HTTPS valido.'),
+    'api': ('passed', 'connectivity', 'L’API risponde con la versione in esecuzione.'),
+    'database': ('passed', 'connectivity', 'Il database risponde a una query di lettura. Nessun dato è stato modificato.'),
+    'storage': ('passed', 'connectivity', 'Archivio accessibile in lettura. Scrittura e caricamento file non sono stati provati.'),
+    'worker': ('passed', 'connectivity', 'Un worker risponde tramite il broker. Non sono stati eseguiti task applicativi.'),
+    'scheduler': ('passed', 'functional', 'Il ciclo dello scheduler è attivo (segnale negli ultimi 90 secondi). L’esito dei task non è verificato.'),
+    'renderer': ('passed', 'connectivity', 'Il renderer apre e chiude una pagina nel browser. La generazione di un documento PDF non è stata provata.'),
+    'email': ('passed', 'configuration', 'Campi SMTP e mittente presenti. Connessione e invio non verificati: usa i test espliciti nella sezione Email.'),
+    'updater': ('not_applicable', 'configuration', 'Disponibile nelle installazioni self-hosted in modalità produzione.'),
+    'backups': ('not_applicable', 'configuration', 'Disponibile nelle installazioni self-hosted in modalità produzione.'),
+}
+NO_WORKER = ('failed', 'connectivity', 'Nessun worker risponde. Verifica worker e broker e riprova.')
+NO_SCHEDULER = ('failed', 'connectivity', 'Segnale dello scheduler assente o scaduto. Avvia o riavvia il servizio beat e ripeti dopo un minuto.')
+RENDERER_FAILED = ('failed', 'connectivity', 'Il renderer non supera il controllo di salute. Verifica il servizio PDF.')
+TIMEOUT = ('failed', 'connectivity', 'Tempo massimo superato. Controlla la disponibilità del servizio e riprova.')
+SMTP_PLAIN = ('warning', 'configuration', 'SMTP senza cifratura. Configura TLS o SSL prima di inviare credenziali o messaggi.')
+SMTP_INCOMPLETE = ('warning', 'configuration', 'Nome utente e password SMTP incompleti. Completa entrambe le credenziali oppure rimuovile per un relay senza autenticazione.')
+SMTP_MISSING = ('not_configured', 'configuration', 'Configura server SMTP e indirizzo mittente nella sezione Email.')
+HEALTH_HEADERS = {'host': '$self', **{'user-agent': 'python-requests/2.34.2', 'accept-encoding': 'gzip, deflate', 'accept': '*/*',
+                                     'connection': 'keep-alive'}}
+HEALTH = {'method': 'GET', 'path': '/healthz', 'headers': HEALTH_HEADERS}
+S3_LIST = {'method': 'GET', 'path': '/$bucket', 'query': {'list-type': '2', 'prefix': 'storage', 'max-keys': '1', 'encoding-type': 'url'},
+           'signed': True}
+LISTING = ('<?xml version="1.0" encoding="UTF-8"?>\n<ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">'
+           '<Name>contract</Name><Prefix>storage</Prefix><KeyCount>0</KeyCount><MaxKeys>1</MaxKeys><EncodingType>url</EncodingType>'
+           '<IsTruncated>false</IsTruncated></ListBucketResult>')
+DENIED_XML = ('<?xml version="1.0" encoding="UTF-8"?>\n<Error><Code>AccessDenied</Code><Message>Access Denied</Message>'
+              '<RequestId>contract</RequestId></Error>')
+# The ping kombu broadcasts (normalized by the adapter: '$uuid' for generated
+# identifiers, '$expires' for time() + 2).
+PING = {'channel': '/0.celery.pidbox', 'envelope_keys': ['body', 'content-encoding', 'content-type', 'headers', 'properties'],
+        'content-encoding': 'utf-8', 'content-type': 'application/json', 'headers': {'clock': 1, 'expires': '$expires'},
+        'properties': {'delivery_mode': 2, 'delivery_info': {'exchange': 'celery.pidbox', 'routing_key': ''}, 'priority': 0,
+                       'body_encoding': 'base64', 'delivery_tag': '$uuid'},
+        'body': {'method': 'ping', 'arguments': {}, 'destination': None, 'pattern': None, 'matcher': None, 'ticket': '$uuid',
+                 'reply_to': {'exchange': 'reply.celery.pidbox', 'routing_key': '$uuid'}}}
+
+
+def health_reply(status=200, body=None, raw=None, headers=None):
+    value = {'status': status, 'headers': headers or {}}
+    if raw is not None:
+        value['raw_b64'] = base64.b64encode(raw.encode()).decode()
+    else:
+        value['raw_b64'] = base64.b64encode(json.dumps(body).encode()).decode()
+        value['headers'] = {'Content-Type': 'application/json', **value['headers']}
+    return value
+
+
+HEALTHY = health_reply(body={'status': 'ok', 'version': 'v0.0.0'})
+RENDERER_OK = health_reply(body={'status': 'ok'})
+S3_OK = {'status': 200, 'headers': {'Content-Type': 'application/xml'}, 'raw_b64': base64.b64encode(LISTING.encode()).decode()}
+
+
+def public(answer):
+    return [{'connect': 'example.org:443', 'method': 'GET', 'path': '/api/healthz',
+             'headers': {'host': 'example.org', **{k: v for k, v in HEALTH_HEADERS.items() if k != 'host'}}, 'reply': answer}]
+
+
+def run(name, results, *, leases, public_reply=HEALTHY, api=HEALTHY, s3=S3_OK, worker='pong', heartbeat='fresh',
+        renderer=RENDERER_OK, email_setup=None, race=False, actor='owner'):
+    """One claimed run: the expected stored checks and response."""
+    setup = {'leases': leases}
+    if email_setup is not None:
+        settings, password = email_setup
+        setup.update(email_settings=settings, email_password=password)
+        state['email_settings'] = settings
+        state['email_password'] = {'$secret': password} if isinstance(password, str) else password
+    results = {**PASSED, **results}
+    checks = [{'status': results[key][0], 'level': results[key][1], 'message': results[key][2], 'checked_at': NOW,
+               'id': key, 'label': label, 'core': core, 'section': section} for key, label, core, section in CHECKS]
+    stored = state['diagnostic_results']
+    if race:
+        # Another save changes the email revision while the probes run: the
+        # email result is not stored.
+        state['email_revision'] += 1
+        checks = [check for check in checks if check['id'] != 'email']
+    stored['operation_leases'] = {**(leases or {}), 'diagnostics': LEASE}
+    stored['checks'], stored['checked_at'] = checks, NOW
+    add(name, actor, DIAGNOSTICS, 200, diagnostics_body(), method='POST', body={}, cache='no-store', effect=write(touched=False),
+        setup=setup, outbound=public(public_reply),
+        stubs={'api': {'replies': [api], 'expect': [HEALTH]}, 'renderer': {'replies': [renderer], 'expect': [HEALTH]},
+               's3': {'replies': [s3], 'expect': [S3_LIST]}},
+        worker={'mode': worker, 'expect': [PING]}, heartbeat=heartbeat, race=race)
+
+
+RELAY = {'host': 'mail.example.test', 'port': 465, 'security': 'tls', 'username': 'relay', 'from_email': 'relay@example.test',
+         'sender_name': 'Relay'}
+# A past lease is claimable; other leases are kept.
+run('diagnostics-run-passed', {}, leases={'diagnostics': 1.5, 'email_test': 2.5}, email_setup=(RELAY, 'placeholder secret 2'))
+add('diagnostics-run-just-finished', 'owner', DIAGNOSTICS, 429,
+    {'error': 'Diagnostica già in corso o appena terminata. Attendi fino a 45 secondi e riprova.'}, method='POST', body={}, retry='45')
+add('diagnostics-after-run', 'owner', DIAGNOSTICS, 200, diagnostics_body(), cache='no-store')
+run('diagnostics-run-failures', {'public_url': HEALTH_FAILED, 'api': HEALTH_FAILED, 'storage': GENERIC, 'worker': NO_WORKER,
+                                 'scheduler': NO_SCHEDULER, 'renderer': RENDERER_FAILED, 'email': SMTP_PLAIN},
+    leases={}, public_reply=health_reply(503, {'status': 'ok', 'version': 'v0.0.0'}),
+    api=health_reply(body={'status': 'ok', 'version': 'v9.9.9'}),
+    s3={'status': 403, 'headers': {'Content-Type': 'application/xml'}, 'raw_b64': base64.b64encode(DENIED_XML.encode()).decode()},
+    worker='silent', heartbeat='stale', renderer=health_reply(body={'status': 'starting'}),
+    email_setup=({**RELAY, 'security': 'none', 'username': ''}, ''))
+# A health body that is not JSON, or JSON that is not an object, raises; a
+# redirect is not followed; a reset connection raises; a worker answering
+# something other than pong does not count; an unreadable saved password raises.
+run('diagnostics-run-odd-answers', {'public_url': GENERIC, 'api': HEALTH_FAILED, 'storage': GENERIC, 'worker': NO_WORKER,
+                                    'scheduler': NO_SCHEDULER, 'renderer': GENERIC, 'email': GENERIC},
+    leases=None, public_reply=health_reply(raw='ok'), api=health_reply(302, raw='', headers={'Location': 'http://127.0.0.1:9/healthz'}),
+    s3={'mode': 'reset'}, worker='pang', heartbeat=None, renderer=health_reply(body=[{'status': 'ok'}]),
+    email_setup=(RELAY, {'$literal': 'not-a-fernet-token'}))
+# The renderer keeps sending its body one byte a second: the probe's 10 s
+# deadline ends it. An integer heartbeat (stored as plain digits) counts.
+run('diagnostics-run-timeout', {'renderer': TIMEOUT, 'email': SMTP_INCOMPLETE}, leases={}, heartbeat='integer',
+    renderer={'mode': 'trickle'}, email_setup=(RELAY, ''))
+# The email revision changes while the probes run (the renderer stub bumps it
+# when its request arrives): the email check is left out of the saved results.
+run('diagnostics-run-email-changed', {}, leases={}, race=True, actor='admin', email_setup=(RELAY, 'placeholder secret 2'))
+add('diagnostics-after-runs', 'owner', DIAGNOSTICS, 200, diagnostics_body(), cache='no-store')
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'instance administration (admin, email, integrations, diagnostics, updates, restarts)',

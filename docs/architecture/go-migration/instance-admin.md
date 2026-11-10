@@ -2,14 +2,16 @@
 
 The owner-only installation administration views of `BE/instance` are implemented in Go
 (`BE_GO/internal/{domain,dto,repository,service,handler}/instance_admin.go`, composed in
-`BE_GO/cmd/server/instance_admin.go`, settings in `BE_GO/internal/config/instance_admin.go`):
+`BE_GO/cmd/server/instance_admin.go`, settings in `BE_GO/internal/config/instance_admin.go`; the diagnostics
+run in `service/instance_diagnostics.go`, routed through `handler/instance_outbound.go` and composed in
+`cmd/server/instance_outbound.go`):
 
 | Route | Django view | Methods in Go |
 | --- | --- | --- |
 | `instance/admin` | `InstanceAdminView` | GET, PUT |
 | `instance/admin/email` | `EmailSettingsView` | GET, PUT, DELETE |
 | `instance/admin/integrations/<provider>` | `IntegrationSettingsView` | GET, PUT, DELETE |
-| `instance/admin/diagnostics` | `DiagnosticsView` | GET; POST only while a lease is active |
+| `instance/admin/diagnostics` | `DiagnosticsView` | GET, POST |
 | `instance/admin/updates` | `InstanceUpdatesView` | GET, POST (production mode: instance-updates.md) |
 | `instance/admin/restarts` | `InstanceRestartsView` | POST (production mode: instance-updates.md) |
 
@@ -34,7 +36,7 @@ The configuration body reuses the bootstrap service (`InstanceConfigSerializer`,
   checked before method dispatch, so a denied actor gets the 403 even for a 405 method.
 - `EmailSettingsView` and `IntegrationSettingsView` (`OwnerOperationsView`) add
   `Cache-Control: no-store` to every DRF response, 401/403/404/405 included. Diagnostics add it
-  only to their 200 reads. The 429 has `Retry-After: 45`.
+  only to their 200 answers (reads and runs). The 429 has `Retry-After: 45`.
 - `InstanceConfiguration` is not registered with auditlog, so no audit entries are written.
   `save(update_fields=...)` writes only the listed columns. `updated_at` advances only when
   it is listed (email, integrations, branding). Diagnostics leases do not touch it.
@@ -102,8 +104,55 @@ The configuration body reuses the bootstrap service (`InstanceConfigSerializer`,
   `not_checked` defaults) and `overall` from the core checks. It also holds the stored
   `checked_at`/`email_test` and the three integration configuration checks, each with a
   request-time `checked_at` (`datetime.isoformat()`, UTC).
-- POST: `claim_operation('diagnostics', 45)` is 429 while the stored lease is in the future,
-  or when the row cannot be locked without waiting.
+- POST: `claim_operation('diagnostics', 45)` is 429 (`Retry-After: 45`) while the stored lease is in
+  the future, or when the row cannot be locked without waiting. Otherwise the lease (now + 45 s) is
+  saved, `email_revision` is read and the ten probes run. Django runs each in a
+  `python -m instance.diagnostic_probe` subprocess, four at a time (`ThreadPoolExecutor(4)`), with a
+  10 s deadline. Go runs them in-process, four goroutines at a time in `CHECKS` order, each under its
+  own 10 s deadline. The run then continues to its save even if the client disconnects, as the
+  Django view does.
+- Each result is reduced as `run_probe` does: an exception inside a probe is
+  `Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.` (never
+  the exception text); an expired deadline is `Tempo massimo superato. Controlla la disponibilità del
+  servizio e riprova.`; output that is not a valid result (status/level outside the allowed sets, a
+  message that is not a string or longer than 700 characters) is `Verifica non riuscita. Controlla il
+  servizio e riprova.`; only `status`, `level` and `message` are kept, plus `checked_at`.
+- The probes, with Django's Italian messages:
+  - `public_url`: `urlsplit(APP_URL)` must be http(s) with a host and no user info (else a
+    configuration failure), then `GET <APP_URL>/api/healthz` with requests' headers, timeouts (3, 3),
+    no redirects, the first 8193 body bytes as JSON: `status == 'ok'` and `version == RUNNING_VERSION`.
+    https passes, http is a warning.
+  - `api`: the same health check on `<api>/healthz` (see below).
+  - `database`: `SELECT 1`.
+  - `storage`: `list_objects_v2(Bucket, Prefix=AWS_LOCATION, MaxKeys=1)` with the settings' static
+    keys, path style, `encoding-type=url`, timeouts 3 s, a single attempt.
+  - `worker`: `app.control.inspect(timeout=2).ping()` over the broker, in
+    `BE_GO/internal/celery/pidbox.go`: the reply queue `<oid>.reply.celery.pidbox` is bound
+    (`_kombu.binding.reply.celery.pidbox`), the ping is published on `/0.celery.pidbox` with kombu's
+    exact envelope (body base64, `clock: 1`, `expires: time() + 2`), replies are taken with BRPOP until
+    none arrives for 2 s, then the binding and the priority lists are removed. It passes when a node
+    answers `{'ok': 'pong'}` (replies merged like `flatten_reply`; a non-dict reply raises).
+  - `scheduler`: the Django cache value `:1:instance:scheduler:heartbeat` (plain digits for an int,
+    else a pickle) must be a number within the last 90 s.
+  - `renderer`: the health check on `http://PUPPETEER_HOST:PUPPETEER_PORT/healthz` (status only).
+  - `email`: `effective_email(config)`: not configured without host or sender, TLS and SSL both set
+    fails, no encryption is a warning, username without password (or the reverse) is a warning, else
+    passed. An unreadable saved password raises.
+  - `updater`, `backups`: `not_applicable` outside production; in production `GET /status` and
+    `GET /diagnostics` on the update runner (`updaterrunner`), with Django's protocol and `can_update`
+    checks; the backups answer is the runner's `backup` object, sanitized.
+- Then, under `select_for_update()`, the email check is left out when `email_revision` changed during
+  the run; `diagnostic_results` keeps its other keys and gets `checks` and `checked_at`. The response
+  is `snapshot(config)` with `Cache-Control: no-store`.
+
+### API probe target (decision)
+
+Django's `api` probe calls `http://127.0.0.1:8000/healthz`, its own process. The equivalent for a
+Go-only installation is the Go server's own `/healthz` (`{"status": "ok", "version":
+RUNNING_VERSION}`, `handler/health.go`). Go uses `http://127.0.0.1:<GO_LISTEN_ADDR port>`, which is
+`http://127.0.0.1:8000` with the default `:8000` that both API containers use in `selfhost/compose.yml`.
+`ASSOZETA_DIAGNOSTICS_API_URL` replaces it (the test sets it to the stub Django's probe reaches).
+The result shape and messages are Django's, including the URL validation.
 
 ## admin/updates and admin/restarts
 
@@ -121,14 +170,29 @@ The configuration body reuses the bootstrap service (`InstanceConfigSerializer`,
 
 Go refuses these with the server error page before any write:
 
-- `admin/diagnostics` POST once a lease can be claimed. Django writes the lease and runs the
-  outbound probes (database, storage, SMTP, worker, renderer, updater).
 - Form-encoded and multipart bodies on every write (the frontend sends JSON).
 - An AI `base_url` with non-ASCII characters (URLValidator's IDNA fallback).
-- Environment email when `EMAIL_PORT` is not an integer, or when `DEFAULT_FROM_EMAIL` is not a
-  plain `Name <address>` form (for example a quoted or commented `WHITELABEL_NAME`).
+- Environment email when `EMAIL_PORT` is not an integer.
 - Stored JSON shapes Django would only partly accept: non-object settings, leases or records,
-  non-list `checks`, `dict()` of pair lists, and non-integer stored revisions on a write.
+  non-list `checks`, `dict()` of pair lists, and non-integer stored revisions on a write. For a
+  diagnostics run they are checked before the lease is claimed.
+- A diagnostics run in production mode when the update runner client could not be built.
+
+Documented differences inside a diagnostics run (each probe still answers; none is reachable with
+data the application writes):
+
+- A health or runner body that `json.loads` would decode as UTF-16/UTF-32, and a runner backup message
+  with a lone surrogate, are answered as failures.
+- A heartbeat pickle other than a float, int, bool, None or short string is answered with the generic
+  failure (only the scheduler writes it, as a float).
+- A malformed `APP_URL` that `urlsplit` rejects with an exception is answered as an invalid URL.
+
+`WHITELABEL_NAME` is no longer refused: `DEFAULT_FROM_EMAIL` (`f"{WHITELABEL_NAME} <{EMAIL_HOST_USER}>"`)
+is read with a port of Python 3.13's strict `email.utils.parseaddr` (`config/parseaddr.go`). Names
+with dots, accents, quotes or comments keep Django's result (`A.S.D. Polisportiva "Città" (Aurora)`
+is `A.S.D. Polisportiva Città (Aurora)`); a name with a comma, `;`, `@`, `<>` or `[]` gives Django's
+empty sender and address. `config/testdata/parseaddr.json` (667 inputs, generated by
+`parseaddr_corpus.py` with the production interpreter) pins the port.
 
 Routes left entirely on Django:
 
@@ -139,15 +203,39 @@ Routes left entirely on Django:
 
 ## Evidence
 
-`TESTS/fixtures/instance_admin_http.json` has 141 cases, from
+`TESTS/fixtures/instance_admin_http.json` has 172 cases, from
 `TESTS/fixtures/generate_instance_admin_http.py`. It runs one seeded configuration in sequence.
 The seed includes an undecryptable email password and Stripe secret, a stored diagnostics
 lease and a Stripe override. Every write case states every managed field, and stored secrets
 are checked by decrypting them with the run's `SECRET_KEY`. The native Go server receives the
-same instance environment Django reads (`TESTS/adapters/go/payment_category_server.py`).
+same instance environment Django reads (`TESTS/adapters/go/payment_category_server.py`), with
+`WHITELABEL_NAME='A.S.D. Polisportiva "Città" (Aurora)'` and
+`EMAIL_HOST_USER=segreteria@polisportiva.example`.
 
-- RED (`native-r1`): Django 141/141, Go 404 on the first case.
-- GREEN (`versioned-r1`): 141/141 on native Django, native Go, Caddy `/api/v1` and `/api/v2`,
-  with exact row effects.
-- Mutation (`mutation-r1`): an email save that drops the wrong diagnostic check (`smtp`
-  instead of `email`) fails `email-put-replace-password` on `state.diagnostic_results`.
+The diagnostics runs (`diagnostics-run-*`) use the services the adapter's `service_context` owns for
+both backends: instance-outbound's HTTPS proxy for `https://example.org/api/healthz`, scripted HTTP
+stubs for the API (127.0.0.1:8000), the renderer and S3, a pidbox worker on the broker that answers
+through kombu's own `Node`/`Mailbox` code, and the scheduler heartbeat in Django's cache. They cover
+every probe's passed and failed paths in development mode (wrong version, 503, non-JSON and non-object
+bodies, an unfollowed redirect, a reset connection, S3 403, silent and non-pong workers, stale,
+missing and integer heartbeats, the renderer's 10 s deadline, each email outcome and an unreadable
+password), the 429 right after a run, a past lease and other leases kept, and an email revision bumped
+while the probes run. Each case checks the exact outbound requests (requests' headers, the S3 query),
+the normalized ping envelope (key order, `clock`, `expires`, base64 body) and that no pidbox reply
+queue is left.
+
+- RED (`diag-red`): Django 172/172; the Go server without this change fails
+  `instance-admin-email-delete` (500, the environment sender refused).
+- GREEN (`diag-green`): 172/172 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`diag-mutation`): a worker answer counted when it is any non-empty `ok` instead of
+  `pong` is caught on `diagnostics-run-odd-answers`.
+- Re-run green with this change (`diag-rerun`): instance-outbound, instance-updates,
+  instance-backups, instance-backups-actions, sso-pairing.
+- Go unit tests: `config/parseaddr_test.go` (667 Python parseaddr outputs),
+  `celery/pidbox_test.go` (the ping envelope byte for byte against kombu's, a captured worker reply),
+  `service/instance_diagnostics_test.go` (heartbeat pickles from the production interpreter, reply
+  merging, sanitizing).
+- Real worker: a Celery worker of `core.celery` (`celery -A core worker --pool solo`) on a throwaway
+  Redis answered `celery.Inspect` (`TestInspectPingLive`) with `{"verify@diag": {"ok": "pong"}}` after the
+  2 s collection, the reply queue removed; Django's `app.control.inspect(timeout=2).ping()` returned the
+  same.

@@ -105,6 +105,11 @@ COURSES = {
     'u_null': {**course('Senza titolo'), 'title': None},
     'u_clear': course('Ginnastica'),
     'd_member': course('Sala pesi', course_type=3),
+    # impersonation sessions (an owner acting as its full collaborator or as an athlete)
+    'd_session': course('Sessione'),
+    'u_session': course('Ritmica'),
+    'o_session': course('Kick boxing'),
+    'o_session_athlete': course('Hockey', one_fee='15.00', one_fee_payment=True),
 }
 COURSE_LOCATIONS = [('u_main', 'old'), ('d_full', 'own'), ('u_linked', 'far')]
 COURSE_TAGS = [('d_full', 'own')]
@@ -164,6 +169,8 @@ CS = {
     'u5': cs('u_multi', 'luisa'),
     'u_far': cs('u_far', 'hans'),
     'd_cs_m': {**cs('d_member', 'luisa'), 'type': 3},
+    'o5': cs('o_session', 'luisa'),
+    'o6': cs('o_session_athlete', 'mario', multi=True),
 }
 MEMBERSHIP_PAYMENTS = [('d_cs_m', 'd_mu'), ('d_cs_m', 'd_mp'), ('d_cs_m', 'd_mdel')]
 
@@ -337,6 +344,8 @@ SCOPED = {'detail': 'Operazione non disponibile nel contesto dell’associazione
 MALFORMED = ['badly formed hexadecimal UUID string']
 NOT_ALLOWED = {'detail': 'User not allowed.'}
 ATHLETE_SESSION = {'X-Impersonation-Id': '$session:owner_athlete', 'User-Id': ATHLETE}
+FULL_SESSION = {'X-Impersonation-Id': '$session:owner_full', 'User-Id': IDS['full_collaborator']}
+HIDDEN = {'detail': 'Risorsa non disponibile per questo utente e associazione.'}
 GROUP = lambda key: {'X-Group-Id': IDS[key]}
 missing = lambda key: {'detail': f'Missing permission: {key}'}
 method_not_allowed = lambda verb: {'detail': f'Method "{verb}" not allowed.'}
@@ -371,6 +380,11 @@ add('delete-foreign-course', 'owner', f'/course/{cid("d_far")}/delete', 403, NOT
 add('delete-course-without-association', 'owner', f'/course/{cid("d_orphan")}/delete', 500, SERVER)
 add('delete-empty-course', 'owner', f'/course/{cid("d_empty")}/delete', 200, DELETE_OK,
     result=effect('owner', rows={COURSE: {cid('d_empty'): None}}, audit=[deleted(COURSE, 'd_empty', 'owner')]))
+
+# Impersonating a full collaborator: the owner's course inside the session's association.
+add('delete-impersonated-collaborator', 'owner', f'/course/{cid("d_session")}/delete', 200, DELETE_OK, headers=FULL_SESSION,
+    result=effect('owner', rows={COURSE: {cid('d_session'): None}}, audit=[deleted(COURSE, 'd_session', 'owner')]))
+add('delete-impersonated-foreign-hidden', 'owner', f'/course/{cid("d_far")}/delete', 403, HIDDEN, headers=FULL_SESSION)
 
 # The collector: installments (pre_delete deletes the unpaid payment: P, I, P), course
 # subscriptions (the soft-deleted one with a payment fails on Payment.objects.get(id=...);
@@ -496,6 +510,11 @@ add('update-clear-fee', 'owner', f'/course/{cid("u_plain")}/update', 200, UPDATE
 add('update-same-values', 'owner', f'/course/{cid("u_plain")}/update', 200, UPDATED, method='PATCH',
     body={'fee': None, 'title': 'Scherma', 'multiple_quotes': {'a': 'è'}, 'locations': []}, result=effect('owner'))
 add('update-empty-body', 'owner', f'/course/{cid("u_plain")}/update', 200, UPDATED, method='PATCH', body={}, result=effect('owner'))
+rows, audit = updated('u_session', 'owner', {'description': ['Descrizione Ritmica', 'Sessione']}, description='Sessione')
+add('update-impersonated-collaborator', 'owner', f'/course/{cid("u_session")}/update', 200, UPDATED, method='PATCH', headers=FULL_SESSION,
+    body={'description': 'Sessione'}, result=effect('owner', rows=rows, audit=audit))
+add('update-impersonated-foreign-hidden', 'owner', f'/course/{cid("u_far")}/update', 403, HIDDEN, method='PATCH', headers=FULL_SESSION,
+    body={'description': 'Altra'})
 add('update-other-association-course-denied', 'owner', f'/course/{cid("u_far")}/update', 403, NOT_ALLOWED, method='PATCH',
     body={'description': 'Altra', 'locations': []})
 add('update-other-association-owner', 'foreign_owner', f'/course/{cid("u_main")}/update', 403, NOT_ALLOWED, method='PATCH',
@@ -569,6 +588,10 @@ add('overview-delete-own-payment-fails', actor, od('o_stale', 'luisa'), 500, SER
     audit=audit))
 add('overview-delete-installments-empty-text', 'owner', od('o_text', 'luisa'), 200, OV_DELETED, method='DELETE', body={'installments': ''},
     result=effect('owner', rows={CSM: {csid('o4'): {'deleted': True}}}, audit=[soft_deleted('o4', 'owner')]))
+
+add('overview-delete-impersonated-collaborator', 'owner', od('o_session', 'luisa'), 200, OV_DELETED, method='DELETE', headers=FULL_SESSION,
+    result=effect('owner', rows={CSM: {csid('o5'): {'deleted': True}}}, audit=[soft_deleted('o5', 'owner')]))
+add('overview-delete-impersonated-foreign-hidden', 'owner', od('u_far', 'hans'), 403, HIDDEN, method='DELETE', headers=FULL_SESSION)
 
 # --- course/<uid>/overview/<uid_subscription>/update ----------------------------------
 
@@ -648,6 +671,25 @@ add('overview-update-to-one-fee', actor, ou('u_plain', 'luisa'), 200, OV_UPDATED
     created={PAYMENT: [new_payment('@u3p', '0.00', user=luisa[0], associate=luisa[1], description=text, meta=one_fee_meta)]}, audit=audit))
 add('overview-update-one-fee-single-payment', 'owner', ou('u_multi', 'luisa'), 200, OV_UPDATED, body={'one_fee_payment': True},
     result=effect('owner'))
+# Impersonating an athlete: the athlete's own instalment row switches to one fee in the subscription's association.
+actor = 'owner'
+row = CS['o6']
+text = "Pagamento in un'unica soluzione per Hockey"
+session_meta = {'one_fee': 'true', 'description': text, 'course_id': cid('o_session_athlete'), 'course_title': 'Hockey', 'course_type': '1',
+                'payment_date': '2026-06-01'}
+audit = [created_entries(PAYMENT, '@u6p', [OWN, DIRECT]),
+         entry(CSM, row['course_subscription_id'], 1, {'payment': ['None', '@u6p'], 'multi_payments': ['True', 'False'],
+                                                       'one_fee_payment': ['False', 'True']},
+               [OWN, COURSE_INDEX], cs_repr({**row, 'multi_payments': False, 'one_fee_payment': True}, payment_id="UUID('@u6p')"))]
+add('overview-update-impersonated-athlete', actor, ou('o_session_athlete', 'mario'), 200, OV_UPDATED, body={'one_fee_payment': True},
+    headers=ATHLETE_SESSION, result=effect(
+        actor, rows={CSM: {csid('o6'): change_row(CSM, 'o6', payment_id='@u6p', multi_payments=False, one_fee_payment=True)}},
+        created={PAYMENT: [new_payment('@u6p', '15.00', user=mario[0], associate=mario[1], description=text, meta=session_meta)]}, audit=audit))
+add('overview-update-impersonated-collaborator', 'owner', ou('o_upd', 'luisa'), 200, OV_UPDATED, headers=FULL_SESSION,
+    body={'multi_payments': False}, result=effect('owner'))
+add('overview-update-impersonated-athlete-other-subscription', 'owner', ou('o_upd', 'luisa'), 403, HIDDEN, headers=ATHLETE_SESSION,
+    body={'one_fee_payment': True})
+
 # Not atomic: data['all'] is read only for a past event, after the payment and the save.
 actor = 'owner'
 row = CS['u4']
@@ -770,6 +812,13 @@ add('add-unknown-subscription', actor, '/course/add', 500, SERVER,
 add('add-other-association-subscription', actor, '/course/add', 500, SERVER,
     body={'new_course': {'title': 'Estera', 'description': 'Note', 'fee': '5'}, 'subscriptions': [sid('hans')]},
     result=effect(actor, created={COURSE: [new_course('@nc6', 'Estera', 'Note', fee='5.00')]}, audit=course_entries('@nc6', actor, ('one_fee',))))
+
+# Impersonating a full collaborator: the course is created in the session's association.
+add('add-impersonated-collaborator', actor, '/course/add', 200, ADDED, headers=FULL_SESSION,
+    body={'new_course': {'title': 'Sessione nuova', 'description': 'Note'}, 'subscriptions': []},
+    result=effect(actor, created={COURSE: [new_course('@nc7', 'Sessione nuova', 'Note')]}, audit=course_entries('@nc7', actor, ('fee', 'one_fee'))))
+add('add-impersonated-foreign-subscription-hidden', actor, '/course/add', 403, HIDDEN, headers=FULL_SESSION,
+    body={'new_course': {'title': 'Estera', 'description': 'Note'}, 'subscriptions': [sid('hans')]})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Course add, update and delete and course-overview update and delete authored '

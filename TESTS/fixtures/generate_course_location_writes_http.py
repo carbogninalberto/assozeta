@@ -13,8 +13,8 @@ viewset's own delete() also answers DELETE on the add (no pk: 500) and update
 routes, which deletes the location. The
 serializer saves the location before handling documents_data, so a document
 without its keys (400) or with bad base64 (500) still leaves the saved row:
-requests are not atomic. Successful document uploads write to S3 and are
-outside this sequence. auditlog records the create, the changed fields and
+requests are not atomic. Each documents_data item creates a Document, stores
+its decoded bytes (default_storage.save on the runner's MinIO) and links it. auditlog records the create, the changed fields and
 the delete. Run with ``python3 -I`` after the course-locations list generator.
 """
 import copy
@@ -139,6 +139,32 @@ response, effect = created('owner', {'title': 'Base64'})
 add('add-document-bad-base64-keeps-location', 'owner', ADD, 500, SERVER,
     body={'title': 'Base64', 'documents_data': [{'document': 'abc', 'filename': 'a.pdf'}]}, effect=effect)
 
+
+
+def upload(filename, text, content_type, encoding=None):
+    """A documents_data item (the form's base64 file) and what the runner expects stored."""
+    body = __import__('base64').b64encode(text.encode()).decode()
+    return {'document': body, 'filename': filename}, {'filename': filename, 'body_b64': body, 'content_type': content_type, 'encoding': encoding}
+
+
+def new_documents(*specs):
+    return [{'document_id': '$document', 'creation_date': '$now', 'filepath': None, 'filename': spec['filename'], 'file_size_bytes': None,
+             'token': '$token'} for spec in specs]
+
+
+# The location form attaches files as {document: <base64>, filename}: each becomes a Document, a stored object and a link.
+first, first_spec = upload('regolamento.pdf', 'Regolamento della piscina', 'application/pdf')
+second, second_spec = upload('orari è.txt', 'Lun-Ven 9-21', 'text/plain')
+response, effect = created('owner', {'title': 'Con allegati'})
+response['documents'] = new_documents(first_spec, second_spec)
+effect['uploads'] = [first_spec, second_spec]
+add('add-with-documents', 'owner', ADD, 201, response, body={'title': 'Con allegati', 'documents_data': [first, second]}, effect=effect)
+third, third_spec = upload('mappa.tar.gz', 'archivio', 'application/x-tar', 'gzip')
+response, effect = created('owner', {'title': 'Archivio'})
+response['documents'] = new_documents(third_spec)
+effect['uploads'] = [third_spec]
+add('add-with-compressed-document', 'owner', ADD, 201, response, body={'title': 'Archivio', 'documents_data': [third]}, effect=effect)
+
 add('update-anonymous', 'anonymous', one('gym', 'update'), 401, ANONYMOUS, method='PATCH', body={})
 add('update-restricted-missing-permission', 'restricted_collaborator', one('gym', 'update'), 403, missing('update'), method='PATCH',
     body={'title': 'X'})
@@ -162,6 +188,19 @@ response, effect = changed('owner', 'gym', description='Nuova')
 add('update-document-missing-key-keeps-change', 'owner', one('gym', 'update'), 400, MISSING_KEY, method='PATCH',
     body={'description': 'Nuova', 'documents_data': [{'document': ''}]}, effect=effect)
 
+# Not atomic: the first document is stored and linked before the second item raises.
+fourth, fourth_spec = upload('turni.pdf', 'Turni estivi', 'application/pdf')
+response, effect = changed('owner', 'pool')
+effect['uploads'] = [fourth_spec]
+add('update-document-then-missing-key', 'owner', one('pool', 'update'), 400, MISSING_KEY, method='PATCH',
+    body={'documents_data': [fourth, {'filename': 'senza.pdf'}]}, effect=effect)
+fifth, fifth_spec = upload('nuovo.pdf', 'Nuovo regolamento', 'application/pdf')
+response, effect = changed('owner', 'gym', title='Palestra grande')
+response['documents'] = response['documents'] + new_documents(fifth_spec)
+effect['uploads'] = [fifth_spec]
+add('update-with-document', 'owner', one('gym', 'update'), 200, response, method='PATCH',
+    body={'title': 'Palestra grande', 'documents_data': [fifth]}, effect=effect)
+
 add('delete-restricted-missing-permission', 'restricted_collaborator', one('pool', 'delete'), 403, missing('delete'), method='DELETE')
 add('delete-wrong-method', 'owner', one('pool', 'delete'), 405, {'detail': 'Method "GET" not allowed.'}, method='GET')
 add('delete-options', 'owner', one('pool', 'delete'), 200, OPTIONS, method='OPTIONS')
@@ -176,6 +215,7 @@ add('update-route-delete-deletes', 'full_collaborator', one('gym', 'update'), 20
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({**{k: v for k, v in SOURCE.items() if k != 'cases'},
-                              'scope': 'Course location add, update and delete authored sequence with audit effects', 'cases': cases},
+                              'scope': 'Course location add, update and delete authored sequence with audit and storage effects',
+                              'location': 'course-locations', 'cases': cases},
                              ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

@@ -86,7 +86,7 @@ func (s *CourseEnrolment) OverviewAdd(ctx context.Context, identity domain.Resol
 	if err = canonicalGroup(request.GroupHeader); err != nil {
 		return nil, err
 	}
-	tx, err := s.begin(ctx, identity)
+	tx, err := s.begin(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -96,13 +96,22 @@ func (s *CourseEnrolment) OverviewAdd(ctx context.Context, identity domain.Resol
 	if err != nil {
 		return nil, err
 	}
+	if own != nil && !courseEnrolmentScoped(identity, own) {
+		own = nil
+	}
 	course, err := tx.Course(ctx, courseID.String(), group)
 	if err != nil {
 		return nil, err
 	}
+	if course != nil && !courseEnrolmentScoped(identity, course.AssociationID) {
+		course = nil
+	}
 	subscription, err := tx.Subscription(ctx, subscriptionID.String(), group)
 	if err != nil {
 		return nil, err
+	}
+	if subscription != nil && !courseEnrolmentScoped(identity, subscription.AssociationID) {
+		subscription = nil
 	}
 	if own != nil {
 		if course == nil || course.AssociationID == nil {
@@ -183,7 +192,8 @@ func (s *CourseEnrolment) OverviewAdd(ctx context.Context, identity domain.Resol
 		return nil, enrolmentLate(tx, err)
 	}
 	if payment != nil {
-		if positive, _ := decimalPositive(&payment.Amount); positive {
+		// payment.amount > 0 compares the in-memory value (a quote's float).
+		if positive, _ := decimalPositive(&payment.MemoryAmount); positive {
 			created.row.PaymentID = &payment.ID
 			if err = tx.SaveRow(ctx, created.save(), audit); err != nil {
 				return nil, err
@@ -336,7 +346,7 @@ func (s *CourseEnrolment) MakePayment(ctx context.Context, identity domain.Resol
 	if err = canonicalGroup(request.GroupHeader); err != nil {
 		return nil, err
 	}
-	tx, err := s.begin(ctx, identity)
+	tx, err := s.begin(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -345,6 +355,9 @@ func (s *CourseEnrolment) MakePayment(ctx context.Context, identity domain.Resol
 	installment, err := tx.Installment(ctx, id.String(), group)
 	if err != nil {
 		return nil, err
+	}
+	if installment != nil && !courseEnrolmentScoped(identity, installment.SubscriptionAssociation, installment.CourseAssociation) {
+		installment = nil
 	}
 	if installment == nil || installment.SubscriptionID == nil {
 		// raise Exception('Installment not found.'), or subscription.user on None.

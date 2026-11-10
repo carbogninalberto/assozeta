@@ -4,15 +4,27 @@ import (
 	"context"
 	"errors"
 	"time"
+	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
+	"github.com/google/uuid"
 )
 
 type CourseLocationWrites struct {
 	store domain.CourseLocationWriteStore
 	now   func() time.Time
 	ids   func() string
+	// uploads stores documents_data files (default_storage.save); without
+	// it every upload is refused.
+	uploads *DocumentUploads
+}
+
+// WithUploads enables the documents_data uploads through the document storage.
+func (s *CourseLocationWrites) WithUploads(uploads *DocumentUploads) *CourseLocationWrites {
+	s.uploads = uploads
+	return s
 }
 
 func NewCourseLocationWrites(store domain.CourseLocationWriteStore, now func() time.Time, ids func() string) *CourseLocationWrites {
@@ -26,9 +38,10 @@ var (
 	// ErrCourseLocationDocumentDecode is base64.b64decode's failure (500),
 	// raised after the location was saved.
 	ErrCourseLocationDocumentDecode = errors.New("course location document is not base64")
-	// ErrCourseLocationUploadUnsupported refuses documents_data that would
-	// reach Document creation and the storage upload (not ported) before any
-	// write.
+	// ErrCourseLocationUploadUnsupported refuses documents_data uploads the
+	// port does not reproduce (indexed form keys, filenames that are not plain
+	// storable text, names Storage.save rejects, no document storage) before
+	// any write.
 	ErrCourseLocationUploadUnsupported = errors.New("course location document upload is not ported")
 	// ErrCourseLocationPrimaryKeyChange refuses a new course_location_id on
 	// update: Model.save() would insert a copy under the new key (not ported).
@@ -103,24 +116,74 @@ func (s *CourseLocationWrites) validate(ctx context.Context, tx domain.CourseLoc
 	return nil
 }
 
-// courseLocationDocuments walks _handle_documents without writing. The first
-// item that raises decides the failure returned after the save; an item that
-// would upload first is refused before any write.
-func courseLocationDocuments(write dto.CourseLocationWrite) (error, error) {
+// courseLocationUpload is one documents_data item _handle_documents stores.
+type courseLocationUpload struct {
+	filename string
+	content  []byte
+}
+
+// courseLocationDocuments walks _handle_documents without writing: the items
+// that store a document (in order) up to the first one that raises, whose
+// failure is returned after the save. Inputs whose failure the port does not
+// reproduce (filenames that are not plain storable text of at most 255
+// characters, names Storage.save rejects) are refused before any write.
+func (s *CourseLocationWrites) courseLocationDocuments(write dto.CourseLocationWrite) ([]courseLocationUpload, error, error) {
 	if write.IndexedDocuments {
-		return nil, ErrCourseLocationUploadUnsupported
+		return nil, nil, ErrCourseLocationUploadUnsupported
 	}
+	var uploads []courseLocationUpload
 	for _, item := range write.Documents {
 		switch dto.CourseLocationDocument(item) {
 		case dto.CourseLocationDocumentMissingKey:
-			return ErrCourseLocationDocumentKey, nil
+			return uploads, ErrCourseLocationDocumentKey, nil
 		case dto.CourseLocationDocumentUndecodable:
-			return ErrCourseLocationDocumentDecode, nil
-		default:
-			return nil, ErrCourseLocationUploadUnsupported
+			return uploads, ErrCourseLocationDocumentDecode, nil
+		}
+		if s.uploads == nil {
+			return nil, nil, ErrCourseLocationUploadUnsupported
+		}
+		raw, _ := item.Lookup("document")
+		content, err := dto.PythonB64Decode(raw)
+		if err != nil {
+			return uploads, ErrCourseLocationDocumentDecode, nil
+		}
+		value, _ := item.Lookup("filename")
+		filename, ok := value.(string)
+		if !ok || !dto.AssociateDraftStorable(filename) || utf8.RuneCountInString(filename) > 255 {
+			return nil, nil, ErrCourseLocationUploadUnsupported
+		}
+		if _, err = documentkey.UploadName(s.now(), uuid.New(), filename); err != nil {
+			return nil, nil, ErrCourseLocationUploadUnsupported
+		}
+		uploads = append(uploads, courseLocationUpload{filename: filename, content: content})
+	}
+	return uploads, nil, nil
+}
+
+// storeDocuments creates each Document (auditlog entry), stores its bytes and
+// links it to the location.
+func (s *CourseLocationWrites) storeDocuments(ctx context.Context, tx domain.CourseLocationWriteTransaction, identity domain.ResolvedIdentity,
+	location string, uploads []courseLocationUpload, audit domain.LoginAuditContext) error {
+	if len(uploads) == 0 {
+		return nil
+	}
+	actor, err := tx.ActorAssociation(ctx, identity.Actor.ID)
+	if err != nil {
+		return err
+	}
+	for _, upload := range uploads {
+		document := s.uploads.newDocument(upload.filename)
+		if err = tx.CreateDocument(ctx, document, actor, audit, s.uploads.at()); err != nil {
+			return err
+		}
+		if err = s.uploads.save(ctx, document, upload.content); err != nil {
+			return err
+		}
+		if err = tx.LinkDocument(ctx, location, document.ID); err != nil {
+			return err
 		}
 	}
-	return nil, nil
+	return nil
 }
 
 func applyCourseLocationWrite(row *domain.CourseLocation, write dto.CourseLocationWrite) {
@@ -165,7 +228,7 @@ func (s *CourseLocationWrites) save(ctx context.Context, identity domain.Resolve
 		if err != nil {
 			return nil, err
 		}
-		failure, refused := courseLocationDocuments(write)
+		uploads, failure, refused := s.courseLocationDocuments(write)
 		if refused != nil {
 			return nil, refused
 		}
@@ -177,12 +240,15 @@ func (s *CourseLocationWrites) save(ctx context.Context, identity domain.Resolve
 		if err = tx.CreateLocation(ctx, created, auditContext, at); err != nil {
 			return nil, err
 		}
+		if err = s.storeDocuments(ctx, tx, identity, created.ID, uploads, auditContext); err != nil {
+			return nil, err
+		}
 		return s.finish(ctx, tx, created, failure)
 	}
 	if write.ID != nil && *write.ID != row.ID {
 		return nil, ErrCourseLocationPrimaryKeyChange
 	}
-	failure, refused := courseLocationDocuments(write)
+	uploads, failure, refused := s.courseLocationDocuments(write)
 	if refused != nil {
 		return nil, refused
 	}
@@ -202,6 +268,9 @@ func (s *CourseLocationWrites) save(ctx context.Context, identity domain.Resolve
 	diff("address", old.Address, row.Address)
 	diff("sport_association", old.AssociationID, row.AssociationID)
 	if err = tx.SaveLocation(ctx, *row, changes, auditContext, at); err != nil {
+		return nil, err
+	}
+	if err = s.storeDocuments(ctx, tx, identity, row.ID, uploads, auditContext); err != nil {
 		return nil, err
 	}
 	return s.finish(ctx, tx, *row, failure)

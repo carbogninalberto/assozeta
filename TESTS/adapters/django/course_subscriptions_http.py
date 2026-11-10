@@ -10,18 +10,20 @@ payments and append the authored auditlog entries in order (delete entries
 rendered from the rows before the request) with their index rows.
 """
 from contextlib import contextmanager
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from decimal import Decimal
 import ipaddress
 import re
 
 from TESTS.contracts import test_course_subscriptions_http as contract
 from TESTS.adapters.django import carnet_replace_http as replace
+from TESTS.adapters.django import course_writes_http as writes
 from TESTS.adapters.django import family_harness as harness
 from TESTS.adapters.django.workflow_writes_http import keyed
 
 SOURCES = ('TESTS/fixtures/course_subscriptions_http.json', 'TESTS/contracts/test_course_subscriptions_http.py',
            'TESTS/adapters/django/course_subscriptions_http.py', 'TESTS/adapters/django/carnet_replace_http.py',
+           'TESTS/adapters/django/course_writes_http.py',
            'BE/application/views/course_views.py', 'BE/application/serializers/courses_serializers.py',
            'BE/application/serializers/payment_serializers.py', 'BE/application/serializers/subscriptions_serializers.py',
            'BE/application/serializers/user_serializers.py', 'BE/application/serializers/auth_serializers.py',
@@ -60,8 +62,8 @@ def default_category():
 
 
 def seed_rows(source, created):
-    from application.models import (Associate, Course, CourseSubscription, CourseSubscriptionInstallment, MedicalCertificate, Payment,
-                                    PaymentCategory, Subscription)
+    from application.models import (Associate, Course, CourseSubscription, CourseSubscriptionInstallment, Instructor, Invoice,
+                                    MedicalCertificate, Payment, PaymentCategory, Subscription)
     from application.models.carnet_models import Carnet, CarnetSubscription
     from docmanager.models import Document
     ids = source['ids']
@@ -91,8 +93,16 @@ def seed_rows(source, created):
     for row in source['courses'].values():
         insert(Course, Course(course_id=row['id'], sport_association_id=row['association'], course_type=row['type'], title=row['title'],
                               deleted=row['deleted'], group_id=group(row['group']), fee=Decimal('50.00')))
+    teacher, bill = source['instructor'], source['invoice']
+    insert(Instructor, Instructor(instructor_id=teacher['id'], user_id=ids['owner'], first_name=teacher['first_name'],
+                                  last_name=teacher['last_name'], email=teacher['email'], tax_code=teacher['tax_code'],
+                                  default_hourly_billing=Decimal(teacher['default_hourly_billing'])))
+    insert(Invoice, Invoice(invoice_id=bill['id'], sport_association_id=ids['own_association'], creation_date=moment(bill['created']),
+                            membership_fee=Decimal(bill['membership_fee']), activity_fee=Decimal(bill['activity_fee']),
+                            description=bill['description'], number=bill['number'], meta=bill['meta']))
     for row in source['payments'].values():
-        insert(Payment, Payment(payment_id=row['id'], sport_association_id=row['association'], subject=row['subject'], amount=Decimal(row['amount']),
+        insert(Payment, Payment(
+            invoice_id=bill['id'] if row.get('invoice') else None, instructor_id=teacher['id'] if row.get('instructor') else None,payment_id=row['id'], sport_association_id=row['association'], subject=row['subject'], amount=Decimal(row['amount']),
                                 paid=row['paid'], meta=row['meta'], associate_id=source['associates'][row['associate']]['id'] if row['associate'] else None,
                                 user_id=row['user'], group_id=group(row['group']), deleted=row['deleted'],
                                 payment_category_id=row['category'], creation_date=moment(row['created']), payment_date=moment(row['payment_date']),
@@ -135,6 +145,9 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
     with base_fixture_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
         category, name = default_category()
         fixture['default_category'] = category
+        from application.models import Payment
+        bank = Payment.get_default_bank_account(contract.load_source()['ids']['own_association'])
+        fixture['tokens_course_subscriptions'] = {'$bank_own': str(bank.pk) if bank else None}
         fixture['sessions'] = {**fixture['sessions'], '$default_category': category, '$default_category_name': name}
         yield fixture
 
@@ -184,6 +197,17 @@ def assert_effect(case, before, after, source, context):
         return
     fixture, ids = context['fixture'], source['ids']
     bindings = {'$default_category': fixture['default_category']}
+    # Rows the request created ('created': {model: [authored columns, '$sym': '@name']}) are matched
+    # exactly and bound; the remaining rows follow the seeded-row checks.
+    binder = writes.Binder({'$default_category': fixture['default_category'], **fixture.get('tokens_course_subscriptions', {})},
+                           datetime.now(timezone.utc))
+    binder.binds.update(contract.BINDINGS.get(case['name'], {}))
+    fresh = {}
+    if effect.get('created'):
+        writes.match_created({'created': effect['created']}, before, after, binder)
+        fresh = {label: {str(binder.binds[spec['$sym']]) for spec in specs} for label, specs in effect['created'].items()}
+    after = {label: ([row for row in rows if str(flat(row)[writes.KEYS[label]]) not in fresh[label]] if label in fresh else rows)
+             for label, rows in after.items()}
     cs_id = lambda label: source['course_subscriptions'][label]['id']
     pay_id = lambda label: source['payments'][label]['id']
     gone_cs = {cs_id(label) for label in effect['cs_deleted']}
@@ -231,14 +255,17 @@ def assert_effect(case, before, after, source, context):
                       'association_id': None if label.startswith('admin_') else ids['own_association']}
     for event, entry in zip(added, effect['audit']):
         name, _, table = MODELS[entry['model']]
-        key = source[table][entry['label']]['id']
+        key = binder.binds[entry['label']] if entry['label'].startswith('@') else source[table][entry['label']]['id']
         where = f":{entry['model']}:{entry['label']}"
         # CourseSubscription.__str__ is str(self.__dict__): only the ModelState address is not reproducible.
         representation = re.sub(r' object at 0x[0-9a-f]+>', ' object at 0x?>', event['object_repr']) if entry['repr'] else event['object_repr']
         contract.require(event['content_type_id'] == types[entry['model']] and event['action'] == entry['action'] and event['object_pk'] == key
                          and representation == (entry['repr'] or f'{name} object ({key})'), 'audit.identity' + where)
         changes = entry['changes']
-        if changes is None:
+        if changes == '$created':
+            model = writes.models()[MODELS[entry['model']][1]]
+            changes = {**writes.created_changes(model, model._base_manager.get(pk=key)), **entry['overrides']}
+        elif changes is None:
             changes = {**context['prepared'][key], **entry['overrides']}
         contract.require(event['changes'] == bind(changes, bindings), 'audit.changes' + where)
         contract.require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor')

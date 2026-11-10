@@ -33,6 +33,10 @@ func (r *CourseCalendars) BeginCalendar(ctx context.Context) (domain.CalendarTra
 		paymentCategoryTransaction: &paymentCategoryTransaction{ownedTransaction: tx}}}, nil
 }
 
+func (t *courseCalendarTransaction) Attendance() domain.CourseAttendanceTransaction {
+	return &courseAttendanceTransaction{archiveWriteTransaction: t.archiveWriteTransaction}
+}
+
 // calendarTables are the only tables the generic row writers accept.
 var calendarTables = map[string]bool{"application_attendanceregistry": true, "application_attendanceday": true,
 	"application_reminders": true, "application_globalcalendarevents": true}

@@ -31,9 +31,9 @@ type InstanceAdminSettings struct {
 	EmailPort                int64
 	EmailPortInvalid         bool
 	EmailUseTLS, EmailUseSSL bool
-	// parseaddr(DEFAULT_FROM_EMAIL); FromInvalid when the simple form does not apply.
+	// parseaddr(DEFAULT_FROM_EMAIL), DEFAULT_FROM_EMAIL being
+	// f"{WHITELABEL_NAME} <{EMAIL_HOST_USER}>" (an unset user is 'None').
 	FromName, FromAddress string `json:"-"`
-	FromInvalid           bool
 	// Environment integrations (integration_configuration.PROVIDERS).
 	AIAPIKey, AIModel, AICheapModel, AIBaseURL string `json:"-"`
 	// MCP_AGENT_* in AI_FIELDS order; AIIntegersInvalid when env.int fails.
@@ -96,7 +96,7 @@ func parseInstanceAdmin(values map[string]string) (InstanceAdminSettings, error)
 	if err != nil {
 		return s, err
 	}
-	s.FromName, s.FromAddress, s.FromInvalid = simpleFromAddress(whitelabel, user)
+	s.FromName, s.FromAddress = ParseAddr(whitelabel + " <" + user + ">")
 	targets := []*string{&s.AIAPIKey, &s.AIModel, &s.AICheapModel, &s.AIBaseURL, &s.StripePublicKey, &s.StripeKey, &s.StripeWebhookSecret}
 	names := []string{"AI_API_KEY", "AI_MODEL", "AI_CHEAP_MODEL", "AI_BASE_URL", "STRIPE_PUBLIC_KEY", "STRIPE_KEY", "STRIPE_WEBHOOK_SECRET"}
 	defaults := []string{"", "deepseek-v4-flash", "deepseek-v4-flash", "https://api.deepseek.com", "", "", ""}
@@ -172,32 +172,4 @@ func pythonInt(text string) (int64, bool) {
 		return 0, false
 	}
 	return number.Int64(), true
-}
-
-// simpleFromAddress is email.utils.parseaddr(f"{name} <{user}>") for a display
-// name of plain atoms and an address without quoting, comments or routes.
-// Other forms are reported invalid (refused) rather than approximated.
-func simpleFromAddress(name, user string) (string, string, bool) {
-	atom := func(text string, dots bool) bool {
-		for _, r := range text {
-			if r > 127 || !(unicode.IsLetter(r) || unicode.IsDigit(r) || strings.ContainsRune("!#$%&'*+/=?^_`{|}~-", r) || dots && strings.ContainsRune(".@", r)) {
-				return false
-			}
-		}
-		return true
-	}
-	words := strings.Fields(name)
-	for _, word := range words {
-		if !atom(word, false) {
-			return "", "", true
-		}
-	}
-	if !atom(user, true) || strings.Count(user, "@") > 1 || strings.HasPrefix(user, ".") || strings.HasSuffix(user, ".") ||
-		strings.Contains(user, "..") || strings.HasPrefix(user, "@") || strings.HasSuffix(user, "@") {
-		return "", "", true
-	}
-	if user == "None" {
-		user = ""
-	}
-	return strings.Join(words, " "), user, false
 }

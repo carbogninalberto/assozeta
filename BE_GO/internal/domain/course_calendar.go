@@ -99,6 +99,9 @@ type CalendarStore interface {
 type CalendarTransaction interface {
 	Commit() error
 	Rollback() error
+	// Attendance is the attendance helpers' view of the same transaction
+	// (get_extended_prop_for_attendance_day for get_lesson).
+	Attendance() CourseAttendanceTransaction
 	OwnerAssociation(ctx context.Context, owner string, scope *string, lock bool) (string, error)
 	ActiveAssociationOf(ctx context.Context, user string) (*string, error)
 	ActiveAssociationExists(ctx context.Context, id string) (bool, error)

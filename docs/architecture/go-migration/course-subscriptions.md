@@ -86,12 +86,28 @@ dict) is a 500, as in Django.
 - Delete entries for payments are indexed through their stored association, installments and course subscriptions through
   the actor's own association (none for a collaborator).
 
+## Installment edits (`events`)
+
+The edit form always sends `events` (the selected course events). `CourseSubscriptionOverviewSerializer.update` runs before
+the instance save, inside the atomic update:
+
+- the row's live group-aware installments are loaded (database order); each one without an event of the same `id` (numbers
+  compare by value, booleans as 0/1) goes: a paid payment is relabelled first (`Rata n.<id+1> del <dd/mm/yy> (<course>)`, its
+  meta replaced, `Payment.save()` filling a missing category), then `installment.delete()`, whose `pre_delete` deletes an
+  unpaid payment (the Payment `pre_delete` nests the installment delete: P, I, P, then the outer I);
+- each event without `course_subscription_installment_id` is validated by `CourseEventsSerializer` (400 with its field errors)
+  and becomes a payment of the course's association (its owner, the default bank account and category, the raw `X-Group-Id`)
+  and an installment.
+- Any error (400, a `KeyError`/`TypeError` of an event, an invalid group header) rolls everything back.
+
+Membership payments render PaymentSerializer's nested `instructor` and `invoice`.
+
 ## Not ported (refused before any write)
 
 - `POST course-subscriptions/add` (not routed in Go) and the list export for `pdf` and `excel` (500).
-- Update: non-null `events` (installment edits), a changed primary key (Model.save() would insert a copy) and HTML-form
-  input for the JSON fields `multiple_quote` and `events`: 500.
-- Membership payments with an instructor or an invoice in any rendered row: 500.
+- Update: `events` given as an object or a string (Python iterates keys or characters), unmatched installments sharing one
+  payment, a non-canonical `X-Group-Id` spelling with new events, a changed primary key (Model.save() would insert a copy)
+  and HTML-form input for the JSON fields `multiple_quote` and `events`: 500.
 - A soft delete whose row's own payment is also the unpaid payment of one of its installments (Django's save would fail
   after the autocommitted deletes): 500.
 
@@ -105,6 +121,14 @@ dict) is a 500, as in Django.
 - Mutation (`mutation-r1`): dropping the `X-Group-Id` filter from the soft delete's installment query fails
   `course-subscriptions-delete-group-installments` (CAUGHT).
 - `subscription-memberships` stays green after the route block was added to `main.go`.
+
+Installment edits and nested membership payment rows (114 cases):
+
+- RED (`v2c-red`): Django 114/114; Go fails `list-owner` (membership payment with an invoice refused).
+- GREEN (`v2c-green`): 114/114 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact effects (created payments
+  and installments matched column by column).
+- Mutation (`v2c-mutation-rata`): numbering the instalment label from 0 fails `update-events` (CAUGHT).
+- Re-run green (`v2c-rerun-cs`): see the v2-refusals change list.
 
 `bulk-row-without-payment-installments`: for a payment-less row the signal deletes its remaining live installments (payment-less
 and grouped ones) after the installment with an unpaid payment went with that payment; the collector then deletes every collected

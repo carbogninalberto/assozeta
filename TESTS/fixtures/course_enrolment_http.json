@@ -724,11 +724,158 @@
    "auto_renewal": false,
    "deleted": false,
    "group_id": null
+  },
+  "session_fee": {
+   "course_id": "e0000000-0000-4000-8000-000000000029",
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "status_flag": 2,
+   "course_type": 1,
+   "creation_date": "2026-02-01T08:00:00Z",
+   "title": "Sessione",
+   "description": "Descrizione Sessione",
+   "multi_payments": false,
+   "fee": "50.00",
+   "events": null,
+   "one_fee_payment": false,
+   "one_fee": "0.00",
+   "google_calendar_id": null,
+   "google_background_color": "#123456",
+   "multiple_quotes": null,
+   "start_date": null,
+   "end_date": null,
+   "pinned": false,
+   "billed_duration_is_sport_season": false,
+   "billed_frequency": 1,
+   "billed_from_subscription_date": false,
+   "billed_from_day_of_month": 1,
+   "auto_renewal": false,
+   "deleted": false,
+   "group_id": null
+  },
+  "ov_session_athlete": {
+   "course_id": "e0000000-0000-4000-8000-000000000030",
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "status_flag": 2,
+   "course_type": 1,
+   "creation_date": "2026-02-01T08:00:00Z",
+   "title": "Arrampicata",
+   "description": "Descrizione Arrampicata",
+   "multi_payments": false,
+   "fee": "12.00",
+   "events": null,
+   "one_fee_payment": false,
+   "one_fee": "0.00",
+   "google_calendar_id": null,
+   "google_background_color": "#123456",
+   "multiple_quotes": null,
+   "start_date": null,
+   "end_date": null,
+   "pinned": false,
+   "billed_duration_is_sport_season": false,
+   "billed_frequency": 1,
+   "billed_from_subscription_date": false,
+   "billed_from_day_of_month": 1,
+   "auto_renewal": false,
+   "deleted": false,
+   "group_id": null
+  },
+  "ov_session_full": {
+   "course_id": "e0000000-0000-4000-8000-000000000031",
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "status_flag": 2,
+   "course_type": 1,
+   "creation_date": "2026-02-01T08:00:00Z",
+   "title": "Canoa",
+   "description": "Descrizione Canoa",
+   "multi_payments": false,
+   "fee": "9.00",
+   "events": null,
+   "one_fee_payment": false,
+   "one_fee": "0.00",
+   "google_calendar_id": null,
+   "google_background_color": "#123456",
+   "multiple_quotes": null,
+   "start_date": null,
+   "end_date": null,
+   "pinned": false,
+   "billed_duration_is_sport_season": false,
+   "billed_frequency": 1,
+   "billed_from_subscription_date": false,
+   "billed_from_day_of_month": 1,
+   "auto_renewal": false,
+   "deleted": false,
+   "group_id": null
+  },
+  "ov_quote_text": {
+   "course_id": "e0000000-0000-4000-8000-000000000032",
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "status_flag": 2,
+   "course_type": 2,
+   "creation_date": "2026-02-01T08:00:00Z",
+   "title": "Zumba",
+   "description": "Descrizione Zumba",
+   "multi_payments": false,
+   "fee": "0.00",
+   "events": null,
+   "one_fee_payment": false,
+   "one_fee": "0.00",
+   "google_calendar_id": null,
+   "google_background_color": "#123456",
+   "multiple_quotes": [
+    {
+     "quote_id": "q1",
+     "title": "Mille",
+     "amount": "1.000"
+    }
+   ],
+   "start_date": null,
+   "end_date": null,
+   "pinned": false,
+   "billed_duration_is_sport_season": false,
+   "billed_frequency": 1,
+   "billed_from_subscription_date": false,
+   "billed_from_day_of_month": 1,
+   "auto_renewal": false,
+   "deleted": false,
+   "group_id": null
+  },
+  "ov_quote_word": {
+   "course_id": "e0000000-0000-4000-8000-000000000033",
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "status_flag": 2,
+   "course_type": 2,
+   "creation_date": "2026-02-01T08:00:00Z",
+   "title": "Boxe",
+   "description": "Descrizione Boxe",
+   "multi_payments": false,
+   "fee": "0.00",
+   "events": null,
+   "one_fee_payment": false,
+   "one_fee": "0.00",
+   "google_calendar_id": null,
+   "google_background_color": "#123456",
+   "multiple_quotes": [
+    {
+     "quote_id": "q1",
+     "title": "Prova",
+     "amount": "dieci"
+    }
+   ],
+   "start_date": null,
+   "end_date": null,
+   "pinned": false,
+   "billed_duration_is_sport_season": false,
+   "billed_frequency": 1,
+   "billed_from_subscription_date": false,
+   "billed_from_day_of_month": 1,
+   "auto_renewal": false,
+   "deleted": false,
+   "group_id": null
   }
  },
  "payments": {
   "old": {
-   "payment_id": "e0000000-0000-4000-8000-000000000029",
+   "payment_id": "e0000000-0000-4000-8000-000000000034",
    "type": "default",
    "subject": 2,
    "amount": "30.00",
@@ -759,7 +906,7 @@
  },
  "course_subscriptions": {
   "existing": {
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000030",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000035",
    "course_id": "e0000000-0000-4000-8000-000000000020",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
@@ -780,7 +927,7 @@
    "deleted": false
   },
   "mp": {
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000031",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000036",
    "course_id": "e0000000-0000-4000-8000-000000000011",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
@@ -801,7 +948,7 @@
    "deleted": false
   },
   "mp_far": {
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000032",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000037",
    "course_id": "e0000000-0000-4000-8000-000000000017",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
@@ -822,7 +969,7 @@
    "deleted": false
   },
   "mp_nosub": {
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000033",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000038",
    "course_id": "e0000000-0000-4000-8000-000000000011",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
@@ -843,7 +990,7 @@
    "deleted": false
   },
   "mp_athlete": {
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000034",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000039",
    "course_id": "e0000000-0000-4000-8000-000000000011",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
@@ -864,7 +1011,7 @@
    "deleted": false
   },
   "mp_gone": {
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000035",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000040",
    "course_id": "e0000000-0000-4000-8000-000000000011",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
@@ -887,8 +1034,8 @@
  },
  "installments": {
   "plain": {
-   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000036",
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000031",
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000041",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000036",
    "id": 0,
    "amount": "30.00",
    "paid": false,
@@ -899,20 +1046,20 @@
    "deleted": false
   },
   "linked": {
-   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000037",
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000031",
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000042",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000036",
    "id": 1,
    "amount": "25.50",
    "paid": false,
    "payment_date": "2099-01-10T00:00:00Z",
-   "payment_id": "e0000000-0000-4000-8000-000000000029",
+   "payment_id": "e0000000-0000-4000-8000-000000000034",
    "archived": false,
    "group_id": null,
    "deleted": false
   },
   "group": {
-   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000038",
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000031",
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000043",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000036",
    "id": 2,
    "amount": "12.00",
    "paid": false,
@@ -923,8 +1070,8 @@
    "deleted": false
   },
   "deleted": {
-   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000039",
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000031",
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000044",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000036",
    "id": 3,
    "amount": "30.00",
    "paid": false,
@@ -935,8 +1082,8 @@
    "deleted": true
   },
   "far": {
-   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000040",
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000032",
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000045",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000037",
    "id": 0,
    "amount": "15.00",
    "paid": false,
@@ -947,8 +1094,8 @@
    "deleted": false
   },
   "nosub": {
-   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000041",
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000033",
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000046",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000038",
    "id": 0,
    "amount": "30.00",
    "paid": false,
@@ -959,8 +1106,8 @@
    "deleted": false
   },
   "athlete": {
-   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000042",
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000034",
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000047",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000039",
    "id": 0,
    "amount": "18.00",
    "paid": false,
@@ -971,10 +1118,34 @@
    "deleted": false
   },
   "gone_row": {
-   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000043",
-   "course_subscription_id": "e0000000-0000-4000-8000-000000000035",
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000048",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000040",
    "id": 0,
    "amount": "7.00",
+   "paid": false,
+   "payment_date": "2099-01-10T00:00:00Z",
+   "payment_id": null,
+   "archived": false,
+   "group_id": null,
+   "deleted": false
+  },
+  "athlete_session": {
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000049",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000039",
+   "id": 4,
+   "amount": "19.00",
+   "paid": false,
+   "payment_date": "2099-01-10T00:00:00Z",
+   "payment_id": null,
+   "archived": false,
+   "group_id": null,
+   "deleted": false
+  },
+  "full_session": {
+   "course_subscription_installment_id": "e0000000-0000-4000-8000-000000000050",
+   "course_subscription_id": "e0000000-0000-4000-8000-000000000036",
+   "id": 5,
+   "amount": "21.00",
    "paid": false,
    "payment_date": "2099-01-10T00:00:00Z",
    "payment_id": null,
@@ -996,7 +1167,7 @@
    "name": "course-enrolment-make-payment-anonymous",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/course-installment/e0000000-0000-4000-8000-000000000036/make-payment",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000041/make-payment",
    "headers": {},
    "status": 401,
    "response": {
@@ -1008,7 +1179,7 @@
    "name": "course-enrolment-make-payment-admin-without-session",
    "actor": "admin",
    "method": "POST",
-   "path": "/course-installment/e0000000-0000-4000-8000-000000000036/make-payment",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000041/make-payment",
    "headers": {},
    "status": 403,
    "response": {
@@ -1020,7 +1191,7 @@
    "name": "course-enrolment-make-payment-restricted-missing-permission",
    "actor": "restricted_collaborator",
    "method": "POST",
-   "path": "/course-installment/e0000000-0000-4000-8000-000000000036/make-payment",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000041/make-payment",
    "headers": {},
    "status": 403,
    "response": {
@@ -1032,7 +1203,7 @@
    "name": "course-enrolment-make-payment-wrong-method",
    "actor": "owner",
    "method": "GET",
-   "path": "/course-installment/e0000000-0000-4000-8000-000000000036/make-payment",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000041/make-payment",
    "headers": {},
    "status": 405,
    "response": {
@@ -1044,7 +1215,7 @@
    "name": "course-enrolment-make-payment-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/course-installment/e0000000-0000-4000-8000-000000000036/make-payment",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000041/make-payment",
    "headers": {},
    "status": 200,
    "response": {
@@ -1087,7 +1258,7 @@
    "name": "course-enrolment-make-payment-deleted-installment",
    "actor": "owner",
    "method": "POST",
-   "path": "/course-installment/e0000000-0000-4000-8000-000000000039/make-payment",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000044/make-payment",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1097,7 +1268,7 @@
    "name": "course-enrolment-make-payment-group-header-hides",
    "actor": "owner",
    "method": "POST",
-   "path": "/course-installment/e0000000-0000-4000-8000-000000000038/make-payment",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000043/make-payment",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
    },
@@ -1109,7 +1280,7 @@
    "name": "course-enrolment-make-payment-without-subscription",
    "actor": "owner",
    "method": "POST",
-   "path": "/course-installment/e0000000-0000-4000-8000-000000000041/make-payment",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000046/make-payment",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1119,7 +1290,7 @@
    "name": "course-enrolment-make-payment-owner",
    "actor": "owner",
    "method": "POST",
-   "path": "/course-installment/e0000000-0000-4000-8000-000000000036/make-payment",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000041/make-payment",
    "headers": {},
    "status": 200,
    "response": {
@@ -1189,7 +1360,7 @@
     "actor": "owner",
     "rows": {
      "application.CourseSubscriptionInstallment": {
-      "e0000000-0000-4000-8000-000000000036": {
+      "e0000000-0000-4000-8000-000000000041": {
        "payment_id": "@mp1"
       }
      }
@@ -1246,7 +1417,7 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "e0000000-0000-4000-8000-000000000036",
+      "key": "e0000000-0000-4000-8000-000000000041",
       "action": 1,
       "changes": {
        "payment": [
@@ -1267,7 +1438,7 @@
    "name": "course-enrolment-make-payment-replaces-link",
    "actor": "full_collaborator",
    "method": "POST",
-   "path": "/course-installment/e0000000-0000-4000-8000-000000000037/make-payment",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000042/make-payment",
    "headers": {},
    "status": 200,
    "response": {
@@ -1337,7 +1508,7 @@
     "actor": "full_collaborator",
     "rows": {
      "application.CourseSubscriptionInstallment": {
-      "e0000000-0000-4000-8000-000000000037": {
+      "e0000000-0000-4000-8000-000000000042": {
        "payment_id": "@mp2"
       }
      }
@@ -1394,11 +1565,11 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "e0000000-0000-4000-8000-000000000037",
+      "key": "e0000000-0000-4000-8000-000000000042",
       "action": 1,
       "changes": {
        "payment": [
-        "e0000000-0000-4000-8000-000000000029",
+        "e0000000-0000-4000-8000-000000000034",
         "@mp2"
        ]
       },
@@ -1415,7 +1586,7 @@
    "name": "course-enrolment-make-payment-grouped",
    "actor": "owner",
    "method": "POST",
-   "path": "/course-installment/e0000000-0000-4000-8000-000000000038/make-payment",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000043/make-payment",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },
@@ -1487,7 +1658,7 @@
     "actor": "owner",
     "rows": {
      "application.CourseSubscriptionInstallment": {
-      "e0000000-0000-4000-8000-000000000038": {
+      "e0000000-0000-4000-8000-000000000043": {
        "payment_id": "@mp3"
       }
      }
@@ -1544,7 +1715,7 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "e0000000-0000-4000-8000-000000000038",
+      "key": "e0000000-0000-4000-8000-000000000043",
       "action": 1,
       "changes": {
        "payment": [
@@ -1565,7 +1736,7 @@
    "name": "course-enrolment-make-payment-athlete",
    "actor": "athlete",
    "method": "POST",
-   "path": "/course-installment/e0000000-0000-4000-8000-000000000042/make-payment",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000047/make-payment",
    "headers": {},
    "status": 200,
    "response": {
@@ -1635,7 +1806,7 @@
     "actor": "athlete",
     "rows": {
      "application.CourseSubscriptionInstallment": {
-      "e0000000-0000-4000-8000-000000000042": {
+      "e0000000-0000-4000-8000-000000000047": {
        "payment_id": "@mp4"
       }
      }
@@ -1692,7 +1863,7 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "e0000000-0000-4000-8000-000000000042",
+      "key": "e0000000-0000-4000-8000-000000000047",
       "action": 1,
       "changes": {
        "payment": [
@@ -1713,7 +1884,7 @@
    "name": "course-enrolment-make-payment-course-association",
    "actor": "owner",
    "method": "POST",
-   "path": "/course-installment/e0000000-0000-4000-8000-000000000040/make-payment",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000045/make-payment",
    "headers": {},
    "status": 200,
    "response": {
@@ -1783,7 +1954,7 @@
     "actor": "owner",
     "rows": {
      "application.CourseSubscriptionInstallment": {
-      "e0000000-0000-4000-8000-000000000040": {
+      "e0000000-0000-4000-8000-000000000045": {
        "payment_id": "@mp6"
       }
      }
@@ -1840,7 +2011,7 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "e0000000-0000-4000-8000-000000000040",
+      "key": "e0000000-0000-4000-8000-000000000045",
       "action": 1,
       "changes": {
        "payment": [
@@ -1861,7 +2032,7 @@
    "name": "course-enrolment-make-payment-soft-deleted-row",
    "actor": "owner",
    "method": "POST",
-   "path": "/course-installment/e0000000-0000-4000-8000-000000000043/make-payment",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000048/make-payment",
    "headers": {},
    "status": 200,
    "response": {
@@ -1931,7 +2102,7 @@
     "actor": "owner",
     "rows": {
      "application.CourseSubscriptionInstallment": {
-      "e0000000-0000-4000-8000-000000000043": {
+      "e0000000-0000-4000-8000-000000000048": {
        "payment_id": "@mp7"
       }
      }
@@ -1988,7 +2159,7 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "e0000000-0000-4000-8000-000000000043",
+      "key": "e0000000-0000-4000-8000-000000000048",
       "action": 1,
       "changes": {
        "payment": [
@@ -2009,10 +2180,327 @@
    "name": "course-enrolment-make-payment-owner-scoped-athlete-hidden",
    "actor": "owner",
    "method": "POST",
-   "path": "/course-installment/e0000000-0000-4000-8000-000000000036/make-payment",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000041/make-payment",
    "headers": {
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-enrolment-make-payment-impersonated-athlete",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000049/make-payment",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "payment_id": "@mp8",
+     "user": {
+      "first_name": "Message",
+      "last_name": "Fixture",
+      "email": "message-reads-700004@example.test",
+      "phone": null,
+      "username": "message-reads-700004",
+      "role": 2
+     },
+     "associate": {
+      "associate_id": "e0000000-0000-4000-8000-000000000002",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "born_city": null,
+      "born_date": "1990-01-01",
+      "email": null,
+      "sex": "M",
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "tax_code": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "phone": null,
+      "family": null,
+      "family_role": null
+     },
+     "subscription_id": "e0000000-0000-4000-8000-000000000005",
+     "instructor_id": null,
+     "instructor": null,
+     "supplier": null,
+     "supplier_id": null,
+     "custom_account_type": 2,
+     "custom_account_name": "Banca fixture",
+     "invoice": null,
+     "attachments": [],
+     "payment_category_name": "$category_name",
+     "type": "default",
+     "subject": 2,
+     "amount": "19.00",
+     "creation_date": "2099-01-10T00:00:00Z",
+     "payment_date": null,
+     "paid": false,
+     "expense": false,
+     "description": "Quota Corso",
+     "meta_payment_categories": null,
+     "payment_intent_id": null,
+     "archived": false,
+     "invoice_fiscal_code": null,
+     "meta": null,
+     "notes": null,
+     "deleted": false,
+     "course": null,
+     "payment_category": "$category",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "custom_accounts": "00000000-0000-4000-8000-0000000e0001",
+     "signature": null,
+     "group": null
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CourseSubscriptionInstallment": {
+      "e0000000-0000-4000-8000-000000000049": {
+       "payment_id": "@mp8"
+      }
+     }
+    },
+    "created": {
+     "application.Payment": [
+      {
+       "$sym": "@mp8",
+       "payment_id": "@mp8",
+       "type": "default",
+       "subject": 2,
+       "amount": "19.00",
+       "creation_date": "2099-01-10T00:00:00Z",
+       "payment_date": null,
+       "paid": false,
+       "expense": false,
+       "description": "Quota Corso",
+       "payment_category_id": "$category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700004",
+       "associate_id": "e0000000-0000-4000-8000-000000000002",
+       "supplier_id": null,
+       "instructor_id": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": null,
+       "notes": null,
+       "custom_accounts_id": "00000000-0000-4000-8000-0000000e0001",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": null
+      }
+     ]
+    },
+    "links": {},
+    "audit": [
+     {
+      "model": "payment",
+      "key": "@mp8",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {}
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "key": "e0000000-0000-4000-8000-000000000049",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "@mp8"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course_subscription.course.sport_association"
+      ],
+      "repr": null
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-enrolment-make-payment-impersonated-collaborator",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000050/make-payment",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "payment_id": "@mp9",
+     "user": {
+      "first_name": "Message",
+      "last_name": "Fixture",
+      "email": "message-reads-700001@example.test",
+      "phone": null,
+      "username": "message-reads-700001",
+      "role": 1
+     },
+     "associate": {
+      "associate_id": "e0000000-0000-4000-8000-000000000003",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "born_city": null,
+      "born_date": "1990-01-01",
+      "email": null,
+      "sex": "M",
+      "first_name": "Luisa",
+      "last_name": "Bianchi",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "tax_code": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "phone": null,
+      "family": null,
+      "family_role": null
+     },
+     "subscription_id": "e0000000-0000-4000-8000-000000000006",
+     "instructor_id": null,
+     "instructor": null,
+     "supplier": null,
+     "supplier_id": null,
+     "custom_account_type": 2,
+     "custom_account_name": "Banca fixture",
+     "invoice": null,
+     "attachments": [],
+     "payment_category_name": "$category_name",
+     "type": "default",
+     "subject": 2,
+     "amount": "21.00",
+     "creation_date": "2099-01-10T00:00:00Z",
+     "payment_date": null,
+     "paid": false,
+     "expense": false,
+     "description": "Quota Corso",
+     "meta_payment_categories": null,
+     "payment_intent_id": null,
+     "archived": false,
+     "invoice_fiscal_code": null,
+     "meta": null,
+     "notes": null,
+     "deleted": false,
+     "course": null,
+     "payment_category": "$category",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "custom_accounts": "00000000-0000-4000-8000-0000000e0001",
+     "signature": null,
+     "group": null
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CourseSubscriptionInstallment": {
+      "e0000000-0000-4000-8000-000000000050": {
+       "payment_id": "@mp9"
+      }
+     }
+    },
+    "created": {
+     "application.Payment": [
+      {
+       "$sym": "@mp9",
+       "payment_id": "@mp9",
+       "type": "default",
+       "subject": 2,
+       "amount": "21.00",
+       "creation_date": "2099-01-10T00:00:00Z",
+       "payment_date": null,
+       "paid": false,
+       "expense": false,
+       "description": "Quota Corso",
+       "payment_category_id": "$category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": "e0000000-0000-4000-8000-000000000003",
+       "supplier_id": null,
+       "instructor_id": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": null,
+       "notes": null,
+       "custom_accounts_id": "00000000-0000-4000-8000-0000000e0001",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": null
+      }
+     ]
+    },
+    "links": {},
+    "audit": [
+     {
+      "model": "payment",
+      "key": "@mp9",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {}
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "key": "e0000000-0000-4000-8000-000000000050",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "@mp9"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course_subscription.course.sport_association"
+      ],
+      "repr": null
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-enrolment-make-payment-impersonated-foreign-hidden",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-installment/e0000000-0000-4000-8000-000000000045/make-payment",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
    },
    "status": 403,
    "response": {
@@ -4172,6 +4660,735 @@
    "body": {}
   },
   {
+   "name": "course-enrolment-overview-add-impersonated-athlete",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/e0000000-0000-4000-8000-000000000030/overview/e0000000-0000-4000-8000-000000000005/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "associate added.",
+     "payment": {
+      "payment_id": "@oa13p",
+      "amount": 12.0,
+      "paid": false,
+      "creation_date": "$now"
+     },
+     "course_subscription": {
+      "course_subscription_id": "@oa13",
+      "course": {
+       "course_id": "e0000000-0000-4000-8000-000000000030",
+       "athletes": null,
+       "tags": [],
+       "locations": [],
+       "status_flag": 2,
+       "course_type": 1,
+       "creation_date": "2026-02-01T08:00:00Z",
+       "title": "Arrampicata",
+       "description": "Descrizione Arrampicata",
+       "multi_payments": false,
+       "fee": "12.00",
+       "events": null,
+       "one_fee_payment": false,
+       "one_fee": "0.00",
+       "google_calendar_id": null,
+       "google_background_color": "#123456",
+       "multiple_quotes": null,
+       "start_date": null,
+       "end_date": null,
+       "pinned": false,
+       "billed_duration_is_sport_season": false,
+       "billed_frequency": 1,
+       "billed_from_subscription_date": false,
+       "billed_from_day_of_month": 1,
+       "auto_renewal": false,
+       "deleted": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "group": null
+      },
+      "paid": false,
+      "creation_date": "$now",
+      "subscription": "e0000000-0000-4000-8000-000000000005",
+      "payment": "@oa13p",
+      "multi_payments": false,
+      "one_fee_payment": false,
+      "archived": false,
+      "type": 1,
+      "multiple_quote": null,
+      "billed_frequency": 1,
+      "billed_from": null,
+      "billed_until": null,
+      "billed_from_day_of_month": 1,
+      "membership_active": true,
+      "membership_fee": "0.00",
+      "auto_renewal": false,
+      "deleted": false,
+      "membership_payments": []
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {
+     "application.CourseSubscription": [
+      {
+       "$sym": "@oa13",
+       "course_subscription_id": "@oa13",
+       "course_id": "e0000000-0000-4000-8000-000000000030",
+       "paid": false,
+       "creation_date": "$now",
+       "subscription_id": "e0000000-0000-4000-8000-000000000005",
+       "payment_id": "@oa13p",
+       "multi_payments": false,
+       "one_fee_payment": false,
+       "archived": false,
+       "type": 1,
+       "multiple_quote": null,
+       "billed_frequency": 1,
+       "billed_from": null,
+       "billed_until": null,
+       "billed_from_day_of_month": 1,
+       "membership_active": true,
+       "membership_fee": "0.00",
+       "auto_renewal": false,
+       "deleted": false
+      }
+     ],
+     "application.Payment": [
+      {
+       "$sym": "@oa13p",
+       "payment_id": "@oa13p",
+       "type": "default",
+       "subject": 2,
+       "amount": "12.00",
+       "creation_date": "$now",
+       "payment_date": null,
+       "paid": false,
+       "expense": false,
+       "description": "Arrampicata, ",
+       "payment_category_id": "$category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700004",
+       "associate_id": "e0000000-0000-4000-8000-000000000002",
+       "supplier_id": null,
+       "instructor_id": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": null,
+       "notes": null,
+       "custom_accounts_id": "00000000-0000-4000-8000-0000000e0001",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": {
+        "label": "Arrampicata",
+        "value": "e0000000-0000-4000-8000-000000000030"
+       }
+      }
+     ]
+    },
+    "links": {},
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "key": "@oa13",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "membership_fee": [
+         "None",
+         "0.0"
+        ],
+        "payment": [
+         "None",
+         "None"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@oa13'), 'course_id': UUID('e0000000-0000-4000-8000-000000000030'), 'paid': False, 'creation_date': {created:@oa13}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "payment",
+      "key": "@oa13p",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {}
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "key": "@oa13",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "@oa13p"
+       ],
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@oa13'), 'course_id': UUID('e0000000-0000-4000-8000-000000000030'), 'paid': False, 'creation_date': {created:@oa13}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000005'), 'payment_id': UUID('@oa13p'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     }
+    ]
+   },
+   "body": {}
+  },
+  {
+   "name": "course-enrolment-overview-add-impersonated-collaborator",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/e0000000-0000-4000-8000-000000000031/overview/e0000000-0000-4000-8000-000000000006/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "associate added.",
+     "payment": {
+      "payment_id": "@oa14p",
+      "amount": 9.0,
+      "paid": false,
+      "creation_date": "$now"
+     },
+     "course_subscription": {
+      "course_subscription_id": "@oa14",
+      "course": {
+       "course_id": "e0000000-0000-4000-8000-000000000031",
+       "athletes": null,
+       "tags": [],
+       "locations": [],
+       "status_flag": 2,
+       "course_type": 1,
+       "creation_date": "2026-02-01T08:00:00Z",
+       "title": "Canoa",
+       "description": "Descrizione Canoa",
+       "multi_payments": false,
+       "fee": "9.00",
+       "events": null,
+       "one_fee_payment": false,
+       "one_fee": "0.00",
+       "google_calendar_id": null,
+       "google_background_color": "#123456",
+       "multiple_quotes": null,
+       "start_date": null,
+       "end_date": null,
+       "pinned": false,
+       "billed_duration_is_sport_season": false,
+       "billed_frequency": 1,
+       "billed_from_subscription_date": false,
+       "billed_from_day_of_month": 1,
+       "auto_renewal": false,
+       "deleted": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "group": null
+      },
+      "paid": false,
+      "creation_date": "$now",
+      "subscription": "e0000000-0000-4000-8000-000000000006",
+      "payment": "@oa14p",
+      "multi_payments": false,
+      "one_fee_payment": false,
+      "archived": false,
+      "type": 1,
+      "multiple_quote": null,
+      "billed_frequency": 1,
+      "billed_from": null,
+      "billed_until": null,
+      "billed_from_day_of_month": 1,
+      "membership_active": true,
+      "membership_fee": "0.00",
+      "auto_renewal": false,
+      "deleted": false,
+      "membership_payments": []
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {
+     "application.CourseSubscription": [
+      {
+       "$sym": "@oa14",
+       "course_subscription_id": "@oa14",
+       "course_id": "e0000000-0000-4000-8000-000000000031",
+       "paid": false,
+       "creation_date": "$now",
+       "subscription_id": "e0000000-0000-4000-8000-000000000006",
+       "payment_id": "@oa14p",
+       "multi_payments": false,
+       "one_fee_payment": false,
+       "archived": false,
+       "type": 1,
+       "multiple_quote": null,
+       "billed_frequency": 1,
+       "billed_from": null,
+       "billed_until": null,
+       "billed_from_day_of_month": 1,
+       "membership_active": true,
+       "membership_fee": "0.00",
+       "auto_renewal": false,
+       "deleted": false
+      }
+     ],
+     "application.Payment": [
+      {
+       "$sym": "@oa14p",
+       "payment_id": "@oa14p",
+       "type": "default",
+       "subject": 2,
+       "amount": "9.00",
+       "creation_date": "$now",
+       "payment_date": null,
+       "paid": false,
+       "expense": false,
+       "description": "Canoa, ",
+       "payment_category_id": "$category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": "e0000000-0000-4000-8000-000000000003",
+       "supplier_id": null,
+       "instructor_id": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": null,
+       "notes": null,
+       "custom_accounts_id": "00000000-0000-4000-8000-0000000e0001",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": {
+        "label": "Canoa",
+        "value": "e0000000-0000-4000-8000-000000000031"
+       }
+      }
+     ]
+    },
+    "links": {},
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "key": "@oa14",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "membership_fee": [
+         "None",
+         "0.0"
+        ],
+        "payment": [
+         "None",
+         "None"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@oa14'), 'course_id': UUID('e0000000-0000-4000-8000-000000000031'), 'paid': False, 'creation_date': {created:@oa14}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000006'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "payment",
+      "key": "@oa14p",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {}
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "key": "@oa14",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "@oa14p"
+       ],
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@oa14'), 'course_id': UUID('e0000000-0000-4000-8000-000000000031'), 'paid': False, 'creation_date': {created:@oa14}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000006'), 'payment_id': UUID('@oa14p'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     }
+    ]
+   },
+   "body": {}
+  },
+  {
+   "name": "course-enrolment-overview-add-impersonated-foreign-course-hidden",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/e0000000-0000-4000-8000-000000000017/overview/e0000000-0000-4000-8000-000000000006/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-enrolment-overview-add-quote-amount-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/e0000000-0000-4000-8000-000000000032/overview/e0000000-0000-4000-8000-000000000006/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "associate added.",
+     "payment": {
+      "payment_id": "@oa15p",
+      "amount": 1.0,
+      "paid": false,
+      "creation_date": "$now"
+     },
+     "course_subscription": {
+      "course_subscription_id": "@oa15",
+      "course": {
+       "course_id": "e0000000-0000-4000-8000-000000000032",
+       "athletes": null,
+       "tags": [],
+       "locations": [],
+       "status_flag": 2,
+       "course_type": 2,
+       "creation_date": "2026-02-01T08:00:00Z",
+       "title": "Zumba",
+       "description": "Descrizione Zumba",
+       "multi_payments": false,
+       "fee": "0.00",
+       "events": null,
+       "one_fee_payment": false,
+       "one_fee": "0.00",
+       "google_calendar_id": null,
+       "google_background_color": "#123456",
+       "multiple_quotes": [
+        {
+         "quote_id": "q1",
+         "title": "Mille",
+         "amount": "1.000"
+        }
+       ],
+       "start_date": null,
+       "end_date": null,
+       "pinned": false,
+       "billed_duration_is_sport_season": false,
+       "billed_frequency": 1,
+       "billed_from_subscription_date": false,
+       "billed_from_day_of_month": 1,
+       "auto_renewal": false,
+       "deleted": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "group": null
+      },
+      "paid": false,
+      "creation_date": "$now",
+      "subscription": "e0000000-0000-4000-8000-000000000006",
+      "payment": "@oa15p",
+      "multi_payments": false,
+      "one_fee_payment": false,
+      "archived": false,
+      "type": 1,
+      "multiple_quote": {
+       "title": "Mille",
+       "amount": "1.000",
+       "quote_id": "q1"
+      },
+      "billed_frequency": 1,
+      "billed_from": null,
+      "billed_until": null,
+      "billed_from_day_of_month": 1,
+      "membership_active": true,
+      "membership_fee": "0.00",
+      "auto_renewal": false,
+      "deleted": false,
+      "membership_payments": []
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {
+     "application.CourseSubscription": [
+      {
+       "$sym": "@oa15",
+       "course_subscription_id": "@oa15",
+       "course_id": "e0000000-0000-4000-8000-000000000032",
+       "paid": false,
+       "creation_date": "$now",
+       "subscription_id": "e0000000-0000-4000-8000-000000000006",
+       "payment_id": "@oa15p",
+       "multi_payments": false,
+       "one_fee_payment": false,
+       "archived": false,
+       "type": 1,
+       "multiple_quote": {
+        "title": "Mille",
+        "amount": "1.000",
+        "quote_id": "q1"
+       },
+       "billed_frequency": 1,
+       "billed_from": null,
+       "billed_until": null,
+       "billed_from_day_of_month": 1,
+       "membership_active": true,
+       "membership_fee": "0.00",
+       "auto_renewal": false,
+       "deleted": false
+      }
+     ],
+     "application.Payment": [
+      {
+       "$sym": "@oa15p",
+       "payment_id": "@oa15p",
+       "type": "default",
+       "subject": 2,
+       "amount": "1.00",
+       "creation_date": "$now",
+       "payment_date": null,
+       "paid": false,
+       "expense": false,
+       "description": "Zumba, ",
+       "payment_category_id": "$category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": "e0000000-0000-4000-8000-000000000003",
+       "supplier_id": null,
+       "instructor_id": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": {
+        "multiple_quote": {
+         "quote_id": "q1",
+         "title": "Mille",
+         "amount": "1.000"
+        }
+       },
+       "notes": null,
+       "custom_accounts_id": "00000000-0000-4000-8000-0000000e0001",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": {
+        "label": "Zumba",
+        "value": "e0000000-0000-4000-8000-000000000032"
+       }
+      }
+     ]
+    },
+    "links": {},
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "key": "@oa15",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "membership_fee": [
+         "None",
+         "0.0"
+        ],
+        "payment": [
+         "None",
+         "None"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@oa15'), 'course_id': UUID('e0000000-0000-4000-8000-000000000032'), 'paid': False, 'creation_date': {created:@oa15}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000006'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': {'title': 'Mille', 'amount': '1.000', 'quote_id': 'q1'}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "payment",
+      "key": "@oa15p",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "amount": [
+         "None",
+         "1.0"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "payment",
+      "key": "@oa15p",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "1.00",
+        "1.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "key": "@oa15",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "@oa15p"
+       ],
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@oa15'), 'course_id': UUID('e0000000-0000-4000-8000-000000000032'), 'paid': False, 'creation_date': {created:@oa15}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000006'), 'payment_id': UUID('@oa15p'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': {'title': 'Mille', 'amount': '1.000', 'quote_id': 'q1'}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     }
+    ]
+   },
+   "body": {
+    "multiple_quote": {
+     "value": "q1"
+    }
+   }
+  },
+  {
+   "name": "course-enrolment-overview-add-quote-amount-not-a-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/e0000000-0000-4000-8000-000000000033/overview/e0000000-0000-4000-8000-000000000006/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {
+     "application.CourseSubscription": [
+      {
+       "$sym": "@oa16",
+       "course_subscription_id": "@oa16",
+       "course_id": "e0000000-0000-4000-8000-000000000033",
+       "paid": false,
+       "creation_date": "$now",
+       "subscription_id": "e0000000-0000-4000-8000-000000000006",
+       "payment_id": null,
+       "multi_payments": false,
+       "one_fee_payment": false,
+       "archived": false,
+       "type": 1,
+       "multiple_quote": {
+        "title": "Prova",
+        "amount": "dieci",
+        "quote_id": "q1"
+       },
+       "billed_frequency": 1,
+       "billed_from": null,
+       "billed_until": null,
+       "billed_from_day_of_month": 1,
+       "membership_active": true,
+       "membership_fee": "0.00",
+       "auto_renewal": false,
+       "deleted": false
+      }
+     ]
+    },
+    "links": {},
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "key": "@oa16",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "membership_fee": [
+         "None",
+         "0.0"
+        ],
+        "payment": [
+         "None",
+         "None"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@oa16'), 'course_id': UUID('e0000000-0000-4000-8000-000000000033'), 'paid': False, 'creation_date': {created:@oa16}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000006'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': {'title': 'Prova', 'amount': 'dieci', 'quote_id': 'q1'}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     }
+    ]
+   },
+   "body": {
+    "multiple_quote": {
+     "value": "q1"
+    }
+   }
+  },
+  {
    "name": "course-enrolment-add-anonymous",
    "actor": "anonymous",
    "method": "POST",
@@ -5620,7 +6837,7 @@
    },
    "effect": null,
    "body": {
-    "course_subscription_id": "e0000000-0000-4000-8000-000000000031",
+    "course_subscription_id": "e0000000-0000-4000-8000-000000000036",
     "course": "e0000000-0000-4000-8000-000000000009",
     "subscription_id": "e0000000-0000-4000-8000-000000000006"
    }
@@ -8160,6 +9377,1799 @@
    "body": {
     "course": "e0000000-0000-4000-8000-000000000017",
     "subscription_id": "e0000000-0000-4000-8000-000000000006"
+   }
+  },
+  {
+   "name": "course-enrolment-add-impersonated-collaborator",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 201,
+   "response": [
+    {
+     "course_subscription_id": "@ca14",
+     "creation_date": "$now",
+     "paid": false,
+     "subscription": {
+      "subscription_id": "e0000000-0000-4000-8000-000000000006",
+      "associate": {
+       "associate_id": "e0000000-0000-4000-8000-000000000003",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-01-01",
+       "email": null,
+       "sex": "M",
+       "first_name": "Luisa",
+       "last_name": "Bianchi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": null,
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "current_year": "corrente"
+     },
+     "multi_payments": false,
+     "multiple_quote": null,
+     "one_fee_payment": false,
+     "installments": [],
+     "course": "e0000000-0000-4000-8000-000000000029",
+     "type": 1,
+     "billed_frequency": 1,
+     "billed_from": null,
+     "billed_until": null,
+     "billed_from_day_of_month": 1,
+     "membership_active": true,
+     "membership_fee": "0.00",
+     "auto_renewal": false,
+     "membership_payments": [],
+     "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-01T09:00:00Z}</span>",
+     "carnets": []
+    }
+   ],
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {
+     "application.CourseSubscription": [
+      {
+       "$sym": "@ca14",
+       "course_subscription_id": "@ca14",
+       "course_id": "e0000000-0000-4000-8000-000000000029",
+       "paid": false,
+       "creation_date": "$now",
+       "subscription_id": "e0000000-0000-4000-8000-000000000006",
+       "payment_id": "@ca14p",
+       "multi_payments": false,
+       "one_fee_payment": false,
+       "archived": false,
+       "type": 1,
+       "multiple_quote": null,
+       "billed_frequency": 1,
+       "billed_from": null,
+       "billed_until": null,
+       "billed_from_day_of_month": 1,
+       "membership_active": true,
+       "membership_fee": "0.00",
+       "auto_renewal": false,
+       "deleted": false
+      }
+     ],
+     "application.Payment": [
+      {
+       "$sym": "@ca14p",
+       "payment_id": "@ca14p",
+       "type": "default",
+       "subject": 2,
+       "amount": "50.00",
+       "creation_date": "$now",
+       "payment_date": null,
+       "paid": false,
+       "expense": false,
+       "description": "Sessione, ",
+       "payment_category_id": "$category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": "e0000000-0000-4000-8000-000000000003",
+       "supplier_id": null,
+       "instructor_id": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": {
+        "description": "Quota corso del {today:%d/%m/%y} Sessione",
+        "course_id": "e0000000-0000-4000-8000-000000000029",
+        "course_title": "Sessione",
+        "course_type": "1",
+        "payment_date": "{today:%Y-%m-%d}"
+       },
+       "notes": null,
+       "custom_accounts_id": "00000000-0000-4000-8000-0000000e0001",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": {
+        "label": "Sessione",
+        "value": "e0000000-0000-4000-8000-000000000029"
+       }
+      }
+     ]
+    },
+    "links": {},
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "key": "@ca14",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "membership_fee": [
+         "None",
+         "0.0"
+        ],
+        "payment": [
+         "None",
+         "None"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@ca14'), 'course_id': UUID('e0000000-0000-4000-8000-000000000029'), 'paid': False, 'creation_date': {created:@ca14}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000006'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "payment",
+      "key": "@ca14p",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {}
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "key": "@ca14",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "@ca14p"
+       ],
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@ca14'), 'course_id': UUID('e0000000-0000-4000-8000-000000000029'), 'paid': False, 'creation_date': {created:@ca14}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000006'), 'payment_id': UUID('@ca14p'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     }
+    ]
+   },
+   "body": {
+    "course": "e0000000-0000-4000-8000-000000000029",
+    "subscription_id": "e0000000-0000-4000-8000-000000000006"
+   }
+  },
+  {
+   "name": "course-enrolment-add-impersonated-foreign-course-hidden",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "course": "e0000000-0000-4000-8000-000000000017",
+    "subscription_id": "e0000000-0000-4000-8000-000000000006"
+   }
+  },
+  {
+   "name": "course-enrolment-add-quote-amount-thousands-dot",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 201,
+   "response": [
+    {
+     "course_subscription_id": "@ca15",
+     "creation_date": "$now",
+     "paid": false,
+     "subscription": {
+      "subscription_id": "e0000000-0000-4000-8000-000000000006",
+      "associate": {
+       "associate_id": "e0000000-0000-4000-8000-000000000003",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-01-01",
+       "email": null,
+       "sex": "M",
+       "first_name": "Luisa",
+       "last_name": "Bianchi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": null,
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "current_year": "corrente"
+     },
+     "multi_payments": false,
+     "multiple_quote": {
+      "quote_id": "q1",
+      "title": "Testo",
+      "amount": "1.000"
+     },
+     "one_fee_payment": false,
+     "installments": [],
+     "course": "e0000000-0000-4000-8000-000000000013",
+     "type": 2,
+     "billed_frequency": 1,
+     "billed_from": null,
+     "billed_until": null,
+     "billed_from_day_of_month": 1,
+     "membership_active": true,
+     "membership_fee": "0.00",
+     "auto_renewal": false,
+     "membership_payments": [],
+     "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-01T09:00:00Z}</span>",
+     "carnets": []
+    }
+   ],
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {
+     "application.CourseSubscription": [
+      {
+       "$sym": "@ca15",
+       "course_subscription_id": "@ca15",
+       "course_id": "e0000000-0000-4000-8000-000000000013",
+       "paid": false,
+       "creation_date": "$now",
+       "subscription_id": "e0000000-0000-4000-8000-000000000006",
+       "payment_id": "@ca15p",
+       "multi_payments": false,
+       "one_fee_payment": false,
+       "archived": false,
+       "type": 2,
+       "multiple_quote": {
+        "quote_id": "q1",
+        "title": "Testo",
+        "amount": "1.000"
+       },
+       "billed_frequency": 1,
+       "billed_from": null,
+       "billed_until": null,
+       "billed_from_day_of_month": 1,
+       "membership_active": true,
+       "membership_fee": "0.00",
+       "auto_renewal": false,
+       "deleted": false
+      }
+     ],
+     "application.Payment": [
+      {
+       "$sym": "@ca15p",
+       "payment_id": "@ca15p",
+       "type": "default",
+       "subject": 2,
+       "amount": "1.00",
+       "creation_date": "$now",
+       "payment_date": null,
+       "paid": false,
+       "expense": false,
+       "description": "Pilates, ",
+       "payment_category_id": "$category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": "e0000000-0000-4000-8000-000000000003",
+       "supplier_id": null,
+       "instructor_id": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": {
+        "multiple_quote": {
+         "quote_id": "q1",
+         "title": "Testo",
+         "amount": "1.000"
+        },
+        "description": "Quota Testo a Pilates",
+        "course_id": "e0000000-0000-4000-8000-000000000013",
+        "course_title": "Pilates",
+        "course_type": "2"
+       },
+       "notes": null,
+       "custom_accounts_id": "00000000-0000-4000-8000-0000000e0001",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": {
+        "label": "Pilates",
+        "value": "e0000000-0000-4000-8000-000000000013"
+       }
+      }
+     ]
+    },
+    "links": {},
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "key": "@ca15",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "membership_fee": [
+         "None",
+         "0.0"
+        ],
+        "payment": [
+         "None",
+         "None"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@ca15'), 'course_id': UUID('e0000000-0000-4000-8000-000000000013'), 'paid': False, 'creation_date': {created:@ca15}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000006'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 2, 'multiple_quote': {'quote_id': 'q1', 'title': 'Testo', 'amount': '1.000'}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "payment",
+      "key": "@ca15p",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "amount": [
+         "None",
+         "1.0"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "key": "@ca15",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "@ca15p"
+       ],
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@ca15'), 'course_id': UUID('e0000000-0000-4000-8000-000000000013'), 'paid': False, 'creation_date': {created:@ca15}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000006'), 'payment_id': UUID('@ca15p'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 2, 'multiple_quote': {'quote_id': 'q1', 'title': 'Testo', 'amount': '1.000'}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     }
+    ]
+   },
+   "body": {
+    "course": "e0000000-0000-4000-8000-000000000013",
+    "subscription_id": "e0000000-0000-4000-8000-000000000006",
+    "multiple_quote": {
+     "quote_id": "q1",
+     "title": "Testo",
+     "amount": "1.000"
+    }
+   }
+  },
+  {
+   "name": "course-enrolment-add-quote-amount-spaces",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 201,
+   "response": [
+    {
+     "course_subscription_id": "@ca16",
+     "creation_date": "$now",
+     "paid": false,
+     "subscription": {
+      "subscription_id": "e0000000-0000-4000-8000-000000000005",
+      "associate": {
+       "associate_id": "e0000000-0000-4000-8000-000000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-01-01",
+       "email": null,
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": null,
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "current_year": "corrente"
+     },
+     "multi_payments": false,
+     "multiple_quote": {
+      "quote_id": "q1",
+      "title": "Testo",
+      "amount": " 50 "
+     },
+     "one_fee_payment": false,
+     "installments": [],
+     "course": "e0000000-0000-4000-8000-000000000013",
+     "type": 2,
+     "billed_frequency": 1,
+     "billed_from": null,
+     "billed_until": null,
+     "billed_from_day_of_month": 1,
+     "membership_active": true,
+     "membership_fee": "0.00",
+     "auto_renewal": false,
+     "membership_payments": [],
+     "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-01T09:00:00Z}</span>",
+     "carnets": []
+    }
+   ],
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {
+     "application.CourseSubscription": [
+      {
+       "$sym": "@ca16",
+       "course_subscription_id": "@ca16",
+       "course_id": "e0000000-0000-4000-8000-000000000013",
+       "paid": false,
+       "creation_date": "$now",
+       "subscription_id": "e0000000-0000-4000-8000-000000000005",
+       "payment_id": "@ca16p",
+       "multi_payments": false,
+       "one_fee_payment": false,
+       "archived": false,
+       "type": 2,
+       "multiple_quote": {
+        "quote_id": "q1",
+        "title": "Testo",
+        "amount": " 50 "
+       },
+       "billed_frequency": 1,
+       "billed_from": null,
+       "billed_until": null,
+       "billed_from_day_of_month": 1,
+       "membership_active": true,
+       "membership_fee": "0.00",
+       "auto_renewal": false,
+       "deleted": false
+      }
+     ],
+     "application.Payment": [
+      {
+       "$sym": "@ca16p",
+       "payment_id": "@ca16p",
+       "type": "default",
+       "subject": 2,
+       "amount": "50.00",
+       "creation_date": "$now",
+       "payment_date": null,
+       "paid": false,
+       "expense": false,
+       "description": "Pilates, ",
+       "payment_category_id": "$category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": "e0000000-0000-4000-8000-000000000002",
+       "supplier_id": null,
+       "instructor_id": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": {
+        "multiple_quote": {
+         "quote_id": "q1",
+         "title": "Testo",
+         "amount": " 50 "
+        },
+        "description": "Quota Testo a Pilates",
+        "course_id": "e0000000-0000-4000-8000-000000000013",
+        "course_title": "Pilates",
+        "course_type": "2"
+       },
+       "notes": null,
+       "custom_accounts_id": "00000000-0000-4000-8000-0000000e0001",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": {
+        "label": "Pilates",
+        "value": "e0000000-0000-4000-8000-000000000013"
+       }
+      }
+     ]
+    },
+    "links": {},
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "key": "@ca16",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "membership_fee": [
+         "None",
+         "0.0"
+        ],
+        "payment": [
+         "None",
+         "None"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@ca16'), 'course_id': UUID('e0000000-0000-4000-8000-000000000013'), 'paid': False, 'creation_date': {created:@ca16}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 2, 'multiple_quote': {'quote_id': 'q1', 'title': 'Testo', 'amount': ' 50 '}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "payment",
+      "key": "@ca16p",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "amount": [
+         "None",
+         "50.0"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "key": "@ca16",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "@ca16p"
+       ],
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@ca16'), 'course_id': UUID('e0000000-0000-4000-8000-000000000013'), 'paid': False, 'creation_date': {created:@ca16}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000005'), 'payment_id': UUID('@ca16p'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 2, 'multiple_quote': {'quote_id': 'q1', 'title': 'Testo', 'amount': ' 50 '}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     }
+    ]
+   },
+   "body": {
+    "course": "e0000000-0000-4000-8000-000000000013",
+    "subscription_id": "e0000000-0000-4000-8000-000000000005",
+    "multiple_quote": {
+     "quote_id": "q1",
+     "title": "Testo",
+     "amount": " 50 "
+    }
+   }
+  },
+  {
+   "name": "course-enrolment-add-quote-amount-three-decimals",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 201,
+   "response": [
+    {
+     "course_subscription_id": "@ca17",
+     "creation_date": "$now",
+     "paid": false,
+     "subscription": {
+      "subscription_id": "e0000000-0000-4000-8000-000000000006",
+      "associate": {
+       "associate_id": "e0000000-0000-4000-8000-000000000003",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-01-01",
+       "email": null,
+       "sex": "M",
+       "first_name": "Luisa",
+       "last_name": "Bianchi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": null,
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "current_year": "corrente"
+     },
+     "multi_payments": false,
+     "multiple_quote": {
+      "quote_id": "q1",
+      "title": "Testo",
+      "amount": "2,675"
+     },
+     "one_fee_payment": false,
+     "installments": [],
+     "course": "e0000000-0000-4000-8000-000000000013",
+     "type": 2,
+     "billed_frequency": 1,
+     "billed_from": null,
+     "billed_until": null,
+     "billed_from_day_of_month": 1,
+     "membership_active": true,
+     "membership_fee": "0.00",
+     "auto_renewal": false,
+     "membership_payments": [],
+     "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-01T09:00:00Z}</span>",
+     "carnets": []
+    }
+   ],
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {
+     "application.CourseSubscription": [
+      {
+       "$sym": "@ca17",
+       "course_subscription_id": "@ca17",
+       "course_id": "e0000000-0000-4000-8000-000000000013",
+       "paid": false,
+       "creation_date": "$now",
+       "subscription_id": "e0000000-0000-4000-8000-000000000006",
+       "payment_id": "@ca17p",
+       "multi_payments": false,
+       "one_fee_payment": false,
+       "archived": false,
+       "type": 2,
+       "multiple_quote": {
+        "quote_id": "q1",
+        "title": "Testo",
+        "amount": "2,675"
+       },
+       "billed_frequency": 1,
+       "billed_from": null,
+       "billed_until": null,
+       "billed_from_day_of_month": 1,
+       "membership_active": true,
+       "membership_fee": "0.00",
+       "auto_renewal": false,
+       "deleted": false
+      }
+     ],
+     "application.Payment": [
+      {
+       "$sym": "@ca17p",
+       "payment_id": "@ca17p",
+       "type": "default",
+       "subject": 2,
+       "amount": "2.68",
+       "creation_date": "$now",
+       "payment_date": null,
+       "paid": false,
+       "expense": false,
+       "description": "Pilates, ",
+       "payment_category_id": "$category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": "e0000000-0000-4000-8000-000000000003",
+       "supplier_id": null,
+       "instructor_id": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": {
+        "multiple_quote": {
+         "quote_id": "q1",
+         "title": "Testo",
+         "amount": "2,675"
+        },
+        "description": "Quota Testo a Pilates",
+        "course_id": "e0000000-0000-4000-8000-000000000013",
+        "course_title": "Pilates",
+        "course_type": "2"
+       },
+       "notes": null,
+       "custom_accounts_id": "00000000-0000-4000-8000-0000000e0001",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": {
+        "label": "Pilates",
+        "value": "e0000000-0000-4000-8000-000000000013"
+       }
+      }
+     ]
+    },
+    "links": {},
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "key": "@ca17",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "membership_fee": [
+         "None",
+         "0.0"
+        ],
+        "payment": [
+         "None",
+         "None"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@ca17'), 'course_id': UUID('e0000000-0000-4000-8000-000000000013'), 'paid': False, 'creation_date': {created:@ca17}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000006'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 2, 'multiple_quote': {'quote_id': 'q1', 'title': 'Testo', 'amount': '2,675'}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "payment",
+      "key": "@ca17p",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "amount": [
+         "None",
+         "2.675"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "key": "@ca17",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "@ca17p"
+       ],
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@ca17'), 'course_id': UUID('e0000000-0000-4000-8000-000000000013'), 'paid': False, 'creation_date': {created:@ca17}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000006'), 'payment_id': UUID('@ca17p'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 2, 'multiple_quote': {'quote_id': 'q1', 'title': 'Testo', 'amount': '2,675'}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     }
+    ]
+   },
+   "body": {
+    "course": "e0000000-0000-4000-8000-000000000013",
+    "subscription_id": "e0000000-0000-4000-8000-000000000006",
+    "multiple_quote": {
+     "quote_id": "q1",
+     "title": "Testo",
+     "amount": "2,675"
+    }
+   }
+  },
+  {
+   "name": "course-enrolment-add-quote-amount-underscores",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 201,
+   "response": [
+    {
+     "course_subscription_id": "@ca18",
+     "creation_date": "$now",
+     "paid": false,
+     "subscription": {
+      "subscription_id": "e0000000-0000-4000-8000-000000000005",
+      "associate": {
+       "associate_id": "e0000000-0000-4000-8000-000000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-01-01",
+       "email": null,
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": null,
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "current_year": "corrente"
+     },
+     "multi_payments": false,
+     "multiple_quote": {
+      "quote_id": "q1",
+      "title": "Testo",
+      "amount": "1_200"
+     },
+     "one_fee_payment": false,
+     "installments": [],
+     "course": "e0000000-0000-4000-8000-000000000013",
+     "type": 2,
+     "billed_frequency": 1,
+     "billed_from": null,
+     "billed_until": null,
+     "billed_from_day_of_month": 1,
+     "membership_active": true,
+     "membership_fee": "0.00",
+     "auto_renewal": false,
+     "membership_payments": [],
+     "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-01T09:00:00Z}</span>",
+     "carnets": []
+    }
+   ],
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {
+     "application.CourseSubscription": [
+      {
+       "$sym": "@ca18",
+       "course_subscription_id": "@ca18",
+       "course_id": "e0000000-0000-4000-8000-000000000013",
+       "paid": false,
+       "creation_date": "$now",
+       "subscription_id": "e0000000-0000-4000-8000-000000000005",
+       "payment_id": "@ca18p",
+       "multi_payments": false,
+       "one_fee_payment": false,
+       "archived": false,
+       "type": 2,
+       "multiple_quote": {
+        "quote_id": "q1",
+        "title": "Testo",
+        "amount": "1_200"
+       },
+       "billed_frequency": 1,
+       "billed_from": null,
+       "billed_until": null,
+       "billed_from_day_of_month": 1,
+       "membership_active": true,
+       "membership_fee": "0.00",
+       "auto_renewal": false,
+       "deleted": false
+      }
+     ],
+     "application.Payment": [
+      {
+       "$sym": "@ca18p",
+       "payment_id": "@ca18p",
+       "type": "default",
+       "subject": 2,
+       "amount": "1200.00",
+       "creation_date": "$now",
+       "payment_date": null,
+       "paid": false,
+       "expense": false,
+       "description": "Pilates, ",
+       "payment_category_id": "$category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": "e0000000-0000-4000-8000-000000000002",
+       "supplier_id": null,
+       "instructor_id": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": {
+        "multiple_quote": {
+         "quote_id": "q1",
+         "title": "Testo",
+         "amount": "1_200"
+        },
+        "description": "Quota Testo a Pilates",
+        "course_id": "e0000000-0000-4000-8000-000000000013",
+        "course_title": "Pilates",
+        "course_type": "2"
+       },
+       "notes": null,
+       "custom_accounts_id": "00000000-0000-4000-8000-0000000e0001",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": {
+        "label": "Pilates",
+        "value": "e0000000-0000-4000-8000-000000000013"
+       }
+      }
+     ]
+    },
+    "links": {},
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "key": "@ca18",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "membership_fee": [
+         "None",
+         "0.0"
+        ],
+        "payment": [
+         "None",
+         "None"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@ca18'), 'course_id': UUID('e0000000-0000-4000-8000-000000000013'), 'paid': False, 'creation_date': {created:@ca18}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 2, 'multiple_quote': {'quote_id': 'q1', 'title': 'Testo', 'amount': '1_200'}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "payment",
+      "key": "@ca18p",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "amount": [
+         "None",
+         "1200.0"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "key": "@ca18",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "@ca18p"
+       ],
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@ca18'), 'course_id': UUID('e0000000-0000-4000-8000-000000000013'), 'paid': False, 'creation_date': {created:@ca18}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000005'), 'payment_id': UUID('@ca18p'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 2, 'multiple_quote': {'quote_id': 'q1', 'title': 'Testo', 'amount': '1_200'}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     }
+    ]
+   },
+   "body": {
+    "course": "e0000000-0000-4000-8000-000000000013",
+    "subscription_id": "e0000000-0000-4000-8000-000000000005",
+    "multiple_quote": {
+     "quote_id": "q1",
+     "title": "Testo",
+     "amount": "1_200"
+    }
+   }
+  },
+  {
+   "name": "course-enrolment-add-quote-amount-exponent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 201,
+   "response": [
+    {
+     "course_subscription_id": "@ca19",
+     "creation_date": "$now",
+     "paid": false,
+     "subscription": {
+      "subscription_id": "e0000000-0000-4000-8000-000000000006",
+      "associate": {
+       "associate_id": "e0000000-0000-4000-8000-000000000003",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-01-01",
+       "email": null,
+       "sex": "M",
+       "first_name": "Luisa",
+       "last_name": "Bianchi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": null,
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "current_year": "corrente"
+     },
+     "multi_payments": false,
+     "multiple_quote": {
+      "quote_id": "q1",
+      "title": "Testo",
+      "amount": "1e2"
+     },
+     "one_fee_payment": false,
+     "installments": [],
+     "course": "e0000000-0000-4000-8000-000000000013",
+     "type": 2,
+     "billed_frequency": 1,
+     "billed_from": null,
+     "billed_until": null,
+     "billed_from_day_of_month": 1,
+     "membership_active": true,
+     "membership_fee": "0.00",
+     "auto_renewal": false,
+     "membership_payments": [],
+     "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-01T09:00:00Z}</span>",
+     "carnets": []
+    }
+   ],
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {
+     "application.CourseSubscription": [
+      {
+       "$sym": "@ca19",
+       "course_subscription_id": "@ca19",
+       "course_id": "e0000000-0000-4000-8000-000000000013",
+       "paid": false,
+       "creation_date": "$now",
+       "subscription_id": "e0000000-0000-4000-8000-000000000006",
+       "payment_id": "@ca19p",
+       "multi_payments": false,
+       "one_fee_payment": false,
+       "archived": false,
+       "type": 2,
+       "multiple_quote": {
+        "quote_id": "q1",
+        "title": "Testo",
+        "amount": "1e2"
+       },
+       "billed_frequency": 1,
+       "billed_from": null,
+       "billed_until": null,
+       "billed_from_day_of_month": 1,
+       "membership_active": true,
+       "membership_fee": "0.00",
+       "auto_renewal": false,
+       "deleted": false
+      }
+     ],
+     "application.Payment": [
+      {
+       "$sym": "@ca19p",
+       "payment_id": "@ca19p",
+       "type": "default",
+       "subject": 2,
+       "amount": "100.00",
+       "creation_date": "$now",
+       "payment_date": null,
+       "paid": false,
+       "expense": false,
+       "description": "Pilates, ",
+       "payment_category_id": "$category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": "e0000000-0000-4000-8000-000000000003",
+       "supplier_id": null,
+       "instructor_id": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": {
+        "multiple_quote": {
+         "quote_id": "q1",
+         "title": "Testo",
+         "amount": "1e2"
+        },
+        "description": "Quota Testo a Pilates",
+        "course_id": "e0000000-0000-4000-8000-000000000013",
+        "course_title": "Pilates",
+        "course_type": "2"
+       },
+       "notes": null,
+       "custom_accounts_id": "00000000-0000-4000-8000-0000000e0001",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": {
+        "label": "Pilates",
+        "value": "e0000000-0000-4000-8000-000000000013"
+       }
+      }
+     ]
+    },
+    "links": {},
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "key": "@ca19",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "membership_fee": [
+         "None",
+         "0.0"
+        ],
+        "payment": [
+         "None",
+         "None"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@ca19'), 'course_id': UUID('e0000000-0000-4000-8000-000000000013'), 'paid': False, 'creation_date': {created:@ca19}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000006'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 2, 'multiple_quote': {'quote_id': 'q1', 'title': 'Testo', 'amount': '1e2'}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "payment",
+      "key": "@ca19p",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "amount": [
+         "None",
+         "100.0"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "key": "@ca19",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "@ca19p"
+       ],
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@ca19'), 'course_id': UUID('e0000000-0000-4000-8000-000000000013'), 'paid': False, 'creation_date': {created:@ca19}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000006'), 'payment_id': UUID('@ca19p'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 2, 'multiple_quote': {'quote_id': 'q1', 'title': 'Testo', 'amount': '1e2'}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     }
+    ]
+   },
+   "body": {
+    "course": "e0000000-0000-4000-8000-000000000013",
+    "subscription_id": "e0000000-0000-4000-8000-000000000006",
+    "multiple_quote": {
+     "quote_id": "q1",
+     "title": "Testo",
+     "amount": "1e2"
+    }
+   }
+  },
+  {
+   "name": "course-enrolment-add-quote-amount-sub-cent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 201,
+   "response": [
+    {
+     "course_subscription_id": "@ca20",
+     "creation_date": "$now",
+     "paid": false,
+     "subscription": {
+      "subscription_id": "e0000000-0000-4000-8000-000000000005",
+      "associate": {
+       "associate_id": "e0000000-0000-4000-8000-000000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-01-01",
+       "email": null,
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": null,
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "current_year": "corrente"
+     },
+     "multi_payments": false,
+     "multiple_quote": {
+      "quote_id": "q1",
+      "title": "Testo",
+      "amount": "0,004"
+     },
+     "one_fee_payment": false,
+     "installments": [],
+     "course": "e0000000-0000-4000-8000-000000000013",
+     "type": 2,
+     "billed_frequency": 1,
+     "billed_from": null,
+     "billed_until": null,
+     "billed_from_day_of_month": 1,
+     "membership_active": true,
+     "membership_fee": "0.00",
+     "auto_renewal": false,
+     "membership_payments": [],
+     "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-01T09:00:00Z}</span>",
+     "carnets": []
+    }
+   ],
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {
+     "application.CourseSubscription": [
+      {
+       "$sym": "@ca20",
+       "course_subscription_id": "@ca20",
+       "course_id": "e0000000-0000-4000-8000-000000000013",
+       "paid": false,
+       "creation_date": "$now",
+       "subscription_id": "e0000000-0000-4000-8000-000000000005",
+       "payment_id": "@ca20p",
+       "multi_payments": false,
+       "one_fee_payment": false,
+       "archived": false,
+       "type": 2,
+       "multiple_quote": {
+        "quote_id": "q1",
+        "title": "Testo",
+        "amount": "0,004"
+       },
+       "billed_frequency": 1,
+       "billed_from": null,
+       "billed_until": null,
+       "billed_from_day_of_month": 1,
+       "membership_active": true,
+       "membership_fee": "0.00",
+       "auto_renewal": false,
+       "deleted": false
+      }
+     ],
+     "application.Payment": [
+      {
+       "$sym": "@ca20p",
+       "payment_id": "@ca20p",
+       "type": "default",
+       "subject": 2,
+       "amount": "0.00",
+       "creation_date": "$now",
+       "payment_date": null,
+       "paid": false,
+       "expense": false,
+       "description": "Pilates, ",
+       "payment_category_id": "$category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": "e0000000-0000-4000-8000-000000000002",
+       "supplier_id": null,
+       "instructor_id": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": {
+        "multiple_quote": {
+         "quote_id": "q1",
+         "title": "Testo",
+         "amount": "0,004"
+        },
+        "description": "Quota Testo a Pilates",
+        "course_id": "e0000000-0000-4000-8000-000000000013",
+        "course_title": "Pilates",
+        "course_type": "2"
+       },
+       "notes": null,
+       "custom_accounts_id": "00000000-0000-4000-8000-0000000e0001",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": {
+        "label": "Pilates",
+        "value": "e0000000-0000-4000-8000-000000000013"
+       }
+      }
+     ]
+    },
+    "links": {},
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "key": "@ca20",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "membership_fee": [
+         "None",
+         "0.0"
+        ],
+        "payment": [
+         "None",
+         "None"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@ca20'), 'course_id': UUID('e0000000-0000-4000-8000-000000000013'), 'paid': False, 'creation_date': {created:@ca20}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 2, 'multiple_quote': {'quote_id': 'q1', 'title': 'Testo', 'amount': '0,004'}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "payment",
+      "key": "@ca20p",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "amount": [
+         "None",
+         "0.004"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "key": "@ca20",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "@ca20p"
+       ],
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@ca20'), 'course_id': UUID('e0000000-0000-4000-8000-000000000013'), 'paid': False, 'creation_date': {created:@ca20}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000005'), 'payment_id': UUID('@ca20p'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 2, 'multiple_quote': {'quote_id': 'q1', 'title': 'Testo', 'amount': '0,004'}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     }
+    ]
+   },
+   "body": {
+    "course": "e0000000-0000-4000-8000-000000000013",
+    "subscription_id": "e0000000-0000-4000-8000-000000000005",
+    "multiple_quote": {
+     "quote_id": "q1",
+     "title": "Testo",
+     "amount": "0,004"
+    }
+   }
+  },
+  {
+   "name": "course-enrolment-add-quote-amount-negative-sub-cent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 201,
+   "response": [
+    {
+     "course_subscription_id": "@ca21",
+     "creation_date": "$now",
+     "paid": false,
+     "subscription": {
+      "subscription_id": "e0000000-0000-4000-8000-000000000006",
+      "associate": {
+       "associate_id": "e0000000-0000-4000-8000-000000000003",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-01-01",
+       "email": null,
+       "sex": "M",
+       "first_name": "Luisa",
+       "last_name": "Bianchi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": null,
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "current_year": "corrente"
+     },
+     "multi_payments": false,
+     "multiple_quote": {
+      "quote_id": "q1",
+      "title": "Testo",
+      "amount": "-0,001"
+     },
+     "one_fee_payment": false,
+     "installments": [],
+     "course": "e0000000-0000-4000-8000-000000000013",
+     "type": 2,
+     "billed_frequency": 1,
+     "billed_from": null,
+     "billed_until": null,
+     "billed_from_day_of_month": 1,
+     "membership_active": true,
+     "membership_fee": "0.00",
+     "auto_renewal": false,
+     "membership_payments": [],
+     "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-01T09:00:00Z}</span>",
+     "carnets": []
+    }
+   ],
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {
+     "application.CourseSubscription": [
+      {
+       "$sym": "@ca21",
+       "course_subscription_id": "@ca21",
+       "course_id": "e0000000-0000-4000-8000-000000000013",
+       "paid": false,
+       "creation_date": "$now",
+       "subscription_id": "e0000000-0000-4000-8000-000000000006",
+       "payment_id": null,
+       "multi_payments": false,
+       "one_fee_payment": false,
+       "archived": false,
+       "type": 2,
+       "multiple_quote": {
+        "quote_id": "q1",
+        "title": "Testo",
+        "amount": "-0,001"
+       },
+       "billed_frequency": 1,
+       "billed_from": null,
+       "billed_until": null,
+       "billed_from_day_of_month": 1,
+       "membership_active": true,
+       "membership_fee": "0.00",
+       "auto_renewal": false,
+       "deleted": false
+      }
+     ],
+     "application.Payment": [
+      {
+       "$sym": "@ca21p",
+       "payment_id": "@ca21p",
+       "type": "default",
+       "subject": 2,
+       "amount": "0.00",
+       "creation_date": "$now",
+       "payment_date": null,
+       "paid": false,
+       "expense": false,
+       "description": "Pilates, ",
+       "payment_category_id": "$category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": "e0000000-0000-4000-8000-000000000003",
+       "supplier_id": null,
+       "instructor_id": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": {
+        "multiple_quote": {
+         "quote_id": "q1",
+         "title": "Testo",
+         "amount": "-0,001"
+        },
+        "description": "Quota Testo a Pilates",
+        "course_id": "e0000000-0000-4000-8000-000000000013",
+        "course_title": "Pilates",
+        "course_type": "2"
+       },
+       "notes": null,
+       "custom_accounts_id": "00000000-0000-4000-8000-0000000e0001",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": {
+        "label": "Pilates",
+        "value": "e0000000-0000-4000-8000-000000000013"
+       }
+      }
+     ]
+    },
+    "links": {},
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "key": "@ca21",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "membership_fee": [
+         "None",
+         "0.0"
+        ],
+        "payment": [
+         "None",
+         "None"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@ca21'), 'course_id': UUID('e0000000-0000-4000-8000-000000000013'), 'paid': False, 'creation_date': {created:@ca21}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000006'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 2, 'multiple_quote': {'quote_id': 'q1', 'title': 'Testo', 'amount': '-0,001'}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "payment",
+      "key": "@ca21p",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "amount": [
+         "None",
+         "-0.001"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     }
+    ]
+   },
+   "body": {
+    "course": "e0000000-0000-4000-8000-000000000013",
+    "subscription_id": "e0000000-0000-4000-8000-000000000006",
+    "multiple_quote": {
+     "quote_id": "q1",
+     "title": "Testo",
+     "amount": "-0,001"
+    }
+   }
+  },
+  {
+   "name": "course-enrolment-add-quote-amount-negative",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {},
+    "links": {},
+    "audit": []
+   },
+   "body": {
+    "course": "e0000000-0000-4000-8000-000000000013",
+    "subscription_id": "e0000000-0000-4000-8000-000000000006",
+    "multiple_quote": {
+     "quote_id": "q1",
+     "title": "Testo",
+     "amount": "-5"
+    }
+   }
+  },
+  {
+   "name": "course-enrolment-add-quote-amount-not-a-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {},
+    "links": {},
+    "audit": []
+   },
+   "body": {
+    "course": "e0000000-0000-4000-8000-000000000013",
+    "subscription_id": "e0000000-0000-4000-8000-000000000006",
+    "multiple_quote": {
+     "quote_id": "q1",
+     "title": "Testo",
+     "amount": "10 euro"
+    }
+   }
+  },
+  {
+   "name": "course-enrolment-add-quote-amount-two-separators",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {},
+    "links": {},
+    "audit": []
+   },
+   "body": {
+    "course": "e0000000-0000-4000-8000-000000000013",
+    "subscription_id": "e0000000-0000-4000-8000-000000000006",
+    "multiple_quote": {
+     "quote_id": "q1",
+     "title": "Testo",
+     "amount": "1.000,50"
+    }
+   }
+  },
+  {
+   "name": "course-enrolment-add-quote-amount-nan",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {},
+    "links": {},
+    "audit": []
+   },
+   "body": {
+    "course": "e0000000-0000-4000-8000-000000000013",
+    "subscription_id": "e0000000-0000-4000-8000-000000000006",
+    "multiple_quote": {
+     "quote_id": "q1",
+     "title": "Testo",
+     "amount": "nan"
+    }
+   }
+  },
+  {
+   "name": "course-enrolment-add-quote-amount-overflow",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {},
+    "links": {},
+    "audit": []
+   },
+   "body": {
+    "course": "e0000000-0000-4000-8000-000000000013",
+    "subscription_id": "e0000000-0000-4000-8000-000000000006",
+    "multiple_quote": {
+     "quote_id": "q1",
+     "title": "Testo",
+     "amount": "12345678"
+    }
    }
   }
  ]

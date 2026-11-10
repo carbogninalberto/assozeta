@@ -192,38 +192,6 @@ func (h *InstanceAdminHandler) Integration(c echo.Context) error {
 	return h.answer(c, body, err)
 }
 
-// Diagnostics is DiagnosticsView (GET; POST answers only an active lease).
-func (h *InstanceAdminHandler) Diagnostics(c echo.Context) error {
-	if ok, err := h.begin(c, "GET, POST, HEAD, OPTIONS", "instance_diagnostics", false); !ok {
-		return err
-	}
-	request := c.Request()
-	switch {
-	case request.Method == http.MethodOptions:
-		return supplierOptions(c, "Diagnostics", "")
-	case isRead(request.Method):
-		body, err := h.admin.Diagnostics(request.Context())
-		if err != nil {
-			return h.fail(c, err)
-		}
-		c.Response().Header().Set("Cache-Control", "no-store")
-		return c.JSON(200, body)
-	case request.Method == http.MethodPost:
-		// The view never reads request.data.
-		tracked, err := h.operations.Track(request.Context())
-		if err != nil {
-			return paymentCategoryError(c, err)
-		}
-		defer tracked.Release()
-		ctx, err := tracked.Admit()
-		if err != nil {
-			return paymentCategoryError(c, err)
-		}
-		return h.fail(c, h.admin.RunDiagnostics(ctx))
-	}
-	return h.notAllowed(c)
-}
-
 // Updates is InstanceUpdatesView (GET, POST).
 func (h *InstanceAdminHandler) Updates(c echo.Context) error {
 	if ok, err := h.begin(c, "GET, POST, HEAD, OPTIONS", "instance_updates", false); !ok {
