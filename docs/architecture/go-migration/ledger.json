@@ -9808,10 +9808,10 @@
         ],
         "request": "No body fields read.",
         "response": "200 {'data': PaymentSerializer}.",
-        "errors": "400 uuid list; 401; 403 registry, scoped guard; 405; 500 missing installment or subscription.",
+        "errors": "400 uuid list; 401; 403 registry, scoped guard, User not allowed (athletes: a subscription of another user or none; others: no association or a course of another association); 405; 500 missing installment or subscription.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
-        "permissions": "association.courses.update (athlete view)",
-        "resource_scope": "Live group-aware installment resolved by id; the payment takes the course's association.",
+        "permissions": "association.courses.update (athlete view); the owner of the course's association, or the athlete whose user holds the course subscription's subscription",
+        "resource_scope": "Live group-aware installment resolved by id, of a course of the caller's association (athletes: of a subscription of their own user); the payment takes the course's association.",
         "side_effects": "Creates a payment for the installment amount and date and links it to the installment; audited.",
         "transaction": "Autocommit.",
         "execution_owner": "django"
@@ -9826,25 +9826,25 @@
         "docs/architecture/go-migration/course-enrolment.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 102/102; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-red2/results.json",
-          "receipt_sha256": "143cb5ea0fa290bfa46ba0bce30cf9e48728d6cfdee4b71303c189907a8fc525"
+          "result": "RED: Django 113/113; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-red/results.json",
+          "receipt_sha256": "a1d6f679734f0557109bef900ebc8aa96ff73b2fb2d082c91febd7987da5ffd9"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-green/results.json",
-          "receipt_sha256": "79e3d4c38cf7564edde1fbab4acbe5eea6b5a9c4dcef4587e13e49b934de0abe"
+          "result": "GREEN: 113/113 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-green/results.json",
+          "receipt_sha256": "3a8a2456760671dd3ccdfa2192d1b2ce80c8f35e6046646e9dbbc3b066928e11"
         },
         {
-          "revision": "committing change with quote cents rounded half down",
-          "result": "Mutation control: fails Go on course-enrolment-add-quote-amount-three-decimals (state.created-unmatched).",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-mutation-half-down/results.json",
-          "receipt_sha256": "95033c4d279f45347b7daad1856e9917e1037700bc2a5301ffa455600ee22f92"
+          "revision": "committing change without the athlete check of the installment payment (the subscription of the caller's user)",
+          "result": "Mutation control: fails Go on course-enrolment-make-payment-athlete-other-subscription (200 instead of 403); a second control (secaw-mutation-add) without the athlete check of course-overview add fails course-enrolment-overview-add-athlete-other-subscription.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-mutation/results.json",
+          "receipt_sha256": "fdb967848cd6faaca27e1513096bcd355ad95234a47671561ed09057fdb87363"
         }
       ],
       "notes": [
-        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add."
+        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add. secaw: course-overview add applies the owner check of course_overview_update (athletes enrol subscriptions of their own user, other callers need the association of the course) and the installment payment answers to the course's association or to the athlete of the course subscription; otherwise 403 User not allowed."
       ]
     },
     {
@@ -10105,25 +10105,25 @@
         "docs/architecture/go-migration/course-enrolment.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 102/102; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-red2/results.json",
-          "receipt_sha256": "143cb5ea0fa290bfa46ba0bce30cf9e48728d6cfdee4b71303c189907a8fc525"
+          "result": "RED: Django 113/113; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-red/results.json",
+          "receipt_sha256": "a1d6f679734f0557109bef900ebc8aa96ff73b2fb2d082c91febd7987da5ffd9"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-green/results.json",
-          "receipt_sha256": "79e3d4c38cf7564edde1fbab4acbe5eea6b5a9c4dcef4587e13e49b934de0abe"
+          "result": "GREEN: 113/113 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-green/results.json",
+          "receipt_sha256": "3a8a2456760671dd3ccdfa2192d1b2ce80c8f35e6046646e9dbbc3b066928e11"
         },
         {
-          "revision": "committing change with quote cents rounded half down",
-          "result": "Mutation control: fails Go on course-enrolment-add-quote-amount-three-decimals (state.created-unmatched).",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-mutation-half-down/results.json",
-          "receipt_sha256": "95033c4d279f45347b7daad1856e9917e1037700bc2a5301ffa455600ee22f92"
+          "revision": "committing change without the athlete check of the installment payment (the subscription of the caller's user)",
+          "result": "Mutation control: fails Go on course-enrolment-make-payment-athlete-other-subscription (200 instead of 403); a second control (secaw-mutation-add) without the athlete check of course-overview add fails course-enrolment-overview-add-athlete-other-subscription.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-mutation/results.json",
+          "receipt_sha256": "fdb967848cd6faaca27e1513096bcd355ad95234a47671561ed09057fdb87363"
         }
       ],
       "notes": [
-        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add."
+        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add. secaw: course-overview add applies the owner check of course_overview_update (athletes enrol subscriptions of their own user, other callers need the association of the course) and the installment payment answers to the course's association or to the athlete of the course subscription; otherwise 403 User not allowed."
       ]
     },
     {
@@ -11016,10 +11016,10 @@
         ],
         "request": "JSON object: optional one_fee_payment, multiple_quote {value}.",
         "response": "200 {'data': {'msg': 'associate added.', 'payment': {...}|null, 'course_subscription': CourseSubscriptionSerializer}}.",
-        "errors": "400 uuid list; 401; 403 registry, scoped guard, User not allowed (course of another association); 405; 500 missing course/subscription, existing live row, late failures.",
+        "errors": "400 uuid list; 401; 403 registry, scoped guard, User not allowed (athletes: a subscription of another user; others: no association or a course of another association); 405; 500 missing course/subscription, existing live row, late failures.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
-        "permissions": "association.courses.update (athlete view)",
-        "resource_scope": "Live group-aware course and subscription; the payments use the subscription's association.",
+        "permissions": "association.courses.update (athlete view); athletes enrol subscriptions of their own user, other callers need the association of the course",
+        "resource_scope": "Live group-aware course of the caller's association and subscription (athletes: a subscription of their own user); the payments use the subscription's association.",
         "side_effects": "Creates the course subscription, its one-fee/quote/fee payment or installments, and links the last positive payment; audited.",
         "transaction": "Autocommit: work saved before a late error stays.",
         "execution_owner": "django"
@@ -11034,25 +11034,25 @@
         "docs/architecture/go-migration/course-enrolment.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 102/102; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-red2/results.json",
-          "receipt_sha256": "143cb5ea0fa290bfa46ba0bce30cf9e48728d6cfdee4b71303c189907a8fc525"
+          "result": "RED: Django 113/113; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-red/results.json",
+          "receipt_sha256": "a1d6f679734f0557109bef900ebc8aa96ff73b2fb2d082c91febd7987da5ffd9"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-green/results.json",
-          "receipt_sha256": "79e3d4c38cf7564edde1fbab4acbe5eea6b5a9c4dcef4587e13e49b934de0abe"
+          "result": "GREEN: 113/113 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-green/results.json",
+          "receipt_sha256": "3a8a2456760671dd3ccdfa2192d1b2ce80c8f35e6046646e9dbbc3b066928e11"
         },
         {
-          "revision": "committing change with quote cents rounded half down",
-          "result": "Mutation control: fails Go on course-enrolment-add-quote-amount-three-decimals (state.created-unmatched).",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-mutation-half-down/results.json",
-          "receipt_sha256": "95033c4d279f45347b7daad1856e9917e1037700bc2a5301ffa455600ee22f92"
+          "revision": "committing change without the athlete check of the installment payment (the subscription of the caller's user)",
+          "result": "Mutation control: fails Go on course-enrolment-make-payment-athlete-other-subscription (200 instead of 403); a second control (secaw-mutation-add) without the athlete check of course-overview add fails course-enrolment-overview-add-athlete-other-subscription.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-mutation/results.json",
+          "receipt_sha256": "fdb967848cd6faaca27e1513096bcd355ad95234a47671561ed09057fdb87363"
         }
       ],
       "notes": [
-        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add."
+        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add. secaw: course-overview add applies the owner check of course_overview_update (athletes enrol subscriptions of their own user, other callers need the association of the course) and the installment payment answers to the course's association or to the athlete of the course subscription; otherwise 403 User not allowed."
       ]
     },
     {
@@ -23688,7 +23688,8 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/service/statistic_today_lessons.go",
         "BE_GO/internal/domain/course_attendance.go",
-        "BE_GO/internal/repository/course_attendance.go"
+        "BE_GO/internal/repository/course_attendance.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "BE/application/views/statistic_views.py",
@@ -23723,7 +23724,7 @@
         "errors": "401 anonymous; 403 administrator without impersonation, registry \"Missing permission: association.dashboard.read\", owner session scoped to an athlete (association context); 405 for other methods (after permissions); 403 [\"error: forbidden.\"] for non-athletes; 500 {\"error\": \"An error occurred while loading the dashboard\"} for any exception inside the view.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "DRF IsAuthenticated; registry association.dashboard.read; role athlete.",
-        "resource_scope": "Impersonation association or the instance primary association; athlete family subscriptions (scoped_queryset boundary during association-scoped impersonation).",
+        "resource_scope": "Impersonation association or the instance primary association; athlete family subscriptions (user, associate user or a shared filled-in tax code) (scoped_queryset boundary during association-scoped impersonation).",
         "side_effects": "None.",
         "transaction": "Read only; no request transaction.",
         "execution_owner": "django"
@@ -23738,25 +23739,25 @@
         "docs/architecture/go-migration/statistic-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 86/86; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-red-r1/results.json",
-          "receipt_sha256": "aae34f8c4a0033a7759e07688e016291a9f42ae03a856017a7fedbd110c312a0"
+          "result": "RED: Django 87/87; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-red/results.json",
+          "receipt_sha256": "b0f165c98f246b95af2ed6170bb475b92bff276bd53dee0ceb0c87f806b3bcd1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-versioned-r1/results.json",
-          "receipt_sha256": "fa48de721917ca0730424df6d3a43ba7ee67cee1861ea4d0e63e48690d743399"
+          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-green/results.json",
+          "receipt_sha256": "ef543c89e83dccd5144511b0731ebf70890d0ac97b563bd7e6f4152a933a2e47"
         },
         {
-          "revision": "committing change with the todaylessons registry match case-sensitive (~ instead of ~*)",
-          "result": "Mutation control: fails Go on statistic-reads-todaylessons-instructor-collaborator (lessons length).",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-mutation-r1/results.json",
-          "receipt_sha256": "56bbe66a5f23284f3d13293afe2b3545e2313cdb3859ebf45a3aa60dcf031c44"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on statistic-reads-athlete-blank-tax-code (2 subscriptions instead of 1).",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-mutation/results.json",
+          "receipt_sha256": "d9bcd234d50220f7a7d016aa98311ebdbc141153e7ffed493b7d970cacc97c88"
         }
       ],
       "notes": [
-        "Implementing: Every dashboard widget is ported; todaylessons and expiredPayments added for the API v2 UI (see v2-refusals.md)."
+        "Implementing: Every dashboard widget is ported; todaylessons and expiredPayments added for the API v2 UI (see v2-refusals.md). secaw: the athlete dashboard matches family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -23786,7 +23787,8 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/service/statistic_today_lessons.go",
         "BE_GO/internal/domain/course_attendance.go",
-        "BE_GO/internal/repository/course_attendance.go"
+        "BE_GO/internal/repository/course_attendance.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "BE/application/views/statistic_views.py",
@@ -23836,25 +23838,25 @@
         "docs/architecture/go-migration/statistic-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 86/86; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-red-r1/results.json",
-          "receipt_sha256": "aae34f8c4a0033a7759e07688e016291a9f42ae03a856017a7fedbd110c312a0"
+          "result": "RED: Django 87/87; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-red/results.json",
+          "receipt_sha256": "b0f165c98f246b95af2ed6170bb475b92bff276bd53dee0ceb0c87f806b3bcd1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-versioned-r1/results.json",
-          "receipt_sha256": "fa48de721917ca0730424df6d3a43ba7ee67cee1861ea4d0e63e48690d743399"
+          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-green/results.json",
+          "receipt_sha256": "ef543c89e83dccd5144511b0731ebf70890d0ac97b563bd7e6f4152a933a2e47"
         },
         {
-          "revision": "committing change with the todaylessons registry match case-sensitive (~ instead of ~*)",
-          "result": "Mutation control: fails Go on statistic-reads-todaylessons-instructor-collaborator (lessons length).",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-mutation-r1/results.json",
-          "receipt_sha256": "56bbe66a5f23284f3d13293afe2b3545e2313cdb3859ebf45a3aa60dcf031c44"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on statistic-reads-athlete-blank-tax-code (2 subscriptions instead of 1).",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-mutation/results.json",
+          "receipt_sha256": "d9bcd234d50220f7a7d016aa98311ebdbc141153e7ffed493b7d970cacc97c88"
         }
       ],
       "notes": [
-        "Implementing: Every dashboard widget is ported; todaylessons and expiredPayments added for the API v2 UI (see v2-refusals.md)."
+        "Implementing: Every dashboard widget is ported; todaylessons and expiredPayments added for the API v2 UI (see v2-refusals.md). secaw: the athlete dashboard matches family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -23956,7 +23958,8 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/service/statistic_today_lessons.go",
         "BE_GO/internal/domain/course_attendance.go",
-        "BE_GO/internal/repository/course_attendance.go"
+        "BE_GO/internal/repository/course_attendance.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "BE/application/views/statistic_views.py",
@@ -24006,25 +24009,25 @@
         "docs/architecture/go-migration/statistic-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 86/86; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-red-r1/results.json",
-          "receipt_sha256": "aae34f8c4a0033a7759e07688e016291a9f42ae03a856017a7fedbd110c312a0"
+          "result": "RED: Django 87/87; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-red/results.json",
+          "receipt_sha256": "b0f165c98f246b95af2ed6170bb475b92bff276bd53dee0ceb0c87f806b3bcd1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-versioned-r1/results.json",
-          "receipt_sha256": "fa48de721917ca0730424df6d3a43ba7ee67cee1861ea4d0e63e48690d743399"
+          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-green/results.json",
+          "receipt_sha256": "ef543c89e83dccd5144511b0731ebf70890d0ac97b563bd7e6f4152a933a2e47"
         },
         {
-          "revision": "committing change with the todaylessons registry match case-sensitive (~ instead of ~*)",
-          "result": "Mutation control: fails Go on statistic-reads-todaylessons-instructor-collaborator (lessons length).",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-mutation-r1/results.json",
-          "receipt_sha256": "56bbe66a5f23284f3d13293afe2b3545e2313cdb3859ebf45a3aa60dcf031c44"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on statistic-reads-athlete-blank-tax-code (2 subscriptions instead of 1).",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-mutation/results.json",
+          "receipt_sha256": "d9bcd234d50220f7a7d016aa98311ebdbc141153e7ffed493b7d970cacc97c88"
         }
       ],
       "notes": [
-        "Implementing: Every dashboard widget is ported; todaylessons and expiredPayments added for the API v2 UI (see v2-refusals.md)."
+        "Implementing: Every dashboard widget is ported; todaylessons and expiredPayments added for the API v2 UI (see v2-refusals.md). secaw: the athlete dashboard matches family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -24884,7 +24887,9 @@
         "BE_GO/internal/domain/subscription_reads_athlete.go",
         "BE_GO/internal/dto/subscription_reads_athlete.go",
         "BE_GO/internal/repository/subscription_reads_athlete.go",
-        "BE_GO/internal/service/subscription_reads_athlete.go"
+        "BE_GO/internal/service/subscription_reads_athlete.go",
+        "BE_GO/internal/service/subscription_reads_export.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -24922,25 +24927,25 @@
         "docs/architecture/go-migration/subscription-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 261/261; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-red-r1/results.json",
-          "receipt_sha256": "ea7b9792b3cea7e2a10bcaff24abf3e12870f2bed980aa3dfe0fdf67bb83ecfd"
+          "result": "RED: Django 296/296; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-red/results.json",
+          "receipt_sha256": "be60f7b66e3646ca5b0ac99a857a022d4df50deb5377d60cd0189b3eb1f83006"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 261/261 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-versioned-r1/results.json",
-          "receipt_sha256": "0fbabbf4023881d8b5de7327855a466b27f1f1bd50140beecaed1ef558324170"
+          "result": "GREEN: 296/296 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-green/results.json",
+          "receipt_sha256": "def6e8375954c92e0a56547eaa1aae4e82aeb290e73f2c2a8ee08931bfa5bc21"
         },
         {
-          "revision": "committing change rendering the membership payment's nested invoice as null",
-          "result": "Mutation control: fails Go on subscription-reads-info-hyphenless-uuid (membership_payments[0].invoice).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-mutation-r1/results.json",
-          "receipt_sha256": "08451bc4746c053fda8d7f250b02241f478b05398484356d75fbb136973a4af8"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on subscription-reads-info-athlete-blank-tax-code-other-user (200 instead of 403).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-mutation/results.json",
+          "receipt_sha256": "f6b371ee1912dcf8fd6bdfc3a41915d750b777840f7ef7fd7baff85b9e78de83"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -25332,7 +25337,9 @@
         "BE_GO/internal/domain/subscription_reads_athlete.go",
         "BE_GO/internal/dto/subscription_reads_athlete.go",
         "BE_GO/internal/repository/subscription_reads_athlete.go",
-        "BE_GO/internal/service/subscription_reads_athlete.go"
+        "BE_GO/internal/service/subscription_reads_athlete.go",
+        "BE_GO/internal/service/subscription_reads_export.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -25355,7 +25362,7 @@
         "errors": "401; 403 administrator without impersonation or registry permission; 405 other methods; 400 malformed uid; 403 'Subscription not found.' / 'Sport association not found.' (athletes) or 'User not allowed.'; 404 {'msg': 'Subscription not found.'}; 500 owner without live association, subscription without associate.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.members.read; athlete view for association-scoped sessions.",
-        "resource_scope": "The group-aware subscription of the scoped association (athletes: their own and same tax code subscriptions).",
+        "resource_scope": "The group-aware subscription of the scoped association (athletes: their own subscriptions and those sharing a filled-in tax code with one of them).",
         "side_effects": "None in the ported paths (the Celery print task path is refused). Without document_pdf: print_document_subscription.delay(str(id), Authorization header) on the Celery broker.",
         "transaction": "Autocommit reads.",
         "execution_owner": "django"
@@ -25370,25 +25377,25 @@
         "docs/architecture/go-migration/subscription-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 261/261; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-red-r1/results.json",
-          "receipt_sha256": "ea7b9792b3cea7e2a10bcaff24abf3e12870f2bed980aa3dfe0fdf67bb83ecfd"
+          "result": "RED: Django 296/296; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-red/results.json",
+          "receipt_sha256": "be60f7b66e3646ca5b0ac99a857a022d4df50deb5377d60cd0189b3eb1f83006"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 261/261 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-versioned-r1/results.json",
-          "receipt_sha256": "0fbabbf4023881d8b5de7327855a466b27f1f1bd50140beecaed1ef558324170"
+          "result": "GREEN: 296/296 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-green/results.json",
+          "receipt_sha256": "def6e8375954c92e0a56547eaa1aae4e82aeb290e73f2c2a8ee08931bfa5bc21"
         },
         {
-          "revision": "committing change rendering the membership payment's nested invoice as null",
-          "result": "Mutation control: fails Go on subscription-reads-info-hyphenless-uuid (membership_payments[0].invoice).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-mutation-r1/results.json",
-          "receipt_sha256": "08451bc4746c053fda8d7f250b02241f478b05398484356d75fbb136973a4af8"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on subscription-reads-info-athlete-blank-tax-code-other-user (200 instead of 403).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-mutation/results.json",
+          "receipt_sha256": "f6b371ee1912dcf8fd6bdfc3a41915d750b777840f7ef7fd7baff85b9e78de83"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -26918,7 +26925,8 @@
         "BE_GO/internal/handler/subscription_renew.go",
         "BE_GO/internal/dto/testimonials.go",
         "BE_GO/cmd/server/main.go",
-        "BE_GO/internal/repository/subscription_create.go"
+        "BE_GO/internal/repository/subscription_create.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "subscription-create"
@@ -26953,25 +26961,25 @@
         "docs/architecture/go-migration/subscription-renew.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 74/74; Go 200 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub2-red-r3/results.json",
-          "receipt_sha256": "136ab6978ddf5573dee2dfcfff04351afe29c250965cdfffb27a9b2945c459e0"
+          "result": "RED: Django 75/75; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-red/results.json",
+          "receipt_sha256": "fc03e3f231560759687e792b4f923c0bf276c3f788c946cb2512a7bd36e6540d"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 74/74 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub2-versioned-r1/results.json",
-          "receipt_sha256": "fa9a9d81de83b2cb72ec78cd1bf5cf92af74a188d0721c80f8e08fdf95ea49ab"
+          "result": "GREEN: 75/75 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-green/results.json",
+          "receipt_sha256": "75e0cb5c8da351647e47e5b19bf2872a90ece08fba9daacf80538348b67319bc"
         },
         {
-          "revision": "committing change skipping the member account's renewal check",
-          "result": "Mutation control: fails Go on subscription-renew-renew-athlete-in-another-association (response.status 200); secsub2-mutation-r2 (the body's e-mail sets the account for every requester) fails subscription-renew-renew-athlete-keeps-the-account.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub2-mutation-r1/results.json",
-          "receipt_sha256": "bcbe01b5be349f6eaf87bad04bb64e132e0bef23f6c6fdd05ae6ac272bc2eda2"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on subscription-renew-renew-athlete-blank-tax-code-member (200 instead of 403).",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-mutation/results.json",
+          "receipt_sha256": "cfd9728777721cabe34e945e4b576ffccd2bc4ff55cf10457cbe3d063754b44e"
         }
       ],
       "notes": [
-        "Implementing: Renewals set only the association's own tags (Tags filtered by the new subscription's association); renewals with courses stay refused. secsub2: a member account renews its own subscriptions and those of its family, in the association they belong to (a subscription of the requester, or of a person sharing a tax code or a family with one of the requester's subscriptions, for the associate of the request; otherwise 403 User not allowed. before any write); data.user.email sets the account only for an association account; the certificate follows subscription-create with the member as requester. The runner also knows Family rows and requests without an actor (used by subscription-create's family cases)."
+        "Implementing: Renewals set only the association's own tags (Tags filtered by the new subscription's association); renewals with courses stay refused. secsub2: a member account renews its own subscriptions and those of its family, in the association they belong to (a subscription of the requester, or of a person sharing a tax code or a family with one of the requester's subscriptions, for the associate of the request; otherwise 403 User not allowed. before any write); data.user.email sets the account only for an association account; the certificate follows subscription-create with the member as requester. The runner also knows Family rows and requests without an actor (used by subscription-create's family cases). secaw: the member renewal check matches persons by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -27471,10 +27479,17 @@
       "status": "implementing",
       "go": [
         "BE_GO/internal/domain/subscription_reads.go",
+        "BE_GO/internal/dto/subscription_reads.go",
         "BE_GO/internal/repository/subscription_reads.go",
         "BE_GO/internal/service/subscription_reads.go",
+        "BE_GO/internal/handler/subscription_reads.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/subscription_reads_athlete.go",
+        "BE_GO/internal/dto/subscription_reads_athlete.go",
+        "BE_GO/internal/repository/subscription_reads_athlete.go",
+        "BE_GO/internal/service/subscription_reads_athlete.go",
         "BE_GO/internal/service/subscription_reads_export.go",
-        "BE_GO/internal/handler/subscription_reads.go"
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -27498,7 +27513,7 @@
         "errors": "400 POST body parse error; 401; 403 administrator without impersonation or registry permission; 405 other methods; 500 owner without live association, unknown field or ordering, malformed tag id, invalid int() values, missing or unknown POST format, export row without associate, POST format pdf (not ported); 404 Invalid page.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.members.read (GET and POST); athlete view for association-scoped sessions.",
-        "resource_scope": "Group-aware subscriptions of the scoped live association (unarchived), soft-deleted rows included; the field mode by the user's association.",
+        "resource_scope": "Group-aware subscriptions of the scoped live association (unarchived), soft-deleted rows included; the field mode by the user's association. Athletes: their own subscriptions and those sharing a filled-in tax code with one of them.",
         "side_effects": "None.",
         "transaction": "Autocommit reads.",
         "execution_owner": "django"
@@ -27513,25 +27528,25 @@
         "docs/architecture/go-migration/subscription-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 294/294; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2xlsx-red-r1/results.json",
-          "receipt_sha256": "d12ac4d7f46198f43d0dd7fc5ee7357de9150e1cd1da0bab47c560f0b7e39fd3"
+          "result": "RED: Django 296/296; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-red/results.json",
+          "receipt_sha256": "be60f7b66e3646ca5b0ac99a857a022d4df50deb5377d60cd0189b3eb1f83006"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 294/294 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2xlsx-green-final/results.json",
-          "receipt_sha256": "a03875e4bb8e846d9c7ec8ce39114ac6097f03ecfee3028a00d058b127a96136"
+          "result": "GREEN: 296/296 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-green/results.json",
+          "receipt_sha256": "def6e8375954c92e0a56547eaa1aae4e82aeb290e73f2c2a8ee08931bfa5bc21"
         },
         {
-          "revision": "'precedente' decided by an end date after today",
-          "result": "Mutation control: fails Go on subscription-reads-list-excel-owner (xl/worksheets/sheet1.xml differs)",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2xlsx-mutation-final/results.json",
-          "receipt_sha256": "586fc93778e99f3effb0726988aeebb39115d34fe15e5b18aa9202efd39aa296"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on subscription-reads-info-athlete-blank-tax-code-other-user (200 instead of 403).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-mutation/results.json",
+          "receipt_sha256": "f6b371ee1912dcf8fd6bdfc3a41915d750b777840f7ef7fd7baff85b9e78de83"
         }
       ],
       "notes": [
-        "Implementing: Implementing: POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -27560,7 +27575,9 @@
         "BE_GO/internal/domain/subscription_reads_athlete.go",
         "BE_GO/internal/dto/subscription_reads_athlete.go",
         "BE_GO/internal/repository/subscription_reads_athlete.go",
-        "BE_GO/internal/service/subscription_reads_athlete.go"
+        "BE_GO/internal/service/subscription_reads_athlete.go",
+        "BE_GO/internal/service/subscription_reads_export.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -27598,25 +27615,25 @@
         "docs/architecture/go-migration/subscription-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 261/261; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-red-r1/results.json",
-          "receipt_sha256": "ea7b9792b3cea7e2a10bcaff24abf3e12870f2bed980aa3dfe0fdf67bb83ecfd"
+          "result": "RED: Django 296/296; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-red/results.json",
+          "receipt_sha256": "be60f7b66e3646ca5b0ac99a857a022d4df50deb5377d60cd0189b3eb1f83006"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 261/261 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-versioned-r1/results.json",
-          "receipt_sha256": "0fbabbf4023881d8b5de7327855a466b27f1f1bd50140beecaed1ef558324170"
+          "result": "GREEN: 296/296 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-green/results.json",
+          "receipt_sha256": "def6e8375954c92e0a56547eaa1aae4e82aeb290e73f2c2a8ee08931bfa5bc21"
         },
         {
-          "revision": "committing change rendering the membership payment's nested invoice as null",
-          "result": "Mutation control: fails Go on subscription-reads-info-hyphenless-uuid (membership_payments[0].invoice).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-mutation-r1/results.json",
-          "receipt_sha256": "08451bc4746c053fda8d7f250b02241f478b05398484356d75fbb136973a4af8"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on subscription-reads-info-athlete-blank-tax-code-other-user (200 instead of 403).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-mutation/results.json",
+          "receipt_sha256": "f6b371ee1912dcf8fd6bdfc3a41915d750b777840f7ef7fd7baff85b9e78de83"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -27645,7 +27662,9 @@
         "BE_GO/internal/domain/subscription_reads_athlete.go",
         "BE_GO/internal/dto/subscription_reads_athlete.go",
         "BE_GO/internal/repository/subscription_reads_athlete.go",
-        "BE_GO/internal/service/subscription_reads_athlete.go"
+        "BE_GO/internal/service/subscription_reads_athlete.go",
+        "BE_GO/internal/service/subscription_reads_export.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -27683,25 +27702,25 @@
         "docs/architecture/go-migration/subscription-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 261/261; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-red-r1/results.json",
-          "receipt_sha256": "ea7b9792b3cea7e2a10bcaff24abf3e12870f2bed980aa3dfe0fdf67bb83ecfd"
+          "result": "RED: Django 296/296; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-red/results.json",
+          "receipt_sha256": "be60f7b66e3646ca5b0ac99a857a022d4df50deb5377d60cd0189b3eb1f83006"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 261/261 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-versioned-r1/results.json",
-          "receipt_sha256": "0fbabbf4023881d8b5de7327855a466b27f1f1bd50140beecaed1ef558324170"
+          "result": "GREEN: 296/296 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-green/results.json",
+          "receipt_sha256": "def6e8375954c92e0a56547eaa1aae4e82aeb290e73f2c2a8ee08931bfa5bc21"
         },
         {
-          "revision": "committing change rendering the membership payment's nested invoice as null",
-          "result": "Mutation control: fails Go on subscription-reads-info-hyphenless-uuid (membership_payments[0].invoice).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-mutation-r1/results.json",
-          "receipt_sha256": "08451bc4746c053fda8d7f250b02241f478b05398484356d75fbb136973a4af8"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on subscription-reads-info-athlete-blank-tax-code-other-user (200 instead of 403).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-mutation/results.json",
+          "receipt_sha256": "f6b371ee1912dcf8fd6bdfc3a41915d750b777840f7ef7fd7baff85b9e78de83"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -28149,7 +28168,8 @@
         "BE_GO/internal/handler/subscription_renew.go",
         "BE_GO/internal/dto/testimonials.go",
         "BE_GO/cmd/server/main.go",
-        "BE_GO/internal/repository/subscription_create.go"
+        "BE_GO/internal/repository/subscription_create.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "subscription-create"
@@ -28169,7 +28189,7 @@
         "errors": "400 {status: error, msg: str(e)} for Python exceptions (rolled back); 400 serializer errors / {msg, code: '400'}; 403 registry / admin session; 405; 409 duplicate; 500 athletes without sport_association; 500 refused inputs (not ported). A member account: 500 non-dict body or association, missing/malformed/unknown sport_association_id; 403 {detail: 'User not allowed.'} when the association has no renewable subscription of the requester for the associate.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated; registry association.members.create; collaborators act as the owner. A member account (not an association) renews only its own subscriptions and those of its family.",
-        "resource_scope": "request.user.sport_association; associates by id or by tax code within it; payments of the association; tags by id. For a member account: the association named by sport_association.sport_association_id, only when it has a subscription of the requester (or of a person sharing a tax code or a family with one of the requester's subscriptions) for associate_data.associate_id or tax_code. data.user.email is read only for an association account.",
+        "resource_scope": "request.user.sport_association; associates by id or by tax code within it; payments of the association; tags by id. For a member account: the association named by sport_association.sport_association_id, only when it has a subscription of the requester (or of a person sharing a filled-in tax code or a family with one of the requester's subscriptions) for associate_data.associate_id or tax_code. data.user.email is read only for an association account.",
         "side_effects": "create_subscription rows and audit; deleted unpaid payments (Payment delete cascade); subscription user update; tag links; after commit check_workflows_trigger(new_subscription), print_document_subscription, notification rows/Redis/Channels. The clean-up QuerySet.delete() also removes unpaid payments that have an invoice (the invoice stays).",
         "transaction": "One atomic transaction around create_subscription and the post-processing; on_commit work after it.",
         "execution_owner": "django"
@@ -28184,25 +28204,25 @@
         "docs/architecture/go-migration/subscription-renew.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 74/74; Go 200 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub2-red-r3/results.json",
-          "receipt_sha256": "136ab6978ddf5573dee2dfcfff04351afe29c250965cdfffb27a9b2945c459e0"
+          "result": "RED: Django 75/75; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-red/results.json",
+          "receipt_sha256": "fc03e3f231560759687e792b4f923c0bf276c3f788c946cb2512a7bd36e6540d"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 74/74 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub2-versioned-r1/results.json",
-          "receipt_sha256": "fa9a9d81de83b2cb72ec78cd1bf5cf92af74a188d0721c80f8e08fdf95ea49ab"
+          "result": "GREEN: 75/75 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-green/results.json",
+          "receipt_sha256": "75e0cb5c8da351647e47e5b19bf2872a90ece08fba9daacf80538348b67319bc"
         },
         {
-          "revision": "committing change skipping the member account's renewal check",
-          "result": "Mutation control: fails Go on subscription-renew-renew-athlete-in-another-association (response.status 200); secsub2-mutation-r2 (the body's e-mail sets the account for every requester) fails subscription-renew-renew-athlete-keeps-the-account.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub2-mutation-r1/results.json",
-          "receipt_sha256": "bcbe01b5be349f6eaf87bad04bb64e132e0bef23f6c6fdd05ae6ac272bc2eda2"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on subscription-renew-renew-athlete-blank-tax-code-member (200 instead of 403).",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-mutation/results.json",
+          "receipt_sha256": "cfd9728777721cabe34e945e4b576ffccd2bc4ff55cf10457cbe3d063754b44e"
         }
       ],
       "notes": [
-        "Implementing: Renewals set only the association's own tags (Tags filtered by the new subscription's association); renewals with courses stay refused. secsub2: a member account renews its own subscriptions and those of its family, in the association they belong to (a subscription of the requester, or of a person sharing a tax code or a family with one of the requester's subscriptions, for the associate of the request; otherwise 403 User not allowed. before any write); data.user.email sets the account only for an association account; the certificate follows subscription-create with the member as requester. The runner also knows Family rows and requests without an actor (used by subscription-create's family cases)."
+        "Implementing: Renewals set only the association's own tags (Tags filtered by the new subscription's association); renewals with courses stay refused. secsub2: a member account renews its own subscriptions and those of its family, in the association they belong to (a subscription of the requester, or of a person sharing a tax code or a family with one of the requester's subscriptions, for the associate of the request; otherwise 403 User not allowed. before any write); data.user.email sets the account only for an association account; the certificate follows subscription-create with the member as requester. The runner also knows Family rows and requests without an actor (used by subscription-create's family cases). secaw: the member renewal check matches persons by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
