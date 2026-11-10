@@ -25,6 +25,22 @@ AUDIT, INDEX = 'auditlog.LogEntry', 'application.AuditLogIndex'
 SOURCES = ('TESTS/adapters/django/family_harness.py', 'TESTS/contracts/http_family.py')
 
 
+def seed_extra_users(source, fixture):
+    """Insert the source's family-specific athletes ('extra_users': {label: {id, username, email}}) with access tokens."""
+    if not source.get('extra_users'):
+        return
+    from application.models import User
+    from rest_framework_simplejwt.tokens import AccessToken
+    fixture['tokens'] = dict(fixture['tokens'])
+    for label, row in source['extra_users'].items():
+        User._base_manager.bulk_create([User(user_id=row['id'], username=row['username'], email=row['email'],
+                                             role=User.ATHLETE, password='!synthetic')])
+        fixture['created'].append((User, row['id']))
+        token = AccessToken()
+        token['user_id'] = row['id']
+        fixture['tokens'][label] = str(token)
+
+
 def fixture_context_for(contract, seed, *, purge=()):
     """The driver's fixture_context.
 
@@ -39,7 +55,9 @@ def fixture_context_for(contract, seed, *, purge=()):
         from TESTS.adapters.django.historical_read_cache import snapshot_historical_read_cache
         with disable_auditlog(), transaction.atomic():
             fixture = scopes.seed_fixture(apps, Path(private_work), raw)
-            seed(contract.load_source(), fixture['created'])
+            source = contract.load_source()
+            seed_extra_users(source, fixture)
+            seed(source, fixture['created'])
             fixture['baseline_state'] = scopes.snapshot_state(apps)
             fixture['baseline_cache'] = snapshot_historical_read_cache(raw)
         return fixture

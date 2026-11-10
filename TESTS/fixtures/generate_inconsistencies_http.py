@@ -1,6 +1,7 @@
 """Author the check-inconsistencies HTTP sequence from inconsistencies.md.
 
-Associates belong to the shared fixture's athlete user. Born dates sit years
+Associates belong to the shared fixture's athlete user, except two that belong to
+an athlete linked to both associations (one member row in each). Born dates sit years
 away from any 18th birthday, so the view's date.today() cannot move a row.
 missing_tutors is unordered (the queryset has no ordering). The first
 request promotes the only tutor relation of an associate without a primary
@@ -17,8 +18,8 @@ PATH = '/check-inconsistencies'
 row_ids = iter(f'a1000000-0000-4000-8000-{790001 + n:012d}' for n in range(30))
 
 
-def associate(label, born, *, association=OWN, deleted=False, group=None, **values):
-    return label, {'id': next(row_ids), 'association': association, 'born_date': born, 'deleted': deleted, 'group': group,
+def associate(label, born, *, association=OWN, deleted=False, group=None, user='athlete', **values):
+    return label, {'id': next(row_ids), 'association': association, 'born_date': born, 'deleted': deleted, 'group': group, 'user': user,
                    'first_name': values.get('first_name', label), 'last_name': values.get('last_name', 'Rossi'),
                    'email': values.get('email'), 'sex': values.get('sex', 'A'), 'tax_code': values.get('tax_code'),
                    'address': values.get('address'), 'address_cap': values.get('address_cap'), 'address_city': values.get('address_city'),
@@ -35,10 +36,14 @@ ASSOCIATES = dict([
     associate('adult_no_tutor', '1990-05-05'),
     associate('no_born_date', None),
     associate('deleted_minor', '2015-01-01', deleted=True),
-    associate('foreign_minor', '2013-09-09', association=FOREIGN),
+    associate('foreign_minor', '2013-09-09', association=FOREIGN, user='multi_athlete'),
     associate('group_minor', '2017-11-11', group='own_group'),
     associate('tutor', '1980-02-02'),
+    associate('multi_home_minor', '2012-04-04', user='multi_athlete'),
 ])
+IDS['multi_athlete'] = 'a1000000-0000-4000-8000-000000790099'
+EXTRA_USERS = {'multi_athlete': {'id': IDS['multi_athlete'], 'username': 'inconsistencies-multi-athlete',
+                                 'email': 'inconsistencies-multi-athlete@example.test'}}
 # Relations: (associate, tutor, primary). The secondary one is promoted on first read.
 RELATIONS = [('minor_primary_tutor', 'tutor', True), ('minor_secondary_tutor', 'tutor', False)]
 FIELDS = ('address', 'address_cap', 'address_city', 'born_city', 'born_date', 'email', 'sex', 'first_name', 'last_name',
@@ -47,9 +52,9 @@ FIELDS = ('address', 'address_cap', 'address_city', 'born_city', 'born_date', 'e
 
 def serialized(label):
     row = ASSOCIATES[label]
-    # AssociateSerializer; user is the associate's user (the athlete).
+    # AssociateSerializer; user is the associate's user.
     return {'associate_id': row['id'], **{field: row[field] for field in FIELDS}, 'sport_association': row['association'],
-            'user': IDS['athlete'], 'family': None}
+            'user': IDS[row['user']], 'family': None}
 
 
 def report(*labels):
@@ -64,12 +69,14 @@ def add(name, actor, status, response, *, method='GET', headers=None, promotes=F
                   'status': status, 'response': response, 'promotes': promotes})
 
 
-ALL = ('minor_no_tutor', 'foreign_minor', 'group_minor')
+ALL = ('minor_no_tutor', 'group_minor')
 add('athlete-promotes-secondary-tutor', 'athlete', 200, report(*ALL), promotes=True)
 add('athlete-repeat-no-effect', 'athlete', 200, report(*ALL))
 add('athlete-group-filter', 'athlete', 200, report('group_minor'), headers={'X-Group-Id': IDS['own_group']})
 # GroupAwareManager logs and swallows the invalid UUID filter: no group filter.
 add('athlete-invalid-group-unfiltered', 'athlete', 200, report(*ALL), headers={'X-Group-Id': 'nope'})
+# No tenant filter: an athlete linked to both associations gets its associates of each.
+add('multi-club-athlete-every-association', 'multi_athlete', 200, report('foreign_minor', 'multi_home_minor'))
 add('admin-impersonating-athlete', 'admin', 200, report(*ALL), headers={'X-Impersonation-Id': '$session:admin_athlete', 'User-Id': IDS['athlete']})
 add('owner-scoped-athlete-denied', 'owner', 403, {'detail': 'Operazione non disponibile nel contesto dell’associazione.'},
     headers={'X-Impersonation-Id': '$session:owner_athlete', 'User-Id': IDS['athlete']})
@@ -83,6 +90,6 @@ add('options', 'athlete', 200, {'name': 'Check Inconsistencies', 'description': 
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'check-inconsistencies authored sequence with tutor promotion audit',
-                              'ids': IDS, 'associates': ASSOCIATES, 'relations': RELATIONS, 'cases': cases},
+                              'ids': IDS, 'extra_users': EXTRA_USERS, 'associates': ASSOCIATES, 'relations': RELATIONS, 'cases': cases},
                              ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

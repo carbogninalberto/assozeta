@@ -69,3 +69,12 @@ them under that association's owner (`scoped_resources.py`).
   `owner-subscriber-member-elsewhere-not-eligible` and `membership-elsewhere-restored`).
 
 Receipts: `quality-reports/go-migration/sec-impersonation-*`.
+
+### Route-family fixtures
+
+Fixtures that linked the shared athlete to the foreign association now either register those rows under the foreign
+owner (carnet-list and its derived carnet families, course-list, subscription-tags, statistic-reads) or move the cases
+about an athlete of both associations to a family athlete (`extra_users`, seeded by `family_harness.seed_extra_users`
+or `carnet_list_http.add_extra_tokens`): carnet-subscription-topup, carnet-assign, carnet-subscription-list,
+inconsistencies, subscription-writes, subscription-reads and profile-misc. The shared athlete's owner-scoped cases are
+unchanged. All 20 families pass on four transports (`sec-impersonation-final-*`).
