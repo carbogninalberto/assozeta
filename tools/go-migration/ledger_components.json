@@ -3,7 +3,16 @@
   "components": {
     "audit-index": {
       "commands": [
-        {"argv": ["{python}", "-m", "TESTS.adapters.go.audit_index", "{label}"], "receipt": "quality-reports/go-migration/audit-index-{label}/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "-m",
+            "TESTS.adapters.go.audit_index",
+            "{label}"
+          ],
+          "receipt": "quality-reports/go-migration/audit-index-{label}/results.json",
+          "check": "json-success"
+        }
       ],
       "entries": [
         "command:BE/application/management/commands/backfill_audit_log_index.py:backfill_audit_log_index",
@@ -12,7 +21,17 @@
     },
     "manuale-commands": {
       "commands": [
-        {"argv": ["{python}", "-m", "TESTS.adapters.go.manuale_commands", "--label", "{label}-manuale-commands"], "receipt": "quality-reports/go-migration/{label}-manuale-commands/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "-m",
+            "TESTS.adapters.go.manuale_commands",
+            "--label",
+            "{label}-manuale-commands"
+          ],
+          "receipt": "quality-reports/go-migration/{label}-manuale-commands/results.json",
+          "check": "json-success"
+        }
       ],
       "entries": [
         "command:BE/application/management/commands/compare_manuale_captures.py:compare_manuale_captures",
@@ -21,31 +40,88 @@
     },
     "instance-superuser-command": {
       "commands": [
-        {"argv": ["{python}", "-m", "TESTS.adapters.go.instance_superuser_command"], "receipt": "quality-reports/go-migration/instance-superuser-command/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "-m",
+            "TESTS.adapters.go.instance_superuser_command"
+          ],
+          "receipt": "quality-reports/go-migration/instance-superuser-command/results.json",
+          "check": "json-success"
+        }
       ],
-      "entries": ["command:BE/application/management/commands/create_instance_superuser.py:create_instance_superuser"]
+      "entries": [
+        "command:BE/application/management/commands/create_instance_superuser.py:create_instance_superuser"
+      ]
     },
     "evaluate-manuale": {
       "commands": [
-        {"argv": ["{python}", "-m", "TESTS.adapters.go.evaluate_manuale", "--label", "{label}-evaluate-manuale"], "receipt": "quality-reports/go-migration/{label}-evaluate-manuale/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "-m",
+            "TESTS.adapters.go.evaluate_manuale",
+            "--label",
+            "{label}-evaluate-manuale"
+          ],
+          "receipt": "quality-reports/go-migration/{label}-evaluate-manuale/results.json",
+          "check": "json-success"
+        }
       ],
-      "entries": ["command:BE/application/management/commands/evaluate_manuale.py:evaluate_manuale"]
+      "entries": [
+        "command:BE/application/management/commands/evaluate_manuale.py:evaluate_manuale"
+      ]
     },
     "subscription-signature-migration": {
       "commands": [
-        {"argv": ["{python}", "-m", "TESTS.adapters.go.subscription_signature_migration_command", "{label}"], "receipt": "quality-reports/go-migration/subscription-signature-migration/{label}/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "-m",
+            "TESTS.adapters.go.subscription_signature_migration_command",
+            "{label}"
+          ],
+          "receipt": "quality-reports/go-migration/subscription-signature-migration/{label}/results.json",
+          "check": "json-success"
+        }
       ],
-      "entries": ["command:BE/application/management/commands/migrate_subscription_signatures_to_s3.py:migrate_subscription_signatures_to_s3"]
+      "entries": [
+        "command:BE/application/management/commands/migrate_subscription_signatures_to_s3.py:migrate_subscription_signatures_to_s3"
+      ]
     },
     "relay-go-realtime": {
       "commands": [
-        {"argv": ["{python}", "-m", "TESTS.adapters.go.relay_go_realtime_command"], "env": {"RELAY_LABEL": "{label}"}, "receipt": "quality-reports/go-migration/relay-go-realtime/{label}/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "-m",
+            "TESTS.adapters.go.relay_go_realtime_command"
+          ],
+          "env": {
+            "RELAY_LABEL": "{label}"
+          },
+          "receipt": "quality-reports/go-migration/relay-go-realtime/{label}/results.json",
+          "check": "json-success"
+        }
       ],
-      "entries": ["command:BE/notifications/management/commands/relay_go_realtime.py:relay_go_realtime"]
+      "entries": [
+        "command:BE/notifications/management/commands/relay_go_realtime.py:relay_go_realtime"
+      ]
     },
     "mcp-server-tools": {
       "commands": [
-        {"argv": ["{python}", "-m", "TESTS.adapters.go.mcp_server_tools"], "env": {"ASSOZETA_MCP_SERVER_LABEL": "{label}-mcp-server-tools"}, "receipt": "quality-reports/go-migration/{label}-mcp-server-tools/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "-m",
+            "TESTS.adapters.go.mcp_server_tools"
+          ],
+          "env": {
+            "ASSOZETA_MCP_SERVER_LABEL": "{label}-mcp-server-tools"
+          },
+          "receipt": "quality-reports/go-migration/{label}-mcp-server-tools/results.json",
+          "check": "json-success"
+        }
       ],
       "entries": [
         "command:BE/application/management/commands/run_mcp_server.py:run_mcp_server",
@@ -64,7 +140,15 @@
     },
     "business-mcp-tools": {
       "commands": [
-        {"argv": ["{python}", "-m", "TESTS.adapters.go.business_mcp_tools"], "receipt": "quality-reports/go-migration/business-mcp-tools/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "-m",
+            "TESTS.adapters.go.business_mcp_tools"
+          ],
+          "receipt": "quality-reports/go-migration/business-mcp-tools/results.json",
+          "check": "json-success"
+        }
       ],
       "entries": [
         "mcp_definition:BE/application/mcp_server/server.py:list_reports",
@@ -74,9 +158,36 @@
     },
     "manual-tools": {
       "commands": [
-        {"argv": ["{python}", "TESTS/adapters/django/manual_reader_http.py", "--tools"], "receipt": "quality-reports/go-migration/manual-tools/results.json", "check": "json-success"},
-        {"argv": ["{python}", "TESTS/adapters/django/manual_reader_http.py", "--tools", "--go-source"], "receipt": "quality-reports/go-migration/manual-tools-go-library/results.json", "check": "json-success"},
-        {"argv": ["{python}", "TESTS/adapters/django/manual_reader_http.py", "--tools", "--backend", "go"], "receipt": "quality-reports/go-migration/manual-tools-go-service/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/django/manual_reader_http.py",
+            "--tools"
+          ],
+          "receipt": "quality-reports/go-migration/manual-tools/results.json",
+          "check": "json-success"
+        },
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/django/manual_reader_http.py",
+            "--tools",
+            "--go-source"
+          ],
+          "receipt": "quality-reports/go-migration/manual-tools-go-library/results.json",
+          "check": "json-success"
+        },
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/django/manual_reader_http.py",
+            "--tools",
+            "--backend",
+            "go"
+          ],
+          "receipt": "quality-reports/go-migration/manual-tools-go-service/results.json",
+          "check": "json-success"
+        }
       ],
       "entries": [
         "mcp_definition:BE/application/manuale/tools.py:get_manual_evidence",
@@ -87,8 +198,26 @@
     },
     "manual-mcp": {
       "commands": [
-        {"argv": ["{python}", "TESTS/adapters/django/manual_reader_http.py", "--mcp"], "receipt": "quality-reports/go-migration/manual-mcp-django/results.json", "check": "json-success"},
-        {"argv": ["{python}", "TESTS/adapters/django/manual_reader_http.py", "--mcp", "--backend", "go"], "receipt": "quality-reports/go-migration/manual-mcp-go/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/django/manual_reader_http.py",
+            "--mcp"
+          ],
+          "receipt": "quality-reports/go-migration/manual-mcp-django/results.json",
+          "check": "json-success"
+        },
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/django/manual_reader_http.py",
+            "--mcp",
+            "--backend",
+            "go"
+          ],
+          "receipt": "quality-reports/go-migration/manual-mcp-go/results.json",
+          "check": "json-success"
+        }
       ],
       "entries": [
         "command:BE/application/management/commands/run_mcp_server.py:run_mcp_server",
@@ -102,8 +231,26 @@
     },
     "manual-reader-http": {
       "commands": [
-        {"argv": ["{python}", "TESTS/adapters/django/manual_reader_http.py", "--versioned"], "receipt": "quality-reports/go-migration/manual-reader-http-versioned/results.json", "check": "json-success"},
-        {"argv": ["{python}", "TESTS/adapters/django/manual_reader_http.py", "--backend", "go", "--versioned"], "receipt": "quality-reports/go-migration/manual-reader-http-go-versioned/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/django/manual_reader_http.py",
+            "--versioned"
+          ],
+          "receipt": "quality-reports/go-migration/manual-reader-http-versioned/results.json",
+          "check": "json-success"
+        },
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/django/manual_reader_http.py",
+            "--backend",
+            "go",
+            "--versioned"
+          ],
+          "receipt": "quality-reports/go-migration/manual-reader-http-go-versioned/results.json",
+          "check": "json-success"
+        }
       ],
       "entries": [
         "route:BE/application/urls.py:manuale/assets/<path:asset_path> -> manual_asset",
@@ -112,7 +259,14 @@
     },
     "accounts": {
       "commands": [
-        {"argv": ["{python}", "TESTS/adapters/django/accounts.py"], "receipt": "quality-reports/go-migration/accounts/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/django/accounts.py"
+          ],
+          "receipt": "quality-reports/go-migration/accounts/results.json",
+          "check": "json-success"
+        }
       ],
       "entries": [
         "model_hook:BE/application/models/payment_models.py:Payment.save",
@@ -132,7 +286,22 @@
     },
     "impersonation-management": {
       "commands": [
-        {"argv": ["{python}", "TESTS/adapters/django/accounts.py", "--only", "impersonation-management"], "env": {"TESTS_IMPERSONATION_MANAGEMENT_CONCURRENCY": "1", "TESTS_IMPERSONATION_MANAGEMENT_GO": "1", "TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY": "1", "TESTS_IMPERSONATION_MANAGEMENT_VERSIONED": "1"}, "receipt": "quality-reports/go-migration/impersonation-management/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/django/accounts.py",
+            "--only",
+            "impersonation-management"
+          ],
+          "env": {
+            "TESTS_IMPERSONATION_MANAGEMENT_CONCURRENCY": "1",
+            "TESTS_IMPERSONATION_MANAGEMENT_GO": "1",
+            "TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY": "1",
+            "TESTS_IMPERSONATION_MANAGEMENT_VERSIONED": "1"
+          },
+          "receipt": "quality-reports/go-migration/impersonation-management/results.json",
+          "check": "json-success"
+        }
       ],
       "entries": [
         "route:BE/application/urls.py:administration/impersonation -> impersonation_session",
@@ -141,13 +310,42 @@
     },
     "collaborator-list": {
       "commands": [
-        {"argv": ["{python}", "TESTS/adapters/django/accounts.py", "--only", "collaborator-list"], "env": {"TESTS_COLLABORATOR_LIST_GO": "1", "TESTS_COLLABORATOR_LIST_VERSIONED": "1", "TESTS_COLLABORATOR_LIST_REPOSITORY": "1"}, "receipt": "quality-reports/go-migration/collaborator-list/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/django/accounts.py",
+            "--only",
+            "collaborator-list"
+          ],
+          "env": {
+            "TESTS_COLLABORATOR_LIST_GO": "1",
+            "TESTS_COLLABORATOR_LIST_VERSIONED": "1",
+            "TESTS_COLLABORATOR_LIST_REPOSITORY": "1"
+          },
+          "receipt": "quality-reports/go-migration/collaborator-list/results.json",
+          "check": "json-success"
+        }
       ],
-      "entries": ["route:BE/application/urls.py:collaborators/list -> collaborators_list"]
+      "entries": [
+        "route:BE/application/urls.py:collaborators/list -> collaborators_list"
+      ]
     },
     "read-route-locales": {
       "commands": [
-        {"argv": ["{python}", "TESTS/adapters/django/accounts.py", "--only", "read-route-locales"], "env": {"TESTS_READ_ROUTE_LOCALES_GO": "1", "TESTS_READ_ROUTE_LOCALES_VERSIONED": "1"}, "receipt": "quality-reports/go-migration/read-route-locales/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/django/accounts.py",
+            "--only",
+            "read-route-locales"
+          ],
+          "env": {
+            "TESTS_READ_ROUTE_LOCALES_GO": "1",
+            "TESTS_READ_ROUTE_LOCALES_VERSIONED": "1"
+          },
+          "receipt": "quality-reports/go-migration/read-route-locales/results.json",
+          "check": "json-success"
+        }
       ],
       "entries": [
         "route:BE/application/urls.py:collaborators/list -> collaborators_list",
@@ -156,14 +354,50 @@
     },
     "payment-info": {
       "commands": [
-        {"argv": ["{python}", "TESTS/adapters/django/accounts.py", "--only", "payment-info"], "env": {"TESTS_PAYMENT_INFO_GO": "1", "TESTS_PAYMENT_INFO_VERSIONED": "1"}, "receipt": "quality-reports/go-migration/payment-info/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/django/accounts.py",
+            "--only",
+            "payment-info"
+          ],
+          "env": {
+            "TESTS_PAYMENT_INFO_GO": "1",
+            "TESTS_PAYMENT_INFO_VERSIONED": "1"
+          },
+          "receipt": "quality-reports/go-migration/payment-info/results.json",
+          "check": "json-success"
+        }
       ],
-      "entries": ["route:BE/application/urls.py:payment/<str:uid>/info -> payment_info"]
+      "entries": [
+        "route:BE/application/urls.py:payment/<str:uid>/info -> payment_info"
+      ]
     },
     "payment-categories": {
       "commands": [
-        {"argv": ["{python}", "TESTS/adapters/django/accounts.py", "--only", "payment-categories"], "env": {"TESTS_PAYMENT_CATEGORIES_GO": "1", "TESTS_PAYMENT_CATEGORIES_VERSIONED": "1", "TESTS_PAYMENT_CATEGORIES_LIFECYCLE": "1"}, "receipt": "quality-reports/go-migration/payment-categories/results.json", "check": "json-success"},
-        {"argv": ["{python}", "TESTS/adapters/go/payment_category_repository.py"], "receipt": "quality-reports/go-migration/payment-category-repository/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/django/accounts.py",
+            "--only",
+            "payment-categories"
+          ],
+          "env": {
+            "TESTS_PAYMENT_CATEGORIES_GO": "1",
+            "TESTS_PAYMENT_CATEGORIES_VERSIONED": "1",
+            "TESTS_PAYMENT_CATEGORIES_LIFECYCLE": "1"
+          },
+          "receipt": "quality-reports/go-migration/payment-categories/results.json",
+          "check": "json-success"
+        },
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/go/payment_category_repository.py"
+          ],
+          "receipt": "quality-reports/go-migration/payment-category-repository/results.json",
+          "check": "json-success"
+        }
       ],
       "entries": [
         "route:BE/application/urls.py:payment/category/<str:uid>/delete -> payment_category_delete",
@@ -174,7 +408,17 @@
     },
     "message-reads": {
       "commands": [
-        {"argv": ["{python}", "TESTS/adapters/django/message_reads_runtime.py", "--versioned", "--output", "{out}/message-reads-http"], "receipt": "{out}/message-reads-http/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/django/message_reads_runtime.py",
+            "--versioned",
+            "--output",
+            "{out}/message-reads-http"
+          ],
+          "receipt": "{out}/message-reads-http/results.json",
+          "check": "json-success"
+        }
       ],
       "entries": [
         "route:BE/communications/urls.py:communications/messages/<str:message_id>/detail -> communication_messages_detail",
@@ -183,7 +427,14 @@
     },
     "health": {
       "commands": [
-        {"argv": ["{python}", "TESTS/adapters/go/health.py"], "receipt": "quality-reports/go-migration/go-health/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/go/health.py"
+          ],
+          "receipt": "quality-reports/go-migration/go-health/results.json",
+          "check": "json-success"
+        }
       ],
       "entries": [
         "route:BE/core/urls.py:healthz -> health",
@@ -192,8 +443,27 @@
     },
     "instance-bootstrap": {
       "commands": [
-        {"argv": ["{python}", "TESTS/adapters/django/instance_bootstrap.py", "--backend", "django"], "receipt": "quality-reports/go-migration/instance-bootstrap/results.json", "check": "json-success"},
-        {"argv": ["{python}", "TESTS/adapters/django/instance_bootstrap.py", "--backend", "go", "--manifest-versioned"], "receipt": "quality-reports/go-migration/instance-bootstrap-go/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/django/instance_bootstrap.py",
+            "--backend",
+            "django"
+          ],
+          "receipt": "quality-reports/go-migration/instance-bootstrap/results.json",
+          "check": "json-success"
+        },
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/django/instance_bootstrap.py",
+            "--backend",
+            "go",
+            "--manifest-versioned"
+          ],
+          "receipt": "quality-reports/go-migration/instance-bootstrap-go/results.json",
+          "check": "json-success"
+        }
       ],
       "entries": [
         "route:BE/instance/urls.py:access -> InstanceAccessView.as_view()",
@@ -204,16 +474,74 @@
     },
     "instance-logo": {
       "commands": [
-        {"argv": ["{python}", "TESTS/adapters/django/instance_logo.py", "--backend", "both", "--versioned", "--output", "{out}/instance-logo"], "receipt": "{out}/instance-logo/results.json", "check": "json-success"}
+        {
+          "argv": [
+            "{python}",
+            "TESTS/adapters/django/instance_logo.py",
+            "--backend",
+            "both",
+            "--versioned",
+            "--output",
+            "{out}/instance-logo"
+          ],
+          "receipt": "{out}/instance-logo/results.json",
+          "check": "json-success"
+        }
       ],
-      "entries": ["route:BE/instance/urls.py:logo.png -> InstanceLogoServeView.as_view()"]
+      "entries": [
+        "route:BE/instance/urls.py:logo.png -> InstanceLogoServeView.as_view()"
+      ]
     },
     "celery-producer": {
       "commands": [
-        {"argv": ["{python}", "-m", "TESTS.adapters.go.celery_producer_golden"], "receipt": "BE_GO/internal/celery/testdata/kombu_messages.json", "check": "json-cases"},
-        {"argv": ["{go}", "test", "-count=1", "-json", "./internal/celery/"], "cwd": "BE_GO", "receipt": "{log}", "check": "go-test-json", "restore": ["BE_GO/internal/celery/testdata/kombu_messages.json"]}
+        {
+          "argv": [
+            "{python}",
+            "-m",
+            "TESTS.adapters.go.celery_producer_golden"
+          ],
+          "receipt": "BE_GO/internal/celery/testdata/kombu_messages.json",
+          "check": "json-cases"
+        },
+        {
+          "argv": [
+            "{go}",
+            "test",
+            "-count=1",
+            "-json",
+            "./internal/celery/"
+          ],
+          "cwd": "BE_GO",
+          "receipt": "{log}",
+          "check": "go-test-json",
+          "restore": [
+            "BE_GO/internal/celery/testdata/kombu_messages.json"
+          ]
+        }
       ],
-      "entries": ["signal_connection:BE/instance/restore/task_base.py:before_task_publish.connect:stamp_published_task"]
+      "entries": [
+        "signal_connection:BE/instance/restore/task_base.py:before_task_publish.connect:stamp_published_task"
+      ]
+    },
+    "message-mutations": {
+      "commands": [
+        {
+          "argv": [
+            "{python}",
+            "-m",
+            "TESTS.adapters.django.message_mutations_acceptance",
+            "--output",
+            "{out}/message-mutations",
+            "--versioned"
+          ],
+          "receipt": "{out}/message-mutations/results.json",
+          "check": "json-success"
+        }
+      ],
+      "entries": [
+        "route:BE/communications/urls.py:communications/messages/<str:message_id>/delete -> communication_messages_delete",
+        "route:BE/communications/urls.py:communications/messages/add -> communication_messages_add"
+      ]
     }
   }
 }

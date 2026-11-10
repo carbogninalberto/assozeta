@@ -64,14 +64,16 @@ def sha256(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def result_keys(entry):
+def result_keys(entry, root=ROOT):
     keys = []
     for test in entry.get('tests', []):
         match = re.fullmatch(r'TESTS/fixtures/(\w+)_http\.json', test)
         if match:
             keys.append('http:' + match.group(1).replace('_', '-'))
         match = re.fullmatch(r'TESTS/adapters/go/(\w+_process)\.py', test)
-        if match:
+        # Like sweep.py: unit-test modules and helpers without a __main__ entry point are not harness runs.
+        path = root / test
+        if match and not match.group(1).startswith('test_') and not (path.is_file() and '__main__' not in path.read_text()):
             keys.append('process:' + match.group(1))
     return keys
 
@@ -109,13 +111,18 @@ def sweep_results(summary, root):
                 continue
             report = json.loads(path.read_text())
             fixture = root / f'TESTS/fixtures/{name.replace("-", "_")}_http.json'
-            count = len(json.loads(fixture.read_text())['cases']) if fixture.is_file() else 0
+            cases = json.loads(fixture.read_text())['cases'] if fixture.is_file() else []
+            count = len(cases)
+            # Command-line cases (kind "cli") have no URL and run on the native transports only.
+            versioned = sum(1 for case in cases if case.get('kind') != 'cli')
             workloads = report.get('workloads') or []
+            expected = [count, count, versioned, versioned]
             if (report.get('success') is not True or [w.get('label') for w in workloads] != TRANSPORTS
-                    or not count or any(len(w.get('cases') or []) != count for w in workloads)):
+                    or not count or [len(w.get('cases') or []) for w in workloads] != expected):
                 out[key] = f'sweep {key} receipt is not a {count}-case pass on all four transports'
                 continue
-            scope = f'HTTP family {name}: {count}/{count} cases on native Django, native Go, Caddy /api/v1 and /api/v2.'
+            scope = (f'HTTP family {name}: {count}/{count} cases on native Django and native Go, '
+                     f'{versioned}/{versioned} on Caddy /api/v1 and /api/v2.')
         elif kind == 'process':
             artifact = Path(f'quality-reports/go-migration/sweep-{label}/process-{name}.log')
             command = f'python -m TESTS.adapters.go.{name}'
@@ -287,7 +294,7 @@ def promote(document, patch, sweeps, components, root=ROOT):
             component_commands[key] = set().union(*[command_files(c.get('command', '')) for c in result.get('commands') or []] or [set()])
     if not results:
         raise PromotionError('no results to promote from')
-    entry_keys = lambda entry: result_keys(entry) + component_entries.get(entry['id'], [])
+    entry_keys = lambda entry: result_keys(entry, root) + component_entries.get(entry['id'], [])
     stale = check_revisions(set(heads.values()), patch, root, entries, entry_keys, component_commands)
     for key, head in heads.items():
         if key in stale.get(head, ()):

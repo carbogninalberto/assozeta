@@ -172,7 +172,7 @@ class PromoteVerifiedTests(unittest.TestCase):
         return self.git('rev-parse', 'HEAD')
 
     def test_revision_change_needs_a_record_covering_every_impacted_key(self):
-        new = self.commit_change('TESTS/adapters/go/baz_process.py', 'print(1)\n')
+        new = self.commit_change('TESTS/adapters/go/baz_process.py', "if __name__ == '__main__':\n    print(1)\n")
         self.patch['revision_changes'] = [{'from': self.head, 'to': new, 'reason': 'merge', 'rerun_keys': []}]
         with self.assertRaisesRegex(promote_verified.PromotionError, 'omits impacted keys: http:foo-bar, process:baz_process'):
             self.run_promote(document=copy.deepcopy(self.document))
@@ -201,6 +201,17 @@ class PromoteVerifiedTests(unittest.TestCase):
         report = self.run_promote(sweep=failed)
         self.assertEqual(report['demoted'], ['route:BE/x.py:foo'])
         self.assertEqual(self.by_id('route:BE/x.py:foo')['status'], 'implementing')
+
+    def test_cli_cases_count_on_native_transports_only_and_helpers_are_not_harnesses(self):
+        self.write('TESTS/fixtures/foo_bar_http.json', {'cases': [{'name': 'a'}, {'name': 'b', 'kind': 'cli'}]})
+        self.sweep['head'] = self.commit_change('TESTS/adapters/go/baz_process.py', 'HELPER = 1\n')
+        workloads = [{'label': t, 'cases': [{'case': 'a'}, {'case': 'b'}] if 'native' in t else [{'case': 'a'}]} for t in TRANSPORTS]
+        self.write('quality-reports/go-migration/foo-bar-http-sweep-L/results.json', {'success': True, 'workloads': workloads})
+        document = {'format': 1, 'entries': [entry('route:BE/x.py:foo', ['TESTS/fixtures/foo_bar_http.json',
+                    'TESTS/adapters/go/baz_process.py', 'TESTS/adapters/go/test_baz_process.py'])]}
+        report = self.run_promote(document=document, components=[])
+        self.assertEqual(report['promoted'], ['route:BE/x.py:foo'])
+        self.assertEqual(len(document['entries'][0]['evidence']), 1)
 
     def test_cli_refuses_empty_inputs_dry_runs_and_requires_a_complete_sweep(self):
         ledger = self.write('ledger.json', self.document)
