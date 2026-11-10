@@ -807,6 +807,41 @@ class CourseOverviewAddTests(BaseAPITestCase):
         ])
 
 
+class CourseOverviewAddOwnershipTests(BaseAPITestCase):
+    """course_overview_add: athletes enrol their own subscriptions."""
+
+    def setUp(self):
+        super().setUp()
+        self.course = create_test_course(self.sport_association)
+        self.athlete = create_test_user(role=User.ATHLETE)
+        self.athlete_client = self.create_authenticated_client(self.athlete)
+
+    def _path(self, subscription):
+        return f'/course/{self.course.course_id}/overview/{subscription.subscription_id}/add'
+
+    def test_athlete_adds_own_subscription(self):
+        associate = create_test_associate(sport_association=self.sport_association, user=self.athlete)
+        subscription = create_test_subscription(sport_association=self.sport_association, associate=associate, user=self.athlete)
+        response = self.athlete_client.post(self._path(subscription), {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(CourseSubscription.objects.filter(course=self.course, subscription=subscription).exists())
+
+    def test_athlete_cannot_add_another_users_subscription(self):
+        associate = create_test_associate(sport_association=self.sport_association)
+        subscription = create_test_subscription(sport_association=self.sport_association, associate=associate)
+        response = self.athlete_client.post(self._path(subscription), {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertFalse(CourseSubscription.objects.filter(course=self.course, subscription=subscription).exists())
+
+    def test_owner_without_association_cannot_add(self):
+        associate = create_test_associate(sport_association=self.sport_association)
+        subscription = create_test_subscription(sport_association=self.sport_association, associate=associate)
+        client = self.create_authenticated_client(create_test_user(role=User.ASSOCIATION))
+        response = client.post(self._path(subscription), {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertFalse(CourseSubscription.objects.filter(course=self.course, subscription=subscription).exists())
+
+
 class CourseOverviewUpdateTests(BaseAPITestCase):
     """Tests for course_overview_update endpoint."""
 
@@ -895,3 +930,45 @@ class CourseInstallmentMakePaymentTests(BaseAPITestCase):
 
         installment.refresh_from_db()
         self.assertIsNotNone(installment.payment)
+
+
+class CourseInstallmentMakePaymentOwnershipTests(BaseAPITestCase):
+    """course_installment_make_payment: the course's association or the subscription's athlete."""
+
+    def setUp(self):
+        super().setUp()
+        self.athlete = create_test_user(role=User.ATHLETE)
+        self.athlete_client = self.create_authenticated_client(self.athlete)
+        self.course = create_test_course(self.sport_association, multi_payments=True)
+
+    def _installment(self, user=None):
+        associate = create_test_associate(sport_association=self.sport_association, user=user)
+        subscription = create_test_subscription(sport_association=self.sport_association, associate=associate, user=user)
+        course_sub = create_test_course_subscription(course=self.course, subscription=subscription, multi_payments=True)
+        return CourseSubscriptionInstallment.objects.create(
+            course_subscription=course_sub, amount=Decimal('100.00'), payment_date=timezone.now(), payment=None)
+
+    def _post(self, client, installment):
+        return client.post(f'/course-installment/{installment.course_subscription_installment_id}/make-payment', format='json')
+
+    def test_athlete_pays_own_installment(self):
+        installment = self._installment(user=self.athlete)
+        self.assertEqual(self._post(self.athlete_client, installment).status_code, status.HTTP_200_OK)
+        installment.refresh_from_db()
+        self.assertIsNotNone(installment.payment)
+
+    def test_athlete_cannot_pay_another_users_installment(self):
+        installment = self._installment()
+        self.assertEqual(self._post(self.athlete_client, installment).status_code, status.HTTP_403_FORBIDDEN)
+        installment.refresh_from_db()
+        self.assertIsNone(installment.payment)
+        self.assertFalse(Payment.objects.filter(sport_association=self.sport_association).exists())
+
+    def test_other_association_cannot_pay(self):
+        installment = self._installment()
+        other_owner = create_test_user(role=User.ASSOCIATION)
+        create_test_sport_association(user=other_owner)
+        response = self._post(self.create_authenticated_client(other_owner), installment)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        installment.refresh_from_db()
+        self.assertIsNone(installment.payment)

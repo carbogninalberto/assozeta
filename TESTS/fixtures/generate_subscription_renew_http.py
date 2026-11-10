@@ -117,6 +117,16 @@ for label, associate, account, start, end, number in (
     SUBSCRIPTIONS[label] = {'id': next(extra_ids), 'associate': associate, 'start': start, 'end': end, 'archived': False, 'number': number,
                             'payment': None, **({'user': account} if account else {})}
 CERTIFICATES['athlete_cert'] = {'id': next(extra_ids), 'user': 'athlete'}
+# Members stored with a blank tax code, one of the requester in the other association and one of this association:
+# a blank tax code is not a family link (family_tax_codes).
+ASSOCIATES['blank_earlier'] = {'id': next(extra_ids), 'association': FOREIGN, 'first': 'Vera', 'last': 'Vuota', 'tax_code': '',
+                               'born': '1985-01-01', 'user': 'athlete', 'email': None, 'deleted': False}
+ASSOCIATES['blank_stranger'] = {'id': next(extra_ids), 'association': OWN, 'first': 'Zita', 'last': 'Senza', 'tax_code': '',
+                                'born': '1985-01-01', 'user': 'owner', 'email': None, 'deleted': False}
+SUBSCRIPTIONS['blank_earlier_2019'] = {'id': next(extra_ids), 'associate': 'blank_earlier', 'start': '2019-01-01', 'end': '2019-12-31',
+                                       'archived': False, 'number': '15', 'payment': None, 'user': 'athlete'}
+SUBSCRIPTIONS['blank_stranger_previous'] = {'id': next(extra_ids), 'associate': 'blank_stranger', 'start': '$last_season_start',
+                                            'end': '$last_season_end', 'archived': False, 'number': '16', 'payment': None}
 TARGET_USER = {'id': next(ids), 'username': 'renew-target-user', 'email': 'renew-target@example.test'}
 ACCOUNT = next(ids)
 
@@ -610,6 +620,8 @@ add('renew-athlete-in-another-association', 'renew', 'athlete', 403, NOT_ALLOWED
 add('renew-athlete-another-member', 'renew', 'athlete', 403, NOT_ALLOWED, body=renewal(member_body('stranger'), sport_association=HERE))
 add('renew-athlete-another-member-by-tax-code', 'renew', 'athlete', 403, NOT_ALLOWED,
     body=renewal({k: v for k, v in member_body('stranger').items() if k != 'associate_id'}, sport_association=HERE))
+add('renew-athlete-blank-tax-code-member', 'renew', 'athlete', 403, NOT_ALLOWED,
+    body=renewal(member_body('blank_stranger'), sport_association=HERE))
 add('renew-athlete-associate-id-malformed', 'renew', 'athlete', 403, NOT_ALLOWED,
     body=renewal(member_body('relative', associate_id='non-un-id'), sport_association=HERE))
 add('renew-athlete-associate-id-not-text', 'renew', 'athlete', 403, NOT_ALLOWED,

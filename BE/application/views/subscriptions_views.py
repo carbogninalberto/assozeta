@@ -38,7 +38,7 @@ from application.printing_tasks import print_document_medical_appointment
 from application.signals import subscription_signed, subscription_approved
 from application.utils.printing import current_view_subscriptions
 from application.utils.subscriptions_utils import create_subscription, get_optimized_subscriptions, \
-    add_course_to_subscription, smart_search, cleanup_storage_keys
+    add_course_to_subscription, smart_search, cleanup_storage_keys, family_tax_codes
 from application.services.subscription_service import (
     SubscriptionService, TagService, MedicalCertificateService, SubscriptionImportService
 )
@@ -197,7 +197,7 @@ def _member_renewal_association(request, data):
 
     A member account renews its own subscriptions and those of its family, in
     the association they belong to: the named association must have a
-    subscription of the account (or of a person sharing a tax code or a family
+    subscription of the account (or of a person sharing a filled-in tax code or a family
     with one of the account's subscriptions) for the associate of the request.
     """
     association = scoped_queryset(request, SportAssociation.objects).get(
@@ -205,7 +205,7 @@ def _member_renewal_association(request, data):
     own = Subscription._base_manager.filter(user=request.user)
     renewable = Subscription._base_manager.filter(sport_association=association).filter(
         Q(user=request.user)
-        | Q(associate__tax_code__in=own.filter(associate__tax_code__isnull=False).values('associate__tax_code'))
+        | Q(associate__tax_code__in=family_tax_codes(own))
         | Q(associate__family__in=own.filter(associate__family__isnull=False).values('associate__family'))
     )
     associate = data.get('associate_data')
@@ -1747,9 +1747,7 @@ def subscription_info(request, uid):
     if request.user.role == User.ATHLETE:
         # Get unique tax codes from associates of user's subscriptions
         user_subscriptions = scoped_queryset(request, Subscription.objects).filter(user=request.user)
-        tax_codes = user_subscriptions.filter(
-            associate__tax_code__isnull=False
-        ).values_list('associate__tax_code', flat=True).distinct()
+        tax_codes = family_tax_codes(user_subscriptions)
 
         # Get all subscription IDs for users with those tax codes, plus original user subscriptions
         allowed_subscription_ids = list(scoped_queryset(request, Subscription.objects).filter(

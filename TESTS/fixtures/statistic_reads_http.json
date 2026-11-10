@@ -92,6 +92,11 @@
   "sub_b1": "a1000000-0000-4000-8000-000000930050",
   "sf1": "a1000000-0000-4000-8000-000000930051",
   "st1": "a1000000-0000-4000-8000-000000930052",
+  "athlete_blank": "a1000000-0000-4000-8000-000000939001",
+  "as_e1": "a1000000-0000-4000-8000-000000939002",
+  "as_e2": "a1000000-0000-4000-8000-000000939003",
+  "sub_e1": "a1000000-0000-4000-8000-000000939004",
+  "sub_e2": "a1000000-0000-4000-8000-000000939005",
   "p1": "a1000000-0000-4000-8000-000000930053",
   "p2": "a1000000-0000-4000-8000-000000930054",
   "p3": "a1000000-0000-4000-8000-000000930055",
@@ -300,6 +305,9 @@
   "owner_three": {
    "role": "association"
   },
+  "athlete_blank": {
+   "role": "athlete"
+  },
   "owner_four": {
    "role": "association"
   },
@@ -386,6 +394,26 @@
    "sex": "F",
    "born": null,
    "age": 0
+  },
+  "as_e1": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Vuoto",
+   "last": "Uno",
+   "sex": "F",
+   "born": null,
+   "age": 0,
+   "user": "athlete_blank",
+   "tax": ""
+  },
+  "as_e2": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Vuoto",
+   "last": "Due",
+   "sex": "F",
+   "born": null,
+   "age": 0,
+   "tax": "",
+   "deleted": true
   },
   "a4_1": {
    "association": "association_four",
@@ -983,6 +1011,40 @@
    "archived": false,
    "group": null,
    "user": "owner_three"
+  },
+  "sub_e1": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "status": 5,
+   "type": 2,
+   "start": {
+    "day": -10
+   },
+   "end": {
+    "day": 10
+   },
+   "created": "2023-01-01T10:00:00Z",
+   "associate": "as_e1",
+   "medical": null,
+   "archived": false,
+   "group": null,
+   "user": "athlete_blank"
+  },
+  "sub_e2": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "status": 5,
+   "type": 2,
+   "start": {
+    "day": -10
+   },
+   "end": {
+    "day": 10
+   },
+   "created": "2023-01-01T10:00:00Z",
+   "associate": "as_e2",
+   "medical": null,
+   "archived": false,
+   "group": null,
+   "user": "a1000000-0000-4000-8000-000000700001"
   },
   "s4_1": {
    "association": "association_four",
@@ -5855,6 +5917,62 @@
        ]
       },
       "subscriptions": 0
+     }
+    ],
+    "upcoming_lessons": []
+   }
+  },
+  {
+   "name": "statistic-reads-athlete-blank-tax-code",
+   "actor": "athlete_blank",
+   "method": "GET",
+   "path": "/statistic/athlete-dashboard",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "sport_association": {
+       "denomination": "Message reads own",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user": {
+        "user_id": "a1000000-0000-4000-8000-000000700001",
+        "avatar_image": null,
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700001"
+       },
+       "review_url": "https://example.test/recensioni",
+       "review_url_enabled": true,
+       "communications": [
+        {
+         "message": "Benvenuti in palestra è",
+         "sent_on": {
+          "$drf": {
+           "now": -86400,
+           "us": 123456
+          }
+         }
+        },
+        {
+         "message": "Avviso estero",
+         "sent_on": {
+          "$drf": {
+           "now": -172800
+          }
+         }
+        },
+        {
+         "message": "Benvenuti in palestra è",
+         "sent_on": {
+          "$drf": {
+           "now": -259200
+          }
+         }
+        }
+       ]
+      },
+      "subscriptions": 1
      }
     ],
     "upcoming_lessons": []

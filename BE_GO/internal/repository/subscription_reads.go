@@ -414,7 +414,7 @@ func (r *SubscriptionReads) AllowedForAthlete(ctx context.Context, user string, 
  LEFT JOIN application_associate a ON a.associate_id=s.associate_id
  WHERE ($2::uuid IS NULL OR s.group_id=$2::uuid) AND ($3::uuid IS NULL OR s.sport_association_id=$3::uuid)
  AND (s.user_id=$1 OR a.tax_code IN (SELECT ta.tax_code FROM application_subscription ts JOIN application_associate ta ON ta.associate_id=ts.associate_id
-   WHERE ts.user_id=$1 AND ta.tax_code IS NOT NULL AND ($2::uuid IS NULL OR ts.group_id=$2::uuid) AND ($3::uuid IS NULL OR ts.sport_association_id=$3::uuid)))`,
+   WHERE ts.user_id=$1 AND `+familyTaxCodeFilled("ta")+` AND ($2::uuid IS NULL OR ts.group_id=$2::uuid) AND ($3::uuid IS NULL OR ts.sport_association_id=$3::uuid)))`,
 		user, group, scope)
 	return ids, err
 }

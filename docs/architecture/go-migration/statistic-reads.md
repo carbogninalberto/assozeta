@@ -104,7 +104,8 @@ any exception is `500 {"error": "An error occurred while loading the dashboard"}
 review URL and up to five `INSIDE_APP` deliveries addressed to the association id
 in the last 14 days (newest first).
 `subscriptions` counts the athlete's family subscriptions (user, associate user or
-a shared tax code) that are current or undated. Upcoming lessons walk the
+a shared filled-in tax code, `family_tax_codes`: null and blank tax codes link
+nothing) that are current or undated. Upcoming lessons walk the
 non-archived ones: course subscriptions, the course's registries and their
 events; an event starting (`'%Y-%m-%dT%H:%M:%S.%fZ'`) within the next 7 days needs
 a non-auto-marked attendance day on that UTC date (first by id); presence and
@@ -179,3 +180,10 @@ generator, and the association-scoped athlete session hiding the soft-deleted
 family member). GREEN: native Django, native Go, Caddy `/api/v1` and `/api/v2`
 pass 77/77. Mutation control: counting only live course subscriptions in
 `bestcourses` fails Go.
+
+Family matching by filled-in tax codes (87 cases; the seed adds an athlete whose
+member has a blank tax code and a removed member with a blank tax code): RED
+(`secaw-red`) Django 87/87, Go counts 2 subscriptions on `athlete-blank-tax-code`.
+GREEN (`secaw-green`) 87/87 on native Django, native Go, Caddy `/api/v1` and
+`/api/v2`. Mutation (`secaw-mutation`): the dashboard codes without
+`familyTaxCodeFilled`'s blank filter fail `athlete-blank-tax-code` (CAUGHT).
