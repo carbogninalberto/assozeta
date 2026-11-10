@@ -13,6 +13,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/fatturapa"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
@@ -76,6 +77,7 @@ func (p *InvoiceSyncPrint) apply(ctx context.Context, path string, authorization
 	if authorization != nil {
 		request.Header["Authorization"] = []string{*authorization}
 	}
+	handoff.MarkEffect(ctx, "print request")
 	response, err := p.client.Do(request)
 	if err != nil {
 		return nil

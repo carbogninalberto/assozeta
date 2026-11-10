@@ -17,7 +17,7 @@ from TESTS.contracts import test_personas_reads_http as personas_reads
 from TESTS.contracts import test_workflow_update_http as workflow_update
 from TESTS.contracts.http_family import require, ResponseFailure  # noqa: F401  (runner interface)
 
-SOURCE = Path(__file__).resolve().parents[1] / 'fixtures/v2_handoff_http.json'
+SOURCE = Path(__file__).resolve().parents[1] / 'fixtures/django_handoff_http.json'
 CONTRACTS = {'personas-reads': personas_reads, 'course-list': course_list, 'workflow-update': workflow_update}
 HEADER = 'X-Assozeta-Handoff'
 

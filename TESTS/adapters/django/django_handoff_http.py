@@ -7,22 +7,22 @@ complete state unchanged; workflow cases are checked by workflow-update's effect
 check (the authored row and audit entries, actor, impersonation data and
 correlation id), so a handed-off write must have exactly Django's effect.
 
-V2_HANDOFF=off runs the same sequence with the handoff disabled: Go then
+HANDOFF_FAMILY=off runs the same sequence with the handoff disabled: Go then
 answers the refused cases with its 500 page (the RED receipt of handoff.md).
 """
 import os
 
-from TESTS.contracts import test_v2_handoff_http as contract
+from TESTS.contracts import test_django_handoff_http as contract
 from TESTS.adapters.django import family_harness as harness
 from TESTS.adapters.django import course_list_http as course_list
 from TESTS.adapters.django import personas_reads_http as personas_reads
 from TESTS.adapters.django import workflow_update_http as workflow_update
 
-SOURCES = ('TESTS/fixtures/v2_handoff_http.json', 'TESTS/contracts/test_v2_handoff_http.py', 'TESTS/adapters/django/v2_handoff_http.py',
+SOURCES = ('TESTS/fixtures/django_handoff_http.json', 'TESTS/contracts/test_django_handoff_http.py', 'TESTS/adapters/django/django_handoff_http.py',
            'BE_GO/internal/handoff/handoff.go', 'BE_GO/internal/handoff/effects.go', 'BE_GO/internal/refusal/refusal.go') \
     + tuple(dict.fromkeys(personas_reads.SOURCES + course_list.SOURCES + workflow_update.SOURCES))
 FAMILIES = {'personas-reads': personas_reads, 'course-list': course_list, 'workflow-update': workflow_update}
-GO_DJANGO_HANDOFF = os.environ.get('V2_HANDOFF', 'on') != 'off'
+GO_DJANGO_HANDOFF = os.environ.get('HANDOFF_FAMILY', 'on') != 'off'
 
 
 def seed_rows(source, created):

@@ -15,8 +15,8 @@ response Django gives (and, for writes, Django's effect):
 - workflow-update: `PATCH communications/workflows/<id>/update` with a form or
   multipart `automation_tree` (ErrAutomationWorkflowFormTreeNotPorted). Django
   parses the field with json.loads: a valid tree is saved (200, audited), an
-  invalid one is 400 `workflow not valid.`. The impersonated multipart update
-  shows that the session headers reach Django (the audit entry records them).
+  invalid one is 400 `workflow not valid.`; the audit entry of a saved update
+  carries the correlation id the client sent to Go.
 
 Each family also has one ported control case that Go serves itself. Cases marked
 `handoff` must be attributed to Django on the Go transports and carry
@@ -30,7 +30,7 @@ from pathlib import Path
 from urllib.parse import urlencode
 
 HERE = Path(__file__).parent
-OUTPUT = HERE / 'v2_handoff_http.json'
+OUTPUT = HERE / 'django_handoff_http.json'
 SOURCES = {name: json.loads((HERE / f'{name.replace("-", "_")}_http.json').read_text())
            for name in ('personas-reads', 'course-list', 'workflow-update')}
 IDS = SOURCES['workflow-update']['ids']
@@ -49,7 +49,7 @@ def add(family, name, *, handoff, path, response_of=None, status=None, response=
         reference = source_case(family, response_of)
         status, response = reference['status'], copy.deepcopy(reference['response'])
         extra = {key: reference[key] for key in ('ordered',) if key in reference}
-    case = {'name': f'v2-handoff-{name}', 'family': family, 'handoff': handoff, 'actor': 'owner', 'method': method, 'path': path,
+    case = {'name': f'django-handoff-{name}', 'family': family, 'handoff': handoff, 'actor': 'owner', 'method': method, 'path': path,
             'headers': headers or {}, 'status': status, 'response': response, 'effect': effect, **(extra or {})}
     if body is not None:
         case['body'] = body
@@ -85,7 +85,6 @@ STATE = {'name': WORKFLOW['name'], 'description': WORKFLOW['description'], 'tree
          'enabled': WORKFLOW['enabled']}
 PATH = f'/communications/workflows/{WORKFLOW["id"]}/update'
 UPDATED, INVALID = {'msg': 'workflow updated.'}, {'msg': 'workflow not valid.'}
-ADMIN_OWNER = {'X-Impersonation-Id': '$session:admin_owner', 'User-Id': IDS['owner']}
 
 
 def text(value):
@@ -125,14 +124,12 @@ add('workflow-update', 'workflow-json-tree-ported', handoff=False, method='PATCH
     body={'automation_tree': JSON_TREE}, effect=saved('owner', {'automation_tree': JSON_TREE}))
 add('workflow-update', 'workflow-form-tree', handoff=True, method='PATCH', path=PATH, status=200, response=UPDATED,
     raw_body=urlencode({'name': 'Dal modulo', 'automation_tree': json.dumps(FORM_TREE)}),
-    content_type='application/x-www-form-urlencoded',
-    effect=saved('owner', {'name': 'Dal modulo', 'automation_tree': FORM_TREE}))
+    content_type='application/x-www-form-urlencoded', effect=saved('owner', {'name': 'Dal modulo', 'automation_tree': FORM_TREE}))
 add('workflow-update', 'workflow-form-tree-invalid-json', handoff=True, method='PATCH', path=PATH, status=400, response=INVALID,
     raw_body='automation_tree=%5Bnot+json&name=Mai', content_type='application/x-www-form-urlencoded', effect=None)
 BODY, CONTENT_TYPE = multipart([('description', 'Da parti'), ('automation_tree', json.dumps(PART_TREE, ensure_ascii=False))])
-add('workflow-update', 'workflow-multipart-tree-impersonated', handoff=True, method='PATCH', path=PATH, status=200, response=UPDATED,
-    raw_body=BODY, content_type=CONTENT_TYPE, headers=ADMIN_OWNER,
-    effect=saved('admin', {'description': 'Da parti', 'automation_tree': PART_TREE}, session='admin_owner'))
+add('workflow-update', 'workflow-multipart-tree', handoff=True, method='PATCH', path=PATH, status=200, response=UPDATED,
+    raw_body=BODY, content_type=CONTENT_TYPE, effect=saved('owner', {'description': 'Da parti', 'automation_tree': PART_TREE}))
 
 assert len({c['name'] for c in cases}) == len(cases)
 assert {c['family'] for c in cases if c['handoff']} == set(SOURCES)

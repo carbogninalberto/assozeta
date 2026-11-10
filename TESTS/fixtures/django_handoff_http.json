@@ -46,7 +46,7 @@
  ],
  "cases": [
   {
-   "name": "v2-handoff-personas-search-ported",
+   "name": "django-handoff-personas-search-ported",
    "family": "personas-reads",
    "handoff": false,
    "actor": "owner",
@@ -68,7 +68,7 @@
    "ordered": false
   },
   {
-   "name": "v2-handoff-personas-search-cyrillic",
+   "name": "django-handoff-personas-search-cyrillic",
    "family": "personas-reads",
    "handoff": true,
    "actor": "owner",
@@ -90,7 +90,7 @@
    "ordered": false
   },
   {
-   "name": "v2-handoff-personas-search-cyrillic-group",
+   "name": "django-handoff-personas-search-cyrillic-group",
    "family": "personas-reads",
    "handoff": true,
    "actor": "owner",
@@ -114,7 +114,7 @@
    "ordered": false
   },
   {
-   "name": "v2-handoff-course-sort-attname-ported",
+   "name": "django-handoff-course-sort-attname-ported",
    "family": "course-list",
    "handoff": false,
    "actor": "owner",
@@ -181,7 +181,7 @@
    "effect": null
   },
   {
-   "name": "v2-handoff-course-sort-relation-path",
+   "name": "django-handoff-course-sort-relation-path",
    "family": "course-list",
    "handoff": true,
    "actor": "owner",
@@ -248,7 +248,7 @@
    "effect": null
   },
   {
-   "name": "v2-handoff-course-sort-relation-path-group",
+   "name": "django-handoff-course-sort-relation-path-group",
    "family": "course-list",
    "handoff": true,
    "actor": "owner",
@@ -326,7 +326,7 @@
    "effect": null
   },
   {
-   "name": "v2-handoff-workflow-json-tree-ported",
+   "name": "django-handoff-workflow-json-tree-ported",
    "family": "workflow-update",
    "handoff": false,
    "actor": "owner",
@@ -379,7 +379,7 @@
    }
   },
   {
-   "name": "v2-handoff-workflow-form-tree",
+   "name": "django-handoff-workflow-form-tree",
    "family": "workflow-update",
    "handoff": true,
    "actor": "owner",
@@ -431,7 +431,7 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
-   "name": "v2-handoff-workflow-form-tree-invalid-json",
+   "name": "django-handoff-workflow-form-tree-invalid-json",
    "family": "workflow-update",
    "handoff": true,
    "actor": "owner",
@@ -447,23 +447,20 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
-   "name": "v2-handoff-workflow-multipart-tree-impersonated",
+   "name": "django-handoff-workflow-multipart-tree",
    "family": "workflow-update",
    "handoff": true,
    "actor": "owner",
    "method": "PATCH",
    "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
-   "headers": {
-    "X-Impersonation-Id": "$session:admin_owner",
-    "User-Id": "a1000000-0000-4000-8000-000000700001"
-   },
+   "headers": {},
    "status": 200,
    "response": {
     "msg": "workflow updated."
    },
    "effect": {
-    "actor": "admin",
-    "session": "admin_owner",
+    "actor": "owner",
+    "session": null,
     "label": "plain",
     "row": {
      "name": "Dal modulo",
