@@ -2643,7 +2643,10 @@
         "TESTS/contracts/test_course_enrolment_http.py",
         "TESTS/adapters/django/course_enrolment_http.py",
         "BE/application/tests/test_payment_default_category.py",
-        "TESTS/adapters/django/default_payment_category.py"
+        "TESTS/adapters/django/default_payment_category.py",
+        "TESTS/fixtures/generate_payment_writes_http.py",
+        "TESTS/contracts/test_payment_writes_http.py",
+        "TESTS/adapters/django/payment_writes_http.py"
       ],
       "evidence": [
         "Production Python 3.13.2 actual Payment.save oracle: 81 required cases, including failed calculations with no managed-row changes; matching Go calculation cases pass.",
@@ -2748,6 +2751,24 @@
               "receipt_sha256": "94e10be94a35ad9f840edc9019cff6942bb6ca84ada6485d3cd09c48b6e1da99"
             }
           ]
+        },
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 124/124; Go 201 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-sec-category-red/results.json",
+          "receipt_sha256": "01bf3a3baef649e116c47004c1dd5a0621892f9164e08670ef0d57382fce013b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 139/139 on native Django, native Go, Caddy /api/v1 and /api/v2 Final GREEN on the integrated tree (payment scope, default category and v2 payment changes together); exercised by payment-writes-add-minimal, payment-writes-bulk-add-owner.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-merged-pay-r1/results.json",
+          "receipt_sha256": "aa90e9f7a2680acd32397fd0a9b166f7ff414e34e9d4c15931558803702de5c5"
+        },
+        {
+          "revision": "secCategoryDefaultSQL without the association clause (the earlier name-only lookup)",
+          "result": "Mutation control: fails Go on payment-writes-add-minimal (response.body:payment_id).",
+          "artifact": "quality-reports/go-migration/payment-writes-http-sec-category-mutation/results.json",
+          "receipt_sha256": "73a601f8977203332f4abc6b17cc60dc8fa7b775fa5a0be94f60d9a65476533e"
         }
       ],
       "notes": [
@@ -2760,7 +2781,8 @@
         "Closed by the model-hooks work: every Go writer of application_payment inventoried and traced (model_hooks_process.py, model-hooks.md). Fixed: supplier-invoice update now derives a NULL description and the quota corso override; the Stripe paid check rolls back a payment whose save() calculation fails and goes on.",
         "Implementing via camps-subscriptions: Default payment category taken from the payment's association (PaymentCategory.default_for).",
         "Implementing via subscription-create: Default payment category taken from the payment's association (PaymentCategory.default_for).",
-        "Implementing via course-enrolment: Default payment category taken from the payment's association (PaymentCategory.default_for)."
+        "Implementing via course-enrolment: Default payment category taken from the payment's association (PaymentCategory.default_for).",
+        "Implementing via payment-writes: Default payment category taken from the payment's association (PaymentCategory.default_for)."
       ]
     },
     {
@@ -20170,12 +20192,18 @@
         "BE_GO/internal/service/payment_reads.go",
         "BE_GO/internal/handler/payment_reads.go",
         "BE_GO/cmd/server/main.go",
-        "BE_GO/internal/service/invoice_sync_print.go"
+        "BE_GO/internal/service/invoice_sync_print.go",
+        "BE_GO/internal/service/payment_stats_stripe.go",
+        "BE_GO/internal/repository/payment_stats_stripe.go",
+        "BE_GO/internal/stripeapi/client.go",
+        "BE_GO/internal/service/stripe_routes.go",
+        "BE_GO/internal/service/stripe_availability.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
         "PaymentSerializer, InstructorSerializer, SupplierSerializer and BasicAssociateSerializer ports; personas-reads search preparation and pagination",
-        "application_payment, application_associate, application_associatetutorrelation, application_subscription, application_coursesubscription, application_coursesubscriptioninstallment, application_carnetsubscription, application_course, application_carnet, application_invoice, application_instructorhours, application_customaccounts, application_paymentcategory, application_supplierandcustomers, application_instructor, docmanager_document, instance_instanceconfiguration"
+        "application_payment, application_associate, application_associatetutorrelation, application_subscription, application_coursesubscription, application_coursesubscriptioninstallment, application_carnetsubscription, application_course, application_carnet, application_invoice, application_instructorhours, application_customaccounts, application_paymentcategory, application_supplierandcustomers, application_instructor, docmanager_document, instance_instanceconfiguration",
+        "stripe-routes Stripe SDK port (stripeapi) and integration settings; Django cache (django-redis, DB 1)"
       ],
       "contract": {
         "methods": [
@@ -20207,25 +20235,25 @@
         "docs/architecture/go-migration/payment-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 242/242; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-red-r2/results.json",
-          "receipt_sha256": "6cef6606894965ecb142fce7e8ae4cad63971fa22fd4f83ed457db9b0715243d"
+          "result": "RED: Django 248/248; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2pay2-stats-red-r1/results.json",
+          "receipt_sha256": "ab7e05023d6b5d9f7674d755b51d4ac548877c821959b2c73e7711332ceae3e8"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 242/242 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-versioned-r2/results.json",
-          "receipt_sha256": "17ee6395a2215dd4895cb50e5881b7933ee42fd9a8b970f3ca17eaccf90bbe74"
+          "result": "GREEN: 248/248 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects Final GREEN on the integrated tree (payment scope, default category and v2 payment changes together)..",
+          "artifact": "quality-reports/go-migration/payment-reads-http-merged-pay-r1/results.json",
+          "receipt_sha256": "fdc9db624d815fd515d5c31ad012727fb6cfaeaf49cf8948025a84a46ab17c7b"
         },
         {
-          "revision": "committing change without the compensation prints",
-          "result": "Mutation control: fails Go on payment-reads-list-owner (print request count).",
-          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-mutation-r3/results.json",
-          "receipt_sha256": "0774d18fbb806dc21f2333910b4e61f68a25d9deb76df223cb2cba94fdcf571a"
+          "revision": "Stripe fees skipping refunds instead of payouts",
+          "result": "Mutation control: fails Go on payment-reads-stats-stripe-fees-fetched-and-cached (response.body).",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2pay2-stats-mutation-r1/results.json",
+          "receipt_sha256": "4f8a5bc27f99d34cebb0f5af16278058221b512f79d4e44b0154bab5f059b34a"
         }
       ],
       "notes": [
-        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500). API v2: sort[field]=user and instructor compensations (several hours, eager compensation print) are ported."
+        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500). API v2: sort[field]=user and instructor compensations (several hours, eager compensation print) are ported. API v2: payment/stats with Stripe configured (Django cache entry read and written in django-redis format, BalanceTransaction list over every page, zero uncached on errors) is ported."
       ]
     },
     {
@@ -20352,10 +20380,10 @@
         ],
         "request": "Body with exactly payment_id and signature {there_is_signature, data}.",
         "response": "200 {'status': 'success'}.",
-        "errors": "401; 403 registry permission or scoped body reference; 405; 400 {'msg': 'validation errors.'}; 400 UUID / 'payment not found' lists; 400 serializer errors; 500 non-dict body.",
+        "errors": "401; 403 registry permission or scoped body reference; 403 {'detail': 'User is not a sport association'} for athletes; 403 {'detail': 'User not allowed.'} for a payment of another association; 405; 400 {'msg': 'validation errors.'}; 400 UUID / 'payment not found' lists; 400 serializer errors; 500 non-dict body or owner without an association.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "bookeeping.payments.update",
-        "resource_scope": "scoped_queryset(Payment.objects) by id, group-aware.",
+        "resource_scope": "scoped_queryset(Payment.objects) by id, group-aware, then the payment's association must be the caller's (request.user.sport_association).",
         "side_effects": "With a signature: Signature row (scope user, or the selected person for collaborators) with its audited create, payment signature and Payment.save() defaults with the audited update, then one GET CURRENT_HOST/document/compensation/<payment_id> with the request's Authorization.",
         "transaction": "Signature and payment save committed together, then the eager print.",
         "execution_owner": "django"
@@ -20370,25 +20398,25 @@
         "docs/architecture/go-migration/payment-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 90/90; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-red-r1/results.json",
-          "receipt_sha256": "78b96dfd95f89dc3d299845cdb33f3be6bbd36e47781b8cef35230aaf38240bd"
+          "result": "RED: Django 94/94; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay2-scope-red-r1/results.json",
+          "receipt_sha256": "56e221fe42aa5bf3278603f57bc841939463bab4ff21c2449a47ab963fb5fb7a"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 90/90 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, Celery messages and print requests.",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-final-r1/results.json",
-          "receipt_sha256": "0e1841db62a836a833bcaf342d0d7286510ff20c274034096c4aa2972f5c4689"
+          "result": "GREEN: 94/94 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, Celery messages and print requests Final GREEN on the integrated tree (payment scope, default category and v2 payment changes together)..",
+          "artifact": "quality-reports/go-migration/payment-misc-http-merged-pay-r1/results.json",
+          "receipt_sha256": "8811e619fcbb88b3e64c0515b7296b6412026f3d047cff012567c203b3603d85"
         },
         {
-          "revision": "Signature user always the scope user (collaborator's selected person ignored)",
-          "result": "Mutation control: fails Go on payment-misc-sign-collaborator-stores-signature-default-category (state.signature).",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-mutation-r1/results.json",
-          "receipt_sha256": "924711bdfe3014cd74989ddbd1b0132c3894813cbbe0c0096235c7bcda61f96a"
+          "revision": "Payment signing without comparing the payment association with the caller association",
+          "result": "Mutation control: fails Go on payment-misc-sign-foreign-payment (response.status).",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay2-scope-mutation-r1/results.json",
+          "receipt_sha256": "c71e1429057c5fecc89da63e9a57efaa2b3c6fe42833143aca8b5ebe64a614aa"
         }
       ],
       "notes": [
-        "Implementing: Partial quotes simulation/apply, payment sign and invoiced approve with HTTP parity. API v2: apply quotes for a member's own account (fee_assigned.html rendered in the request language, send_mail_async published after the commit) and sign with a signature to store (Signature create, Payment.save(), print_document_compensation.apply to CURRENT_HOST) are ported. Refused (500) before any write: apply when the association has a CommunicationConfiguration (Timer-thread SMTP), plan values outside the ported conversions, non-canonical X-Group-Id on apply."
+        "Implementing: Partial quotes simulation/apply, payment sign and invoiced approve with HTTP parity. API v2: apply quotes for a member's own account (fee_assigned.html rendered in the request language, send_mail_async published after the commit) and sign with a signature to store (Signature create, Payment.save(), print_document_compensation.apply to CURRENT_HOST) are ported. Refused (500) before any write: apply when the association has a CommunicationConfiguration (Timer-thread SMTP), plan values outside the ported conversions, non-canonical X-Group-Id on apply. Payment signing only applies to the caller's association (403 User not allowed.; athletes 403, owners without an association 500)."
       ]
     },
     {
@@ -20456,25 +20484,25 @@
         "docs/architecture/go-migration/payment-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 90/90; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-red-r1/results.json",
-          "receipt_sha256": "78b96dfd95f89dc3d299845cdb33f3be6bbd36e47781b8cef35230aaf38240bd"
+          "result": "RED: Django 94/94; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay2-scope-red-r1/results.json",
+          "receipt_sha256": "56e221fe42aa5bf3278603f57bc841939463bab4ff21c2449a47ab963fb5fb7a"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 90/90 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, Celery messages and print requests.",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-final-r1/results.json",
-          "receipt_sha256": "0e1841db62a836a833bcaf342d0d7286510ff20c274034096c4aa2972f5c4689"
+          "result": "GREEN: 94/94 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, Celery messages and print requests Final GREEN on the integrated tree (payment scope, default category and v2 payment changes together)..",
+          "artifact": "quality-reports/go-migration/payment-misc-http-merged-pay-r1/results.json",
+          "receipt_sha256": "8811e619fcbb88b3e64c0515b7296b6412026f3d047cff012567c203b3603d85"
         },
         {
-          "revision": "Signature user always the scope user (collaborator's selected person ignored)",
-          "result": "Mutation control: fails Go on payment-misc-sign-collaborator-stores-signature-default-category (state.signature).",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-mutation-r1/results.json",
-          "receipt_sha256": "924711bdfe3014cd74989ddbd1b0132c3894813cbbe0c0096235c7bcda61f96a"
+          "revision": "Payment signing without comparing the payment association with the caller association",
+          "result": "Mutation control: fails Go on payment-misc-sign-foreign-payment (response.status).",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay2-scope-mutation-r1/results.json",
+          "receipt_sha256": "c71e1429057c5fecc89da63e9a57efaa2b3c6fe42833143aca8b5ebe64a614aa"
         }
       ],
       "notes": [
-        "Implementing: Partial quotes simulation/apply, payment sign and invoiced approve with HTTP parity. API v2: apply quotes for a member's own account (fee_assigned.html rendered in the request language, send_mail_async published after the commit) and sign with a signature to store (Signature create, Payment.save(), print_document_compensation.apply to CURRENT_HOST) are ported. Refused (500) before any write: apply when the association has a CommunicationConfiguration (Timer-thread SMTP), plan values outside the ported conversions, non-canonical X-Group-Id on apply."
+        "Implementing: Partial quotes simulation/apply, payment sign and invoiced approve with HTTP parity. API v2: apply quotes for a member's own account (fee_assigned.html rendered in the request language, send_mail_async published after the commit) and sign with a signature to store (Signature create, Payment.save(), print_document_compensation.apply to CURRENT_HOST) are ported. Refused (500) before any write: apply when the association has a CommunicationConfiguration (Timer-thread SMTP), plan values outside the ported conversions, non-canonical X-Group-Id on apply. Payment signing only applies to the caller's association (403 User not allowed.; athletes 403, owners without an association 500)."
       ]
     },
     {
@@ -20542,25 +20570,25 @@
         "docs/architecture/go-migration/payment-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 90/90; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-red-r1/results.json",
-          "receipt_sha256": "78b96dfd95f89dc3d299845cdb33f3be6bbd36e47781b8cef35230aaf38240bd"
+          "result": "RED: Django 94/94; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay2-scope-red-r1/results.json",
+          "receipt_sha256": "56e221fe42aa5bf3278603f57bc841939463bab4ff21c2449a47ab963fb5fb7a"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 90/90 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, Celery messages and print requests.",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-final-r1/results.json",
-          "receipt_sha256": "0e1841db62a836a833bcaf342d0d7286510ff20c274034096c4aa2972f5c4689"
+          "result": "GREEN: 94/94 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, Celery messages and print requests Final GREEN on the integrated tree (payment scope, default category and v2 payment changes together)..",
+          "artifact": "quality-reports/go-migration/payment-misc-http-merged-pay-r1/results.json",
+          "receipt_sha256": "8811e619fcbb88b3e64c0515b7296b6412026f3d047cff012567c203b3603d85"
         },
         {
-          "revision": "Signature user always the scope user (collaborator's selected person ignored)",
-          "result": "Mutation control: fails Go on payment-misc-sign-collaborator-stores-signature-default-category (state.signature).",
-          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay-mutation-r1/results.json",
-          "receipt_sha256": "924711bdfe3014cd74989ddbd1b0132c3894813cbbe0c0096235c7bcda61f96a"
+          "revision": "Payment signing without comparing the payment association with the caller association",
+          "result": "Mutation control: fails Go on payment-misc-sign-foreign-payment (response.status).",
+          "artifact": "quality-reports/go-migration/payment-misc-http-v2pay2-scope-mutation-r1/results.json",
+          "receipt_sha256": "c71e1429057c5fecc89da63e9a57efaa2b3c6fe42833143aca8b5ebe64a614aa"
         }
       ],
       "notes": [
-        "Implementing: Partial quotes simulation/apply, payment sign and invoiced approve with HTTP parity. API v2: apply quotes for a member's own account (fee_assigned.html rendered in the request language, send_mail_async published after the commit) and sign with a signature to store (Signature create, Payment.save(), print_document_compensation.apply to CURRENT_HOST) are ported. Refused (500) before any write: apply when the association has a CommunicationConfiguration (Timer-thread SMTP), plan values outside the ported conversions, non-canonical X-Group-Id on apply."
+        "Implementing: Partial quotes simulation/apply, payment sign and invoiced approve with HTTP parity. API v2: apply quotes for a member's own account (fee_assigned.html rendered in the request language, send_mail_async published after the commit) and sign with a signature to store (Signature create, Payment.save(), print_document_compensation.apply to CURRENT_HOST) are ported. Refused (500) before any write: apply when the association has a CommunicationConfiguration (Timer-thread SMTP), plan values outside the ported conversions, non-canonical X-Group-Id on apply. Payment signing only applies to the caller's association (403 User not allowed.; athletes 403, owners without an association 500)."
       ]
     },
     {
@@ -20587,12 +20615,18 @@
         "BE_GO/internal/service/payment_reads.go",
         "BE_GO/internal/handler/payment_reads.go",
         "BE_GO/cmd/server/main.go",
-        "BE_GO/internal/service/invoice_sync_print.go"
+        "BE_GO/internal/service/invoice_sync_print.go",
+        "BE_GO/internal/service/payment_stats_stripe.go",
+        "BE_GO/internal/repository/payment_stats_stripe.go",
+        "BE_GO/internal/stripeapi/client.go",
+        "BE_GO/internal/service/stripe_routes.go",
+        "BE_GO/internal/service/stripe_availability.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
         "PaymentSerializer, InstructorSerializer, SupplierSerializer and BasicAssociateSerializer ports; personas-reads search preparation and pagination",
-        "application_payment, application_associate, application_associatetutorrelation, application_subscription, application_coursesubscription, application_coursesubscriptioninstallment, application_carnetsubscription, application_course, application_carnet, application_invoice, application_instructorhours, application_customaccounts, application_paymentcategory, application_supplierandcustomers, application_instructor, docmanager_document, instance_instanceconfiguration"
+        "application_payment, application_associate, application_associatetutorrelation, application_subscription, application_coursesubscription, application_coursesubscriptioninstallment, application_carnetsubscription, application_course, application_carnet, application_invoice, application_instructorhours, application_customaccounts, application_paymentcategory, application_supplierandcustomers, application_instructor, docmanager_document, instance_instanceconfiguration",
+        "stripe-routes Stripe SDK port (stripeapi) and integration settings; Django cache (django-redis, DB 1)"
       ],
       "contract": {
         "methods": [
@@ -20610,7 +20644,7 @@
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry bookeeping.payments.read.",
         "resource_scope": "Live, unarchived, group-aware payments of the scoped live association within the date window.",
-        "side_effects": "None.",
+        "side_effects": "With Stripe configured: GET /v1/balance_transactions (every page) on a cache miss and the Django cache entry stripe_fees_direct_<key hash>_<from>_<to> written for 300 seconds; otherwise none.",
         "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
@@ -20624,25 +20658,25 @@
         "docs/architecture/go-migration/payment-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 242/242; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-red-r2/results.json",
-          "receipt_sha256": "6cef6606894965ecb142fce7e8ae4cad63971fa22fd4f83ed457db9b0715243d"
+          "result": "RED: Django 248/248; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2pay2-stats-red-r1/results.json",
+          "receipt_sha256": "ab7e05023d6b5d9f7674d755b51d4ac548877c821959b2c73e7711332ceae3e8"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 242/242 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-versioned-r2/results.json",
-          "receipt_sha256": "17ee6395a2215dd4895cb50e5881b7933ee42fd9a8b970f3ca17eaccf90bbe74"
+          "result": "GREEN: 248/248 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects Final GREEN on the integrated tree (payment scope, default category and v2 payment changes together)..",
+          "artifact": "quality-reports/go-migration/payment-reads-http-merged-pay-r1/results.json",
+          "receipt_sha256": "fdc9db624d815fd515d5c31ad012727fb6cfaeaf49cf8948025a84a46ab17c7b"
         },
         {
-          "revision": "committing change without the compensation prints",
-          "result": "Mutation control: fails Go on payment-reads-list-owner (print request count).",
-          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-mutation-r3/results.json",
-          "receipt_sha256": "0774d18fbb806dc21f2333910b4e61f68a25d9deb76df223cb2cba94fdcf571a"
+          "revision": "Stripe fees skipping refunds instead of payouts",
+          "result": "Mutation control: fails Go on payment-reads-stats-stripe-fees-fetched-and-cached (response.body).",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2pay2-stats-mutation-r1/results.json",
+          "receipt_sha256": "4f8a5bc27f99d34cebb0f5af16278058221b512f79d4e44b0154bab5f059b34a"
         }
       ],
       "notes": [
-        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500). API v2: sort[field]=user and instructor compensations (several hours, eager compensation print) are ported."
+        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500). API v2: sort[field]=user and instructor compensations (several hours, eager compensation print) are ported. API v2: payment/stats with Stripe configured (Django cache entry read and written in django-redis format, BalanceTransaction list over every page, zero uncached on errors) is ported."
       ]
     },
     {
@@ -25377,12 +25411,18 @@
         "BE_GO/internal/service/payment_reads.go",
         "BE_GO/internal/handler/payment_reads.go",
         "BE_GO/cmd/server/main.go",
-        "BE_GO/internal/service/invoice_sync_print.go"
+        "BE_GO/internal/service/invoice_sync_print.go",
+        "BE_GO/internal/service/payment_stats_stripe.go",
+        "BE_GO/internal/repository/payment_stats_stripe.go",
+        "BE_GO/internal/stripeapi/client.go",
+        "BE_GO/internal/service/stripe_routes.go",
+        "BE_GO/internal/service/stripe_availability.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
         "PaymentSerializer, InstructorSerializer, SupplierSerializer and BasicAssociateSerializer ports; personas-reads search preparation and pagination",
-        "application_payment, application_associate, application_associatetutorrelation, application_subscription, application_coursesubscription, application_coursesubscriptioninstallment, application_carnetsubscription, application_course, application_carnet, application_invoice, application_instructorhours, application_customaccounts, application_paymentcategory, application_supplierandcustomers, application_instructor, docmanager_document, instance_instanceconfiguration"
+        "application_payment, application_associate, application_associatetutorrelation, application_subscription, application_coursesubscription, application_coursesubscriptioninstallment, application_carnetsubscription, application_course, application_carnet, application_invoice, application_instructorhours, application_customaccounts, application_paymentcategory, application_supplierandcustomers, application_instructor, docmanager_document, instance_instanceconfiguration",
+        "stripe-routes Stripe SDK port (stripeapi) and integration settings; Django cache (django-redis, DB 1)"
       ],
       "contract": {
         "methods": [
@@ -25414,25 +25454,25 @@
         "docs/architecture/go-migration/payment-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 242/242; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-red-r2/results.json",
-          "receipt_sha256": "6cef6606894965ecb142fce7e8ae4cad63971fa22fd4f83ed457db9b0715243d"
+          "result": "RED: Django 248/248; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2pay2-stats-red-r1/results.json",
+          "receipt_sha256": "ab7e05023d6b5d9f7674d755b51d4ac548877c821959b2c73e7711332ceae3e8"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 242/242 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-versioned-r2/results.json",
-          "receipt_sha256": "17ee6395a2215dd4895cb50e5881b7933ee42fd9a8b970f3ca17eaccf90bbe74"
+          "result": "GREEN: 248/248 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects Final GREEN on the integrated tree (payment scope, default category and v2 payment changes together)..",
+          "artifact": "quality-reports/go-migration/payment-reads-http-merged-pay-r1/results.json",
+          "receipt_sha256": "fdc9db624d815fd515d5c31ad012727fb6cfaeaf49cf8948025a84a46ab17c7b"
         },
         {
-          "revision": "committing change without the compensation prints",
-          "result": "Mutation control: fails Go on payment-reads-list-owner (print request count).",
-          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-mutation-r3/results.json",
-          "receipt_sha256": "0774d18fbb806dc21f2333910b4e61f68a25d9deb76df223cb2cba94fdcf571a"
+          "revision": "Stripe fees skipping refunds instead of payouts",
+          "result": "Mutation control: fails Go on payment-reads-stats-stripe-fees-fetched-and-cached (response.body).",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2pay2-stats-mutation-r1/results.json",
+          "receipt_sha256": "4f8a5bc27f99d34cebb0f5af16278058221b512f79d4e44b0154bab5f059b34a"
         }
       ],
       "notes": [
-        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500). API v2: sort[field]=user and instructor compensations (several hours, eager compensation print) are ported."
+        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500). API v2: sort[field]=user and instructor compensations (several hours, eager compensation print) are ported. API v2: payment/stats with Stripe configured (Django cache entry read and written in django-redis format, BalanceTransaction list over every page, zero uncached on errors) is ported."
       ]
     },
     {
