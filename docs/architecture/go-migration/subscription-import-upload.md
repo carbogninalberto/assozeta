@@ -142,9 +142,11 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
   association's next upload, imports that raise (400, statuses only, upload kept), the upload removed by a completed
   import and unknown afterwards, a sheet of typed cells (codes as text, date cells of text fields, day-first and
   year-first date text, impossible dates) and a sheet of whole numbers): RED (`imphard-red-r5`): Django 55/55; Go fails
-  `state.kept` on the first upload. GREEN (`imphard-versioned-r1`): 55/55 on native Django, native Go, Caddy `/api/v1`
-  and `/api/v2`. Mutation (`imphard-mutation-r1`): reading `A/B/YYYY` month first fails Go on
-  `subscription-import-upload-wizard-map` (`state.drafts`). `BE/application/tests/test_subscription_import_upload.py`
+  `state.kept` on the first upload. GREEN (`imphard-versioned-r2`, after merging the base; `imphard-versioned-r1` before): 55/55 on native Django,
+  native Go, Caddy `/api/v1` and `/api/v2`. Mutation (`imphard-mutation-r1`): reading `A/B/YYYY` month first fails Go on
+  `subscription-import-upload-wizard-map` (`state.drafts`). Re-run green (`imphard-rerun-r1`): associates-draft
+  (128), document-render (193); documents-writes and document-views are green on the four transports with their own
+  changes. `BE/application/tests/test_subscription_import_upload.py`
   (16 tests) covers the same on the view with file storage, CSV imports included.
 - Earlier evidence: RED (`secimp-red-r1`): Django 47/47; Go fails `storage.keys` on the first upload. GREEN
   (`secimp-versioned-r1`): 47/47 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutations: reading a document
