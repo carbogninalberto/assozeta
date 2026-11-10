@@ -1941,6 +1941,107 @@
    }
   },
   {
+   "name": "camps-core-update-new-id-inserts-copy",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Camp or retreat updated successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "a1000000-0000-4000-8000-0000007a9901",
+     "title": "Copia",
+     "description": "Dal modulo",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "a1000000-0000-4000-8000-0000007a9901": {
+       "title": "Copia",
+       "description": "Dal modulo",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "a1000000-0000-4000-8000-0000007a9901",
+      "action": 1,
+      "changes": {
+       "camps_and_retreats_id": [
+        "None",
+        "a1000000-0000-4000-8000-0000007a9901"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "title": [
+        "None",
+        "Copia"
+       ],
+       "description": [
+        "None",
+        "Dal modulo"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     },
+     {
+      "model": "CampsAndRetreats",
+      "key": "a1000000-0000-4000-8000-0000007a9901",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_id": [
+        "None",
+        "a1000000-0000-4000-8000-0000007a9901"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "title": [
+        "None",
+        "Copia"
+       ],
+       "description": [
+        "None",
+        "Dal modulo"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "camps_and_retreats_id": "a1000000-0000-4000-8000-0000007a9901",
+    "title": "Copia"
+   }
+  },
+  {
+   "name": "camps-core-update-new-id-taken",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'camps_and_retreats_id': [ErrorDetail(string='camps and retreats with this camps and retreats id already exists.', code='unique')]}"
+   },
+   "effect": null,
+   "body": {
+    "camps_and_retreats_id": "a1000000-0000-4000-8000-0000007a9901",
+    "title": "Altra"
+   }
+  },
+  {
    "name": "camps-core-delete-anonymous",
    "actor": "anonymous",
    "method": "DELETE",

@@ -117,6 +117,17 @@ add('update-same-value-no-audit', 'owner', update('acqua'), 200, existing('acqua
 add('update-clear-and-set', 'full_collaborator', update('beta'), 200, existing('beta', address=None, note='Nuova'), method='PATCH',
     body={'address': None, 'note': 'Nuova'}, effect=changed('full_collaborator', 'beta', {'address': ['Via Rossi 1', 'None'], 'note': ['None', 'Nuova']}))
 
+# An update naming a supplier_id no row has: Model.save() inserts a copy with the validated values under that key
+# (auditlog: an update against nothing, then the create); the row the path names stays. A key another row has is the serializer's unique error.
+COPY_ID = 'a1000000-0000-4000-8000-00000064a901'
+add('update-new-id-inserts-copy', 'owner', update('beta'), 200, existing('beta', supplier_id=COPY_ID, address=None, note='Nuova', city='Bari'), method='PATCH',
+    body={'supplier_id': COPY_ID, 'city': 'Bari'}, effect={'kind': 'copy', 'actor': 'owner', 'supplier': 'beta', 'id': COPY_ID})
+add('update-new-id-taken', 'owner', update('beta'), 400, {'msg': 'validation errors.'}, method='PATCH',
+    body={'supplier_id': COPY_ID, 'city': 'Lecce'})
+add('update-own-id-kept', 'owner', update('beta'), 200, existing('beta', address=None, note='Nuova', city='Lecce'), method='PATCH',
+    body={'supplier_id': SUPPLIERS['beta']['id'], 'city': 'Lecce'},
+    effect=changed('owner', 'beta', {'city': [SUPPLIERS['beta']['city'] if SUPPLIERS['beta']['city'] is not None else 'None', 'Lecce']}))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({**{k: v for k, v in SOURCE.items() if k != 'cases'},
                               'scope': 'Supplier add and update authored sequence with audit effects', 'cases': cases},

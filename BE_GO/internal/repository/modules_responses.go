@@ -31,17 +31,14 @@ func (r *ModulesResponses) ModuleByLink(ctx context.Context, link string) (*doma
 	return &row, nil
 }
 
-// Response is ModuleResponses.objects.filter(module_response_id=...).first()
-// with its attachment pks and attachments_docs.
-func (r *ModulesResponses) Response(ctx context.Context, id string) (*domain.ModuleResponseRow, error) {
-	var row domain.ModuleResponseRow
-	err := r.db.GetContext(ctx, &row, `SELECT r.module_response_id, r.module_id, r.creation_date, r.progressive_response_number,
- r.queue_position, r.response::text AS response, r.approved, r.user_id, r.payment_id,
- COALESCE((SELECT json_agg(t.document_id) FROM application_moduleresponses_attachments t
-   WHERE t.moduleresponses_id=r.module_response_id), '[]')::text AS attachments,
- COALESCE((SELECT json_agg(json_build_object('document_id', d.document_id, 'filename', d.filename, 'token', d.token))
+// ResponseAttachments is attachments_docs of
+// ModuleResponses.objects.filter(module_response_id=...).first(): nil
+// without the row.
+func (r *ModulesResponses) ResponseAttachments(ctx context.Context, id string) (*string, error) {
+	var docs string
+	err := r.db.GetContext(ctx, &docs, `SELECT COALESCE((SELECT json_agg(json_build_object('document_id', d.document_id, 'filename', d.filename))
    FROM application_moduleresponses_attachments t JOIN docmanager_document d ON d.document_id=t.document_id
-   WHERE t.moduleresponses_id=r.module_response_id), '[]')::text AS attachments_docs
+   WHERE t.moduleresponses_id=r.module_response_id), '[]')::text
  FROM application_moduleresponses r WHERE r.module_response_id=$1`, id)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
@@ -49,7 +46,15 @@ func (r *ModulesResponses) Response(ctx context.Context, id string) (*domain.Mod
 	if err != nil {
 		return nil, err
 	}
-	return &row, nil
+	return &docs, nil
+}
+
+// PublicAssociation is module.sport_association (the row by id, any state):
+// its name and its deleted flag.
+func (r *ModulesResponses) PublicAssociation(ctx context.Context, association string) (domain.ModulePublicAssociation, error) {
+	var row domain.ModulePublicAssociation
+	err := r.db.GetContext(ctx, &row, `SELECT denomination, deleted FROM application_sportassociation WHERE sport_association_id=$1`, association)
+	return row, err
 }
 
 // AssociationOwner is the owner of an association row (any state).

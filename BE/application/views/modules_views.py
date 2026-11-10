@@ -16,7 +16,7 @@ from rest_framework.decorators import api_view, permission_classes
 
 from application.models import Module, ModuleResponses
 from application.serializers.modules_serializers import ModulesSerializer, ModulesSerializerWithResponses, \
-    ModuleResponseSerializer, ModulesAddSerializer
+    ModuleResponseSerializer, ModulesAddSerializer, PublicModuleSerializer, PublicModuleResponseSerializer
 from core.middleware import IsAuthenticated
 
 import logging
@@ -171,19 +171,24 @@ def modules_custom_link_info(request, custom_link):
     if not module:
         return Response({'error': 'module not found'}, status=status.HTTP_404_NOT_FOUND)
 
+    association = module.sport_association
+    if association is not None and association.deleted:
+        return Response({'error': 'module not found'}, status=status.HTTP_404_NOT_FOUND)
+
     response_data = None
 
     # check if the is response_id in the query params
     response_id = request.query_params.get('response_id', None)
     if response_id is not None and is_valid_uuid(response_id):
         response = ModuleResponses.objects.filter(module_response_id=response_id).first()
-        response_data = ModuleResponseSerializer(response).data
+        if response is not None:
+            response_data = PublicModuleResponseSerializer(response).data
 
     # check if module is active
     if not module.enabled:
         return Response({'error': 'module not active'}, status=status.HTTP_404_NOT_FOUND)
 
-    return Response({'data': ModulesSerializer(module).data, 'response_data': response_data}, status=status.HTTP_200_OK)
+    return Response({'data': PublicModuleSerializer(module).data, 'response_data': response_data}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])

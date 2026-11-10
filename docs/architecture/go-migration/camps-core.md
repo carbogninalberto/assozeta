@@ -49,7 +49,6 @@ owner.
 ## Not ported (refused with a 500 before any write)
 
 - Add or update with multipart file parts (DRF merges the files into a mutable copy of the form data).
-- A changed primary key on update that passes validation (`Model.save()` would insert a copy under the new key).
 
 ## Evidence
 
@@ -60,3 +59,9 @@ indexing the camp's delete entry through the actor fails `delete-owner-cascade` 
 skipping the camp subscriptions' cascade fails the same case (`mutation-r2`, 500). `camps-periods` (whose period info
 rendering moved into a shared helper and whose routes now sit beside `camps-and-retreats/:uid/*`) stays green on all
 four transports (`versioned-r1`).
+
+v2-rest-b: `PATCH camps-and-retreats/<uid>/update` with a `camps_and_retreats_id` no row has inserts the copy `Model.save()`
+inserts (validated values under the new key; the camp the path names stays). auditlog writes two entries for the copy: the
+pre-save update against nothing, indexed from its changes, then the create, indexed directly. A key another camp has is the
+unique error (400). Two cases (90 in all); RED is the documented refusal (v2-refusals.md, camps-core row). GREEN
+`v2restb-green-r1`: 90/90 on the four transports. Mutation `v2restb-mutation-r1` (the pre-save entry indexed directly) CAUGHT.

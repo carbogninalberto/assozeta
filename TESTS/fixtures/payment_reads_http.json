@@ -73665,6 +73665,75 @@
    "stripe": []
   },
   {
+   "name": "payment-reads-list-search-infinite",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list?query[generalSearch]=inf",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false,
+   "prints": [],
+   "renders": [],
+   "generated": [],
+   "stripe_setup": null,
+   "stripe": []
+  },
+  {
+   "name": "payment-reads-list-search-negative-infinity",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list?query[generalSearch]=-Infinity",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false,
+   "prints": [],
+   "renders": [],
+   "generated": [],
+   "stripe_setup": null,
+   "stripe": []
+  },
+  {
+   "name": "payment-reads-stats-search-infinite",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/stats?query[payment_range]=2024/01/01%20al%202024/12/31&query[generalSearch]=inf",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false,
+   "prints": [],
+   "renders": [],
+   "generated": [],
+   "stripe_setup": null,
+   "stripe": []
+  },
+  {
+   "name": "payment-reads-subscription-search-infinite",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeeade/payments?query[generalSearch]=infinity",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [],
+    "meta": {
+     "total": 0,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": []
+    }
+   },
+   "unordered": false,
+   "prints": [],
+   "renders": [],
+   "generated": [],
+   "stripe_setup": null,
+   "stripe": []
+  },
+  {
    "name": "payment-reads-subscription-search-percent-escaped",
    "actor": "owner",
    "method": "GET",

@@ -1068,6 +1068,12 @@ for name, raw, query in (('full-name', 'mario rossi', 'mario%20rossi'), ('course
                          ('not-stripped', ' rossi', '%20rossi'), ('amount', '30', '30'), ('amount-one', '1', '1')):
     hits = sub_search(raw)
     add(f'subscription-search-{name}', 'owner', SS + query, 200, sub_page(hits, ordered=hits))
+# float('inf') is refused by the amount lookup when the filter is built, as NaN is: payment_list and payment_stats do
+# not catch it, subscription_payments falls back to the text search.
+add('list-search-infinite', 'owner', SEARCH + 'inf', 500, SERVER)
+add('list-search-negative-infinity', 'owner', SEARCH + '-Infinity', 500, SERVER)
+add('stats-search-infinite', 'owner', STATS + YEAR + '&query[generalSearch]=inf', 500, SERVER)
+add('subscription-search-infinite', 'owner', SS + 'infinity', 200, sub_page(sub_search('infinity'), ordered=sub_search('infinity')))
 add('subscription-search-percent-escaped', 'owner', SS + '%25', 200, sub_page(sub_search('%'), ordered=sub_search('%')))
 created_order = column_order(MEMBERS, created_key, False)
 add('subscription-sort-creation-asc', 'owner', SUB + '?sort[field]=creation_date', 200, sub_page(MEMBERS, ordered=created_order))
