@@ -110,6 +110,24 @@ to the owner's association, then `_handle_quick_subscription`:
 An owner's body with `sport_association` (the wizard inside a modal) is not an athlete request: the username's association replaces
 `request.user`'s when found (the own username: the same one), a miss keeps it.
 
+## The wizard's signature and new member account
+
+- `there_is_signature` with data: `Signature.objects.create(signature=data, user=user)` after the associate (create entry, indexed
+  through the actor's association), the subscription is PENDING (2), and after `Subscription.objects.create`
+  `set_signature_from_base64(data)`: an http(s) URL becomes `signature_url`; otherwise the text after the first `,` through
+  `base64.b64decode(validate=True)` (invalid: 400 `{'msg': 'Firma non valida.', 'code': '400', 'ref': 'invalid_signature'}`, rolled
+  back) is stored at `<AWS_LOCATION>/subscriptions/<id>/signature_<timestamp>.png` (the subscription/sign upload, shared; a storage
+  failure is the 503 `signature_storage` body) and `save(update_fields=[signature_url, signature_storage_key])` writes the name and
+  the public URL (one update entry; the create entry was written without them). A later failure deletes the stored object.
+- `new_user_account.new_member` true: `new_member_info['email']` (missing: 500) names the user create_subscription continues with
+  (the first live user with that exact e-mail by key); without one `UserSerializer(raise_exception)` (400 field errors) and
+  `create_user` with a `token_hex(10)` username (create entry, indexed through the actor), then `first_name[:3] + last_name[:3]` plus 8
+  random upper-case characters and `set_password` (the username update entry; the password is not audited). That user owns the
+  associate (and tutor), the signature, the payment and the subscription; the membership dates follow its season settings; it gets
+  the notification (its broadcast rows on first use). On commit, in registration order: the welcome e-mail (`send_mail_async`,
+  `email_welcome_password_message.html` with the password), `new_subscription`, `print_document_subscription`, the notification and,
+  for an athlete user, `send_email_template` to the owner (`email_new_subscription.html`, `Ricordati di approvare l'iscrizione`).
+
 ## Not ported
 
 Refused with the 500 page before anything is committed:
@@ -120,8 +138,8 @@ Refused with the 500 page before anything is committed:
   owner with several associations, plan ids or fees of other shapes (booleans, containers, more than two decimals) and a
   certificate choice that depends on the unordered subscriptions;
 - `preregistration: true` (next-season and renewal registrations);
-- `new_user_account.new_member` true (the account creation and its welcome e-mail);
-- `there_is_signature` with data (the `Signature` row and the storage upload);
+- new member info with a `username` (create_user's TypeError, 500), a `role` other than athlete, a non-string e-mail, a numeric
+  `new_member` flag; a signature upload whose generated key already exists;
 - a `medical_certificate` without `medical_id` whose `certificate_expring_date` parses to a date other than today (the placeholder
   certificate image drawn with PIL and stored), and expiration dates with non-ASCII digits (accepted by `strptime`);
 - a truthy `custom_data.type_of_associate` (its JSON `icontains` filter);
@@ -159,3 +177,12 @@ v2-sub-create: the quick re-subscription and the owner's `sport_association` (55
 - Mutation (`v2create-mutation-r1`): the fallback plan's data taken from the first plan fails
   `subscription-create-quick-quick-abroad` (CAUGHT).
 - `subscription-renew` re-run green (`v2create-rerun-create-r1`, 62/62).
+
+v2-sub-create: the wizard's signature and the new member account (62 cases).
+
+- RED (`v2create-red-r12`, the Go code of the previous commit): Django 62/62; Go 500 on `subscription-create-signature-upload`.
+- GREEN (`v2create-versioned-r2`): 62/62 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with the stored object, the
+  user rows, the welcome e-mail (password checked against the stored hash) and the notification of the new account.
+- Mutation (`v2create-mutation-r3`): the signature saved for `request.user` instead of the new member fails
+  `subscription-create-new-member-account` (CAUGHT).
+- Re-run green: `subscription-renew` 62/62 (`v2create-rerun-create-r2`), `subscription-sign` 47/47 (`v2create-rerun-create-r1`).

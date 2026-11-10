@@ -32,6 +32,7 @@ Response {"status": "success", "payment_id": ..., "amount": float or 0}.
 
 Run with ``python3 -I``.
 """
+import base64
 import json
 from pathlib import Path
 
@@ -533,6 +534,120 @@ quick('owner', 'quick_abroad', 'Elio Estero', plan='nessuno',
                                                         {'id': 'p2', 'name': 'Due', 'subscription_fee': 45}]}},
       payment={'amount': '30.00', '$audit': '30', 'meta': {'subscription_data': {'subscription_fee': 45, 'name': 'Due', 'id': 'p2'}}},
       subscription={'user_id': IDS['foreign_owner']})
+
+
+# --- The wizard's signature and the "new member" account ---------------------------------------------------
+# With there_is_signature and data: Signature.objects.create(signature=data, user=user) after the associate (create
+# entry, indexed through the actor's association), the subscription PENDING (2), and after Subscription.objects.create
+# set_signature_from_base64(data): an http(s) URL is kept as signature_url; otherwise the text after the first ',' through
+# base64.b64decode(validate=True) (invalid: 400 'Firma non valida.', rolled back) is stored at
+# '<AWS_LOCATION>/subscriptions/<id>/signature_<timestamp>.png' and save(update_fields=[signature_url, signature_storage_key])
+# writes the name and the public URL (update entry).
+# new_user_account.new_member: the live user with new_member_info's e-mail (first by key) becomes create_subscription's
+# user; without one UserSerializer(raise_exception) creates the account (create_user with a token_hex username: create
+# entry; then first_name[:3] + last_name[:3] + 8 random upper-case characters and set_password: the username update
+# entry) and the welcome e-mail with the password is queued on commit before the other tasks. That user owns the
+# associate, the payment, the signature and the subscription and gets the notification; an athlete user also queues
+# send_email_template to the owner after the notification.
+SIGNATURE_PNG = b'\x89PNG\r\n\x1a\nfirma creazione'
+SIGNATURE_B64 = base64.b64encode(SIGNATURE_PNG).decode()
+ATHLETE_EMAIL = 'message-reads-700004@example.test'
+
+
+def signature_entries(effect, *, upload):
+    """Signature create after the associate entries; the subscription update after its create entry."""
+    audit = effect['audit']
+    position = max(i for i, e in enumerate(audit) if e['model'] == 'associate') + 1
+    audit.insert(position, {'model': 'signature', 'action': 0, 'ref': 'signature', 'changes': {}, 'index': [OWN, 'actor.sport_association']})
+    changes = {'signature_url': ['None', '$signature_url']}
+    if upload:
+        changes['signature_storage_key'] = ['None', '$signature_key']
+    position = next(i for i, e in enumerate(audit) if e['model'] == 'subscription')
+    # The create entry was written before the signature fields were set.
+    audit[position] = {**audit[position], 'changes': {**audit[position]['changes'], 'signature_url': None,
+                                                       **({'signature_storage_key': None} if upload else {})}}
+    audit.insert(position + 1, {'model': 'subscription', 'action': 1, 'ref': 'subscription', 'changes': changes, 'index': [OWN, 'direct']})
+
+
+signer = person('Sofia', 'Firmata', 'FRMSFO90C41H501K')
+effect = success('owner', 'Sofia Firmata', associate=created_associate(signer), payment=new_payment('25.00', audit_amount='25.0'),
+                 subscription={**PLAIN, 'status_flag': 2, 'signature_url': '$signature_url', 'signature_storage_key': '$signature_key'},
+                 membership=dict(MEMBER))
+effect['signature'] = {'user': 'owner', 'data': 'data:image/png;base64,' + SIGNATURE_B64}
+effect['stored'] = SIGNATURE_B64
+signature_entries(effect, upload=True)
+add('signature-upload', 'owner', 200, SUCCESS(25.0), setup={'association': {**BASE_SETTINGS['association'], 'multiple_membership_fee': False}},
+    body=request(signer, signature={'there_is_signature': True, 'data': ' data:image/png;base64,' + SIGNATURE_B64 + ' '}), effect=effect)
+
+linked = person('Ugo', 'Collegato', 'CLLUGO90C01H501K')
+effect = success('owner', 'Ugo Collegato', associate=created_associate(linked), payment=new_payment('25.00', audit_amount='25.0'),
+                 subscription={**PLAIN, 'status_flag': 2, 'signature_url': 'https://firme.example.test/ugo.png'}, membership=dict(MEMBER))
+effect['signature'] = {'user': 'owner', 'data': 'https://firme.example.test/ugo.png'}
+signature_entries(effect, upload=False)
+effect['audit'] = [{**e, 'changes': {'signature_url': ['None', 'https://firme.example.test/ugo.png']}} if e['model'] == 'subscription'
+                   and e['action'] == 1 else e for e in effect['audit']]
+add('signature-url', 'owner', 200, SUCCESS(25.0),
+    body=request(linked, signature={'there_is_signature': True, 'data': 'https://firme.example.test/ugo.png'}), effect=effect)
+add('signature-invalid-base64', 'owner', 400, {'msg': 'Firma non valida.', 'code': '400', 'ref': 'invalid_signature'},
+    body=request(person('Ivo', 'Firmaerrata', 'FRMVIO90C01H501K'), signature={'there_is_signature': True, 'data': 'data:image/png;base64,@@@'}))
+
+add('new-member-info-missing-server-error', 'owner', 500, SERVER,
+    body=request(person('Nico', 'Senzadati', 'SNZNCO90C01H501K'), account={'new_member': True}))
+add('new-member-invalid-email', 'owner', 400, {'email': ['Enter a valid email address.']},
+    body=request(person('Nico', 'Errato', 'RRTNCO90C01H501K'),
+                 account={'new_member': True, 'new_member_info': {'first_name': 'Nico', 'last_name': 'Errato', 'email': 'non-valida'}}))
+
+
+def member_effect(full_name, data, *, member, member_label, new_user=None, welcome=False, signature=None):
+    effect = success('owner', full_name, associate=created_associate(data, user_id=member),
+                     payment=new_payment('25.00', audit_amount='25.0'),
+                     subscription={**PLAIN, 'user_id': member, **({'status_flag': 2, 'signature_url': signature} if signature else {})},
+                     membership=dict(MEMBER))
+    effect['member'] = member
+    for entry in effect['audit']:
+        if entry['model'] == 'associate' and entry['action'] == 1:
+            entry['changes'] = {'user': ['None', member]}
+    # The notification goes to the member: its broadcast rows are created once.
+    effect['audit'] = [e for e in effect['audit'] if e.get('app') != 'notifications']
+    effect['audit'] += [{'model': model, 'action': 0, 'ref': model, 'changes': {}, 'app': 'notifications', 'index': [OWN, 'actor.sport_association']}
+                        for model in ('notificationsbroadcast', 'usernotificationsbroadcast')]
+    effect['broadcast_created'] = True
+    effect['notification']['user'] = member_label
+    if new_user:
+        effect['new_user'] = new_user
+        effect['audit'][:0] = [{'model': 'user', 'action': 0, 'ref': 'new_user', 'changes': {}, 'index': [OWN, 'actor.sport_association']},
+                               {'model': 'user', 'action': 1, 'ref': 'new_user', 'changes': {'username': ['$token_username', '$username']},
+                                'index': [OWN, 'actor.sport_association']}]
+    if signature:
+        effect['signature'] = {'user': member_label, 'data': signature}
+        signature_entries(effect, upload=False)
+        effect['audit'] = [{**e, 'changes': {'signature_url': ['None', signature]}} if e['model'] == 'subscription' and e['action'] == 1 else e
+                           for e in effect['audit']]
+    first, last = data['first_name'], data['last_name']
+    athlete = {'task': 'send_email_template', 'args': [], 'kwargs': [
+        ['recipient_list', ['message-reads-700001@example.test']],
+        ['subject', f"[$denomination] Ricordati di approvare l'iscrizione di {first} {last}"],
+        ['template', 'email/account/email_new_subscription.html'],
+        ['data', {'athlete_first_name': first, 'athlete_last_name': last, 'sport_association': {'denomination': '$denomination'},
+                  'app_host': '$app_url', 'settings': {'WHITELABEL_NAME': '$whitelabel_name', 'IS_WHITELABEL': '$is_whitelabel'}}],
+        ['sport_association_id', {'uuid': OWN}]]}
+    effect['celery'] = (['$welcome'] if welcome else []) + effect['celery'] + [athlete]
+    return effect
+
+
+fresh = person('Nadia', 'Nuovissima', 'NVSNDA90C41H501K')
+add('new-member-account', 'owner', 200, SUCCESS(25.0),
+    body=request(fresh, account={'new_member': True, 'new_member_info': {'first_name': 'Nadia', 'last_name': 'Nuovissima', 'phone': '3330001111',
+                                                                         'email': 'Nadia.Nuova@Example.TEST'}},
+                 signature={'there_is_signature': True, 'data': 'https://firme.example.test/nadia.png'}),
+    effect=member_effect('Nadia Nuovissima', fresh, member='$new_user', member_label='$new_user', welcome=True,
+                         new_user={'prefix': 'NadNuo', 'email': 'Nadia.Nuova@example.test', 'first_name': 'Nadia', 'last_name': 'Nuovissima',
+                                   'phone': '3330001111'},
+                         signature='https://firme.example.test/nadia.png'))
+known_member = person('Elsa', 'Esistente', 'SSTLSE90C41H501K')
+add('new-member-existing-email', 'owner', 200, SUCCESS(25.0),
+    body=request(known_member, account={'new_member': True, 'new_member_info': {'first_name': 'X', 'last_name': 'Y', 'email': ATHLETE_EMAIL}}),
+    effect=member_effect('Elsa Esistente', known_member, member=IDS['athlete'], member_label='athlete'))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

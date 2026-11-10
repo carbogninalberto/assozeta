@@ -53,6 +53,7 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
 	request.Audit = paymentCategoryAuditContext(identity, request.Audit)
+	committed := false
 	tx, err := s.store.BeginSubscriptionRenew(ctx)
 	if err != nil {
 		return nil, err
@@ -83,6 +84,13 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 	if err = subscriptionCreateRefuse(data, subscriptionCreateToday(s.creates.now())); err != nil {
 		return nil, err
 	}
+	keys := []string{}
+	request.StorageKeys = &keys
+	defer func() {
+		if !committed {
+			s.creates.cleanupStorage(ctx, keys)
+		}
+	}()
 	created, err := s.creates.createSubscription(ctx, tx, identity, data, request)
 	if err != nil {
 		return nil, renewError(err)
@@ -109,6 +117,7 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
+	committed = true
 	s.creates.afterCommit(ctx, identity, created, request)
 	return &SubscriptionRenewResult{PaymentID: created.result.PaymentID}, nil
 }

@@ -898,7 +898,12 @@ func run() (runErr error) {
 	paymentPaidFlows := repository.NewPaymentPaidFlows(repository.NewPaymentStates(db))
 	paymentStates.WithPaidFlow(paymentPaidFlows, subscriptionNotifier)
 	stripeRoutes.WithPaidFlow(paymentPaidFlows, subscriptionNotifier, tasks, os.Getenv("DOCUMENT_BYPASS_TOKEN"))
-	subscriptionCreates := service.NewSubscriptionCreates(repository.NewSubscriptionCreates(db), tasks, subscriptionNotifier, time.Now, nil)
+	subscriptionCreates := service.NewSubscriptionCreates(repository.NewSubscriptionCreates(db), tasks, subscriptionNotifier, time.Now, nil).
+		WithSignatures(composeSubscriptionSignatureUploads(cfg, db, tasks)).
+		WithAccounts(service.SubscriptionCreateAccounts{Passwords: passwordcrypto.NewPasswordVerifier(passwordcrypto.DefaultPasswordLimits()),
+			Settings: service.OAuthAccountSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName,
+				DefaultFromEmail: cfg.DefaultFromEmail, IsWhitelabel: cfg.IsWhitelabel, Debug: cfg.Debug},
+			InstanceConfig: repository.NewEmailRenderRoutes(db).InstanceConfig})
 	subscriptionCreateHandler := handler.NewSubscriptionCreateHandler(subscriptionCreates, service.NewActorAuthentication(accounts, tokens),
 		identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/add", subscriptionCreateHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))

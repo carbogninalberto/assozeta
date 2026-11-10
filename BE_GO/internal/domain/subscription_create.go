@@ -51,6 +51,29 @@ type SubscriptionCreateSettings struct {
 	DefaultPaymentCategory   *string `db:"default_payment_category_id"`
 	// DefaultCoursesCategory is default_payment_category_courses (the quick re-subscription).
 	DefaultCoursesCategory *string `db:"default_payment_category_courses_id"`
+	Denomination           *string `db:"denomination"`
+	OwnerEmail             string  `db:"owner_email"`
+}
+
+// SubscriptionCreateMember is a user create_subscription continues with
+// (request.user, or the new member's account).
+type SubscriptionCreateMember struct {
+	ID         string `db:"user_id"`
+	Role       int    `db:"role"`
+	StartDay   int    `db:"subscription_start_day"`
+	StartMonth int    `db:"subscription_start_month"`
+	CustomEnd  bool   `db:"custom_end_date"`
+	EndDay     int    `db:"subscription_end_day"`
+	EndMonth   int    `db:"subscription_end_month"`
+}
+
+// SubscriptionCreateNewUser is UserSerializer.save()'s account (create_user,
+// then the generated username and set_password, saved again).
+type SubscriptionCreateNewUser struct {
+	ID, TokenUsername, Username, Email, PasswordHash, FirstName, LastName string
+	Phone                                                                 *string
+	Role                                                                  int
+	Joined                                                                time.Time
 }
 
 // SubscriptionQuickCertificate is the certificate of one of an associate's subscriptions.
@@ -143,6 +166,16 @@ type SubscriptionCreateTransaction interface {
 	QuickAssociate(ctx context.Context, id string) (*SubscriptionEditAssociate, error)
 	// QuickCertificates are the certificates of Subscription.objects.filter(associate=...), one per subscription.
 	QuickCertificates(ctx context.Context, associate string) ([]SubscriptionQuickCertificate, error)
+	// InsertSignature is Signature.objects.create(signature=data, user=user) with its create entry.
+	InsertSignature(ctx context.Context, id, user, data string, audit LoginAuditContext, at time.Time) error
+	// SaveSubscriptionSignature is save(update_fields=['signature_url', 'signature_storage_key']) of the new subscription.
+	SaveSubscriptionSignature(ctx context.Context, id, association string, url, key *string, audit LoginAuditContext, at time.Time) error
+	// MemberByEmail is User.objects.filter(email=email).first() (live users, by key).
+	MemberByEmail(ctx context.Context, email string) (*SubscriptionCreateMember, error)
+	// Member is the user's role and season settings.
+	Member(ctx context.Context, id string) (*SubscriptionCreateMember, error)
+	// InsertNewUser writes the account with its create entry (TokenUsername) and the username update entry.
+	InsertNewUser(ctx context.Context, user SubscriptionCreateNewUser, audit LoginAuditContext) error
 }
 
 type SubscriptionCreateStore interface {

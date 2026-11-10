@@ -166,3 +166,8 @@ func SubscriptionCreateInt(value any) (*big.Int, bool) {
 	}
 	return nil, false
 }
+
+// SubscriptionCreateUserText is a UserSerializer model CharField/EmailField value.
+func SubscriptionCreateUserText(field SupplierField, value any) (*string, []string) {
+	return modelTextValue(field, value, false)
+}

@@ -61,6 +61,7 @@ Receipts are `quality-reports/go-migration/<family>-http-v2sub-*`; each family d
 | subscription-reads | `GET subscription/<uid>/info` | subscription without `document_pdf` (now publishes `print_document_subscription`) | same run |
 | subscription-renew | `POST subscription/renew` | payment clean-up meets an unpaid invoiced payment | 55 cases; RED `v2sub-red-r1` Django 55/55, Go 500; GREEN `v2sub-versioned-r1` 4 transports; mutation `v2sub-mutation-r1` (invoiced payments excluded) CAUGHT |
 | subscription-create | `POST subscription/add?m=only_associate`, `POST subscription/add` with an owner's `sport_association` | quick re-subscription; the wizard in a modal (v2-sub-create) | 55 cases; RED `v2create-red-r5` Django 55/55, Go 500; GREEN `v2create-versioned-r1` 4 transports; mutation `v2create-mutation-r1` (fallback plan data) CAUGHT; subscription-renew re-run 62/62 |
+| subscription-create | `POST subscription/add` | owner wizard: signature upload; "new member" account and welcome e-mail (v2-sub-create) | 62 cases; RED `v2create-red-r12` Django 62/62, Go 500; GREEN `v2create-versioned-r2` 4 transports; mutation `v2create-mutation-r3` (signature user) CAUGHT; subscription-renew 62/62, subscription-sign 47/47 re-run |
 | subscription-renew | `POST subscription/renew` | athlete session (v2-sub-create) | 62 cases; RED `v2create-red-r2` Django 62/62, Go 500; GREEN `v2create-versioned-r1` 4 transports; mutation `v2create-mutation-r1` (athlete kept as request.user) CAUGHT |
 | subscription-transfer | `POST subscription/<uid>/transfer` (e-mail branch) | tutor/associate names starting with non-ASCII letters; non-ASCII e-mail domain | 31 cases; RED `v2sub-red-r1` Django 31/31, Go 500; GREEN `v2sub-versioned-r1` 4 transports 31/31; mutation `v2sub-mutation-r1` (no NFKC) CAUGHT |
 
@@ -83,7 +84,7 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 ### subscription-create / subscription-import-upload / subscription-memberships
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST subscription/add | owner wizard: a typed certificate date without an upload (placeholder PNG drawn with PIL: image rendering, refused by the porting rules); signature; "new member" | `routes/association/Members/add/AddMember.svelte:104-139` | `service/subscription_create.go:148,156,164` | expensive (image) / medium / medium |
+| POST subscription/add | owner wizard: a typed certificate date without an upload (placeholder PNG drawn with PIL: image rendering, refused by the porting rules) | `routes/association/Members/add/AddMember.svelte:104-139` | `service/subscription_create.go` (`subscriptionCreateRefuse`) | expensive (image) |
 | POST subscription/add | public forms: anonymous, `sport_association`, preregistration, family wizard | `Subscribe.svelte:124,147,167`, `SubscribeMultiple.svelte:183`, `SubscribeFamily.svelte:136-181` | `service/subscription_create.go:91,102,132,141` | expensive |
 | POST subscription/import/upload | final mapping step (every import) | `routes/association/Members/import/ImportMembers.svelte:46-52` | `service/subscription_import_upload.go:200` | expensive |
 | POST subscription/import/upload | Excel file | `import/sections/Section1.svelte:33-37` | `service/subscription_import_upload.go:210` | expensive |
@@ -792,8 +793,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | POST subscription/add?m=only_associate with `associate` | quick re-subscription | ported (v2-sub-create) | **ported** | `routes/association/Members/MembersList.svelte:1564`, `MembersBook.svelte:1318`. Cost: medium. |
 | POST subscription/add | `is_family_wizard: true` | `service/subscription_create.go:132` | **A** | `SubscribeFamily.svelte:146`. Cost: expensive. |
 | POST subscription/add | `preregistration: true` | `service/subscription_create.go:141` | **A** | `Subscribe.svelte:147-148` (route `/subscribe/:user/:preregistration`). |
-| POST subscription/add | `new_user_account.new_member` true | `service/subscription_create.go:148` | **A** | Toggle in the AddMember wizard (`AddMember.svelte:44,338`). Cost: medium (account + welcome e-mail). |
-| POST subscription/add | `signature` with data | `service/subscription_create.go:156` | **A** | AddMember signature step (`sections/Section3.svelte:11-26`). Cost: medium (storage upload). |
+| POST subscription/add | `new_user_account.new_member` true | ported (v2-sub-create) | **ported** | Toggle in the AddMember wizard (`AddMember.svelte:44,338`). Cost: medium (account + welcome e-mail). |
+| POST subscription/add | `signature` with data | ported (v2-sub-create) | **ported** | AddMember signature step (`sections/Section3.svelte:11-26`). Cost: medium (storage upload). |
 | POST subscription/add | truthy `custom_data.type_of_associate` | `service/subscription_create.go:172` | B | No UI writer found in `routes/association/Members/add`. legacy: low. |
 | POST subscription/add | non-empty X-Group-Id, form bodies, born-date formats, non-ASCII sex/tax code, duplicate tax-code ties, tutor edge cases, fee/amount formats | `service/subscription_create.go:322-1014`, `subscription_create_python.go:110-245` | B | Mostly exotic or legacy duplicates. Tutor edge cases (an associate that already has tutors) are reachable once the A gates are lifted. Re-check then. |
 
