@@ -491,27 +491,40 @@ func (s *InstanceBackupActions) SaveRemoteSettings(ctx context.Context, request 
 	return backupActionsRendered(reply)
 }
 
-// TestRemote is RemoteBackupTestView.post: request.data or {}, without
-// 'enabled', with the slow timeout; not audited.
-func (s *InstanceBackupActions) TestRemote(ctx context.Context, body any) (*BackupActionsReply, error) {
+// TestRemote is RemoteBackupTestView.post: request.data or {} with the
+// owner's password, relayed without 'enabled' and the password (slow
+// timeout); on 200 the audit records what was tried, the secret only as
+// 'provided'.
+func (s *InstanceBackupActions) TestRemote(ctx context.Context, request BackupActionsRequest, body any) (*BackupActionsReply, error) {
 	if !backupActionsTruthy(body) {
 		body = domain.RequestObject{}
 	}
-	value, errs, err := dto.ValidateBackupActions(body, dto.BackupRemoteSettingsFields(s.limits.AllowHTTP, false))
+	validated, errs, err := dto.ValidateBackupActions(body, dto.BackupRemoteSettingsFields(s.limits.AllowHTTP, true))
 	if err != nil {
 		return nil, ErrInstanceBackupsNotPorted
 	}
 	if errs != nil {
 		return backupActionsInvalid(errs), nil
 	}
-	payload := domain.RequestObject{}
-	for _, field := range value {
-		if field.Name != "enabled" {
-			payload = append(payload, field)
+	value, password := backupActionsWithout(validated, "password")
+	if refusal, err := s.passwordRefusal(ctx, request.Actor, password.(string)); refusal != nil || err != nil {
+		return refusal, err
+	}
+	payload, _ := backupActionsWithout(value, "enabled")
+	reply, err := s.remoteRelay(ctx, "POST", "/backups/remote/test", payload, 200, backupActionsSlow)
+	if err != nil || reply.Status != 200 {
+		return reply, err
+	}
+	tried := domain.RequestObject{}
+	for _, key := range remoteSettingsFields {
+		if item, found := payload.Lookup(key); found {
+			tried = append(tried, domain.RequestField{Name: key, Value: item})
 		}
 	}
-	reply, err := s.remoteRelay(ctx, "POST", "/backups/remote/test", payload, 200, backupActionsSlow)
-	if err != nil {
+	if secret, _ := payload.Lookup("secret_key"); secret != nil && secret != "" {
+		tried = append(tried, domain.RequestField{Name: "secret_key", Value: "provided"})
+	}
+	if err := s.audit(ctx, request, "backup_remote_test", string(dto.PythonJSONDumpsSorted(tried)), nil); err != nil {
 		return nil, err
 	}
 	return backupActionsRendered(reply)

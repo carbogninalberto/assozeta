@@ -63,8 +63,8 @@ A runner body of `null` renders as no content without `Content-Type` (DRF `Respo
 
 ## Owner password confirmation
 
-Deleting an archive, putting it back into the rotation (`keep: false`), saving the remote copy
-settings and generating or confirming the remote key ask for the owner's password again, exactly as a
+Deleting an archive, putting it back into the rotation (`keep: false`), saving or testing the remote
+copy settings and generating or confirming the remote key ask for the owner's password again, exactly as a
 restore or a download token:
 
 - `password_confirmation(request)`: `PasswordSerializer(data=request.data)` (`password`
@@ -145,7 +145,16 @@ middleware, which skips `STREAMED_PATHS`) sees an empty body and the view reads 
   settings fields and `secret_key: 'changed'` when the secret is non-empty (the secret itself is never
   audited).
 - `POST remote/test`: `request.data or {}` (an empty list or body is `{}`), validated by
-  `RemoteSettingsSerializer` (no password), relayed without `enabled` (30 s); not audited.
+  `RemoteSettingsChangeSerializer` (the password is required also when the saved settings are tested);
+  the password confirmation; relayed without `enabled` and the password (30 s); on 200
+  `backup_remote_test` with `json.dumps(tried, sort_keys=True)`: the provided settings fields and
+  `secret_key: 'provided'` when a secret was sent.
+- The update runner checks the endpoint again when it builds an S3 client (test, uploads, listing,
+  fetch, the command line), so settings saved earlier follow the same address rules, and every
+  connection goes to an address it checked (`selfhost/updater/endpoint_guard.py`): each resolved
+  address of the host must pass the rules, and the socket is opened to that address while TLS and the
+  Host header keep the name. A name that later resolves to another address gets checked again on the
+  next connection. Tests: `selfhost/tests/test_remote_endpoint_guard.py`.
 - The endpoint (`validate_endpoint`, `remote_backups.endpoint_problem`, Go
   `dto.BackupRemoteEndpointProblem`), checked before the runner is called: blank stays allowed (AWS);
   otherwise it must fullmatch `(https?)://<authority>[/path]` without user information, query,
@@ -189,6 +198,9 @@ oracle, 247 cases; the run sets `upload_max_bytes` to the large upload's size, w
 the limit, and over-limit uploads are written while the early answer is read):
 
 - RED (`sec-red-r1`): Django 247/247; Go fails `keep-false-admin` (no password confirmation).
+- Connection test with the password (254 cases): RED (`sec2-red-r1`) Django 254/254, Go fails
+  `remote-test-no-body`; GREEN (`sec2-versioned-r1`) on the four transports; testing without the
+  password confirmation is CAUGHT (`sec2-mutation-r1`).
 - GREEN (`sec-versioned-r2`): 247/247 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`sec-mutation-r1`): deleting without the password confirmation is CAUGHT on Go.
 - `go test ./internal/dto -run 'BackupRemote|BackupActions'`, `./internal/service -run InstanceBackupsPassword`

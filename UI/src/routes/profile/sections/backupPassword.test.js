@@ -14,7 +14,7 @@ test('keeping is one click, un-keeping confirms the owner password', () => {
     assert.deepEqual(keepBody(false, 'pw'), {keep: false, password: 'pw'});
 });
 
-test('remote settings carry the password, the connection test never does', () => {
+test('remote settings and the connection test carry the owner password', () => {
     const draft = {endpoint: 'https://s3.example.com', bucket: 'b', access_key: 'k', secret_key: '', retention: '5', password: 'stale'};
     const body = remoteSettingsBody(draft, 'pw');
     assert.equal(body.password, 'pw');
@@ -22,11 +22,12 @@ test('remote settings carry the password, the connection test never does', () =>
     assert.equal('secret_key' in body, false);
     assert.equal(remoteSettingsBody({...draft, secret_key: 's'}, 'pw').secret_key, 's');
 
-    const probe = remoteTestBody(draft);
-    assert.equal('password' in probe, false);
+    const probe = remoteTestBody(draft, 'pw');
+    assert.equal(probe.password, 'pw');
     assert.equal('secret_key' in probe, false);
     assert.equal(probe.bucket, 'b');
-    assert.deepEqual(remoteTestBody(null), {});
+    // The saved settings: only the password.
+    assert.deepEqual(remoteTestBody(null, 'pw'), {password: 'pw'});
     assert.equal(draft.password, 'stale', 'the draft is not changed');
 });
 

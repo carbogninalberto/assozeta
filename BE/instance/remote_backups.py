@@ -4,7 +4,7 @@ The runner keeps the S3 settings and the public key, encrypts and uploads.
 These views check the owner, validate, relay, and audit every change. The
 secret key, the recovery key and the confirmation characters are never
 logged, audited or returned (except the recovery key, once, when generated).
-Saving the settings and setting up the key need the owner's password again.
+Saving or testing the settings and setting up the key need the owner's password again.
 
 The storage address must be https:// (http:// only when
 ASSOZETA_BACKUP_REMOTE_ALLOW_HTTP is set, for a storage on the local network)
@@ -150,10 +150,21 @@ class RemoteBackupTestView(APIView):
     permission_classes = [IsInstanceOwner]
 
     def post(self, request):
-        serializer = RemoteSettingsSerializer(data=request.data or {})
+        serializer = RemoteSettingsChangeSerializer(data=request.data or {})
         serializer.is_valid(raise_exception=True)
-        value = {key: item for key, item in serializer.validated_data.items() if key != 'enabled'}
-        return relay('POST', '/backups/remote/test', value, timeout=SLOW)
+        value = dict(serializer.validated_data)
+        refusal = password_refusal(actor_of(request), value.pop('password'))
+        if refusal:
+            return refusal
+        value.pop('enabled', None)
+        response = relay('POST', '/backups/remote/test', value, timeout=SLOW)
+        if response.status_code == 200:
+            # What was tried (the saved settings when empty), never the secret itself.
+            tried = {key: value[key] for key in SETTINGS_FIELDS if key in value}
+            if value.get('secret_key'):
+                tried['secret_key'] = 'provided'
+            audit(actor_of(request), 'backup_remote_test', json.dumps(tried, sort_keys=True))
+        return response
 
 
 class RemoteBackupKeyView(APIView):
