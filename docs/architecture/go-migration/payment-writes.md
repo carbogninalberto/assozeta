@@ -79,7 +79,9 @@ payment dates are a 500 with nothing written. Response `201`.
 
 ## Not ported (refused with a 500 before any write)
 
-- Add for a user with `auto_paid_payment` (invoice numbering and creation, `print_document_invoice`).
+- Add for a user with `auto_paid_payment` and a party when a float fee (amount with `meta_payment_categories`) rounds on an
+  exact half cent, where the invoice column and the response round differently; a non-canonical `X-Group-Id`; a print
+  deferred by a pending restore.
 - `attachments_data` items outside the ported subset: a non-string `document` or `filename` (Django stores `str()` of the
   filename, then `os.path.join` raises), a filename over 255 characters, with NUL or not valid UTF-8, a storage name
   `Storage.save` rejects (path traversal, empty base name), and an existing key without `AWS_S3_FILE_OVERWRITE`
@@ -146,3 +148,26 @@ association's `subscription_id`, and bulk add with another association's or a sh
 `PaymentAssociationScopeTests` in `BE/application/tests/test_payment_views.py`. RED `v2pay2-scope-red-r1`: Django
 139/139, Go 201 on `add-foreign-party-persone-denied`. GREEN `v2pay2-scope-versioned-r1`: 139/139 on the four transports.
 Mutation `v2pay2-scope-mutation-r1` (skipping the party association comparison) CAUGHT.
+
+## Add with `auto_paid_payment` (v2-payments-3)
+
+`data['paid']` is True and a missing payment date is now (`timezone.now()` as text, which the view's `strptime` does not
+match). After the save of user, association and party, a paid income payment without an invoice and with an associate,
+supplier or instructor runs an atomic block: the fees from the in-memory amount (a validated Decimal, or the float the
+serializer sums with `meta_payment_categories`), `InvoiceService.get_next_invoice_number(creation_date,
+use_payment_date=False)` (advisory lock, the owner's balance year, `starting_number_invoices`) and
+`generate_invoice_description`. Without a supplier it creates the invoice (group from `X-Group-Id`), saves it again with
+the payment date when `payment_date_equal_invoice_date`, and calls `print_document_invoice.apply` inside the block. The
+payment is then saved once more (the invoice; a float amount is audited against the stored decimal again) and the
+response renders the in-memory payment with the in-memory invoice. An error raised before the invoice exists (no
+description for the subject, an invalid balance year start) is the 500 page and keeps the saved payment.
+
+Go: `PaymentWrites.addInvoice` on the request's transaction through `PaymentWritesTransaction.InvoiceGenerate()`
+(invoice-generate's numbering, description and invoice writes), `paymentWritesFees` for the in-memory amount and
+`InvoiceSyncPrint.Invoice` before the last save.
+
+Fixture 152 cases (13 new). The runner sets the case's `owner_settings` on the owner only around its request and checks
+the created invoice, its audit entries and the `$invoice` print request. RED `v2pay3-add-red-r1`: Django 152/152, Go 500
+on `add-auto-paid-without-party`. GREEN `v2pay3-add-versioned-r1`: 152/152 on native Django, native Go, Caddy `/api/v1`
+and `/api/v2`. Mutation `v2pay3-add-mutation-r1` (no invoice for a payment without an associate) CAUGHT on
+`add-auto-paid-instructor-invoice`.

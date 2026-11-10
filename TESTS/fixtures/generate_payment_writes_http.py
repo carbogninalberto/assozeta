@@ -574,6 +574,177 @@ added('add-attachment-without-keys', 'owner', {'creation_date': '2026-03-24', 'p
       {**unfinished, 'creation_date': '2026-03-24T00:00:00Z', 'amount': '11.00', 'description': 'Allegato'}, status=400,
       response={'exception': 'document key not present'}, finish=False)
 
+# --- payment/add with auto_paid_payment ------------------------------------------
+# The owner's auto_paid_payment (set by the runner only around the request, with the case's other 'owner_settings')
+# makes data['paid'] True and a missing payment date now. A paid income payment with a party then runs the atomic
+# invoice block: the fees from the in-memory amount, the next number by creation date
+# (InvoiceService.get_next_invoice_number, use_payment_date=False), the description; without a supplier the invoice is
+# created (saved again with the payment date when payment_date_equal_invoice_date), printed eagerly
+# (print_document_invoice.apply) and the payment saved once more with it.
+
+DENOMINATION = 'Message reads own'
+AUTO_PAID = {'auto_paid_payment': True}
+PRINT_NEW = {'path': '/document/invoice/$invoice?send_receipt_email=False', 'reply': {'status': 200, 'body': 'printed'}}
+ZERO = ('0.00', '0.0')
+
+
+def escape(text):
+    return str(text).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#x27;')
+
+
+def other_text(reason):
+    return f"Ricevuta di pagamento con causale <b>{escape(reason)}</b> per l'associazione <b>{escape(DENOMINATION)}</b>."
+
+
+def recipient_text(recipient, reason):
+    return (f"Ricevuta di pagamento di <b>{escape(recipient)}</b> con causale <b>{escape(reason)}</b> per l'associazione "
+            f"<b>{escape(DENOMINATION)}</b>.")
+
+
+def auto_paid(name, actor, body, values, *, invoice=None, amount=None, headers=None, settings=None, prints=None, status=201):
+    """A payment added with auto_paid_payment. invoice: number, description, membership and activity as (rendered,
+    str() in memory), created ('$now' or the payment date), meta, group. amount: (str(float), stored, rendered)."""
+    stored_amount, shown = (amount[1], amount[2]) if amount else (None, None)
+    floated = amount[0] if amount else None
+    created = row(**{**values, 'paid': True, 'amount': stored_amount or values.get('amount', '0.00')})
+    first = dict(created)
+    for column in ('user_id', 'sport_association_id', 'associate_id', 'instructor_id', 'supplier_id'):
+        first[column] = None
+    audit = [event('$id', 0, created_changes(first, floated), actor_index(actor)),
+             event('$id', 1, updated_changes(first, created, floated, stored_amount), [OWN, 'changes_json.sport_association'])]
+    final, stored_invoice, item = created, None, None
+    party = any(created[column] for column in ('associate_id', 'supplier_id', 'instructor_id'))
+    if status == 201 and party and not created['expense']:
+        if invoice:
+            membership, activity = invoice['membership'], invoice['activity']
+            date, meta, group = invoice.get('created', '$now'), invoice.get('meta'), invoice.get('group')
+            item = {'invoice_id': '$bind:invoice', 'document_token': None, 'creation_date': date, 'membership_fee': membership[0],
+                    'activity_fee': activity[0], 'meta_payment_categories': meta, 'description': invoice['description'],
+                    'number': invoice['number'], 'archived': False, 'cancelled': False, 'meta': None, 'imported_from_associami': False,
+                    'deleted': False, 'document_pdf': None, 'sport_association': OWN, 'selected_tutor': None, 'group': group,
+                    'attached_documents': []}
+            audit.append({'key': '$invoice', 'model': 'invoice', 'action': 0, 'index': DIRECT, 'changes': {
+                'invoice_id': ['None', '$invoice'], 'document_pdf': ['None', 'None'], 'sport_association': ['None', OWN],
+                'creation_date': ['None', '$now'], 'membership_fee': ['None', membership[1]], 'activity_fee': ['None', activity[1]],
+                'meta_payment_categories': ['None', json.dumps(meta, sort_keys=True)], 'description': ['None', invoice['description']],
+                'number': ['None', str(invoice['number'])], 'archived': ['None', 'False'], 'cancelled': ['None', 'False'],
+                'selected_tutor': ['None', 'None'], 'meta': ['None', 'null'], 'imported_from_associami': ['None', 'False'],
+                'group': ['None', group or 'None'], 'deleted': ['None', 'False']}})
+            if date != '$now':
+                # invoice.save(): the payment date, and the float fees against the stored decimals.
+                update = {'creation_date': ['$now', naive(date)]}
+                for column, fee in (('membership_fee', membership), ('activity_fee', activity)):
+                    if fee[0] != fee[1]:
+                        update[column] = list(fee)
+                audit.append({'key': '$invoice', 'model': 'invoice', 'action': 1, 'index': DIRECT, 'changes': update})
+            stored_invoice = {'sport_association_id': OWN, 'creation_date': date, 'membership_fee': membership[0],
+                              'activity_fee': activity[0], 'meta_payment_categories': meta, 'description': invoice['description'],
+                              'number': invoice['number'], 'group_id': group}
+            final = {**created, 'invoice_id': '$invoice'}
+            prints = [PRINT_NEW] if prints is None else prints
+        # payment.save() after the block: the invoice, and a float amount against the stored decimal.
+        last = updated_changes(created, final, floated, stored_amount)
+        if last:
+            audit.append(event('$id', 1, last, DIRECT))
+    response = SERVER
+    if status == 201:
+        response = {**payment_item({**final, 'invoice_id': None}, '$bind:payment', shown), 'invoice': item}
+    add(name, actor, ADD, status, response, body=body, headers=headers, prints=prints or (),
+        effect={**effect(actor, created=[final], audit=audit), 'documents': [], 'invoice': stored_invoice})
+    cases[-1]['owner_settings'] = settings or AUTO_PAID
+
+
+OWN_CATEGORY = {**plain, 'payment_category_id': CATEGORIES['own']['id']}
+PERSON = lambda label: {'group': 'Persone', 'associate_id': A(label)}
+auto_paid('add-auto-paid-without-party', 'owner',
+          {'creation_date': '2026-04-01', 'payment_date': None, 'amount': '12', 'description': 'Incasso', 'complex_item': None},
+          {**plain, 'creation_date': '2026-04-01T00:00:00Z', 'payment_date': '$now', 'amount': '12.00', 'description': 'Incasso'})
+auto_paid('add-auto-paid-expense-with-associate', 'owner',
+          {'creation_date': '2026-04-01', 'payment_date': '2026-04-02', 'amount': '13', 'expense': True, 'description': 'Rimborso',
+           'complex_item': PERSON('mario')},
+          {**plain, 'creation_date': '2026-04-01T00:00:00Z', 'payment_date': '2026-04-02T00:00:00Z', 'amount': '13.00', 'expense': True,
+           'description': 'Rimborso', 'associate_id': A('mario')})
+auto_paid('add-auto-paid-supplier-without-invoice', 'owner',
+          {'creation_date': '2026-04-01', 'payment_date': None, 'amount': '14', 'description': 'Reso',
+           'complex_item': {'group': 'Fornitori', 'supplier_id': SUPPLIER['id']}},
+          {**plain, 'creation_date': '2026-04-01T00:00:00Z', 'payment_date': '$now', 'amount': '14.00', 'description': 'Reso',
+           'supplier_id': SUPPLIER['id']})
+# The fixture invoice (number 41) belongs to payments created in the current balance year.
+auto_paid('add-auto-paid-associate-invoice', 'owner',
+          {'creation_date': '2026-04-01', 'payment_date': None, 'amount': '15', 'description': 'Quota auto',
+           'payment_category': CATEGORIES['own']['id'], 'complex_item': PERSON('mario')},
+          {**OWN_CATEGORY, 'creation_date': '2026-04-01T00:00:00Z', 'payment_date': '$now', 'amount': '15.00', 'description': 'Quota auto',
+           'associate_id': A('mario')},
+          invoice={'number': 42, 'description': other_text(CATEGORIES['own']['name']), 'membership': ZERO, 'activity': ('15.00', '15.00')})
+auto_paid('add-auto-paid-instructor-invoice', 'owner',
+          {'creation_date': '2026-04-02', 'payment_date': None, 'amount': '20', 'description': 'Lezione <privata>',
+           'complex_item': {'group': 'Istruttori', 'instructor_id': INSTRUCTOR['id']}},
+          {**plain, 'creation_date': '2026-04-02T00:00:00Z', 'payment_date': '$now', 'amount': '20.00', 'description': 'Lezione <privata>',
+           'instructor_id': INSTRUCTOR['id']},
+          invoice={'number': 43, 'description': recipient_text(f"{INSTRUCTOR['first_name']} {INSTRUCTOR['last_name']}", 'Lezione <privata>'),
+                   'membership': ZERO, 'activity': ('20.00', '20.00')})
+auto_total = float('30') + (0 + float('5'))
+auto_meta = [{'amount': '5', 'title': 'Extra'}]
+auto_paid('add-auto-paid-subscription-meta-fees', 'owner',
+          {'creation_date': '2026-04-03', 'payment_date': None, 'subject': 1, 'amount': '30', 'description': 'Iscrizione auto',
+           'meta_payment_categories': auto_meta, 'complex_item': PERSON('luca')},
+          {**plain, 'creation_date': '2026-04-03T00:00:00Z', 'payment_date': '$now', 'subject': 1, 'description': 'Iscrizione auto',
+           'meta_payment_categories': auto_meta, 'associate_id': A('luca')},
+          amount=(repr(auto_total), *float_amount(auto_total)),
+          invoice={'number': 44, 'meta': auto_meta, 'membership': ('30.00', repr(float(repr(auto_total)) - 5.0)), 'activity': ('5.00', '5.0'),
+                   'description': f"Ricevuta di pagamento per l'iscrizione di <b>{escape('Luca Verdi è')}</b> all'associazione "
+                                  f"<b>{escape(DENOMINATION)}</b>."})
+# A creation date before the current balance year numbers after the invoices created before it (none).
+auto_paid('add-auto-paid-previous-year-number', 'owner',
+          {'creation_date': '2025-03-01', 'payment_date': None, 'amount': '16', 'description': 'Vecchia',
+           'payment_category': CATEGORIES['own']['id'], 'complex_item': PERSON('mario')},
+          {**OWN_CATEGORY, 'creation_date': '2025-03-01T00:00:00Z', 'payment_date': '$now', 'amount': '16.00', 'description': 'Vecchia',
+           'associate_id': A('mario')},
+          invoice={'number': 1, 'description': other_text(CATEGORIES['own']['name']), 'membership': ZERO, 'activity': ('16.00', '16.00')})
+# X-Group-Id: the invoices of that group only (none), and the invoice stores the group.
+auto_paid('add-auto-paid-group-invoice', 'owner',
+          {'creation_date': '2026-04-05', 'payment_date': None, 'amount': '17', 'description': 'Gruppo auto',
+           'payment_category': CATEGORIES['own']['id'], 'complex_item': PERSON('grouped')},
+          {**OWN_CATEGORY, 'creation_date': '2026-04-05T00:00:00Z', 'payment_date': '$now', 'amount': '17.00', 'description': 'Gruppo auto',
+           'associate_id': A('grouped'), 'group_id': IDS['own_group']}, headers=GROUP,
+          invoice={'number': 1, 'group': IDS['own_group'], 'description': other_text(CATEGORIES['own']['name']), 'membership': ZERO,
+                   'activity': ('17.00', '17.00')})
+auto_paid('add-auto-paid-invoice-date-and-starting-number', 'owner',
+          {'creation_date': '2026-04-06', 'payment_date': '2026-04-10', 'amount': '18', 'description': 'Datata',
+           'payment_category': CATEGORIES['own']['id'], 'complex_item': PERSON('mario')},
+          {**OWN_CATEGORY, 'creation_date': '2026-04-06T00:00:00Z', 'payment_date': '2026-04-10T00:00:00Z', 'amount': '18.00',
+           'description': 'Datata', 'associate_id': A('mario')},
+          settings={**AUTO_PAID, 'payment_date_equal_invoice_date': True, 'starting_number_invoices': 100},
+          invoice={'number': 101, 'created': '2026-04-10T00:00:00Z', 'description': other_text(CATEGORIES['own']['name']),
+                   'membership': ZERO, 'activity': ('18.00', '18.00')})
+# The print's failure stays in the eager result.
+auto_paid('add-auto-paid-print-failure-ignored', 'owner',
+          {'creation_date': '2026-04-07', 'payment_date': None, 'amount': '19', 'description': 'Senza stampa',
+           'payment_category': CATEGORIES['own']['id'], 'complex_item': PERSON('mario')},
+          {**OWN_CATEGORY, 'creation_date': '2026-04-07T00:00:00Z', 'payment_date': '$now', 'amount': '19.00', 'description': 'Senza stampa',
+           'associate_id': A('mario')},
+          prints=[{**PRINT_NEW, 'reply': {'status': 500, 'body': 'renderer down'}}],
+          invoice={'number': 102, 'description': other_text(CATEGORIES['own']['name']), 'membership': ZERO, 'activity': ('19.00', '19.00')})
+auto_paid('add-auto-paid-full-collaborator', 'full_collaborator',
+          {'creation_date': '2026-04-08', 'payment_date': None, 'amount': '21', 'description': 'Collaboratore auto',
+           'payment_category': CATEGORIES['own']['id'], 'complex_item': PERSON('mario')},
+          {**OWN_CATEGORY, 'creation_date': '2026-04-08T00:00:00Z', 'payment_date': '$now', 'amount': '21.00',
+           'description': 'Collaboratore auto', 'associate_id': A('mario')},
+          invoice={'number': 103, 'description': other_text(CATEGORIES['own']['name']), 'membership': ZERO, 'activity': ('21.00', '21.00')})
+# An account transfer has no invoice description (KeyError inside the atomic block): the saved payment stays.
+auto_paid('add-auto-paid-transfer-with-associate-server-error', 'owner',
+          {'creation_date': '2026-04-09', 'payment_date': None, 'subject': 3, 'amount': '22', 'description': 'Giroconto',
+           'complex_item': PERSON('mario')},
+          {**plain, 'creation_date': '2026-04-09T00:00:00Z', 'payment_date': '$now', 'subject': 3, 'amount': '22.00',
+           'description': 'Giroconto', 'associate_id': A('mario')}, status=500)
+# The owner's balance year start is not a date (ValueError in the number lookup): the saved payment stays.
+auto_paid('add-auto-paid-invalid-balance-year-server-error', 'owner',
+          {'creation_date': '2026-04-09', 'payment_date': None, 'amount': '23', 'description': 'Anno',
+           'complex_item': PERSON('mario')},
+          {**plain, 'creation_date': '2026-04-09T00:00:00Z', 'payment_date': '$now', 'amount': '23.00', 'description': 'Anno',
+           'associate_id': A('mario')}, status=500,
+          settings={**AUTO_PAID, 'balance_sheet_start_day': 30, 'balance_sheet_start_month': 2})
+
 # --- payment/<uid>/update --------------------------------------------------------
 
 guards('update', UPDATE('up_plain'), 'PATCH', {'detail': 'Missing permission: bookeeping.payments.update'}, 'Payment Update', DOC)

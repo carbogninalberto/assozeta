@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -322,6 +323,8 @@ type paymentMemory struct {
 	row         domain.PaymentWriteRow
 	amountAudit *string
 	amountShown *string
+	// amountFloat is the in-memory amount when it is a Python float.
+	amountFloat *float64
 	jsonAudit   map[string]string
 }
 
@@ -341,12 +344,12 @@ func (m *paymentMemory) setJSON(field string, value any, target **string) {
 func (m *paymentMemory) setFloat(value float64) {
 	m.row.Amount = dto.DecimalFromFloat9(value)
 	audit, shown := dto.PythonFloatStr(value), dto.PaymentFloatHalfEven(value)
-	m.amountAudit, m.amountShown = &audit, &shown
+	m.amountAudit, m.amountShown, m.amountFloat = &audit, &shown, &value
 }
 
 func (m *paymentMemory) setDecimal(text string) {
 	m.row.Amount = text
-	m.amountAudit, m.amountShown = &text, &text
+	m.amountAudit, m.amountShown, m.amountFloat = &text, &text, nil
 }
 
 // apply sets the validated fields (serializer.update's setattr / create's kwargs).
@@ -646,10 +649,120 @@ func (s *PaymentWrites) createGroup(ctx context.Context, tx domain.PaymentWrites
 	return group, nil
 }
 
-// Add follows payment_add for users without auto_paid_payment (the paid
-// branch creates invoices and PDFs: not ported). serializer.save() creates
-// the payment before the view sets its user, association and party, so a
-// failure after it keeps the created payment.
+// paymentWritesFees is payment_add's fee arithmetic on the in-memory payment:
+// invoiceFees for a validated Decimal amount; a float amount (the serializer's
+// meta_payment_categories sum, or the model default) stays a float fee.
+func paymentWritesFees(m *paymentMemory) (invoiceFeePair, error) {
+	payment := domain.InvoiceGeneratePayment{Amount: m.row.Amount, MetaPaymentCategories: m.row.MetaCategories}
+	if m.amountFloat == nil {
+		return invoiceFees(m.row.Subject, payment)
+	}
+	amount := *m.amountFloat
+	if m.row.Subject != 1 {
+		zero, _ := floatFee(0)
+		activity, err := floatFee(amount)
+		return invoiceFeePair{membership: zero, activity: activity}, err
+	}
+	// The activity fee is the float sum of the meta amounts.
+	payment.Amount = "0"
+	fees, err := invoiceFees(1, payment)
+	if err != nil {
+		return fees, err
+	}
+	if amount > 0 {
+		activity, err := strconv.ParseFloat(fees.activity.memory, 64)
+		if err != nil {
+			return fees, domain.ErrPaymentStateServer
+		}
+		amount -= activity
+	}
+	fees.membership, err = floatFee(amount)
+	return fees, err
+}
+
+// addInvoice is payment_add's atomic block for a paid income payment with a
+// party: the fees, the next invoice number by creation date (advisory lock)
+// and the description; without a supplier the invoice (saved again with the
+// payment date when payment_date_equal_invoice_date) and its eager print,
+// which runs before the payment's last save. It returns the created
+// invoice's fees (nil with a supplier).
+func (s *PaymentWrites) addInvoice(ctx context.Context, tx domain.PaymentWritesTransaction, identity domain.ResolvedIdentity,
+	request PaymentWritesRequest, m *paymentMemory, association string, group *string) (*invoiceFeePair, error) {
+	invoices := tx.InvoiceGenerate()
+	row, err := invoices.PaymentState(ctx, domain.PaymentStateQuery{ID: m.row.ID, Scope: paymentStateScope(identity), Group: group})
+	if err != nil {
+		return nil, err
+	}
+	if row == nil {
+		return nil, errors.New("payment add: created payment not found")
+	}
+	payment, err := invoices.InvoiceGeneratePayment(ctx, m.row.ID)
+	if err != nil {
+		return nil, err
+	}
+	fees, err := paymentWritesFees(m)
+	if err != nil {
+		return nil, err
+	}
+	owner, err := invoices.InvoiceGenerateOwner(ctx, identity.ScopeUser.ID)
+	if err != nil {
+		return nil, err
+	}
+	number, err := (&InvoiceGenerations{now: s.now}).nextNumber(ctx, invoices, owner, association, group, m.row.CreationDate)
+	if err != nil {
+		return nil, err
+	}
+	description, err := (&InvoiceGenerations{}).description(ctx, invoices, row, payment, row.AssociateID, association, group)
+	if err != nil {
+		return nil, err
+	}
+	if m.row.SupplierID != nil {
+		return nil, nil
+	}
+	invoiceGroup, err := paymentPaidFlowInvoiceGroup(request.GroupHeader)
+	if err != nil {
+		return nil, err
+	}
+	at := s.at()
+	audit := paymentCategoryAuditContext(identity, request.Audit)
+	create := domain.InvoiceGenerateCreate{ID: s.newID(), Association: association, CreationDate: at, MembershipFee: fees.membership.stored,
+		ActivityFee: fees.activity.stored, MetaPaymentCategories: payment.MetaPaymentCategories, Description: &description, Number: number,
+		Group: invoiceGroup}
+	if err = invoices.CreateInvoice(ctx, create, map[string]string{"membership_fee": fees.membership.memory,
+		"activity_fee": fees.activity.memory}, audit, at); err != nil {
+		return nil, err
+	}
+	if owner.PaymentDateEqual {
+		if m.row.PaymentDate == nil {
+			return nil, errors.New("payment add: paid payment without a payment date")
+		}
+		// invoice.save(): the payment date and the float fees against the stored row.
+		changes := map[string][2]string{}
+		if before, after := courseSubscriptionAuditTime(&at), courseSubscriptionAuditTime(m.row.PaymentDate); before != after {
+			changes["creation_date"] = [2]string{before, after}
+		}
+		for field, fee := range map[string]invoiceFee{"membership_fee": fees.membership, "activity_fee": fees.activity} {
+			if fee.rendered != fee.memory {
+				changes[field] = [2]string{fee.rendered, fee.memory}
+			}
+		}
+		if err = invoices.SetInvoiceCreationDate(ctx, create.ID, association, *m.row.PaymentDate, changes, audit, at); err != nil {
+			return nil, err
+		}
+	}
+	m.row.InvoiceID = &create.ID
+	// print_document_invoice.apply(args=[invoice_id, Authorization]) inside the atomic block.
+	if err = s.printer.Invoice(ctx, create.ID, request.Authorization); err != nil {
+		return nil, err
+	}
+	return &fees, nil
+}
+
+// Add follows payment_add. serializer.save() creates the payment before the
+// view sets its user, association and party, so a failure after it keeps the
+// created payment. With auto_paid_payment the payment is paid (now, without
+// a payment date) and an income payment with a party runs addInvoice, then
+// is saved once more.
 func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentity, request PaymentWritesRequest, body any) (map[string]any, error) {
 	if identity.ScopeUser.Role == domain.RoleAthlete {
 		return nil, domain.ErrPaymentWritesAthlete
@@ -669,10 +782,10 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 	if err != nil {
 		return nil, err
 	}
-	if autoPaid {
+	if autoPaid && s.printer == nil {
 		return nil, domain.ErrPaymentWritesNotPorted
 	}
-	object = replaceField(object, "paid", false)
+	object = replaceField(object, "paid", autoPaid)
 	creation, present := object.Lookup("creation_date")
 	if !present {
 		return nil, domain.ErrPaymentWritesServer
@@ -690,7 +803,10 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 	if paymentDate == "" {
 		paymentDate = nil
 	}
-	if paymentDate != nil {
+	if paymentDate == nil && autoPaid {
+		// timezone.now() as text: strptime('%Y-%m-%d') does not match it and the serializer parses it.
+		paymentDate = dto.PaymentEntryDate{Moment: s.at()}
+	} else if paymentDate != nil {
 		if paymentDate, err = addDate(paymentDate); err != nil {
 			return nil, err
 		}
@@ -716,6 +832,12 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 	// The model default amount is the float 0.00.
 	m.setFloat(0)
 	m.apply(input, total)
+	if item, present := object.Lookup("complex_item"); present && dto.PythonTruthy(item) && m.row.Paid && !m.row.Expense {
+		// A float fee the invoice columns round differently is refused before any write.
+		if _, err := paymentWritesFees(m); errors.Is(err, domain.ErrPaymentStateNotPorted) {
+			return nil, domain.ErrPaymentWritesNotPorted
+		}
+	}
 	if err = s.defaults(ctx, tx, m); err != nil {
 		return nil, err
 	}
@@ -787,9 +909,43 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 			return nil, err
 		}
 	}
+	var fees *invoiceFeePair
+	if m.row.Paid && m.row.InvoiceID == nil && !m.row.Expense &&
+		(m.row.AssociateID != nil || m.row.SupplierID != nil || m.row.InstructorID != nil) {
+		fees, err = s.addInvoice(ctx, tx, identity, request, m, association, readGroup)
+		if errors.Is(err, domain.ErrPaymentStateServer) {
+			// Raised before the invoice exists: the atomic block has nothing to undo and the saved payment stays.
+			return fail(domain.ErrPaymentWritesServer)
+		}
+		if err != nil {
+			return nil, err
+		}
+		// payment.save() after the block.
+		if before, err = tx.PaymentAuditValues(ctx, m.row.ID); err != nil {
+			return nil, err
+		}
+		if err = s.defaults(ctx, tx, m); err != nil {
+			return nil, err
+		}
+		if err = tx.SavePaymentRow(ctx, m.row); err != nil {
+			return nil, err
+		}
+		if after, err = s.values(ctx, tx, m); err != nil {
+			return nil, err
+		}
+		if changes := updatedPaymentChanges(before, after); len(changes) > 0 {
+			if err = s.audit(ctx, tx, identity, request.Audit, m.row.ID, 1, changes, &association); err != nil {
+				return nil, err
+			}
+		}
+	}
 	result, err := s.render(ctx, tx, m, readGroup)
 	if err != nil {
 		return nil, err
+	}
+	if invoice, ok := result["invoice"].(map[string]any); ok && fees != nil {
+		// The in-memory invoice keeps the float fees.
+		invoice["membership_fee"], invoice["activity_fee"] = fees.membership.rendered, fees.activity.rendered
 	}
 	return result, tx.Commit()
 }
