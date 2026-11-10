@@ -121,7 +121,7 @@ expired, naive, unparsable or numeric expiry, and the lookups that ask nothing (
 upper-case token, a disconnected pairing, a changed origin or association, an instance that is not self-hosted, a stored token).
 
 - RED (`v2misc3-red-r1`): Django 128/128; Go 500 on `misc-routes-card-paired-server-vouches`.
-- GREEN (`v2misc3-versioned-r1`): 128/128 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
-- Mutation (`v2misc3-mutation-r1`): accepting an expiry without an offset fails Go on
+- GREEN (`v2misc3-final-r1`, after the last base merge; first `v2misc3-versioned-r1`): 128/128 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`v2misc3-mutation-r2`): accepting an expiry without an offset fails Go on
   `misc-routes-card-paired-server-naive-expiry` (CAUGHT).
 - sso-pairing re-runs green natively (`v2misc3-rerun-r1`): the port reuses its binding check and upstream call.

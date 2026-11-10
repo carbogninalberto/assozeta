@@ -154,7 +154,7 @@ instance-outbound 106/106 and payment-misc 96/96 (`v2misc2-rerun-r2`).
 unknown hosts under the reserved `.invalid` name with each encryption).
 
 - RED (`v2misc3-red-r2`): Django 88/88; Go 500 on `communications-smtp-verify-ssl-on-starttls-port`.
-- GREEN (`v2misc3-versioned-r1`): 88/88 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- GREEN (`v2misc3-final-r1`, after the last base merge; first `v2misc3-versioned-r1`): 88/88 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`v2misc3-mutation-r1`): the call site number of another CPython release fails Go on
   `communications-smtp-verify-ssl-on-starttls-port` (CAUGHT).
 - `smtpsend` unit tests pin both platform texts and the inputs that stay refused.

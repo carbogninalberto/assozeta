@@ -58,6 +58,6 @@ card answer, a missing, numeric or 256-character gym name, an expired grant, ano
 that ask nothing (upper-case token, disconnected pairing, an instance that is not self-hosted, a stored token).
 
 - RED (`v2misc3-red-r1`): Django 157/157; Go 500 on `subscription-misc-validate-paired-server-vouches`.
-- GREEN (`v2misc3-versioned-r1`): 157/157 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- GREEN (`v2misc3-final-r1`, after the last base merge; first `v2misc3-versioned-r1`): 157/157 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`v2misc3-mutation-r1`): a gym name limit of 256 fails Go on
   `subscription-misc-validate-paired-server-gym-name-too-long` (CAUGHT).

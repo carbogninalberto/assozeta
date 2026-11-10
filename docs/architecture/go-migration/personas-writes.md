@@ -113,7 +113,7 @@ exact storage requests (HeadObject 404, PutObject, PutObjectAcl `public-read`), 
 stored bytes and metadata, and that the response and the saved row carry the URL of that key.
 
 - RED (`v2misc3-red-r4`): Django 188/188; Go 500 on `personas-writes-add-picture`.
-- GREEN (`v2misc3-versioned-r3`): 188/188 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- GREEN (`v2misc3-final-r1`, after the last base merge; first `v2misc3-versioned-r3`): 188/188 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`v2misc3-mutation-r3`): the ACL request on the name without `AWS_LOCATION` fails Go on `personas-writes-add-picture`
   (`storage.requests`, CAUGHT).
 - Re-run: subscription-sign 47/47 (`v2misc3-rerun-r1`, the proxy takes its bucket as a parameter), router-personas 51/51 and
