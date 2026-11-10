@@ -24,6 +24,6 @@
     summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
     .release-date, .release-name, .release-empty { color: var(--text-secondary); }
     .release-body { padding-top: .75rem; }
-    .release-notes :global(h1), .release-notes :global(h2), .release-notes :global(h3) { font-size: 1rem; font-weight: 600; margin: 1rem 0 .5rem; }
+    .release-notes :global(h1), .release-notes :global(h2), .release-notes :global(h3) { font-size: 1.15rem; font-weight: 600; margin: 1rem 0 .5rem; }
     .release-notes :global(pre), .release-notes :global(table) { max-width: 100%; overflow-x: auto; display: block; }
 </style>

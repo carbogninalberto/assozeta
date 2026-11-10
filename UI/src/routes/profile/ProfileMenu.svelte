@@ -69,11 +69,11 @@
 </script>
 
 <!--begin::Aside-->
-<div class="flex-row-auto" id="bkn_profile_aside">
+<div class="flex-row-auto" class:profile-aside-sticky={!$isMobile} id="bkn_profile_aside">
     <!--begin::Nav Panels Wizard 2-->
     <div class="card card-custom gutter-b card-settings">
         <!--begin::Body-->
-        <div class="card-body {$isMobile ? '' : 'position-fixed'} navi-body-settings p-0 px-md-8 py-md-4">
+        <div class="card-body navi-body-settings p-0 px-md-8 py-md-4">
             {#if $role === 'administrator'}
                 <nav aria-label="Amministrazione" class="navi navi-bold navi-hover navi-active navi-link-rounded py-4">
                     {#each [{page:'self-instance',label:'Istanza',icon:GearSix},...(selfHosted ? [] : [{page:'data-management',label:'Gestione Dati',icon:Database}])] as item}
@@ -311,3 +311,9 @@
     <!--end::Nav Panels Wizard 2-->
 </div>
 <!--end::Aside-->
+
+<style>
+    /* The menu fills its column and stays in view while the page scrolls
+       (it used to be position-fixed, which left a gap before the content). */
+    .profile-aside-sticky { position: sticky; top: calc(67px + 1.5rem); }
+</style>

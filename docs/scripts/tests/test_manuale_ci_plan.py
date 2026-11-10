@@ -188,6 +188,7 @@ class PrepareTests(unittest.TestCase):
             runner.argument_parser.return_value.parse_args.side_effect = lambda parameters: SimpleNamespace(parameters=parameters)
             runner.prepare.return_value = {'run': str(run), 'manual_input': {'revision': 'b' * 40}}
             policy = Mock()
+            policy.needs_historical_rehearsal.side_effect = module('manuale-policy').needs_historical_rehearsal
             policy.verification_decision.return_value = arguments.pop('decision', {
                 'mode': 'reuse', 'historical_rehearsal': False, 'fresh_workflows': [], 'reused_workflows': IDS,
                 'reasons': ['reuse'], 'cache_decisions': []})
@@ -234,6 +235,20 @@ class PrepareTests(unittest.TestCase):
         self.assertTrue(keywords['force_full'])
         _, keywords, _, _ = self.prepare(ci.fallback_impact([], 'x', IDS))
         self.assertFalse(keywords['force_full'])
+
+    def test_forced_full_rehearses_the_historical_appliance_only_for_upgrade_inputs(self):
+        full = {'mode': 'full', 'historical_rehearsal': False, 'fresh_workflows': IDS, 'reused_workflows': [],
+                'reasons': ['full'], 'cache_decisions': []}
+        security = report('full', files=[('BE/application/impersonation.py', 'security', IDS)])
+        _, _, values, plan = self.prepare(security, decision=dict(full))
+        self.assertEqual(values['historical_rehearsal'], 'false')
+        self.assertFalse(plan['historical_rehearsal'])
+        for path in ('selfhost/compose.yml', 'BE/application/migrations/0300_x.py'):
+            with self.subTest(path=path):
+                upgrade = report('full', files=[(path, 'security', IDS)])
+                _, _, values, plan = self.prepare(upgrade, decision=dict(full))
+                self.assertEqual(values['historical_rehearsal'], 'true')
+                self.assertTrue(plan['historical_rehearsal'])
 
     def test_content_only_escalates_whenever_a_capture_would_be_needed(self):
         _, _, values, plan = self.prepare(report('content'), content_only=True)

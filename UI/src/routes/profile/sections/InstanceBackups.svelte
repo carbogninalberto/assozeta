@@ -3,7 +3,7 @@
     // Actions appear only when the runner reports them (overview.actions).
     import {toast} from 'svelte-sonner';
     import {getApiHost} from 'store/instanceStore.js';
-    import {Archive, PushPin, WarningCircle, SpinnerGap, HardDrive, CloudCheck, Cloud} from 'phosphor-svelte';
+    import {Archive, PushPin, WarningCircle, SpinnerGap, HardDrive, CloudCheck, Cloud, ArrowCounterClockwise, CloudArrowDown, DownloadSimple, PlusCircle, Trash, UploadSimple} from 'phosphor-svelte';
     import InstanceDialog from './InstanceDialog.svelte';
     import InstanceMenu from './InstanceMenu.svelte';
     import DiagnosticResult from './DiagnosticResult.svelte';
@@ -233,7 +233,7 @@
             </div>
             <div class="si-actions">
                 {#if actions.create}
-                    <button type="button" class="btn btn-primary" disabled={!!active || !!blockedReason || tooSmall} title={busyReason || (tooSmall ? 'Spazio su disco insufficiente.' : '')} on:click={() => openDialog('create')}>Crea backup</button>
+                    <button type="button" class="btn btn-primary si-btn" disabled={!!active || !!blockedReason || tooSmall} title={busyReason || (tooSmall ? 'Spazio su disco insufficiente.' : '')} on:click={() => openDialog('create')}><PlusCircle size={18} weight="duotone" />Crea backup</button>
                 {/if}
                 <InstanceMenu label="Altre azioni backup" items={menuItems} />
             </div>
@@ -291,7 +291,7 @@
                                         </span>
                                     </td>
                                 {/if}
-                                <td class="row-menu"><InstanceMenu label={`Azioni backup del ${formatDate(archive.created_at)}`} items={rowActions(archive)} /></td>
+                                <td class="row-menu"><InstanceMenu size="sm" label={`Azioni backup del ${formatDate(archive.created_at)}`} items={rowActions(archive)} /></td>
                             </tr>
                         {/each}
                     </tbody>
@@ -301,7 +301,7 @@
                 <div class="empty">
                     <Archive size={40} weight="duotone" />
                     <p class="mb-0"><strong>Ancora nessun backup</strong></p>
-                    {#if actions.create}<button type="button" class="btn btn-primary btn-sm" disabled={!!active || tooSmall} on:click={() => openDialog('create')}>Crea il primo backup</button>{/if}
+                    {#if actions.create}<button type="button" class="btn btn-primary btn-sm si-btn" disabled={!!active || tooSmall} on:click={() => openDialog('create')}><PlusCircle size={16} weight="duotone" />Crea il primo backup</button>{/if}
                 </div>
             {/if}
         {/if}
@@ -331,7 +331,7 @@
     {/if}
     <svelte:fragment slot="footer">
         <button type="button" class="btn btn-light" disabled={working} on:click={closeDialog}>Annulla</button>
-        <button type="submit" form="backup-download-form" class="btn btn-primary" disabled={!password || working}>{working ? 'Verifica…' : 'Scarica backup'}</button>
+        <button type="submit" form="backup-download-form" class="btn btn-primary si-btn" disabled={!password || working}><DownloadSimple size={18} weight="duotone" />{working ? 'Verifica…' : 'Scarica backup'}</button>
     </svelte:fragment>
 </InstanceDialog>
 
@@ -343,7 +343,7 @@
     {/if}
     <svelte:fragment slot="footer">
         <button type="button" class="btn btn-light" data-autofocus disabled={working} on:click={closeDialog}>Annulla</button>
-        <button type="button" class="btn btn-danger" disabled={working} on:click={confirmDelete}>{working ? 'Eliminazione…' : 'Elimina'}</button>
+        <button type="button" class="btn btn-danger si-btn" disabled={working} on:click={confirmDelete}><Trash size={18} weight="duotone" />{working ? 'Eliminazione…' : 'Elimina'}</button>
     </svelte:fragment>
 </InstanceDialog>
 
@@ -353,7 +353,7 @@
     {#if dialogError}<p class="text-danger mb-0" role="alert">{dialogError}</p>{/if}
     <svelte:fragment slot="footer">
         <button type="button" class="btn btn-light" disabled={working} on:click={closeDialog}>Annulla</button>
-        <button type="button" class="btn btn-primary" data-autofocus disabled={working} on:click={confirmCreate}>{working ? 'Avvio…' : 'Crea backup'}</button>
+        <button type="button" class="btn btn-primary si-btn" data-autofocus disabled={working} on:click={confirmCreate}><PlusCircle size={18} weight="duotone" />{working ? 'Avvio…' : 'Crea backup'}</button>
     </svelte:fragment>
 </InstanceDialog>
 
@@ -373,7 +373,7 @@
     {/if}
     <svelte:fragment slot="footer">
         <button type="button" class="btn btn-light" data-autofocus disabled={working} on:click={closeDialog}>Annulla</button>
-        <button type="submit" form="backup-restore-form" class="btn btn-danger" disabled={!restoreReady || working}>{working ? 'Avvio…' : 'Ripristina'}</button>
+        <button type="submit" form="backup-restore-form" class="btn btn-danger si-btn" disabled={!restoreReady || working}><ArrowCounterClockwise size={18} weight="duotone" />{working ? 'Avvio…' : 'Ripristina'}</button>
     </svelte:fragment>
 </InstanceDialog>
 
@@ -396,7 +396,7 @@
     </form>
     <svelte:fragment slot="footer">
         <button type="button" class="btn btn-light" on:click={cancelUpload}>Annulla</button>
-        <button type="submit" form="backup-upload-form" class="btn btn-primary" disabled={!file || !!fileProblem || working}>{working ? 'Caricamento…' : 'Carica'}</button>
+        <button type="submit" form="backup-upload-form" class="btn btn-primary si-btn" disabled={!file || !!fileProblem || working}><UploadSimple size={18} weight="duotone" />{working ? 'Caricamento…' : 'Carica'}</button>
     </svelte:fragment>
 </InstanceDialog>
 
@@ -412,7 +412,7 @@
     {/if}
     <svelte:fragment slot="footer">
         <button type="button" class="btn btn-light" disabled={working} on:click={closeDialog}>Annulla</button>
-        <button type="submit" form="backup-fetch-form" class="btn btn-primary" disabled={!recoveryKeyLine(recoveryKey) || working}>{working ? 'Verifica…' : 'Recupera'}</button>
+        <button type="submit" form="backup-fetch-form" class="btn btn-primary si-btn" disabled={!recoveryKeyLine(recoveryKey) || working}><CloudArrowDown size={18} weight="duotone" />{working ? 'Verifica…' : 'Recupera'}</button>
     </svelte:fragment>
 </InstanceDialog>
 
@@ -426,16 +426,16 @@
     .seg-other { background: var(--text-muted); opacity: .45; }
     .marker { position: absolute; top: -.3rem; bottom: -.3rem; width: 2px; margin-left: -1px; background: var(--text-primary); border-radius: 2px; }
     .marker.over { background: var(--danger, #d92d20); }
-    .legend { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; list-style: none; margin: .625rem 0 0; padding: 0; font-size: .875rem; color: var(--text-secondary); }
+    .legend { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; list-style: none; margin: .625rem 0 0; padding: 0; font-size: 1rem; color: var(--text-secondary); }
     .legend strong { color: var(--text-primary); font-weight: 600; }
     .dot { display: inline-block; width: .55rem; height: .55rem; margin-right: .4rem; border-radius: 50%; vertical-align: .05rem; }
     .dot.free { background: var(--bg-active); box-shadow: inset 0 0 0 1px var(--border-color-dark, var(--border-color)); }
-    .space-warning { display: flex; align-items: center; gap: .4rem; margin: .75rem 0 0; font-size: .875rem; font-weight: 500; color: var(--danger, #d92d20); }
+    .space-warning { display: flex; align-items: center; gap: .4rem; margin: .75rem 0 0; font-size: 1rem; font-weight: 500; color: var(--danger, #d92d20); }
     .running { display: flex; align-items: center; gap: .5rem; padding: .75rem 1rem; margin-bottom: .75rem; border-radius: .625rem; background: var(--light-primary); font-weight: 500; }
     .spin { display: inline-flex; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .backups { width: 100%; border-collapse: collapse; }
-    .backups th { padding: 0 .75rem .5rem 0; font-size: .8125rem; font-weight: 600; color: var(--text-secondary); text-align: left; border-bottom: 1px solid var(--border-color); }
+    .backups th { padding: 0 .75rem .5rem 0; font-size: .925rem; font-weight: 600; color: var(--text-secondary); text-align: left; white-space: nowrap; border-bottom: 1px solid var(--border-color); }
     .backups td { padding: .75rem .75rem .75rem 0; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
     .backups tr:last-child td { border-bottom: 0; }
     .backups .num { text-align: right; white-space: nowrap; }
@@ -447,7 +447,7 @@
     .place { display: inline-flex; vertical-align: middle; color: var(--text-secondary); }
     .place-both { color: var(--primary-text, var(--primary)); }
     .remote-only .date { color: var(--text-secondary); }
-    .key-file { display: inline-block; cursor: pointer; font-size: .875rem; }
+    .key-file { display: inline-block; cursor: pointer; font-size: 1rem; }
     .key-file:focus-within { outline: 2px solid var(--primary); outline-offset: 2px; }
     .empty { display: flex; flex-direction: column; align-items: center; gap: .75rem; padding: 2rem 1rem; color: var(--text-secondary); text-align: center; }
     .upload-bar { height: .5rem; border-radius: 999px; background: var(--bg-active); overflow: hidden; }
@@ -460,7 +460,7 @@
         .backups tr { position: relative; padding: .75rem 2.75rem .75rem 0; border-bottom: 1px solid var(--border-color); }
         .backups tr:last-child { border-bottom: 0; }
         .backups td { padding: 0; border: 0; }
-        .backups td[data-label] { display: inline; font-size: .875rem; color: var(--text-secondary); }
+        .backups td[data-label] { display: inline; font-size: 1rem; color: var(--text-secondary); }
         .backups td[data-label] + td[data-label]::before { content: ' · '; }
         .backups .num { text-align: left; }
         .row-menu { position: absolute; top: .75rem; right: 0; width: auto; }

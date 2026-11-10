@@ -1,46 +1,62 @@
-/* Shared look of the instance owner pages. Theme tokens only, so dark mode follows. */
-.si-page { --si-radius: .75rem; --si-gap: 1rem; color: var(--text-primary); }
-.si-page h2.si-title { font-size: 1.25rem; font-weight: 600; margin: 0; }
-.si-page h3.si-subtitle { font-size: 1rem; font-weight: 600; margin: 0; }
+/* Shared look of the instance owner pages, on the app's Metronic scale.
+ * The app root is 12px: body text is 1.08rem (13px), small text 1rem,
+ * hints .925rem (the app's font-size-sm). Colours are the app's own
+ * success/warning/danger values, so the page matches the other screens. */
+.si-page {
+    --si-radius: .65rem; --si-gap: 1.25rem;
+    --si-success: #06938E; --si-success-bg: #C9F7F5;
+    --si-warning: #BD6E00; --si-warning-bg: #FFF4DE;
+    --si-danger: #EC3244; --si-danger-bg: #FFE2E5;
+    color: var(--text-primary); font-size: 1.08rem;
+}
+[data-theme="dark"] .si-page {
+    --si-success: #5AD8A8; --si-success-bg: rgba(90, 216, 168, .14);
+    --si-warning: #F5C451; --si-warning-bg: rgba(245, 196, 81, .14);
+    --si-danger: #FF6B7A; --si-danger-bg: rgba(255, 107, 122, .14);
+}
+.si-page h2.si-title { font-size: 1.5rem; font-weight: 600; margin: 0; }
+.si-page h3.si-subtitle { font-size: 1.25rem; font-weight: 600; margin: 0; }
 .si-muted { color: var(--text-secondary) !important; }
-.si-small { font-size: .875rem; }
+.si-small { font-size: 1rem; }
 
-.si-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--si-radius); padding: 1.25rem; min-width: 0; overflow-wrap: anywhere; }
+.si-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--si-radius); padding: 1.75rem; min-width: 0; overflow-wrap: anywhere; }
 .si-card + .si-card { margin-top: var(--si-gap); }
-.si-card-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; margin-bottom: 1rem; }
+.si-card-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; margin-bottom: 1.5rem; }
 .si-card-head > :first-child { min-width: 0; }
-.si-card-head .si-muted { margin: .25rem 0 0; }
+.si-card-head .si-muted { margin: .35rem 0 0; }
 
 .si-stack { display: flex; flex-direction: column; gap: var(--si-gap); }
 .si-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
-.si-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
-.si-grid-2 label, .si-field { display: grid; gap: .4rem; margin: 0; font-weight: 500; min-width: 0; }
-.si-hint { font-size: .8125rem; font-weight: 400; color: var(--text-secondary); }
+.si-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
+.si-grid-2 label, .si-field { display: grid; gap: .5rem; margin: 0; font-weight: 500; min-width: 0; }
+.si-hint { font-size: .925rem; font-weight: 400; color: var(--text-secondary); }
 
-/* Status pills: one per row at most. */
-.si-pill { display: inline-flex; align-items: center; gap: .35rem; padding: .15rem .6rem; border-radius: 999px; font-size: .8125rem; font-weight: 600; line-height: 1.5; white-space: nowrap; background: var(--bg-hover); color: var(--text-secondary); }
-.si-pill.ok { background: var(--light-success); color: #0f6b4f; }
-.si-pill.warn { background: var(--light-warning); color: #8a5300; }
-.si-pill.bad { background: var(--light-danger); color: #a51d2d; }
+/* Buttons follow the app: bold label, optional duotone icon before it. */
+.si-page .btn { font-weight: 600; }
+.si-btn { display: inline-flex !important; align-items: center; justify-content: center; gap: .45rem; }
+.si-btn svg { flex-shrink: 0; }
+
+/* Status labels: one per row at most, Metronic label colours. */
+.si-pill { display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .75rem; border-radius: .42rem; font-size: .925rem; font-weight: 600; line-height: 1.35; white-space: nowrap; background: var(--bg-hover); color: var(--text-secondary); }
+.si-pill.ok { background: var(--si-success-bg); color: var(--si-success); }
+.si-pill.warn { background: var(--si-warning-bg); color: var(--si-warning); }
+.si-pill.bad { background: var(--si-danger-bg); color: var(--si-danger); }
 .si-pill.info { background: var(--light-primary); color: var(--primary-text, var(--primary)); }
-[data-theme="dark"] .si-pill.ok { color: #6ee7b7; }
-[data-theme="dark"] .si-pill.warn { color: #fcd34d; }
-[data-theme="dark"] .si-pill.bad { color: #fca5a5; }
 
 /* Compact list rows (history, problems, checks). */
 .si-rows { list-style: none; margin: 0; padding: 0; }
-.si-rows > li { display: flex; align-items: flex-start; gap: .75rem; padding: .75rem 0; border-top: 1px solid var(--border-color); min-width: 0; }
+.si-rows > li { display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-top: 1px solid var(--border-color); min-width: 0; }
 .si-rows > li:first-child { border-top: 0; }
 .si-rows .si-row-main { flex: 1; min-width: 0; }
-.si-rows .si-row-main p { margin: .15rem 0 0; }
-.si-icon { flex-shrink: 0; display: inline-flex; margin-top: .1rem; }
-.si-icon.ok { color: #12a37a; }
-.si-icon.warn { color: #c27c00; }
-.si-icon.bad { color: var(--danger, #d92d20); }
+.si-rows .si-row-main p { margin: .2rem 0 0; }
+.si-icon { flex-shrink: 0; display: inline-flex; }
+.si-icon.ok { color: var(--si-success); }
+.si-icon.warn { color: var(--si-warning); }
+.si-icon.bad { color: var(--si-danger); }
 .si-icon.neutral { color: var(--text-muted); }
 
 /* Inline "why is this disabled" text next to an action. */
-.si-reason { font-size: .8125rem; color: var(--text-secondary); }
+.si-reason { font-size: .925rem; color: var(--text-secondary); }
 
 /* Text button for secondary navigation. */
 .si-link { background: none; border: 0; padding: 0; color: var(--text-link); font-weight: 600; text-align: left; }
@@ -53,22 +69,22 @@
 @media (prefers-reduced-motion: reduce) { .si-skeleton { animation: none; } }
 
 /* Save bar sticks to the bottom of the viewport only while there are changes. */
-.si-savebar { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: 1.25rem -1.25rem -1.25rem; padding: .875rem 1.25rem; background: var(--bg-card); border-top: 1px solid var(--border-color); border-radius: 0 0 var(--si-radius) var(--si-radius); }
+.si-savebar { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: 1.75rem -1.75rem -1.75rem; padding: 1rem 1.75rem; background: var(--bg-card); border-top: 1px solid var(--border-color); border-radius: 0 0 var(--si-radius) var(--si-radius); }
 .si-savebar.dirty { position: sticky; bottom: 0; z-index: 2; box-shadow: 0 -.5rem 1rem -.75rem rgba(0, 0, 0, .25); }
-.si-savebar .si-dirty { font-size: .875rem; color: var(--text-secondary); margin-left: auto; }
+.si-savebar .si-dirty { font-size: 1rem; color: var(--text-secondary); margin-left: auto; }
 
 .si-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
 @media (max-width: 575px) {
-    .si-card { padding: 1rem; }
-    .si-savebar { margin: 1rem -1rem -1rem; padding: .75rem 1rem; }
+    .si-card { padding: 1.25rem; }
+    .si-savebar { margin: 1.25rem -1.25rem -1.25rem; padding: .875rem 1.25rem; }
     .si-grid-2 { grid-template-columns: 1fr; }
 }
 
 .si-stack > .si-card + .si-card { margin-top: 0; }
 
 /* Switches read as one line: toggle, then its label. */
-.si-page .form-group:has(> .input-group .switch) { display: flex; flex-direction: row-reverse; justify-content: flex-end; align-items: center; gap: .75rem; margin-bottom: .75rem; }
-.si-page .form-group:has(> .input-group .switch) > label { margin: 0 !important; font-weight: 500 !important; font-size: 1rem; cursor: pointer; }
+.si-page .form-group:has(> .input-group .switch) { display: flex; flex-direction: row-reverse; justify-content: flex-end; align-items: center; gap: .75rem; margin-bottom: 1rem; }
+.si-page .form-group:has(> .input-group .switch) > label { margin: 0 !important; font-weight: 500 !important; font-size: 1.08rem; cursor: pointer; }
 .si-page .form-group:has(> .input-group .switch) > .input-group { width: auto; flex: 0 0 auto; }
 .si-page .form-group:has(> .input-group .switch) .switch { margin: 0; }

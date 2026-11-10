@@ -3,7 +3,7 @@
     // progress → result. Same endpoints and safety steps as before: the server
     // validates the file, takes a safety copy, then replaces the data.
     import {onMount, onDestroy} from 'svelte';
-    import {UploadSimple, FileZip, X, CheckCircle, WarningCircle, Info} from 'phosphor-svelte';
+    import {UploadSimple, FileZip, X, CheckCircle, WarningCircle, Info, ArrowCounterClockwise, DownloadSimple} from 'phosphor-svelte';
     import RestoreProgressCard from './RestoreProgressCard.svelte';
     import NotificationService from 'utils/NotificationService.js';
     import {mergeRestoreProgress} from 'utils/restoreProgress.js';
@@ -314,7 +314,7 @@
             {/if}
             {#if error}<p class="text-danger si-small mt-3 mb-0" role="alert">{error}</p>{/if}
             <div class="step-actions">
-                <button type="button" class="btn btn-primary" disabled={busy || !file} on:click={upload}>{busy ? 'Verifica in corso…' : 'Carica e verifica'}</button>
+                <button type="button" class="btn btn-primary si-btn" disabled={busy || !file} on:click={upload}><UploadSimple size={18} weight="duotone" />{busy ? 'Verifica in corso…' : 'Carica e verifica'}</button>
             </div>
             {#if busy}<p class="si-hint mb-0" role="status">Tieni aperta questa finestra fino alla fine della verifica.</p>{/if}
 
@@ -336,7 +336,7 @@
                 <div class="report-actions">
                     <button type="button" class="btn btn-light btn-sm" disabled={busy || reportLoading} on:click={() => toggleReport(selected)}>
                         {reportLoading ? 'Caricamento…' : reportOperationId === selected.id && relationReport ? 'Nascondi rapporto' : 'Mostra rapporto'}</button>
-                    <button type="button" class="btn btn-light btn-sm" aria-label="Scarica rapporto del backup" disabled={busy} on:click={() => downloadReport(selected)}>
+                    <button type="button" class="btn btn-light btn-sm si-btn" aria-label="Scarica rapporto del backup" disabled={busy} on:click={() => downloadReport(selected)}><DownloadSimple size={16} weight="duotone" />
                         {downloading === selected.id ? 'Download…' : 'Scarica rapporto'}</button>
                 </div>
                 {#if reportOperationId === selected.id && relationReport}
@@ -380,7 +380,7 @@
             {#if error}<p class="text-danger si-small mt-3 mb-0" role="alert">{error}</p>{/if}
             <div class="step-actions">
                 <button type="button" class="btn btn-light" disabled={busy} on:click={() => confirming = false}>Indietro</button>
-                <button type="button" class="btn btn-danger" disabled={busy || !ready} on:click={() => action('start')}>Sostituisci i dati</button>
+                <button type="button" class="btn btn-danger si-btn" disabled={busy || !ready} on:click={() => action('start')}><ArrowCounterClockwise size={18} weight="duotone" />Sostituisci i dati</button>
             </div>
 
         {:else if step === 'progress'}
@@ -423,9 +423,9 @@
                         <li>
                             <div class="si-row-main"><strong class="si-small">{formatDate(op.created_at)}</strong><p class="si-muted si-small">Dati prima del ripristino</p></div>
                             {#if op.preview.missing_relations || op.preview.reassigned_tutors || op.preview.tutor_tax_code_conflicts}
-                                <button type="button" class="btn btn-light btn-sm" aria-label="Scarica rapporto del backup" disabled={busy} on:click={() => downloadReport(op)}>Rapporto</button>
+                                <button type="button" class="btn btn-light btn-sm si-btn" aria-label="Scarica rapporto del backup" disabled={busy} on:click={() => downloadReport(op)}><DownloadSimple size={16} weight="duotone" />Rapporto</button>
                             {/if}
-                            <button type="button" class="btn btn-light btn-sm" aria-label="Scarica backup di sicurezza" disabled={busy} on:click={() => downloadBackup(op)}>Scarica</button>
+                            <button type="button" class="btn btn-light btn-sm si-btn" aria-label="Scarica backup di sicurezza" disabled={busy} on:click={() => downloadBackup(op)}><DownloadSimple size={16} weight="duotone" />Scarica</button>
                         </li>
                     {/each}
                 </ul>
@@ -440,9 +440,9 @@
 <style>
     .data-import { display: grid; gap: .75rem; min-width: 0; }
     .data-import h3, .data-import p { margin: 0; }
-    .steps { display: flex; flex-wrap: wrap; gap: .25rem .875rem; margin: 0 0 .5rem; padding: 0; list-style: none; font-size: .8125rem; color: var(--text-muted); }
+    .steps { display: flex; flex-wrap: wrap; gap: .25rem .875rem; margin: 0 0 .5rem; padding: 0; list-style: none; font-size: .925rem; color: var(--text-muted); }
     .steps li { display: inline-flex; align-items: center; gap: .35rem; }
-    .num { display: inline-grid; place-items: center; width: 1.25rem; height: 1.25rem; border-radius: 50%; border: 1px solid currentColor; font-size: .75rem; font-weight: 600; }
+    .num { display: inline-grid; place-items: center; width: 1.25rem; height: 1.25rem; border-radius: 50%; border: 1px solid currentColor; font-size: .925rem; font-weight: 600; }
     .steps .done { color: var(--text-secondary); }
     .steps .done .num { background: var(--light-success); border-color: transparent; color: #0f6b4f; }
     .steps .current { color: var(--primary-text, var(--primary)); font-weight: 600; }
@@ -459,19 +459,19 @@
     .step-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .5rem; margin-top: .25rem; }
     .summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; margin: 0; }
     .summary > div { padding: .75rem; border-radius: .5rem; background: var(--bg-hover); }
-    .summary dt { font-size: .8125rem; font-weight: 400; color: var(--text-secondary); }
+    .summary dt { font-size: .925rem; font-weight: 400; color: var(--text-secondary); }
     .summary dd { margin: .2rem 0 0; font-weight: 600; }
     .notes > li { padding: .5rem 0; }
     .report-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
     .report { max-height: 22rem; overflow: auto; padding: .75rem; border: 1px solid var(--border-color); border-radius: .625rem; }
     .report:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-    .report h4 { font-size: .875rem; font-weight: 600; margin: .5rem 0; }
+    .report h4 { font-size: 1rem; font-weight: 600; margin: .5rem 0; }
     .report h4:first-child { margin-top: 0; }
-    .report table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: .8125rem; margin-bottom: .5rem; }
+    .report table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: .925rem; margin-bottom: .5rem; }
     .report th { text-align: left; font-weight: 600; color: var(--text-secondary); padding: .25rem .5rem .25rem 0; border-bottom: 1px solid var(--border-color); }
     .report td { padding: .25rem .5rem .25rem 0; border-bottom: 1px solid var(--border-color); }
     .report code { color: inherit; white-space: normal; overflow-wrap: anywhere; }
-    .report .si-rows > li { padding: .4rem 0; font-size: .875rem; }
+    .report .si-rows > li { padding: .4rem 0; font-size: 1rem; }
     .result { display: flex; gap: .75rem; padding: 1rem; border-radius: .625rem; background: var(--bg-hover); }
     .result.completed { background: var(--light-success); }
     .result .si-icon { margin: 0; }

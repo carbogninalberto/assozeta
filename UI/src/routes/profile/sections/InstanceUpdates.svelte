@@ -1,6 +1,6 @@
 <script>
     // Aggiornamenti: one version line, one action, a short history.
-    import {CheckCircle, WarningCircle, XCircle, Circle} from 'phosphor-svelte';
+    import {CheckCircle, WarningCircle, XCircle, Circle, ArrowCircleUp, ArrowsClockwise} from 'phosphor-svelte';
     import InstanceDialog from './InstanceDialog.svelte';
     import ReleaseNotes from './release-notes/ReleaseNotes.svelte';
     import Switch from '../../../components/inputs/Switch.svelte';
@@ -55,8 +55,8 @@
                 {#if info.configured_version && info.configured_version !== info.running_version}<p class="si-muted si-small mb-0">Configurata: {info.configured_version}</p>{/if}
             </div>
             <div class="si-actions">
-                {#if behind}<button type="button" class="btn btn-primary" disabled={!!updateBlockedReason} on:click={onReview}>Aggiorna a {catalog.latest.tag}</button>{/if}
-                <button type="button" class="btn btn-light-primary" disabled={checkingReleases || checkBlocked} on:click={onCheck}>{checkingReleases ? 'Controllo…' : 'Controlla aggiornamenti'}</button>
+                {#if behind}<button type="button" class="btn btn-primary si-btn" disabled={!!updateBlockedReason} on:click={onReview}><ArrowCircleUp size={18} weight="duotone" />Aggiorna a {catalog.latest.tag}</button>{/if}
+                <button type="button" class="btn btn-light-primary si-btn" disabled={checkingReleases || checkBlocked} on:click={onCheck}><ArrowsClockwise size={18} weight="duotone" />{checkingReleases ? 'Controllo…' : 'Controlla aggiornamenti'}</button>
             </div>
         </div>
         {#if behind && updateBlockedReason}<p class="si-reason mt-3 mb-0">{updateBlockedReason}</p>{/if}
@@ -108,7 +108,7 @@
     </div>
     <svelte:fragment slot="footer">
         <button type="button" class="btn btn-light" disabled={starting} on:click={closeReview}>Annulla</button>
-        <button type="button" class="btn btn-primary" disabled={starting || !!updateBlockedReason} on:click={onStart}>{starting ? 'Avvio…' : 'Avvia aggiornamento'}</button>
+        <button type="button" class="btn btn-primary si-btn" disabled={starting || !!updateBlockedReason} on:click={onStart}><ArrowCircleUp size={18} weight="duotone" />{starting ? 'Avvio…' : 'Avvia aggiornamento'}</button>
     </svelte:fragment>
 </InstanceDialog>
 
@@ -124,8 +124,8 @@
 
 <style>
     .version { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
-    .version-label { font-size: .8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; margin: 0 0 .25rem; }
-    .version-value { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; font-size: 1.5rem; font-weight: 600; margin: 0; }
+    .version-label { font-size: .925rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; margin: 0 0 .25rem; }
+    .version-value { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; font-size: 1.75rem; font-weight: 600; margin: 0; }
     .review-notes { max-height: min(28rem, 55vh); overflow-y: auto; overscroll-behavior: contain; border-top: 1px solid var(--border-color); }
     .review-notes:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
     @media (max-width: 575px) { .version .si-actions, .version .si-actions .btn { width: 100%; } }

@@ -1,4 +1,5 @@
 <script>
+    import {FloppyDisk} from 'phosphor-svelte';
     // Pianificazione: automatic backups (off by default) and how many to keep.
     import {toast} from 'svelte-sonner';
     import Switch from '../../../components/inputs/Switch.svelte';
@@ -82,7 +83,7 @@
         <p id="backup-keep-help" class="si-hint mt-2 mb-0">Numero di backup automatici da tenere. Se lo spazio non basta, i più vecchi vengono eliminati prima del nuovo.</p>
         {#if error}<p class="text-danger mt-3 mb-0" role="alert">{error}</p>{/if}
         <div class="si-savebar" class:dirty={changed}>
-            <button type="submit" class="btn btn-primary" disabled={!changed}>{saving ? 'Salvataggio…' : 'Salva pianificazione'}</button>
+            <button type="submit" class="btn btn-primary si-btn" disabled={!changed}><FloppyDisk size={18} weight="duotone" />{saving ? 'Salvataggio…' : 'Salva pianificazione'}</button>
             {#if changed}<button type="button" class="btn btn-light" on:click={() => draft = JSON.parse(baseline)}>Annulla</button><span class="si-dirty" role="status">Modifiche non salvate</span>{/if}
         </div>
     </fieldset>

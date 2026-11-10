@@ -2,6 +2,8 @@ name: Verify manual workflows and MCP knowledge
 
 on:
   pull_request:
+    # `labeled` lets adding the manual-full label start the full capture on a PR.
+    types: [opened, synchronize, reopened, labeled]
     paths:
       - 'BE/**'
       - 'UI/**'
@@ -61,13 +63,20 @@ permissions:
   actions: read
 
 concurrency:
-  group: manuale-${{ github.event.pull_request.number || github.ref }}
+  # A run for an unrelated label does nothing, so it gets its own group and never
+  # cancels the PR's running checks.
+  group: >-
+    manuale-${{ github.event.pull_request.number || github.ref }}${{
+    (github.event.action == 'labeled' && github.event.label.name != 'manual-full') && format('-ignored-{0}', github.run_id) || '' }}
   cancel-in-progress: true
 
 jobs:
   plan:
     name: Plan manual verification from the change impact
-    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.edit_content) }}
+    # Other labels must not restart (and cancel) the PR's running checks.
+    if: >-
+      ${{ !(github.event_name == 'workflow_dispatch' && inputs.edit_content) &&
+          !(github.event.action == 'labeled' && github.event.label.name != 'manual-full') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     outputs:
@@ -298,10 +307,13 @@ jobs:
   verify:
     # Modes B and full: only when the plan or a content escalation needs
     # captures. Never comprehensive: publication runs manuale-release.yml.
+    # Pull requests run the offline checks only; the capture runs after merge on
+    # main, or on a PR labelled manual-full. Releases always verify in full.
     needs: [plan, content]
     if: >-
       ${{ !cancelled() && needs.plan.result == 'success' && needs.content.result != 'failure' &&
-          (needs.plan.outputs.verify == 'true' || needs.content.outputs.escalate == 'true') }}
+          (needs.plan.outputs.verify == 'true' || needs.content.outputs.escalate == 'true') &&
+          (github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'manual-full')) }}
     uses: ./.github/workflows/manuale-verify.yml
     with:
       release: ${{ format('manual-verification-{0}', github.sha) }}

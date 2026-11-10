@@ -1,4 +1,5 @@
 <script>
+    import {UploadSimple} from 'phosphor-svelte';
     // Trasferisci dati (self-hosted only): the Bakney ZIP export and import,
     // a transfer format. The server archive above stays the backup.
     import {onMount} from 'svelte';
@@ -30,7 +31,7 @@
 <DataExports title="Trasferisci dati" instanceOwner={true} description="Sposta i dati da o verso Bakney o un altro server con un file ZIP.">
     <svelte:fragment slot="actions">
         {#if importing}<span class="si-pill info">Importazione in corso</span>{/if}
-        <button type="button" class="btn btn-light" on:click={() => importOpen = true}>{importing ? 'Segui importazione' : 'Importa da Bakney'}</button>
+        <button type="button" class="btn btn-light si-btn" on:click={() => importOpen = true}><UploadSimple size={18} weight="duotone" />{importing ? 'Segui importazione' : 'Importa da Bakney'}</button>
     </svelte:fragment>
 </DataExports>
 

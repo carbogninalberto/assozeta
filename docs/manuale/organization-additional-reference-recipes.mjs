@@ -15,10 +15,10 @@ export const organizationAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
     "BE/application/views/payment_views.py": "cc31d3e1d74244930b6929fd2bf9b2d2e6a90a7b915e0edf73000f468d58573d",
     "UI/src/routes/profile/sections/DataManagement.svelte": "349a510108fde62e09cd746c5934f445f3c176efe43946541a59a50cd1890bbd",
-    "UI/src/routes/profile/sections/DataExports.svelte": "55fd9c417dab5ddc9a26c7e760a8eef2db555b22be1b26e6803946069ec5446a",
+    "UI/src/routes/profile/sections/DataExports.svelte": "4fec2d01e6e95c2f7dfc65dfa156e68110e0479264dc86995598948e7f4b2ca9",
     "BE/application/views/export_views.py": "1620991baa696f9ea410edc33fe11a612c8dd9d7d9d5ef8ceb9b0b3cce55544a",
     "BE/application/tasks.py": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c",
-    "UI/src/routes/profile/ProfileMenu.svelte": "c083936170965608775be53540477754b033d3940313bfce54b09a9dfe426847",
+    "UI/src/routes/profile/ProfileMenu.svelte": "5bb6b5afa551d786105d4ccea32a42358182e8cff50ddc6662bddb6e79c73e13",
     // Reviewed: association scope is retained for both endpoints; links to
     // soft-deleted associates now survive export and repeated restore.
     // Category/VAT dependencies of exported soft-deleted payments remain retained;
