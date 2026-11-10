@@ -117,6 +117,12 @@ for index, key in enumerate(('same_associate', 'same_tax', 'linked_associate', '
                              'attached_other', 'athlete_invoice', 'associate_invoice', 'other_tax')):
     document(key, f'{key.replace("_", "-")}.pdf', created=f'2026-03-{index + 1:02d}T10:00:00+00:00', body=f'%PDF-{key}',
              content_type='application/pdf')
+# Stored PDFs whose object is missing (download_file/view_file print them again): no body.
+for index, (key, filename, filepath) in enumerate((
+        ('reprint_sub', 'tessera.pdf', None), ('reprint_inv', 'ricevuta è.pdf', None), ('reprint_both', 'entrambi.pdf', None),
+        ('reprint_two', 'doppia.pdf', None), ('reprint_three', 'tripla.pdf', None), ('reprint_group', 'gruppo.pdf', None),
+        ('reprint_filepath', 'percorso.pdf', 'archive/custom/percorso.pdf'), ('reprint_deleted', 'annullata bis.pdf', None))):
+    document(key, filename, filepath=filepath, created=f'2026-04-{index + 1:02d}T10:00:00.250000+00:00')
 
 # Athletes of the family: another member, and the account the primary association belongs to.
 EXTRA_USERS = {label: {'id': uid(700 + index), 'username': f'docmanager-reads-{label}', 'email': f'docmanager-reads-{label}@example.test'}
@@ -157,6 +163,13 @@ SUBSCRIPTIONS = {
     'blank_elsewhere': {'id': uid(409), 'association': 'foreign_association', 'user': 'foreign_owner', 'document': 'other_tax',
                         'group': None, 'associate': 'blank_elsewhere'},
 }
+REPRINT_SUBSCRIPTIONS = {'reprint_sub': ('reprint_sub', None), 'reprint_both': ('reprint_both', None),
+                         'reprint_two_a': ('reprint_two', None), 'reprint_two_b': ('reprint_two', None),
+                         'reprint_three_a': ('reprint_three', None), 'reprint_three_b': ('reprint_three', None),
+                         'reprint_group': ('reprint_group', 'own_group'), 'reprint_group_other': ('reprint_group', None),
+                         'reprint_filepath': ('reprint_filepath', None)}
+SUBSCRIPTIONS.update({label: {'id': uid(420 + index), 'association': 'own_association', 'user': 'owner', 'document': key, 'group': group}
+                      for index, (label, (key, group)) in enumerate(REPRINT_SUBSCRIPTIONS.items())})
 MEDICALS = {'medical': {'id': uid(500), 'document': 'medical'}, 'empty': {'id': uid(501), 'document': None},
             'athlete': {'id': uid(502), 'document': 'athlete_medical', 'user': 'athlete'},
             'associate': {'id': uid(503), 'document': 'associate_medical'}}
@@ -168,6 +181,10 @@ INVOICES = {
     'athlete': {'id': uid(602), 'association': 'own_association', 'document': 'athlete_invoice', 'deleted': False},
     'associate': {'id': uid(603), 'association': 'own_association', 'document': 'associate_invoice', 'deleted': False},
 }
+INVOICES.update({label: {'id': uid(620 + index), 'association': 'own_association', 'document': key, 'deleted': deleted}
+                 for index, (label, key, deleted) in enumerate((('reprint_inv', 'reprint_inv', False), ('reprint_both', 'reprint_both', False),
+                                                                ('reprint_three', 'reprint_three', False),
+                                                                ('reprint_deleted', 'reprint_deleted', True)))})
 PAYMENTS = {
     'invoice': {'id': uid(740), 'association': 'own_association', 'invoice': 'invoice', 'user': 'owner', 'associate': None},
     'athlete': {'id': uid(741), 'association': 'own_association', 'invoice': 'athlete', 'user': 'athlete', 'associate': None},
@@ -178,9 +195,9 @@ UNKNOWN = uid(999)
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='GET', headers=None, stream=None, challenge=False):
+def add(name, actor, path, status, response, *, method='GET', headers=None, stream=None, challenge=False, renders=(), effect=None):
     case = {'name': f'docmanager-reads-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'challenge': challenge, 'effect': None}
+            'status': status, 'response': response, 'challenge': challenge, 'renders': list(renders), 'effect': effect}
     if stream is not None:
         case['stream'] = stream
     cases.append(case)
@@ -409,6 +426,63 @@ ok('retrieve-dot-file', 'owner', 'hidden', 'application/x-fixture-hidden')
 add('retrieve-missing-object', 'owner', retrieve('missing'), 500, {'exception': 'File not found'})
 add('retrieve-missing-object-view', 'owner', retrieve('missing', 'download=false'), 500, {'exception': 'File not found'})
 add('retrieve-key-outside-location', 'owner', retrieve('escape'), 500, {'exception': "Attempted access to '../outside.pdf' denied."})
+
+# --- retrieve: a stored PDF whose object is missing is printed again --------------------------
+# download_file/view_file call the renderer for the view of the one subscription (else the one invoice) that has
+# the document as its PDF, with the request's Authorization header or 'Bearer <?token>', publish save_to_storage
+# with '<creation timestamp>/<id>/<filename>' and the PDF, read no outcome and still stream: until the worker has
+# stored the file the answer is the provider's missing-key text. effect.published names the document whose
+# storage task the case publishes; effect.store runs the task afterwards, as the worker would.
+NO_KEY = {'exception': 'An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist.'}
+PDF, FAILED, NOT_PDF = ({'status': 200, 'content_type': 'application/pdf', 'body': '$pdf'},
+                        {'status': 500, 'content_type': 'text/plain', 'body': 'renderer failed'},
+                        {'status': 200, 'content_type': 'text/html', 'body': '<html>busy</html>'})
+
+
+def view_of(kind, label):
+    row = SUBSCRIPTIONS[label] if kind == 'subscription' else INVOICES[label]
+    return f'document/{kind}/{row["id"]}/view'
+
+
+def reprint(name, actor, key, kind, label, *, query='', headers=None, authorization='$bearer', reply=PDF, store=False):
+    add(name, actor, retrieve(key, query), 500, NO_KEY, headers=headers,
+        renders=[{'url': view_of(kind, label), 'authorization': authorization, 'reply': reply}],
+        effect={'published': key if reply is PDF else None, 'store': store})
+
+
+def rendered(name, actor, key, *, query='', view=False):
+    add(name, actor, retrieve(key, query), 200, STREAM,
+        stream={'object': '$rendered', 'content_type': 'application/pdf', 'encoding': None,
+                'disposition': None if view else disposition(False, DOCUMENTS[key]['filename'].replace(',', ' '))})
+
+
+reprint('reprint-subscription-first-try', 'owner', 'reprint_sub', 'subscription', 'reprint_sub', store=True)
+rendered('reprint-subscription-stored', 'owner', 'reprint_sub')
+# The query token becomes the bearer; view_file prints the same way.
+reprint('reprint-invoice-view-query-token', 'anonymous', 'reprint_inv', 'invoice', 'reprint_inv', query='download=false&token=$jwt:owner',
+        authorization='Bearer $jwt:owner', store=True)
+rendered('reprint-invoice-stored-view', 'owner', 'reprint_inv', query='download=false', view=True)
+# A renderer failure or an answer that is not a PDF publishes nothing; the stream is still attempted.
+reprint('reprint-renderer-failure', 'owner', 'reprint_both', 'subscription', 'reprint_both', reply=FAILED)
+reprint('reprint-renderer-not-pdf', 'owner', 'reprint_both', 'subscription', 'reprint_both', reply=NOT_PDF)
+# The subscription comes before the invoice. A cookie session has no Authorization header and no ?token.
+reprint('reprint-subscription-before-invoice-cookie', 'anonymous', 'reprint_both', 'subscription', 'reprint_both',
+        headers={'Cookie': 'BKN_AUTH=$jwt:owner'}, authorization=None)
+# Until the task has run, every request prints again.
+reprint('reprint-not-stored-yet-prints-again', 'full_collaborator', 'reprint_both', 'subscription', 'reprint_both', query='download=1')
+add('reprint-two-subscriptions-file-not-found', 'owner', retrieve('reprint_two'), 500, {'exception': 'File not found'})
+# Two subscriptions and one invoice: the invoice view. The document's own token is the bearer.
+reprint('reprint-invoice-after-two-subscriptions-document-token', 'anonymous', 'reprint_three', 'invoice', 'reprint_three',
+        query='token=' + DOCUMENTS['reprint_three']['token'], authorization='Bearer ' + DOCUMENTS['reprint_three']['token'])
+# The subscription manager reads X-Group-Id: two subscriptions without the header, one inside the group.
+add('reprint-group-two-subscriptions-file-not-found', 'owner', retrieve('reprint_group'), 500, {'exception': 'File not found'})
+reprint('reprint-group-header-one-subscription', 'owner', 'reprint_group', 'subscription', 'reprint_group',
+        headers={'X-Group-Id': IDS['own_group']})
+# A document with a filepath is read from it, while the task stores under the creation timestamp: the stored
+# file is never the one read.
+reprint('reprint-filepath-first-try', 'owner', 'reprint_filepath', 'subscription', 'reprint_filepath', store=True)
+reprint('reprint-filepath-prints-again', 'owner', 'reprint_filepath', 'subscription', 'reprint_filepath', query='download=false', store=True)
+add('reprint-invoice-out-of-the-list-file-not-found', 'owner', retrieve('reprint_deleted'), 500, {'exception': 'File not found'})
 
 # --- delete: up to the owner lookup ------------------------------------------------------------
 DELETE_PLAIN = f'/document/{DOCUMENTS["plain"]["id"]}/delete'

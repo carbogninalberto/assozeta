@@ -264,6 +264,62 @@
    "filename": "other-tax.pdf",
    "filepath": null,
    "created": "2026-03-10T10:00:00+00:00"
+  },
+  "reprint_sub": {
+   "id": "a1000000-0000-4000-8000-000000983033",
+   "token": "a1000000-0000-4000-8000-000000983133",
+   "filename": "tessera.pdf",
+   "filepath": null,
+   "created": "2026-04-01T10:00:00.250000+00:00"
+  },
+  "reprint_inv": {
+   "id": "a1000000-0000-4000-8000-000000983034",
+   "token": "a1000000-0000-4000-8000-000000983134",
+   "filename": "ricevuta è.pdf",
+   "filepath": null,
+   "created": "2026-04-02T10:00:00.250000+00:00"
+  },
+  "reprint_both": {
+   "id": "a1000000-0000-4000-8000-000000983035",
+   "token": "a1000000-0000-4000-8000-000000983135",
+   "filename": "entrambi.pdf",
+   "filepath": null,
+   "created": "2026-04-03T10:00:00.250000+00:00"
+  },
+  "reprint_two": {
+   "id": "a1000000-0000-4000-8000-000000983036",
+   "token": "a1000000-0000-4000-8000-000000983136",
+   "filename": "doppia.pdf",
+   "filepath": null,
+   "created": "2026-04-04T10:00:00.250000+00:00"
+  },
+  "reprint_three": {
+   "id": "a1000000-0000-4000-8000-000000983037",
+   "token": "a1000000-0000-4000-8000-000000983137",
+   "filename": "tripla.pdf",
+   "filepath": null,
+   "created": "2026-04-05T10:00:00.250000+00:00"
+  },
+  "reprint_group": {
+   "id": "a1000000-0000-4000-8000-000000983038",
+   "token": "a1000000-0000-4000-8000-000000983138",
+   "filename": "gruppo.pdf",
+   "filepath": null,
+   "created": "2026-04-06T10:00:00.250000+00:00"
+  },
+  "reprint_filepath": {
+   "id": "a1000000-0000-4000-8000-000000983039",
+   "token": "a1000000-0000-4000-8000-000000983139",
+   "filename": "percorso.pdf",
+   "filepath": "archive/custom/percorso.pdf",
+   "created": "2026-04-07T10:00:00.250000+00:00"
+  },
+  "reprint_deleted": {
+   "id": "a1000000-0000-4000-8000-000000983040",
+   "token": "a1000000-0000-4000-8000-000000983140",
+   "filename": "annullata bis.pdf",
+   "filepath": null,
+   "created": "2026-04-08T10:00:00.250000+00:00"
   }
  },
  "objects": {
@@ -539,6 +595,69 @@
    "document": "other_tax",
    "group": null,
    "associate": "blank_elsewhere"
+  },
+  "reprint_sub": {
+   "id": "a1000000-0000-4000-8000-000000983420",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_sub",
+   "group": null
+  },
+  "reprint_both": {
+   "id": "a1000000-0000-4000-8000-000000983421",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_both",
+   "group": null
+  },
+  "reprint_two_a": {
+   "id": "a1000000-0000-4000-8000-000000983422",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_two",
+   "group": null
+  },
+  "reprint_two_b": {
+   "id": "a1000000-0000-4000-8000-000000983423",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_two",
+   "group": null
+  },
+  "reprint_three_a": {
+   "id": "a1000000-0000-4000-8000-000000983424",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_three",
+   "group": null
+  },
+  "reprint_three_b": {
+   "id": "a1000000-0000-4000-8000-000000983425",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_three",
+   "group": null
+  },
+  "reprint_group": {
+   "id": "a1000000-0000-4000-8000-000000983426",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_group",
+   "group": "own_group"
+  },
+  "reprint_group_other": {
+   "id": "a1000000-0000-4000-8000-000000983427",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_group",
+   "group": null
+  },
+  "reprint_filepath": {
+   "id": "a1000000-0000-4000-8000-000000983428",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_filepath",
+   "group": null
   }
  },
  "medicals": {
@@ -584,6 +703,30 @@
    "association": "own_association",
    "document": "associate_invoice",
    "deleted": false
+  },
+  "reprint_inv": {
+   "id": "a1000000-0000-4000-8000-000000983620",
+   "association": "own_association",
+   "document": "reprint_inv",
+   "deleted": false
+  },
+  "reprint_both": {
+   "id": "a1000000-0000-4000-8000-000000983621",
+   "association": "own_association",
+   "document": "reprint_both",
+   "deleted": false
+  },
+  "reprint_three": {
+   "id": "a1000000-0000-4000-8000-000000983622",
+   "association": "own_association",
+   "document": "reprint_three",
+   "deleted": false
+  },
+  "reprint_deleted": {
+   "id": "a1000000-0000-4000-8000-000000983623",
+   "association": "own_association",
+   "document": "reprint_deleted",
+   "deleted": true
   }
  },
  "extra_users": {
@@ -689,6 +832,7 @@
     "error": "Invalid token. Not Authorized."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -702,6 +846,7 @@
     "error": "Invalid token. Not Authorized."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -725,6 +870,7 @@
     ]
    },
    "challenge": true,
+   "renders": [],
    "effect": null
   },
   {
@@ -740,6 +886,7 @@
     "error": "Invalid token. Not Authorized."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -753,6 +900,7 @@
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -766,6 +914,7 @@
     "detail": "Access denied: No permission mapping for endpoint 'document/retrieve/a1000000-0000-4000-8000-000000983001'. Contact administrator to grant access."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -782,6 +931,7 @@
     "badly formed hexadecimal UUID string"
    ],
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -795,6 +945,7 @@
     "badly formed hexadecimal UUID string"
    ],
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -808,6 +959,7 @@
     "invalid literal for int() with base 16: 'zzaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'"
    ],
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -821,6 +973,7 @@
     "detail": "Method \"POST\" not allowed."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -843,6 +996,7 @@
     ]
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -854,6 +1008,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -871,6 +1026,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -888,6 +1044,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -905,6 +1062,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -922,6 +1080,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -939,6 +1098,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -956,6 +1116,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -973,6 +1134,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -990,6 +1152,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "group",
@@ -1009,6 +1172,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "group",
@@ -1030,6 +1194,7 @@
     "error": "Document not found."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1043,6 +1208,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "group",
@@ -1062,6 +1228,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "group",
@@ -1081,6 +1248,7 @@
     "error": "Document not found."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1092,6 +1260,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "medical",
@@ -1111,6 +1280,7 @@
     "error": "Document not found."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1122,6 +1292,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "invoice",
@@ -1141,6 +1312,7 @@
     "error": "Document not found."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1152,6 +1324,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "deleted_invoice",
@@ -1171,6 +1344,7 @@
     "error": "Document not found."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1182,6 +1356,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "foreign",
@@ -1199,6 +1374,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "foreign",
@@ -1216,6 +1392,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -1233,6 +1410,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "athlete",
@@ -1250,6 +1428,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -1270,6 +1449,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -1289,6 +1469,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -1310,6 +1491,7 @@
     "error": "Invalid token. Not Authorized."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1321,6 +1503,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -1338,6 +1521,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -1355,6 +1539,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -1374,6 +1559,7 @@
     "error": "Document not found."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1385,6 +1571,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -1402,6 +1589,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -1419,6 +1607,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -1436,6 +1625,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -1455,6 +1645,7 @@
     "error": "Invalid token. Not Authorized."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1468,6 +1659,7 @@
     "error": "Invalid token. Not Authorized."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1481,6 +1673,7 @@
     "error": "Invalid token. Not Authorized."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1492,6 +1685,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -1509,6 +1703,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "export",
@@ -1528,6 +1723,7 @@
     "error": "Not authorized to access this export."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1541,6 +1737,7 @@
     "error": "Not authorized to access this export."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1554,6 +1751,7 @@
     "error": "Not authorized to access this export."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1568,6 +1766,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "export",
@@ -1585,6 +1784,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "export",
@@ -1604,6 +1804,7 @@
     "error": "Not authorized to access this export."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1615,6 +1816,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "orphan_export",
@@ -1634,6 +1836,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1645,6 +1848,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "export",
@@ -1662,6 +1866,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "export",
@@ -1679,6 +1884,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "export",
@@ -1696,6 +1902,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "export",
@@ -1715,6 +1922,7 @@
     "error": "Invalid download token."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1728,6 +1936,7 @@
     "error": "Invalid download token."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1741,6 +1950,7 @@
     "error": "Invalid download token."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1754,6 +1964,7 @@
     "error": "Invalid download token."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1767,6 +1978,7 @@
     "error": "Invalid download token."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1780,6 +1992,7 @@
     "error": "Invalid download token."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1793,6 +2006,7 @@
     "error": "Invalid download token."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1806,6 +2020,7 @@
     "error": "Invalid download token."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1819,6 +2034,7 @@
     "error": "Invalid download token."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1832,6 +2048,7 @@
     "error": "Invalid download token."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1845,6 +2062,7 @@
     "error": "Document not found."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1858,6 +2076,7 @@
     "error": "Document not found."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1871,6 +2090,7 @@
     "error": "Document not found."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1882,6 +2102,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1893,6 +2114,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1904,6 +2126,7 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -1915,6 +2138,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "export",
@@ -1932,6 +2156,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "athlete",
@@ -1949,6 +2174,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "same_associate",
@@ -1966,6 +2192,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "same_associate",
@@ -1983,6 +2210,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "same_tax",
@@ -2000,6 +2228,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "linked_associate",
@@ -2017,6 +2246,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "athlete_medical",
@@ -2034,6 +2264,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "athlete_medical",
@@ -2051,6 +2282,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "associate_medical",
@@ -2068,6 +2300,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "associate_medical",
@@ -2085,6 +2318,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "attached",
@@ -2102,6 +2336,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "athlete_invoice",
@@ -2119,6 +2354,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "athlete_invoice",
@@ -2136,6 +2372,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "associate_invoice",
@@ -2153,6 +2390,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "associate_invoice",
@@ -2170,6 +2408,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "athlete",
@@ -2189,6 +2428,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "athlete",
@@ -2206,6 +2446,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "same_associate",
@@ -2225,6 +2466,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2238,6 +2480,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2251,6 +2494,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2264,6 +2508,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2277,6 +2522,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2290,6 +2536,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2303,6 +2550,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2316,6 +2564,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2329,6 +2578,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2342,6 +2592,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2355,6 +2606,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2368,6 +2620,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2381,6 +2634,7 @@
     "error": "Document not found."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2396,6 +2650,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2409,6 +2664,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2420,6 +2676,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -2439,6 +2696,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2452,6 +2710,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2465,6 +2724,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2478,6 +2738,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2491,6 +2752,7 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2502,6 +2764,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "athlete",
@@ -2519,6 +2782,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "plain",
@@ -2536,6 +2800,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "athlete_invoice",
@@ -2553,6 +2818,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "athlete",
@@ -2570,6 +2836,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "athlete_invoice",
@@ -2587,6 +2854,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "athlete",
@@ -2607,6 +2875,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "athlete",
@@ -2627,6 +2896,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "athlete",
@@ -2647,6 +2917,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "athlete",
@@ -2669,6 +2940,7 @@
     "detail": "Documento non disponibile per questa associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2685,6 +2957,7 @@
     "detail": "Documento non disponibile per questa associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2701,6 +2974,7 @@
     "error": "Not authorized to access this export."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2717,6 +2991,7 @@
     "error": "Document not found."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2728,6 +3003,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "comma",
@@ -2745,6 +3021,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "comma",
@@ -2762,6 +3039,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "unicode",
@@ -2779,6 +3057,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "quote",
@@ -2796,6 +3075,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "noext",
@@ -2813,6 +3093,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "unknown",
@@ -2830,6 +3111,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "gzip",
@@ -2847,6 +3129,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "upper",
@@ -2864,6 +3147,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "tarball",
@@ -2881,6 +3165,7 @@
    "status": 200,
    "response": "<stream>",
    "challenge": false,
+   "renders": [],
    "effect": null,
    "stream": {
     "object": "hidden",
@@ -2900,6 +3185,7 @@
     "exception": "File not found"
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2913,6 +3199,7 @@
     "exception": "File not found"
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2926,6 +3213,359 @@
     "exception": "Attempted access to '../outside.pdf' denied."
    },
    "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-reprint-subscription-first-try",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983033",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000983420/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "published": "reprint_sub",
+    "store": true
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-subscription-stored",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983033",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "$rendered",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"tessera.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-invoice-view-query-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983034?download=false&token=$jwt:owner",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000983620/view",
+     "authorization": "Bearer $jwt:owner",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "published": "reprint_inv",
+    "store": true
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-invoice-stored-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983034?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "$rendered",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-renderer-failure",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983035",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000983421/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 500,
+      "content_type": "text/plain",
+      "body": "renderer failed"
+     }
+    }
+   ],
+   "effect": {
+    "published": null,
+    "store": false
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-renderer-not-pdf",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983035",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000983421/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "text/html",
+      "body": "<html>busy</html>"
+     }
+    }
+   ],
+   "effect": {
+    "published": null,
+    "store": false
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-subscription-before-invoice-cookie",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983035",
+   "headers": {
+    "Cookie": "BKN_AUTH=$jwt:owner"
+   },
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000983421/view",
+     "authorization": null,
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "published": "reprint_both",
+    "store": false
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-not-stored-yet-prints-again",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983035?download=1",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000983421/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "published": "reprint_both",
+    "store": false
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-two-subscriptions-file-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983036",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "File not found"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-reprint-invoice-after-two-subscriptions-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983037?token=a1000000-0000-4000-8000-000000983137",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000983622/view",
+     "authorization": "Bearer a1000000-0000-4000-8000-000000983137",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "published": "reprint_three",
+    "store": false
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-group-two-subscriptions-file-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983038",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "File not found"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-reprint-group-header-one-subscription",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983038",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000983426/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "published": "reprint_group",
+    "store": false
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-filepath-first-try",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983039",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000983428/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "published": "reprint_filepath",
+    "store": true
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-filepath-prints-again",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983039?download=false",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000983428/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "published": "reprint_filepath",
+    "store": true
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-invoice-out-of-the-list-file-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983040",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "File not found"
+   },
+   "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2939,6 +3579,7 @@
     "detail": "Authentication credentials were not provided."
    },
    "challenge": true,
+   "renders": [],
    "effect": null
   },
   {
@@ -2952,6 +3593,7 @@
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2965,6 +3607,7 @@
     "detail": "Access denied: No permission mapping for endpoint 'document/a1000000-0000-4000-8000-000000983001/delete'. Contact administrator to grant access."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2981,6 +3624,7 @@
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -2994,6 +3638,7 @@
     "detail": "Method \"GET\" not allowed."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -3016,6 +3661,7 @@
     ]
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -3029,6 +3675,7 @@
     "badly formed hexadecimal UUID string"
    ],
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -3042,6 +3689,7 @@
     "error": "Document not found."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -3055,6 +3703,7 @@
     "error": "Document not found."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   },
   {
@@ -3068,6 +3717,7 @@
     "error": "Document not found."
    },
    "challenge": false,
+   "renders": [],
    "effect": null
   }
  ]

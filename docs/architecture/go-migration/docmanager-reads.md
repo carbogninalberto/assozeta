@@ -45,6 +45,17 @@ The rendering routes of `BE/docmanager/urls.py` are not part of this family (see
   - A key outside the location is `500 {"exception": "Attempted access to '<name>' denied."}`.
   - `exists` is a HEAD where only 404 means absent. An absent object linked to no single subscription or invoice is
     `500 {"exception": "File not found"}`.
+  - An absent object that exactly one subscription (`GroupAwareManager`), or else exactly one listed invoice, has as its
+    PDF is printed again: `print_and_store_pdf` asks the renderer for `document/subscription/<id>/view` or
+    `document/invoice/<id>/view` with the request's `Authorization` header (or `Bearer <?token>` when the header is absent,
+    `null` when both are), and on a PDF answer publishes `save_to_storage('<creation timestamp>/<id>/<filename>',
+    <base64 PDF>)`. Its outcome is not read (a renderer failure or a failed publish changes nothing), and the stream is
+    still attempted: until the worker has stored the file the answer is `500 {"exception": "An error occurred
+    (NoSuchKey) when calling the GetObject operation: The specified key does not exist."}`, and every request prints
+    again. The next request after the task has run streams the stored PDF. A document with a `filepath` is read from
+    it while the task stores under the creation timestamp, so it prints on every request. Go:
+    `DocmanagerReadsStore.RenderSource` returns the view, `DocumentRender.PrintAndStore` renders and publishes, and
+    `documentobjects.NoSuchKeyError` carries the provider text. The names Go refuses (below) are refused before printing.
   - `Content-Type` is `mimetypes.guess_type(name)[0]` (`pkg/pymime`: Python 3.13's built-in table plus every existing
     `mimetypes.knownfiles` file, read once per process, with suffix and encoding maps). Failing that, the object's type
     is used, and then `application/octet-stream`.
@@ -60,10 +71,8 @@ active `SportAssociation`, gets `404 {"error": "Document not found."}`. The owne
 
 ## Not ported (refused with the 500 page before any write)
 
-- **Retrieve** of an absent object that exactly one subscription, or else one invoice, references. Django re-renders it
-  with Puppeteer and the `save_to_storage` Celery task.
-- **Retrieve** provider errors: a HEAD failing with a status other than 404, or a failed `GetObject`. Django answers
-  `500 {"exception": "<botocore text>"}`.
+- **Retrieve** provider errors: a HEAD failing with a status other than 404, or a `GetObject` failure other than a
+  missing key. Django answers `500 {"exception": "<botocore text>"}`.
 - **Retrieve** names outside the modelled grammar:
   - filenames `urllib.parse` reads as a URL with a scheme of two or more characters (Python guesses from the URL path);
   - a quotable filename ending in a newline (Django's header check raises);
@@ -131,3 +140,16 @@ GREEN `secdoc-versioned-final` (after merging the base; `secdoc-versioned-r1` be
 Mutations, all CAUGHT: `secdoc-mutation-r1` (retrieve without the member check), `secdoc-mutation-r2` (the instance owner
 never matched: `docmanager-reads-retrieve-primary-association-account`) and `secdoc-mutation-r3` (blank tax codes joined:
 `docmanager-reads-retrieve-athlete-blank-tax-code-document`).
+
+Missing PDFs printed again (`v2doc2-*`): 15 more cases (170 in all) over 8 documents without an object. The runner also
+owns the renderer stub of document-render and the run's Celery broker; a case must send exactly the authored renderer
+request and publish exactly the authored `save_to_storage` message, and `effect.store` then runs
+`docmanager.tasks.save_to_storage` as the worker would, so the following case streams the stored PDF. The stored
+objects are removed before and after each workload. Covered: the first try and the stored retry (download and view), the
+query token and the document token as bearer, a cookie session (`null` header), a renderer failure and a non-PDF answer
+(nothing published), repeated printing until the task runs, two subscriptions (not found), two subscriptions and an
+invoice (the invoice), the `X-Group-Id` count, a `filepath` document and an invoice out of the list. RED `v2doc2-red-r1`:
+Django 170/170, Go the 500 page on `reprint-subscription-first-try`. GREEN `v2doc2-versioned-r1`: 170/170 on native
+Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `v2doc2-mutation-r1`: storing under the document's
+`filepath` fails `reprint-filepath-first-try` (`celery.headers:0`). Re-run green (`v2doc2-rerun-r1`): document-render
+and documents-writes.

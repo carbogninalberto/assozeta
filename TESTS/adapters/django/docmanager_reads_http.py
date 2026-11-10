@@ -11,10 +11,21 @@ archive rows, associates, subscriptions, medical certificates, attached files,
 invoices and payments, plus a self-hosted InstanceConfiguration whose primary
 association belongs to an athlete account. Every case is
 a read or a refusal: the complete model state and the cache must be
-unchanged. Download tokens are issued per workload with django.core.signing
+unchanged.
+
+A stored PDF whose object is missing is printed again: service_context also
+owns the renderer stub of document_render_http (scripted per case, every
+request compared with the authored FastRender payload), and the fixture
+publishes Celery tasks to the run's broker. Such a case must publish exactly
+one save_to_storage('<creation timestamp>/<id>/<filename>', base64 PDF), or
+nothing when the renderer fails. With effect.store the adapter then runs the
+task itself (docmanager.tasks.save_to_storage, as the worker would), so the
+next case streams the stored PDF. The objects stored this way are removed
+before and after each workload. Download tokens are issued per workload with django.core.signing
 (fresh, expired, tampered, compressed and crafted payloads).
 """
 import base64
+import types
 from contextlib import contextmanager
 from datetime import date, datetime
 from decimal import Decimal
@@ -23,18 +34,49 @@ import os
 import time
 import zlib
 
-from TESTS.contracts import test_docmanager_reads_http as contract
+from TESTS.contracts import test_docmanager_reads_http as base_contract
+from TESTS.adapters.django import document_render_http as renderer
 from TESTS.adapters.django import family_harness as harness
 
 SOURCES = ('TESTS/fixtures/docmanager_reads_http.json', 'TESTS/contracts/test_docmanager_reads_http.py',
            'TESTS/adapters/django/docmanager_reads_http.py', 'TESTS/adapters/django/instance_logo.py',
-           'TESTS/adapters/django/s3_objects.py', 'BE/docmanager/views/document_view.py',
+           'TESTS/adapters/django/s3_objects.py', 'TESTS/adapters/django/document_render_http.py',
+           'TESTS/contracts/test_document_render_http.py', 'BE/docmanager/tasks.py', 'BE/docmanager/views/document_view.py',
            'BE/docmanager/access.py', 'BE/instance/permissions.py', 'BE/docmanager/download_tokens.py', 'BE/docmanager/models.py', 'BE/application/document_scope.py',
            'BE/application/utils/printing.py', 'BE/application/impersonation_scope.py', 'BE/application/mixin.py',
            'BE/application/models/subscriptions_models.py', 'BE/application/models/invoices_models.py',
            'BE/application/models/user_models.py', 'BE/application/permissions_registry.py',
            'BE/core/middleware.py') + harness.SOURCES
 BUCKET = 'docmanager-reads-fixture'
+STORAGE = {}
+
+
+def _assert_case(case, base_url, *, token, sessions):
+    with renderer.STUB['lock']:
+        renderer.STUB['log'] = []
+        renderer.STUB['script'] = [item['reply'] for item in case['renders']]
+    renderer.STUB['token'] = token
+    return base_contract.assert_case(case, base_url, token=token, sessions=sessions)
+
+
+# The harness drives this proxy: the renderer stub is scripted with the case's replies before each request.
+contract = types.SimpleNamespace(load_source=base_contract.load_source, require=base_contract.require, assert_case=_assert_case,
+                                 ResponseFailure=base_contract.ResponseFailure, RUNTIME=base_contract.RUNTIME)
+
+
+def authored_keys(source):
+    return sorted(stored['key'] for stored in source['objects'].values())
+
+
+def remove_stored(source):
+    """Delete the objects the save_to_storage step stored; the authored ones must all remain."""
+    client = STORAGE['client']
+    listed = sorted(item['Key'] for item in client.list_objects_v2(Bucket=BUCKET).get('Contents', []))
+    authored = authored_keys(source)
+    contract.require(authored and set(authored) <= set(listed), 'storage.authored-objects')
+    for key in listed:
+        if key not in authored:
+            client.delete_object(Bucket=BUCKET, Key=key)
 
 
 @contextmanager
@@ -55,12 +97,17 @@ def service_context(report, log):
                               ContentType=stored['content_type'], **extra)
         storages = {'default': {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'},
                     'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}}
-        with override_settings(STORAGES=storages, AWS_ACCESS_KEY_ID=access, AWS_SECRET_ACCESS_KEY=secret,
-                               AWS_STORAGE_BUCKET_NAME=BUCKET, AWS_S3_REGION_NAME='us-east-1', AWS_S3_ENDPOINT_URL=endpoint,
-                               AWS_LOCATION=source['location'], AWS_S3_ADDRESSING_STYLE='path'):
-            yield
-        listed = sorted(item['Key'] for item in client.list_objects_v2(Bucket=BUCKET).get('Contents', []))
-        contract.require(listed == sorted(stored['key'] for stored in source['objects'].values()), 'storage.objects-unchanged')
+        STORAGE['client'] = client
+        try:
+            with override_settings(STORAGES=storages, AWS_ACCESS_KEY_ID=access, AWS_SECRET_ACCESS_KEY=secret,
+                                   AWS_STORAGE_BUCKET_NAME=BUCKET, AWS_S3_REGION_NAME='us-east-1', AWS_S3_ENDPOINT_URL=endpoint,
+                                   AWS_LOCATION=source['location'], AWS_S3_ADDRESSING_STYLE='path'), \
+                    renderer.service_context(report, log):
+                yield
+            listed = sorted(item['Key'] for item in client.list_objects_v2(Bucket=BUCKET).get('Contents', []))
+            contract.require(listed == authored_keys(source), 'storage.objects-unchanged')
+        finally:
+            STORAGE.clear()
 
 
 def seed_rows(source, created):
@@ -158,14 +205,45 @@ def download_tokens(source):
     }
 
 
-fixture_context = harness.fixture_context_for(contract, seed_rows)
-_run_workload = harness.run_workload_for(contract)
+fixture_context = harness.with_celery_broker(harness.fixture_context_for(contract, seed_rows))
+
+
+def assert_effect(case, before, after, source, context):
+    """Nothing is written. A case that prints a missing PDF again sends the authored renderer requests and
+    publishes the storage task of the document; effect.store then runs the task as the worker would."""
+    require = contract.require
+    require(before == after, 'state.unchanged')
+    filled = {**case, 'renders': [{**item, 'authorization': base_contract.fill(item['authorization'])} for item in case['renders']]}
+    renderer.check_renderer(filled)
+    effect = case['effect'] or {'published': None, 'store': False}
+    expected = []
+    if effect['published']:
+        row = source['documents'][effect['published']]
+        stored = f"{datetime.fromisoformat(row['created']).timestamp()}/{row['id']}/{row['filename']}"
+        expected.append({'task': 'save_to_storage', 'args': [stored, base64.b64encode(renderer.PDF_BYTES).decode()], 'kwargs': []})
+    require(bool(expected) or not effect['store'], 'fixture.store-without-task')
+    checked = harness.celery_published(contract, context['fixture'], expected, since=context['prepared']['started'], until=time.time())
+    if effect['store']:
+        from docmanager.tasks import save_to_storage
+        from kombu.utils.json import loads
+        args, kwargs, _ = loads(base64.b64decode(checked[0]['body']))
+        require(len(args) == 2 and not kwargs, 'celery.storage-arguments')
+        save_to_storage.run(*args)
+        key = f"{source['location']}/{args[0]}"
+        head = STORAGE['client'].head_object(Bucket=BUCKET, Key=key)
+        require(head['ContentLength'] == len(renderer.PDF_BYTES), 'storage.stored-object')
+
+
+_run_workload = harness.run_workload_for(contract, assert_effect, prepare=lambda source: {'started': time.time()})
 
 
 def run_workload(label, backend, base_url, fixture, apps, raw, observer):
+    source = contract.load_source()
     contract.RUNTIME.clear()
-    contract.RUNTIME.update(tokens=fixture['tokens'], download_tokens=download_tokens(contract.load_source()))
+    contract.RUNTIME.update(tokens=fixture['tokens'], download_tokens=download_tokens(source), pdf=renderer.PDF_BYTES)
+    remove_stored(source)
     try:
         return _run_workload(label, backend, base_url, fixture, apps, raw, observer)
     finally:
+        remove_stored(source)
         contract.RUNTIME.clear()

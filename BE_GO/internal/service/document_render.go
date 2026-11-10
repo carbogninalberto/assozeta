@@ -315,6 +315,33 @@ func (s *DocumentRender) print(ctx context.Context, identity domain.ResolvedIden
 	return &DocumentRenderReply{Status: 200, PDF: pdf, Disposition: pdfrender.HeaderBytes(disposition + "; filename=" + job.filename)}, nil
 }
 
+// PrintAndStore is print_and_store_pdf for a stored document whose object is
+// missing (download_file/view_file): the renderer prints the view and the
+// save_to_storage task receives '<creation timestamp>/<id>/<filename>' with
+// the PDF. The callers do not read the outcome: every failure is logged only.
+func (s *DocumentRender) PrintAndStore(ctx context.Context, view string, authorization *string, document domain.StoredDocument) {
+	id, err := uuid.Parse(document.ID)
+	if err != nil {
+		slog.Error("document reprint: document id", "error", err)
+		return
+	}
+	file, err := documentkey.StoredName(document.Created, id, document.Filename, nil)
+	if err != nil {
+		slog.Error("document reprint: storage name", "error", err)
+		return
+	}
+	pdf, err := s.renderer.Render(ctx, view, authorization)
+	if err != nil {
+		slog.Error("document reprint: renderer", "error", err)
+		return
+	}
+	publish, cancel := context.WithTimeout(context.WithoutCancel(ctx), documentRenderPublishWait)
+	defer cancel()
+	if _, err = s.publisher.Publish(publish, celery.Task{Name: saveToStorageTask, Args: []any{file, base64.StdEncoding.EncodeToString(pdf)}}); err != nil {
+		slog.Error("document reprint: storage task not published", "error", err)
+	}
+}
+
 // lookupFailure maps a lookup error to the view's except clause.
 func lookupFailure(err error, missing *DocumentRenderReply) (*DocumentRenderReply, error) {
 	if errors.Is(err, domain.ErrRenderNotFound) {
