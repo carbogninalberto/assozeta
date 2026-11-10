@@ -32,13 +32,16 @@ def _acl(client):
 
 
 def _denials(client, command):
-    counts = {}
-    for entry in client.acl_log(128):
-        if (entry['username'] == 'default' and entry['reason'] == 'command'
-                and entry['object'].lower() == command.lower()):
-            identity = entry.get('entry-id', entry['client-info'].get('id'))
-            counts[str(identity)] = int(entry['count'])
-    return counts
+    """Total logged denials of one command for the default user.
+
+    Redis merges repeated denials into one log entry and, before 7.2, has no
+    entry id: the same client can own several entries once a merge window has
+    passed. Counting per client id would let an older entry hide a new one, so
+    sum every matching entry instead.
+    """
+    return sum(int(entry['count']) for entry in client.acl_log(128)
+               if entry['username'] == 'default' and entry['reason'] == 'command'
+               and entry['object'].lower() == command.lower())
 
 
 def _address_and_command(address, command):
@@ -88,8 +91,7 @@ def _deny_acl(client, address, command):
         finally:
             try:
                 after = _denials(client, command)
-                receipt['observed_denials'] = sum(max(0, count - before.get(key, 0))
-                                                  for key, count in after.items())
+                receipt['observed_denials'] = max(0, after - before)
             finally:
                 # Do not reset passwords, keys, channels, flags or unrelated
                 # commands. Redis executes this ACL update atomically.
