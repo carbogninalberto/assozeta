@@ -47,7 +47,9 @@ value the UUID field rejects, or an unknown group, is a 500 before any row), the
 description defaults and the create entry. Its index resolves through the actor's own association (none for a
 collaborator) unless the body set the association. The view then reads `data['complex_item']` (missing: 500) and, when
 truthy, the party: `Istruttori`, `Fornitori`, `Iscrizioni` (the subscription's associate) or `Persone`; a missing key or
-object is a 500. These failures come after the create, which stays (no atomic block). It sets user and association
+object is a 500. Payment parties only apply to the caller's association (instructors through the association's user):
+another association's party is `403 {'detail': 'User not allowed.'}`. These failures come after the create, which stays
+(no atomic block). It sets user and association
 and saves again: the update entry is written in `pre_save`, so its index resolves from the unassociated stored row
 through the changes' `sport_association` (`changes_json.sport_association`). Response `201` PaymentSerializer of the
 in-memory payment.
@@ -58,7 +60,7 @@ in-memory payment.
 association: `403 {'detail': 'User not allowed.'}`), `data.keys()` (non-dict: 500), blank dates dropped, the partial
 serializer with `raise_exception` (400 JSON errors). Instructor and supplier are always cleared; a truthy `complex_item`
 also clears the associate before setting its party, and a truthy `subscription_id` sets the subscription's associate
-last. `payment_intent_id` is cleared, the save hook runs, and the full-row save is audited with the changed fields
+last; a party or subscription of another association is `403 {'detail': 'User not allowed.'}` before the save. `payment_intent_id` is cleared, the save hook runs, and the full-row save is audited with the changed fields
 (indexed directly). Response `{'data': {'payment': PaymentSerializer}}`.
 
 ## Bulk add
@@ -69,7 +71,8 @@ to 0..3 (booleans and integral floats included). `set(associate_ids)` keeps the 
 UUIDField rejects malformed members (500) and None is dropped. Unknown, foreign, deleted and other-group ids are listed by
 `str()` (uppercase spellings of a valid id included); nothing valid answers `200` with no row. Otherwise the view computes
 the defaults itself: the association's account or else the default bank account (an id of another association gives
-none), the category by key or else the default one, the description by subject, `paid` from the body or the user, the
+none), the category by key among the association's own or shared categories (another association's: none) or else
+the default one, the description by subject, `paid` from the body or the user, the
 dates (`strptime`, otherwise now for the creation date and `DateTimeField.to_python` for the payment date) and one atomic
 `bulk_create`: no `save()`, no signals, no audit, no group. Invalid booleans, Infinity, overflowing amounts and invalid
 payment dates are a 500 with nothing written. Response `201`.
@@ -136,3 +139,10 @@ default storage and checks each case's Documents, payment links, objects (key, b
 Mutation `v2pay-mutation-r4` (indexing the Document create through the scope user instead of the actor) CAUGHT on
 `update-attachment-then-missing-keys`.
 After merging `codex/go-backend-parity` (`d91ea696`): GREEN `v2pay-final-r1` 128/128 on the four transports; documents-writes 124/124 re-run (`v2pay-rerun-r1`, shared `composeDocumentStorage`).
+
+Association scope of payment parties (`v2pay2-scope-*`): 11 cases (139 in all): add and update with an associate,
+subscription, instructor or supplier of another association (403; add keeps the created payment), update with another
+association's `subscription_id`, and bulk add with another association's or a shared category. Django:
+`PaymentAssociationScopeTests` in `BE/application/tests/test_payment_views.py`. RED `v2pay2-scope-red-r1`: Django
+139/139, Go 201 on `add-foreign-party-persone-denied`. GREEN `v2pay2-scope-versioned-r1`: 139/139 on the four transports.
+Mutation `v2pay2-scope-mutation-r1` (skipping the party association comparison) CAUGHT.

@@ -38,7 +38,9 @@ payment/sign (POST): ``request.data`` with exactly the keys payment_id and
 signature (otherwise 400 {'msg': 'validation errors.'}; a body without
 keys() is a 500), is_valid_uuid (400 list), the first live group-aware
 payment by id through scoped_queryset (none: 400 ['payment not found']),
-SignatureRequestSerializer with raise_exception (400 field errors); without a
+the caller's association (``request.user.sport_association``: athletes 403,
+owners without one 500; a payment of another association 403 'User not
+allowed.'), SignatureRequestSerializer with raise_exception (400 field errors); without a
 signature to store the answer is {'status': 'success'} and nothing is written.
 A signature to store creates a Signature (the scope user, or the selected
 person for collaborators, with the trimmed data; audited create indexed to
@@ -198,6 +200,7 @@ PAYMENTS = {
     'sign_group': {'id': next(ids), **row(group_id=IDS['own_group'])},
     'sign_removed': {'id': next(ids), **row(deleted=True)},
     'sign_abroad': {'id': next(ids), **row(sport_association_id=FOREIGN, user_id=IDS['foreign_owner'], payment_category_id=None)},
+    'sign_uncategorized': {'id': 'a1000000-0000-4000-8000-000000993301', **row(payment_category_id=None)},
 }
 STATE = copy.deepcopy(PAYMENTS)
 cases = []
@@ -440,8 +443,16 @@ add('sign-default-flag', 'owner', SIGN, 200, SUCCESS, method='POST', body=sign(O
 add('sign-false-strings', 'owner', SIGN, 200, SUCCESS, method='POST', body=sign(OWN_ID, {'there_is_signature': 'off', 'data': 12}),
     effect=effect())
 add('sign-group', 'owner', SIGN, 200, SUCCESS, method='POST', body=sign(PAYMENTS['sign_group']['id'], UNSIGNED), headers=GROUP, effect=effect())
-add('sign-foreign-payment', 'owner', SIGN, 200, SUCCESS, method='POST', body=sign(PAYMENTS['sign_abroad']['id'], UNSIGNED), effect=effect())
-add('sign-athlete', 'athlete', SIGN, 200, SUCCESS, method='POST', body=sign(OWN_ID, UNSIGNED), effect=effect('athlete'))
+# Payment signing only applies to the caller's association (checked after the lookup, before the signature).
+NOT_ALLOWED = {'detail': 'User not allowed.'}
+add('sign-foreign-payment', 'owner', SIGN, 403, NOT_ALLOWED, method='POST', body=sign(PAYMENTS['sign_abroad']['id'], UNSIGNED))
+add('sign-foreign-payment-with-signature', 'owner', SIGN, 403, NOT_ALLOWED, method='POST',
+    body=sign(PAYMENTS['sign_abroad']['id'], {'there_is_signature': True, 'data': 'firma'}))
+add('sign-foreign-payment-invalid-signature', 'full_collaborator', SIGN, 403, NOT_ALLOWED, method='POST',
+    body=sign(PAYMENTS['sign_abroad']['id'], 'x'))
+add('sign-athlete', 'athlete', SIGN, 403, DENIED_ATHLETE, method='POST', body=sign(OWN_ID, UNSIGNED))
+add('sign-athlete-missing-payment', 'athlete', SIGN, 400, ['payment not found'], method='POST', body=sign(IDS['missing'], UNSIGNED))
+add('sign-owner-without-association-server-error', 'owner_without_association', SIGN, 500, SERVER, method='POST', body=sign(OWN_ID, UNSIGNED))
 add('sign-full-collaborator', 'full_collaborator', SIGN, 200, SUCCESS, method='POST', body=sign(OWN_ID, {'there_is_signature': 0, 'data': ''}),
     effect=effect('full_collaborator'))
 
@@ -473,9 +484,9 @@ add('sign-stores-signature', 'owner', SIGN, 200, SUCCESS, method='POST',
                   payment_index=[OWN, DIRECT]), prints=compensation_print('sign_own'))
 # A collaborator signs as the selected person; the payment without a category gets the default one on save.
 add('sign-collaborator-stores-signature-default-category', 'full_collaborator', SIGN, 200, SUCCESS, method='POST',
-    body=sign(PAYMENTS['sign_abroad']['id'], {'there_is_signature': 'true', 'data': 'firma'}),
-    effect=signed('full_collaborator', 'sign_abroad', IDS['full_collaborator'], 'firma', index=None, payment_index=[FOREIGN, DIRECT],
-                  extra={'payment_category': ['None', '$default_category']}), prints=compensation_print('sign_abroad'))
+    body=sign(PAYMENTS['sign_uncategorized']['id'], {'there_is_signature': 'true', 'data': 'firma'}),
+    effect=signed('full_collaborator', 'sign_uncategorized', IDS['full_collaborator'], 'firma', index=None, payment_index=[OWN, DIRECT],
+                  extra={'payment_category': ['None', '$default_category']}), prints=compensation_print('sign_uncategorized'))
 
 # --- approve with an invoice -----------------------------------------------------
 

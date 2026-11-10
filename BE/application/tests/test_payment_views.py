@@ -7,11 +7,15 @@ from rest_framework.test import APIClient
 
 from application.models.payment_models import Payment, PaymentCategory
 from application.models.user_models import User
+from application.models.subscriptions_models import Signature
+from application.models.user_models import Instructor
 from application.tests.fixtures.factories import (
     create_test_associate,
     create_test_payment,
+    create_test_payment_category,
     create_test_sport_association,
     create_test_subscription,
+    create_test_supplier,
     create_test_user,
 )
 
@@ -613,6 +617,131 @@ class PaymentBulkAddTests(PaymentViewsTestCase):
             str(foreign_associate.associate_id),
             response.data['data']['invalid_associate_ids'],
         )
+
+
+
+class PaymentAssociationScopeTests(PaymentViewsTestCase):
+    """Payment signing and payment parties only apply to the caller's association."""
+
+    def setUp(self):
+        super().setUp()
+        self.other_user = create_test_user(role=User.ASSOCIATION)
+        self.other_association = create_test_sport_association(user=self.other_user)
+
+    def other_payment(self):
+        return create_test_payment(sport_association=self.other_association, user=self.other_user)
+
+    def sign(self, payment):
+        return self.client.post('/payment/sign', {
+            'payment_id': str(payment.payment_id),
+            'signature': {'there_is_signature': True, 'data': 'firma'},
+        }, format='json')
+
+    @patch('application.views.payment_views.print_document_compensation')
+    def test_sign_own_payment(self, printer):
+        payment = self.create_payment()
+
+        response = self.sign(payment)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payment.refresh_from_db()
+        self.assertEqual(payment.signature.signature, 'firma')
+        printer.apply.assert_called_once()
+
+    @patch('application.views.payment_views.print_document_compensation')
+    def test_sign_other_association_payment_is_denied(self, printer):
+        payment = self.other_payment()
+
+        response = self.sign(payment)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, {'detail': 'User not allowed.'})
+        payment.refresh_from_db()
+        self.assertIsNone(payment.signature)
+        self.assertFalse(Signature.objects.exists())
+        printer.apply.assert_not_called()
+
+    @patch('application.views.payment_views.print_document_compensation')
+    def test_athlete_cannot_sign_payment(self, printer):
+        payment = self.create_payment()
+        self.client.force_authenticate(user=self.athlete_user)
+
+        response = self.sign(payment)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        payment.refresh_from_db()
+        self.assertIsNone(payment.signature)
+        self.assertFalse(Signature.objects.exists())
+        printer.apply.assert_not_called()
+
+    def other_parties(self):
+        associate = create_test_associate(sport_association=self.other_association)
+        return {
+            'Persone': {'associate_id': str(associate.associate_id)},
+            'Iscrizioni': {'subscription_id': str(create_test_subscription(
+                sport_association=self.other_association, associate=associate).subscription_id)},
+            'Istruttori': {'instructor_id': str(Instructor.objects.create(
+                user=self.other_user, first_name='Anna', last_name='Bianchi').instructor_id)},
+            'Fornitori': {'supplier_id': str(create_test_supplier(sport_association=self.other_association).supplier_id)},
+        }
+
+    def test_add_with_other_association_party_is_denied(self):
+        for group, ids in self.other_parties().items():
+            with self.subTest(group=group):
+                response = self.client.post('/payment/add', self.payment_payload(
+                    complex_item={'group': group, **ids}), format='json')
+
+                self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+                self.assertEqual(response.data, {'detail': 'User not allowed.'})
+                self.assertFalse(Payment.objects.filter(sport_association=self.sport_association).exclude(
+                    associate=None, instructor=None, supplier=None).exists())
+
+    def test_add_with_own_parties(self):
+        instructor = Instructor.objects.create(user=self.user, first_name='Anna', last_name='Bianchi')
+        supplier = create_test_supplier(sport_association=self.sport_association)
+        for item, field, value in [
+            ({'group': 'Persone', 'associate_id': str(self.associate.associate_id)}, 'associate', self.associate),
+            ({'group': 'Istruttori', 'instructor_id': str(instructor.instructor_id)}, 'instructor', instructor),
+            ({'group': 'Fornitori', 'supplier_id': str(supplier.supplier_id)}, 'supplier', supplier),
+        ]:
+            with self.subTest(group=item['group']):
+                response = self.client.post('/payment/add', self.payment_payload(complex_item=item), format='json')
+
+                self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+                payment = Payment.objects.get(payment_id=response.data['payment_id'])
+                self.assertEqual(getattr(payment, field), value)
+
+    def test_update_with_other_association_party_is_denied(self):
+        payment = self.create_payment()
+        parties = self.other_parties()
+        bodies = [{'complex_item': {'group': group, **ids}} for group, ids in parties.items()]
+        bodies.append({'subscription_id': parties['Iscrizioni']['subscription_id']})
+        for body in bodies:
+            with self.subTest(body=body):
+                response = self.client.patch(f'/payment/{payment.payment_id}/update', body, format='json')
+
+                self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+                self.assertEqual(response.data, {'detail': 'User not allowed.'})
+                payment.refresh_from_db()
+                self.assertEqual(payment.associate, self.associate)
+                self.assertIsNone(payment.instructor)
+                self.assertIsNone(payment.supplier)
+
+    def test_bulk_add_uses_own_or_shared_categories(self):
+        own = create_test_payment_category(sport_association=self.sport_association, name='own')
+        shared = PaymentCategory.objects.create(name='shared', sport_association=None)
+        foreign = create_test_payment_category(sport_association=self.other_association, name='foreign')
+        for category, expected in [(own, own), (shared, shared), (foreign, None)]:
+            with self.subTest(category=category.name):
+                Payment.objects.filter(associate=self.associate).delete()
+                response = self.client.post('/payment/bulk-add', {
+                    'associate_ids': [str(self.associate.associate_id)], 'amount': '10.00',
+                    'payment_category': str(category.payment_category_id),
+                }, format='json')
+
+                self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+                payment = Payment.objects.get(associate=self.associate, sport_association=self.sport_association)
+                self.assertEqual(payment.payment_category, expected)
 
 
 class SubscriptionPaymentIdentityTests(PaymentViewsTestCase):

@@ -501,8 +501,14 @@ func run() (runErr error) {
 	// (print_document_compensation), with invoice-sync-print's CoordinatedTask gate.
 	paymentInvoicePrinter := service.NewInvoiceSyncPrint(service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
 		repository.NewRestoreStates(db), cfg.RestoreLockPath != ""), os.Getenv("CURRENT_HOST"))
+	// payment_stats' Stripe fees: the stripe/* SDK client and Django's cache (DB 1).
+	paymentStatsStripeCache, err := repository.NewPaymentStatsStripeCache(cache)
+	if err != nil {
+		return err
+	}
 	paymentReadsHandler := handler.NewPaymentReadsHandler(service.NewPaymentReads(repository.NewPaymentReads(db), time.Now,
-		cfg.StripePublicKey != "" && cfg.StripeSecretConfigured).WithCompensationPrint(paymentInvoicePrinter),
+		cfg.StripePublicKey != "" && cfg.StripeSecretConfigured).WithCompensationPrint(paymentInvoicePrinter).
+		WithStripeFees(service.NewPaymentStatsStripe(stripeRoutes, paymentStatsStripeCache)),
 		service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/payment/list", paymentReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/stats", paymentReadsHandler.Stats, middleware.DjangoSessionAudit(sessionAuthentication))

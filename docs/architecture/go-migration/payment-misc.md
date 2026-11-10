@@ -60,7 +60,10 @@ so far and answers 200:
 list is a 500). An association-scoped session first checks the body's `payment_id` (`403 Risorsa non disponibile per
 questo utente e associazione.`). `is_valid_uuid` raises `400 [str(exception)]` (`badly formed hexadecimal UUID string`,
 `'int' object has no attribute 'replace'`, the `None` TypeError message). The payment resolves by id through
-`scoped_queryset(Payment.objects)` (live, group-aware; none: `400 ['payment not found']`). `SignatureRequestSerializer`:
+`scoped_queryset(Payment.objects)` (live, group-aware; none: `400 ['payment not found']`). Payment signing only applies to
+the caller's association (`request.user.sport_association`: athletes `403 {'detail': 'User is not a sport association'}`,
+owners without one the 500 page; a payment of another association `403 {'detail': 'User not allowed.'}`), before the
+signature is validated. `SignatureRequestSerializer`:
 `None` is `No data provided`, other non-dicts `Invalid data. Expected a dictionary, but got <type>.`; `there_is_signature`
 DRF boolean (default False, null rejected); `data` required, nullable, blank allowed (trimmed, numbers stringified, bools
 rejected); with a signature flag and empty data `{'data': ['La firma è obbligatoria.']}`. Without the flag:
@@ -127,3 +130,12 @@ CURRENT_HOST print requests (invoice-sync-print's stub). RED `v2pay-red-r1`: Dja
 `/api/v2`. Mutation `v2pay-mutation-r1` (Signature user always the scope user) CAUGHT on
 `sign-collaborator-stores-signature-default-category`.
 After merging `codex/go-backend-parity` (`d91ea696`): GREEN `v2pay-final-r1` 90/90 on the four transports.
+
+## Association scope of payment signing
+
+Fixture 94 cases: signing a payment of another association (unsigned, with a signature, with an invalid signature) is
+`403 User not allowed.`; athletes get `403 User is not a sport association` (a missing payment still `400`); owners
+without an association the 500 page; the collaborator's stored signature now uses an own payment without a category.
+Django: `PaymentAssociationScopeTests` in `BE/application/tests/test_payment_views.py`. RED `v2pay2-scope-red-r1`: Django
+94/94, Go 200 on `sign-foreign-payment`. GREEN `v2pay2-scope-versioned-r1`: 94/94 on the four transports. Mutation
+`v2pay2-scope-mutation-r1` (skipping the association comparison) CAUGHT on `sign-foreign-payment`.

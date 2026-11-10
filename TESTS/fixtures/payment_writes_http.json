@@ -171,6 +171,27 @@
   "vat_number": "01234567890",
   "email": "fornitore@example.test"
  },
+ "foreign_parties": {
+  "subscription": {
+   "id": "a1000000-0000-4000-8000-000000988301",
+   "associate": "abroad",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "created": "2026-08-01T10:00:00Z"
+  },
+  "instructor": {
+   "id": "a1000000-0000-4000-8000-000000988302",
+   "user": "a1000000-0000-4000-8000-000000700007",
+   "first_name": "Klaus",
+   "last_name": "Weber"
+  },
+  "supplier": {
+   "id": "a1000000-0000-4000-8000-000000988303",
+   "name": "Fornitore estero",
+   "vat_number": "09999999999",
+   "email": "fornitore-estero@example.test",
+   "association": "a1000000-0000-4000-8000-000000701002"
+  }
+ },
  "payments": {
   "up_plain": {
    "id": "a1000000-0000-4000-8000-000000988016",
@@ -5524,6 +5545,666 @@
    }
   },
   {
+   "name": "payment-writes-add-foreign-party-persone-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [
+     {
+      "type": "default",
+      "subject": 0,
+      "amount": "10.00",
+      "creation_date": "2026-03-25T00:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Estero",
+      "payment_category_id": "$default_category",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": null,
+      "associate_id": null,
+      "supplier_id": null,
+      "instructor_id": null,
+      "sport_association_id": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": null,
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    ],
+    "changed": {},
+    "audit": [
+     {
+      "key": "$id",
+      "action": 0,
+      "changes": {
+       "payment_id": [
+        "None",
+        "$id"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "subject": [
+        "None",
+        "0"
+       ],
+       "amount": [
+        "None",
+        "10.00"
+       ],
+       "creation_date": [
+        "None",
+        "2026-03-25 00:00:00"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "description": [
+        "None",
+        "Estero"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "associate": [
+        "None",
+        "None"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "None"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "custom_accounts": [
+        "None",
+        "None"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "course": [
+        "None",
+        "null"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     }
+    ],
+    "documents": []
+   },
+   "prints": [],
+   "body": {
+    "creation_date": "2026-03-25",
+    "payment_date": null,
+    "amount": "10",
+    "description": "Estero",
+    "complex_item": {
+     "group": "Persone",
+     "associate_id": "a1000000-0000-4000-8000-000000988011"
+    }
+   }
+  },
+  {
+   "name": "payment-writes-add-foreign-party-iscrizioni-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [
+     {
+      "type": "default",
+      "subject": 0,
+      "amount": "10.00",
+      "creation_date": "2026-03-25T00:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Estero",
+      "payment_category_id": "$default_category",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": null,
+      "associate_id": null,
+      "supplier_id": null,
+      "instructor_id": null,
+      "sport_association_id": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": null,
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    ],
+    "changed": {},
+    "audit": [
+     {
+      "key": "$id",
+      "action": 0,
+      "changes": {
+       "payment_id": [
+        "None",
+        "$id"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "subject": [
+        "None",
+        "0"
+       ],
+       "amount": [
+        "None",
+        "10.00"
+       ],
+       "creation_date": [
+        "None",
+        "2026-03-25 00:00:00"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "description": [
+        "None",
+        "Estero"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "associate": [
+        "None",
+        "None"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "None"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "custom_accounts": [
+        "None",
+        "None"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "course": [
+        "None",
+        "null"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     }
+    ],
+    "documents": []
+   },
+   "prints": [],
+   "body": {
+    "creation_date": "2026-03-25",
+    "payment_date": null,
+    "amount": "10",
+    "description": "Estero",
+    "complex_item": {
+     "group": "Iscrizioni",
+     "subscription_id": "a1000000-0000-4000-8000-000000988301"
+    }
+   }
+  },
+  {
+   "name": "payment-writes-add-foreign-party-istruttori-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [
+     {
+      "type": "default",
+      "subject": 0,
+      "amount": "10.00",
+      "creation_date": "2026-03-25T00:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Estero",
+      "payment_category_id": "$default_category",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": null,
+      "associate_id": null,
+      "supplier_id": null,
+      "instructor_id": null,
+      "sport_association_id": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": null,
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    ],
+    "changed": {},
+    "audit": [
+     {
+      "key": "$id",
+      "action": 0,
+      "changes": {
+       "payment_id": [
+        "None",
+        "$id"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "subject": [
+        "None",
+        "0"
+       ],
+       "amount": [
+        "None",
+        "10.00"
+       ],
+       "creation_date": [
+        "None",
+        "2026-03-25 00:00:00"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "description": [
+        "None",
+        "Estero"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "associate": [
+        "None",
+        "None"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "None"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "custom_accounts": [
+        "None",
+        "None"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "course": [
+        "None",
+        "null"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     }
+    ],
+    "documents": []
+   },
+   "prints": [],
+   "body": {
+    "creation_date": "2026-03-25",
+    "payment_date": null,
+    "amount": "10",
+    "description": "Estero",
+    "complex_item": {
+     "group": "Istruttori",
+     "instructor_id": "a1000000-0000-4000-8000-000000988302"
+    }
+   }
+  },
+  {
+   "name": "payment-writes-add-foreign-party-fornitori-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [
+     {
+      "type": "default",
+      "subject": 0,
+      "amount": "10.00",
+      "creation_date": "2026-03-25T00:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Estero",
+      "payment_category_id": "$default_category",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": null,
+      "associate_id": null,
+      "supplier_id": null,
+      "instructor_id": null,
+      "sport_association_id": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": null,
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    ],
+    "changed": {},
+    "audit": [
+     {
+      "key": "$id",
+      "action": 0,
+      "changes": {
+       "payment_id": [
+        "None",
+        "$id"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "subject": [
+        "None",
+        "0"
+       ],
+       "amount": [
+        "None",
+        "10.00"
+       ],
+       "creation_date": [
+        "None",
+        "2026-03-25 00:00:00"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "description": [
+        "None",
+        "Estero"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "associate": [
+        "None",
+        "None"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "None"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "custom_accounts": [
+        "None",
+        "None"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "course": [
+        "None",
+        "null"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     }
+    ],
+    "documents": []
+   },
+   "prints": [],
+   "body": {
+    "creation_date": "2026-03-25",
+    "payment_date": null,
+    "amount": "10",
+    "description": "Estero",
+    "complex_item": {
+     "group": "Fornitori",
+     "supplier_id": "a1000000-0000-4000-8000-000000988303"
+    }
+   }
+  },
+  {
    "name": "payment-writes-add-attachment-without-keys",
    "actor": "owner",
    "method": "POST",
@@ -6079,6 +6760,127 @@
    "prints": [],
    "body": {
     "subscription_id": "a1000000-0000-4000-8000-000000720009"
+   }
+  },
+  {
+   "name": "payment-writes-update-foreign-party-persone-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988020/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "prints": [],
+   "body": {
+    "complex_item": {
+     "group": "Persone",
+     "associate_id": "a1000000-0000-4000-8000-000000988011"
+    }
+   }
+  },
+  {
+   "name": "payment-writes-update-foreign-party-iscrizioni-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988020/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "prints": [],
+   "body": {
+    "complex_item": {
+     "group": "Iscrizioni",
+     "subscription_id": "a1000000-0000-4000-8000-000000988301"
+    }
+   }
+  },
+  {
+   "name": "payment-writes-update-foreign-party-istruttori-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988020/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "prints": [],
+   "body": {
+    "complex_item": {
+     "group": "Istruttori",
+     "instructor_id": "a1000000-0000-4000-8000-000000988302"
+    }
+   }
+  },
+  {
+   "name": "payment-writes-update-foreign-party-fornitori-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988020/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "prints": [],
+   "body": {
+    "complex_item": {
+     "group": "Fornitori",
+     "supplier_id": "a1000000-0000-4000-8000-000000988303"
+    }
+   }
+  },
+  {
+   "name": "payment-writes-update-foreign-subscription-id-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988021/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "prints": [],
+   "body": {
+    "complex_item": {
+     "group": "Persone",
+     "associate_id": "a1000000-0000-4000-8000-000000988008"
+    },
+    "subscription_id": "a1000000-0000-4000-8000-000000988301"
    }
   },
   {
@@ -19216,6 +20018,128 @@
     "custom_accounts": "a1000000-0000-4000-8000-000000988006",
     "payment_date": "2026-05-02T10:00:00+02:00",
     "meta_payment_categories": null
+   }
+  },
+  {
+   "name": "payment-writes-bulk-add-foreign-category",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/bulk-add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "data": {
+     "created_count": 1,
+     "total_requested": 1,
+     "invalid_associate_ids": {
+      "$any_order": []
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [
+     {
+      "type": "default",
+      "subject": 0,
+      "amount": "1.00",
+      "creation_date": "2026-05-07T00:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": null,
+      "payment_category_id": null,
+      "meta_payment_categories": [],
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "associate_id": "a1000000-0000-4000-8000-000000988007",
+      "supplier_id": null,
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000988004",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    ],
+    "changed": {},
+    "audit": []
+   },
+   "prints": [],
+   "body": {
+    "associate_ids": [
+     "a1000000-0000-4000-8000-000000988007"
+    ],
+    "amount": 1,
+    "creation_date": "2026-05-07",
+    "payment_category": "a1000000-0000-4000-8000-000000988003"
+   }
+  },
+  {
+   "name": "payment-writes-bulk-add-shared-category",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/bulk-add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "data": {
+     "created_count": 1,
+     "total_requested": 1,
+     "invalid_associate_ids": {
+      "$any_order": []
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [
+     {
+      "type": "default",
+      "subject": 0,
+      "amount": "2.00",
+      "creation_date": "2026-05-08T00:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": null,
+      "payment_category_id": "a1000000-0000-4000-8000-000000988002",
+      "meta_payment_categories": [],
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "associate_id": "a1000000-0000-4000-8000-000000988007",
+      "supplier_id": null,
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000988004",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    ],
+    "changed": {},
+    "audit": []
+   },
+   "prints": [],
+   "body": {
+    "associate_ids": [
+     "a1000000-0000-4000-8000-000000988007"
+    ],
+    "amount": 2,
+    "creation_date": "2026-05-08",
+    "payment_category": "a1000000-0000-4000-8000-000000988002"
    }
   },
   {

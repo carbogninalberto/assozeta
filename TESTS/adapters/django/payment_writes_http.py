@@ -161,6 +161,17 @@ def seed_rows(source, created):
     vendor = source['supplier']
     insert(SupplierAndCustomers, SupplierAndCustomers(supplier_id=vendor['id'], name=vendor['name'], vat_number=vendor['vat_number'],
                                                       email=vendor['email'], sport_association_id=own))
+    foreign = source['foreign_parties']
+    subscription = foreign['subscription']
+    insert(Subscription, Subscription(subscription_id=subscription['id'], sport_association_id=subscription['association'],
+                                      user_id=ids['foreign_owner'], associate_id=associates[subscription['associate']]['id'],
+                                      creation_date=moment(subscription['created']), status_flag=Subscription.ACCEPTED))
+    teacher = foreign['instructor']
+    insert(Instructor, Instructor(instructor_id=teacher['id'], user_id=teacher['user'], first_name=teacher['first_name'],
+                                  last_name=teacher['last_name']))
+    vendor = foreign['supplier']
+    insert(SupplierAndCustomers, SupplierAndCustomers(supplier_id=vendor['id'], name=vendor['name'], vat_number=vendor['vat_number'],
+                                                      email=vendor['email'], sport_association_id=vendor['association']))
     from application.models import Invoice
     bill = source['invoice']
     insert(Invoice, Invoice(invoice_id=bill['id'], sport_association_id=own, creation_date=moment(bill['created']),
