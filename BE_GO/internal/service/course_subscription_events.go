@@ -261,7 +261,7 @@ func (s *CourseSubscriptions) relabelPaidPayment(ctx context.Context, tx domain.
 		save.Changes["meta"] = [2]string{before, after}
 	}
 	if state.CategoryID == nil {
-		if save.CategoryID, err = tx.DefaultPaymentCategory(ctx); err != nil {
+		if save.CategoryID, err = tx.DefaultPaymentCategory(ctx, state.AssociationID); err != nil {
 			return err
 		}
 		if save.CategoryID != nil {

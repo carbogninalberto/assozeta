@@ -39,7 +39,7 @@ func (t *courseSubscriptionTransaction) EventPaymentContext(ctx context.Context,
 	if result.AccountID, err = writes.DefaultBankAccount(ctx, &association); err != nil {
 		return result, err
 	}
-	result.CategoryID, err = t.DefaultPaymentCategory(ctx)
+	result.CategoryID, err = t.DefaultPaymentCategory(ctx, &association)
 	return result, err
 }
 
