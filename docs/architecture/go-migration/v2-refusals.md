@@ -553,7 +553,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### camps-periods.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH periods/<uid>/update, periods/services/<uid>/update | changed primary key passing validation | service/camps_periods.go:244,600 (`ErrCampsPrimaryKeyChange`) | B | Period update (`overview/CampsAndRetreatsPeriodOverview.svelte:49-53`) and service update (`overview/modals/EditServiceModal.svelte:29-35`) send form fields without the pk. Cost: medium. |
+| PATCH periods/<uid>/update, periods/services/<uid>/update | changed primary key passing validation | service/camps_periods.go (`UpdatePeriod`, `UpdateService`) | ported (v2-rest-b3) | The copy under the new key is inserted as `Model.save()` does (`camps-periods.md`). |
 | POST periods/add, PATCH periods/<uid>/update, services add/update | form body with the services key or file parts | dto/camps_period_write.go:245,320 (`ErrCampsFormNotPorted`) | B | UI sends JSON (`overview/modals/AddModal.svelte:33-34`, `AddServiceModal.svelte:31-32`, and the two above). Cost: cheap. |
 | PATCH camps-and-retreats/periods/services/<uid>/update | an unpaid walked payment is soft-deleted, or (with `X-Group-Id` set) belongs to another/no group | service/camps_periods.go (`campsWalk`) | ported | Ported in v2-misc-2 (`camps-periods.md`, `v2misc2-green-r2`). A hidden payment without an association stays refused (B). |
 | PATCH services/<uid>/update | walk failure with more than one subscription period; `Payment.save()` description failure | service/camps_periods.go:773,816 | B | Failures need malformed metas (e.g. null) on camp payments, which the camp writers never produce; legacy: yes (admin-edited metas). Cost: medium. |
@@ -924,18 +924,18 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### modules-responses.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST modules/response/<id>/add-attachment | filename longer than 255 chars, or containing `/`, `\` or NUL | `service/modules_responses.go` (`attachmentNamePorted`) | B | Compression suffixes ported in v2-misc (`ContentEncoding` from `mimetypes`). A browser's `file.name` has no separators; 255+ character names are unusual. |
+| POST modules/response/<id>/add-attachment | filename longer than 255 chars, or containing `/`, `\` or NUL | `service/modules_responses.go` (`attachmentNamePorted`) | ported (v2-rest-b3) | The column refusal and the storage name are reproduced; a name that is an uploaded file part or not valid UTF-8 stays refused (B). |
 | same | storage name already taken with `AWS_S3_FILE_OVERWRITE` off | `service/modules_responses.go:498` | C | The path includes the timestamp and a new document UUID, so it cannot collide. Note: this check runs after the Document commit (`:470-474`), not before any write as the doc says. |
-| POST add-attachment / response/add | form or multipart body | `service/modules_responses.go:213,370` | B | The UI sends JSON (`PublicModule.svelte:47-50,67-73`). |
-| POST add-attachment | non-string `filename`/`base64` | `service/modules_responses.go:466` | B | The UI sends strings. |
-| DELETE add-attachment | non-string `document_id`; document referenced elsewhere | `service/modules_responses.go:392,416` | B | The UI sends the string id (`PublicModule.svelte:84-92`). Attachment documents are created per response, so another reference would be legacy or imported data. legacy: low. Cost: medium (collector). |
+| POST add-attachment / response/add | form or multipart body | `service/modules_responses.go` | ported (v2-rest-b3) | The QueryDict is stored through its last values; a file part answers the 500 page as Django does. |
+| POST add-attachment | non-string `filename`/`base64` | `service/modules_responses.go` | ported (v2-rest-b3) | The CharField stores `str()` of the value. |
+| DELETE add-attachment | non-string `document_id`; document referenced elsewhere | `service/modules_responses.go` | ported (v2-rest-b3) | Integer ids resolve through `UUID(int=...)`; a document other rows reference is deleted with the shared collector. |
 | GET modules/<link>/info | module whose association is not active | `service/modules_responses.go` (`Info`) | ported (v2-rest-a, v2-rest-b) | Not a refusal: the public module page returns the fields the form needs, and a module of an association marked deleted answers `module not found` in Django and Go (v2-rest-b). |
-| GET modules/<id>/export | list/dict labels, ints beyond int64, xlsxwriter-refused text, non-dict `props` | `service/modules_export.go:94,114,150,162,176,260,266,272` | B | `routes/association/Members/overview/ModuleOverview.svelte:37`. The form builder writes string labels. Free-text answers starting with `=` or holding URLs with `#` would hit the xlsxwriter path. legacy: yes. Cost: medium. |
+| GET modules/<id>/export | ints beyond int64, xlsxwriter-refused text (list/dict labels and non-dict `props` ported in v2-rest-b3) | `service/modules_export.go:94,114,150,162,176,260,266,272` | B | `routes/association/Members/overview/ModuleOverview.svelte:37`. The form builder writes string labels. Free-text answers starting with `=` or holding URLs with `#` would hit the xlsxwriter path. legacy: yes. Cost: medium. |
 
 ### modules-writes.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH modules/<id>/update | `module_id` differs from the row | `service/modules_writes.go:191` | B | The composer body has no `module_id` (`components/formBuilder/composer.svelte:637-655`). |
+| PATCH modules/<id>/update | `module_id` differs from the row | `service/modules_writes.go` (`Update`) | ported (v2-rest-b3) | The copy under the new key is inserted as `Model.save()` does (`modules-writes.md`). |
 | PATCH modules/<id>/update | nested `sport_association` dict with keys | `service/modules_writes.go:204` | B | Not sent by the composer. |
 | PATCH update | DB exception text | handler | C | Only on infrastructure errors. |
 

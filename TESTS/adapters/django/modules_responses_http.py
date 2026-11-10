@@ -18,7 +18,8 @@ seed). Each case is checked against the complete model state:
   '<str(creation_date.timestamp())>/<id>/<filename>'), the new attachment link
   if any, and its create entry;
 - 'rows': deleted responses (with their links) or documents (with every link
-  to them), and the authored update entries applied to the other responses.
+  to them, the payment attachment links included), and the authored update
+  entries applied to the other responses.
 Every audit entry is compared field by field (content type, action, pk, repr,
 changes, actor, cid, impersonation additional_data) with its index row; delete
 entries carry auditlog's own diff of the row captured before the case, and
@@ -50,7 +51,8 @@ SOURCES = ('TESTS/fixtures/modules_responses_http.json', 'TESTS/fixtures/generat
 BUCKET = 'modules-responses-fixture'
 MODULE, RESPONSE, LINK = 'application.Module', 'application.ModuleResponses', 'application.ModuleResponses_attachments'
 DOCUMENT = 'docmanager.Document'
-MANAGED = (MODULE, RESPONSE, LINK, DOCUMENT, harness.AUDIT, harness.INDEX)
+PAYMENT_LINK = 'application.Payment_attachments'
+MANAGED = (MODULE, RESPONSE, LINK, DOCUMENT, PAYMENT_LINK, harness.AUDIT, harness.INDEX)
 STORAGE = {}
 UUID4 = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\Z')
 
@@ -226,7 +228,7 @@ def assert_effect(case, before, after, source, context):
         if effect['link']:
             expected_links.add((resolve_key(effect['link'], source, context, None), created))
         if effect['object'] is not None:
-            name = f'{str(row.creation_date.timestamp())}/{created}/{row.filename}'
+            name = f"{str(row.creation_date.timestamp())}/{created}/{effect.get('object_name', row.filename)}"
             expected_objects[name] = effect['object']
     else:
         contract.require(not created_r and not created_d, 'state.nothing-created')
@@ -236,6 +238,10 @@ def assert_effect(case, before, after, source, context):
     expected_links = {pair for pair in expected_links if pair[0] not in gone_r and pair[1] not in gone_d}
     contract.require(new_links == expected_links and len(after[LINK]) == len(expected_links), 'state.links')
     contract.require(all(new_d[k] == old_d[k] for k in new_d if k in old_d), 'state.documents-unchanged')
+    # Payment.attachments: the links of a deleted document go with it.
+    payment_links = {pair for pair in harness.pairs(before[PAYMENT_LINK], 'payment_id', 'document_id') if pair[1] not in gone_d}
+    contract.require(harness.pairs(after[PAYMENT_LINK], 'payment_id', 'document_id') == payment_links
+                     and len(after[PAYMENT_LINK]) == len(payment_links), 'state.payment-links')
     # Authored saves of existing responses: only those fields change.
     changed = {}
     for spec in effect['audit']:
@@ -291,6 +297,9 @@ def seed_rows(source, created):
         created.append((ModuleResponses, row['id']))
         ModuleResponses.attachments.through.objects.bulk_create([ModuleResponses.attachments.through(
             moduleresponses_id=row['id'], document_id=source['documents'][d]['id']) for d in row['attachments']])
+    Payment.attachments.through.objects.bulk_create([Payment.attachments.through(
+        payment_id=source['export_payments'][payment]['id'], document_id=source['documents'][document]['id'])
+        for payment, document in source['payment_attachments']])
 
 
 _base_fixture_context = harness.fixture_context_for(contract, seed_rows, purge=tuple(lambda index=index: models()[index] for index in (0, 1)))
