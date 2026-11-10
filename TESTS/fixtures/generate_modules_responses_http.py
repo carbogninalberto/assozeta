@@ -324,7 +324,7 @@ DOCUMENT_CREATED = lambda filename: {'document_id': ['None', '$id'], 'creation_d
                                      'token': ['None', '$token'], 'customer_invoice_pdf': ['None', 'application.CustomerInvoice.None']}
 
 
-def uploaded(actor, filename, data, *, link, content_type=None, stored=True):
+def uploaded(actor, filename, data, *, link, content_type=None, stored=True, content_encoding=None):
     """Document.objects.create (one create entry, actor fallback index), the
     stored object, and the new attachment link when the response exists."""
     effect = {'kind': 'document', 'actor': actor, 'filename': filename, 'link': link,
@@ -333,6 +333,8 @@ def uploaded(actor, filename, data, *, link, content_type=None, stored=True):
         content = decode_base64(data)
         effect['object'] = {'size': len(content), 'sha256': hashlib.sha256(content).hexdigest(),
                             'content_type': content_type, 'cache_control': 'max-age=86400'}
+        if content_encoding:
+            effect['object']['content_encoding'] = content_encoding
     else:
         effect['object'] = None
     return effect
@@ -579,6 +581,21 @@ add('attach-owner-data-uri-padding', 'owner', 'POST', attach('att_r'), 200, ATTA
 add('attach-full-collaborator-junk-characters', 'full_collaborator', 'POST', attach(rid('open_r1').upper()), 200, ATTACHED,
     body={'filename': 'senza estensione', 'base64': 'Y2l!hbw=='},
     effect=uploaded('full_collaborator', 'senza estensione', 'Y2l!hbw==', link='open_r1', content_type='application/octet-stream'))
+# Compression suffixes: mimetypes.guess_type gives the type of the inner name and an encoding, which
+# S3Storage stores as ContentEncoding ('.tgz' maps to '.tar.gz'; '.Z' is case-sensitive, '.z' is no encoding).
+for name, filename, kind, encoding in [('tar-gz', 'archivio.tar.gz', 'application/x-tar', 'gzip'),
+                                       ('tgz', 'Backup.TGZ', 'application/x-tar', 'gzip'),
+                                       ('gz-only', 'dati.gz', 'application/octet-stream', 'gzip'),
+                                       ('csv-bz2', 'soci.csv.bz2', 'text/csv', 'bzip2'),
+                                       ('txz', 'foto.txz', 'application/x-tar', 'xz'),
+                                       ('svgz', 'logo.svgz', 'image/svg+xml', 'gzip'),
+                                       ('pdf-br', 'modulo.pdf.br', 'application/pdf', 'br'),
+                                       ('upper-z', 'vecchio.tar.Z', 'application/x-tar', 'compress'),
+                                       ('lower-z', 'nota.z', 'application/octet-stream', None),
+                                       ('upper-gz', 'ARCHIVIO.GZ', 'application/octet-stream', None)]:
+    add(f'attach-compressed-{name}', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED,
+        body={'filename': filename, 'base64': 'H4sIAAAAAAAAA0vOz0nJBAA='},
+        effect=uploaded(None, filename, 'H4sIAAAAAAAAA0vOz0nJBAA=', link='att_r', content_type=kind, content_encoding=encoding))
 # The document is created (and the object stored) before the missing response raises.
 add('attach-unknown-response-server-error', 'athlete', 'POST', attach(UNKNOWN), 500, SERVER,
     body={'filename': 'orfano.txt', 'base64': 'b3JmYW5v'},

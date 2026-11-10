@@ -3996,6 +3996,32 @@
           "revision": "go/sec-impersonation on e91e32ab",
           "result": "CAUGHT: owner-member-subscribed-elsewhere-not-eligible, owner-subscriber-member-elsewhere-not-eligible, membership-elsewhere-restored",
           "artifact": "quality-reports/go-migration/sec-impersonation-identity-mutation.log"
+        },
+        "The instance owner selects every athlete for impersonation, as the admin does, plus its own collaborators; the owner of another association keeps the linked-members rule (Django eligible_users; Go impersonationInstanceOwner and impersonationLinksOwned in managementEligible and IdentityRelations.EligibleTarget). See docs/architecture/go-migration/impersonation-users.md.",
+        {
+          "command": "TESTS_IMPERSONATION_MANAGEMENT_GO=1 TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 python TESTS/adapters/django/accounts.py --only impersonation-management",
+          "revision": "go/owner-impersonation on 074a5dba, before the Go change",
+          "result": "red: Django identity 55 cases + 12 transitions pass; the Go replay fails instance-owner-athlete-of-another-association, instance-owner-unlinked-athlete, instance-owner-athlete-linked-to-both",
+          "artifact": "quality-reports/go-migration/ownerimp-identity-red.log"
+        },
+        {
+          "command": "same",
+          "revision": "go/owner-impersonation on 074a5dba",
+          "result": "green: identity 55 cases + 12 transitions (Django, Go replay), scoped resources 67, scoped requests 132, impersonation-management 280 cases / 68 audits on django, go, v1, v2",
+          "artifact": "quality-reports/go-migration/ownerimp-identity-green/results.json",
+          "receipt_sha256": "67140bed84db2af267e6094a37853a103cfc041f613977e9ae07a0e3e9b9867e"
+        },
+        {
+          "command": "same, with the linked-members rule applied to the instance owner in IdentityRelations.EligibleTarget",
+          "revision": "go/owner-impersonation on 074a5dba",
+          "result": "CAUGHT: the three instance-owner identity cases",
+          "artifact": "quality-reports/go-migration/ownerimp-identity-mutation.log"
+        },
+        {
+          "command": "same, with the instance-owner rule applied to every owner in IdentityRelations.EligibleTarget",
+          "revision": "go/owner-impersonation on 074a5dba",
+          "result": "CAUGHT: owner-subscriber-member-elsewhere-not-eligible, owner-unlinked-athlete-not-eligible, owner-deleted-subscription-not-eligible and five transitions",
+          "artifact": "quality-reports/go-migration/ownerimp-identity-mutation-open.log"
         }
       ],
       "notes": [
@@ -4010,7 +4036,8 @@
         "Implementing evidence: Independent parent replay of unchanged compiled UI passes Django/v1 and committed b225276 Go/v2: 17 required checkpoints, 12 ACCESS events, seven exact picker checks, foreign-athlete denial, unchanged actor credentials and real expiry recovery per version. All 128 managed models and DB1 values checked with documented login/audit/session/readiness exceptions; unrelated audit/index sentinel preserved. Selected Django observer 93/0, real 200 fallback rejected, source/build/UI stability and cleanup pass. Same final source has genuine picker 404 red on the preserved pre-management image. Explicit Django coexistence dependencies, current schema and private aliases are not installed/history/activation acceptance. See impersonation-management.md.",
         "Implementing evidence: RED: Django 49 identity cases and 10 eligibility/configuration transitions pass; Go identity replay fails instance-owner-unlinked-athlete and owner-impersonates-subscriber. (quality-reports/go-migration/payments-impersonation-reverify-identity-red/results.json)",
         "Implementing evidence: GREEN: Django 50 identity cases and 10 transitions replayed by Go; impersonation management 264-case workloads on native Django, native Go, Caddy /api/v1 and /api/v2; repository integration tests pass. (quality-reports/go-migration/payments-impersonation-reverify-identity-impersonation-management-green/results.json)",
-        "Impersonation is limited to athletes whose memberships are all within the actor's associations (instance owner included)."
+        "Impersonation is limited to athletes whose memberships are all within the actor's associations (instance owner included).",
+        "The instance owner starts and keeps sessions on every athlete, as the admin does; the owner of another association keeps the linked-members rule."
       ]
     },
     {
@@ -4132,6 +4159,28 @@
           "revision": "go/sec-impersonation on e91e32ab",
           "result": "CAUGHT: owner-member-subscribed-elsewhere-not-eligible, owner-subscriber-member-elsewhere-not-eligible, membership-elsewhere-restored",
           "artifact": "quality-reports/go-migration/sec-impersonation-identity-mutation.log"
+        },
+        "The instance owner selects every athlete for impersonation, as the admin does, plus its own collaborators; the owner of another association keeps the linked-members rule (Django eligible_users; Go impersonationInstanceOwner and impersonationLinksOwned in managementEligible and IdentityRelations.EligibleTarget). See docs/architecture/go-migration/impersonation-users.md.",
+        {
+          "command": "family.py run impersonation-users",
+          "revision": "go/owner-impersonation on 074a5dba",
+          "result": "red: Django 38/38, Go fails impersonation-users-instance-owner-every-athlete",
+          "artifact": "quality-reports/go-migration/impersonation-users-http-ownerimp-red/results.json",
+          "receipt_sha256": "ecb021ca28caac307116aa2ad01d749addb2fce28db7a51721844aca69fa423f"
+        },
+        {
+          "command": "family.py run impersonation-users --versioned",
+          "revision": "go/owner-impersonation on 074a5dba",
+          "result": "green: 38/38 django-native, go-native, caddy-v1, caddy-v2",
+          "artifact": "quality-reports/go-migration/impersonation-users-http-ownerimp-green/results.json",
+          "receipt_sha256": "f7567470919a9286e829ba38701472258fb18eed2a1f3f3f14e8c9b9ff209bc2"
+        },
+        {
+          "command": "family.py mutation impersonation-users (linked-members rule applied to the instance owner in managementEligible)",
+          "revision": "go/owner-impersonation on 074a5dba",
+          "result": "CAUGHT",
+          "artifact": "quality-reports/go-migration/impersonation-users-http-ownerimp-mutation/results.json",
+          "receipt_sha256": "5844251e7d59fa63247942e45fec5e1a2a5714f26703bb1069bc3dae19880d56"
         }
       ],
       "notes": [
@@ -4149,7 +4198,8 @@
         "Implementing evidence: Mutation CAUGHT: Go fails impersonation-users-search-eleventh-word-ignored. (quality-reports/go-migration/payments-impersonation-reverify-impersonation-users-mutation/results.json)",
         "Implementing evidence: RED: Django 49 identity cases and 10 eligibility/configuration transitions pass; Go identity replay fails instance-owner-unlinked-athlete and owner-impersonates-subscriber. (quality-reports/go-migration/payments-impersonation-reverify-identity-red/results.json)",
         "Implementing evidence: GREEN: Django 50 identity cases and 10 transitions replayed by Go; impersonation management 264-case workloads on native Django, native Go, Caddy /api/v1 and /api/v2; repository integration tests pass. (quality-reports/go-migration/payments-impersonation-reverify-identity-impersonation-management-green/results.json)",
-        "Impersonation is limited to athletes whose memberships are all within the actor's associations (instance owner included)."
+        "Impersonation is limited to athletes whose memberships are all within the actor's associations (instance owner included).",
+        "The instance owner sees every athlete for impersonation, as the admin does; the owner of another association selects athletes whose memberships are all within its associations."
       ]
     },
     {
@@ -4700,6 +4750,32 @@
           "revision": "go/sec-impersonation on e91e32ab",
           "result": "CAUGHT: owner-member-subscribed-elsewhere-not-eligible, owner-subscriber-member-elsewhere-not-eligible, membership-elsewhere-restored",
           "artifact": "quality-reports/go-migration/sec-impersonation-identity-mutation.log"
+        },
+        "The instance owner selects every athlete for impersonation, as the admin does, plus its own collaborators; the owner of another association keeps the linked-members rule (Django eligible_users; Go impersonationInstanceOwner and impersonationLinksOwned in managementEligible and IdentityRelations.EligibleTarget). See docs/architecture/go-migration/impersonation-users.md.",
+        {
+          "command": "TESTS_IMPERSONATION_MANAGEMENT_GO=1 TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 python TESTS/adapters/django/accounts.py --only impersonation-management",
+          "revision": "go/owner-impersonation on 074a5dba, before the Go change",
+          "result": "red: Django identity 55 cases + 12 transitions pass; the Go replay fails instance-owner-athlete-of-another-association, instance-owner-unlinked-athlete, instance-owner-athlete-linked-to-both",
+          "artifact": "quality-reports/go-migration/ownerimp-identity-red.log"
+        },
+        {
+          "command": "same",
+          "revision": "go/owner-impersonation on 074a5dba",
+          "result": "green: identity 55 cases + 12 transitions (Django, Go replay), scoped resources 67, scoped requests 132, impersonation-management 280 cases / 68 audits on django, go, v1, v2",
+          "artifact": "quality-reports/go-migration/ownerimp-identity-green/results.json",
+          "receipt_sha256": "67140bed84db2af267e6094a37853a103cfc041f613977e9ae07a0e3e9b9867e"
+        },
+        {
+          "command": "same, with the linked-members rule applied to the instance owner in IdentityRelations.EligibleTarget",
+          "revision": "go/owner-impersonation on 074a5dba",
+          "result": "CAUGHT: the three instance-owner identity cases",
+          "artifact": "quality-reports/go-migration/ownerimp-identity-mutation.log"
+        },
+        {
+          "command": "same, with the instance-owner rule applied to every owner in IdentityRelations.EligibleTarget",
+          "revision": "go/owner-impersonation on 074a5dba",
+          "result": "CAUGHT: owner-subscriber-member-elsewhere-not-eligible, owner-unlinked-athlete-not-eligible, owner-deleted-subscription-not-eligible and five transitions",
+          "artifact": "quality-reports/go-migration/ownerimp-identity-mutation-open.log"
         }
       ],
       "notes": [
@@ -4715,7 +4791,8 @@
         "Implementing evidence: passed (quality-reports/go-migration/parallel-delivery-20261025/active-expiry-parent-audit.json)",
         "Implementing evidence: RED: Django 49 identity cases and 10 eligibility/configuration transitions pass; Go identity replay fails instance-owner-unlinked-athlete and owner-impersonates-subscriber. (quality-reports/go-migration/payments-impersonation-reverify-identity-red/results.json)",
         "Implementing evidence: GREEN: Django 50 identity cases and 10 transitions replayed by Go; impersonation management 264-case workloads on native Django, native Go, Caddy /api/v1 and /api/v2; repository integration tests pass. (quality-reports/go-migration/payments-impersonation-reverify-identity-impersonation-management-green/results.json)",
-        "Impersonation is limited to athletes whose memberships are all within the actor's associations (instance owner included)."
+        "Impersonation is limited to athletes whose memberships are all within the actor's associations (instance owner included).",
+        "The instance owner starts and keeps sessions on every athlete, as the admin does; the owner of another association keeps the linked-members rule."
       ]
     },
     {
@@ -4837,6 +4914,28 @@
           "revision": "go/sec-impersonation on e91e32ab",
           "result": "CAUGHT: owner-member-subscribed-elsewhere-not-eligible, owner-subscriber-member-elsewhere-not-eligible, membership-elsewhere-restored",
           "artifact": "quality-reports/go-migration/sec-impersonation-identity-mutation.log"
+        },
+        "The instance owner selects every athlete for impersonation, as the admin does, plus its own collaborators; the owner of another association keeps the linked-members rule (Django eligible_users; Go impersonationInstanceOwner and impersonationLinksOwned in managementEligible and IdentityRelations.EligibleTarget). See docs/architecture/go-migration/impersonation-users.md.",
+        {
+          "command": "family.py run impersonation-users",
+          "revision": "go/owner-impersonation on 074a5dba",
+          "result": "red: Django 38/38, Go fails impersonation-users-instance-owner-every-athlete",
+          "artifact": "quality-reports/go-migration/impersonation-users-http-ownerimp-red/results.json",
+          "receipt_sha256": "ecb021ca28caac307116aa2ad01d749addb2fce28db7a51721844aca69fa423f"
+        },
+        {
+          "command": "family.py run impersonation-users --versioned",
+          "revision": "go/owner-impersonation on 074a5dba",
+          "result": "green: 38/38 django-native, go-native, caddy-v1, caddy-v2",
+          "artifact": "quality-reports/go-migration/impersonation-users-http-ownerimp-green/results.json",
+          "receipt_sha256": "f7567470919a9286e829ba38701472258fb18eed2a1f3f3f14e8c9b9ff209bc2"
+        },
+        {
+          "command": "family.py mutation impersonation-users (linked-members rule applied to the instance owner in managementEligible)",
+          "revision": "go/owner-impersonation on 074a5dba",
+          "result": "CAUGHT",
+          "artifact": "quality-reports/go-migration/impersonation-users-http-ownerimp-mutation/results.json",
+          "receipt_sha256": "5844251e7d59fa63247942e45fec5e1a2a5714f26703bb1069bc3dae19880d56"
         }
       ],
       "notes": [
@@ -4854,7 +4953,8 @@
         "Implementing evidence: Mutation CAUGHT: Go fails impersonation-users-search-eleventh-word-ignored. (quality-reports/go-migration/payments-impersonation-reverify-impersonation-users-mutation/results.json)",
         "Implementing evidence: RED: Django 49 identity cases and 10 eligibility/configuration transitions pass; Go identity replay fails instance-owner-unlinked-athlete and owner-impersonates-subscriber. (quality-reports/go-migration/payments-impersonation-reverify-identity-red/results.json)",
         "Implementing evidence: GREEN: Django 50 identity cases and 10 transitions replayed by Go; impersonation management 264-case workloads on native Django, native Go, Caddy /api/v1 and /api/v2; repository integration tests pass. (quality-reports/go-migration/payments-impersonation-reverify-identity-impersonation-management-green/results.json)",
-        "Impersonation is limited to athletes whose memberships are all within the actor's associations (instance owner included)."
+        "Impersonation is limited to athletes whose memberships are all within the actor's associations (instance owner included).",
+        "The instance owner sees every athlete for impersonation, as the admin does; the owner of another association selects athletes whose memberships are all within its associations."
       ]
     },
     {
@@ -7003,7 +7103,7 @@
         "target": "camps_and_retreats_subscriptions_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/camps_subscriptions.go",
         "BE_GO/internal/dto/camps_subscriptions.go",
@@ -7053,21 +7153,28 @@
         "TESTS/adapters/django/camps_subscriptions_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/camps-subscriptions.md",
         {
-          "command": "python tools/go-migration/family.py run camps-subscriptions --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/camps-subscriptions-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "363af14bcb37517f922dfde3ce62f046189f8dbe8b476c2a2502999027c5b074",
-          "scope": "HTTP family camps-subscriptions: 111/111 cases on native Django and native Go, 111/111 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 111/111; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-v2misc-red-r3/results.json",
+          "receipt_sha256": "b53f76560bc3bd85d638409e54ab124e4a0af789d0448220874e51420cb2feb9"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-merged-misc-r1/results.json",
+          "receipt_sha256": "580442061ae9c04c33720a8f2ba4b73f94088cca5dfa8b4e85bb86e7e5ab6a53"
+        },
+        {
+          "revision": "committing change rendering the camp payment without its nested instructor",
+          "result": "Mutation control: fails Go on camps-subscriptions-list-owner (periods[2].payment.instructor_id).",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-v2misc-mutation-r1/results.json",
+          "receipt_sha256": "b742d7ec78fb2e2640bfda5de8312a07675386760797f58666de467dabc474e6"
         }
       ],
       "notes": [
-        "Implementing: camps and retreats subscriptions list/add/update/delete (camp_and_retreats_views.py) with camps_and_retreats_utils (delete_unpaid_periods, add_new_periods, generate_payment_for_periods) and CampsAndRetreatsSubscriptionInfoSerializer.save. Not ported (500 before any write): file parts, update forms with a periods key, payment creation with an X-Group-Id that is not an existing group, amounts numeric(9,2) or the non-negative constraint would reject, notes over 5120 characters, and list payments with an instructor or an invoice.",
-        "Implementing evidence: docs/architecture/go-migration/camps-subscriptions.md",
-        "Implementing evidence: RED: Django 111/111; Go 404 on the first case. (quality-reports/go-migration/camps-subscriptions-http-red-r3/results.json)",
-        "Implementing evidence: GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp subscription, subscription period, payment, link, audit and index effects. (quality-reports/go-migration/camps-subscriptions-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on update-owner-replace-periods (audit.changes). (quality-reports/go-migration/camps-subscriptions-http-mutation-r1/results.json)"
+        "Implementing: camps and retreats subscriptions list/add/update/delete (camp_and_retreats_views.py) with camps_and_retreats_utils (delete_unpaid_periods, add_new_periods, generate_payment_for_periods) and CampsAndRetreatsSubscriptionInfoSerializer.save. Not ported (500 before any write): file parts, update forms with a periods key, payment creation with an X-Group-Id that is not an existing group, amounts numeric(9,2) or the non-negative constraint would reject, notes over 5120 characters, and list payments with an instructor or an invoice. API v2 (v2-misc): the list renders period payments with their nested invoice and instructor."
       ]
     },
     {
@@ -7085,7 +7192,7 @@
         "target": "camps_and_retreats_subscriptions_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/camps_subscriptions.go",
         "BE_GO/internal/dto/camps_subscriptions.go",
@@ -7135,21 +7242,28 @@
         "TESTS/adapters/django/camps_subscriptions_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/camps-subscriptions.md",
         {
-          "command": "python tools/go-migration/family.py run camps-subscriptions --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/camps-subscriptions-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "363af14bcb37517f922dfde3ce62f046189f8dbe8b476c2a2502999027c5b074",
-          "scope": "HTTP family camps-subscriptions: 111/111 cases on native Django and native Go, 111/111 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 111/111; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-v2misc-red-r3/results.json",
+          "receipt_sha256": "b53f76560bc3bd85d638409e54ab124e4a0af789d0448220874e51420cb2feb9"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-merged-misc-r1/results.json",
+          "receipt_sha256": "580442061ae9c04c33720a8f2ba4b73f94088cca5dfa8b4e85bb86e7e5ab6a53"
+        },
+        {
+          "revision": "committing change rendering the camp payment without its nested instructor",
+          "result": "Mutation control: fails Go on camps-subscriptions-list-owner (periods[2].payment.instructor_id).",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-v2misc-mutation-r1/results.json",
+          "receipt_sha256": "b742d7ec78fb2e2640bfda5de8312a07675386760797f58666de467dabc474e6"
         }
       ],
       "notes": [
-        "Implementing: camps and retreats subscriptions list/add/update/delete (camp_and_retreats_views.py) with camps_and_retreats_utils (delete_unpaid_periods, add_new_periods, generate_payment_for_periods) and CampsAndRetreatsSubscriptionInfoSerializer.save. Not ported (500 before any write): file parts, update forms with a periods key, payment creation with an X-Group-Id that is not an existing group, amounts numeric(9,2) or the non-negative constraint would reject, notes over 5120 characters, and list payments with an instructor or an invoice.",
-        "Implementing evidence: docs/architecture/go-migration/camps-subscriptions.md",
-        "Implementing evidence: RED: Django 111/111; Go 404 on the first case. (quality-reports/go-migration/camps-subscriptions-http-red-r3/results.json)",
-        "Implementing evidence: GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp subscription, subscription period, payment, link, audit and index effects. (quality-reports/go-migration/camps-subscriptions-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on update-owner-replace-periods (audit.changes). (quality-reports/go-migration/camps-subscriptions-http-mutation-r1/results.json)"
+        "Implementing: camps and retreats subscriptions list/add/update/delete (camp_and_retreats_views.py) with camps_and_retreats_utils (delete_unpaid_periods, add_new_periods, generate_payment_for_periods) and CampsAndRetreatsSubscriptionInfoSerializer.save. Not ported (500 before any write): file parts, update forms with a periods key, payment creation with an X-Group-Id that is not an existing group, amounts numeric(9,2) or the non-negative constraint would reject, notes over 5120 characters, and list payments with an instructor or an invoice. API v2 (v2-misc): the list renders period payments with their nested invoice and instructor."
       ]
     },
     {
@@ -7167,7 +7281,7 @@
         "target": "camps_and_retreats_subscriptions_list",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/camps_subscriptions.go",
         "BE_GO/internal/dto/camps_subscriptions.go",
@@ -7217,21 +7331,28 @@
         "TESTS/adapters/django/camps_subscriptions_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/camps-subscriptions.md",
         {
-          "command": "python tools/go-migration/family.py run camps-subscriptions --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/camps-subscriptions-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "363af14bcb37517f922dfde3ce62f046189f8dbe8b476c2a2502999027c5b074",
-          "scope": "HTTP family camps-subscriptions: 111/111 cases on native Django and native Go, 111/111 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 111/111; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-v2misc-red-r3/results.json",
+          "receipt_sha256": "b53f76560bc3bd85d638409e54ab124e4a0af789d0448220874e51420cb2feb9"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-merged-misc-r1/results.json",
+          "receipt_sha256": "580442061ae9c04c33720a8f2ba4b73f94088cca5dfa8b4e85bb86e7e5ab6a53"
+        },
+        {
+          "revision": "committing change rendering the camp payment without its nested instructor",
+          "result": "Mutation control: fails Go on camps-subscriptions-list-owner (periods[2].payment.instructor_id).",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-v2misc-mutation-r1/results.json",
+          "receipt_sha256": "b742d7ec78fb2e2640bfda5de8312a07675386760797f58666de467dabc474e6"
         }
       ],
       "notes": [
-        "Implementing: camps and retreats subscriptions list/add/update/delete (camp_and_retreats_views.py) with camps_and_retreats_utils (delete_unpaid_periods, add_new_periods, generate_payment_for_periods) and CampsAndRetreatsSubscriptionInfoSerializer.save. Not ported (500 before any write): file parts, update forms with a periods key, payment creation with an X-Group-Id that is not an existing group, amounts numeric(9,2) or the non-negative constraint would reject, notes over 5120 characters, and list payments with an instructor or an invoice.",
-        "Implementing evidence: docs/architecture/go-migration/camps-subscriptions.md",
-        "Implementing evidence: RED: Django 111/111; Go 404 on the first case. (quality-reports/go-migration/camps-subscriptions-http-red-r3/results.json)",
-        "Implementing evidence: GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp subscription, subscription period, payment, link, audit and index effects. (quality-reports/go-migration/camps-subscriptions-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on update-owner-replace-periods (audit.changes). (quality-reports/go-migration/camps-subscriptions-http-mutation-r1/results.json)"
+        "Implementing: camps and retreats subscriptions list/add/update/delete (camp_and_retreats_views.py) with camps_and_retreats_utils (delete_unpaid_periods, add_new_periods, generate_payment_for_periods) and CampsAndRetreatsSubscriptionInfoSerializer.save. Not ported (500 before any write): file parts, update forms with a periods key, payment creation with an X-Group-Id that is not an existing group, amounts numeric(9,2) or the non-negative constraint would reject, notes over 5120 characters, and list payments with an instructor or an invoice. API v2 (v2-misc): the list renders period payments with their nested invoice and instructor."
       ]
     },
     {
@@ -7249,7 +7370,7 @@
         "target": "camps_and_retreats_subscriptions_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/camps_subscriptions.go",
         "BE_GO/internal/dto/camps_subscriptions.go",
@@ -7299,21 +7420,28 @@
         "TESTS/adapters/django/camps_subscriptions_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/camps-subscriptions.md",
         {
-          "command": "python tools/go-migration/family.py run camps-subscriptions --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/camps-subscriptions-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "363af14bcb37517f922dfde3ce62f046189f8dbe8b476c2a2502999027c5b074",
-          "scope": "HTTP family camps-subscriptions: 111/111 cases on native Django and native Go, 111/111 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 111/111; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-v2misc-red-r3/results.json",
+          "receipt_sha256": "b53f76560bc3bd85d638409e54ab124e4a0af789d0448220874e51420cb2feb9"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-merged-misc-r1/results.json",
+          "receipt_sha256": "580442061ae9c04c33720a8f2ba4b73f94088cca5dfa8b4e85bb86e7e5ab6a53"
+        },
+        {
+          "revision": "committing change rendering the camp payment without its nested instructor",
+          "result": "Mutation control: fails Go on camps-subscriptions-list-owner (periods[2].payment.instructor_id).",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-v2misc-mutation-r1/results.json",
+          "receipt_sha256": "b742d7ec78fb2e2640bfda5de8312a07675386760797f58666de467dabc474e6"
         }
       ],
       "notes": [
-        "Implementing: camps and retreats subscriptions list/add/update/delete (camp_and_retreats_views.py) with camps_and_retreats_utils (delete_unpaid_periods, add_new_periods, generate_payment_for_periods) and CampsAndRetreatsSubscriptionInfoSerializer.save. Not ported (500 before any write): file parts, update forms with a periods key, payment creation with an X-Group-Id that is not an existing group, amounts numeric(9,2) or the non-negative constraint would reject, notes over 5120 characters, and list payments with an instructor or an invoice.",
-        "Implementing evidence: docs/architecture/go-migration/camps-subscriptions.md",
-        "Implementing evidence: RED: Django 111/111; Go 404 on the first case. (quality-reports/go-migration/camps-subscriptions-http-red-r3/results.json)",
-        "Implementing evidence: GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp subscription, subscription period, payment, link, audit and index effects. (quality-reports/go-migration/camps-subscriptions-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on update-owner-replace-periods (audit.changes). (quality-reports/go-migration/camps-subscriptions-http-mutation-r1/results.json)"
+        "Implementing: camps and retreats subscriptions list/add/update/delete (camp_and_retreats_views.py) with camps_and_retreats_utils (delete_unpaid_periods, add_new_periods, generate_payment_for_periods) and CampsAndRetreatsSubscriptionInfoSerializer.save. Not ported (500 before any write): file parts, update forms with a periods key, payment creation with an X-Group-Id that is not an existing group, amounts numeric(9,2) or the non-negative constraint would reject, notes over 5120 characters, and list payments with an instructor or an invoice. API v2 (v2-misc): the list renders period payments with their nested invoice and instructor."
       ]
     },
     {
@@ -13079,7 +13207,7 @@
         "target": "google_calendar_export_course",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/googleapi/transport.go",
@@ -13092,7 +13220,8 @@
         "BE_GO/internal/repository/google_calendar.go",
         "BE_GO/internal/repository/google_calendar_test.go",
         "BE_GO/internal/service/google_calendar.go",
-        "BE_GO/internal/handler/google_calendar.go"
+        "BE_GO/internal/handler/google_calendar.go",
+        "BE_GO/internal/middleware/session_audit.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and scoped-request guard",
@@ -13132,21 +13261,28 @@
         "TESTS/adapters/django/google_calendar_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/google-calendar.md",
         {
-          "command": "python tools/go-migration/family.py run google-calendar --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/google-calendar-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "4f9081b61f39944b08c44e9553b9957284b71e885aac22a0ddc97c71cfc7ea58",
-          "scope": "HTTP family google-calendar: 83/83 cases on native Django and native Go, 83/83 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 89/89; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-v2misc-red-r2/results.json",
+          "receipt_sha256": "c8c5046f67bb35624fb51c74677ffd58016a8d4ba82f227aafd46563b4dcadee"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 89/89 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-v2misc-green-r2/results.json",
+          "receipt_sha256": "8ee407e8fd4dae0ff2ed3e7b394a27a14e2fa11afc072286726fb101532fed86"
+        },
+        {
+          "revision": "committing change saving the existing session with SET NX instead of SET XX",
+          "result": "Mutation control: fails Go on google-calendar-config-get-owner-existing-session (response.status).",
+          "artifact": "quality-reports/go-migration/google-calendar-http-v2misc-mutation-r1/results.json",
+          "receipt_sha256": "55e65625a0ae0423ca10457ae9fb53d3a5517d059917527263660ea7aa59ebf2"
         }
       ],
       "notes": [
-        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500.",
-        "Implementing evidence: docs/architecture/go-migration/google-calendar.md",
-        "Implementing evidence: RED: Django 83/83; Go 404 on the first case. (quality-reports/go-migration/google-calendar-http-native-r11/results.json)",
-        "Implementing evidence: GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact User, Course, auditlog, index, cache session and outbound Google request effects. (quality-reports/go-migration/google-calendar-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on google-calendar-export-full-collaborator-keeps-course-id (response google_calendar_id). (quality-reports/go-migration/google-calendar-http-mutation-r1/results.json)"
+        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500. API v2 (v2-misc): config GET with an existing sessionid cookie saves the new state in that cache session (same key); expired or short keys get a new session. Sessions holding more than a state stay refused."
       ]
     },
     {
@@ -13164,7 +13300,7 @@
         "target": "google_calendar_config",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/googleapi/transport.go",
@@ -13177,7 +13313,8 @@
         "BE_GO/internal/repository/google_calendar.go",
         "BE_GO/internal/repository/google_calendar_test.go",
         "BE_GO/internal/service/google_calendar.go",
-        "BE_GO/internal/handler/google_calendar.go"
+        "BE_GO/internal/handler/google_calendar.go",
+        "BE_GO/internal/middleware/session_audit.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and scoped-request guard",
@@ -13218,21 +13355,28 @@
         "TESTS/adapters/django/google_calendar_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/google-calendar.md",
         {
-          "command": "python tools/go-migration/family.py run google-calendar --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/google-calendar-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "4f9081b61f39944b08c44e9553b9957284b71e885aac22a0ddc97c71cfc7ea58",
-          "scope": "HTTP family google-calendar: 83/83 cases on native Django and native Go, 83/83 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 89/89; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-v2misc-red-r2/results.json",
+          "receipt_sha256": "c8c5046f67bb35624fb51c74677ffd58016a8d4ba82f227aafd46563b4dcadee"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 89/89 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-v2misc-green-r2/results.json",
+          "receipt_sha256": "8ee407e8fd4dae0ff2ed3e7b394a27a14e2fa11afc072286726fb101532fed86"
+        },
+        {
+          "revision": "committing change saving the existing session with SET NX instead of SET XX",
+          "result": "Mutation control: fails Go on google-calendar-config-get-owner-existing-session (response.status).",
+          "artifact": "quality-reports/go-migration/google-calendar-http-v2misc-mutation-r1/results.json",
+          "receipt_sha256": "55e65625a0ae0423ca10457ae9fb53d3a5517d059917527263660ea7aa59ebf2"
         }
       ],
       "notes": [
-        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500.",
-        "Implementing evidence: docs/architecture/go-migration/google-calendar.md",
-        "Implementing evidence: RED: Django 83/83; Go 404 on the first case. (quality-reports/go-migration/google-calendar-http-native-r11/results.json)",
-        "Implementing evidence: GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact User, Course, auditlog, index, cache session and outbound Google request effects. (quality-reports/go-migration/google-calendar-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on google-calendar-export-full-collaborator-keeps-course-id (response google_calendar_id). (quality-reports/go-migration/google-calendar-http-mutation-r1/results.json)"
+        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500. API v2 (v2-misc): config GET with an existing sessionid cookie saves the new state in that cache session (same key); expired or short keys get a new session. Sessions holding more than a state stay refused."
       ]
     },
     {
@@ -13250,7 +13394,7 @@
         "target": "google_calendar_list",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/googleapi/transport.go",
@@ -13263,7 +13407,8 @@
         "BE_GO/internal/repository/google_calendar.go",
         "BE_GO/internal/repository/google_calendar_test.go",
         "BE_GO/internal/service/google_calendar.go",
-        "BE_GO/internal/handler/google_calendar.go"
+        "BE_GO/internal/handler/google_calendar.go",
+        "BE_GO/internal/middleware/session_audit.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and scoped-request guard",
@@ -13303,21 +13448,28 @@
         "TESTS/adapters/django/google_calendar_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/google-calendar.md",
         {
-          "command": "python tools/go-migration/family.py run google-calendar --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/google-calendar-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "4f9081b61f39944b08c44e9553b9957284b71e885aac22a0ddc97c71cfc7ea58",
-          "scope": "HTTP family google-calendar: 83/83 cases on native Django and native Go, 83/83 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 89/89; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-v2misc-red-r2/results.json",
+          "receipt_sha256": "c8c5046f67bb35624fb51c74677ffd58016a8d4ba82f227aafd46563b4dcadee"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 89/89 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-v2misc-green-r2/results.json",
+          "receipt_sha256": "8ee407e8fd4dae0ff2ed3e7b394a27a14e2fa11afc072286726fb101532fed86"
+        },
+        {
+          "revision": "committing change saving the existing session with SET NX instead of SET XX",
+          "result": "Mutation control: fails Go on google-calendar-config-get-owner-existing-session (response.status).",
+          "artifact": "quality-reports/go-migration/google-calendar-http-v2misc-mutation-r1/results.json",
+          "receipt_sha256": "55e65625a0ae0423ca10457ae9fb53d3a5517d059917527263660ea7aa59ebf2"
         }
       ],
       "notes": [
-        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500.",
-        "Implementing evidence: docs/architecture/go-migration/google-calendar.md",
-        "Implementing evidence: RED: Django 83/83; Go 404 on the first case. (quality-reports/go-migration/google-calendar-http-native-r11/results.json)",
-        "Implementing evidence: GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact User, Course, auditlog, index, cache session and outbound Google request effects. (quality-reports/go-migration/google-calendar-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on google-calendar-export-full-collaborator-keeps-course-id (response google_calendar_id). (quality-reports/go-migration/google-calendar-http-mutation-r1/results.json)"
+        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500. API v2 (v2-misc): config GET with an existing sessionid cookie saves the new state in that cache session (same key); expired or short keys get a new session. Sessions holding more than a state stay refused."
       ]
     },
     {
@@ -13335,7 +13487,7 @@
         "target": "google_check",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/googleapi/transport.go",
@@ -13348,7 +13500,8 @@
         "BE_GO/internal/repository/google_calendar.go",
         "BE_GO/internal/repository/google_calendar_test.go",
         "BE_GO/internal/service/google_calendar.go",
-        "BE_GO/internal/handler/google_calendar.go"
+        "BE_GO/internal/handler/google_calendar.go",
+        "BE_GO/internal/middleware/session_audit.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and scoped-request guard",
@@ -13388,21 +13541,28 @@
         "TESTS/adapters/django/google_calendar_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/google-calendar.md",
         {
-          "command": "python tools/go-migration/family.py run google-calendar --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/google-calendar-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "4f9081b61f39944b08c44e9553b9957284b71e885aac22a0ddc97c71cfc7ea58",
-          "scope": "HTTP family google-calendar: 83/83 cases on native Django and native Go, 83/83 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 89/89; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-v2misc-red-r2/results.json",
+          "receipt_sha256": "c8c5046f67bb35624fb51c74677ffd58016a8d4ba82f227aafd46563b4dcadee"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 89/89 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-v2misc-green-r2/results.json",
+          "receipt_sha256": "8ee407e8fd4dae0ff2ed3e7b394a27a14e2fa11afc072286726fb101532fed86"
+        },
+        {
+          "revision": "committing change saving the existing session with SET NX instead of SET XX",
+          "result": "Mutation control: fails Go on google-calendar-config-get-owner-existing-session (response.status).",
+          "artifact": "quality-reports/go-migration/google-calendar-http-v2misc-mutation-r1/results.json",
+          "receipt_sha256": "55e65625a0ae0423ca10457ae9fb53d3a5517d059917527263660ea7aa59ebf2"
         }
       ],
       "notes": [
-        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500.",
-        "Implementing evidence: docs/architecture/go-migration/google-calendar.md",
-        "Implementing evidence: RED: Django 83/83; Go 404 on the first case. (quality-reports/go-migration/google-calendar-http-native-r11/results.json)",
-        "Implementing evidence: GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact User, Course, auditlog, index, cache session and outbound Google request effects. (quality-reports/go-migration/google-calendar-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on google-calendar-export-full-collaborator-keeps-course-id (response google_calendar_id). (quality-reports/go-migration/google-calendar-http-mutation-r1/results.json)"
+        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500. API v2 (v2-misc): config GET with an existing sessionid cookie saves the new state in that cache session (same key); expired or short keys get a new session. Sessions holding more than a state stay refused."
       ]
     },
     {
@@ -13420,7 +13580,7 @@
         "target": "google_oauth2callback",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/googleapi/transport.go",
@@ -13433,7 +13593,8 @@
         "BE_GO/internal/repository/google_calendar.go",
         "BE_GO/internal/repository/google_calendar_test.go",
         "BE_GO/internal/service/google_calendar.go",
-        "BE_GO/internal/handler/google_calendar.go"
+        "BE_GO/internal/handler/google_calendar.go",
+        "BE_GO/internal/middleware/session_audit.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and scoped-request guard",
@@ -13459,7 +13620,7 @@
         "request": "Query error | state, code.",
         "response": "200 text/html cancel page for ?error; 200 text/html 'Autorizzato' page after storing the credentials.",
         "errors": "400 {'msg': 'No user found for the integration flow.'}; 403 'Missing permission: other.settings.update' for restricted collaborators; 405; 500 missing state/code, token endpoint errors, changed scope, missing expiry.",
-        "authentication": "DRF AllowAny (JWT identity resolved when a token is sent).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "AllowAny; registry other.settings.update.",
         "resource_scope": "User.objects.filter(integration_google_state=state).first() (live users, by key).",
         "side_effects": "POST to the client secrets token_uri (authorization_code, Basic client authentication); User.save() of the credentials JSON and auto sync for non-collaborators (audited).",
@@ -13473,21 +13634,28 @@
         "TESTS/adapters/django/google_calendar_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/google-calendar.md",
         {
-          "command": "python tools/go-migration/family.py run google-calendar --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/google-calendar-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "4f9081b61f39944b08c44e9553b9957284b71e885aac22a0ddc97c71cfc7ea58",
-          "scope": "HTTP family google-calendar: 83/83 cases on native Django and native Go, 83/83 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 89/89; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-v2misc-red-r2/results.json",
+          "receipt_sha256": "c8c5046f67bb35624fb51c74677ffd58016a8d4ba82f227aafd46563b4dcadee"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 89/89 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-v2misc-green-r2/results.json",
+          "receipt_sha256": "8ee407e8fd4dae0ff2ed3e7b394a27a14e2fa11afc072286726fb101532fed86"
+        },
+        {
+          "revision": "committing change saving the existing session with SET NX instead of SET XX",
+          "result": "Mutation control: fails Go on google-calendar-config-get-owner-existing-session (response.status).",
+          "artifact": "quality-reports/go-migration/google-calendar-http-v2misc-mutation-r1/results.json",
+          "receipt_sha256": "55e65625a0ae0423ca10457ae9fb53d3a5517d059917527263660ea7aa59ebf2"
         }
       ],
       "notes": [
-        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500.",
-        "Implementing evidence: docs/architecture/go-migration/google-calendar.md",
-        "Implementing evidence: RED: Django 83/83; Go 404 on the first case. (quality-reports/go-migration/google-calendar-http-native-r11/results.json)",
-        "Implementing evidence: GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact User, Course, auditlog, index, cache session and outbound Google request effects. (quality-reports/go-migration/google-calendar-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on google-calendar-export-full-collaborator-keeps-course-id (response google_calendar_id). (quality-reports/go-migration/google-calendar-http-mutation-r1/results.json)"
+        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500. API v2 (v2-misc): config GET with an existing sessionid cookie saves the new state in that cache session (same key); expired or short keys get a new session. Sessions holding more than a state stay refused."
       ]
     },
     {
@@ -16423,14 +16591,25 @@
         "target": "modules_custom_link_info",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/modules_responses.go",
         "BE_GO/internal/repository/modules_responses.go",
         "BE_GO/internal/service/modules_responses.go",
         "BE_GO/internal/handler/modules_responses.go",
         "BE_GO/cmd/server/modules_responses.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/modules_export.go",
+        "BE_GO/internal/repository/modules_export.go",
+        "BE_GO/internal/service/modules_export.go",
+        "BE_GO/internal/xlsxexport/value.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/xlsxwriter.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/internal/xlsxexport/compare.go",
+        "BE_GO/internal/xlsxexport/golden_test.go",
+        "BE_GO/pkg/storage/instancelogo/write.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
@@ -16439,7 +16618,8 @@
         "application_module",
         "application_moduleresponses",
         "application_moduleresponses_attachments",
-        "docmanager_document"
+        "docmanager_document",
+        "Existing family Go code and xlsxexport writer"
       ],
       "contract": {
         "methods": [
@@ -16454,7 +16634,7 @@
         "request": "Path custom_link; optional query response_id (last value).",
         "response": "200 {'data': ModulesSerializer(module), 'response_data': ModuleResponseSerializer(response or None) or None}.",
         "errors": "400 ['badly formed hexadecimal UUID string'] for response_id; 403 registry / scoped session / admin without session; 404 {'error': 'module not found'} and {'error': 'module not active'}.",
-        "authentication": "AllowAny (no permission_classes); identity resolution still applies to authenticated requests.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.modules.read.",
         "resource_scope": "Module by exact custom_link; response by id. request.user is not read.",
         "side_effects": "None.",
@@ -16468,21 +16648,28 @@
         "TESTS/adapters/django/modules_responses_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/modules-responses.md",
         {
-          "command": "python tools/go-migration/family.py run modules-responses --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/modules-responses-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "44f85777e215b8ceea030b4b4820278019d0413a4130ad400c18f255ec1515e9",
-          "scope": "HTTP family modules-responses: 135/135 cases on native Django and native Go, 135/135 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 145/145; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-red-r1/results.json",
+          "receipt_sha256": "f89f92a06bb44e0f68eeb9c9549c08fa414c92d098db6d1c7fb8df43ca5481c6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 145/145 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-green-r3/results.json",
+          "receipt_sha256": "6451b13fdf91a48829e714066f456f4a784d25406b3a00502ddc8c4570702e99"
+        },
+        {
+          "revision": "committing change guessing the attachment's type and encoding on the lower-cased storage name",
+          "result": "Mutation control: fails Go on modules-responses-attach-compressed-upper-z (storage.objects).",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-mutation-r1/results.json",
+          "receipt_sha256": "15b3736b32465a85a2b1736775b1bb4087314a19085a5e688a34823fcf13275b"
         }
       ],
       "notes": [
-        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active.",
-        "Implementing evidence: docs/architecture/go-migration/modules-responses.md",
-        "Implementing evidence: RED: Django 110/110; Go 404 on the first case. (quality-reports/go-migration/modules-responses-http-native-r2/results.json)",
-        "Implementing evidence: GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and stored objects. (quality-reports/go-migration/modules-responses-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on approve-foreign-response (quality-reports/go-migration/modules-responses-http-mutation-r2/results.json)"
+        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active. API v2 (v2-misc): add-attachment names with compression suffixes are stored with mimetypes' encoding as ContentEncoding."
       ]
     },
     {
@@ -16650,13 +16837,17 @@
         "target": "modules_response_export",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/internal/domain/modules_responses.go",
+        "BE_GO/internal/repository/modules_responses.go",
+        "BE_GO/internal/service/modules_responses.go",
+        "BE_GO/internal/handler/modules_responses.go",
+        "BE_GO/cmd/server/modules_responses.go",
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/modules_export.go",
         "BE_GO/internal/repository/modules_export.go",
         "BE_GO/internal/service/modules_export.go",
-        "BE_GO/internal/handler/modules_responses.go",
-        "BE_GO/cmd/server/modules_responses.go",
         "BE_GO/internal/xlsxexport/value.go",
         "BE_GO/internal/xlsxexport/pandas.go",
         "BE_GO/internal/xlsxexport/openpyxl.go",
@@ -16664,9 +16855,16 @@
         "BE_GO/internal/xlsxexport/zip.go",
         "BE_GO/internal/xlsxexport/compare.go",
         "BE_GO/internal/xlsxexport/golden_test.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/pkg/storage/instancelogo/write.go"
       ],
       "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "Modules reads serialization and the association profile",
+        "Default (S3) storage settings and the instance-logo S3 writer",
+        "application_module",
+        "application_moduleresponses",
+        "application_moduleresponses_attachments",
+        "docmanager_document",
         "Existing family Go code and xlsxexport writer"
       ],
       "contract": {
@@ -16696,21 +16894,28 @@
         "TESTS/adapters/django/modules_responses_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/modules-responses.md",
         {
-          "command": "python tools/go-migration/family.py run modules-responses --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/modules-responses-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "44f85777e215b8ceea030b4b4820278019d0413a4130ad400c18f255ec1515e9",
-          "scope": "HTTP family modules-responses: 135/135 cases on native Django and native Go, 135/135 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 145/145; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-red-r1/results.json",
+          "receipt_sha256": "f89f92a06bb44e0f68eeb9c9549c08fa414c92d098db6d1c7fb8df43ca5481c6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 145/145 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-green-r3/results.json",
+          "receipt_sha256": "6451b13fdf91a48829e714066f456f4a784d25406b3a00502ddc8c4570702e99"
+        },
+        {
+          "revision": "committing change guessing the attachment's type and encoding on the lower-cased storage name",
+          "result": "Mutation control: fails Go on modules-responses-attach-compressed-upper-z (storage.objects).",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-mutation-r1/results.json",
+          "receipt_sha256": "15b3736b32465a85a2b1736775b1bb4087314a19085a5e688a34823fcf13275b"
         }
       ],
       "notes": [
-        "Implementing: Implementing: modules_response_export (pandas xlsxwriter workbook, sheet Risposte); refused: list/object labels, ints beyond int64, workbook inputs the writer does not reproduce. See docs/architecture/go-migration/modules-responses.md.",
-        "Implementing evidence: docs/architecture/go-migration/modules-responses.md",
-        "Implementing evidence: RED: Django 135/135; Go 404 on the first case. (quality-reports/go-migration/modules-responses-http-xlsx-red-r1/results.json)",
-        "Implementing evidence: GREEN: 135/135 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/modules-responses-http-xlsx-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on modules-responses-export-owner (sharedStrings.xml differs) (quality-reports/go-migration/modules-responses-http-xlsx-mutation-r1/results.json)"
+        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active. API v2 (v2-misc): add-attachment names with compression suffixes are stored with mimetypes' encoding as ContentEncoding."
       ]
     },
     {
@@ -16801,14 +17006,25 @@
         "target": "modules_response_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/modules_responses.go",
         "BE_GO/internal/repository/modules_responses.go",
         "BE_GO/internal/service/modules_responses.go",
         "BE_GO/internal/handler/modules_responses.go",
         "BE_GO/cmd/server/modules_responses.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/modules_export.go",
+        "BE_GO/internal/repository/modules_export.go",
+        "BE_GO/internal/service/modules_export.go",
+        "BE_GO/internal/xlsxexport/value.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/xlsxwriter.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/internal/xlsxexport/compare.go",
+        "BE_GO/internal/xlsxexport/golden_test.go",
+        "BE_GO/pkg/storage/instancelogo/write.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
@@ -16817,7 +17033,8 @@
         "application_module",
         "application_moduleresponses",
         "application_moduleresponses_attachments",
-        "docmanager_document"
+        "docmanager_document",
+        "Existing family Go code and xlsxexport writer"
       ],
       "contract": {
         "methods": [
@@ -16832,7 +17049,7 @@
         "request": "Path module_id (is_valid_uuid); any JSON body stored as the response.",
         "response": "200 {'msg': 'response added', 'module_response_id': id}.",
         "errors": "400 bad UUID; 403 registry / scoped session; 404 module not found / not enabled / max responses reached / only users; 500 a response without progressive number, JSON null.",
-        "authentication": "AllowAny (no permission_classes); identity resolution still applies to authenticated requests.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.modules.create.",
         "resource_scope": "Module by id; the authenticated request.user becomes the response's user.",
         "side_effects": "Creates the response (create entry), saves the user (update entry), update_queue saves (update entries); module.sport_association or actor index.",
@@ -16846,21 +17063,28 @@
         "TESTS/adapters/django/modules_responses_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/modules-responses.md",
         {
-          "command": "python tools/go-migration/family.py run modules-responses --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/modules-responses-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "44f85777e215b8ceea030b4b4820278019d0413a4130ad400c18f255ec1515e9",
-          "scope": "HTTP family modules-responses: 135/135 cases on native Django and native Go, 135/135 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 145/145; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-red-r1/results.json",
+          "receipt_sha256": "f89f92a06bb44e0f68eeb9c9549c08fa414c92d098db6d1c7fb8df43ca5481c6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 145/145 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-green-r3/results.json",
+          "receipt_sha256": "6451b13fdf91a48829e714066f456f4a784d25406b3a00502ddc8c4570702e99"
+        },
+        {
+          "revision": "committing change guessing the attachment's type and encoding on the lower-cased storage name",
+          "result": "Mutation control: fails Go on modules-responses-attach-compressed-upper-z (storage.objects).",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-mutation-r1/results.json",
+          "receipt_sha256": "15b3736b32465a85a2b1736775b1bb4087314a19085a5e688a34823fcf13275b"
         }
       ],
       "notes": [
-        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active.",
-        "Implementing evidence: docs/architecture/go-migration/modules-responses.md",
-        "Implementing evidence: RED: Django 110/110; Go 404 on the first case. (quality-reports/go-migration/modules-responses-http-native-r2/results.json)",
-        "Implementing evidence: GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and stored objects. (quality-reports/go-migration/modules-responses-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on approve-foreign-response (quality-reports/go-migration/modules-responses-http-mutation-r2/results.json)"
+        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active. API v2 (v2-misc): add-attachment names with compression suffixes are stored with mimetypes' encoding as ContentEncoding."
       ]
     },
     {
@@ -17174,14 +17398,25 @@
         "target": "modules_response_add_attachment",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/modules_responses.go",
         "BE_GO/internal/repository/modules_responses.go",
         "BE_GO/internal/service/modules_responses.go",
         "BE_GO/internal/handler/modules_responses.go",
         "BE_GO/cmd/server/modules_responses.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/modules_export.go",
+        "BE_GO/internal/repository/modules_export.go",
+        "BE_GO/internal/service/modules_export.go",
+        "BE_GO/internal/xlsxexport/value.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/xlsxwriter.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/internal/xlsxexport/compare.go",
+        "BE_GO/internal/xlsxexport/golden_test.go",
+        "BE_GO/pkg/storage/instancelogo/write.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
@@ -17190,7 +17425,8 @@
         "application_module",
         "application_moduleresponses",
         "application_moduleresponses_attachments",
-        "docmanager_document"
+        "docmanager_document",
+        "Existing family Go code and xlsxexport writer"
       ],
       "contract": {
         "methods": [
@@ -17206,7 +17442,7 @@
         "request": "POST JSON {'filename', 'base64'} (data URI prefix allowed); DELETE JSON {'document_id'}.",
         "response": "200 {'msg': 'attachment added'} / {'msg': 'attachment deleted'}.",
         "errors": "400 bad UUID; 403 registry / scoped session; 404 {'error': 'document not found'}; 500 decode errors and a missing response (after the document and object exist for POST), malformed document_id, list/str bodies that index.",
-        "authentication": "AllowAny (no permission_classes); identity resolution still applies to authenticated requests.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.modules.update for POST and DELETE.",
         "resource_scope": "Response and document resolved by id.",
         "side_effects": "POST: Document create (entry), S3 object <timestamp>/<document_id>/<filename>, attachment link. DELETE: every link of the document and the document (delete entry).",
@@ -17220,21 +17456,28 @@
         "TESTS/adapters/django/modules_responses_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/modules-responses.md",
         {
-          "command": "python tools/go-migration/family.py run modules-responses --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/modules-responses-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "44f85777e215b8ceea030b4b4820278019d0413a4130ad400c18f255ec1515e9",
-          "scope": "HTTP family modules-responses: 135/135 cases on native Django and native Go, 135/135 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 145/145; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-red-r1/results.json",
+          "receipt_sha256": "f89f92a06bb44e0f68eeb9c9549c08fa414c92d098db6d1c7fb8df43ca5481c6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 145/145 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-green-r3/results.json",
+          "receipt_sha256": "6451b13fdf91a48829e714066f456f4a784d25406b3a00502ddc8c4570702e99"
+        },
+        {
+          "revision": "committing change guessing the attachment's type and encoding on the lower-cased storage name",
+          "result": "Mutation control: fails Go on modules-responses-attach-compressed-upper-z (storage.objects).",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-mutation-r1/results.json",
+          "receipt_sha256": "15b3736b32465a85a2b1736775b1bb4087314a19085a5e688a34823fcf13275b"
         }
       ],
       "notes": [
-        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active.",
-        "Implementing evidence: docs/architecture/go-migration/modules-responses.md",
-        "Implementing evidence: RED: Django 110/110; Go 404 on the first case. (quality-reports/go-migration/modules-responses-http-native-r2/results.json)",
-        "Implementing evidence: GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and stored objects. (quality-reports/go-migration/modules-responses-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on approve-foreign-response (quality-reports/go-migration/modules-responses-http-mutation-r2/results.json)"
+        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active. API v2 (v2-misc): add-attachment names with compression suffixes are stored with mimetypes' encoding as ContentEncoding."
       ]
     },
     {
@@ -17252,14 +17495,25 @@
         "target": "modules_response_approve",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/modules_responses.go",
         "BE_GO/internal/repository/modules_responses.go",
         "BE_GO/internal/service/modules_responses.go",
         "BE_GO/internal/handler/modules_responses.go",
         "BE_GO/cmd/server/modules_responses.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/modules_export.go",
+        "BE_GO/internal/repository/modules_export.go",
+        "BE_GO/internal/service/modules_export.go",
+        "BE_GO/internal/xlsxexport/value.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/xlsxwriter.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/internal/xlsxexport/compare.go",
+        "BE_GO/internal/xlsxexport/golden_test.go",
+        "BE_GO/pkg/storage/instancelogo/write.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
@@ -17268,7 +17522,8 @@
         "application_module",
         "application_moduleresponses",
         "application_moduleresponses_attachments",
-        "docmanager_document"
+        "docmanager_document",
+        "Existing family Go code and xlsxexport writer"
       ],
       "contract": {
         "methods": [
@@ -17297,21 +17552,28 @@
         "TESTS/adapters/django/modules_responses_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/modules-responses.md",
         {
-          "command": "python tools/go-migration/family.py run modules-responses --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/modules-responses-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "44f85777e215b8ceea030b4b4820278019d0413a4130ad400c18f255ec1515e9",
-          "scope": "HTTP family modules-responses: 135/135 cases on native Django and native Go, 135/135 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 145/145; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-red-r1/results.json",
+          "receipt_sha256": "f89f92a06bb44e0f68eeb9c9549c08fa414c92d098db6d1c7fb8df43ca5481c6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 145/145 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-green-r3/results.json",
+          "receipt_sha256": "6451b13fdf91a48829e714066f456f4a784d25406b3a00502ddc8c4570702e99"
+        },
+        {
+          "revision": "committing change guessing the attachment's type and encoding on the lower-cased storage name",
+          "result": "Mutation control: fails Go on modules-responses-attach-compressed-upper-z (storage.objects).",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-mutation-r1/results.json",
+          "receipt_sha256": "15b3736b32465a85a2b1736775b1bb4087314a19085a5e688a34823fcf13275b"
         }
       ],
       "notes": [
-        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active.",
-        "Implementing evidence: docs/architecture/go-migration/modules-responses.md",
-        "Implementing evidence: RED: Django 110/110; Go 404 on the first case. (quality-reports/go-migration/modules-responses-http-native-r2/results.json)",
-        "Implementing evidence: GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and stored objects. (quality-reports/go-migration/modules-responses-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on approve-foreign-response (quality-reports/go-migration/modules-responses-http-mutation-r2/results.json)"
+        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active. API v2 (v2-misc): add-attachment names with compression suffixes are stored with mimetypes' encoding as ContentEncoding."
       ]
     },
     {
@@ -17329,14 +17591,25 @@
         "target": "modules_response_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/modules_responses.go",
         "BE_GO/internal/repository/modules_responses.go",
         "BE_GO/internal/service/modules_responses.go",
         "BE_GO/internal/handler/modules_responses.go",
         "BE_GO/cmd/server/modules_responses.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/modules_export.go",
+        "BE_GO/internal/repository/modules_export.go",
+        "BE_GO/internal/service/modules_export.go",
+        "BE_GO/internal/xlsxexport/value.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/xlsxwriter.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/internal/xlsxexport/compare.go",
+        "BE_GO/internal/xlsxexport/golden_test.go",
+        "BE_GO/pkg/storage/instancelogo/write.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
@@ -17345,7 +17618,8 @@
         "application_module",
         "application_moduleresponses",
         "application_moduleresponses_attachments",
-        "docmanager_document"
+        "docmanager_document",
+        "Existing family Go code and xlsxexport writer"
       ],
       "contract": {
         "methods": [
@@ -17374,21 +17648,28 @@
         "TESTS/adapters/django/modules_responses_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/modules-responses.md",
         {
-          "command": "python tools/go-migration/family.py run modules-responses --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/modules-responses-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "44f85777e215b8ceea030b4b4820278019d0413a4130ad400c18f255ec1515e9",
-          "scope": "HTTP family modules-responses: 135/135 cases on native Django and native Go, 135/135 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 145/145; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-red-r1/results.json",
+          "receipt_sha256": "f89f92a06bb44e0f68eeb9c9549c08fa414c92d098db6d1c7fb8df43ca5481c6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 145/145 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-green-r3/results.json",
+          "receipt_sha256": "6451b13fdf91a48829e714066f456f4a784d25406b3a00502ddc8c4570702e99"
+        },
+        {
+          "revision": "committing change guessing the attachment's type and encoding on the lower-cased storage name",
+          "result": "Mutation control: fails Go on modules-responses-attach-compressed-upper-z (storage.objects).",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2misc-mutation-r1/results.json",
+          "receipt_sha256": "15b3736b32465a85a2b1736775b1bb4087314a19085a5e688a34823fcf13275b"
         }
       ],
       "notes": [
-        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active.",
-        "Implementing evidence: docs/architecture/go-migration/modules-responses.md",
-        "Implementing evidence: RED: Django 110/110; Go 404 on the first case. (quality-reports/go-migration/modules-responses-http-native-r2/results.json)",
-        "Implementing evidence: GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and stored objects. (quality-reports/go-migration/modules-responses-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on approve-foreign-response (quality-reports/go-migration/modules-responses-http-mutation-r2/results.json)"
+        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active. API v2 (v2-misc): add-attachment names with compression suffixes are stored with mimetypes' encoding as ContentEncoding."
       ]
     },
     {
@@ -18659,7 +18940,7 @@
         "target": "onboarding_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/profile_misc.go",
         "BE_GO/internal/dto/profile_misc.go",
@@ -18703,21 +18984,28 @@
         "TESTS/adapters/django/profile_misc_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/profile-misc.md",
         {
-          "command": "python tools/go-migration/family.py run profile-misc --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/profile-misc-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "b1619bfba17942fb9d05524149b1b005064866b17638c308fdb27ba8486d9290",
-          "scope": "HTTP family profile-misc: 93/93 cases on native Django and native Go, 93/93 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 101/101; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-red-r1/results.json",
+          "receipt_sha256": "7f11e060c3fb309d9dcc2a1e16b2e9a6555498c467017e8816e290a0b770414c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 101/101 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-green-r1/results.json",
+          "receipt_sha256": "08e1d48804cc04502a2e27e00dde850636852b3a86aab1f13f53d848daf332d5"
+        },
+        {
+          "revision": "committing change comparing users_onboarding_id and user as raw strings instead of uuid.UUID values",
+          "result": "Mutation control: fails Go on profile-misc-onboarding-flags-ui-row-uppercase-ids (response.status).",
+          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-mutation-r2/results.json",
+          "receipt_sha256": "98d012f94207dbb0a3f97a2887218979ba5938f60d754e3bf51b68c4bf05f71e"
         }
       ],
       "notes": [
-        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values, and onboarding_data carrying users_onboarding_id or user.",
-        "Implementing evidence: docs/architecture/go-migration/profile-misc.md",
-        "Implementing evidence: RED: Django 93/93; Go 404 on the first case. (quality-reports/go-migration/profile-misc-http-native-r1/results.json)",
-        "Implementing evidence: GREEN: 93/93 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact association, user, onboarding, instance, audit and index effects. (quality-reports/go-migration/profile-misc-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on profile-misc-course-athlete (associates_subscribed length) (quality-reports/go-migration/profile-misc-http-mutation-r1/results.json)"
+        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values, and onboarding_data carrying users_onboarding_id or user. API v2 (v2-misc): onboarding_data carrying the row's own users_onboarding_id and user (the checklist's whole row) is ported; other values stay refused."
       ]
     },
     {
@@ -21748,7 +22036,7 @@
         "target": "profile_associates_course",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/profile_misc.go",
         "BE_GO/internal/dto/profile_misc.go",
@@ -21792,21 +22080,28 @@
         "TESTS/adapters/django/profile_misc_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/profile-misc.md",
         {
-          "command": "python tools/go-migration/family.py run profile-misc --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/profile-misc-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "b1619bfba17942fb9d05524149b1b005064866b17638c308fdb27ba8486d9290",
-          "scope": "HTTP family profile-misc: 93/93 cases on native Django and native Go, 93/93 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 101/101; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-red-r1/results.json",
+          "receipt_sha256": "7f11e060c3fb309d9dcc2a1e16b2e9a6555498c467017e8816e290a0b770414c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 101/101 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-green-r1/results.json",
+          "receipt_sha256": "08e1d48804cc04502a2e27e00dde850636852b3a86aab1f13f53d848daf332d5"
+        },
+        {
+          "revision": "committing change comparing users_onboarding_id and user as raw strings instead of uuid.UUID values",
+          "result": "Mutation control: fails Go on profile-misc-onboarding-flags-ui-row-uppercase-ids (response.status).",
+          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-mutation-r2/results.json",
+          "receipt_sha256": "98d012f94207dbb0a3f97a2887218979ba5938f60d754e3bf51b68c4bf05f71e"
         }
       ],
       "notes": [
-        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values, and onboarding_data carrying users_onboarding_id or user.",
-        "Implementing evidence: docs/architecture/go-migration/profile-misc.md",
-        "Implementing evidence: RED: Django 93/93; Go 404 on the first case. (quality-reports/go-migration/profile-misc-http-native-r1/results.json)",
-        "Implementing evidence: GREEN: 93/93 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact association, user, onboarding, instance, audit and index effects. (quality-reports/go-migration/profile-misc-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on profile-misc-course-athlete (associates_subscribed length) (quality-reports/go-migration/profile-misc-http-mutation-r1/results.json)"
+        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values, and onboarding_data carrying users_onboarding_id or user. API v2 (v2-misc): onboarding_data carrying the row's own users_onboarding_id and user (the checklist's whole row) is ported; other values stay refused."
       ]
     },
     {
@@ -21824,7 +22119,7 @@
         "target": "profile_associates_sport_association",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/profile_misc.go",
         "BE_GO/internal/dto/profile_misc.go",
@@ -21868,21 +22163,28 @@
         "TESTS/adapters/django/profile_misc_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/profile-misc.md",
         {
-          "command": "python tools/go-migration/family.py run profile-misc --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/profile-misc-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "b1619bfba17942fb9d05524149b1b005064866b17638c308fdb27ba8486d9290",
-          "scope": "HTTP family profile-misc: 93/93 cases on native Django and native Go, 93/93 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 101/101; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-red-r1/results.json",
+          "receipt_sha256": "7f11e060c3fb309d9dcc2a1e16b2e9a6555498c467017e8816e290a0b770414c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 101/101 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-green-r1/results.json",
+          "receipt_sha256": "08e1d48804cc04502a2e27e00dde850636852b3a86aab1f13f53d848daf332d5"
+        },
+        {
+          "revision": "committing change comparing users_onboarding_id and user as raw strings instead of uuid.UUID values",
+          "result": "Mutation control: fails Go on profile-misc-onboarding-flags-ui-row-uppercase-ids (response.status).",
+          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-mutation-r2/results.json",
+          "receipt_sha256": "98d012f94207dbb0a3f97a2887218979ba5938f60d754e3bf51b68c4bf05f71e"
         }
       ],
       "notes": [
-        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values, and onboarding_data carrying users_onboarding_id or user.",
-        "Implementing evidence: docs/architecture/go-migration/profile-misc.md",
-        "Implementing evidence: RED: Django 93/93; Go 404 on the first case. (quality-reports/go-migration/profile-misc-http-native-r1/results.json)",
-        "Implementing evidence: GREEN: 93/93 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact association, user, onboarding, instance, audit and index effects. (quality-reports/go-migration/profile-misc-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on profile-misc-course-athlete (associates_subscribed length) (quality-reports/go-migration/profile-misc-http-mutation-r1/results.json)"
+        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values, and onboarding_data carrying users_onboarding_id or user. API v2 (v2-misc): onboarding_data carrying the row's own users_onboarding_id and user (the checklist's whole row) is ported; other values stay refused."
       ]
     },
     {
@@ -21900,7 +22202,7 @@
         "target": "profile_image",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/profile_misc.go",
         "BE_GO/internal/dto/profile_misc.go",
@@ -21930,7 +22232,7 @@
         "request": "Path uid (is_valid_uuid).",
         "response": "200 the stored avatar_image string; empty 200 body when null.",
         "errors": "400 bad UUID; 500 page for a missing or deleted user; 403 identity/registry for supplied tokens; 405.",
-        "authentication": "DRF default AllowAny with default authentication (a supplied token is resolved).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "AllowAny; registry other.settings.update for authenticated collaborators; not an athlete view.",
         "resource_scope": "User row by id.",
         "side_effects": "None.",
@@ -21944,21 +22246,28 @@
         "TESTS/adapters/django/profile_misc_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/profile-misc.md",
         {
-          "command": "python tools/go-migration/family.py run profile-misc --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/profile-misc-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "b1619bfba17942fb9d05524149b1b005064866b17638c308fdb27ba8486d9290",
-          "scope": "HTTP family profile-misc: 93/93 cases on native Django and native Go, 93/93 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 101/101; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-red-r1/results.json",
+          "receipt_sha256": "7f11e060c3fb309d9dcc2a1e16b2e9a6555498c467017e8816e290a0b770414c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 101/101 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-green-r1/results.json",
+          "receipt_sha256": "08e1d48804cc04502a2e27e00dde850636852b3a86aab1f13f53d848daf332d5"
+        },
+        {
+          "revision": "committing change comparing users_onboarding_id and user as raw strings instead of uuid.UUID values",
+          "result": "Mutation control: fails Go on profile-misc-onboarding-flags-ui-row-uppercase-ids (response.status).",
+          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-mutation-r2/results.json",
+          "receipt_sha256": "98d012f94207dbb0a3f97a2887218979ba5938f60d754e3bf51b68c4bf05f71e"
         }
       ],
       "notes": [
-        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values, and onboarding_data carrying users_onboarding_id or user.",
-        "Implementing evidence: docs/architecture/go-migration/profile-misc.md",
-        "Implementing evidence: RED: Django 93/93; Go 404 on the first case. (quality-reports/go-migration/profile-misc-http-native-r1/results.json)",
-        "Implementing evidence: GREEN: 93/93 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact association, user, onboarding, instance, audit and index effects. (quality-reports/go-migration/profile-misc-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on profile-misc-course-athlete (associates_subscribed length) (quality-reports/go-migration/profile-misc-http-mutation-r1/results.json)"
+        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values, and onboarding_data carrying users_onboarding_id or user. API v2 (v2-misc): onboarding_data carrying the row's own users_onboarding_id and user (the checklist's whole row) is ported; other values stay refused."
       ]
     },
     {
@@ -31136,7 +31445,7 @@
         "target": "communication_workflows_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/automation_workflows.go",
@@ -31183,21 +31492,28 @@
         "TESTS/adapters/django/workflow_update_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/workflow-update.md",
         {
-          "command": "python tools/go-migration/family.py run workflow-update --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/workflow-update-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "77d22314920915e2545e457ab499bf56efed38fe5118c5655f48a454156a75d0",
-          "scope": "HTTP family workflow-update: 57/57 cases on native Django and native Go, 57/57 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 63/63; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/workflow-update-http-v2misc-red-r3/results.json",
+          "receipt_sha256": "7c3c88ac9ea39b9820389d0e66a7ab3d5ac64226f500106905741d03a96fe8ad"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 63/63 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/workflow-update-http-v2misc-green-r1/results.json",
+          "receipt_sha256": "440c2d3099f32b7646553f7de10e43e122d34858fa6d9b64374b4363a6d2379d"
+        },
+        {
+          "revision": "committing change giving an ambiguous Europe/Rome wall time the summer offset",
+          "result": "Mutation control: fails Go on workflow-update-enable-cron-future-ambiguous-standard-offset (celery.eta).",
+          "artifact": "quality-reports/go-migration/workflow-update-http-v2misc-mutation-r1/results.json",
+          "receipt_sha256": "b3b3e9d281c4b6eb85672db8adf93af7e8d828be7ab0d196aa185fc006be9dff"
         }
       ],
       "notes": [
-        "Implementing: Partial AutomationWorkflowSerializer update (generic 400, tenant-scoped relation 403 ahead of other errors), full-row save with auditlog of changed request fields only, enabling resets a triggered cron flag with a second save, trigger() errors are a 500 after the saves, on four transports; enabling a cron workflow with a future, near or unclassified time (Celery countdown), a new automation_workflow_id (insert-copy save) and a form-encoded automation_tree are refused with 500 before any write.",
-        "Implementing evidence: docs/architecture/go-migration/workflow-update.md",
-        "Implementing evidence: RED: Django 57/57; Go 404 on the first case. (quality-reports/go-migration/workflow-update-http-native-r4/results.json)",
-        "Implementing evidence: GREEN: 57/57 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact AutomationWorkflow, auditlog and index effects. (quality-reports/go-migration/workflow-update-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on workflow-update-enable-cron-invalid-time-server-error (response.status 200). (quality-reports/go-migration/workflow-update-http-mutation-r2/results.json)"
+        "Implementing: Partial AutomationWorkflowSerializer update (generic 400, tenant-scoped relation 403 ahead of other errors), full-row save with auditlog of changed request fields only, enabling resets a triggered cron flag with a second save, trigger() errors are a 500 after the saves, on four transports; enabling a cron workflow with a future, near or unclassified time (Celery countdown), a new automation_workflow_id (insert-copy save) and a form-encoded automation_tree are refused with 500 before any write. API v2 (v2-misc): enabling a future cron trigger publishes check_workflows_trigger_cron with the countdown's eta (pytz localize semantics)."
       ]
     },
     {

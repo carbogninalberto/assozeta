@@ -105,9 +105,19 @@ def seed_rows(source, created):
         insert(CampsAndRetreatsSubscription, CampsAndRetreatsSubscription(
             camps_and_retreats_subscription_id=row['id'], camps_and_retreats_id=camps[row['camp']]['id'], status_flag=row['status'],
             subscription_id=registrations[row['registration']]['id'] if row['registration'] else None, created_at=periods.when(row['created'])))
+    from application.models import Instructor, Invoice
+    teacher, bill = source['instructor'], source['invoice']
+    insert(Instructor, Instructor(instructor_id=teacher['id'], user_id=source['ids']['owner'], first_name=teacher['first_name'],
+                                  last_name=teacher['last_name'], email=teacher['email'], tax_code=teacher['tax_code'],
+                                  default_hourly_billing=Decimal(teacher['default_hourly_billing'])))
+    insert(Invoice, Invoice(invoice_id=bill['id'], sport_association_id=source['ids']['own_association'],
+                            creation_date=periods.when(bill['created']), membership_fee=Decimal(bill['membership_fee']),
+                            activity_fee=Decimal(bill['activity_fee']), description=bill['description'], number=bill['number'],
+                            meta=bill['meta']))
     payments = source['payments']
     for row in payments.values():
-        insert(Payment, Payment(payment_id=row['id'], sport_association_id=row['association'], user_id=row['user'],
+        insert(Payment, Payment(invoice_id=bill['id'] if row.get('invoice') else None,
+                                instructor_id=teacher['id'] if row.get('instructor') else None, payment_id=row['id'], sport_association_id=row['association'], user_id=row['user'],
                                 associate_id=associates[row['associate']]['id'], amount=Decimal(row['amount']), paid=row['paid'],
                                 deleted=row['deleted'], subject=Payment.OTHER, description=row['description'],
                                 payment_category_id=categories[row['category']]['id'] if row['category'] else None, notes=row['notes'],

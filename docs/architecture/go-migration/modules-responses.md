@@ -75,8 +75,9 @@ and `GET modules/<module_id>/export` (`modules_response_export`) are implemented
 - export: list or object labels, integers beyond int64 and inputs the workbook writer refuses ([xlsx-exports](xlsx-exports.md)).
 - add and add-attachment with a form or multipart body (a QueryDict as the stored JSON value, or as request data).
 - add-attachment POST with a non-string `filename` or `base64`, or a filename that is empty, `.`/`..`, contains `/`, `\` or NUL, is
-  longer than 255 characters, or ends in an encoding suffix (`.gz`, `.tgz`, ...); a storage name already taken when
-  `AWS_S3_FILE_OVERWRITE` is off.
+  or longer than 255 characters; a storage name already taken when `AWS_S3_FILE_OVERWRITE` is off. Names ending in a
+  compression suffix (`.gz`, `.tgz`, `.Z`, ...) are ported: the object is stored with `mimetypes.guess_type`'s type of the inner
+  name and its encoding as `ContentEncoding` (`S3Storage._get_write_parameters`).
 - add-attachment DELETE with a non-string, non-null `document_id` (`UUID(int=...)`), or of a document that any other table references
   (Django's collector would cascade or set null there).
 - info for a module whose association is not active (the shared profile reader serves active associations).
@@ -97,3 +98,11 @@ Export (25 more cases first in the sequence, 135 in all; an export module with t
 seeded in authored order; workbooks compared with `TESTS/contracts/xlsx.py`): RED `xlsx-red-r1` (Django 135/135, Go 404 on
 `export-anonymous`), GREEN `xlsx-versioned-r1` on all four transports, mutation `xlsx-mutation-r1` (attachments joined by `, `
 fail `export-owner`, CAUGHT).
+
+API v2 (v2-misc): attachment names with compression suffixes (10 cases: `.tar.gz`, `.TGZ`, `.gz`, `.csv.bz2`, `.txz`, `.svgz`,
+`.pdf.br`, `.tar.Z`, and `.z`/`.GZ` without an encoding), 145 cases in all. RED `v2misc-red-r1`: Django 145/145, Go 500. GREEN
+`v2misc-green-r3`: 145/145 on the four transports. Mutation `v2misc-mutation-r1` (encoding guessed on the lower-cased name) fails
+`attach-compressed-upper-z` on Go. The adapter now VACUUMs `application_moduleresponses` before seeding: the export reads rows in
+the table's physical order, and the rows a previous workload deleted otherwise let the next seed land out of authored order.
+Shared code: `instancelogo.WriteParameters` gains `ContentEncoding` (empty for every other caller); profile-template 45/45 and
+subscription-sign 47/47 re-run green natively.

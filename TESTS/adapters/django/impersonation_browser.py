@@ -92,7 +92,7 @@ def assert_browser_acceptance(browser, checkpoints):
         (actor,action,index) for index,(actor,action) in enumerate(CHECKPOINTS,1)]
     for actor,count in (('owner',3),('admin',4)):
         assert len([row for row in browser['checks'] if row['actor']==actor and row['action']=='picker-exact-eligible-ids'])==count
-    assert [(row['actor'],row['action']) for row in browser['checks'] if row['action']=='foreign-owner-and-athlete-excluded']==[('owner','foreign-owner-and-athlete-excluded')]
+    assert [(row['actor'],row['action']) for row in browser['checks'] if row['action']=='foreign-owner-excluded']==[('owner','foreign-owner-excluded')]
     credentials=[row for row in browser['checks'] if row['action']=='credentials-unchanged']
     assert [row['actor'] for row in credentials]==['owner','admin']
     assert all(re.fullmatch('[0-9a-f]{64}',row[key]) for row in credentials
@@ -156,12 +156,12 @@ class ImpersonationBrowserContractTests(unittest.TestCase):
                       for index,(actor,action) in enumerate(CHECKPOINTS,1)]}
         for actor,count in (('owner',3),('admin',4)):
             browser['checks'] += [{'actor':actor,'action':'picker-exact-eligible-ids'} for _ in range(count)]
-        browser['checks'] += [{'actor':'owner','action':'foreign-owner-and-athlete-excluded'}]
+        browser['checks'] += [{'actor':'owner','action':'foreign-owner-excluded'}]
         browser['checks'] += [{'actor':actor,'action':'credentials-unchanged',
             'access_token_sha256':'a'*64,'refresh_token_sha256':'b'*64} for actor in ('owner','admin')]
         assert_browser_acceptance(browser,checkpoints)
         with self.assertRaises(AssertionError):assert_browser_acceptance(browser,checkpoints[:-1])
-        for action in ('picker-exact-eligible-ids','foreign-owner-and-athlete-excluded','credentials-unchanged'):
+        for action in ('picker-exact-eligible-ids','foreign-owner-excluded','credentials-unchanged'):
             altered=copy.deepcopy(browser)
             altered['checks'].pop(next(i for i,row in enumerate(altered['checks']) if row['action']==action))
             with self.subTest(action=action),self.assertRaises(AssertionError):assert_browser_acceptance(altered,checkpoints)

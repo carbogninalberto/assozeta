@@ -1148,6 +1148,230 @@
    "session": true
   },
   {
+   "name": "google-calendar-config-get-owner-keeps-session",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/google/calendar/config",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "authorization_url": "https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=placeholder-client-id.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fassozeta.example.test%2Fgoogle%2Foauth2callback&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&state={state}&access_type=offline&include_granted_scopes=true"
+   },
+   "google": [],
+   "users": {
+    "owner": {
+     "state": "$state"
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "owner",
+     "fields": [
+      "integration_google_state"
+     ],
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "user.sport_association"
+     ],
+     "intermediate": null
+    }
+   ],
+   "state_for": "owner",
+   "session": true,
+   "session_cookie": {
+    "keep": true
+   }
+  },
+  {
+   "name": "google-calendar-config-get-owner-existing-session",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/google/calendar/config",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "authorization_url": "https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=placeholder-client-id.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fassozeta.example.test%2Fgoogle%2Foauth2callback&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&state={state}&access_type=offline&include_granted_scopes=true"
+   },
+   "google": [],
+   "users": {
+    "owner": {
+     "state": "$state"
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "owner",
+     "fields": [
+      "integration_google_state"
+     ],
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "user.sport_association"
+     ],
+     "intermediate": null
+    }
+   ],
+   "state_for": "owner",
+   "session": true,
+   "session_cookie": {
+    "cookie_from": "google-calendar-config-get-owner-keeps-session",
+    "reused": true
+   }
+  },
+  {
+   "name": "google-calendar-config-get-owner-expired-session-cookie",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/google/calendar/config",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "authorization_url": "https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=placeholder-client-id.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fassozeta.example.test%2Fgoogle%2Foauth2callback&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&state={state}&access_type=offline&include_granted_scopes=true"
+   },
+   "google": [],
+   "users": {
+    "owner": {
+     "state": "$state"
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "owner",
+     "fields": [
+      "integration_google_state"
+     ],
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "user.sport_association"
+     ],
+     "intermediate": null
+    }
+   ],
+   "state_for": "owner",
+   "session": true,
+   "session_cookie": {
+    "cookie": "sessionid=0123456789abcdefghijklmnopqrstuv"
+   }
+  },
+  {
+   "name": "google-calendar-config-get-owner-short-session-cookie",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/google/calendar/config",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "authorization_url": "https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=placeholder-client-id.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fassozeta.example.test%2Fgoogle%2Foauth2callback&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&state={state}&access_type=offline&include_granted_scopes=true"
+   },
+   "google": [],
+   "users": {
+    "owner": {
+     "state": "$state"
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "owner",
+     "fields": [
+      "integration_google_state"
+     ],
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "user.sport_association"
+     ],
+     "intermediate": null
+    }
+   ],
+   "state_for": "owner",
+   "session": true,
+   "session_cookie": {
+    "cookie": "theme=dark; sessionid=abc"
+   }
+  },
+  {
+   "name": "google-calendar-config-get-collaborator-keeps-session",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/google/calendar/config",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "authorization_url": "https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=placeholder-client-id.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fassozeta.example.test%2Fgoogle%2Foauth2callback&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&state={state}&access_type=offline&include_granted_scopes=true"
+   },
+   "google": [],
+   "users": {
+    "full_collaborator": {
+     "state": "$state"
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "full_collaborator",
+     "fields": [
+      "integration_google_state"
+     ],
+     "actor": "full_collaborator",
+     "index": null,
+     "intermediate": null
+    }
+   ],
+   "state_for": "full_collaborator",
+   "session": true,
+   "session_cookie": {
+    "keep": true
+   }
+  },
+  {
+   "name": "google-calendar-config-get-collaborator-existing-session",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/google/calendar/config",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "authorization_url": "https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=placeholder-client-id.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fassozeta.example.test%2Fgoogle%2Foauth2callback&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&state={state}&access_type=offline&include_granted_scopes=true"
+   },
+   "google": [],
+   "users": {
+    "full_collaborator": {
+     "state": "$state"
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "full_collaborator",
+     "fields": [
+      "integration_google_state"
+     ],
+     "actor": "full_collaborator",
+     "index": null,
+     "intermediate": null
+    }
+   ],
+   "state_for": "full_collaborator",
+   "session": true,
+   "session_cookie": {
+    "cookie_from": "google-calendar-config-get-collaborator-keeps-session",
+    "reused": true
+   }
+  },
+  {
    "name": "google-calendar-callback-options",
    "actor": "anonymous",
    "method": "OPTIONS",
