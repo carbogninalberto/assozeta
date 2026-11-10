@@ -26254,7 +26254,8 @@
         "BE_GO/internal/channels/channels.go",
         "BE_GO/internal/channels/python.go",
         "BE_GO/internal/repository/notification_store.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/subscription_create_python.go"
       ],
       "dependencies": [],
       "contract": {
@@ -26267,12 +26268,12 @@
           "/api/v2/subscription/add",
           "/api/subscription/add"
         ],
-        "request": "POST JSON {new_user_account, associate_data, associate_tutor_data, signature[, medical_certificate, custom_data, additional_fields, plan_id, membership_plan_id]}; ?m=only_associate quick mode.",
+        "request": "POST JSON {new_user_account, associate_data, associate_tutor_data, signature[, medical_certificate, custom_data, additional_fields, plan_id, membership_plan_id]}; ?m=only_associate quick mode. Anonymous or athlete: sport_association (the association user's username); preregistration: true for the next season.",
         "response": "{status: success, payment_id, amount (float or 0)}; quick mode {status: success, payment_id}.",
-        "errors": "400 {msg: validation errors.}; 400 serializer errors (associate fields, born_date DD/MM/YYYY, signature data); 400 {msg, code: '400'} membership plan; 403 registry / admin session / 'Seleziona la tua associazione.' / 'User is not a sport association'; 405; 409 {msg, code: '409', ref: subscription_duplicate}; 500 non-dict body, born date, medical_certificate null, int() errors, no association; 500 refused inputs (not ported). 400 {msg: Firma non valida., code: 400, ref: invalid_signature}; 503 signature_storage; 400 new member field errors.",
+        "errors": "400 {msg: validation errors.}; 400 serializer errors (associate fields, born_date DD/MM/YYYY, signature data); 400 {msg, code: '400'} membership plan; 403 registry / admin session / 'Seleziona la tua associazione.' / 'User is not a sport association'; 405; 409 {msg, code: '409', ref: subscription_duplicate}; 500 non-dict body, born date, medical_certificate null, int() errors, no association; 500 refused inputs (not ported). 400 {msg: Firma non valida., code: 400, ref: invalid_signature}; 503 signature_storage; 400 new member field errors. 403 'User not allowed.' (quick mode on another association's member or without a session; an association naming another one); 500 anonymous without sport_association or with an unknown username.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
-        "permissions": "AllowAny view; registry association.members.create; collaborators act as the owner.",
-        "resource_scope": "request.user.sport_association (exactly one live association); associates by tax code within it; certificates by id.",
+        "permissions": "AllowAny view (anonymous requests are attributed to the named user); registry association.members.create; collaborators act as the owner.",
+        "resource_scope": "request.user.sport_association (exactly one live association) or, for athletes, the association of the named username; associates by tax code within it; the quick mode's associate must belong to it; certificates by id.",
         "side_effects": "Associate/tutor/relation, certificate owner, payment, subscription, membership rows with audit entries; after commit check_workflows_trigger(new_subscription) and print_document_subscription Celery messages, notification broadcast rows, Redis DB 0 list, user_broadcasts cache, Channels notification_push and mirrored envelope. Quick mode: a payment (always), the subscription (not signed, number 0, no membership), the same on_commit work. Signature row and the stored signature object (update entry); a new member user (create and username update entries) with the send_mail_async welcome e-mail on commit; send_email_template to the owner for an athlete user.",
         "transaction": "One atomic transaction; on_commit callbacks after it, failures logged.",
         "execution_owner": "django"
@@ -26287,25 +26288,25 @@
         "docs/architecture/go-migration/subscription-create.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 62/62; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-create-http-v2create-red-r12/results.json",
-          "receipt_sha256": "e587463a8dee378ef0abb48573983ba52fc4adac00b08a0ebdb7c3c908069035"
+          "result": "RED: Django 84/84; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-create-http-v2forms-red-r2/results.json",
+          "receipt_sha256": "b03513815334c2e22c588062eba2120c82cb0532f70ed161bef3cab50aca3a10"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 62/62 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
-          "artifact": "quality-reports/go-migration/subscription-create-http-v2create-merged-r1/results.json",
-          "receipt_sha256": "2719f5524aba38800f1e93371641214a99f22c7ff3b9899d5b48db75a5563de0"
+          "result": "GREEN: 84/84 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
+          "artifact": "quality-reports/go-migration/subscription-create-http-v2forms-versioned-r1/results.json",
+          "receipt_sha256": "ce32ce6e8ca7555c817dcc2774b47c694f2ee7d2ff4128345858077d411bf340"
         },
         {
-          "revision": "committing change saving the wizard's Signature for request.user instead of the new member",
-          "result": "Mutation control: fails Go on subscription-create-new-member-account (state.signature-row).",
-          "artifact": "quality-reports/go-migration/subscription-create-http-v2create-mutation-r3/results.json",
-          "receipt_sha256": "0721ba16ef7107d87849b96cacc63dcde2afc878f547e3c697a66b76f86c77b3"
+          "revision": "committing change creating a preregistration with the current timestamp instead of the next season's first day",
+          "result": "Mutation control: fails Go on subscription-create-preregistration (state.row: creation_date).",
+          "artifact": "quality-reports/go-migration/subscription-create-http-v2forms-mutation-r1/results.json",
+          "receipt_sha256": "de3c96ce401052770d641e87d14408bca3256003df7671996ae814824d8d2dca"
         }
       ],
       "notes": [
-        "Implementing: subscription/add for authenticated owners and collaborators: create_subscription (associate get_or_create, minor tutor, certificate owner, fees and plans, payment reuse/create, numbering, subscription, membership) in one transaction, then check_workflows_trigger and print_document_subscription Celery messages and the notification (broadcast rows, Redis store, user_broadcasts cache, Channels group_send written by Go plus the mirrored envelope). Anonymous/athlete/sport_association bodies, the family mode, preregistration, certificate expirations, type_of_associate filters, associate_id updates, form bodies and X-Group-Id are refused with a 500 before anything is committed. See docs/architecture/go-migration/subscription-create.md. API v2: the owner wizard's medical certificate date (today default, unparseable, uploaded certificate expiration) is ported. v2-sub-create: the quick re-subscription (m=only_associate), an owner's sport_association, signature uploads (shared with subscription/sign) and new member accounts with the welcome e-mail are ported."
+        "Implementing: subscription/add for authenticated owners and collaborators: create_subscription (associate get_or_create, minor tutor, certificate owner, fees and plans, payment reuse/create, numbering, subscription, membership) in one transaction, then check_workflows_trigger and print_document_subscription Celery messages and the notification (broadcast rows, Redis store, user_broadcasts cache, Channels group_send written by Go plus the mirrored envelope). The family mode, the renewing preregistration, certificate expirations, type_of_associate filters, associate_id updates, form bodies and X-Group-Id are refused with a 500 before anything is committed. See docs/architecture/go-migration/subscription-create.md. API v2: the owner wizard's medical certificate date (today default, unparseable, uploaded certificate expiration) is ported. v2-sub-create: the quick re-subscription (m=only_associate), an owner's sport_association, signature uploads (shared with subscription/sign) and new member accounts with the welcome e-mail are ported. Own records: the quick re-subscription only uses the association's own members and an association account only names its own association (403 User not allowed.). v2-public-forms: the anonymous form (attributed to the user sport_association names, no actor), a logged-in athlete naming an association and preregistration: true without a subscription to renew (next season) are ported; the family wizard and the preregistration that renews a subscription stay refused."
       ]
     },
     {
@@ -26747,25 +26748,25 @@
         "docs/architecture/go-migration/subscription-renew.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 62/62; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-v2create-red-r2/results.json",
-          "receipt_sha256": "a5363868e64fbe6e3fc518ac4758fca54d1da9a00b8f44c69ff8bf3dd4058246"
+          "result": "RED: Django 62/62; Go fails state.tags on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub-mutation-r1/results.json",
+          "receipt_sha256": "d989db3e48489a2c203dc50cd9e7442e8c3fac32f42debd068650da199bcc02a"
         },
         {
           "revision": "committing change",
           "result": "GREEN: 62/62 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-v2create-merged-r1/results.json",
-          "receipt_sha256": "c7b1a21c186a1041638963450dc8e9140e84b9a681656c1f2c1f05d81c46dffc"
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub-merged-r1/results.json",
+          "receipt_sha256": "01450be63ed5f9f36d01378c2b875e8c8b0201d03862cf53ca9e1c84b129164e"
         },
         {
-          "revision": "committing change keeping the athlete as request.user for an athlete renewal",
-          "result": "Mutation control: fails Go on subscription-renew-renew-athlete (403).",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-v2create-mutation-r1/results.json",
-          "receipt_sha256": "51abd19028337e9b46695bc11030318c549d5d64285c4df192462ea0bdb55826"
+          "revision": "committing change setting the tags by id alone",
+          "result": "Mutation control: fails Go on subscription-renew-renew-basic (state.tags).",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub-mutation-r1/results.json",
+          "receipt_sha256": "d989db3e48489a2c203dc50cd9e7442e8c3fac32f42debd068650da199bcc02a"
         }
       ],
       "notes": [
-        "Implementing: The renewal payment clean-up deletes invoiced unpaid subscription payments too (the invoice stays); renewals by athletes run create_subscription for the owner of data[sport_association][sport_association_id] (audit actor the athlete); renewals with courses stay refused."
+        "Implementing: Renewals set only the association's own tags (Tags filtered by the new subscription's association); renewals with courses stay refused."
       ]
     },
     {
@@ -27910,10 +27911,10 @@
         ],
         "request": "POST JSON create_subscription data {new_user_account, associate_data (associate_id), associate_tutor_data, signature, medical_certificate, custom_data, additional_fields, plan_id, membership_plan_id, sport_association, user, tags, courses}.",
         "response": "{status: success, payment_id}.",
-        "errors": "400 {status: error, msg: str(e)} for Python exceptions (rolled back); 400 serializer errors / {msg, code: '400'}; 403 registry / admin session; 405; 409 duplicate; 500 athletes without a dict sport_association with a known sport_association_id; 500 refused inputs (not ported).",
+        "errors": "400 {status: error, msg: str(e)} for Python exceptions (rolled back); 400 serializer errors / {msg, code: '400'}; 403 registry / admin session; 405; 409 duplicate; 500 athletes without sport_association; 500 refused inputs (not ported).",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated; registry association.members.create; collaborators act as the owner.",
-        "resource_scope": "request.user.sport_association; associates by id or by tax code within it; payments of the association; tags by id. Athletes: the owner of data[sport_association][sport_association_id].",
+        "resource_scope": "request.user.sport_association; associates by id or by tax code within it; payments of the association; tags by id.",
         "side_effects": "create_subscription rows and audit; deleted unpaid payments (Payment delete cascade); subscription user update; tag links; after commit check_workflows_trigger(new_subscription), print_document_subscription, notification rows/Redis/Channels. The clean-up QuerySet.delete() also removes unpaid payments that have an invoice (the invoice stays).",
         "transaction": "One atomic transaction around create_subscription and the post-processing; on_commit work after it.",
         "execution_owner": "django"
@@ -27928,25 +27929,25 @@
         "docs/architecture/go-migration/subscription-renew.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 62/62; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-v2create-red-r2/results.json",
-          "receipt_sha256": "a5363868e64fbe6e3fc518ac4758fca54d1da9a00b8f44c69ff8bf3dd4058246"
+          "result": "RED: Django 62/62; Go fails state.tags on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub-mutation-r1/results.json",
+          "receipt_sha256": "d989db3e48489a2c203dc50cd9e7442e8c3fac32f42debd068650da199bcc02a"
         },
         {
           "revision": "committing change",
           "result": "GREEN: 62/62 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-v2create-merged-r1/results.json",
-          "receipt_sha256": "c7b1a21c186a1041638963450dc8e9140e84b9a681656c1f2c1f05d81c46dffc"
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub-merged-r1/results.json",
+          "receipt_sha256": "01450be63ed5f9f36d01378c2b875e8c8b0201d03862cf53ca9e1c84b129164e"
         },
         {
-          "revision": "committing change keeping the athlete as request.user for an athlete renewal",
-          "result": "Mutation control: fails Go on subscription-renew-renew-athlete (403).",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-v2create-mutation-r1/results.json",
-          "receipt_sha256": "51abd19028337e9b46695bc11030318c549d5d64285c4df192462ea0bdb55826"
+          "revision": "committing change setting the tags by id alone",
+          "result": "Mutation control: fails Go on subscription-renew-renew-basic (state.tags).",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub-mutation-r1/results.json",
+          "receipt_sha256": "d989db3e48489a2c203dc50cd9e7442e8c3fac32f42debd068650da199bcc02a"
         }
       ],
       "notes": [
-        "Implementing: The renewal payment clean-up deletes invoiced unpaid subscription payments too (the invoice stays); renewals by athletes run create_subscription for the owner of data[sport_association][sport_association_id] (audit actor the athlete); renewals with courses stay refused."
+        "Implementing: Renewals set only the association's own tags (Tags filtered by the new subscription's association); renewals with courses stay refused."
       ]
     },
     {
