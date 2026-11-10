@@ -16,7 +16,7 @@ below describe what Go itself does not serve; with the handoff on, an A or B ite
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 74** (about 68 distinct after duplicates; 2 ported in v2-deletes; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard, 3 in v2-misc-3 (which also narrows the smtp/verify row to connect timeouts) and 1 in the famwiz change (the preregistration that renews a subscription; also the excel half of the course-subscriptions export row), below), **B 218** (54 with
+Counts (table rows, appendix): **A 69** (about 63 distinct after duplicates; 5 ported in v2-pdf (the reportlab documents); 2 ported in v2-deletes; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard, 3 in v2-misc-3 (which also narrows the smtp/verify row to connect timeouts) and 1 in the famwiz change (the preregistration that renews a subscription; also the excel half of the course-subscriptions export row), below), **B 218** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -105,6 +105,22 @@ Receipts are `quality-reports/go-migration/<family>-http-v2pay2-*`.
 
 Go reads and writes the Django cache entry in django-redis format (the adapter writes it with `cache.set` and reads
 Go's back with `cache.get`) and calls the balance transactions list through a per-run Stripe stub.
+
+### Ported in the v2-pdf change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2pdf-*`; [pdf-exports](pdf-exports.md) has the parity standard (the
+decoded document, byte for byte; dates within the request window) and the Go writer, each family doc the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| printing-generate | `POST printing/generate` | `format: 'pdf'` (the modal's default; all eleven reports) | 113 cases; RED `v2pdf-red-r2` Django 113/113, Go 500; GREEN `v2pdf-versioned-r2` 4 transports; mutation `v2pdf-mutation-r1` (header row padding) CAUGHT |
+| subscription-reads | `POST subscription/list` | current-view print `format: pdf` | 350 cases; RED `v2pdf-red-r1` Django 350/350, Go 500; GREEN `v2pdf-versioned-r2` 4 transports; mutation `v2pdf-mutation-r1` (default title in the document) CAUGHT |
+| course-list | `POST course/list` | print `format: pdf` | 159 cases; RED `v2pdf-red-r2` Django 159/159, Go 500; GREEN `v2pdf-versioned-r2` 4 transports; mutation `v2pdf-mutation-r1` (Tag column dropped) CAUGHT |
+| course-subscriptions | `POST course-subscriptions/list` | export `format: pdf` | 145 cases; RED `v2pdf-red-r2` Django 145/145, Go 500; GREEN `v2pdf-versioned-r2` 4 transports; mutation `v2pdf-mutation-r1` (list title instead of the carnet title) CAUGHT |
+| balance-sheet | `POST balance-sheet` | export `format: pdf` of a draft | 89 cases; RED `v2pdf-red-r1` Django 86/86 (before the account-delete cases), Go 500; GREEN `v2pdf-versioned-r2` 4 transports; mutation `v2pdf-mutation-r1` (closing date one day late) CAUGHT |
+
+Still refused in the balance-sheet PDF (B: unusual data): a denomination or address with `&`, `<` or a soft hyphen, and a
+`data:image/jpeg` logo that is not a plain 8-bit JPEG (balance-sheet.md, "Not ported").
 
 ## Remaining A items, per family
 
@@ -246,12 +262,10 @@ No A item remains.
 ### subscription-reads / subscription-lifecycle / subscription-renew / subscription-transfer / subscription-medical
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST subscription/list | current-view print `format` pdf (excel is ported) | `components/modals/CurrentViewPrintingModal.svelte:31,41` | `service/subscription_reads_export.go:45` | expensive |
 | POST .../medical-certificate/set-certificate-expiration | member without a certificate | `Members/detail/sections/modals/AddMedicalCertificate.svelte:51` | `service/subscription_medical.go:389` | medium |
 | POST subscription/renew | member with courses (pre-filled) | `Members/modals/RenewalModal.svelte:58` | `service/subscription_renew.go:96` | medium-expensive |
 
 Why these stay (v2-subscriptions):
-- POST subscription/list export: the PDF is a synchronous render and stays refused; the Excel export is ported (subscription-reads.md, "Excel export").
 - set-certificate-expiration without a certificate: Django draws a PNG with PIL/FreeType; not byte-reproducible, refused before any write.
 - renew with courses: add_course_to_subscription inside the renewal transaction; the course-enrolment port has its own
   transaction and data handling, so it needs a shared refactor.
@@ -259,12 +273,10 @@ Why these stay (v2-subscriptions):
 ### course-subscriptions / course-enrolment / course-writes / course-list / course-locations / course-calendar
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST course-subscriptions/list | export pdf (excel is ported) | `course-subscriptions-list.svelte:575-588` | `service/course_subscriptions_export.go` (`Export`) | expensive |
-| POST course/list | print pdf (excel is ported) | `course/CourseList.svelte:806-812` | `service/course_list.go:359` | expensive |
+| — | none left (both "Stampa vista corrente" exports are ported in both formats: v2-pdf) | | | |
 
-Still refused: the `pdf` format of both "Stampa vista corrente" exports (the modal's default; reportlab's in-process
-`generate_pdf_from_data`, time-stamped, not byte-reproducible). The `excel` format of both is ported (course-list.md and
-course-subscriptions.md, "Excel export"). The course-subscriptions rows follow the database's order of statements without
+Both formats of both "Stampa vista corrente" exports are ported (course-list.md and course-subscriptions.md, "Excel export";
+the PDF in the v2-pdf change). The course-subscriptions rows follow the database's order of statements without
 ORDER BY; Go sends the statements the ORM compiles (same joins, predicates and columns), and the different order an earlier
 attempt saw came from the harness storing the re-seeded rows in another physical order on its second workload, not from Go
 (course-subscriptions.md, "Row order").
@@ -282,8 +294,6 @@ attempt saw came from the harness storing the re-seeded rows in another physical
 ### printing / balance sheet / saved reports (file outputs)
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST printing/generate | `format: 'pdf'` (modal default) | `components/modals/PrintingModal.svelte:80,110` | `service/printing_generate.go:218` | expensive |
-| POST balance-sheet | export pdf of a draft (excel is ported) | `BalanceSheetEditor.svelte:464-504` | `service/balance_sheet.go:267` | expensive |
 | POST saved-reports/<pk>/run | tools `export_data`, `export_multi_sheet`, `get_attendance_matrix` | `reports/SavedReports.svelte:177-190` | `dto/report_tools.go:71` | expensive |
 
 ### association transfer, data restore, instance setup and administration
@@ -361,7 +371,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### balance-sheet.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST balance-sheet | `format` `pdf` on a non-approved (draft) sheet (`excel` is ported: balance-sheet.md, "Excel export") | service/balance_sheet.go:267 (`ErrBalanceSheetExportNotPorted`) | A | The always-visible "Esporta PDF/Excel" button (`src/routes/accounting/balanceSheet/BalanceSheetEditor.svelte:504`, `printBalanceSheet` :464-471) opens `src/components/modals/CurrentViewPrintingModal.svelte`, which POSTs `{"format": "pdf"|"excel"}` (:30-43) to `balance-sheet?currentDate=...`. For an approved sheet both backends return the stored data without a file. |
+| POST balance-sheet | `format` `pdf` on a non-approved (draft) sheet (`excel` is ported: balance-sheet.md, "Excel export") | service/balance_sheet.go:267 (`ErrBalanceSheetExportNotPorted`) | ported (v2-pdf) | The always-visible "Esporta PDF/Excel" button (`src/routes/accounting/balanceSheet/BalanceSheetEditor.svelte:504`, `printBalanceSheet` :464-471) opens `src/components/modals/CurrentViewPrintingModal.svelte`, which POSTs `{"format": "pdf"|"excel"}` (:30-43) to `balance-sheet?currentDate=...`. For an approved sheet both backends return the stored data without a file. |
 
 ### balance-accounts.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
@@ -505,7 +515,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### course-list.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST course/list | `format` `pdf` (`excel` is ported: course-list.md, "Excel export") | service/course_list.go:359 (`ErrCourseListExportUnported`) | A | "Stampa vista corrente" in `association/course/CourseList.svelte:806-812` and `CourseListArchive.svelte:790-797` opens `components/modals/CurrentViewPrintingModal.svelte`, which POSTs `{"format": "pdf"|"excel"}` (:30-43). |
+| POST course/list | `format` `pdf` (`excel` is ported: course-list.md, "Excel export") | service/course_list.go:359 (`ErrCourseListExportUnported`) | ported (v2-pdf) | "Stampa vista corrente" in `association/course/CourseList.svelte:806-812` and `CourseListArchive.svelte:790-797` opens `components/modals/CurrentViewPrintingModal.svelte`, which POSTs `{"format": "pdf"|"excel"}` (:30-43). |
 | GET/POST course/list | lazy orderings (`title__lower`, M2M, relation paths) | service/course_list.go:192,231 (`ErrCourseListUnported`) | B | UI sorts only by plain fields (`CourseList.svelte` columns: `title` sortable :295; `sort[field]` passes the column field). Cost: medium. |
 
 ### document-render.md
@@ -522,7 +532,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
 | POST course-subscriptions/add | "not routed in Go" | — | n/a | Superseded: now routed (`BE_GO/cmd/server/main.go:588`, `courseEnrolmentHandler.Add`, another family). |
-| POST course-subscriptions/list (export pdf/excel) | any POST (export) | `BE_GO/internal/service/course_subscriptions_export.go`, `ErrCourseSubscriptionExportUnsupported` | **A** for `pdf`; `excel` ported (famwiz) | `routes/association/course/overview/partials/course-subscriptions-list.svelte:575-588` → `components/modals/CurrentViewPrintingModal.svelte:41` POST `{format:'pdf'|'excel'}`. |
+| POST course-subscriptions/list (export pdf/excel) | any POST (export) | `BE_GO/internal/service/course_subscriptions_export.go`, `ErrCourseSubscriptionExportUnsupported` | ported: `excel` (famwiz), `pdf` (v2-pdf) | `routes/association/course/overview/partials/course-subscriptions-list.svelte:575-588` → `components/modals/CurrentViewPrintingModal.svelte:41` POST `{format:'pdf'|'excel'}`. |
 | PATCH course-subscriptions/<pk>/update | `events` key present and non-null | `service/course_subscription_update.go:408-411`, `ErrCourseSubscriptionNotPorted` | ported | Ported (`course-subscriptions.md`, `v2c-green`). |
 | PATCH …/update | changed primary key | same site | B | UI never sends `course_subscription_id` in the body. legacy: no; cheap. |
 | PATCH …/update | HTML-form input for `multiple_quote`/`events` | `service/course_subscription_update.go:371` | B | UI sends JSON. legacy: no; cheap. |
@@ -856,7 +866,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### printing-generate.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST printing/generate | `format: 'pdf'` | `service/printing_generate.go:218-219` | **A** | `components/modals/PrintingModal.svelte:80` defaults `format: 'pdf'`. The body is sent at `:110-112`. Cost: expensive (reportlab-equivalent PDF). |
+| POST printing/generate | `format: 'pdf'` | `service/printing_generate.go:218-219` | **A** (ported in v2-pdf) | `components/modals/PrintingModal.svelte:80` defaults `format: 'pdf'`. The body is sent at `:110-112`. Cost: expensive (reportlab-equivalent PDF). |
 | same (excel) | openpyxl refusals (bool column, dup names), int beyond int64 / bad float in `meta.description` | `service/printing_generate.go:210-211,767,773` | B | A bool column needs bool `meta.description` values. legacy: yes. Cost: cheap. |
 
 ### restore-cleanup.md
@@ -1002,7 +1012,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | GET subscription/list (athlete, no `field`) | every athlete request (`get_optimized_subscriptions` not ported) | `service/subscription_reads.go:290`, `ErrSubscriptionReadsNotPorted` | **ported** (v2-subscriptions) | Athlete pages call it: `routes/activities/subscription/SubscriptionList.svelte:40` (route `/subscription/list/:tab?`, athlete-only, `routes.js:472-478`), `routes/search/modals/BuyCarnetFor.svelte:58`, `routes/search/profile/sections/AvailableCarnets.svelte:17`. Django `subscriptions_views.py:1071` |
-| POST subscription/list (current-view export, `format` pdf; `excel` is ported) | POST with `format` `pdf` | `service/subscription_reads_export.go:45` | **A** | The "Vista corrente" button (`MembersList.svelte:2335`, `MembersBook.svelte:1801`) opens `components/modals/CurrentViewPrintingModal.svelte:41-42` and POSTs with `format` `pdf` (default, `:31`) or `excel`. Django `subscriptions_views.py:1087` |
+| POST subscription/list (current-view export, `format` pdf; `excel` is ported) | POST with `format` `pdf` | `service/subscription_reads_export.go:45` | **A** (ported in v2-pdf) | The "Vista corrente" button (`MembersList.svelte:2335`, `MembersBook.svelte:1801`) opens `components/modals/CurrentViewPrintingModal.svelte:41-42` and POSTs with `format` `pdf` (default, `:31`) or `excel`. Django `subscriptions_views.py:1087` |
 | GET subscription/<uid>/info | subscription without `document_pdf` | `:855` | **ported** (v2-subscriptions, Celery producer) | Member detail calls info (`Members/detail/Detail.svelte:95`, `EditSubscription.svelte:23`, `course-selection.svelte:17`, used by renewal). `document_pdf` is filled asynchronously by the `print_document_subscription` worker after create/renew, so it is empty until the print finishes or if it failed. Django prints it on demand at `:1787` |
 | same | course-subscription membership payments with an instructor or an invoice | `:994` | **A** (invoice) / B (instructor) (both ported in v2-documents) | Paying a membership installment with invoice generation (default `generate_invoice` True, `payment_views.py:1761`), or cancelling it, leaves an invoice on the payment. Instructor on a membership payment: legacy: yes, medium |
 | same | course-subscription membership payments with an instructor or an invoice | — | ported | Ported in v2-misc (nested invoice and instructor rendered). |
@@ -1081,7 +1091,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### xlsx-exports.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST printing/generate | `format: 'pdf'` | `service/printing_generate.go:218-219`, `ErrPrintingGenerateNotPorted` | **A** | `components/modals/PrintingModal.svelte:80` defaults `format: 'pdf'` and POSTs it at `:110`. Django `printing_views.py:22` (reportlab) |
+| POST printing/generate | `format: 'pdf'` | `service/printing_generate.go:218-219`, `ErrPrintingGenerateNotPorted` | **A** (ported in v2-pdf) | `components/modals/PrintingModal.svelte:80` defaults `format: 'pdf'` and POSTs it at `:110`. Django `printing_views.py:22` (reportlab) |
 | GET instructor/report | dates other than `D/M/YYYY` | xlsx/instructor report service | B | UI sends `DD/MM/YYYY` (`course/instructor/modals/ReportModal.svelte:10-22,52`). legacy: no |
 
 ### websockets.md

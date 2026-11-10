@@ -9941,6 +9941,658 @@
    }
   },
   {
+   "name": "course-subscriptions-list-pdf-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660021",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags"
+      ],
+      "rows": [
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ],
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ],
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ],
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ],
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ],
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ]
+      ],
+      "title": "Iscrizioni ai corsi (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni corsi filtrate - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-pdf-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660021",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags"
+      ],
+      "rows": [
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ],
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ],
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ],
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ],
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ],
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ]
+      ],
+      "title": "Iscrizioni ai corsi (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni corsi filtrate - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-pdf-form-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660021",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags"
+      ],
+      "rows": [
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ],
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ],
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ],
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ],
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ],
+       [
+        "Bianchi",
+        "Luisa",
+        "02/02/1985",
+        null,
+        null,
+        "Palestra",
+        "10/09/2026",
+        "Master è"
+       ]
+      ],
+      "title": "Iscrizioni ai corsi (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni corsi filtrate - Message reads own.pdf"
+   },
+   "effect": null,
+   "raw_body": "format=excel&format=pdf",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-subscriptions-list-pdf-subscription-carnet-title",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660020&subscription_id=a1000000-0000-4000-8000-000000660013",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags",
+       "Carnet"
+      ],
+      "rows": [
+       [
+        "Rossi",
+        "Mario",
+        "10/05/1990",
+        "mario@example.test",
+        null,
+        "Yoga è",
+        "10/09/2026",
+        "Agonisti, Master è",
+        "-"
+       ],
+       [
+        "Rossi",
+        "Mario",
+        "10/05/1990",
+        "mario@example.test",
+        null,
+        "Yoga è",
+        "10/09/2026",
+        "Agonisti, Master è",
+        "-"
+       ],
+       [
+        "Rossi",
+        "Mario",
+        "10/05/1990",
+        "mario@example.test",
+        null,
+        "Yoga è",
+        "10/09/2026",
+        "Agonisti, Master è",
+        "Dieci ingressi (15/09/2026) - 7/10"
+       ]
+      ],
+      "title": "Dieci ingressi (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni corsi filtrate - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-pdf-several-carnets",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660020&subscription_id=a1000000-0000-4000-8000-000000660015",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags",
+       "Carnet"
+      ],
+      "rows": [
+       [
+        "Verdi",
+        "Piccolo",
+        "01/06/2024",
+        null,
+        null,
+        "Yoga è",
+        "10/09/2026",
+        "",
+        "Dieci ingressi (15/09/2026) - 7/10, Dieci ingressi (17/09/2026) - 10/10, Libero (18/09/2026)"
+       ],
+       [
+        "Verdi",
+        "Piccolo",
+        "01/06/2024",
+        null,
+        null,
+        "Yoga è",
+        "10/09/2026",
+        "",
+        "-"
+       ]
+      ],
+      "title": "Libero (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni corsi filtrate - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-pdf-include-deleted",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?include_deleted=true&course_id=a1000000-0000-4000-8000-000000660020&subscription_id=a1000000-0000-4000-8000-000000660013",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags",
+       "Carnet"
+      ],
+      "rows": [
+       [
+        "Rossi",
+        "Mario",
+        "10/05/1990",
+        "mario@example.test",
+        null,
+        "Yoga è",
+        "10/09/2026",
+        "Agonisti, Master è",
+        "-"
+       ],
+       [
+        "Rossi",
+        "Mario",
+        "10/05/1990",
+        "mario@example.test",
+        null,
+        "Yoga è",
+        "10/09/2026",
+        "Agonisti, Master è",
+        "-"
+       ],
+       [
+        "Rossi",
+        "Mario",
+        "10/05/1990",
+        "mario@example.test",
+        null,
+        "Yoga è",
+        "10/09/2026",
+        "Agonisti, Master è",
+        "-"
+       ],
+       [
+        "Rossi",
+        "Mario",
+        "10/05/1990",
+        "mario@example.test",
+        null,
+        "Yoga è",
+        "10/09/2026",
+        "Agonisti, Master è",
+        "Dieci ingressi (15/09/2026) - 7/10"
+       ]
+      ],
+      "title": "Dieci ingressi (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni corsi filtrate - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-pdf-one-row",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660022",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags"
+      ],
+      "rows": [
+       [
+        "Neri",
+        "Gino",
+        "03/03/1970",
+        null,
+        null,
+        "Sala pesi",
+        "10/09/2026",
+        ""
+       ]
+      ],
+      "title": "Iscrizioni ai corsi (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni corsi filtrate - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-pdf-empty",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660025",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags"
+      ],
+      "rows": [],
+      "title": "Iscrizioni ai corsi (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni corsi filtrate - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-pdf-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Nato il",
+       "Email",
+       "Telefono",
+       "Corso",
+       "Data creazione",
+       "Tags"
+      ],
+      "rows": [
+       [
+        "Muller",
+        "Hans",
+        "01/01/1980",
+        null,
+        null,
+        "Estero",
+        "10/09/2026",
+        "Estero"
+       ]
+      ],
+      "title": "Iscrizioni ai corsi (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni corsi filtrate - Message reads foreign.pdf"
+   },
+   "effect": null,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-pdf-row-without-subscription-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-pdf-missing-birth-date-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660020&subscription_id=a1000000-0000-4000-8000-000000660016",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-pdf-format-case-sensitive",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/list?course_id=a1000000-0000-4000-8000-000000660022",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "format": "PDF"
+   }
+  },
+  {
+   "name": "course-subscriptions-list-pdf-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/course-subscriptions/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
    "name": "course-subscriptions-update-anonymous",
    "actor": "anonymous",
    "method": "PATCH",

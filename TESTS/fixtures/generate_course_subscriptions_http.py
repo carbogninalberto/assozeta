@@ -691,7 +691,7 @@ add('list-head', 'owner', f'{LIST}?course_id={C("sala")}', 200, '<empty>', metho
 add('list-delete-without-pk-server-error', 'owner', LIST, 500, SERVER, method='DELETE')
 add('list-delete-athlete-not-association', 'athlete', LIST, 403, NOT_ASSOCIATION, method='DELETE')
 add('list-options', 'owner', LIST, 200, LIST_OPTIONS, method='OPTIONS')
-# POST runs the export: an unknown or missing format raises (500); pdf/excel are not ported.
+# POST runs the export: an unknown or missing format raises (500).
 add('list-export-unknown-format-server-error', 'owner', LIST, 500, SERVER, method='POST', body={'format': 'csv'})
 add('list-export-missing-format-server-error', 'full_collaborator', f'{LIST}?course_id={C("yoga")}', 500, SERVER, method='POST', body={})
 add('list-export-list-body-server-error', 'owner', LIST, 500, SERVER, method='POST', body=['pdf'])
@@ -706,7 +706,7 @@ EXCEL = {'format': 'excel'}
 ddmmyyyy = lambda text: f'{text[8:10]}/{text[5:7]}/{text[:4]}'
 
 
-def export(*labels, association=OWN, denomination='Message reads own'):
+def export(*labels, association=OWN, denomination='Message reads own', fmt='excel'):
     title, lookup, listed = 'Iscrizioni ai corsi', {}, set(labels)
     for holding in HOLDINGS.values():
         if holding['disabled']:
@@ -733,6 +733,12 @@ def export(*labels, association=OWN, denomination='Message reads own'):
     if lookup:
         columns.append('Carnet')
         data.append([', '.join(lookup.get(label, [])) or '-' for label in labels])
+    if fmt == 'pdf':
+        # generate_pdf_from_data(zip(*rows), columns, title=...): the document carries the (rebound) title, the
+        # filename a fixed one; the per-tag columns belong to the workbook only.
+        return {'file': {'$pdf': {'engine': 'data_table', 'columns': columns, 'rows': [list(row) for row in zip(*data)],
+                                  'title': f'{title} (giorno stampa $today)'}},
+                'filename': f'[$today] Iscrizioni corsi filtrate - {denomination}.pdf'}
     for key, tag in TAGS.items():
         if tag['association'] == association:
             columns.append(tag['name'])
@@ -773,6 +779,29 @@ add('list-excel-filter-error-before-body', 'owner', f'{LIST}?course_id=abc', 500
     content_type='application/json')
 add('list-excel-owner-without-association-server-error', 'owner_without_association', LIST, 500, SERVER, method='POST', body=EXCEL)
 add('list-excel-athlete-not-association', 'athlete', LIST, 403, NOT_ASSOCIATION, method='POST', body=EXCEL)
+
+# POST pdf: the same rows as a reportlab table document (TESTS/contracts/pdf.py).
+PDF = {'format': 'pdf'}
+add('list-pdf-course', 'owner', f'{LIST}?course_id={C("palestra")}', 200, export(*PALESTRA, fmt='pdf'), method='POST', body=PDF)
+add('list-pdf-full-collaborator', 'full_collaborator', f'{LIST}?course_id={C("palestra")}', 200, export(*PALESTRA, fmt='pdf'),
+    method='POST', body=PDF)
+add('list-pdf-form-body', 'owner', f'{LIST}?course_id={C("palestra")}', 200, export(*PALESTRA, fmt='pdf'), method='POST',
+    raw_body='format=excel&format=pdf', content_type='application/x-www-form-urlencoded')
+add('list-pdf-subscription-carnet-title', 'admin', f'{LIST}?course_id={C("yoga")}&subscription_id={S("sub_mario")}', 200,
+    export('cs_yoga', 'cs_del', 'cs_bd1', fmt='pdf'), method='POST', body=PDF, headers=ADMIN_OWNER)
+add('list-pdf-several-carnets', 'owner', f'{LIST}?course_id={C("yoga")}&subscription_id={S("sub_piccolo")}', 200,
+    export('cs_carnet', 'cs_del5', fmt='pdf'), method='POST', body=PDF)
+add('list-pdf-include-deleted', 'owner', f'{LIST}?include_deleted=true&course_id={C("yoga")}&subscription_id={S("sub_mario")}', 200,
+    export('cs_yoga', 'cs_deleted', 'cs_del', 'cs_bd1', fmt='pdf'), method='POST', body=PDF)
+add('list-pdf-one-row', 'owner', f'{LIST}?course_id={C("sala")}', 200, export('cs_invoiced', fmt='pdf'), method='POST', body=PDF)
+add('list-pdf-empty', 'owner', f'{LIST}?course_id={C("estero")}', 200, export(fmt='pdf'), method='POST', body=PDF)
+add('list-pdf-foreign-owner', 'foreign_owner', LIST, 200,
+    export('cs_abroad', association=FOREIGN, denomination='Message reads foreign', fmt='pdf'), method='POST', body=PDF)
+add('list-pdf-row-without-subscription-server-error', 'owner', LIST, 500, SERVER, method='POST', body=PDF)
+add('list-pdf-missing-birth-date-server-error', 'owner', f'{LIST}?course_id={C("yoga")}&subscription_id={S("sub_senza")}', 500, SERVER,
+    method='POST', body=PDF)
+add('list-pdf-format-case-sensitive', 'owner', f'{LIST}?course_id={C("sala")}', 500, SERVER, method='POST', body={'format': 'PDF'})
+add('list-pdf-owner-without-association-server-error', 'owner_without_association', LIST, 500, SERVER, method='POST', body=PDF)
 
 # --- update ----------------------------------------------------------------
 def updated(actor, label, fields, changes, *, payments=None, index=None, sent=()):

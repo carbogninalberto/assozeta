@@ -9,6 +9,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfexport"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 )
 
@@ -30,9 +31,12 @@ var subscriptionReadsStatusLang = map[int]string{1: "non firmato", 2: "in attesa
 
 // Export is current_view_subscriptions(sport_association, request.data,
 // subscriptions, title=printing_title): data['format'] must be 'pdf' or
-// 'excel' (the PDF is not ported); 'excel' is generate_xlsx_from_data of
-// eight columns over the whole filtered, sorted queryset and the response is
-// {'file': <base64>, 'filename': '[<today>] <title> - <denomination>.xlsx'}.
+// 'excel'; 'excel' is generate_xlsx_from_data of eight columns over the whole
+// filtered, sorted queryset and the response is {'file': <base64>,
+// 'filename': '[<today>] <title> - <denomination>.xlsx'}; 'pdf' is
+// generate_pdf_from_data of the same columns as rows, titled '<title> (giorno
+// stampa <today>)' and named '[<today>] Iscrizioni filtrate -
+// <denomination>.pdf'.
 // Every exception is the view's 500.
 func (s *SubscriptionReads) Export(ctx context.Context, export *SubscriptionReadsExport, data any) (map[string]any, error) {
 	format, err := dto.PythonIndex(data, "format")
@@ -40,9 +44,7 @@ func (s *SubscriptionReads) Export(ctx context.Context, export *SubscriptionRead
 		return nil, domain.ErrSubscriptionReadsServer // KeyError or TypeError
 	}
 	switch format {
-	case "excel":
-	case "pdf":
-		return nil, domain.ErrSubscriptionReadsNotPorted
+	case "excel", "pdf":
 	default:
 		return nil, domain.ErrSubscriptionReadsServer // Exception('Format not valid')
 	}
@@ -106,6 +108,24 @@ func (s *SubscriptionReads) Export(ctx context.Context, export *SubscriptionRead
 			xlsxexport.StrValue(medical), xlsxexport.StrValue(row.UserUsername), xlsxexport.StrValue(strings.Join(tags[row.ID], ", "))} {
 			cells[column] = append(cells[column], value)
 		}
+	}
+	if format == "pdf" {
+		// generate_pdf_from_data(zip(*rows), columns, title=...): the
+		// filename keeps the default title, the document the view's.
+		document, err := pdfexport.DataTable{Columns: columns, Rows: pdfexport.RowsOf(cells),
+			Title: export.title + " (giorno stampa " + printingDate(now) + ")"}.Build(now)
+		switch {
+		case errors.Is(err, pdfexport.ErrNotPorted):
+			return nil, domain.ErrSubscriptionReadsNotPorted
+		case err != nil:
+			return nil, domain.ErrSubscriptionReadsServer // an exception of reportlab
+		}
+		denomination, err := s.store.AssociationDenomination(ctx, export.association)
+		if err != nil {
+			return nil, err
+		}
+		return map[string]any{"file": base64.StdEncoding.EncodeToString(document),
+			"filename": fmt.Sprintf("[%s] Iscrizioni filtrate - %s.pdf", printingDate(now), subscriptionReadsPythonStr(denomination))}, nil
 	}
 	workbook, err := xlsxexport.PandasOpenpyxl(cells, columns, s.now())
 	switch {

@@ -36,14 +36,17 @@
   and `course.label`; `ACCOUNT_TRANSFER` raises (`CustomAccounts` has no `destination_account_name`).
 - `excel`: `get_excel_base64(*columns, columns=...)` through `xlsxexport.PandasOpenpyxl`; `None` (for example an
   illegal control character) raises (400). Response `{'file': <base64>, 'filename': '[<dd/mm/YYYY>] <title> -
-  <denomination>.xlsx'}`. Any other format but `pdf` raises after the rows (and their promotions).
+  <denomination>.xlsx'}`.
+- `pdf`: `generate_pdf_from_data(zip(*columns), columns, title=...)` through `pdfexport.DataTable` (see
+  [pdf-exports](pdf-exports.md)): the same columns as rows in a reportlab table document, the same filename ending in
+  `.pdf`, and a document title per report (most add `(giorno stampa <dd/mm/YYYY>)`; `Iscrizioni` has none). A control
+  character that fails the workbook is drawn here. An exception of reportlab (a row taller than a page, a list in a
+  payment's `meta.description`) is the builder's 400.
+- Any other format raises after the rows (and their promotions).
 - Querysets without ordering keep Django's joins and predicates in Go (same plans, same database order).
 
 ## Not ported
 
-- The `pdf` format: `generate_pdf_from_data` renders in-process with reportlab (time-stamped, not byte-reproducible).
-  Go answers the 500 page when a request would reach it, before any promotion is saved; requests that fail earlier
-  (missing filters, bad status, …) keep their 400.
 - Workbook inputs `xlsxexport` refuses (`ErrNotPorted`, see [xlsx-exports](xlsx-exports.md)) and integers beyond int64
   in a payment's `meta.description`: the 500 page before any write.
 
@@ -55,3 +58,10 @@ Go 404), GREEN `versioned-r2` (91/91 on native Django, native Go, Caddy `/api/v1
 mutation `mutation-r1`: sorting the medical reports by descending days fails
 `printing-generate-expiring-medical`. Re-run after the `xlsxexport` change: payment-export, misc-exports,
 modules-responses, instructor-writes (native, green).
+
+PDF format: 22 more cases (113 in all; one document per report type, no rows, a control character, group, collaborator,
+foreign association, form body, `PDF` in capitals). RED `v2pdf-red-r2`: Django 113/113, Go 500 on
+`pdf-expiring-medical-certificates` (taken with the service's `pdf` branch as it was before the change, the first RED run
+having started after the branch was written). GREEN `v2pdf-versioned-r1` (and `v2pdf-versioned-r2` after merging `codex/go-backend-parity`): 113/113 on native Django, native Go, Caddy
+`/api/v1` and `/api/v2`, each document compared in decoded form. Mutation `v2pdf-mutation-r1`: a header row with 3 points
+below the text instead of 6 fails `pdf-expiring-medical-certificates` (CAUGHT).

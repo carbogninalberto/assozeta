@@ -45,7 +45,10 @@ execution owner. CourseSerializer rendering is shared with `course/<uid>/overvie
 `current_view_course(sport_association, request.data, courses, title="Corsi filtrati")` runs over the whole
 filtered, sorted queryset (pagination parameters are ignored). `data['format']` must be `excel` or `pdf`: a missing
 key, another value, or a body that is not a dict is a 500. `excel` answers 200 with
-`{'file': <base64 workbook>, 'filename': '[<dd/mm/YYYY today>] Corsi filtrati - <denomination>.xlsx'}`.
+`{'file': <base64 workbook>, 'filename': '[<dd/mm/YYYY today>] Corsi filtrati - <denomination>.xlsx'}`. `pdf` answers the
+same shape with a reportlab table document (`pdfexport.DataTable`, [pdf-exports](pdf-exports.md)) named `….pdf` and titled
+`Corsi filtrati (giorno stampa <dd/mm/YYYY>)`: the ten fixed columns as rows, without the per-tag columns, which Django adds
+to the workbook only.
 
 The workbook is `get_excel_base64` (`xlsxexport.PandasOpenpyxl`) of the columns Nome, Tipologia
 (`get_course_type_label`), Visibilità (`get_status_label`), Data inizio, Data fine, Data creazione (`%d/%m/%Y`, `-`
@@ -66,10 +69,8 @@ names: pandas keeps them, skips the numeric coercion for those columns and sizes
 
 ## Not ported (refused with the stable 500 page before any work)
 
-- **PDF export:** POST with `format` `pdf` renders a time-stamped PDF in Django (200 with `file`, `filename`); Go
-  refuses it (`ErrCourseListExportUnported`). The Excel export is ported (below), except workbook inputs
-  `xlsxexport` does not reproduce (formula-like text and the other cases in `xlsx-exports.md`) and an export whose
-  ordering is one of the lazy names below.
+- **Exports:** workbook inputs `xlsxexport` does not reproduce (formula-like text and the other cases in
+  `xlsx-exports.md`) and an export (either format) whose ordering is one of the lazy names below.
 - **Lazy orderings:** names Django resolves only when compiling the rows — transforms of a field (`title__lower`,
   `creation_date__year`, JSON keys), M2M/reverse relations (`tags`, `locations`, `coursesubscription`,
   `attendanceregistry`) and relation paths (`sport_association__...`). Go refuses them where Django compiles: after
@@ -93,3 +94,8 @@ case. GREEN `v2xlsx-green-final`: 142/142 on native Django, native Go, Caddy `/a
 `v2xlsx-mutation-final`: counting deleted course subscriptions in Iscritti fails Go on `excel-owner` (sheet1.xml
 differs). Re-run for the shared `xlsxexport` change (duplicate column names), `v2xlsx-rerun-r1`: payment-export
 87/87, misc-exports 70/70 and printing-generate 91/91 natively.
+
+PDF export: 17 more cases (159 in all). RED `v2pdf-red-r2`: Django 159/159, Go answers 500 on `pdf-owner` (the first
+authored expectation carried the per-tag columns and failed on Django; they belong to the workbook only). GREEN
+`v2pdf-versioned-r1` (and `v2pdf-versioned-r2` after merging `codex/go-backend-parity`): 159/159 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, each document compared in decoded
+form. Mutation `v2pdf-mutation-r1`: a document without the Tag column fails `pdf-owner` (CAUGHT).

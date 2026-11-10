@@ -12,6 +12,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfexport"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 )
@@ -344,20 +345,19 @@ func courseListExportDate(value *time.Time) string {
 }
 
 // Export is current_view_course(sport_association, request.data, courses,
-// title="Corsi filtrati"): data['format'] must be 'pdf' or 'excel' (the
-// PDF is not ported); 'excel' is generate_xlsx_from_data of the fixed
-// columns plus one column per CourseTags of the association, and the
-// response is {'file': <base64>, 'filename': '[<today>] Corsi filtrati -
-// <denomination>.xlsx'}.
+// title="Corsi filtrati"): data['format'] must be 'pdf' or 'excel'; 'excel'
+// is generate_xlsx_from_data of the fixed columns plus one column per
+// CourseTags of the association, and the response is {'file': <base64>,
+// 'filename': '[<today>] Corsi filtrati - <denomination>.xlsx'}; 'pdf' is
+// generate_pdf_from_data of the fixed columns as rows, titled 'Corsi filtrati
+// (giorno stampa <today>)', under the same name ending in .pdf.
 func (s *CourseLists) Export(ctx context.Context, export *CourseListExport, data any) (map[string]any, error) {
 	format, err := dto.PythonIndex(data, "format")
 	if err != nil {
 		return nil, ErrCourseListExport // KeyError or TypeError
 	}
 	switch format {
-	case "excel":
-	case "pdf":
-		return nil, ErrCourseListExportUnported
+	case "excel", "pdf":
 	default:
 		return nil, ErrCourseListExport // Exception('Format not valid')
 	}
@@ -426,6 +426,24 @@ func (s *CourseLists) Export(ctx context.Context, export *CourseListExport, data
 			xlsxexport.StrValue(strings.Join(names, ", "))} {
 			rows[column] = append(rows[column], value)
 		}
+	}
+	if format == "pdf" {
+		// generate_pdf_from_data(zip(*rows), columns, title=...) of the ten
+		// fixed columns: the per-tag columns belong to the workbook.
+		document, err := pdfexport.DataTable{Columns: columns, Rows: pdfexport.RowsOf(rows),
+			Title: "Corsi filtrati (giorno stampa " + printingDate(today) + ")"}.Build(today)
+		switch {
+		case errors.Is(err, pdfexport.ErrNotPorted):
+			return nil, ErrCourseListExportUnported
+		case err != nil:
+			return nil, ErrCourseListExport // an exception of reportlab
+		}
+		denomination, err := s.store.AssociationDenomination(ctx, export.association)
+		if err != nil {
+			return nil, err
+		}
+		return map[string]any{"file": base64.StdEncoding.EncodeToString(document),
+			"filename": fmt.Sprintf("[%s] %s - %s.pdf", printingDate(today), "Corsi filtrati", courseListPythonStr(denomination))}, nil
 	}
 	for _, tag := range tags {
 		columns = append(columns, tag.Name)
