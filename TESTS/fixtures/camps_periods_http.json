@@ -128,6 +128,17 @@
    "fee": "1.00",
    "max": null,
    "created": "2026-06-05T10:00:00Z"
+  },
+  "october": {
+   "id": "a1000000-0000-4000-8000-000000985031",
+   "camp": "camp",
+   "start": "2026-10-01T07:00:00Z",
+   "end": "2026-10-05T07:00:00Z",
+   "title": "Ottobre",
+   "description": null,
+   "fee": "40.00",
+   "max": null,
+   "created": "2026-06-06T10:00:00Z"
   }
  },
  "services": {
@@ -193,6 +204,15 @@
    "fee": "3.00",
    "category": "foreign",
    "created": "2026-06-11T09:00:00Z"
+  },
+  "canoe": {
+   "id": "a1000000-0000-4000-8000-000000985032",
+   "period": "october",
+   "title": "Canoa",
+   "description": null,
+   "fee": "8.00",
+   "category": null,
+   "created": "2026-06-11T10:00:00Z"
   }
  },
  "subscriptions": {
@@ -260,6 +280,25 @@
    "notes": null,
    "meta": null,
    "created": "2026-06-13T11:00:00Z"
+  },
+  "gone": {
+   "id": "a1000000-0000-4000-8000-000000985033",
+   "amount": "48.00",
+   "paid": false,
+   "subject": 1,
+   "description": "Ottobre",
+   "category": "own",
+   "notes": "Note",
+   "meta": [
+    {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985032",
+     "title": "Canoa",
+     "amount": 8.0,
+     "payment_category_id": "None"
+    }
+   ],
+   "created": "2026-06-13T12:00:00Z",
+   "deleted": true
   }
  },
  "subscription_periods": {
@@ -303,6 +342,15 @@
    "payment": "sept",
    "services": [
     "guide"
+   ]
+  },
+  "october": {
+   "id": "a1000000-0000-4000-8000-000000985034",
+   "period": "october",
+   "subscription": "camp",
+   "payment": "gone",
+   "services": [
+    "canoe"
    ]
   }
  },
@@ -3055,6 +3103,478 @@
    },
    "raw_body": "fee=16&payment_category=",
    "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-services-update-deleted-payment",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985032/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985032",
+     "title": "Canoa doppia",
+     "description": null,
+     "fee": "9.50",
+     "created_at": "2026-06-11T10:00:00Z",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985031",
+     "payment_category": null
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985032": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985031",
+       "title": "Canoa doppia",
+       "description": null,
+       "fee": "9.50",
+       "payment_category_id": null
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985033": {
+       "amount": "49.50",
+       "notes": "Iscrizione al periodo Ottobre del campo Campo estivo è\nMare e monti\n\nCanoa doppia - 9.5€",
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985032",
+         "title": "Canoa doppia",
+         "amount": 9.5,
+         "payment_category_id": "None"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985032",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Canoa",
+        "Canoa doppia"
+       ],
+       "fee": [
+        "8.00",
+        "9.50"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985033",
+      "action": 1,
+      "changes": {
+       "payment_id": [
+        "None",
+        "a1000000-0000-4000-8000-000000985033"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "associate": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "custom_accounts": [
+        "None",
+        "None"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "payment_category": [
+        "None",
+        "a1000000-0000-4000-8000-000000985004"
+       ],
+       "subject": [
+        "None",
+        "1"
+       ],
+       "description": [
+        "None",
+        "Ottobre"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "True"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "course": [
+        "None",
+        "null"
+       ],
+       "creation_date": [
+        "None",
+        "2026-06-13 12:00:00"
+       ],
+       "amount": [
+        "None",
+        "48.00"
+       ],
+       "notes": [
+        "None",
+        "Note"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "[{\"amount\": 9.5, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985032\", \"payment_category_id\": \"None\", \"title\": \"Canoa doppia\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985033",
+      "action": 1,
+      "changes": {
+       "payment_id": [
+        "None",
+        "a1000000-0000-4000-8000-000000985033"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "associate": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "custom_accounts": [
+        "None",
+        "None"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "payment_category": [
+        "None",
+        "a1000000-0000-4000-8000-000000985004"
+       ],
+       "subject": [
+        "None",
+        "1"
+       ],
+       "description": [
+        "None",
+        "Ottobre"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "True"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "course": [
+        "None",
+        "null"
+       ],
+       "creation_date": [
+        "None",
+        "2026-06-13 12:00:00"
+       ],
+       "amount": [
+        "None",
+        "49.5"
+       ],
+       "notes": [
+        "None",
+        "Iscrizione al periodo Ottobre del campo Campo estivo è\nMare e monti\n\nCanoa doppia - 9.5€"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "[{\"amount\": 9.5, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985032\", \"payment_category_id\": \"None\", \"title\": \"Canoa doppia\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "fee": "9.50",
+    "title": "Canoa doppia"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-other-group-payment",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985016/update",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985016",
+     "title": "Ombrellone",
+     "description": "Spiaggia",
+     "fee": "6.00",
+     "created_at": "2026-06-07T09:00:00Z",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985009",
+     "payment_category": "a1000000-0000-4000-8000-000000985004"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985016": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985009",
+       "title": "Ombrellone",
+       "description": "Spiaggia",
+       "fee": "6.00",
+       "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985023": {
+       "amount": "146.00",
+       "notes": "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 16.0€\nBus - 30.0€",
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+         "title": "Kayak doppio",
+         "amount": 16.0,
+         "payment_category_id": "None"
+        },
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985015",
+         "title": "Bus",
+         "amount": 30.0,
+         "payment_category_id": "None"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985016",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "5.00",
+        "6.00"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "payment_id": [
+        "None",
+        "a1000000-0000-4000-8000-000000985023"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "associate": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "custom_accounts": [
+        "None",
+        "None"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "payment_category": [
+        "None",
+        "a1000000-0000-4000-8000-000000985004"
+       ],
+       "subject": [
+        "None",
+        "1"
+       ],
+       "description": [
+        "None",
+        "Iscrizione"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "course": [
+        "None",
+        "null"
+       ],
+       "creation_date": [
+        "None",
+        "2026-06-13 09:00:00"
+       ],
+       "amount": [
+        "None",
+        "146.0"
+       ],
+       "notes": [
+        "None",
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 16.0€\nBus - 30.0€"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "[{\"amount\": 16.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak doppio\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "fee": "6.00"
+   }
   },
   {
    "name": "camps-periods-services-update-null-metas-server-error",

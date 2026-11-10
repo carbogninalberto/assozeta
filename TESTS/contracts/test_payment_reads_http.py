@@ -7,8 +7,8 @@ http_family.assert_case's, with three family-specific differences:
   WWW-Authenticate header;
 - related managers without ordering (an associate's tutor relations) are
   compared sorted by the tutor's id;
-- 'unordered' cases (a random ordering) compare the rows and rowIds as
-  multisets.
+- 'unordered' cases (a random ordering, or the athlete list's index-keyed rows
+  of a queryset without ordering) compare the rows and rowIds as multisets.
 """
 import json
 from pathlib import Path
@@ -50,6 +50,11 @@ def unordered(value):
     if not isinstance(value, dict):
         return value
     result = dict(value)
+    if isinstance(result.get('data'), dict):
+        # The athlete list keys its rows by index: the keys must be 0..n-1, the rows are a multiset.
+        if sorted(result['data'], key=str) != sorted((str(index) for index in range(len(result['data']))), key=str):
+            return value
+        result['data'] = list(result['data'].values())
     if isinstance(result.get('data'), list):
         result['data'] = sorted(result['data'], key=lambda item: json.dumps(item, sort_keys=True))
     meta = result.get('meta')

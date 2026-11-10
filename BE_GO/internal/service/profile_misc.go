@@ -661,10 +661,7 @@ func (s *ProfileMisc) onboardingFlags(ctx context.Context, user string, data any
 	case len(rows) > 1:
 		return &OnboardingServerError{Message: "get() returned more than one UsersOnboarding -- it returned " + strconv.Itoa(len(rows)) + "!"}
 	}
-	flags, refused, invalid := dto.ParseOnboardingFlags(data, rows[0].ID, user)
-	if refused {
-		return ErrOnboardingNotPorted
-	}
+	flags, invalid := dto.ParseOnboardingFlags(data)
 	if invalid != nil {
 		return &OnboardingValidationError{Fields: invalid}
 	}

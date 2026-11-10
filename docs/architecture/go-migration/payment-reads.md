@@ -39,7 +39,7 @@ word preparation (`personaSearch`) and KTDatatable page resolution (`personaPage
 - `mode=compressed`: `request.user.sportassociation` (without one the scoped live lookup fails, 500), the `query[archived]` filter (BooleanField `to_python`: `t`,
   `True`, `1`, `f`, `False`, `0`; anything else, including `true` and empty, is a 500), `values(...)` by `-creation_date` with
   Decimals as floats. Other parameters are ignored.
-- Athletes: own branch (not ported, see below).
+- Athletes: their own branch ("payment/list for athletes" below).
 - Otherwise the same association and archived filter, then one `filter()` of `associate_id`, `query[payment_range]`,
   `query[subject]`, `query[type]`, `query[paid]` / `query[expense]` (`== 'true'`), `query[payment_categories]` (`[]`: no
   category) and `query[account]` (`[]`: no account), each only when truthy. The range is `Y/m/d al Y/m/d` or
@@ -59,6 +59,55 @@ word preparation (`personaSearch`) and KTDatatable page resolution (`personaPage
   is a FieldError), unknown names a FieldError (500) before pagination.
 - Rows: PaymentOptimizedSerializer plus, for instructor payments, `instructor_document` / `instructor_document_token` from
   the payment's InstructorHours document.
+
+## payment/list for athletes
+
+Go: `BE_GO/internal/{domain,dto,repository,service}/payment_reads_athlete.go`. The UI's athlete page
+(`UI/src/routes/activities/payment/PaymentList.svelte`) calls the list without `mode`, optionally with
+`course_subscription_id`. Owner filters, sorting and pagination parameters are ignored.
+
+- With a `course_subscription_id` key (after `is_valid_uuid`; an empty value fails the UUID lookup, 500): the live course
+  subscription with that id (none: 500). When it has `multi_payments`, the payments of its live group-aware installments
+  whose amount is above zero, or all of them when the course association's owner has `show_zero_payments` (an installment
+  without payment: 500); otherwise its own payment under the same rule on the payment's amount. Then the payments of the
+  carnet holdings linked to it, under the same rule with the carnet association's owner. The rows are the live group-aware
+  payments with those ids, in database order (no ordering; the fixture compares them as a multiset).
+- Without it: the athlete's group-aware subscriptions (any state) give the associates; the rows are the live group-aware
+  payments of the athlete's user or of those associates with `amount >= 0`, `expense` false and created at most 60 days
+  ahead, by `paid, -creation_date`, in any archived state. The exclusions walk the live course subscriptions of those
+  subscriptions: when the course has `multi_payments`, each unpaid live installment due more than 31 days after today is
+  excluded, and one due earlier is excluded when its payment is zero and the subscription association's owner does not show
+  zero payments (such an installment without payment: 500); otherwise the course subscription's payment is excluded when
+  it is zero and the owner does not show zero payments.
+- Receipts: before the exclusions apply, every row that is paid and whose invoice has no PDF goes through `document_invoice`
+  in-process with the list's own request (its query string, so `send_receipt_email=true` sends the receipt e-mail, its
+  Authorization header for the renderer, its group and session). Go calls `DocumentRender.Render` with the `invoice` route
+  (`document-render.md`): the live scoped invoice and its single payment with a payment date, a new Document, the renderer
+  request, the `save_to_storage` task, the invoice link, the optional `send_mail_async`, each write audited. The view's
+  answer is ignored (a deleted invoice, two payments on one invoice, a payment without date or a renderer failure leave the
+  list unchanged), and the row still shows the invoice as loaded before: `document_pdf` is null in the request that
+  generates the PDF and the Document id from the next one.
+- Rows are PaymentCompressedSerializer: `payment_id`, `type`, `subject`, `amount`, `associate`
+  (`{associate_id, first_name, last_name}` or null), `description`, `paid`, `creation_date`, `payment_date`,
+  `payment_category`, `sport_association`, `notes`, `course` (the JSON) and `meta`. `get_meta` starts from
+  `{type: '', is_installment: false, installment: {id, payment_date}, conjunction: '', description, notes, name,
+  subscription: {subscription_id, start_date, end_date}}` and takes the first match, each lookup's first row by key: the
+  live group-aware installment (`rata`, ` del corso `, the course title, the installment's `id` and `payment_date`), the
+  group-aware subscription paid by it (`Iscrizione`, ` all'associazione `, the denomination), the carnet holding
+  (`Assegnazione carnet`, ` con nome `, the carnet title), the live course subscription (`Iscrizione `, ` al corso `, the
+  course title), the camp period (`Iscrizione `, ` al campo `, the period title). A match without its subscription (or a
+  holding without its carnet) is a 500.
+- The view adds `payment_method` (the type), `online_pay_available` (the payment association owner's `online_payments` and
+  `stripe_direct_credentials_configured()`; a payment without association: 500), `sport_association_denomination`,
+  `one_solution_available` and, for paid invoiced rows, `document_pdf`. `one_solution_available` needs online payments, a
+  live scoped installment of the payment whose course has `one_fee_payment`, and an unpaid payment: it is true when one of
+  the course's `events` has `int(id) == 0` and a `payment_date` equal to the installment's date as `d/m/Y` (events that are
+  not a list of such objects, or any event when the installment date has microseconds, are a 500).
+- The response is `{"data": {"0": row, "1": row, ...}, "meta": {}}` (an object keyed by index; `{}` without rows).
+- In an association-scoped session `scoped_queryset` filters every queryset above to the session's association and to the
+  athlete's family boundary (the payments of the athlete's user or of the members it resolves), and a
+  `course_subscription_id` outside it is `403 Risorsa non disponibile per questo utente e associazione.` before the view.
+  The course subscription itself is otherwise resolved by its id.
 
 ## payment/stats
 
@@ -99,8 +148,10 @@ course subscription by key (`all_objects()`), else the first installment's (`all
 
 ## Not ported (refused with the 500 page)
 
-- payment/list for athletes outside the compressed mode (their branch, PaymentCompressedSerializer, online-payment flags and
-  the synchronous invoice PDF generation), and the compressed mode in an association-scoped athlete session.
+- The compressed mode in an association-scoped athlete session (Django answers 500 there too: an athlete has no association).
+- In the athlete list: a receipt whose filename is not a valid header value (the association's denomination with control
+  characters; `document-render.md`) is refused before any write, where Django stores the Document and ignores the failed
+  response.
 - Orderings Django resolves only when compiling the rows (relations other than `user`, relation paths and transforms, the
   `full_name` annotation of the subscription search), refused after the count and page checks; random ordering together with
   the payment/list text search (DISTINCT with `RANDOM()` in the select list); reverse relation names are refused as unknown.
@@ -119,7 +170,9 @@ invoice-sync-print re-run green.
 by the foreign key column (NULLs last ascending, first descending). API v2 gaps: 3 cases (242 in all); RED `v2gaps-red-r1`
 Django 242/242, Go 500; GREEN `v2gaps-versioned-r1` on the four transports; mutation (ordering by `associate_id`) CAUGHT.
 
-Not authored: payments in the athlete branch, HEAD, the Italian invalid-page message, Stripe configured.
+Not authored: HEAD, the Italian invalid-page message; in the athlete list, payments without association, matches without
+their subscription, malformed course events and installment dates with microseconds on a one-fee course (Go follows the
+source: 500).
 
 ## Evidence (TDD)
 
@@ -143,3 +196,21 @@ list (zero floats cached). The adapter runs a Stripe API stub (stripe-routes' ha
 instance integration only during the case and reads the entry back with `cache.get` (with its expiry). RED
 `v2pay2-stats-red-r1`: Django 248/248, Go 500. GREEN `v2pay2-stats-versioned-r1`: 248/248 on the four transports. Mutation
 `v2pay2-stats-mutation-r1` (skipping refunds instead of payouts) CAUGHT.
+
+API v2 athlete list (`v2athpay-*`): 22 cases (270 in all) at the end of the sequence, on rows of their own: two further
+associations (one owner hides zero payments and takes online payments, the other the opposite), a group, three athletes,
+their subscriptions, courses, course subscriptions, installments, a carnet holding, a camp period, invoices and payments,
+plus an association-scoped session of the first owner for one athlete. They cover the empty list (also under an
+administrator's impersonation), both variants of the query, the group header, the installment and zero-amount exclusions on
+both owner settings, every `get_meta` branch, the online payment flags with Stripe configured, disabled and absent, the
+one-fee flag, the 500 paths (an installment without payment in each variant, a deleted course subscription, an empty id),
+and the receipts: a renderer failure (the Documents stay, nothing linked), two receipts generated with their e-mails
+through the list's `send_receipt_email`, the ids shown from the next request, invoices that never generate (deleted, shared
+by two payments, payment without date), and the scoped session (its rows, its receipt audited with the session, its
+`course_subscription_id` check). The adapter now runs document-render's renderer stub and the Celery broker and checks
+every case against the complete model state: unchanged, or exactly the authored Documents, invoice links, auditlog entries
+with their index rows and Celery messages. RED `v2athpay-red-r3`: Django 270/270, Go 500 (the refusal). GREEN
+`v2athpay-versioned-r1`: 270/270 on the four transports. Mutation `v2athpay-mutation-r1` (zero course subscription payments
+excluded whatever the owner's setting) CAUGHT on `payment-reads-athlete-list-renderer-failure`. Shared code: `main.go`
+(the `DocumentRender` service is now also handed to payment-reads) and the payment-reads handler; payment-writes,
+payment-misc, payment-state and document-render re-run green (`v2athpay-rerun-r1`).
