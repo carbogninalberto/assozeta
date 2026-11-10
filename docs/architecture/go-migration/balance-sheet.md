@@ -41,8 +41,16 @@ Django remains the production execution owner.
   `No balance sheet found.`).
 - **Account delete**: the association's account (malformed/foreign/unknown:
   404 `{"exception": ...}`), non-editable is 403 `This account is not deletable.`;
-  the transfers referencing it are deleted, then the account, each with a delete
-  entry indexed through `changes_json`.
+  then `custom_account.delete()`, Django's deletion collector (Go runs the shared
+  collector, `collaborator_delete_collector.go`): the account, the transfers
+  referencing it and every payment of the account (base manager: payments removed
+  from the list, of a group or never paid too) are deleted, each with a delete
+  entry indexed through `changes_json`, in that order, the payments in descending
+  key order. Before anything is deleted the payments' delete receiver runs: the
+  instalments of a payment are deleted, and an instalment's own receiver deletes
+  its unpaid payment first. That payment is audited, then the instalment (indexed
+  to the actor's association, none for a collaborator), then the account's own
+  pass audits the payment again.
 
 ## Excel export (POST with `format` `excel`)
 
@@ -67,8 +75,6 @@ in-memory data before saving, so a refusal happens before any write.
   export). `format` `excel` is ported (below), except a non-finite amount, a
   description that is not text or null, and the workbook inputs `xlsxexport`
   does not reproduce (`xlsx-exports.md`): those are refused before any write.
-- Deleting an account that any payment references: the cascade deletes payments
-  with their own signals; Go answers 500.
 - `CustomAccountSerializer.save` / `CustomAccountTransferSerializer.save` are not
   reached by these routes; they are exercised by the balance-account-writes and
   balance-transfer-writes families (account/transfer add and update).
@@ -87,3 +93,14 @@ Excel export: 11 more cases (77 in all). RED `v2xlsx-red-r2`: Django 77/77, Go
 Go, Caddy `/api/v1` and `/api/v2` with exact effects. Mutation
 `v2xlsx-mutation-final`: the expenses of the management statement without their
 minus sign fail `excel-draft` (sheet1.xml differs).
+
+Account delete with payments: 3 more cases (80 in all; accounts with payments
+removed from the list, of a group and unpaid, with a transfer, and with an unpaid
+payment and its course instalment). RED `v2del-red-r1`: Django 80/80, Go 500 on
+`account-deleted-with-payments`. GREEN `v2del-versioned-r1` (and `v2del-final-r1`
+after merging `codex/go-backend-parity`): 80/80 on native
+Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `v2del-mutation-r1`:
+the payments' delete receiver skipped leaves the instalment in place
+(`state.deleted:application.CourseSubscriptionInstallment`). Re-run green
+(`v2del-rerun-r1`): balance-account-writes 29/29, balance-transfer-writes 30/30,
+balance-accounts 25/25.

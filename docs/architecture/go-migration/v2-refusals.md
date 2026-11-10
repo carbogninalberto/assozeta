@@ -16,7 +16,7 @@ below describe what Go itself does not serve; with the handoff on, an A or B ite
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard, 3 in v2-misc-3 (which also narrows the smtp/verify row to connect timeouts) and 1 in the famwiz change (the preregistration that renews a subscription; also the excel half of the course-subscriptions export row), below), **B 218** (54 with
+Counts (table rows, appendix): **A 74** (about 68 distinct after duplicates; 2 ported in v2-deletes; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard, 3 in v2-misc-3 (which also narrows the smtp/verify row to connect timeouts) and 1 in the famwiz change (the preregistration that renews a subscription; also the excel half of the course-subscriptions export row), below), **B 218** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -219,6 +219,15 @@ Still refused in an association-scoped session (writes, owned by subscription-cr
 re-subscription (`service/subscription_create_quick.go`, `quickMember` and `quick`) and the renewal's requester lookup
 (`service/subscription_renew.go`, `renewRequesterOwner`). Cost: medium each (session cases in a write family).
 
+### Ported in the v2-deletes change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2del-*`; each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| document-delete | `DELETE document/<uid>/delete` | every existing document of a requester with an association (A): the ownership walk over the objects referencing it, then `Document.delete()` with its cascade and audit entries | 57 cases; RED `v2del-red-r3` Django 57/57, Go 500; GREEN `v2del-versioned-r1` 4 transports; mutation `v2del-mutation-r1` (update entries counted as creation entries) CAUGHT; docmanager-reads 155/155 re-run (`v2del-rerun-r1`) |
+| balance-sheet | `DELETE balance-sheet/accounts/<uid>/delete` | an account that any payment references (A: payments removed from the list or of another group leave it deletable in the UI): the collector deletes the account, its transfers and its payments, with the payments' delete receivers | 80 cases; RED `v2del-red-r1` Django 80/80, Go 500; GREEN `v2del-versioned-r1` 4 transports; mutation `v2del-mutation-r1` (payment receiver skipped) CAUGHT; balance-account-writes 29/29, balance-transfer-writes 30/30 and balance-accounts 25/25 re-run (`v2del-rerun-r1`) |
+
 ## Remaining A items, per family
 
 UI paths under `UI/src/`, Go under `BE_GO/internal/`. Cost: cheap (hours), medium (a family change with new
@@ -263,7 +272,6 @@ attempt saw came from the harness storing the re-seeded rows in another physical
 ### documents / docmanager / document-views
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| DELETE document/<uid>/delete | every attachment delete | `payment/modals/AddEditModal.svelte:803`, `course/modals/AddModal.svelte:300` | `service/docmanager_reads.go:430` | expensive |
 | GET document/retrieve | PDF object missing, still referenced | `ReceiptList.svelte:68`, `MembersList.svelte:527` | `service/docmanager_reads.go:241-246` | medium |
 | GET document/medical-appointment/<uid> | region `agonistica-piemonte-biella` (server-side call to `CURRENT_HOST`) | `AddMedicalAppointment.svelte:30` | `service/document_render.go:657` | expensive |
 
@@ -276,7 +284,6 @@ attempt saw came from the harness storing the re-seeded rows in another physical
 |---|---|---|---|---|
 | POST printing/generate | `format: 'pdf'` (modal default) | `components/modals/PrintingModal.svelte:80,110` | `service/printing_generate.go:218` | expensive |
 | POST balance-sheet | export pdf of a draft (excel is ported) | `BalanceSheetEditor.svelte:464-504` | `service/balance_sheet.go:267` | expensive |
-| DELETE balance-sheet/accounts/<uid>/delete | only soft-deleted/other-group payments | `routes/accounting/accounts/Accounts.svelte:166,192` | `service/balance_sheet.go:466` | medium |
 | POST saved-reports/<pk>/run | tools `export_data`, `export_multi_sheet`, `get_attendance_matrix` | `reports/SavedReports.svelte:177-190` | `dto/report_tools.go:71` | expensive |
 
 ### association transfer, data restore, instance setup and administration
@@ -355,13 +362,11 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
 | POST balance-sheet | `format` `pdf` on a non-approved (draft) sheet (`excel` is ported: balance-sheet.md, "Excel export") | service/balance_sheet.go:267 (`ErrBalanceSheetExportNotPorted`) | A | The always-visible "Esporta PDF/Excel" button (`src/routes/accounting/balanceSheet/BalanceSheetEditor.svelte:504`, `printBalanceSheet` :464-471) opens `src/components/modals/CurrentViewPrintingModal.svelte`, which POSTs `{"format": "pdf"|"excel"}` (:30-43) to `balance-sheet?currentDate=...`. For an approved sheet both backends return the stored data without a file. |
-| DELETE balance-sheet/accounts/<uid>/delete | any `application_payment` row references the account (soft-deleted or other-group included) | service/balance_sheet.go:466 (`ErrBalanceAccountPaymentsNotPorted`); query repository/balance_sheet.go:180 | A | UI enables delete when `row.deletable` (`src/routes/accounting/accounts/Accounts.svelte:166`, call at :192). `deletable` only counts live, group-filtered payments, so an account whose payments were all deleted from the payment list (soft delete, `views/payment_views.py:506`) or belong to another group shows as deletable and Go refuses. |
 
 ### balance-accounts.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
 | PATCH balance-sheet/accounts/<uid>/update | body carries a new `custom_account_id` | service/balance_account_writes.go:97,281 (`ErrBalanceAccountPrimaryKeyChange`) | B | `src/routes/accounting/accounts/modals/EditModal.svelte:62-76` sends the form fields `name`, `account_type`, `enabled`, `initial_balance`, `account_code` only. Cost: medium (insert-copy semantics). |
-| DELETE accounts/<uid>/delete with payments | see balance-sheet.md | — | — | Documented here as "not ported yet"; now covered by balance-sheet.md. |
 
 ### camps-subscriptions.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
@@ -573,7 +578,6 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### docmanager-reads.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| DELETE document/<uid>/delete | existing document, requester with an association | `BE_GO/internal/service/docmanager_reads.go:430`, `ErrDocmanagerNotPorted` | **A** | `routes/accounting/payment/modals/AddEditModal.svelte:803`, `routes/association/course/modals/AddModal.svelte:300` (attachment delete). Every UI delete is refused. |
 | GET document/retrieve/<uid> | object absent and referenced by a subscription or invoice (re-render) | `service/docmanager_reads.go:241-246` | **A** | Links everywhere (`accounting/receipts/ReceiptList.svelte:68`, `Members/MembersList.svelte:527`). Produced by a restore with "allow missing media" (`profile/sections/DataImport.svelte:188-189`) or a failed/pending `save_to_storage`. Medium confidence on frequency. |
 | GET document/retrieve | provider errors (HEAD ≠404, GetObject failure) | `service/docmanager_reads.go:237,266` | B | Infrastructure. cheap. |
 | GET document/retrieve | URL-like names (`abc:…`), trailing newline, inline empty name, invalid UTF-8/NUL, odd creation dates | `service/docmanager_reads.go:225,233,256,262`; `BE_GO/pkg/pymime/pymime.go:146-163` | B | Generated names start with `[`; an uploaded name like `Nota:spese.pdf` (Linux/Android) would hit it. legacy: yes; cheap. |

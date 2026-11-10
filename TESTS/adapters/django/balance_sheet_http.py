@@ -29,7 +29,8 @@ SOURCES = ('TESTS/fixtures/balance_sheet_http.json', 'TESTS/contracts/test_balan
            'BE/application/models/payment_models.py', 'BE/application/mixin.py', 'BE/application/permissions.py',
            'BE/application/permissions_registry.py', 'BE/application/audit_resolvers.py', 'BE/application/signals.py') + harness.SOURCES
 SHEET, ACCOUNT, TRANSFER = 'application.BalanceSheet', 'application.CustomAccounts', 'application.CustomAccountsTransfer'
-MANAGED = (SHEET, ACCOUNT, TRANSFER, harness.AUDIT, harness.INDEX)
+PAYMENT, INSTALLMENT = 'application.Payment', 'application.CourseSubscriptionInstallment'
+MANAGED = (SHEET, ACCOUNT, TRANSFER, PAYMENT, INSTALLMENT, harness.AUDIT, harness.INDEX)
 MANAGER = ['application.CustomAccountsTransfer.None', 'None']
 
 
@@ -66,6 +67,15 @@ def seed_rows(source, created):
                                 expense=row['expense'], deleted=row['deleted'], archived=row['archived'],
                                 group_id=ids[row['group']] if row['group'] else None, payment_date=moment(row['date']),
                                 creation_date=moment(row['created']), meta_payment_categories=row['meta'], subject=Payment.OTHER))
+    from application.models.courses_models import Course, CourseSubscription, CourseSubscriptionInstallment
+    contract.require(len(source['installments']) > 0, 'fixture.installments')
+    insert(Course, Course(course_id=source['course']['course'], sport_association_id=ids['own_association']))
+    insert(CourseSubscription, CourseSubscription(course_subscription_id=source['course']['subscription'],
+                                                  course_id=source['course']['course']))
+    for row in source['installments'].values():
+        insert(CourseSubscriptionInstallment, CourseSubscriptionInstallment(
+            course_subscription_installment_id=row['id'], course_subscription_id=source['course']['subscription'],
+            payment_id=source['payments'][row['payment']]['id'], amount=Decimal(row['amount']), payment_date=moment(row['date'])))
     for row in source['sheets'].values():
         insert(BalanceSheet, BalanceSheet(balance_sheet_id=row['id'], sport_association_id=row['association'], status_flag=row['status'],
                                           year=row['year'], archived=row['archived'], data=row['data'], creation_date=moment(row['created'])))
@@ -86,7 +96,49 @@ def prepare(source):
             for r in CustomAccounts._base_manager.filter(pk__in=[a['id'] for a in source['accounts'].values()])}
     rows.update({str(r.pk): replace.deleted_changes(CustomAccountsTransfer, r)
                  for r in CustomAccountsTransfer._base_manager.filter(pk__in=[t['id'] for t in source['transfers'].values()])})
+    from application.models import Payment
+    from application.models.courses_models import CourseSubscriptionInstallment
+    rows.update({str(r.pk): replace.deleted_changes(Payment, r)
+                 for r in Payment._base_manager.filter(pk__in=[p['id'] for p in source['payments'].values()])})
+    rows.update({str(r.pk): replace.deleted_changes(CourseSubscriptionInstallment, r)
+                 for r in CourseSubscriptionInstallment._base_manager.filter(pk__in=[i['id'] for i in source['installments'].values()])})
     return rows
+
+
+def assert_cascade(case, before, after, source, context, entries, indexes, common):
+    """An account deleted with its transfers, payments and their instalments: the rows removed, nothing else
+    changed, and the audit entries in the authored order."""
+    effect, ids = case['effect'], source['ids']
+    removed = {ACCOUNT: [source['accounts'][effect['account']]['id']],
+               TRANSFER: [source['transfers'][label]['id'] for label in effect['transfers']],
+               PAYMENT: [source['payments'][label]['id'] for label in effect['payments']],
+               INSTALLMENT: [source['installments'][label]['id'] for label in effect['installments']]}
+    keys = {ACCOUNT: 'custom_account_id', TRANSFER: 'custom_account_transfer_id', PAYMENT: 'payment_id',
+            INSTALLMENT: 'course_subscription_installment_id'}
+    contract.require(before[SHEET] == after[SHEET], 'state.sheets')
+    for model, key in keys.items():
+        old, new = keyed(before[model], key), keyed(after[model], key)
+        contract.require(set(removed[model]) <= set(old), 'effect.rows-seeded:' + model)
+        contract.require(set(new) == set(old) - set(removed[model]) and all(new[k] == old[k] for k in new), 'state.deleted:' + model)
+    kinds = {'account': ('CustomAccounts', source['accounts']), 'transfer': ('CustomAccountsTransfer', source['transfers']),
+             'payment': ('Payment', source['payments']), 'installment': ('CourseSubscriptionInstallment', source['installments'])}
+    entries = sorted(entries, key=lambda event: event['id'])
+    contract.require(len(entries) == len(effect['audit']) > 0, 'audit.count')
+    indexed = 0
+    for event, (kind, label) in zip(entries, effect['audit']):
+        model, rows = kinds[kind]
+        key = rows[label]['id']
+        # An instalment has no association in its changes and is gone: the actor's association, when it has one.
+        association, path = ids['own_association'], 'changes_json.sport_association'
+        if kind == 'installment':
+            path = 'actor.sport_association'
+            if effect['actor'] != 'owner':
+                contract.require(str(event['id']) not in indexes and event['object_pk'] == key, 'index.absent')
+                continue
+        indexed += 1
+        harness.check_audit_event(contract, case, event, indexes, model=model, key=key, action=2, changes=context['prepared'][key],
+                                  association=association, path=path, **common)
+    contract.require(len(indexes) == indexed, 'index.rows')
 
 
 def resolved(value):
@@ -108,6 +160,11 @@ def assert_effect(case, before, after, source, context):
     entries, indexes = harness.audit_delta(contract, before, after)
     common = dict(before=before, ids=ids, actor=effect['actor'], context=context)
     old_s, new_s = keyed(before[SHEET], 'balance_sheet_id'), keyed(after[SHEET], 'balance_sheet_id')
+    if effect['kind'] != 'delete-account-cascade':
+        contract.require(before[PAYMENT] == after[PAYMENT] and before[INSTALLMENT] == after[INSTALLMENT], 'state.payments')
+    if effect['kind'] == 'delete-account-cascade':
+        assert_cascade(case, before, after, source, context, entries, indexes, common)
+        return
     if effect['kind'] == 'delete-account':
         contract.require(before[SHEET] == after[SHEET], 'state.sheets')
         removed = [source['accounts'][effect['account']]['id']] + [source['transfers'][label]['id'] for label in effect['transfers']]
