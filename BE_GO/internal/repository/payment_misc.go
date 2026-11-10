@@ -68,9 +68,14 @@ func (t *paymentMiscTransaction) QuoteExists(ctx context.Context, check domain.P
 		check.User, check.Pattern, check.Associate, check.Amount, check.Group)
 }
 
-func (t *paymentMiscTransaction) SignPayment(ctx context.Context, id string, group, scope *string) (bool, error) {
-	return t.exists(ctx, `SELECT 1 FROM application_payment WHERE payment_id=$1 AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid)
- AND ($3::uuid IS NULL OR sport_association_id=$3::uuid)`, id, group, scope)
+func (t *paymentMiscTransaction) SignPayment(ctx context.Context, id string, group, scope *string) (bool, *string, error) {
+	var association *string
+	err := t.tx.GetContext(ctx, &association, `SELECT sport_association_id::text FROM application_payment WHERE payment_id=$1 AND NOT deleted
+ AND ($2::uuid IS NULL OR group_id=$2::uuid) AND ($3::uuid IS NULL OR sport_association_id=$3::uuid) LIMIT 1`, id, group, scope)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil, nil
+	}
+	return err == nil, association, err
 }
 
 func (t *paymentMiscTransaction) CommunicationConfigured(ctx context.Context, association string) (bool, error) {

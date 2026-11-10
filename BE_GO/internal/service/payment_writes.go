@@ -500,8 +500,27 @@ type paymentParty struct {
 	setAssociate                    bool
 }
 
-// party is the views' complex_item branch (a Python exception is a 500).
-func (s *PaymentWrites) party(ctx context.Context, tx domain.PaymentWritesTransaction, item any, group, scope *string) (paymentParty, error) {
+// errPaymentWritesForeignParty is the views' PermissionDenied for a party of another association.
+var errPaymentWritesForeignParty = &domain.PermissionDenied{Detail: "User not allowed."}
+
+// paymentWritesOwned is a party's owning key compared with the caller's.
+func paymentWritesOwned(found bool, owning *string, err error, caller string) error {
+	if err != nil {
+		return err
+	}
+	if !found {
+		return domain.ErrPaymentWritesServer
+	}
+	if owning == nil || *owning != caller {
+		return errPaymentWritesForeignParty
+	}
+	return nil
+}
+
+// party is the views' complex_item branch (a Python exception is a 500); payment parties only apply to
+// the caller's association (instructors through the association's user).
+func (s *PaymentWrites) party(ctx context.Context, tx domain.PaymentWritesTransaction, item any, group, scope *string,
+	association, owner string) (paymentParty, error) {
 	object, ok := item.(domain.RequestObject)
 	if !ok {
 		return paymentParty{}, domain.ErrPaymentWritesServer
@@ -522,15 +541,6 @@ func (s *PaymentWrites) party(ctx context.Context, tx domain.PaymentWritesTransa
 		}
 		return id, nil
 	}
-	missing := func(found bool, err error) error {
-		if err != nil {
-			return err
-		}
-		if !found {
-			return domain.ErrPaymentWritesServer
-		}
-		return nil
-	}
 	party := paymentParty{}
 	switch name {
 	case "Istruttori":
@@ -538,7 +548,8 @@ func (s *PaymentWrites) party(ctx context.Context, tx domain.PaymentWritesTransa
 		if err != nil {
 			return party, err
 		}
-		if err = missing(tx.InstructorExists(ctx, id)); err != nil {
+		found, user, err := tx.InstructorOwner(ctx, id)
+		if err = paymentWritesOwned(found, user, err, owner); err != nil {
 			return party, err
 		}
 		party.instructor = &id
@@ -547,7 +558,8 @@ func (s *PaymentWrites) party(ctx context.Context, tx domain.PaymentWritesTransa
 		if err != nil {
 			return party, err
 		}
-		if err = missing(tx.SupplierExists(ctx, id, group)); err != nil {
+		found, owning, err := tx.SupplierAssociation(ctx, id, group)
+		if err = paymentWritesOwned(found, owning, err, association); err != nil {
 			return party, err
 		}
 		party.supplier = &id
@@ -556,8 +568,8 @@ func (s *PaymentWrites) party(ctx context.Context, tx domain.PaymentWritesTransa
 		if err != nil {
 			return party, err
 		}
-		found, associate, err := tx.SubscriptionAssociate(ctx, id, group, scope)
-		if err = missing(found, err); err != nil {
+		found, associate, owning, err := tx.SubscriptionAssociate(ctx, id, group, scope)
+		if err = paymentWritesOwned(found, owning, err, association); err != nil {
 			return party, err
 		}
 		party.associate, party.setAssociate = associate, true
@@ -566,7 +578,8 @@ func (s *PaymentWrites) party(ctx context.Context, tx domain.PaymentWritesTransa
 		if err != nil {
 			return party, err
 		}
-		if err = missing(tx.AssociateExists(ctx, id, group, scope)); err != nil {
+		found, owning, err := tx.AssociateAssociation(ctx, id, group, scope)
+		if err = paymentWritesOwned(found, owning, err, association); err != nil {
 			return party, err
 		}
 		party.associate, party.setAssociate = &id, true
@@ -741,8 +754,8 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 		return nil, err
 	}
 	if dto.PythonTruthy(item) {
-		party, err := s.party(ctx, tx, item, readGroup, scope)
-		if errors.Is(err, domain.ErrPaymentWritesServer) {
+		party, err := s.party(ctx, tx, item, readGroup, scope, association, owner)
+		if errors.Is(err, domain.ErrPaymentWritesServer) || errors.Is(err, errPaymentWritesForeignParty) {
 			return fail(err)
 		}
 		if err != nil {
@@ -837,7 +850,7 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	m.row.InstructorID, m.row.SupplierID = nil, nil
 	if item, present := object.Lookup("complex_item"); present && dto.PythonTruthy(item) {
 		m.row.AssociateID = nil
-		party, err := s.party(ctx, tx, item, group, scope)
+		party, err := s.party(ctx, tx, item, group, scope, association, identity.ScopeUser.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -851,12 +864,9 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 		if !ok {
 			return nil, domain.ErrPaymentWritesServer
 		}
-		found, associate, err := tx.SubscriptionAssociate(ctx, subscription, group, scope)
-		if err != nil {
+		found, associate, owning, err := tx.SubscriptionAssociate(ctx, subscription, group, scope)
+		if err = paymentWritesOwned(found, owning, err, association); err != nil {
 			return nil, err
-		}
-		if !found {
-			return nil, domain.ErrPaymentWritesServer
 		}
 		m.row.AssociateID = associate
 	}
@@ -1088,7 +1098,7 @@ func (s *PaymentWrites) BulkAdd(ctx context.Context, identity domain.ResolvedIde
 		if !ok {
 			return 0, nil, domain.ErrPaymentWritesServer
 		}
-		exists, err := tx.CategoryExists(ctx, id)
+		exists, err := tx.AssociationCategoryExists(ctx, id, association)
 		if err != nil {
 			return 0, nil, err
 		}

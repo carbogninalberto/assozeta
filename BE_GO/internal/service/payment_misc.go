@@ -645,12 +645,26 @@ func (s *PaymentMisc) Sign(ctx context.Context, identity domain.ResolvedIdentity
 		return nil, err
 	}
 	defer tx.Rollback()
-	found, err := tx.SignPayment(ctx, key, supplierGroup(request.GroupHeader), paymentStateScope(identity))
+	found, paymentAssociation, err := tx.SignPayment(ctx, key, supplierGroup(request.GroupHeader), paymentStateScope(identity))
 	if err != nil {
 		return nil, err
 	}
 	if !found {
 		return nil, &dto.MessageReadUUIDError{Detail: "payment not found"}
+	}
+	// Payment signing only applies to the caller's association (request.user.sport_association).
+	if identity.ScopeUser.Role == domain.RoleAthlete {
+		return nil, &domain.PermissionDenied{Detail: "User is not a sport association"}
+	}
+	association, err := tx.ScopedAssociation(ctx, identity.ScopeUser.ID, nil)
+	if errors.Is(err, domain.ErrAssociationNotFound) {
+		return nil, domain.ErrPaymentMiscServer
+	}
+	if err != nil {
+		return nil, err
+	}
+	if paymentAssociation == nil || *paymentAssociation != association {
+		return nil, &domain.PermissionDenied{Detail: "User not allowed."}
 	}
 	fields, ok := signature.(domain.RequestObject)
 	if signature == nil {

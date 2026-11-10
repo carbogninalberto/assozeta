@@ -72,8 +72,9 @@ type PaymentMiscTransaction interface {
 	SimulationAssociation(ctx context.Context, id string) (*PaymentSimulationAssociation, error)
 	SimulationSubscriptions(ctx context.Context, query PaymentSimulationQuery) ([]PaymentSimulationSubscription, error)
 	QuoteExists(ctx context.Context, check PaymentQuoteCheck) (bool, error)
-	// SignPayment is scoped_queryset(request, Payment.objects).filter(payment_id=id).first() is not None.
-	SignPayment(ctx context.Context, id string, group, scope *string) (bool, error)
+	// SignPayment is scoped_queryset(request, Payment.objects).filter(payment_id=id).first(): whether it
+	// exists and its sport_association_id.
+	SignPayment(ctx context.Context, id string, group, scope *string) (bool, *string, error)
 	// CommunicationConfigured is CommunicationConfiguration.objects.filter(sport_association_id=...).first() is not None.
 	CommunicationConfigured(ctx context.Context, association string) (bool, error)
 	// CreatePaymentSignature is Signature.objects.create(signature=..., user=...) with its audited create.

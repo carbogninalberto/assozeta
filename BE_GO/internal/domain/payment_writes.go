@@ -105,13 +105,17 @@ type PaymentWritesTransaction interface {
 	CategoryName(ctx context.Context, id string) (*string, error)
 	DefaultBankAccount(ctx context.Context, association string) (*string, error)
 	GroupExists(ctx context.Context, id string) (bool, error)
-	InstructorExists(ctx context.Context, id string) (bool, error)
-	// SupplierExists is SupplierAndCustomers.objects (live, group-aware).
-	SupplierExists(ctx context.Context, id string, group *string) (bool, error)
-	// SubscriptionAssociate is scoped_queryset(request, Subscription.objects).get(...).associate.
-	SubscriptionAssociate(ctx context.Context, id string, group, scope *string) (bool, *string, error)
-	// AssociateExists is scoped_queryset(request, Associate.objects) (live, group-aware).
-	AssociateExists(ctx context.Context, id string, group, scope *string) (bool, error)
+	// InstructorOwner is Instructor.objects.get(...): whether it exists and its user_id.
+	InstructorOwner(ctx context.Context, id string) (bool, *string, error)
+	// SupplierAssociation is SupplierAndCustomers.objects (live, group-aware): whether it exists and its
+	// sport_association_id.
+	SupplierAssociation(ctx context.Context, id string, group *string) (bool, *string, error)
+	// SubscriptionAssociate is scoped_queryset(request, Subscription.objects).get(...): whether it exists,
+	// its associate_id and its sport_association_id.
+	SubscriptionAssociate(ctx context.Context, id string, group, scope *string) (bool, *string, *string, error)
+	// AssociateAssociation is scoped_queryset(request, Associate.objects) (live, group-aware): whether it
+	// exists and its sport_association_id.
+	AssociateAssociation(ctx context.Context, id string, group, scope *string) (bool, *string, error)
 	InsertPaymentRow(ctx context.Context, row PaymentWriteRow) error
 	// AttachPaymentDocument is Document.objects.create(filename=...) with its audited create
 	// and obj.attachments.add(document) (no audit entry for the through row).
@@ -123,7 +127,8 @@ type PaymentWritesTransaction interface {
 	AppendPaymentWritesAudit(ctx context.Context, entry PaymentWritesAuditEntry) error
 	// BulkAssociates is the matching live group-aware associates of the association.
 	BulkAssociates(ctx context.Context, ids []string, association string, group, scope *string) ([]string, error)
-	CategoryExists(ctx context.Context, id string) (bool, error)
+	// AssociationCategoryExists is PaymentCategory.get_all_categories(association).filter(pk=id).exists().
+	AssociationCategoryExists(ctx context.Context, id, association string) (bool, error)
 	// AssociationAccount is CustomAccounts.objects.filter(pk=id, sport_association=association).first().
 	AssociationAccount(ctx context.Context, id, association string) (*string, error)
 	InsertBulkPayments(ctx context.Context, rows []PaymentBulkRow) error
