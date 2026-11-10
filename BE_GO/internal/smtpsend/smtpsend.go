@@ -54,6 +54,12 @@ type Server struct {
 	User       string
 	Password   string
 	Encryption string // "SSL", "TLS"; any other value is a plain connection
+	// NoUser and NoPassword are login(None, ...) and login(..., None).
+	NoUser, NoPassword bool
+	// ConnectHost, when set, is the host the socket connects to while Host
+	// stays the TLS server name (smtplib splits "host:port" for a falsy port
+	// and keeps the whole text as the server name).
+	ConnectHost string
 	// Timeout bounds the connect and each read or write (SMTP_TIMEOUT_SECONDS).
 	Timeout time.Duration
 	// LocalHostname is the EHLO/HELO argument; empty means LocalName().
@@ -157,7 +163,10 @@ type client struct {
 	ehlo     bool
 	count    int
 	stop     func() bool
-	tls      *tls.Config
+	// anyAddress: envelope addresses go through QuoteAddr (any text).
+	anyAddress         bool
+	noUser, noPassword bool
+	tls                *tls.Config
 	// handshake records a failed TLS handshake: Python has then detached
 	// the plain socket, so a later QUIT cannot be sent.
 	handshake bool
@@ -174,12 +183,17 @@ func open(ctx context.Context, s Server) (*client, error) {
 		dial = dialer.DialContext
 	}
 	connectCtx, cancel := context.WithTimeout(ctx, timeout)
-	raw, err := dial(connectCtx, "tcp", net.JoinHostPort(s.Host, strconv.Itoa(s.Port)))
+	connectHost := s.Host
+	if s.ConnectHost != "" {
+		connectHost = s.ConnectHost
+	}
+	raw, err := dial(connectCtx, "tcp", net.JoinHostPort(connectHost, strconv.Itoa(s.Port)))
 	cancel()
 	if err != nil {
 		return nil, err
 	}
-	c := &client{ctx: ctx, raw: raw, conn: raw, timeout: timeout, host: s.Host, features: map[string]string{}, tls: s.TLSConfig}
+	c := &client{ctx: ctx, raw: raw, conn: raw, timeout: timeout, host: s.Host, features: map[string]string{}, tls: s.TLSConfig,
+		noUser: s.NoUser, noPassword: s.NoPassword}
 	c.stop = context.AfterFunc(ctx, func() { _ = raw.Close() })
 	if s.Encryption == "SSL" {
 		if err = c.wrap(); err != nil {
@@ -261,8 +275,8 @@ func (c *client) putcmd(cmd, args string) error {
 	if strings.ContainsAny(s, "\r\n") {
 		return failure("ValueError")
 	}
-	if !isASCII(s) {
-		return failure("UnicodeEncodeError")
+	if err := asciiEncodeFailure(s); err != nil {
+		return err
 	}
 	return c.send([]byte(s + "\r\n"))
 }
@@ -501,28 +515,47 @@ func (c *client) authObject(method, user, password string, challenge []byte) (*s
 		if challenge == nil {
 			return nil, nil
 		}
-		if !isASCII(password) {
-			return nil, failure("UnicodeEncodeError")
+		if c.noPassword {
+			return nil, failureText("AttributeError", noneEncode)
+		}
+		if c.noUser {
+			// the f-string formats a missing user as the text None.
+			user = "None"
+		}
+		if err := asciiEncodeFailure(password); err != nil {
+			return nil, err
 		}
 		mac := hmac.New(md5.New, []byte(password))
 		mac.Write(challenge)
 		answer := user + " " + hex.EncodeToString(mac.Sum(nil))
 		return &answer, nil
 	case "PLAIN":
+		if c.noUser {
+			user = "None"
+		}
+		if c.noPassword {
+			password = "None"
+		}
 		answer := "\x00" + user + "\x00" + password
 		return &answer, nil
 	default:
-		answer := password
+		answer, none := password, c.noPassword
 		if challenge == nil || c.count < 2 {
-			answer = user
+			answer, none = user, c.noUser
+		}
+		if none {
+			return nil, nil
 		}
 		return &answer, nil
 	}
 }
 
+// noneEncode is the AttributeError of None.encode('ascii').
+const noneEncode = "'NoneType' object has no attribute 'encode'"
+
 func encodeASCII(s string) (string, error) {
-	if !isASCII(s) {
-		return "", failure("UnicodeEncodeError")
+	if err := asciiEncodeFailure(s); err != nil {
+		return "", err
 	}
 	return base64.StdEncoding.EncodeToString([]byte(s)), nil
 }
@@ -558,6 +591,9 @@ func (c *client) auth(method, user, password string) error {
 		answer, err := c.authObject(method, user, password, challenge)
 		if err != nil {
 			return err
+		}
+		if answer == nil {
+			return failureText("AttributeError", noneEncode)
 		}
 		encoded, err := encodeASCII(*answer)
 		if err != nil {
@@ -604,7 +640,7 @@ func (c *client) sendmailFrom(given, from string, to []string, data []byte) erro
 	if c.esmtp && c.hasExtn("size") {
 		options = " size=" + strconv.Itoa(len(data))
 	}
-	code, msg, err := c.docmd("mail", "from:"+quoteaddr(from)+options)
+	code, msg, err := c.docmd("mail", "from:"+c.quote(from)+options)
 	if err != nil {
 		return err
 	}
@@ -618,7 +654,7 @@ func (c *client) sendmailFrom(given, from string, to []string, data []byte) erro
 	}
 	var refused []Refusal
 	for _, each := range to {
-		code, msg, err := c.docmd("rcpt", "to:"+quoteaddr(each))
+		code, msg, err := c.docmd("rcpt", "to:"+c.quote(each))
 		if err != nil {
 			return err
 		}
@@ -682,3 +718,10 @@ func quotePeriods(b []byte) []byte { return periodPattern.ReplaceAll(b, []byte("
 // quoteaddr is smtplib.quoteaddr for addresses CheckEnvelope accepts, which
 // email.utils.parseaddr returns unchanged.
 func quoteaddr(address string) string { return "<" + address + ">" }
+
+func (c *client) quote(address string) string {
+	if c.anyAddress {
+		return QuoteAddr(address)
+	}
+	return quoteaddr(address)
+}

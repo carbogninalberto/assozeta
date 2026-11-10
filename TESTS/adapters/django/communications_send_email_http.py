@@ -84,7 +84,10 @@ class FakeSMTP:
 
     def features(self, tls):
         names = ['fake.smtp.test', 'SIZE 10485760']
-        if self.mode != 'noauth':
+        if self.mode in ('cram', 'challenge'):
+            # Servers that answer AUTH with a 334 challenge.
+            names.append('AUTH CRAM-MD5 LOGIN' if self.mode == 'cram' else 'AUTH LOGIN')
+        elif self.mode != 'noauth':
             names.append('AUTH PLAIN LOGIN')
         if self.mode == 'starttls' and not tls:
             names.append('STARTTLS')
@@ -104,7 +107,7 @@ class FakeSMTP:
                 units.append('<eof>')
                 return
             stream.sendall(b'220 fake.smtp.test ESMTP\r\n')
-            buffer, data = b'', False
+            buffer, data, challenged = b'', False, 0
             while True:
                 terminator = b'\r\n.\r\n' if data else b'\n'
                 while terminator not in buffer:
@@ -121,7 +124,14 @@ class FakeSMTP:
                     stream.sendall(b'250 queued\r\n')
                     continue
                 verb = unit.split(b' ', 1)[0].strip().upper()
-                if verb == b'EHLO':
+                if challenged:
+                    challenged -= 1
+                    stream.sendall(b'334 UGFzc3dvcmQ6\r\n' if challenged else b'235 ok\r\n')
+                elif verb == b'AUTH' and self.mode in ('cram', 'challenge'):
+                    # CRAM-MD5: one challenge; LOGIN: one per value the client has not sent yet.
+                    challenged = 1 if b'CRAM' in unit.upper() or len(unit.split()) > 2 else 2
+                    stream.sendall(b'334 PDEyMzQ1LjY3ODkwQGZha2Uuc210cC50ZXN0Pg==\r\n' if b'CRAM' in unit.upper() else b'334 VXNlcm5hbWU6\r\n')
+                elif verb == b'EHLO':
                     stream.sendall(self.features(tls))
                 elif verb == b'STARTTLS' and self.mode == 'starttls' and not tls:
                     stream.sendall(b'220 ready\r\n')

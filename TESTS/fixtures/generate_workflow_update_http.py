@@ -75,6 +75,19 @@ WORKFLOWS = {
     'cron_future_skipped': workflow(cron({'time': '2027-03-28T02:30:15'})),
     'cron_future_after_table': workflow(cron({'time': '2038-07-01T10:00'})),
     'cron_future_date_only': workflow(cron({'time': '2030-05-04'})),
+    # Forms datetime.fromisoformat() reads beyond the editor's datetime-local text.
+    'cron_compact_date': workflow(cron({'time': '20200101', 'triggered': True})),
+    'cron_hour_only': workflow(cron({'time': '2020-01-01T10'})),
+    'cron_week_date': workflow(cron({'time': '2020-W01-1T10:30'})),
+    'cron_comma_fraction': workflow(cron({'time': '2020-01-01 1030,5'})),
+    'cron_compact_future': workflow(cron({'time': '20300504T1015'})),
+    'cron_week_future': workflow(cron({'time': '2030W181 09:30:15.5'})),
+    'cron_empty_clock': workflow(cron({'time': '2030-05-04T'})),
+    'cron_hour_24': workflow(cron({'time': '2030-05-04T24:00'})),
+    'cron_year_one': workflow(cron({'time': '0001-01-01'})),
+    'cron_year_max': workflow(cron({'time': '9999-12-31T10:00'})),
+    'copy_plain': workflow(TREE_PLAIN, name='Da copiare', description='Nota'),
+    'cron_far_future': workflow(cron({'time': '9994-12-30T23:59:59.999999'})),
 }
 STATE = copy.deepcopy(WORKFLOWS)
 cases = []
@@ -216,6 +229,15 @@ enable_future('enable-cron-future-skipped-standard-offset', 'admin', 'cron_futur
               headers=ADMIN_OWNER, session='admin_owner')
 enable_future('enable-cron-future-after-pytz-table', 'owner', 'cron_future_after_table', '2038-07-01T09:00:00+00:00')
 enable_future('enable-cron-future-date-only', 'owner', 'cron_future_date_only', '2030-05-03T22:00:00+00:00')
+enable_future('enable-cron-compact-future', 'owner', 'cron_compact_future', '2030-05-04T08:15:00+00:00')
+enable_future('enable-cron-far-future', 'owner', 'cron_far_future', '9994-12-30T22:59:59.999999+00:00')
+enable_future('enable-cron-week-future', 'owner', 'cron_week_future', '2030-04-29T07:30:15.500000+00:00')
+for label in ('cron_compact_date', 'cron_hour_only', 'cron_week_date', 'cron_comma_fraction'):
+    add(f'enable-{label.replace("_", "-")}-past', 'owner', path(label), 200, UPDATED, body={'enabled': True},
+        effect=saved('owner', label, {'enabled': True}, reset=label == 'cron_compact_date'))
+for label in ('cron_empty_clock', 'cron_hour_24', 'cron_year_one', 'cron_year_max'):
+    add(f'enable-{label.replace("_", "-")}-server-error', 'owner', path(label), 500, SERVER, body={'enabled': True},
+        effect=saved('owner', label, {'enabled': True}))
 add('enable-cron-invalid-time-server-error', 'owner', path('cron_bad_time'), 500, SERVER, body={'enabled': True},
     effect=saved('owner', 'cron_bad_time', {'enabled': True}, reset=True))
 add('enabled-after-error-no-trigger', 'owner', path('cron_bad_time'), 200, UPDATED, body={'enabled': True},
@@ -226,6 +248,32 @@ for label in ('cron_aware', 'cron_no_data', 'cron_string_data', 'cron_time_numbe
         effect=saved('owner', label, {'enabled': True}))
 add('enable-null-node-single', 'owner', path('null_node_single'), 200, UPDATED, body={'enabled': True},
     effect=saved('owner', 'null_node_single', {'enabled': True}))
+# save() under a key no row has: the instance (new values, loaded timestamps) is logged as an update with
+# nothing to diff against, then inserted as a copy; the row the request named keeps its values.
+COPY_ID = 'a1000000-0000-4000-8000-000000962900'
+TREE_COPY = [{'id': 'trigger', 'value': 'new_subscription', 'data': {'k': 'è'}}]
+
+
+def copied(actor, label, new_id, fields, *, session=None):
+    row = STATE[label]
+    values = {'automation_workflow_id': new_id, 'sport_association': row['association'], 'name': row['name'],
+              'automation_tree': dumps(row['tree']), 'enabled': text(row['enabled']).capitalize()}
+    if row['description'] is not None:
+        values['description'] = row['description']
+    values.update(fields)
+    return {'actor': actor, 'session': session, 'label': label, 'copy': {
+        'id': new_id,
+        'row': {'name': values['name'], 'description': values.get('description'), 'automation_tree': json.loads(values['automation_tree']),
+                'enabled': values['enabled'] == 'True'},
+        'update': {k: ['None', v] for k, v in values.items()}, 'create': {k: ['None', v] for k, v in values.items()}}}
+
+
+add('new-id-inserts-copy', 'owner', path('plain'), 200, UPDATED,
+    body={'automation_workflow_id': COPY_ID, 'name': 'Copia', 'automation_tree': TREE_COPY},
+    effect=copied('owner', 'plain', COPY_ID, {'name': 'Copia', 'automation_tree': dumps(TREE_COPY)}))
+add('new-id-enable-copy', 'full_collaborator', path('copy_plain'), 200, UPDATED,
+    body={'automation_workflow_id': 'a1000000-0000-4000-8000-000000962901', 'enabled': True},
+    effect=copied('full_collaborator', 'copy_plain', 'a1000000-0000-4000-8000-000000962901', {'enabled': 'True'}))
 add('restricted-after-updates-unmapped', 'restricted_collaborator', path('enabled'), 403, UNMAPPED('enabled'), body={})
 
 assert len({c['name'] for c in cases}) == len(cases)

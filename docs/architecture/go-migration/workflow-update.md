@@ -41,11 +41,11 @@ Django remains the production execution owner.
 
 ## Not ported (refused with 500 before any write)
 
-- Enabling a cron workflow whose time the Go classifier does not parse
-  (anything beyond `YYYY-MM-DD[(T| )HH:MM[:SS[.ffffff]]][Z|±HH:MM]`, such as
-  `20200101` or hour-only times, which Python's `fromisoformat` accepts). A string
-  that does not start with four ASCII digits, or a classified time with an
-  out-of-range field, is the 500 after the saves.
+- Ported (restb2): every time text `datetime.fromisoformat` of Python 3.13 reads (`YYYYMMDD`, hour-only, week dates,
+  comma or long fractions, any one-character separator) in `service/automation_workflow_iso.go`, replayed against
+  Python's own answers (`testdata/fromisoformat.json`, `TESTS/adapters/go/fromisoformat_golden.py`). A text Python rejects, an
+  aware time, and the first and last day of the calendar (`localize` overflows) are the 500 after the saves. The eta of a time
+  centuries ahead follows `timedelta(seconds=float)`.
 
 A future cron time is ported (API v2, v2-misc): after the saves Go publishes
 `check_workflows_trigger_cron` with `args=[UUID]` (list repr) and the eta Celery
@@ -54,8 +54,9 @@ localized like pytz's `localize(is_dst=False)` for Europe/Rome: the standard
 offset (+01:00) for ambiguous and skipped wall times, and +01:00 after pytz's
 last table transition (2037-10-25), where the system zone would apply summer
 time. A past time publishes nothing.
-- A new `automation_workflow_id` that no row uses: `save()` would insert a copy
-  of the workflow under the new key (audited as a create).
+- Ported (restb2): a new `automation_workflow_id` that no row uses: `save()` inserts a copy of the workflow under the new
+  key (the audit holds an update entry from the loaded row, then the create); the named row keeps its values
+  (cases `new-id-inserts-copy`, `new-id-enable-copy`).
 - A form-encoded `automation_tree` (DRF parses the HTML value with Python's
   `json.loads`).
 
@@ -64,7 +65,7 @@ These are covered by `TestAutomationWorkflowEnablePlan`, `TestAutomationWorkflow
 
 ## Evidence (TDD)
 
-`TESTS/fixtures/workflow_update_http.json` (generator alongside) authors 57 cases
+`TESTS/fixtures/workflow_update_http.json` (generator alongside) authors 76 cases
 over 16 seeded workflows: identity and dispatch, malformed/missing/foreign ids,
 15 invalid bodies, foreign and soft-deleted association relations (403, also
 ahead of other errors), field updates by the owner, a FULL collaborator and an

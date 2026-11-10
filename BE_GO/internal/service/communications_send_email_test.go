@@ -10,8 +10,8 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/smtpsend"
 )
 
-// Messages outside smtpsend's subset are refused before any write; the
-// supported ones render the text/plain multipart send_email builds.
+// The text/plain multipart send_email builds; a subject Python raises on is
+// ErrHeader, text that is not valid Unicode stays outside the port.
 func TestCommunicationSendEmailRenderSubset(t *testing.T) {
 	user, name := "mittente@example.test", "Associazione"
 	row := domain.CommunicationConfigurationRecord{User: &user, SenderName: &name}
@@ -28,13 +28,16 @@ func TestCommunicationSendEmailRenderSubset(t *testing.T) {
 	for name, input := range map[string]struct {
 		subject string
 		to      []string
+		want    error
 	}{
-		"subject line break": {"Riga\nseconda", []string{"socio@example.test"}},
-		"quoted recipient":   {"Avviso", []string{`"a b"@example.test`}},
-		"ip literal":         {"Avviso", []string{"socio@[127.0.0.1]"}},
+		"subject line break":        {"Riga\nseconda", []string{"socio@example.test"}, smtpsend.ErrHeader},
+		"subject continuation line": {"Riga\n seconda", []string{"socio@example.test"}, nil},
+		"quoted recipient":          {"Avviso", []string{`"a b"@example.test`}, nil},
+		"ip literal":                {"Avviso", []string{"socio@[127.0.0.1]"}, nil},
+		"invalid text":              {"Avviso\xff", []string{"socio@example.test"}, smtpsend.ErrUnsupported},
 	} {
-		if _, err := s.render(row, dto.SendEmailInput{Subject: input.subject, Message: "Ciao"}, input.to); !errors.Is(err, smtpsend.ErrUnsupported) {
-			t.Errorf("%s: err = %v, want ErrUnsupported", name, err)
+		if _, err := s.render(row, dto.SendEmailInput{Subject: input.subject, Message: "Ciao"}, input.to); !errors.Is(err, input.want) {
+			t.Errorf("%s: err = %v, want %v", name, err, input.want)
 		}
 	}
 }
