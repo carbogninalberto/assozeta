@@ -14,7 +14,8 @@ import (
 )
 
 type InstructorHoursService interface {
-	List(ctx context.Context, identity domain.ResolvedIdentity, raw string, parameters domain.RequestObject, audit domain.LoginAuditContext) (map[string]any, error)
+	List(ctx context.Context, identity domain.ResolvedIdentity, raw string, parameters domain.RequestObject, audit domain.LoginAuditContext,
+		authorization *string) (map[string]any, error)
 	Add(ctx context.Context, identity domain.ResolvedIdentity, raw string, load service.InstructorHoursBody, group string, audit domain.LoginAuditContext) error
 	Update(ctx context.Context, identity domain.ResolvedIdentity, instructor, hours string, load service.InstructorHoursBody, group string,
 		audit domain.LoginAuditContext) error
@@ -148,7 +149,8 @@ func (h *InstructorHoursHandler) serve(c echo.Context, method, operation, name s
 
 func (h *InstructorHoursHandler) List(c echo.Context) error {
 	return h.serve(c, http.MethodGet, "instructor_hours_list", "Instructor Hours List", func(ctx context.Context, r *instructorHoursRequest) error {
-		body, err := h.hours.List(ctx, r.identity, c.Param("uid"), parseReferenceForm(c.Request().URL.RawQuery), r.audit)
+		body, err := h.hours.List(ctx, r.identity, c.Param("uid"), parseReferenceForm(c.Request().URL.RawQuery), r.audit,
+			requestAuthorization(c.Request()))
 		if err != nil {
 			return err
 		}

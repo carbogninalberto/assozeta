@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 )
@@ -15,12 +16,13 @@ import (
 // InvoiceCore ports invoice_list, invoice_list_archived, invoice_bulk_archive,
 // invoice_bulk_delete and invoice_delete (invoice_views.py).
 type InvoiceCore struct {
-	store domain.InvoiceCoreStore
-	now   func() time.Time
+	store     domain.InvoiceCoreStore
+	publisher celery.Publisher
+	now       func() time.Time
 }
 
-func NewInvoiceCore(store domain.InvoiceCoreStore, now func() time.Time) *InvoiceCore {
-	return &InvoiceCore{store: store, now: now}
+func NewInvoiceCore(store domain.InvoiceCoreStore, publisher celery.Publisher, now func() time.Time) *InvoiceCore {
+	return &InvoiceCore{store: store, publisher: publisher, now: now}
 }
 
 // ErrInvoiceCoreForbidden is IsAssociationUser's denial (DRF's generic 403).
@@ -33,7 +35,9 @@ type InvoiceCoreRequest struct {
 	Body        any
 	Form        bool
 	GroupHeader string
-	Audit       domain.LoginAuditContext
+	// Authorization is the request's Authorization header (nil when absent).
+	Authorization *string
+	Audit         domain.LoginAuditContext
 }
 
 // invoiceCoreModelUUID is the model UUIDField.to_python of a lookup value
@@ -192,12 +196,6 @@ func (s *InvoiceCore) List(ctx context.Context, request InvoiceCoreRequest) (any
 	if err != nil {
 		return nil, err
 	}
-	for _, id := range distinct {
-		if invoices[id].DocumentID == nil {
-			// print_document_invoice.delay(...) for an invoice without a PDF (Celery task dispatch).
-			return nil, domain.ErrInvoiceCoreNotPorted
-		}
-	}
 	first, err := s.store.FirstPayments(ctx, distinct, group, scope, false)
 	if err != nil {
 		return nil, err
@@ -226,7 +224,25 @@ func (s *InvoiceCore) List(ctx context.Context, request InvoiceCoreRequest) (any
 		delete(item, "meta")
 		data[strconv.Itoa(index)] = item
 	}
+	// After the loop: print_document_invoice.delay(invoice_id, auth_token)
+	// once per listed row without a PDF, in page order.
+	for _, id := range ids {
+		if invoices[id].DocumentID != nil {
+			continue
+		}
+		if err := invoiceCorePrint(ctx, s.publisher, id, authorizationArg(request.Authorization)); err != nil {
+			return nil, err
+		}
+	}
 	return map[string]any{"data": data, "meta": paymentReadsMeta(count, number, size, pages, ids)}, nil
+}
+
+// invoiceCorePrint publishes print_document_invoice with tuple args (.delay).
+func invoiceCorePrint(ctx context.Context, publisher celery.Publisher, args ...any) error {
+	publish, cancel := context.WithTimeout(context.WithoutCancel(ctx), invoicePublishTimeout)
+	defer cancel()
+	_, err := publisher.Publish(publish, celery.Task{Name: "print_document_invoice", Args: args})
+	return err
 }
 
 // Archived follows invoice_list_archived (IsAssociationUser runs before the view).

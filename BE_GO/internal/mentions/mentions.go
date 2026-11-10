@@ -8,8 +8,8 @@
 // (tags lowercased; void elements; a missing end tag at the end of the
 // input), double- or single-quoted or bare attributes, text with the
 // &amp; &lt; &gt; &quot; &apos; &nbsp; and numeric references. Comments,
-// declarations, processing instructions, script/style/raw-text elements,
-// <pre> and <textarea> (which keep whitespace), mismatched end tags and
+// declarations, processing instructions, script/style/raw-text elements
+// and <textarea>, mismatched end tags and
 // other ampersands are refused with ErrUnsupported rather than imitating
 // html.parser's recovery rules.
 package mentions

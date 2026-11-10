@@ -10,14 +10,22 @@ order (with their index rows); every other model and row must be unchanged.
 before the case, '$payment'/'$invoice' the created primary keys, and a
 '$created' audit is auditlog's create diff of the stored row with the named
 relations still unset. Created rows are removed before the fixture cleanup.
+'$xml' accepts generate_invoice_xml of the stored row with a ProgressivoInvio
+taken during the request; '$before-text' is str() of the stored value before
+the case. A CURRENT_HOST print stub (invoice-sync-print's service_context)
+runs for the whole run: each case's outbound requests must be exactly its
+authored 'prints'.
 """
 from datetime import date, datetime, timezone
 from decimal import Decimal
 import json
 import re
 
-from TESTS.contracts import test_invoice_parties_http as contract
+import types
+
+from TESTS.contracts import test_invoice_parties_http as base_contract
 from TESTS.adapters.django import family_harness as harness
+from TESTS.adapters.django import invoice_sync_print_http as printer
 from TESTS.adapters.django.workflow_writes_http import keyed
 
 SOURCES = ('TESTS/fixtures/invoice_parties_http.json', 'TESTS/contracts/test_invoice_parties_http.py',
@@ -27,7 +35,38 @@ SOURCES = ('TESTS/fixtures/invoice_parties_http.json', 'TESTS/contracts/test_inv
            'BE/application/models/payment_models.py', 'BE/application/models/balance_sheet_models.py',
            'BE/application/models/user_models.py', 'BE/application/mixin.py', 'BE/application/tenant_scope.py',
            'BE/application/audit_resolvers.py', 'BE/application/signals.py', 'BE/application/utils/api_utils.py',
-           'BE/docmanager/models.py') + harness.SOURCES
+           'BE/docmanager/models.py', 'BE/application/printing_tasks.py', 'BE/instance/restore/task_base.py',
+           'TESTS/adapters/django/invoice_sync_print_http.py') + harness.SOURCES
+
+
+def _assert_case(case, base_url, *, token, sessions):
+    """The authored request, with the print stub scripted for it and its outbound requests checked after."""
+    stub = printer.STUB
+    with stub['lock']:
+        stub['log'] = []
+        stub['script'] = [item['reply'] for item in case['prints']]
+    stub['token'] = token
+    status = base_contract.assert_case(case, base_url, token=token, sessions=sessions)
+    printer.check_prints(case, None)
+    return status
+
+
+contract = types.SimpleNamespace(**{name: getattr(base_contract, name) for name in dir(base_contract) if not name.startswith('__')})
+contract.assert_case = _assert_case
+service_context = printer.service_context
+
+
+def stored_xml(window, actual, instance):
+    """actual is generate_invoice_xml(instance) with its ProgressivoInvio drawn during the request."""
+    from application.serializers.invoice_serializers import generate_invoice_xml
+    found = printer.PROGRESSIVO_XML.findall(actual or '')
+    if len(found) != 1:
+        return False
+    moment, _ = printer.progressivo(found[0])
+    if not window[0].timestamp() - 1 <= moment <= window[1].timestamp() + 1:
+        return False
+    normalize = lambda text: printer.PROGRESSIVO_XML.sub('<ProgressivoInvio>#</ProgressivoInvio>', text)
+    return normalize(actual) == normalize(generate_invoice_xml(instance))
 MODELS = {'payment': 'application.Payment', 'invoicesuppliers': 'application.InvoiceSuppliers',
           'customerinvoice': 'application.CustomerInvoice'}
 MANAGED = (*MODELS.values(), harness.AUDIT, harness.INDEX)
@@ -156,7 +195,11 @@ def assert_effect(case, before, after, source, context):
         contract.require(all(new[k] == old[k] for k in old if k not in touched), 'state.untouched:' + name)
     substitutions = {'$payment': created.get('payment'), '$invoice': created.get('invoicesuppliers')}
 
-    def expect(value, actual, previous=None):
+    def expect(value, actual, previous=None, instance=None):
+        if value == '$xml':
+            return instance is not None and stored_xml(window, actual, instance)
+        if value == '$before-text':
+            return actual == str(previous)
         if value == '$now':
             return isinstance(actual, str) and within(window, actual)
         if value == '$before':
@@ -174,7 +217,8 @@ def assert_effect(case, before, after, source, context):
         for key, fields in rows.items():
             instance = model._base_manager.get(pk=key)
             for field, value in fields.items():
-                contract.require(expect(value, render(getattr(instance, model_field(model, field).attname))), f'state.row:{name}.{field}')
+                contract.require(expect(value, render(getattr(instance, model_field(model, field).attname)), instance=instance),
+                                 f'state.row:{name}.{field}')
     for name, fields in spec['new'].items():
         model = model_class(name)
         instance = model._base_manager.get(pk=created[name])
@@ -210,8 +254,14 @@ def assert_effect(case, before, after, source, context):
                         stored = stored['value']
                     previous = audit_value(model_field(model, field), datetime.fromisoformat(stored.replace('Z', '+00:00'))) \
                         if isinstance(stored, str) and model_field(model, field).get_internal_type() == 'DateTimeField' else stored
+                if old_value == '$before-text':
+                    previous = old_rows[key][model_field(model, field).attname]
                 contract.require(expect(old_value, actual[field][0], previous), 'audit.changes-old:' + field)
-                contract.require(expect(new_value, actual[field][1]), 'audit.changes-new:' + field)
+                if new_value == '$xml':
+                    current = model._base_manager.get(pk=key)
+                    contract.require(actual[field][1] == getattr(current, model_field(model, field).attname), 'audit.changes-new:' + field)
+                else:
+                    contract.require(expect(new_value, actual[field][1]), 'audit.changes-new:' + field)
         contract.require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor')
         contract.require(event['cid'] == case['name'] and event['additional_data'] is None and event['changes_text'] == '', 'audit.context')
         context['remote'].setdefault('addr', event['remote_addr'])

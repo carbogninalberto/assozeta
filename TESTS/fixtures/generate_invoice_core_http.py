@@ -145,6 +145,9 @@ PAYMENTS = {
     'archived': payment('archived', subject=1, associate=MARIO, user=OWNER, amount='40.00', payment_date='2024-11-20T10:00:00Z',
                         description='Quota archiviata', notes='archivio', meta={'source': 'seed'}),
     'archived_old': payment('archived', deleted=True, payment_date='2019-01-01T00:00:00Z'),
+    # Two soft-deleted payments list the PDF-less archived_plain invoice twice.
+    'archived_plain_a': payment('archived_plain', deleted=True, payment_date='2019-02-01T00:00:00Z'),
+    'archived_plain_b': payment('archived_plain', deleted=True, payment_date='2019-03-01T00:00:00Z'),
 }
 ATTACHMENTS = [('archived', 'receipt')]
 SEED = copy.deepcopy({'documents': DOCUMENTS, 'associates': ASSOCIATES, 'supplier': SUPPLIER, 'category': CATEGORY, 'invoices': INVOICES,
@@ -237,9 +240,10 @@ def archived_item(label):
 cases = []
 
 
-def add(name, actor, method, path, status, response, *, body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, method, path, status, response, *, body=None, raw_body=None, content_type=None, headers=None, effect=None,
+        celery=()):
     case = {'name': f'invoice-core-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'effect': effect}
+            'status': status, 'response': response, 'effect': effect, 'celery': list(celery)}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -292,7 +296,26 @@ add('list-collaborator-default', 'full_collaborator', 'GET', IL, 200, page(DEFAU
 add('list-admin-impersonating-owner', 'admin', 'GET', IL, 200, page(DEFAULT), headers=ADMIN_OWNER)
 add('list-group-header', 'owner', 'GET', IL, 200, page(['grouped']), headers={'X-Group-Id': GROUP})
 add('list-rejected-group-header-ignored', 'owner', 'GET', IL, 200, page(DEFAULT), headers={'X-Group-Id': 'not-a-group'})
-add('list-archived-true', 'owner', 'GET', listing(**{'query[archived]': 'True'}), 200, page(['archived', 'archived']))
+
+
+def print_invoice(*labels):
+    """print_document_invoice.delay(invoice_id, auth_token) once per listed row without a PDF, in page order, after the loop."""
+    return [{'task': 'print_document_invoice', 'args': [INVOICES[label]['invoice_id'], '$authorization'], 'kwargs': []}
+            for label in labels]
+
+
+# archived_plain has no PDF and two (soft-deleted) payment rows: one publish per listed row.
+ARCHIVED = ['archived_plain', 'archived_plain', 'archived', 'archived']
+add('list-archived-true', 'owner', 'GET', listing(**{'query[archived]': 'True'}), 200, page(ARCHIVED),
+    celery=print_invoice('archived_plain', 'archived_plain'))
+add('list-archived-true-collaborator', 'full_collaborator', 'GET', listing(**{'query[archived]': 'True'}), 200, page(ARCHIVED),
+    celery=print_invoice('archived_plain', 'archived_plain'))
+add('list-archived-true-admin-impersonating', 'admin', 'GET', listing(**{'query[archived]': 'True'}), 200, page(ARCHIVED),
+    headers=ADMIN_OWNER, celery=print_invoice('archived_plain', 'archived_plain'))
+add('list-archived-true-second-row', 'owner', 'GET', listing(**{'query[archived]': 'True', 'pagination[perpage]': 1, 'pagination[page]': 2}),
+    200, page(['archived_plain'], total=4, number=2, pages=4, perpage=1), celery=print_invoice('archived_plain'))
+add('list-archived-true-last-page', 'owner', 'GET', listing(**{'query[archived]': 'True', 'pagination[perpage]': 2, 'pagination[page]': 2}),
+    200, page(['archived', 'archived'], total=4, number=2, pages=2, perpage=2))
 add('list-archived-zero', 'owner', 'GET', listing(**{'query[archived]': '0'}), 200, page(DEFAULT))
 add('list-archived-lowercase-server-error', 'owner', 'GET', listing(**{'query[archived]': 'true'}), 500, SERVER)
 add('list-second-page', 'owner', 'GET', listing(**{'pagination[perpage]': 3, 'pagination[page]': 2}), 200,

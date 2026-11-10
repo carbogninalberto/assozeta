@@ -291,6 +291,15 @@ COURSE_SUBS['l_untitled'] = {'id': uid('c5c5c5c5'), 'course': 'broken', 'subscri
                              'created': '2025-09-15T09:00:00Z', 'deleted': False}
 # CarnetSubscription rows (carnet, user and payment left empty): the athlete list's `carnets` Exists.
 CARNETS = {'l_current': {'id': uid('ca1eca1e'), 'subscription': 'l_current'}}
+# A membership payment generated with an invoice and an instructor (CourseSubscriptionOverviewSerializer.membership_payments
+# renders PaymentSerializer with both nested); subject COURSE without installments: subscription_id None.
+MEMBERSHIP_INSTRUCTOR = {'id': uid('1a5e1a5e'), 'first_name': 'Anna è', 'last_name': 'Bianchi', 'email': 'anna@example.test',
+                         'tax_code': 'BNCNNA80A41H501X', 'default_hourly_billing': '12.50'}
+MEMBERSHIP_INVOICE = {'id': uid('1a5ef00d'), 'created': '2026-02-02T09:00:00Z', 'membership_fee': '25.00', 'activity_fee': '0.00',
+                      'description': 'Fattura è', 'number': 7, 'meta': {'numero': 7}}
+PAYMENTS['membership'] = payment('2025-09-08T09:00:00Z', amount='25.00', paid=True, paid_on='2025-09-08T10:00:00Z', subject=2,
+                                 description='Abbonamento: Corso nuoto', invoice=True, instructor=True)
+MEMBERSHIPS = {'giulia': ['membership']}
 S = {label: row['id'] for label, row in SUBSCRIPTIONS.items()}
 A = {label: row['id'] for label, row in ASSOCIATES.items()}
 
@@ -723,7 +732,33 @@ def overview(cs_label, group=None):
             'multi_payments': row['multi'], 'multiple_quote': None, 'one_fee_payment': False, 'installments': installments,
             'course': COURSES[row['course']]['id'], 'type': 1, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None,
             'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': '0.00', 'auto_renewal': False,
-            'membership_payments': [], 'medical_label': html_label(row['subscription']), 'carnets': []}
+            'membership_payments': [membership_payment(p) for p in MEMBERSHIPS.get(cs_label, [])],
+            'medical_label': html_label(row['subscription']), 'carnets': []}
+
+
+def membership_payment(label):
+    """PaymentSerializer of a membership payment with its nested instructor (InstructorSerializer) and invoice (InvoiceSerializer)."""
+    row, teacher, bill = PAYMENTS[label], MEMBERSHIP_INSTRUCTOR, MEMBERSHIP_INVOICE
+    instructor = {'instructor_id': teacher['id'], 'user': OWNER, 'first_name': teacher['first_name'], 'last_name': teacher['last_name'],
+                  'email': teacher['email'], 'born_date': None, 'born_city': None, 'born_province': None, 'tax_code': teacher['tax_code'],
+                  'address_city': None, 'address': None, 'address_province': None, 'civic_number': None, 'study_title': None,
+                  'role': 'Istruttore', 'phone': None, 'phone_2': None, 'phone_3': None, 'phone_4': None, 'draft': False,
+                  'associated_user_id': None, 'is_volunteer': False, 'stipulated_contract_in': None,
+                  'default_hourly_billing': teacher['default_hourly_billing'], 'default_percentage_billing': '0.00', 'documents': []}
+    invoice = {'invoice_id': bill['id'], 'document_token': None, 'creation_date': bill['created'], 'membership_fee': bill['membership_fee'],
+               'activity_fee': bill['activity_fee'], 'meta_payment_categories': None, 'description': bill['description'],
+               'number': bill['number'], 'archived': False, 'cancelled': False, 'meta': bill['meta'], 'imported_from_associami': False,
+               'deleted': False, 'document_pdf': None, 'sport_association': OWN, 'selected_tutor': None, 'group': None,
+               'attached_documents': []}
+    return {'payment_id': row['id'], 'user': None, 'associate': None, 'subscription_id': None,
+            'instructor_id': teacher['id'] if row.get('instructor') else None, 'instructor': instructor if row.get('instructor') else None,
+            'supplier': None, 'supplier_id': None, 'custom_account_type': None, 'custom_account_name': None,
+            'invoice': invoice if row.get('invoice') else None, 'attachments': [], 'payment_category_name': None, 'type': 'default',
+            'subject': row['subject'], 'amount': row['amount'], 'creation_date': drf_time(row['created']),
+            'payment_date': drf_time(row['paid_on']) if row['paid_on'] else None, 'paid': row['paid'], 'expense': False,
+            'description': row['description'], 'meta_payment_categories': None, 'payment_intent_id': None, 'archived': row['archived'],
+            'invoice_fiscal_code': None, 'meta': None, 'notes': None, 'deleted': row['deleted'], 'course': None, 'payment_category': None,
+            'sport_association': row['association'], 'custom_accounts': None, 'signature': None, 'group': row['group']}
 
 
 def info_courses(sublabel, group=None):
@@ -1235,6 +1270,8 @@ assert len({c['name'] for c in cases}) == len(cases)
 SOURCE = {'matrix_version': 1, 'scope': 'subscription list, list/all, list/archived, info and calendar reads', 'ids': IDS,
           'extra_users': EXTRA_USERS, 'users': USERS, 'documents': DOCUMENTS, 'medicals': MEDICALS, 'tags': TAGS, 'associates': ASSOCIATES, 'tutors': TUTORS,
           'payments': PAYMENTS, 'subscriptions': SUBSCRIPTIONS, 'courses': COURSES, 'course_subscriptions': COURSE_SUBS,
-          'installments': INSTALLMENTS, 'registries': REGISTRIES, 'files': FILES, 'card': CARD, 'carnets': CARNETS, 'cases': cases}
+          'installments': INSTALLMENTS, 'registries': REGISTRIES, 'files': FILES, 'card': CARD, 'carnets': CARNETS,
+          'membership_instructor': MEMBERSHIP_INSTRUCTOR, 'membership_invoice': MEMBERSHIP_INVOICE, 'membership_payments': MEMBERSHIPS,
+          'cases': cases}
 OUTPUT.write_text(json.dumps(SOURCE, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')
