@@ -29,8 +29,10 @@ type CourseListQuery struct {
 	// lookup outside the column's range): no rows, no query.
 	Empty       bool
 	OrderColumn string // empty: -creation_date
-	Descending  bool
-	Random      bool
+	// OrderTransform is the datetime extract applied to OrderColumn (creation_date__year ...).
+	OrderTransform string
+	Descending     bool
+	Random         bool
 }
 
 // CourseListValue is one values('course_id', 'title') row.

@@ -115,6 +115,8 @@ type CourseWriteInstallmentCreate struct {
 type CourseWriteCourseSave struct {
 	Row     CourseWriteRow
 	Changes map[string][2]string
+	// AuditOnly writes auditlog's entry without the UPDATE (the column rejects a value).
+	AuditOnly bool
 }
 
 // CourseWriteSubscriptionSave is CourseSubscription.save() of an in-memory

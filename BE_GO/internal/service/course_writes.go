@@ -280,6 +280,8 @@ func courseWritesLocations(ctx context.Context, tx domain.CourseWritesTransactio
 type courseUpdateDate struct {
 	present, valid bool
 	moment         *time.Time
+	// audit is the raw text of a value the column rejects at the UPDATE.
+	audit string
 }
 
 // Update follows course_update: is_valid_uuid, the live group-aware course
@@ -348,22 +350,35 @@ func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdent
 		}
 		after[name] = escaped
 	}
-	if value, present := data.Lookup("one_fee"); present && course.OneFeePayment {
-		stored, text, ok := dto.CourseUpdateDecimal(value)
-		if !ok {
+	// saveFails: a value the column rejects; auditlog's entry is written, then the UPDATE fails.
+	saveFails := false
+	decimal := func(name string, value any, target *string) error {
+		stored, text, result := dto.CourseUpdateDecimal(value)
+		switch result {
+		case dto.CourseSaveNotPorted:
 			return domain.ErrCourseWritesNotPorted
+		case dto.CourseSaveFails:
+			saveFails = true
+		default:
+			*target = stored
 		}
-		row.OneFee, after["one_fee"] = stored, text
+		after[name] = text
+		return nil
+	}
+	if value, present := data.Lookup("one_fee"); present && course.OneFeePayment {
+		if err = decimal("one_fee", value, &row.OneFee); err != nil {
+			return err
+		}
 	}
 	if value, present := data.Lookup("fee"); present {
 		if value == nil {
 			row.Fee, after["fee"] = nil, "None"
 		} else {
-			stored, text, ok := dto.CourseUpdateDecimal(value)
-			if !ok {
-				return domain.ErrCourseWritesNotPorted
+			stored := ""
+			if err = decimal("fee", value, &stored); err != nil {
+				return err
 			}
-			row.Fee, after["fee"] = &stored, text
+			row.Fee = &stored
 		}
 	}
 	locations, locationsPresent := data.Lookup("locations")
@@ -393,30 +408,36 @@ func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdent
 	}{{"billed_duration_is_sport_season", &row.SportSeason}, {"billed_from_subscription_date", &row.FromSubscription},
 		{"auto_renewal", &row.AutoRenewal}} {
 		if value, present := data.Lookup(field.name); present {
-			flag, text, ok := dto.CourseUpdateBoolean(value)
-			if !ok {
-				return domain.ErrCourseWritesNotPorted
+			flag, text, result := dto.CourseUpdateBoolean(value)
+			if result == dto.CourseSaveFails {
+				saveFails = true
+			} else {
+				*field.target = flag
 			}
-			*field.target, after[field.name] = flag, text
+			after[field.name] = text
 		}
 	}
 	if value, present := data.Lookup("billed_frequency"); present {
 		if value == nil {
 			row.BilledFrequency, after["billed_frequency"] = nil, "None"
 		} else {
-			number, ok := dto.CourseUpdateInteger(value, 0, 32767)
-			if !ok {
-				return domain.ErrCourseWritesNotPorted
+			number, text, result := dto.CourseUpdateInteger(value, 0, 32767)
+			if result == dto.CourseSaveFails {
+				saveFails = true
+			} else {
+				row.BilledFrequency = &number
 			}
-			row.BilledFrequency, after["billed_frequency"] = &number, strconv.Itoa(number)
+			after["billed_frequency"] = text
 		}
 	}
 	if value, present := data.Lookup("billed_from_day_of_month"); present {
-		number, ok := dto.CourseUpdateInteger(value, -2147483648, 2147483647)
-		if !ok {
-			return domain.ErrCourseWritesNotPorted
+		number, text, result := dto.CourseUpdateInteger(value, -2147483648, 2147483647)
+		if result == dto.CourseSaveFails {
+			saveFails = true
+		} else {
+			row.BilledDayOfMonth = number
 		}
-		row.BilledDayOfMonth, after["billed_from_day_of_month"] = number, strconv.Itoa(number)
+		after["billed_from_day_of_month"] = text
 	}
 	dates := map[string]*courseUpdateDate{}
 	for _, name := range []string{"start_date", "end_date"} {
@@ -426,16 +447,16 @@ func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdent
 		}
 		date := &courseUpdateDate{present: true, valid: true}
 		if value != nil {
-			text, ok := value.(string)
-			if !ok {
+			moment, text, result := dto.CourseUpdateDateTime(value)
+			switch result {
+			case dto.CourseSaveNotPorted:
 				return domain.ErrCourseWritesNotPorted
-			}
-			moment, valid, ok := dto.CourseUpdateDateTime(text)
-			if !ok {
-				return domain.ErrCourseWritesNotPorted
-			}
-			date.valid = valid
-			if valid {
+			case dto.CourseSaveRaises:
+				date.valid = false
+			case dto.CourseSaveFails:
+				saveFails = true
+				date.audit = text
+			default:
 				date.moment = &moment
 			}
 		}
@@ -486,6 +507,10 @@ func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdent
 			// DateTimeField.to_python raises in auditlog's pre_save.
 			return courseWritesLate(tx, domain.ErrCourseWritesServer)
 		}
+		if date.audit != "" {
+			after[name] = date.audit
+			continue
+		}
 		after[name] = courseWritesMoment(date.moment)
 		if name == "start_date" {
 			row.StartDate = date.moment
@@ -499,8 +524,11 @@ func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdent
 			changes[name] = [2]string{before[name], value}
 		}
 	}
-	if err = tx.SaveCourse(ctx, domain.CourseWriteCourseSave{Row: row, Changes: changes}, audit); err != nil {
+	if err = tx.SaveCourse(ctx, domain.CourseWriteCourseSave{Row: row, Changes: changes, AuditOnly: saveFails}, audit); err != nil {
 		return err
+	}
+	if saveFails {
+		return courseWritesLate(tx, domain.ErrCourseWritesServer)
 	}
 	// Course.save() dispatches update_metadata_courses when the title changed.
 	if !sameText(course.Title, row.Title) {

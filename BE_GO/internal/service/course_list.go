@@ -100,6 +100,12 @@ var courseListColumns = map[string]string{
 // through any known name, and only the compiled query uses or rejects them.
 var courseListRelations = map[string]bool{"tags": true, "locations": true, "coursesubscription": true, "attendanceregistry": true}
 
+// courseListDateColumns are the DateTimeFields; courseListExtracts the transforms
+// registered on them (a single transform: chains and lookups stay refused).
+var courseListDateColumns = map[string]bool{"creation_date": true, "start_date": true, "end_date": true}
+var courseListExtracts = map[string]bool{"year": true, "iso_year": true, "month": true, "day": true, "week": true, "week_day": true,
+	"iso_week_day": true, "quarter": true, "hour": true, "minute": true, "second": true, "date": true, "time": true}
+
 func courseListText(query domain.RequestObject, name string) string {
 	value, _ := query.Lookup(name)
 	text, _ := value.(string)
@@ -132,6 +138,9 @@ func courseListOrdering(query *domain.CourseListQuery, name string) (unported bo
 	switch {
 	case local && len(parts) == 1:
 		query.OrderColumn, query.Descending = column, descending
+		return false, nil
+	case local && len(parts) == 2 && courseListDateColumns[column] && courseListExtracts[parts[1]]:
+		query.OrderColumn, query.OrderTransform, query.Descending = column, parts[1], descending
 		return false, nil
 	case local || courseListRelations[first]:
 		return true, nil

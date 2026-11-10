@@ -2,6 +2,7 @@ package dto
 
 import (
 	"encoding/json"
+	"math"
 	"math/big"
 	"regexp"
 	"strconv"
@@ -264,8 +265,8 @@ type CourseAddInvalid struct {
 func (e *CourseAddInvalid) Error() string { return "invalid course add input" }
 
 // pythonRational is Decimal(value) of a raw event amount already accepted by
-// DecimalField: strings and integers exactly; floats only when their binary
-// value has at most two decimal places (other floats are not ported).
+// DecimalField: strings and integers exactly; floats by their exact binary
+// value (Decimal(float) has no context rounding).
 func pythonRational(value any) (*big.Rat, error) {
 	switch v := value.(type) {
 	case string:
@@ -289,10 +290,6 @@ func pythonRational(value any) (*big.Rat, error) {
 		}
 		number := new(big.Rat)
 		if number.SetFloat64(float) == nil {
-			return nil, domain.ErrCourseWritesNotPorted
-		}
-		scaled := new(big.Rat).Mul(number, big.NewRat(100, 1))
-		if !scaled.IsInt() {
 			return nil, domain.ErrCourseWritesNotPorted
 		}
 		return number, nil
@@ -451,125 +448,175 @@ func validateCourseAddEvents(input *CourseAddInput, taken CourseEventTaken) erro
 
 // --- course_update raw assignments -------------------------------------------
 
-var (
-	courseWritesDecimalText = regexp.MustCompile(`^-?\d{1,7}(\.\d{1,2})?$`)
-	courseWritesDateOnly    = regexp.MustCompile(`^(\d{4})-(\d{2})-(\d{2})$`)
-	courseWritesDateTime    = regexp.MustCompile(`^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{3}|\d{6}))?)?(Z|[+-]\d{2}:\d{2})?$`)
+// CourseSaveResult classifies a raw value assigned to a Course column before
+// Course.save(): it is stored, the UPDATE fails after auditlog's entry (the
+// column rejects it), or the input is not reproduced.
+type CourseSaveResult int
+
+const (
+	CourseSaveOK CourseSaveResult = iota
+	CourseSaveFails
+	CourseSaveNotPorted
+	// CourseSaveRaises is a DateTimeField.to_python ValidationError inside
+	// auditlog's pre_save: nothing is written, not even the entry.
+	CourseSaveRaises
 )
 
-// CourseUpdateDecimal is a raw fee value assigned to a DecimalField(9, 2):
-// the stored text and str() of the value. Only plain decimals of up to seven
-// whole digits and two places are ported.
-func CourseUpdateDecimal(value any) (stored, audit string, ok bool) {
-	var text string
-	switch v := value.(type) {
-	case string:
-		text, audit = v, v
-	case json.Number:
-		text, audit = string(v), PythonStr(v)
-	default:
-		return "", "", false
-	}
-	if !courseWritesDecimalText.MatchString(text) {
-		return "", "", false
-	}
-	quantized, code := DRFDecimal(text, 9, 2)
-	if code != "" || strings.HasPrefix(quantized, "-") && strings.Trim(quantized, "-0.") == "" {
-		return "", "", false
-	}
-	return quantized, audit, true
-}
+var courseWritesDateFallback = regexp.MustCompile(`^(\d{4})-(\d{1,2})-(\d{1,2})\n?$`)
 
-// CourseUpdateBoolean is a raw value assigned to a BooleanField: the stored
-// value and str() of it (BooleanField.to_python's accepted values).
-func CourseUpdateBoolean(value any) (bool, string, bool) {
+// CourseUpdateDecimal is a raw value assigned to a DecimalField(9, 2): to_python
+// (Decimal(value), or Context(prec=9).create_decimal_from_float for a float),
+// then the column's numeric(9,2) rounding (half away from zero). audit is
+// str() of the raw value.
+func CourseUpdateDecimal(value any) (stored, audit string, result CourseSaveResult) {
+	audit = PythonStr(value)
+	var exact *big.Rat
 	switch v := value.(type) {
 	case bool:
-		return v, PythonStr(v), true
+		exact = big.NewRat(map[bool]int64{true: 1, false: 0}[v], 1)
+	case json.Number:
+		text := string(v)
+		if !strings.ContainsAny(text, ".eE") {
+			exact, _ = new(big.Rat).SetString(text)
+			break
+		}
+		float, err := strconv.ParseFloat(text, 64)
+		if err != nil && !math.IsInf(float, 0) {
+			return "", audit, CourseSaveNotPorted
+		}
+		if math.IsInf(float, 0) {
+			return "", audit, CourseSaveFails
+		}
+		exact, _ = new(big.Rat).SetString(DecimalFromFloat9(float))
+	case string:
+		parsed := ParsePythonDecimal(v)
+		if parsed.Kind != "finite" {
+			return "", audit, CourseSaveFails
+		}
+		if at := strings.IndexAny(parsed.Text, "E"); at >= 0 {
+			exponent, err := strconv.Atoi(strings.TrimPrefix(parsed.Text[at+1:], "+"))
+			if err != nil || exponent > 10000 || exponent < -10000 {
+				return "", audit, CourseSaveNotPorted
+			}
+		}
+		exact, _ = new(big.Rat).SetString(parsed.Text)
+	default:
+		// None, lists and objects: Decimal() raises (a ValidationError, or the NOT NULL column).
+		return "", audit, CourseSaveFails
+	}
+	if exact == nil {
+		return "", audit, CourseSaveNotPorted
+	}
+	text, ok := CourseNumeric92(exact)
+	if !ok {
+		return "", audit, CourseSaveFails
+	}
+	return text, audit, CourseSaveOK
+}
+
+// CourseNumeric92 rounds an exact value to numeric(9,2), half away from zero;
+// ok is false when it needs more than seven integer digits.
+func CourseNumeric92(value *big.Rat) (string, bool) {
+	cents := new(big.Rat).Mul(value, big.NewRat(100, 1))
+	negative := cents.Sign() < 0
+	cents.Abs(cents)
+	quotient, remainder := new(big.Int).QuoRem(cents.Num(), cents.Denom(), new(big.Int))
+	if new(big.Int).Mul(remainder, big.NewInt(2)).Cmp(cents.Denom()) >= 0 {
+		quotient.Add(quotient, big.NewInt(1))
+	}
+	if quotient.Cmp(big.NewInt(1_000_000_000)) >= 0 {
+		return "", false
+	}
+	digits := quotient.String()
+	for len(digits) < 3 {
+		digits = "0" + digits
+	}
+	text := digits[:len(digits)-2] + "." + digits[len(digits)-2:]
+	if negative && quotient.Sign() != 0 {
+		text = "-" + text
+	}
+	return text, true
+}
+
+// CourseUpdateBoolean is a raw value assigned to a BooleanField(null=False):
+// BooleanField.to_python (value in (True, False), then "t", "True", "1",
+// "f", "False", "0"); None and the rest reject at the UPDATE.
+func CourseUpdateBoolean(value any) (bool, string, CourseSaveResult) {
+	audit := PythonStr(value)
+	switch v := value.(type) {
+	case bool:
+		return v, audit, CourseSaveOK
 	case string:
 		switch v {
 		case "t", "True", "1":
-			return true, v, true
+			return true, audit, CourseSaveOK
 		case "f", "False", "0":
-			return false, v, true
+			return false, audit, CourseSaveOK
 		}
 	case json.Number:
-		switch string(v) {
-		case "1":
-			return true, "1", true
-		case "0":
-			return false, "0", true
+		text := string(v)
+		if !strings.ContainsAny(text, ".eE") {
+			number, ok := new(big.Int).SetString(text, 10)
+			if ok && (number.Sign() == 0 || number.Cmp(big.NewInt(1)) == 0) {
+				return number.Sign() != 0, audit, CourseSaveOK
+			}
+			break
+		}
+		if float, err := strconv.ParseFloat(text, 64); err == nil && (float == 0 || float == 1) {
+			return float == 1, audit, CourseSaveOK
 		}
 	}
-	return false, "", false
+	return false, audit, CourseSaveFails
 }
 
-// CourseUpdateInteger is a raw JSON integer assigned to an integer field.
-func CourseUpdateInteger(value any, minimum, maximum int64) (int, bool) {
-	number, ok := value.(json.Number)
-	if !ok || strings.ContainsAny(string(number), ".eE") {
-		return 0, false
+// CourseUpdateInteger is a raw value assigned to an integer column:
+// IntegerField.get_prep_value is int(value) (floats truncate, texts parse),
+// then the column's range (and, for the positive field, its check).
+func CourseUpdateInteger(value any, minimum, maximum int64) (int, string, CourseSaveResult) {
+	audit := PythonStr(value)
+	number, result := PythonInt(value)
+	if result != PythonIntOK || !number.IsInt64() || number.Int64() < minimum || number.Int64() > maximum {
+		return 0, audit, CourseSaveFails
 	}
-	parsed, err := strconv.ParseInt(string(number), 10, 64)
-	if err != nil || parsed < minimum || parsed > maximum {
-		return 0, false
-	}
-	return int(parsed), true
+	return int(number.Int64()), audit, CourseSaveOK
 }
 
-// CourseUpdateDateTime is a raw string assigned to a DateTimeField: ISO dates
-// and date-times (naive values are UTC). valid is false for a calendar error
-// (Django's to_python raises at save); ok is false for formats not ported.
-func CourseUpdateDateTime(value string) (moment time.Time, valid, ok bool) {
-	if match := courseWritesDateOnly.FindStringSubmatch(value); match != nil {
-		date, valid := courseWritesCalendar(match[1], match[2], match[3], "0", "0", "0", "")
-		return date, valid, true
+// CourseUpdateDateTime is a raw value assigned to a DateTimeField: str goes
+// through parse_datetime then parse_date (a naive value is UTC); a failure
+// of the parsers raises inside auditlog's pre_save (CourseSaveRaises), any
+// other type raises a TypeError the audit diff swallows and the UPDATE does not.
+func CourseUpdateDateTime(value any) (moment time.Time, audit string, result CourseSaveResult) {
+	text, ok := value.(string)
+	if !ok {
+		return time.Time{}, PythonStr(value), CourseSaveFails
 	}
-	match := courseWritesDateTime.FindStringSubmatch(value)
+	parsed, _, outcome := DjangoParseDateTime(text)
+	switch outcome {
+	case DjangoDateTimeParsed:
+		return parsed, CourseWritesNaiveUTC(parsed), CourseSaveOK
+	case DjangoDateTimeNotPorted:
+		return time.Time{}, "", CourseSaveNotPorted
+	case DjangoDateTimeValueError:
+		return time.Time{}, "", CourseSaveRaises
+	}
+	normalized := strings.Map(func(r rune) rune {
+		if digit, ok := pythonDigit(r); ok {
+			return '0' + rune(digit)
+		}
+		return r
+	}, text)
+	match := courseWritesDateFallback.FindStringSubmatch(normalized)
 	if match == nil {
-		return time.Time{}, false, false
+		return time.Time{}, "", CourseSaveRaises
 	}
-	moment, valid = courseWritesCalendar(match[1], match[2], match[3], match[4], match[5], match[6], match[7])
-	if !valid {
-		return time.Time{}, false, true
+	year, _ := strconv.Atoi(match[1])
+	month, _ := strconv.Atoi(match[2])
+	day, _ := strconv.Atoi(match[3])
+	moment = time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
+	if year < 1 || month < 1 || month > 12 || day < 1 || moment.Day() != day {
+		return time.Time{}, "", CourseSaveRaises
 	}
-	if zone := match[8]; zone != "" && zone != "Z" {
-		hours, _ := strconv.Atoi(zone[1:3])
-		minutes, _ := strconv.Atoi(zone[4:6])
-		if hours > 23 || minutes > 59 {
-			return time.Time{}, false, false
-		}
-		offset := time.Duration(hours)*time.Hour + time.Duration(minutes)*time.Minute
-		if zone[0] == '+' {
-			moment = moment.Add(-offset)
-		} else {
-			moment = moment.Add(offset)
-		}
-	}
-	return moment, true, true
-}
-
-func courseWritesCalendar(year, month, day, hour, minute, second, fraction string) (time.Time, bool) {
-	number := func(text string) int {
-		if text == "" {
-			return 0
-		}
-		value, _ := strconv.Atoi(text)
-		return value
-	}
-	y, mo, d, h, mi, s := number(year), number(month), number(day), number(hour), number(minute), number(second)
-	micro := 0
-	if fraction != "" {
-		micro = number((fraction + "000000")[:6])
-	}
-	if y < 1 || mo < 1 || mo > 12 || h > 23 || mi > 59 || s > 59 {
-		return time.Time{}, false
-	}
-	moment := time.Date(y, time.Month(mo), d, h, mi, s, micro*1000, time.UTC)
-	if moment.Day() != d || int(moment.Month()) != mo {
-		return time.Time{}, false
-	}
-	return moment, true
+	return moment, CourseWritesNaiveUTC(moment), CourseSaveOK
 }
 
 // CourseWritesNaiveUTC is str() of the naive UTC datetime auditlog compares.
