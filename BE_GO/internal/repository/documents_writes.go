@@ -14,9 +14,14 @@ import (
 // DocumentUploads stores the rows of the document upload views: Documents,
 // archive rows, subscription files, uploaded medical certificates and the
 // certificate's subscription or draft.
-type DocumentUploads struct{ db *sqlx.DB }
+type DocumentUploads struct {
+	MemberDocuments
+	db *sqlx.DB
+}
 
-func NewDocumentUploads(db *sqlx.DB) *DocumentUploads { return &DocumentUploads{db: db} }
+func NewDocumentUploads(db *sqlx.DB) *DocumentUploads {
+	return &DocumentUploads{MemberDocuments: NewMemberDocuments(db), db: db}
+}
 
 var _ domain.DocumentUploadStore = (*DocumentUploads)(nil)
 

@@ -194,6 +194,76 @@
    "filename": "lettera.docx",
    "filepath": null,
    "created": "2026-02-24T10:00:00+00:00"
+  },
+  "same_associate": {
+   "id": "a1000000-0000-4000-8000-000000983023",
+   "token": "a1000000-0000-4000-8000-000000983123",
+   "filename": "same-associate.pdf",
+   "filepath": null,
+   "created": "2026-03-01T10:00:00+00:00"
+  },
+  "same_tax": {
+   "id": "a1000000-0000-4000-8000-000000983024",
+   "token": "a1000000-0000-4000-8000-000000983124",
+   "filename": "same-tax.pdf",
+   "filepath": null,
+   "created": "2026-03-02T10:00:00+00:00"
+  },
+  "linked_associate": {
+   "id": "a1000000-0000-4000-8000-000000983025",
+   "token": "a1000000-0000-4000-8000-000000983125",
+   "filename": "linked-associate.pdf",
+   "filepath": null,
+   "created": "2026-03-03T10:00:00+00:00"
+  },
+  "athlete_medical": {
+   "id": "a1000000-0000-4000-8000-000000983026",
+   "token": "a1000000-0000-4000-8000-000000983126",
+   "filename": "athlete-medical.pdf",
+   "filepath": null,
+   "created": "2026-03-04T10:00:00+00:00"
+  },
+  "associate_medical": {
+   "id": "a1000000-0000-4000-8000-000000983027",
+   "token": "a1000000-0000-4000-8000-000000983127",
+   "filename": "associate-medical.pdf",
+   "filepath": null,
+   "created": "2026-03-05T10:00:00+00:00"
+  },
+  "attached": {
+   "id": "a1000000-0000-4000-8000-000000983028",
+   "token": "a1000000-0000-4000-8000-000000983128",
+   "filename": "attached.pdf",
+   "filepath": null,
+   "created": "2026-03-06T10:00:00+00:00"
+  },
+  "attached_other": {
+   "id": "a1000000-0000-4000-8000-000000983029",
+   "token": "a1000000-0000-4000-8000-000000983129",
+   "filename": "attached-other.pdf",
+   "filepath": null,
+   "created": "2026-03-07T10:00:00+00:00"
+  },
+  "athlete_invoice": {
+   "id": "a1000000-0000-4000-8000-000000983030",
+   "token": "a1000000-0000-4000-8000-000000983130",
+   "filename": "athlete-invoice.pdf",
+   "filepath": null,
+   "created": "2026-03-08T10:00:00+00:00"
+  },
+  "associate_invoice": {
+   "id": "a1000000-0000-4000-8000-000000983031",
+   "token": "a1000000-0000-4000-8000-000000983131",
+   "filename": "associate-invoice.pdf",
+   "filepath": null,
+   "created": "2026-03-09T10:00:00+00:00"
+  },
+  "other_tax": {
+   "id": "a1000000-0000-4000-8000-000000983032",
+   "token": "a1000000-0000-4000-8000-000000983132",
+   "filename": "other-tax.pdf",
+   "filepath": null,
+   "created": "2026-03-10T10:00:00+00:00"
   }
  },
  "objects": {
@@ -316,6 +386,66 @@
    "body_b64": "ZG9jeC1maXh0dXJl",
    "content_type": "application/x-fixture-docx",
    "encoding": null
+  },
+  "same_associate": {
+   "key": "docs-fixture/1772359200.0/a1000000-0000-4000-8000-000000983023/same-associate.pdf",
+   "body_b64": "JVBERi1zYW1lX2Fzc29jaWF0ZQ==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "same_tax": {
+   "key": "docs-fixture/1772445600.0/a1000000-0000-4000-8000-000000983024/same-tax.pdf",
+   "body_b64": "JVBERi1zYW1lX3RheA==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "linked_associate": {
+   "key": "docs-fixture/1772532000.0/a1000000-0000-4000-8000-000000983025/linked-associate.pdf",
+   "body_b64": "JVBERi1saW5rZWRfYXNzb2NpYXRl",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "athlete_medical": {
+   "key": "docs-fixture/1772618400.0/a1000000-0000-4000-8000-000000983026/athlete-medical.pdf",
+   "body_b64": "JVBERi1hdGhsZXRlX21lZGljYWw=",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "associate_medical": {
+   "key": "docs-fixture/1772704800.0/a1000000-0000-4000-8000-000000983027/associate-medical.pdf",
+   "body_b64": "JVBERi1hc3NvY2lhdGVfbWVkaWNhbA==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "attached": {
+   "key": "docs-fixture/1772791200.0/a1000000-0000-4000-8000-000000983028/attached.pdf",
+   "body_b64": "JVBERi1hdHRhY2hlZA==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "attached_other": {
+   "key": "docs-fixture/1772877600.0/a1000000-0000-4000-8000-000000983029/attached-other.pdf",
+   "body_b64": "JVBERi1hdHRhY2hlZF9vdGhlcg==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "athlete_invoice": {
+   "key": "docs-fixture/1772964000.0/a1000000-0000-4000-8000-000000983030/athlete-invoice.pdf",
+   "body_b64": "JVBERi1hdGhsZXRlX2ludm9pY2U=",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "associate_invoice": {
+   "key": "docs-fixture/1773050400.0/a1000000-0000-4000-8000-000000983031/associate-invoice.pdf",
+   "body_b64": "JVBERi1hc3NvY2lhdGVfaW52b2ljZQ==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "other_tax": {
+   "key": "docs-fixture/1773136800.0/a1000000-0000-4000-8000-000000983032/other-tax.pdf",
+   "body_b64": "JVBERi1vdGhlcl90YXg=",
+   "content_type": "application/pdf",
+   "encoding": null
   }
  },
  "archives": {
@@ -345,7 +475,8 @@
    "association": "own_association",
    "user": "athlete",
    "document": "athlete",
-   "group": null
+   "group": null,
+   "associate": "person"
   },
   "group": {
    "id": "a1000000-0000-4000-8000-000000983402",
@@ -367,6 +498,47 @@
    "user": "foreign_owner",
    "document": "foreign",
    "group": null
+  },
+  "same_associate": {
+   "id": "a1000000-0000-4000-8000-000000983405",
+   "association": "own_association",
+   "user": "owner",
+   "document": "same_associate",
+   "group": null,
+   "associate": "person",
+   "medical": "associate"
+  },
+  "same_tax": {
+   "id": "a1000000-0000-4000-8000-000000983406",
+   "association": "foreign_association",
+   "user": "foreign_owner",
+   "document": "same_tax",
+   "group": null,
+   "associate": "elsewhere"
+  },
+  "linked_associate": {
+   "id": "a1000000-0000-4000-8000-000000983407",
+   "association": "own_association",
+   "user": "owner",
+   "document": "linked_associate",
+   "group": null,
+   "associate": "linked"
+  },
+  "blank": {
+   "id": "a1000000-0000-4000-8000-000000983408",
+   "association": "own_association",
+   "user": "athlete",
+   "document": null,
+   "group": null,
+   "associate": "blank"
+  },
+  "blank_elsewhere": {
+   "id": "a1000000-0000-4000-8000-000000983409",
+   "association": "foreign_association",
+   "user": "foreign_owner",
+   "document": "other_tax",
+   "group": null,
+   "associate": "blank_elsewhere"
   }
  },
  "medicals": {
@@ -377,6 +549,15 @@
   "empty": {
    "id": "a1000000-0000-4000-8000-000000983501",
    "document": null
+  },
+  "athlete": {
+   "id": "a1000000-0000-4000-8000-000000983502",
+   "document": "athlete_medical",
+   "user": "athlete"
+  },
+  "associate": {
+   "id": "a1000000-0000-4000-8000-000000983503",
+   "document": "associate_medical"
   }
  },
  "invoices": {
@@ -391,6 +572,109 @@
    "association": "own_association",
    "document": "deleted_invoice",
    "deleted": true
+  },
+  "athlete": {
+   "id": "a1000000-0000-4000-8000-000000983602",
+   "association": "own_association",
+   "document": "athlete_invoice",
+   "deleted": false
+  },
+  "associate": {
+   "id": "a1000000-0000-4000-8000-000000983603",
+   "association": "own_association",
+   "document": "associate_invoice",
+   "deleted": false
+  }
+ },
+ "extra_users": {
+  "member": {
+   "id": "a1000000-0000-4000-8000-000000983700",
+   "username": "docmanager-reads-member",
+   "email": "docmanager-reads-member@example.test"
+  },
+  "primary_athlete": {
+   "id": "a1000000-0000-4000-8000-000000983701",
+   "username": "docmanager-reads-primary_athlete",
+   "email": "docmanager-reads-primary_athlete@example.test"
+  }
+ },
+ "primary": {
+  "association": "a1000000-0000-4000-8000-000000983710",
+  "user": "primary_athlete",
+  "denomination": "Associazione principale"
+ },
+ "instance": {
+  "id": 983090,
+  "domain": "docmanager-reads.example.test",
+  "name": "Docmanager reads",
+  "self_hosted": true,
+  "setup_provenance": "fresh"
+ },
+ "associates": {
+  "person": {
+   "id": "a1000000-0000-4000-8000-000000983720",
+   "association": "own_association",
+   "user": null,
+   "tax_code": "DCMRDS80A01H501A"
+  },
+  "elsewhere": {
+   "id": "a1000000-0000-4000-8000-000000983721",
+   "association": "foreign_association",
+   "user": null,
+   "tax_code": "DCMRDS80A01H501A"
+  },
+  "linked": {
+   "id": "a1000000-0000-4000-8000-000000983722",
+   "association": "own_association",
+   "user": "athlete",
+   "tax_code": "DCMRDS81B02H501B"
+  },
+  "blank": {
+   "id": "a1000000-0000-4000-8000-000000983723",
+   "association": "own_association",
+   "user": null,
+   "tax_code": ""
+  },
+  "blank_elsewhere": {
+   "id": "a1000000-0000-4000-8000-000000983724",
+   "association": "foreign_association",
+   "user": null,
+   "tax_code": ""
+  }
+ },
+ "files": {
+  "attached": {
+   "id": "a1000000-0000-4000-8000-000000983730",
+   "subscription": "athlete",
+   "document": "attached"
+  },
+  "attached_other": {
+   "id": "a1000000-0000-4000-8000-000000983731",
+   "subscription": "plain",
+   "document": "attached_other"
+  }
+ },
+ "payments": {
+  "invoice": {
+   "id": "a1000000-0000-4000-8000-000000983740",
+   "association": "own_association",
+   "invoice": "invoice",
+   "user": "owner",
+   "associate": null
+  },
+  "athlete": {
+   "id": "a1000000-0000-4000-8000-000000983741",
+   "association": "own_association",
+   "invoice": "athlete",
+   "user": "athlete",
+   "associate": null
+  },
+  "associate": {
+   "id": "a1000000-0000-4000-8000-000000983742",
+   "association": "own_association",
+   "invoice": "associate",
+   "user": "owner",
+   "associate": "person"
   }
  },
  "cases": [
@@ -1345,16 +1629,12 @@
    "method": "GET",
    "path": "/document/retrieve/a1000000-0000-4000-8000-000000983015",
    "headers": {},
-   "status": 200,
-   "response": "<stream>",
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
    "challenge": false,
-   "effect": null,
-   "stream": {
-    "object": "orphan_export",
-    "content_type": "application/zip",
-    "encoding": null,
-    "disposition": "inline; filename=\"export_orphan.zip\""
-   }
+   "effect": null
   },
   {
    "name": "docmanager-reads-retrieve-download-token",
@@ -1641,6 +1921,698 @@
     "content_type": "application/zip",
     "encoding": null,
     "disposition": "inline; filename=\"export_own.zip\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-subscription",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983401",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "athlete",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-associate-subscription-document",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983023",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "same_associate",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"same-associate.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-associate-subscription",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983405",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "same_associate",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"same-associate.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-same-tax-code-document",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983024",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "same_tax",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"same-tax.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-linked-associate-document",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983025",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "linked_associate",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"linked-associate.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-own-certificate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983026",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "athlete_medical",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete-medical.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-own-certificate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983502",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "athlete_medical",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete-medical.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-associate-certificate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983027",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "associate_medical",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"associate-medical.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-associate-certificate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983503",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "associate_medical",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"associate-medical.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-attached-file",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983028",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "attached",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"attached.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-own-receipt",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983030",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "athlete_invoice",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete-invoice.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-own-invoice",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983602",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "athlete_invoice",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete-invoice.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-associate-receipt",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983031",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "associate_invoice",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"associate-invoice.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-associate-invoice",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983603",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "associate_invoice",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"associate-invoice.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-view",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983016?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "athlete",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-cookie",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983016",
+   "headers": {
+    "Cookie": "BKN_AUTH=$jwt:athlete"
+   },
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "athlete",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-query-jwt",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983023?token=$jwt:athlete",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "same_associate",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"same-associate.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-other-document",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-other-subscription",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983400",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-group-subscription-document",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983017",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-other-certificate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983018",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-other-certificate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983500",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-other-attached-file",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983029",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-other-receipt",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983019",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-other-invoice",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983600",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-unlinked-document",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983022",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-blank-tax-code-document",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983032",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-other-document-view",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?download=false",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-missing-object-of-other",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983011",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-unknown",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983999",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-cookie-other-document",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {
+    "Cookie": "BKN_AUTH=$jwt:athlete"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-query-jwt-other-document",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?token=$jwt:athlete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-document-token-of-other",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?token=a1000000-0000-4000-8000-000000983101",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-other-document-token-mismatch",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?token=a1000000-0000-4000-8000-000000983102",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-member-athlete-document",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983016",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-member-by-athlete-subscription",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983401",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-member-athlete-certificate",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983026",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-member-athlete-receipt",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983030",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-member-document-token",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983016?token=a1000000-0000-4000-8000-000000983116",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "athlete",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-primary-association-account",
+   "actor": "primary_athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-primary-association-account-by-invoice",
+   "actor": "primary_athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983602",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "athlete_invoice",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete-invoice.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-full-collaborator-athlete-document",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983016",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "athlete",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-foreign-owner-athlete-receipt",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983030",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "athlete_invoice",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete-invoice.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-query-jwt-admin-athlete-document",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983016?token=$jwt:admin",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "athlete",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-admin-impersonating-owner-athlete-document",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983016",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "effect": null,
+   "stream": {
+    "object": "athlete",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete.pdf\""
    }
   },
   {

@@ -124,6 +124,7 @@ var (
 
 // DocumentViewStore reads the rows the HTML views render.
 type DocumentViewStore interface {
+	MemberDocumentStore
 	Association(ctx context.Context, id string) (*ViewAssociation, error)
 	// ActiveAssociation is scoped_queryset(SportAssociation.objects).get(pk=id) (live rows).
 	ActiveAssociation(ctx context.Context, id string, scope *string) (*ViewAssociation, error)

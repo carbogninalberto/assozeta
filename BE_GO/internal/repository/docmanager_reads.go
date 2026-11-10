@@ -13,9 +13,14 @@ import (
 // rows that reference them. Managers are reproduced per model: Subscription is
 // GroupAwareManager, Invoice is SoftDeleteGroupAwareManager, SportAssociation
 // is ActiveManager; MedicalCertificate, archives and Document use the default.
-type DocmanagerReads struct{ db *sqlx.DB }
+type DocmanagerReads struct {
+	MemberDocuments
+	db *sqlx.DB
+}
 
-func NewDocmanagerReads(db *sqlx.DB) *DocmanagerReads { return &DocmanagerReads{db: db} }
+func NewDocmanagerReads(db *sqlx.DB) *DocmanagerReads {
+	return &DocmanagerReads{MemberDocuments: NewMemberDocuments(db), db: db}
+}
 
 var _ domain.DocmanagerReadsStore = (*DocmanagerReads)(nil)
 

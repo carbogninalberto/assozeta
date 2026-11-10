@@ -28,7 +28,7 @@ from TESTS.adapters.django import document_render_http as renderer_runner
 SOURCES = ('TESTS/fixtures/document_views_http.json', 'TESTS/contracts/test_document_views_http.py',
            'TESTS/adapters/django/document_views_http.py', 'TESTS/adapters/django/document_render_http.py',
            'TESTS/adapters/go/document_template_golden.py', 'TESTS/adapters/go/payment_category_server.py',
-           'BE/docmanager/views/printing_views.py', 'BE/docmanager/views/utils.py', 'BE/application/utils/printing.py',
+           'BE/docmanager/views/printing_views.py', 'BE/docmanager/access.py', 'BE/instance/permissions.py', 'BE/docmanager/views/utils.py', 'BE/application/utils/printing.py',
            'BE/application/models/utils.py', 'BE/application/models/subscriptions_models.py',
            'BE/application/models/payment_models.py', 'BE/application/models/user_models.py',
            'BE/application/models/courses_models.py', 'BE/application/templatetags/format.py',

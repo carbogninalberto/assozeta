@@ -580,6 +580,18 @@
    "signature_url": null,
    "group": null,
    "user": "athlete"
+  },
+  "renewal": {
+   "id": "a1000000-0000-4000-8000-000000985051",
+   "association": "own",
+   "associate": "athlete",
+   "type": 1,
+   "role": 2,
+   "created": "2026-09-09T09:09:09+00:00",
+   "payment": null,
+   "additional_fields": null,
+   "signature_url": null,
+   "group": null
   }
  },
  "courses": {
@@ -880,6 +892,13 @@
    "date": null,
    "sport": "",
    "meta": null
+  }
+ },
+ "extra_users": {
+  "member": {
+   "id": "a1000000-0000-4000-8000-000000985052",
+   "username": "document-views-member",
+   "email": "document-views-member@example.test"
   }
  },
  "cases": [
@@ -3162,485 +3181,6 @@
      },
      "payment_data": {
       "t": "none"
-     },
-     "show_regulation_to": {
-      "t": "list",
-      "v": [
-       {
-        "t": "int",
-        "v": 1
-       },
-       {
-        "t": "int",
-        "v": 3
-       }
-      ]
-     },
-     "show_demand_to": {
-      "t": "list",
-      "v": [
-       {
-        "t": "int",
-        "v": 2
-       }
-      ]
-     },
-     "is_preview": {
-      "t": "bool",
-      "v": false
-     },
-     "header": {
-      "t": "str",
-      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli &amp; soci - CF 01234567890<br/>Data: $today, contatto alfa@example.test, iscritto </p>"
-     },
-     "footer": {
-      "t": "str",
-      "v": "<p>Grazie da @Denominazione — </p>\n<p> </p>"
-     }
-    }
-   }
-  },
-  {
-   "name": "document-views-subscription-athlete-direct",
-   "actor": "athlete",
-   "method": "GET",
-   "path": "/document/subscription/a1000000-0000-4000-8000-000000985030/view/",
-   "headers": {},
-   "status": 200,
-   "response": "<html>",
-   "renders": [],
-   "content_language": "en",
-   "html": {
-    "template": "document/application/subscription.html",
-    "language": "en",
-    "context": {
-     "uid": {
-      "t": "str",
-      "v": "a1000000-0000-4000-8000-000000985030"
-     },
-     "subscription": {
-      "t": "obj",
-      "v": [
-       [
-        "sport_association",
-        {
-         "t": "obj",
-         "v": [
-          [
-           "logo",
-           {
-            "t": "str",
-            "v": "data:image/png;base64,QUJD"
-           }
-          ],
-          [
-           "denomination",
-           {
-            "t": "str",
-            "v": "ASD Alfa & Figli"
-           }
-          ],
-          [
-           "tax_code",
-           {
-            "t": "str",
-            "v": "01234567890"
-           }
-          ],
-          [
-           "address",
-           {
-            "t": "str",
-            "v": "Via Roma 1"
-           }
-          ],
-          [
-           "address_city",
-           {
-            "t": "str",
-            "v": "Torino"
-           }
-          ],
-          [
-           "address_cap",
-           {
-            "t": "str",
-            "v": "10100"
-           }
-          ],
-          [
-           "federation",
-           {
-            "t": "str",
-            "v": "FIDAL"
-           }
-          ],
-          [
-           "enroll_number",
-           {
-            "t": "str",
-            "v": "ab-12"
-           }
-          ],
-          [
-           "regulation",
-           {
-            "t": "str",
-            "v": "<p>Regolamento <b>interno</b></p>"
-           }
-          ],
-          [
-           "demand",
-           {
-            "t": "none"
-           }
-          ],
-          [
-           "additional_sections",
-           {
-            "t": "list",
-            "v": [
-             {
-              "t": "dict",
-              "v": [
-               [
-                "name",
-                {
-                 "t": "str",
-                 "v": "Privacy & dati"
-                }
-               ],
-               [
-                "text",
-                {
-                 "t": "str",
-                 "v": "<p>Testo privacy</p>"
-                }
-               ],
-               [
-                "show_to_members",
-                {
-                 "t": "bool",
-                 "v": true
-                }
-               ],
-               [
-                "show_to_both",
-                {
-                 "t": "bool",
-                 "v": false
-                }
-               ],
-               [
-                "show_to_athletes",
-                {
-                 "t": "bool",
-                 "v": true
-                }
-               ],
-               [
-                "show_to",
-                {
-                 "t": "list",
-                 "v": [
-                  {
-                   "t": "int",
-                   "v": 1
-                  },
-                  {
-                   "t": "int",
-                   "v": 3
-                  }
-                 ]
-                }
-               ]
-              ]
-             },
-             {
-              "t": "dict",
-              "v": [
-               [
-                "show_to",
-                {
-                 "t": "list",
-                 "v": []
-                }
-               ],
-               [
-                "name",
-                {
-                 "t": "str",
-                 "v": "Foto"
-                }
-               ],
-               [
-                "text",
-                {
-                 "t": "str",
-                 "v": "Consenso <i>foto</i>"
-                }
-               ],
-               [
-                "show_to_members",
-                {
-                 "t": "bool",
-                 "v": false
-                }
-               ]
-              ]
-             },
-             {
-              "t": "dict",
-              "v": [
-               [
-                "name",
-                {
-                 "t": "str",
-                 "v": "Vuota"
-                }
-               ],
-               [
-                "text",
-                {
-                 "t": "none"
-                }
-               ],
-               [
-                "show_to_both",
-                {
-                 "t": "int",
-                 "v": 1
-                }
-               ],
-               [
-                "show_to",
-                {
-                 "t": "list",
-                 "v": [
-                  {
-                   "t": "int",
-                   "v": 2
-                  }
-                 ]
-                }
-               ]
-              ]
-             }
-            ]
-           }
-          ]
-         ]
-        }
-       ],
-       [
-        "creation_date",
-        {
-         "t": "datetime",
-         "v": "2026-03-04T10:00:00+00:00"
-        }
-       ],
-       [
-        "type",
-        {
-         "t": "int",
-         "v": 2
-        }
-       ],
-       [
-        "role",
-        {
-         "t": "int",
-         "v": 5
-        }
-       ],
-       [
-        "associate",
-        {
-         "t": "obj",
-         "v": [
-          [
-           "first_name",
-           {
-            "t": "str",
-            "v": "Mario"
-           }
-          ],
-          [
-           "last_name",
-           {
-            "t": "str",
-            "v": "Rossi"
-           }
-          ],
-          [
-           "tax_code",
-           {
-            "t": "str",
-            "v": "RSSMRA80A01L219X"
-           }
-          ],
-          [
-           "sex",
-           {
-            "t": "str",
-            "v": "M"
-           }
-          ],
-          [
-           "born_date",
-           {
-            "t": "date",
-            "v": "1980-01-01"
-           }
-          ],
-          [
-           "born_city",
-           {
-            "t": "str",
-            "v": "Torino"
-           }
-          ],
-          [
-           "address",
-           {
-            "t": "str",
-            "v": "Via Po 2"
-           }
-          ],
-          [
-           "address_city",
-           {
-            "t": "str",
-            "v": "Torino"
-           }
-          ],
-          [
-           "address_cap",
-           {
-            "t": "str",
-            "v": "10123"
-           }
-          ],
-          [
-           "phone",
-           {
-            "t": "str",
-            "v": "+39 333 0000000"
-           }
-          ],
-          [
-           "email",
-           {
-            "t": "str",
-            "v": "mario@example.test"
-           }
-          ],
-          [
-           "get_full_name",
-           {
-            "t": "call",
-            "v": {
-             "t": "str",
-             "v": "Mario Rossi"
-            }
-           }
-          ],
-          [
-           "full_name",
-           {
-            "t": "str",
-            "v": "Mario Rossi"
-           }
-          ],
-          [
-           "is_minor_now",
-           {
-            "t": "bool",
-            "v": false
-           }
-          ],
-          [
-           "main_tutor",
-           {
-            "t": "call",
-            "v": {
-             "t": "none"
-            }
-           }
-          ]
-         ]
-        }
-       ],
-       [
-        "additional_fields",
-        {
-         "t": "list",
-         "v": [
-          {
-           "t": "dict",
-           "v": [
-            [
-             "props",
-             {
-              "t": "dict",
-              "v": [
-               [
-                "label",
-                {
-                 "t": "str",
-                 "v": "Note"
-                }
-               ],
-               [
-                "value",
-                {
-                 "t": "str",
-                 "v": "ok <b>"
-                }
-               ]
-              ]
-             }
-            ]
-           ]
-          }
-         ]
-        }
-       ],
-       [
-        "has_signature",
-        {
-         "t": "bool",
-         "v": false
-        }
-       ]
-      ]
-     },
-     "payment_data": {
-      "t": "dict",
-      "v": [
-       [
-        "subscription_data",
-        {
-         "t": "dict",
-         "v": [
-          [
-           "name",
-           {
-            "t": "str",
-            "v": "Annuale <b>"
-           }
-          ],
-          [
-           "subscription_fee",
-           {
-            "t": "int",
-            "v": 30
-           }
-          ]
-         ]
-        }
-       ]
-      ]
      },
      "show_regulation_to": {
       "t": "list",
@@ -6112,6 +5652,1262 @@
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
    },
+   "status": 200,
+   "response": "<html>",
+   "renders": [],
+   "content_language": "en",
+   "html": {
+    "template": "document/application/subscription.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000985050"
+     },
+     "subscription": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "Message reads own"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "70000000001"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "federation",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "enroll_number",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "regulation",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "demand",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "additional_sections",
+           {
+            "t": "default_sections"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "creation_date",
+        {
+         "t": "datetime",
+         "v": "2026-08-08T08:08:08+00:00"
+        }
+       ],
+       [
+        "type",
+        {
+         "t": "int",
+         "v": 2
+        }
+       ],
+       [
+        "role",
+        {
+         "t": "int",
+         "v": 1
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Athlete"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Fixture"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "A"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Athlete Fixture"
+            }
+           }
+          ],
+          [
+           "full_name",
+           {
+            "t": "str",
+            "v": "Athlete Fixture"
+           }
+          ],
+          [
+           "is_minor_now",
+           {
+            "t": "bool",
+            "v": true
+           }
+          ],
+          [
+           "main_tutor",
+           {
+            "t": "call",
+            "v": {
+             "t": "none"
+            }
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "additional_fields",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "has_signature",
+        {
+         "t": "bool",
+         "v": false
+        }
+       ]
+      ]
+     },
+     "payment_data": {
+      "t": "none"
+     },
+     "show_regulation_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 1
+       },
+       {
+        "t": "int",
+        "v": 2
+       },
+       {
+        "t": "int",
+        "v": 3
+       }
+      ]
+     },
+     "show_demand_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 1
+       },
+       {
+        "t": "int",
+        "v": 2
+       },
+       {
+        "t": "int",
+        "v": 3
+       }
+      ]
+     },
+     "is_preview": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": ""
+     },
+     "footer": {
+      "t": "str",
+      "v": ""
+     }
+    }
+   }
+  },
+  {
+   "name": "document-views-subscription-athlete-own",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985050/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "renders": [],
+   "content_language": "en",
+   "html": {
+    "template": "document/application/subscription.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000985050"
+     },
+     "subscription": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "Message reads own"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "70000000001"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "federation",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "enroll_number",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "regulation",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "demand",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "additional_sections",
+           {
+            "t": "default_sections"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "creation_date",
+        {
+         "t": "datetime",
+         "v": "2026-08-08T08:08:08+00:00"
+        }
+       ],
+       [
+        "type",
+        {
+         "t": "int",
+         "v": 2
+        }
+       ],
+       [
+        "role",
+        {
+         "t": "int",
+         "v": 1
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Athlete"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Fixture"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "A"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Athlete Fixture"
+            }
+           }
+          ],
+          [
+           "full_name",
+           {
+            "t": "str",
+            "v": "Athlete Fixture"
+           }
+          ],
+          [
+           "is_minor_now",
+           {
+            "t": "bool",
+            "v": true
+           }
+          ],
+          [
+           "main_tutor",
+           {
+            "t": "call",
+            "v": {
+             "t": "none"
+            }
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "additional_fields",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "has_signature",
+        {
+         "t": "bool",
+         "v": false
+        }
+       ]
+      ]
+     },
+     "payment_data": {
+      "t": "none"
+     },
+     "show_regulation_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 1
+       },
+       {
+        "t": "int",
+        "v": 2
+       },
+       {
+        "t": "int",
+        "v": 3
+       }
+      ]
+     },
+     "show_demand_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 1
+       },
+       {
+        "t": "int",
+        "v": 2
+       },
+       {
+        "t": "int",
+        "v": 3
+       }
+      ]
+     },
+     "is_preview": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": ""
+     },
+     "footer": {
+      "t": "str",
+      "v": ""
+     }
+    }
+   }
+  },
+  {
+   "name": "document-views-subscription-athlete-associate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985051/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "renders": [],
+   "content_language": "en",
+   "html": {
+    "template": "document/application/subscription.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000985051"
+     },
+     "subscription": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "Message reads own"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "70000000001"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "federation",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "enroll_number",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "regulation",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "demand",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "additional_sections",
+           {
+            "t": "default_sections"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "creation_date",
+        {
+         "t": "datetime",
+         "v": "2026-09-09T09:09:09+00:00"
+        }
+       ],
+       [
+        "type",
+        {
+         "t": "int",
+         "v": 1
+        }
+       ],
+       [
+        "role",
+        {
+         "t": "int",
+         "v": 2
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Athlete"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Fixture"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "A"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Athlete Fixture"
+            }
+           }
+          ],
+          [
+           "full_name",
+           {
+            "t": "str",
+            "v": "Athlete Fixture"
+           }
+          ],
+          [
+           "is_minor_now",
+           {
+            "t": "bool",
+            "v": true
+           }
+          ],
+          [
+           "main_tutor",
+           {
+            "t": "call",
+            "v": {
+             "t": "none"
+            }
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "additional_fields",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "has_signature",
+        {
+         "t": "bool",
+         "v": false
+        }
+       ]
+      ]
+     },
+     "payment_data": {
+      "t": "none"
+     },
+     "show_regulation_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 1
+       },
+       {
+        "t": "int",
+        "v": 2
+       },
+       {
+        "t": "int",
+        "v": 3
+       }
+      ]
+     },
+     "show_demand_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 1
+       },
+       {
+        "t": "int",
+        "v": 2
+       },
+       {
+        "t": "int",
+        "v": 3
+       }
+      ]
+     },
+     "is_preview": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": ""
+     },
+     "footer": {
+      "t": "str",
+      "v": ""
+     }
+    }
+   }
+  },
+  {
+   "name": "document-views-subscription-athlete-direct",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985030/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-subscription-athlete-without-associate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985034/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-subscription-athlete-sections-not-a-list",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985036/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-subscription-athlete-unknown",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985999/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-subscription-member-of-athlete",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985050/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-subscription-member-of-associate",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985051/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-subscription-full-collaborator-of-athlete",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985050/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "renders": [],
+   "content_language": "en",
+   "html": {
+    "template": "document/application/subscription.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000985050"
+     },
+     "subscription": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "Message reads own"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "70000000001"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "federation",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "enroll_number",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "regulation",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "demand",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "additional_sections",
+           {
+            "t": "default_sections"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "creation_date",
+        {
+         "t": "datetime",
+         "v": "2026-08-08T08:08:08+00:00"
+        }
+       ],
+       [
+        "type",
+        {
+         "t": "int",
+         "v": 2
+        }
+       ],
+       [
+        "role",
+        {
+         "t": "int",
+         "v": 1
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Athlete"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Fixture"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "A"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Athlete Fixture"
+            }
+           }
+          ],
+          [
+           "full_name",
+           {
+            "t": "str",
+            "v": "Athlete Fixture"
+           }
+          ],
+          [
+           "is_minor_now",
+           {
+            "t": "bool",
+            "v": true
+           }
+          ],
+          [
+           "main_tutor",
+           {
+            "t": "call",
+            "v": {
+             "t": "none"
+            }
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "additional_fields",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "has_signature",
+        {
+         "t": "bool",
+         "v": false
+        }
+       ]
+      ]
+     },
+     "payment_data": {
+      "t": "none"
+     },
+     "show_regulation_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 1
+       },
+       {
+        "t": "int",
+        "v": 2
+       },
+       {
+        "t": "int",
+        "v": 3
+       }
+      ]
+     },
+     "show_demand_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 1
+       },
+       {
+        "t": "int",
+        "v": 2
+       },
+       {
+        "t": "int",
+        "v": 3
+       }
+      ]
+     },
+     "is_preview": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": ""
+     },
+     "footer": {
+      "t": "str",
+      "v": ""
+     }
+    }
+   }
+  },
+  {
+   "name": "document-views-subscription-foreign-owner-of-athlete",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985050/view/",
+   "headers": {},
    "status": 200,
    "response": "<html>",
    "renders": [],

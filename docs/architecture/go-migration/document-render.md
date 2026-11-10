@@ -159,3 +159,28 @@ Model hooks ([model-hooks](model-hooks.md)): `document-render-subscription-inval
 `save(update_fields=['document_pdf'])` raises in the season range for an owner whose season start is 31 April; the Document
 and its storage task stay, the row is not linked, 500 `{"exception": "Invalid date combination: day is out of range for
 month"}`. Native 142/142; mutation (`model-hooks-mutation`) fails Go with 200 (CAUGHT).
+
+Member documents (`secdoc-*`): documents are served to the association's staff and to the member they belong to.
+`docmanager.access` (Django, with `docmanager.test_document_access`) and `memberDocumentAccess` with
+`repository.MemberDocuments` (Go) decide it the same way: accounts other than athletes, superusers and the instance owner
+(`is_instance_owner`) reach every record; an athlete account reaches the records of its user, of the associates of its
+subscriptions, of associates whose account it is and of associates sharing a non-empty tax code with those (base managers:
+no group or soft-delete filter). Anything else answers `403 {"detail": "Risorsa non disponibile per questo utente e
+associazione."}`. Association-scoped sessions keep their own boundary, and requests admitted without an account (a document
+token, the renderer header) are decided by the view's permission classes as before.
+
+`document/subscription/<uid>` and `document/invoice/<uid>` apply it right after the row lookup, before the Document is
+created: the 403 leaves no row, renderer request or task (the views re-raise it instead of answering `500 {"exception"}`).
+The renderer fetches the `/view/` page with the caller's `Authorization`, so the page applies the same rule; the print tasks
+(`print_document_subscription`, `print_document_invoice`) call these routes with the header they were given. The athlete
+payment list, which generates missing receipts in-process, ignores this answer like the view's others. The fixture has 155
+cases (13 new): the athlete's own receipt and a later subscription of their associate are generated with their effects;
+another member's subscription or receipt (GET and POST, with or without the receipt e-mail flag) and another athlete account
+get the 403; unknown ids keep their answers. RED `secdoc-red-r1`: Django 155/155, Go 500 on
+`document-render-subscription-athlete-other` with the check switched off. GREEN `secdoc-versioned-final` (after merging the
+base; `secdoc-versioned-r1` before): 155/155 on the four transports with exact effects. Mutations `secdoc-mutation-r1` (every
+subscription counted as the member's) and `secdoc-mutation-r2` (every invoice) CAUGHT. The other routes are unchanged.
+
+Re-run after the change (`secdoc-rerun-r1`, native Django and Go): payment-reads 276/276 (the athlete receipts generated
+in-process), invoice-sync-print 70/70, subscription-sign 47/47 and subscription-import-upload 29/29. The print consumer
+harness (`celery-consumer-print-process-secdoc-r1`) passes every scenario.

@@ -9808,10 +9808,10 @@
         ],
         "request": "No body fields read.",
         "response": "200 {'data': PaymentSerializer}.",
-        "errors": "400 uuid list; 401; 403 registry, scoped guard; 405; 500 missing installment or subscription.",
+        "errors": "400 uuid list; 401; 403 registry, scoped guard, User not allowed (athletes: a subscription of another user or none; others: no association or a course of another association); 405; 500 missing installment or subscription.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
-        "permissions": "association.courses.update (athlete view)",
-        "resource_scope": "Live group-aware installment resolved by id; the payment takes the course's association.",
+        "permissions": "association.courses.update (athlete view); the owner of the course's association, or the athlete whose user holds the course subscription's subscription",
+        "resource_scope": "Live group-aware installment resolved by id, of a course of the caller's association (athletes: of a subscription of their own user); the payment takes the course's association.",
         "side_effects": "Creates a payment for the installment amount and date and links it to the installment; audited.",
         "transaction": "Autocommit.",
         "execution_owner": "django"
@@ -9826,25 +9826,25 @@
         "docs/architecture/go-migration/course-enrolment.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 102/102; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-red2/results.json",
-          "receipt_sha256": "143cb5ea0fa290bfa46ba0bce30cf9e48728d6cfdee4b71303c189907a8fc525"
+          "result": "RED: Django 113/113; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-red/results.json",
+          "receipt_sha256": "a1d6f679734f0557109bef900ebc8aa96ff73b2fb2d082c91febd7987da5ffd9"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-green/results.json",
-          "receipt_sha256": "79e3d4c38cf7564edde1fbab4acbe5eea6b5a9c4dcef4587e13e49b934de0abe"
+          "result": "GREEN: 113/113 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-green/results.json",
+          "receipt_sha256": "3a8a2456760671dd3ccdfa2192d1b2ce80c8f35e6046646e9dbbc3b066928e11"
         },
         {
-          "revision": "committing change with quote cents rounded half down",
-          "result": "Mutation control: fails Go on course-enrolment-add-quote-amount-three-decimals (state.created-unmatched).",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-mutation-half-down/results.json",
-          "receipt_sha256": "95033c4d279f45347b7daad1856e9917e1037700bc2a5301ffa455600ee22f92"
+          "revision": "committing change without the athlete check of the installment payment (the subscription of the caller's user)",
+          "result": "Mutation control: fails Go on course-enrolment-make-payment-athlete-other-subscription (200 instead of 403); a second control (secaw-mutation-add) without the athlete check of course-overview add fails course-enrolment-overview-add-athlete-other-subscription.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-mutation/results.json",
+          "receipt_sha256": "fdb967848cd6faaca27e1513096bcd355ad95234a47671561ed09057fdb87363"
         }
       ],
       "notes": [
-        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add."
+        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add. secaw: course-overview add applies the owner check of course_overview_update (athletes enrol subscriptions of their own user, other callers need the association of the course) and the installment payment answers to the course's association or to the athlete of the course subscription; otherwise 403 User not allowed."
       ]
     },
     {
@@ -10105,25 +10105,25 @@
         "docs/architecture/go-migration/course-enrolment.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 102/102; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-red2/results.json",
-          "receipt_sha256": "143cb5ea0fa290bfa46ba0bce30cf9e48728d6cfdee4b71303c189907a8fc525"
+          "result": "RED: Django 113/113; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-red/results.json",
+          "receipt_sha256": "a1d6f679734f0557109bef900ebc8aa96ff73b2fb2d082c91febd7987da5ffd9"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-green/results.json",
-          "receipt_sha256": "79e3d4c38cf7564edde1fbab4acbe5eea6b5a9c4dcef4587e13e49b934de0abe"
+          "result": "GREEN: 113/113 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-green/results.json",
+          "receipt_sha256": "3a8a2456760671dd3ccdfa2192d1b2ce80c8f35e6046646e9dbbc3b066928e11"
         },
         {
-          "revision": "committing change with quote cents rounded half down",
-          "result": "Mutation control: fails Go on course-enrolment-add-quote-amount-three-decimals (state.created-unmatched).",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-mutation-half-down/results.json",
-          "receipt_sha256": "95033c4d279f45347b7daad1856e9917e1037700bc2a5301ffa455600ee22f92"
+          "revision": "committing change without the athlete check of the installment payment (the subscription of the caller's user)",
+          "result": "Mutation control: fails Go on course-enrolment-make-payment-athlete-other-subscription (200 instead of 403); a second control (secaw-mutation-add) without the athlete check of course-overview add fails course-enrolment-overview-add-athlete-other-subscription.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-mutation/results.json",
+          "receipt_sha256": "fdb967848cd6faaca27e1513096bcd355ad95234a47671561ed09057fdb87363"
         }
       ],
       "notes": [
-        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add."
+        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add. secaw: course-overview add applies the owner check of course_overview_update (athletes enrol subscriptions of their own user, other callers need the association of the course) and the installment payment answers to the course's association or to the athlete of the course subscription; otherwise 403 User not allowed."
       ]
     },
     {
@@ -11016,10 +11016,10 @@
         ],
         "request": "JSON object: optional one_fee_payment, multiple_quote {value}.",
         "response": "200 {'data': {'msg': 'associate added.', 'payment': {...}|null, 'course_subscription': CourseSubscriptionSerializer}}.",
-        "errors": "400 uuid list; 401; 403 registry, scoped guard, User not allowed (course of another association); 405; 500 missing course/subscription, existing live row, late failures.",
+        "errors": "400 uuid list; 401; 403 registry, scoped guard, User not allowed (athletes: a subscription of another user; others: no association or a course of another association); 405; 500 missing course/subscription, existing live row, late failures.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
-        "permissions": "association.courses.update (athlete view)",
-        "resource_scope": "Live group-aware course and subscription; the payments use the subscription's association.",
+        "permissions": "association.courses.update (athlete view); athletes enrol subscriptions of their own user, other callers need the association of the course",
+        "resource_scope": "Live group-aware course of the caller's association and subscription (athletes: a subscription of their own user); the payments use the subscription's association.",
         "side_effects": "Creates the course subscription, its one-fee/quote/fee payment or installments, and links the last positive payment; audited.",
         "transaction": "Autocommit: work saved before a late error stays.",
         "execution_owner": "django"
@@ -11034,25 +11034,25 @@
         "docs/architecture/go-migration/course-enrolment.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 102/102; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-red2/results.json",
-          "receipt_sha256": "143cb5ea0fa290bfa46ba0bce30cf9e48728d6cfdee4b71303c189907a8fc525"
+          "result": "RED: Django 113/113; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-red/results.json",
+          "receipt_sha256": "a1d6f679734f0557109bef900ebc8aa96ff73b2fb2d082c91febd7987da5ffd9"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-green/results.json",
-          "receipt_sha256": "79e3d4c38cf7564edde1fbab4acbe5eea6b5a9c4dcef4587e13e49b934de0abe"
+          "result": "GREEN: 113/113 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-green/results.json",
+          "receipt_sha256": "3a8a2456760671dd3ccdfa2192d1b2ce80c8f35e6046646e9dbbc3b066928e11"
         },
         {
-          "revision": "committing change with quote cents rounded half down",
-          "result": "Mutation control: fails Go on course-enrolment-add-quote-amount-three-decimals (state.created-unmatched).",
-          "artifact": "quality-reports/go-migration/course-enrolment-http-v2c-mutation-half-down/results.json",
-          "receipt_sha256": "95033c4d279f45347b7daad1856e9917e1037700bc2a5301ffa455600ee22f92"
+          "revision": "committing change without the athlete check of the installment payment (the subscription of the caller's user)",
+          "result": "Mutation control: fails Go on course-enrolment-make-payment-athlete-other-subscription (200 instead of 403); a second control (secaw-mutation-add) without the athlete check of course-overview add fails course-enrolment-overview-add-athlete-other-subscription.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-secaw-mutation/results.json",
+          "receipt_sha256": "fdb967848cd6faaca27e1513096bcd355ad95234a47671561ed09057fdb87363"
         }
       ],
       "notes": [
-        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add."
+        "Implementing: API v2: association-scoped impersonation sessions (scoped lookups, audit session context) and free-text quote amounts (float() grammar, 9-digit Decimal into numeric(9,2), the amount >= 0 constraint, the in-memory float for the link) are ported. Still refused: non-canonical X-Group-Id spellings, form bodies, non-object quote categories, the athlete membership prefill on overview add. secaw: course-overview add applies the owner check of course_overview_update (athletes enrol subscriptions of their own user, other callers need the association of the course) and the installment payment answers to the course's association or to the athlete of the course subscription; otherwise 403 User not allowed."
       ]
     },
     {
@@ -12479,7 +12479,10 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/pyhtml/unescape.go",
         "BE_GO/internal/pyhtml/entities.go",
-        "BE_GO/internal/pyhtml/unescape_test.go"
+        "BE_GO/internal/pyhtml/unescape_test.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, impersonation scope, tenant_scope and audit index",
@@ -12529,25 +12532,25 @@
         "docs/architecture/go-migration/documents-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 124/124; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/documents-writes-http-v2sub-red-r1/results.json",
-          "receipt_sha256": "b073032a20ed35f9f6c7877270b8d24b65b23d854569df96b83cf5458519e60a"
+          "result": "RED: Django 130/130; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "9048ea6a5f36294ea4cd69eaa8dbeb24de7a05925569482f83eb6816e54a03ff"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 124/124 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/documents-writes-http-v2sub-merged-r1/results.json",
-          "receipt_sha256": "14afa7b2db67fd53b14e305fa3ed1d90c6d818720358cbb7686380d8eb7fd067"
+          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "644b549ebf9e77b80f2f0484f73b15af5381c005c946dd0b3b852df87ba20124"
         },
         {
-          "revision": "committing change without the longest-prefix named reference match in pyhtml.Unescape",
-          "result": "Mutation control: fails Go on documents-writes-certificate-ampersand-references (audit.document-values).",
-          "artifact": "quality-reports/go-migration/documents-writes-http-v2sub-mutation-r1/results.json",
-          "receipt_sha256": "de3e97e553e7e4bb99d5be85b9114847d884e4d79f97876e6158d994764d752d"
+          "revision": "upload-document counting every subscription as the member's",
+          "result": "Mutation control: fails Go on documents-writes-upload-athlete-other-subscription (response.status).",
+          "artifact": "quality-reports/go-migration/documents-writes-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "c5d10dfa84fe8cf3a66dd87076b7ce716f43e4bc84a0487ebf1a9a34608c2b40"
         }
       ],
       "notes": [
-        "Implementing: Multipart filenames go through html.unescape (internal/pyhtml, CPython 3.13 table and numeric rules) instead of refusing any &."
+        "Implementing: Multipart filenames go through html.unescape (internal/pyhtml, CPython 3.13 table and numeric rules) instead of refusing any &. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -12581,7 +12584,10 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/pyhtml/unescape.go",
         "BE_GO/internal/pyhtml/entities.go",
-        "BE_GO/internal/pyhtml/unescape_test.go"
+        "BE_GO/internal/pyhtml/unescape_test.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, impersonation scope, tenant_scope and audit index",
@@ -12631,25 +12637,25 @@
         "docs/architecture/go-migration/documents-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 124/124; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/documents-writes-http-v2sub-red-r1/results.json",
-          "receipt_sha256": "b073032a20ed35f9f6c7877270b8d24b65b23d854569df96b83cf5458519e60a"
+          "result": "RED: Django 130/130; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "9048ea6a5f36294ea4cd69eaa8dbeb24de7a05925569482f83eb6816e54a03ff"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 124/124 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/documents-writes-http-v2sub-merged-r1/results.json",
-          "receipt_sha256": "14afa7b2db67fd53b14e305fa3ed1d90c6d818720358cbb7686380d8eb7fd067"
+          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "644b549ebf9e77b80f2f0484f73b15af5381c005c946dd0b3b852df87ba20124"
         },
         {
-          "revision": "committing change without the longest-prefix named reference match in pyhtml.Unescape",
-          "result": "Mutation control: fails Go on documents-writes-certificate-ampersand-references (audit.document-values).",
-          "artifact": "quality-reports/go-migration/documents-writes-http-v2sub-mutation-r1/results.json",
-          "receipt_sha256": "de3e97e553e7e4bb99d5be85b9114847d884e4d79f97876e6158d994764d752d"
+          "revision": "upload-document counting every subscription as the member's",
+          "result": "Mutation control: fails Go on documents-writes-upload-athlete-other-subscription (response.status).",
+          "artifact": "quality-reports/go-migration/documents-writes-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "c5d10dfa84fe8cf3a66dd87076b7ce716f43e4bc84a0487ebf1a9a34608c2b40"
         }
       ],
       "notes": [
-        "Implementing: Multipart filenames go through html.unescape (internal/pyhtml, CPython 3.13 table and numeric rules) instead of refusing any &."
+        "Implementing: Multipart filenames go through html.unescape (internal/pyhtml, CPython 3.13 table and numeric rules) instead of refusing any &. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -23688,7 +23694,8 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/service/statistic_today_lessons.go",
         "BE_GO/internal/domain/course_attendance.go",
-        "BE_GO/internal/repository/course_attendance.go"
+        "BE_GO/internal/repository/course_attendance.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "BE/application/views/statistic_views.py",
@@ -23723,7 +23730,7 @@
         "errors": "401 anonymous; 403 administrator without impersonation, registry \"Missing permission: association.dashboard.read\", owner session scoped to an athlete (association context); 405 for other methods (after permissions); 403 [\"error: forbidden.\"] for non-athletes; 500 {\"error\": \"An error occurred while loading the dashboard\"} for any exception inside the view.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "DRF IsAuthenticated; registry association.dashboard.read; role athlete.",
-        "resource_scope": "Impersonation association or the instance primary association; athlete family subscriptions (scoped_queryset boundary during association-scoped impersonation).",
+        "resource_scope": "Impersonation association or the instance primary association; athlete family subscriptions (user, associate user or a shared filled-in tax code) (scoped_queryset boundary during association-scoped impersonation).",
         "side_effects": "None.",
         "transaction": "Read only; no request transaction.",
         "execution_owner": "django"
@@ -23738,25 +23745,25 @@
         "docs/architecture/go-migration/statistic-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 86/86; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-red-r1/results.json",
-          "receipt_sha256": "aae34f8c4a0033a7759e07688e016291a9f42ae03a856017a7fedbd110c312a0"
+          "result": "RED: Django 87/87; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-red/results.json",
+          "receipt_sha256": "b0f165c98f246b95af2ed6170bb475b92bff276bd53dee0ceb0c87f806b3bcd1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-versioned-r1/results.json",
-          "receipt_sha256": "fa48de721917ca0730424df6d3a43ba7ee67cee1861ea4d0e63e48690d743399"
+          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-green/results.json",
+          "receipt_sha256": "ef543c89e83dccd5144511b0731ebf70890d0ac97b563bd7e6f4152a933a2e47"
         },
         {
-          "revision": "committing change with the todaylessons registry match case-sensitive (~ instead of ~*)",
-          "result": "Mutation control: fails Go on statistic-reads-todaylessons-instructor-collaborator (lessons length).",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-mutation-r1/results.json",
-          "receipt_sha256": "56bbe66a5f23284f3d13293afe2b3545e2313cdb3859ebf45a3aa60dcf031c44"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on statistic-reads-athlete-blank-tax-code (2 subscriptions instead of 1).",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-mutation/results.json",
+          "receipt_sha256": "d9bcd234d50220f7a7d016aa98311ebdbc141153e7ffed493b7d970cacc97c88"
         }
       ],
       "notes": [
-        "Implementing: Every dashboard widget is ported; todaylessons and expiredPayments added for the API v2 UI (see v2-refusals.md)."
+        "Implementing: Every dashboard widget is ported; todaylessons and expiredPayments added for the API v2 UI (see v2-refusals.md). secaw: the athlete dashboard matches family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -23786,7 +23793,8 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/service/statistic_today_lessons.go",
         "BE_GO/internal/domain/course_attendance.go",
-        "BE_GO/internal/repository/course_attendance.go"
+        "BE_GO/internal/repository/course_attendance.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "BE/application/views/statistic_views.py",
@@ -23836,25 +23844,25 @@
         "docs/architecture/go-migration/statistic-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 86/86; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-red-r1/results.json",
-          "receipt_sha256": "aae34f8c4a0033a7759e07688e016291a9f42ae03a856017a7fedbd110c312a0"
+          "result": "RED: Django 87/87; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-red/results.json",
+          "receipt_sha256": "b0f165c98f246b95af2ed6170bb475b92bff276bd53dee0ceb0c87f806b3bcd1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-versioned-r1/results.json",
-          "receipt_sha256": "fa48de721917ca0730424df6d3a43ba7ee67cee1861ea4d0e63e48690d743399"
+          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-green/results.json",
+          "receipt_sha256": "ef543c89e83dccd5144511b0731ebf70890d0ac97b563bd7e6f4152a933a2e47"
         },
         {
-          "revision": "committing change with the todaylessons registry match case-sensitive (~ instead of ~*)",
-          "result": "Mutation control: fails Go on statistic-reads-todaylessons-instructor-collaborator (lessons length).",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-mutation-r1/results.json",
-          "receipt_sha256": "56bbe66a5f23284f3d13293afe2b3545e2313cdb3859ebf45a3aa60dcf031c44"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on statistic-reads-athlete-blank-tax-code (2 subscriptions instead of 1).",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-mutation/results.json",
+          "receipt_sha256": "d9bcd234d50220f7a7d016aa98311ebdbc141153e7ffed493b7d970cacc97c88"
         }
       ],
       "notes": [
-        "Implementing: Every dashboard widget is ported; todaylessons and expiredPayments added for the API v2 UI (see v2-refusals.md)."
+        "Implementing: Every dashboard widget is ported; todaylessons and expiredPayments added for the API v2 UI (see v2-refusals.md). secaw: the athlete dashboard matches family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -23956,7 +23964,8 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/service/statistic_today_lessons.go",
         "BE_GO/internal/domain/course_attendance.go",
-        "BE_GO/internal/repository/course_attendance.go"
+        "BE_GO/internal/repository/course_attendance.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "BE/application/views/statistic_views.py",
@@ -24006,25 +24015,25 @@
         "docs/architecture/go-migration/statistic-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 86/86; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-red-r1/results.json",
-          "receipt_sha256": "aae34f8c4a0033a7759e07688e016291a9f42ae03a856017a7fedbd110c312a0"
+          "result": "RED: Django 87/87; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-red/results.json",
+          "receipt_sha256": "b0f165c98f246b95af2ed6170bb475b92bff276bd53dee0ceb0c87f806b3bcd1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-versioned-r1/results.json",
-          "receipt_sha256": "fa48de721917ca0730424df6d3a43ba7ee67cee1861ea4d0e63e48690d743399"
+          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-green/results.json",
+          "receipt_sha256": "ef543c89e83dccd5144511b0731ebf70890d0ac97b563bd7e6f4152a933a2e47"
         },
         {
-          "revision": "committing change with the todaylessons registry match case-sensitive (~ instead of ~*)",
-          "result": "Mutation control: fails Go on statistic-reads-todaylessons-instructor-collaborator (lessons length).",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-mutation-r1/results.json",
-          "receipt_sha256": "56bbe66a5f23284f3d13293afe2b3545e2313cdb3859ebf45a3aa60dcf031c44"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on statistic-reads-athlete-blank-tax-code (2 subscriptions instead of 1).",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-secaw-mutation/results.json",
+          "receipt_sha256": "d9bcd234d50220f7a7d016aa98311ebdbc141153e7ffed493b7d970cacc97c88"
         }
       ],
       "notes": [
-        "Implementing: Every dashboard widget is ported; todaylessons and expiredPayments added for the API v2 UI (see v2-refusals.md)."
+        "Implementing: Every dashboard widget is ported; todaylessons and expiredPayments added for the API v2 UI (see v2-refusals.md). secaw: the athlete dashboard matches family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -24884,7 +24893,9 @@
         "BE_GO/internal/domain/subscription_reads_athlete.go",
         "BE_GO/internal/dto/subscription_reads_athlete.go",
         "BE_GO/internal/repository/subscription_reads_athlete.go",
-        "BE_GO/internal/service/subscription_reads_athlete.go"
+        "BE_GO/internal/service/subscription_reads_athlete.go",
+        "BE_GO/internal/service/subscription_reads_export.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -24922,25 +24933,25 @@
         "docs/architecture/go-migration/subscription-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 261/261; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-red-r1/results.json",
-          "receipt_sha256": "ea7b9792b3cea7e2a10bcaff24abf3e12870f2bed980aa3dfe0fdf67bb83ecfd"
+          "result": "RED: Django 296/296; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-red/results.json",
+          "receipt_sha256": "be60f7b66e3646ca5b0ac99a857a022d4df50deb5377d60cd0189b3eb1f83006"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 261/261 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-versioned-r1/results.json",
-          "receipt_sha256": "0fbabbf4023881d8b5de7327855a466b27f1f1bd50140beecaed1ef558324170"
+          "result": "GREEN: 296/296 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-green/results.json",
+          "receipt_sha256": "def6e8375954c92e0a56547eaa1aae4e82aeb290e73f2c2a8ee08931bfa5bc21"
         },
         {
-          "revision": "committing change rendering the membership payment's nested invoice as null",
-          "result": "Mutation control: fails Go on subscription-reads-info-hyphenless-uuid (membership_payments[0].invoice).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-mutation-r1/results.json",
-          "receipt_sha256": "08451bc4746c053fda8d7f250b02241f478b05398484356d75fbb136973a4af8"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on subscription-reads-info-athlete-blank-tax-code-other-user (200 instead of 403).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-mutation/results.json",
+          "receipt_sha256": "f6b371ee1912dcf8fd6bdfc3a41915d750b777840f7ef7fd7baff85b9e78de83"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -25332,7 +25343,9 @@
         "BE_GO/internal/domain/subscription_reads_athlete.go",
         "BE_GO/internal/dto/subscription_reads_athlete.go",
         "BE_GO/internal/repository/subscription_reads_athlete.go",
-        "BE_GO/internal/service/subscription_reads_athlete.go"
+        "BE_GO/internal/service/subscription_reads_athlete.go",
+        "BE_GO/internal/service/subscription_reads_export.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -25355,7 +25368,7 @@
         "errors": "401; 403 administrator without impersonation or registry permission; 405 other methods; 400 malformed uid; 403 'Subscription not found.' / 'Sport association not found.' (athletes) or 'User not allowed.'; 404 {'msg': 'Subscription not found.'}; 500 owner without live association, subscription without associate.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.members.read; athlete view for association-scoped sessions.",
-        "resource_scope": "The group-aware subscription of the scoped association (athletes: their own and same tax code subscriptions).",
+        "resource_scope": "The group-aware subscription of the scoped association (athletes: their own subscriptions and those sharing a filled-in tax code with one of them).",
         "side_effects": "None in the ported paths (the Celery print task path is refused). Without document_pdf: print_document_subscription.delay(str(id), Authorization header) on the Celery broker.",
         "transaction": "Autocommit reads.",
         "execution_owner": "django"
@@ -25370,25 +25383,25 @@
         "docs/architecture/go-migration/subscription-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 261/261; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-red-r1/results.json",
-          "receipt_sha256": "ea7b9792b3cea7e2a10bcaff24abf3e12870f2bed980aa3dfe0fdf67bb83ecfd"
+          "result": "RED: Django 296/296; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-red/results.json",
+          "receipt_sha256": "be60f7b66e3646ca5b0ac99a857a022d4df50deb5377d60cd0189b3eb1f83006"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 261/261 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-versioned-r1/results.json",
-          "receipt_sha256": "0fbabbf4023881d8b5de7327855a466b27f1f1bd50140beecaed1ef558324170"
+          "result": "GREEN: 296/296 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-green/results.json",
+          "receipt_sha256": "def6e8375954c92e0a56547eaa1aae4e82aeb290e73f2c2a8ee08931bfa5bc21"
         },
         {
-          "revision": "committing change rendering the membership payment's nested invoice as null",
-          "result": "Mutation control: fails Go on subscription-reads-info-hyphenless-uuid (membership_payments[0].invoice).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-mutation-r1/results.json",
-          "receipt_sha256": "08451bc4746c053fda8d7f250b02241f478b05398484356d75fbb136973a4af8"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on subscription-reads-info-athlete-blank-tax-code-other-user (200 instead of 403).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-mutation/results.json",
+          "receipt_sha256": "f6b371ee1912dcf8fd6bdfc3a41915d750b777840f7ef7fd7baff85b9e78de83"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -25891,7 +25904,10 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/pyhtml/unescape.go",
         "BE_GO/internal/pyhtml/entities.go",
-        "BE_GO/internal/pyhtml/unescape_test.go"
+        "BE_GO/internal/pyhtml/unescape_test.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, impersonation scope, tenant_scope and audit index",
@@ -25940,25 +25956,25 @@
         "docs/architecture/go-migration/documents-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 124/124; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/documents-writes-http-v2sub-red-r1/results.json",
-          "receipt_sha256": "b073032a20ed35f9f6c7877270b8d24b65b23d854569df96b83cf5458519e60a"
+          "result": "RED: Django 130/130; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "9048ea6a5f36294ea4cd69eaa8dbeb24de7a05925569482f83eb6816e54a03ff"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 124/124 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/documents-writes-http-v2sub-merged-r1/results.json",
-          "receipt_sha256": "14afa7b2db67fd53b14e305fa3ed1d90c6d818720358cbb7686380d8eb7fd067"
+          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "644b549ebf9e77b80f2f0484f73b15af5381c005c946dd0b3b852df87ba20124"
         },
         {
-          "revision": "committing change without the longest-prefix named reference match in pyhtml.Unescape",
-          "result": "Mutation control: fails Go on documents-writes-certificate-ampersand-references (audit.document-values).",
-          "artifact": "quality-reports/go-migration/documents-writes-http-v2sub-mutation-r1/results.json",
-          "receipt_sha256": "de3e97e553e7e4bb99d5be85b9114847d884e4d79f97876e6158d994764d752d"
+          "revision": "upload-document counting every subscription as the member's",
+          "result": "Mutation control: fails Go on documents-writes-upload-athlete-other-subscription (response.status).",
+          "artifact": "quality-reports/go-migration/documents-writes-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "c5d10dfa84fe8cf3a66dd87076b7ce716f43e4bc84a0487ebf1a9a34608c2b40"
         }
       ],
       "notes": [
-        "Implementing: Multipart filenames go through html.unescape (internal/pyhtml, CPython 3.13 table and numeric rules) instead of refusing any &."
+        "Implementing: Multipart filenames go through html.unescape (internal/pyhtml, CPython 3.13 table and numeric rules) instead of refusing any &. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -26351,7 +26367,10 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/pyhtml/unescape.go",
         "BE_GO/internal/pyhtml/entities.go",
-        "BE_GO/internal/pyhtml/unescape_test.go"
+        "BE_GO/internal/pyhtml/unescape_test.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, impersonation scope, tenant_scope and audit index",
@@ -26382,10 +26401,10 @@
         ],
         "request": "JSON, form or multipart: document (base64), filename. Multipart filenames: html.unescape, basename, non-printable characters dropped.",
         "response": "200 {'mgs': 'file uploaded'}.",
-        "errors": "401; 403 admin, 'Missing permission: association.members.update', scoped resource; 405; 400 ['badly formed hexadecimal UUID string']; 500 unknown subscription; 400 JSON parse; 500 non-dict body; 400 {'exception': 'document key not present'}; after the Document exists: 500 non-str filename or bad base64, Django's 400 page for SuspiciousFileOperation.",
+        "errors": "401; 403 admin, 'Missing permission: association.members.update', scoped resource; 405; 400 ['badly formed hexadecimal UUID string']; 500 unknown subscription; 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account outside its own records (before the body is read); 400 JSON parse; 500 non-dict body; 400 {'exception': 'document key not present'}; after the Document exists: 500 non-str filename or bad base64, Django's 400 page for SuspiciousFileOperation.",
         "authentication": "DRF authentication (ScopedJWT); identity resolution and impersonation; collaborators act as the owner.",
-        "permissions": "IsAuthenticated; registry association.members.update.",
-        "resource_scope": "scoped_queryset(request, Subscription.objects) by id (group-aware; narrowed during association-scoped impersonation).",
+        "permissions": "IsAuthenticated; registry association.members.update; staff, superusers and the instance owner attach to every subscription, an athlete account that is neither a superuser nor the instance owner needs the record among those of its user, of the associates of its subscriptions, of associates whose account it is and of associates sharing a non-empty tax code with them (docmanager.access; base managers).",
+        "resource_scope": "scoped_queryset(request, Subscription.objects) by id (group-aware; narrowed during association-scoped impersonation). Outside a scoped session an athlete account is limited to the member's subscriptions.",
         "side_effects": "Document (uuid4 id/token, timezone.now()), then default_storage.save(<str(creation_date.timestamp())>/<id>/<filename>): validate_file_name, HeadObject (AWS_S3_FILE_OVERWRITE false), one PutObject under AWS_LOCATION with guess_type ContentType/ContentEncoding, CacheControl max-age=86400 and AWS_DEFAULT_ACL; Document create entry (actor.sport_association). SubscriptionFile create entry (subscription.sport_association).",
         "transaction": "None (autocommit): the Document stays when a later step fails.",
         "execution_owner": "django"
@@ -26400,25 +26419,25 @@
         "docs/architecture/go-migration/documents-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 124/124; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/documents-writes-http-v2sub-red-r1/results.json",
-          "receipt_sha256": "b073032a20ed35f9f6c7877270b8d24b65b23d854569df96b83cf5458519e60a"
+          "result": "RED: Django 130/130; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "9048ea6a5f36294ea4cd69eaa8dbeb24de7a05925569482f83eb6816e54a03ff"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 124/124 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/documents-writes-http-v2sub-merged-r1/results.json",
-          "receipt_sha256": "14afa7b2db67fd53b14e305fa3ed1d90c6d818720358cbb7686380d8eb7fd067"
+          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "644b549ebf9e77b80f2f0484f73b15af5381c005c946dd0b3b852df87ba20124"
         },
         {
-          "revision": "committing change without the longest-prefix named reference match in pyhtml.Unescape",
-          "result": "Mutation control: fails Go on documents-writes-certificate-ampersand-references (audit.document-values).",
-          "artifact": "quality-reports/go-migration/documents-writes-http-v2sub-mutation-r1/results.json",
-          "receipt_sha256": "de3e97e553e7e4bb99d5be85b9114847d884e4d79f97876e6158d994764d752d"
+          "revision": "upload-document counting every subscription as the member's",
+          "result": "Mutation control: fails Go on documents-writes-upload-athlete-other-subscription (response.status).",
+          "artifact": "quality-reports/go-migration/documents-writes-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "c5d10dfa84fe8cf3a66dd87076b7ce716f43e4bc84a0487ebf1a9a34608c2b40"
         }
       ],
       "notes": [
-        "Implementing: Multipart filenames go through html.unescape (internal/pyhtml, CPython 3.13 table and numeric rules) instead of refusing any &."
+        "Implementing: Multipart filenames go through html.unescape (internal/pyhtml, CPython 3.13 table and numeric rules) instead of refusing any &. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -26918,7 +26937,8 @@
         "BE_GO/internal/handler/subscription_renew.go",
         "BE_GO/internal/dto/testimonials.go",
         "BE_GO/cmd/server/main.go",
-        "BE_GO/internal/repository/subscription_create.go"
+        "BE_GO/internal/repository/subscription_create.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "subscription-create"
@@ -26953,25 +26973,25 @@
         "docs/architecture/go-migration/subscription-renew.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 74/74; Go 200 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub2-red-r3/results.json",
-          "receipt_sha256": "136ab6978ddf5573dee2dfcfff04351afe29c250965cdfffb27a9b2945c459e0"
+          "result": "RED: Django 75/75; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-red/results.json",
+          "receipt_sha256": "fc03e3f231560759687e792b4f923c0bf276c3f788c946cb2512a7bd36e6540d"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 74/74 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub2-versioned-r1/results.json",
-          "receipt_sha256": "fa9a9d81de83b2cb72ec78cd1bf5cf92af74a188d0721c80f8e08fdf95ea49ab"
+          "result": "GREEN: 75/75 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-green/results.json",
+          "receipt_sha256": "75e0cb5c8da351647e47e5b19bf2872a90ece08fba9daacf80538348b67319bc"
         },
         {
-          "revision": "committing change skipping the member account's renewal check",
-          "result": "Mutation control: fails Go on subscription-renew-renew-athlete-in-another-association (response.status 200); secsub2-mutation-r2 (the body's e-mail sets the account for every requester) fails subscription-renew-renew-athlete-keeps-the-account.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub2-mutation-r1/results.json",
-          "receipt_sha256": "bcbe01b5be349f6eaf87bad04bb64e132e0bef23f6c6fdd05ae6ac272bc2eda2"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on subscription-renew-renew-athlete-blank-tax-code-member (200 instead of 403).",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-mutation/results.json",
+          "receipt_sha256": "cfd9728777721cabe34e945e4b576ffccd2bc4ff55cf10457cbe3d063754b44e"
         }
       ],
       "notes": [
-        "Implementing: Renewals set only the association's own tags (Tags filtered by the new subscription's association); renewals with courses stay refused. secsub2: a member account renews its own subscriptions and those of its family, in the association they belong to (a subscription of the requester, or of a person sharing a tax code or a family with one of the requester's subscriptions, for the associate of the request; otherwise 403 User not allowed. before any write); data.user.email sets the account only for an association account; the certificate follows subscription-create with the member as requester. The runner also knows Family rows and requests without an actor (used by subscription-create's family cases)."
+        "Implementing: Renewals set only the association's own tags (Tags filtered by the new subscription's association); renewals with courses stay refused. secsub2: a member account renews its own subscriptions and those of its family, in the association they belong to (a subscription of the requester, or of a person sharing a tax code or a family with one of the requester's subscriptions, for the associate of the request; otherwise 403 User not allowed. before any write); data.user.email sets the account only for an association account; the certificate follows subscription-create with the member as requester. The runner also knows Family rows and requests without an actor (used by subscription-create's family cases). secaw: the member renewal check matches persons by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -27471,10 +27491,17 @@
       "status": "implementing",
       "go": [
         "BE_GO/internal/domain/subscription_reads.go",
+        "BE_GO/internal/dto/subscription_reads.go",
         "BE_GO/internal/repository/subscription_reads.go",
         "BE_GO/internal/service/subscription_reads.go",
+        "BE_GO/internal/handler/subscription_reads.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/subscription_reads_athlete.go",
+        "BE_GO/internal/dto/subscription_reads_athlete.go",
+        "BE_GO/internal/repository/subscription_reads_athlete.go",
+        "BE_GO/internal/service/subscription_reads_athlete.go",
         "BE_GO/internal/service/subscription_reads_export.go",
-        "BE_GO/internal/handler/subscription_reads.go"
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -27498,7 +27525,7 @@
         "errors": "400 POST body parse error; 401; 403 administrator without impersonation or registry permission; 405 other methods; 500 owner without live association, unknown field or ordering, malformed tag id, invalid int() values, missing or unknown POST format, export row without associate, POST format pdf (not ported); 404 Invalid page.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.members.read (GET and POST); athlete view for association-scoped sessions.",
-        "resource_scope": "Group-aware subscriptions of the scoped live association (unarchived), soft-deleted rows included; the field mode by the user's association.",
+        "resource_scope": "Group-aware subscriptions of the scoped live association (unarchived), soft-deleted rows included; the field mode by the user's association. Athletes: their own subscriptions and those sharing a filled-in tax code with one of them.",
         "side_effects": "None.",
         "transaction": "Autocommit reads.",
         "execution_owner": "django"
@@ -27513,25 +27540,25 @@
         "docs/architecture/go-migration/subscription-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 294/294; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2xlsx-red-r1/results.json",
-          "receipt_sha256": "d12ac4d7f46198f43d0dd7fc5ee7357de9150e1cd1da0bab47c560f0b7e39fd3"
+          "result": "RED: Django 296/296; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-red/results.json",
+          "receipt_sha256": "be60f7b66e3646ca5b0ac99a857a022d4df50deb5377d60cd0189b3eb1f83006"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 294/294 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2xlsx-green-final/results.json",
-          "receipt_sha256": "a03875e4bb8e846d9c7ec8ce39114ac6097f03ecfee3028a00d058b127a96136"
+          "result": "GREEN: 296/296 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-green/results.json",
+          "receipt_sha256": "def6e8375954c92e0a56547eaa1aae4e82aeb290e73f2c2a8ee08931bfa5bc21"
         },
         {
-          "revision": "'precedente' decided by an end date after today",
-          "result": "Mutation control: fails Go on subscription-reads-list-excel-owner (xl/worksheets/sheet1.xml differs)",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2xlsx-mutation-final/results.json",
-          "receipt_sha256": "586fc93778e99f3effb0726988aeebb39115d34fe15e5b18aa9202efd39aa296"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on subscription-reads-info-athlete-blank-tax-code-other-user (200 instead of 403).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-mutation/results.json",
+          "receipt_sha256": "f6b371ee1912dcf8fd6bdfc3a41915d750b777840f7ef7fd7baff85b9e78de83"
         }
       ],
       "notes": [
-        "Implementing: Implementing: POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -27560,7 +27587,9 @@
         "BE_GO/internal/domain/subscription_reads_athlete.go",
         "BE_GO/internal/dto/subscription_reads_athlete.go",
         "BE_GO/internal/repository/subscription_reads_athlete.go",
-        "BE_GO/internal/service/subscription_reads_athlete.go"
+        "BE_GO/internal/service/subscription_reads_athlete.go",
+        "BE_GO/internal/service/subscription_reads_export.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -27598,25 +27627,25 @@
         "docs/architecture/go-migration/subscription-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 261/261; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-red-r1/results.json",
-          "receipt_sha256": "ea7b9792b3cea7e2a10bcaff24abf3e12870f2bed980aa3dfe0fdf67bb83ecfd"
+          "result": "RED: Django 296/296; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-red/results.json",
+          "receipt_sha256": "be60f7b66e3646ca5b0ac99a857a022d4df50deb5377d60cd0189b3eb1f83006"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 261/261 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-versioned-r1/results.json",
-          "receipt_sha256": "0fbabbf4023881d8b5de7327855a466b27f1f1bd50140beecaed1ef558324170"
+          "result": "GREEN: 296/296 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-green/results.json",
+          "receipt_sha256": "def6e8375954c92e0a56547eaa1aae4e82aeb290e73f2c2a8ee08931bfa5bc21"
         },
         {
-          "revision": "committing change rendering the membership payment's nested invoice as null",
-          "result": "Mutation control: fails Go on subscription-reads-info-hyphenless-uuid (membership_payments[0].invoice).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-mutation-r1/results.json",
-          "receipt_sha256": "08451bc4746c053fda8d7f250b02241f478b05398484356d75fbb136973a4af8"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on subscription-reads-info-athlete-blank-tax-code-other-user (200 instead of 403).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-mutation/results.json",
+          "receipt_sha256": "f6b371ee1912dcf8fd6bdfc3a41915d750b777840f7ef7fd7baff85b9e78de83"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -27645,7 +27674,9 @@
         "BE_GO/internal/domain/subscription_reads_athlete.go",
         "BE_GO/internal/dto/subscription_reads_athlete.go",
         "BE_GO/internal/repository/subscription_reads_athlete.go",
-        "BE_GO/internal/service/subscription_reads_athlete.go"
+        "BE_GO/internal/service/subscription_reads_athlete.go",
+        "BE_GO/internal/service/subscription_reads_export.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -27683,25 +27714,25 @@
         "docs/architecture/go-migration/subscription-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 261/261; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-red-r1/results.json",
-          "receipt_sha256": "ea7b9792b3cea7e2a10bcaff24abf3e12870f2bed980aa3dfe0fdf67bb83ecfd"
+          "result": "RED: Django 296/296; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-red/results.json",
+          "receipt_sha256": "be60f7b66e3646ca5b0ac99a857a022d4df50deb5377d60cd0189b3eb1f83006"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 261/261 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-versioned-r1/results.json",
-          "receipt_sha256": "0fbabbf4023881d8b5de7327855a466b27f1f1bd50140beecaed1ef558324170"
+          "result": "GREEN: 296/296 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-green/results.json",
+          "receipt_sha256": "def6e8375954c92e0a56547eaa1aae4e82aeb290e73f2c2a8ee08931bfa5bc21"
         },
         {
-          "revision": "committing change rendering the membership payment's nested invoice as null",
-          "result": "Mutation control: fails Go on subscription-reads-info-hyphenless-uuid (membership_payments[0].invoice).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-mutation-r1/results.json",
-          "receipt_sha256": "08451bc4746c053fda8d7f250b02241f478b05398484356d75fbb136973a4af8"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on subscription-reads-info-athlete-blank-tax-code-other-user (200 instead of 403).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-secaw-mutation/results.json",
+          "receipt_sha256": "f6b371ee1912dcf8fd6bdfc3a41915d750b777840f7ef7fd7baff85b9e78de83"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused."
+        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused. POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md. secaw: the athlete list and subscription/info match family subscriptions by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -28149,7 +28180,8 @@
         "BE_GO/internal/handler/subscription_renew.go",
         "BE_GO/internal/dto/testimonials.go",
         "BE_GO/cmd/server/main.go",
-        "BE_GO/internal/repository/subscription_create.go"
+        "BE_GO/internal/repository/subscription_create.go",
+        "BE_GO/internal/repository/family_tax_codes.go"
       ],
       "dependencies": [
         "subscription-create"
@@ -28169,7 +28201,7 @@
         "errors": "400 {status: error, msg: str(e)} for Python exceptions (rolled back); 400 serializer errors / {msg, code: '400'}; 403 registry / admin session; 405; 409 duplicate; 500 athletes without sport_association; 500 refused inputs (not ported). A member account: 500 non-dict body or association, missing/malformed/unknown sport_association_id; 403 {detail: 'User not allowed.'} when the association has no renewable subscription of the requester for the associate.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated; registry association.members.create; collaborators act as the owner. A member account (not an association) renews only its own subscriptions and those of its family.",
-        "resource_scope": "request.user.sport_association; associates by id or by tax code within it; payments of the association; tags by id. For a member account: the association named by sport_association.sport_association_id, only when it has a subscription of the requester (or of a person sharing a tax code or a family with one of the requester's subscriptions) for associate_data.associate_id or tax_code. data.user.email is read only for an association account.",
+        "resource_scope": "request.user.sport_association; associates by id or by tax code within it; payments of the association; tags by id. For a member account: the association named by sport_association.sport_association_id, only when it has a subscription of the requester (or of a person sharing a filled-in tax code or a family with one of the requester's subscriptions) for associate_data.associate_id or tax_code. data.user.email is read only for an association account.",
         "side_effects": "create_subscription rows and audit; deleted unpaid payments (Payment delete cascade); subscription user update; tag links; after commit check_workflows_trigger(new_subscription), print_document_subscription, notification rows/Redis/Channels. The clean-up QuerySet.delete() also removes unpaid payments that have an invoice (the invoice stays).",
         "transaction": "One atomic transaction around create_subscription and the post-processing; on_commit work after it.",
         "execution_owner": "django"
@@ -28184,25 +28216,25 @@
         "docs/architecture/go-migration/subscription-renew.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 74/74; Go 200 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub2-red-r3/results.json",
-          "receipt_sha256": "136ab6978ddf5573dee2dfcfff04351afe29c250965cdfffb27a9b2945c459e0"
+          "result": "RED: Django 75/75; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-red/results.json",
+          "receipt_sha256": "fc03e3f231560759687e792b4f923c0bf276c3f788c946cb2512a7bd36e6540d"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 74/74 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub2-versioned-r1/results.json",
-          "receipt_sha256": "fa9a9d81de83b2cb72ec78cd1bf5cf92af74a188d0721c80f8e08fdf95ea49ab"
+          "result": "GREEN: 75/75 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-green/results.json",
+          "receipt_sha256": "75e0cb5c8da351647e47e5b19bf2872a90ece08fba9daacf80538348b67319bc"
         },
         {
-          "revision": "committing change skipping the member account's renewal check",
-          "result": "Mutation control: fails Go on subscription-renew-renew-athlete-in-another-association (response.status 200); secsub2-mutation-r2 (the body's e-mail sets the account for every requester) fails subscription-renew-renew-athlete-keeps-the-account.",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-secsub2-mutation-r1/results.json",
-          "receipt_sha256": "bcbe01b5be349f6eaf87bad04bb64e132e0bef23f6c6fdd05ae6ac272bc2eda2"
+          "revision": "committing change with familyTaxCodeFilled keeping only the IS NOT NULL test",
+          "result": "Mutation control: fails Go on subscription-renew-renew-athlete-blank-tax-code-member (200 instead of 403).",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-secaw-mutation/results.json",
+          "receipt_sha256": "cfd9728777721cabe34e945e4b576ffccd2bc4ff55cf10457cbe3d063754b44e"
         }
       ],
       "notes": [
-        "Implementing: Renewals set only the association's own tags (Tags filtered by the new subscription's association); renewals with courses stay refused. secsub2: a member account renews its own subscriptions and those of its family, in the association they belong to (a subscription of the requester, or of a person sharing a tax code or a family with one of the requester's subscriptions, for the associate of the request; otherwise 403 User not allowed. before any write); data.user.email sets the account only for an association account; the certificate follows subscription-create with the member as requester. The runner also knows Family rows and requests without an actor (used by subscription-create's family cases)."
+        "Implementing: Renewals set only the association's own tags (Tags filtered by the new subscription's association); renewals with courses stay refused. secsub2: a member account renews its own subscriptions and those of its family, in the association they belong to (a subscription of the requester, or of a person sharing a tax code or a family with one of the requester's subscriptions, for the associate of the request; otherwise 403 User not allowed. before any write); data.user.email sets the account only for an association account; the certificate follows subscription-create with the member as requester. The runner also knows Family rows and requests without an actor (used by subscription-create's family cases). secaw: the member renewal check matches persons by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go)."
       ]
     },
     {
@@ -32401,7 +32433,7 @@
         "target": "delete_document",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/docmanager_reads.go",
         "BE_GO/internal/repository/docmanager_reads.go",
@@ -32412,7 +32444,10 @@
         "BE_GO/pkg/pymime/pymime.go",
         "BE_GO/pkg/pymime/defaults.go",
         "BE_GO/pkg/storage/documentkey/stored.go",
-        "BE_GO/pkg/storage/documentobjects/s3.go"
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "PostgreSQL",
@@ -32446,21 +32481,28 @@
         "TESTS/adapters/django/docmanager_reads_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/docmanager-reads.md",
         {
-          "command": "python tools/go-migration/family.py run docmanager-reads --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/docmanager-reads-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "bdfb41cabe12199b6ba102860e895197cf96307431cd1850aace3118e2d5b2b5",
-          "scope": "HTTP family docmanager-reads: 110/110 cases on native Django and native Go, 110/110 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 155/155; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "268bd67777896dd52e9b48e8137b9f309b21c387fd402a5b89fc5777268adbc0"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 155/155 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "69cc9c1557ccbb1983b21370b15e7142f15896d42ce3546454ca0f987bdf5ea3"
+        },
+        {
+          "revision": "retrieve without the member check for athlete accounts",
+          "result": "Mutation control: fails Go on docmanager-reads-retrieve-orphan-export-athlete (response.status).",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "26976f707cda6a5e87ba60d688f32cfe9ba2d3e3b0e8a2ee043ff66a1befdd88"
         }
       ],
       "notes": [
-        "Implementing: retrieve streams stored documents from S3 with Django's lookups, download tokens and headers; delete is implemented up to its ownership walk. Refused with the 500 page: re-rendering a missing subscription/invoice PDF, provider errors other than a 404 HEAD, URL-like or newline-terminated filenames, non-standard JSON in signed payloads, and delete of an existing document by a requester with an association. The PDF rendering routes, their /view/ variants, subscription/preview and medical/certificate are not part of this family.",
-        "Implementing evidence: docs/architecture/go-migration/docmanager-reads.md",
-        "Implementing evidence: RED: Django 110/110; Go 404 on the first case. (quality-reports/go-migration/docmanager-reads-http-native-r2/results.json)",
-        "Implementing evidence: GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact streamed bytes and headers. (quality-reports/go-migration/docmanager-reads-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on docmanager-reads-retrieve-owner-by-deleted-invoice (200 instead of 404). (quality-reports/go-migration/docmanager-reads-http-mutation-deleted-invoice/results.json)"
+        "Implementing: retrieve streams stored documents from S3 with Django's lookups, download tokens and headers; delete is implemented up to its ownership walk. Refused with the 500 page: re-rendering a missing subscription/invoice PDF, provider errors other than a 404 HEAD, URL-like or newline-terminated filenames, non-standard JSON in signed payloads, and delete of an existing document by a requester with an association. The PDF rendering routes, their /view/ variants, subscription/preview and medical/certificate are not part of this family. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -32478,7 +32520,7 @@
         "target": "document_compensation",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/document_render.go",
         "BE_GO/internal/repository/document_render.go",
@@ -32487,7 +32529,10 @@
         "BE_GO/internal/pdfrender/client.go",
         "BE_GO/internal/pdfrender/header.go",
         "BE_GO/cmd/server/document_render.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "BE/docmanager/views/printing_views.py",
@@ -32536,21 +32581,28 @@
         "TESTS/adapters/django/document_render_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/document-render.md",
         {
-          "command": "python tools/go-migration/family.py run document-render --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/document-render-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "7972df8942d92b6f554917b57ab4e5979be388e16383384af014ef8f81e1e4b1",
-          "scope": "HTTP family document-render: 141/141 cases on native Django and native Go, 141/141 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 155/155; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "cc0f61f589746e07125972638f4bbbbd742548ac72d53f1928e4052d923a07f3"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 155/155 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "e5cf2503ecf56ff69febdc867b787ad29283609df5548ed90309545e79ab7f66"
+        },
+        {
+          "revision": "the subscription PDF counting every subscription as the member's (secdoc-mutation-r2: every invoice for the receipt)",
+          "result": "Mutation control: fails Go on document-render-subscription-athlete-other (response.status); secdoc-mutation-r2 fails on document-render-invoice-athlete-direct.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "8319bb1031694d9a6692e0875469cb761333ae2800765ad928175c14e463c820"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up).",
-        "Implementing evidence: docs/architecture/go-migration/document-render.md",
-        "Implementing evidence: RED: Django 141/141; Go 404 on the first case. (quality-reports/go-migration/document-render-http-native-r7/results.json)",
-        "Implementing evidence: GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages. (quality-reports/go-migration/document-render-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404). (quality-reports/go-migration/document-render-http-mutation-r1/results.json)"
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up). Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -32586,7 +32638,10 @@
         "BE_GO/internal/mentions/tree.go",
         "BE_GO/internal/pdfrender/client.go",
         "BE_GO/internal/repository/document_views.go",
-        "BE_GO/internal/service/document_views.go"
+        "BE_GO/internal/service/document_views.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "BE/application/impersonation_scope.py",
@@ -32638,25 +32693,25 @@
         "docs/architecture/go-migration/document-views.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 114/114; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/document-views-http-v2doc-red-r1/results.json",
-          "receipt_sha256": "92fa1453a8b64fde51f922e28241dce2ca1e6e19fae6f053a3b2b3c176df8a99"
+          "result": "RED: Django 123/123; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/document-views-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "d57eef82f07d5c113e93fda15ef3195d21f955b6d58fec5e10dbadae83a02312"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
-          "artifact": "quality-reports/go-migration/document-views-http-v2doc-versioned-r1/results.json",
-          "receipt_sha256": "9811ebc3648ad19909c3de98b6a8db99c6e26e53aead13b2934208f488aa9530"
+          "result": "GREEN: 123/123 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/document-views-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "e99b946d30a3cfdaa422f2986035accf08770ff5038b106ace2cb2c6cdeb367e"
         },
         {
-          "revision": "committing change preserving whitespace only for direct children of <pre>",
-          "result": "Mutation control: fails Go on document-views-subscription-fallback-template (html.body).",
-          "artifact": "quality-reports/go-migration/document-views-http-v2doc-mutation-r1/results.json",
-          "receipt_sha256": "ffece6e95cd5cf78df345a71e74a9b45b5882edef1fcad6a40d9719ac88bc55c"
+          "revision": "the subscription page counting every subscription as the member's",
+          "result": "Mutation control: fails Go on document-views-subscription-athlete-direct (response.status).",
+          "artifact": "quality-reports/go-migration/document-views-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "76f6922079890dcde6d5545c726c92b07ecf1dda958a2bb331d54e07b4d03c37"
         }
       ],
       "notes": [
-        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset with <pre> whitespace preservation, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset (comments, raw-text elements, textarea, mismatched tags), template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups."
+        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset with <pre> whitespace preservation, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset (comments, raw-text elements, textarea, mismatched tags), template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -32674,7 +32729,7 @@
         "target": "document_einvoice",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/document_render.go",
         "BE_GO/internal/repository/document_render.go",
@@ -32683,7 +32738,10 @@
         "BE_GO/internal/pdfrender/client.go",
         "BE_GO/internal/pdfrender/header.go",
         "BE_GO/cmd/server/document_render.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "BE/docmanager/views/printing_views.py",
@@ -32732,21 +32790,28 @@
         "TESTS/adapters/django/document_render_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/document-render.md",
         {
-          "command": "python tools/go-migration/family.py run document-render --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/document-render-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "7972df8942d92b6f554917b57ab4e5979be388e16383384af014ef8f81e1e4b1",
-          "scope": "HTTP family document-render: 141/141 cases on native Django and native Go, 141/141 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 155/155; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "cc0f61f589746e07125972638f4bbbbd742548ac72d53f1928e4052d923a07f3"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 155/155 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "e5cf2503ecf56ff69febdc867b787ad29283609df5548ed90309545e79ab7f66"
+        },
+        {
+          "revision": "the subscription PDF counting every subscription as the member's (secdoc-mutation-r2: every invoice for the receipt)",
+          "result": "Mutation control: fails Go on document-render-subscription-athlete-other (response.status); secdoc-mutation-r2 fails on document-render-invoice-athlete-direct.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "8319bb1031694d9a6692e0875469cb761333ae2800765ad928175c14e463c820"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up).",
-        "Implementing evidence: docs/architecture/go-migration/document-render.md",
-        "Implementing evidence: RED: Django 141/141; Go 404 on the first case. (quality-reports/go-migration/document-render-http-native-r7/results.json)",
-        "Implementing evidence: GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages. (quality-reports/go-migration/document-render-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404). (quality-reports/go-migration/document-render-http-mutation-r1/results.json)"
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up). Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -32764,7 +32829,7 @@
         "target": "document_einvoice_view",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/djtemplate/render.go",
         "BE_GO/internal/djtemplate/parse.go",
@@ -32791,7 +32856,10 @@
         "BE_GO/internal/repository/document_views.go",
         "BE_GO/internal/repository/document_render.go",
         "BE_GO/internal/handler/invoice_views.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "BE/docmanager/views/printing_views.py",
@@ -32840,21 +32908,28 @@
         "TESTS/adapters/django/invoice_views_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-views.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-views --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-views-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "87966a37473b2a0912eb539fcb3557ebe143f05bf03c1258ddbe1dd631db5f79",
-          "scope": "HTTP family invoice-views: 76/76 cases on native Django and native Go, 76/76 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 86/86; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-views-http-secdoc-red-r3/results.json",
+          "receipt_sha256": "8544a08b8172628a784f9272c181ef0d01e0d7bc128d2c37f229b14ccd58ae97"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/invoice-views-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "2719dc29789b309498b7de6a5a9cd766eefd50e011641e16412d26825dd51e2d"
+        },
+        {
+          "revision": "the receipt page counting every invoice as the member's",
+          "result": "Mutation control: fails Go on invoice-views-invoice-athlete-direct (response.status).",
+          "artifact": "quality-reports/go-migration/invoice-views-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "69b0cb8c235b28a88e8f1f6a09fafec0a3f0b5ebaebc7823c5a7e4f7f4865e82"
         }
       ],
       "notes": [
-        "Implementing: Both views render in Go with byte parity: document/invoice/<uid>/view/ builds the receipt context (OTHER description, course/carnet category name, meta payment categories with the float remainder, tutor, get_subscription and the first membership, the plan block, mentions, custom_data) for djtemplate; document/einvoice/<uid>/view/ renders generate_invoice_html through internal/fatturapa (a38 0.1.8 model, validation, Decimal cleaning and VAT summary rounding; golden-tested against a38 on 630 invoices). Refused before rendering (no writes): main tutor promotion, stored JSON outside the handled shapes, mention keys/markup and template inputs outside the document-views subset, FatturaPA shapes outside the proven subset (fatturapa.ErrUnsupported). invoice-customers/add and invoice/<uid>/update stay uncharacterized (see invoice-views.md, follow-up).",
-        "Implementing evidence: docs/architecture/go-migration/invoice-views.md",
-        "Implementing evidence: RED: Django 76/76; Go 401 on the first case. (quality-reports/go-migration/invoice-views-http-native-r4/results.json)",
-        "Implementing evidence: GREEN: 76/76 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/invoice-views-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-views-invoice-deleted-second-payment (the 500 page instead of the receipt). (quality-reports/go-migration/invoice-views-http-mutation-r1/results.json)"
+        "Implementing: Both views render in Go with byte parity: document/invoice/<uid>/view/ builds the receipt context (OTHER description, course/carnet category name, meta payment categories with the float remainder, tutor, get_subscription and the first membership, the plan block, mentions, custom_data) for djtemplate; document/einvoice/<uid>/view/ renders generate_invoice_html through internal/fatturapa (a38 0.1.8 model, validation, Decimal cleaning and VAT summary rounding; golden-tested against a38 on 630 invoices). Refused before rendering (no writes): main tutor promotion, stored JSON outside the handled shapes, mention keys/markup and template inputs outside the document-views subset, FatturaPA shapes outside the proven subset (fatturapa.ErrUnsupported). invoice-customers/add and invoice/<uid>/update stay uncharacterized (see invoice-views.md, follow-up). Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -32872,7 +32947,7 @@
         "target": "document_invoice",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/document_render.go",
         "BE_GO/internal/repository/document_render.go",
@@ -32881,7 +32956,10 @@
         "BE_GO/internal/pdfrender/client.go",
         "BE_GO/internal/pdfrender/header.go",
         "BE_GO/cmd/server/document_render.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "BE/docmanager/views/printing_views.py",
@@ -32915,10 +32993,10 @@
         ],
         "request": "uid; ?download; send_receipt_email from the query, else the urlencoded form ('true'/'True'/'1'); ?token; bypass Authorization",
         "response": "200 application/pdf (renderer bytes), Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
-        "errors": "400 DRF JSON parse error (body read when the query flag is falsy); 401; 403; 404 {exception: Invoice not found} (missing, deleted, other group); 500 {exception} for the payment get() (none/several), payment without date, invalid uid, renderer failures; 500 page for a ?token UUIDField rejects or that names two Documents",
+        "errors": "400 DRF JSON parse error (body read when the query flag is falsy); 401; 403; 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account outside its own records (after the invoice lookup, before any write); 404 {exception: Invoice not found} (missing, deleted, other group); 500 {exception} for the payment get() (none/several), payment without date, invalid uid, renderer failures; 500 page for a ?token UUIDField rejects or that names two Documents",
         "authentication": "DRF IsAuthenticated (JWT/session).",
-        "permissions": "IsAuthenticated | HasDocumentToken | HasBypassAuthorizationHeader. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid)",
-        "resource_scope": "scoped_queryset(Invoice.objects) live + group; scoped_queryset(Payment.objects).get(invoice=...) live + group",
+        "permissions": "IsAuthenticated | HasDocumentToken | HasBypassAuthorizationHeader. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid) By account: staff, superusers and the instance owner reach every invoice, an athlete account that is neither a superuser nor the instance owner needs the record among those of its user, of the associates of its subscriptions, of associates whose account it is and of associates sharing a non-empty tax code with them (docmanager.access; base managers).",
+        "resource_scope": "scoped_queryset(Invoice.objects) live + group; scoped_queryset(Payment.objects).get(invoice=...) live + group; outside a scoped session an athlete account is limited to the invoices of the member's payments",
         "side_effects": "Document.objects.create (audited, actor association index); one renderer POST (FastRender payload) to PUPPETEER_HOST:PORT/render; on a PDF: save_to_storage.delay(path, base64) then the row link (audited update) (Invoice.document_pdf, index direct); then send_mail_async.apply_async(kwargs) for the opted-in receipt to the payment associate's e-mail",
         "transaction": "Not atomic in Django: Document, links and created rows commit one by one; the renderer call and Celery publishes sit between them. Go: one short transaction per write in the same order, publishes after the Document commit.",
         "execution_owner": "django"
@@ -32930,21 +33008,28 @@
         "TESTS/adapters/django/document_render_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/document-render.md",
         {
-          "command": "python tools/go-migration/family.py run document-render --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/document-render-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "7972df8942d92b6f554917b57ab4e5979be388e16383384af014ef8f81e1e4b1",
-          "scope": "HTTP family document-render: 141/141 cases on native Django and native Go, 141/141 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 155/155; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "cc0f61f589746e07125972638f4bbbbd742548ac72d53f1928e4052d923a07f3"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 155/155 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "e5cf2503ecf56ff69febdc867b787ad29283609df5548ed90309545e79ab7f66"
+        },
+        {
+          "revision": "the subscription PDF counting every subscription as the member's (secdoc-mutation-r2: every invoice for the receipt)",
+          "result": "Mutation control: fails Go on document-render-subscription-athlete-other (response.status); secdoc-mutation-r2 fails on document-render-invoice-athlete-direct.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "8319bb1031694d9a6692e0875469cb761333ae2800765ad928175c14e463c820"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up).",
-        "Implementing evidence: docs/architecture/go-migration/document-render.md",
-        "Implementing evidence: RED: Django 141/141; Go 404 on the first case. (quality-reports/go-migration/document-render-http-native-r7/results.json)",
-        "Implementing evidence: GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages. (quality-reports/go-migration/document-render-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404). (quality-reports/go-migration/document-render-http-mutation-r1/results.json)"
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up). Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -32962,7 +33047,7 @@
         "target": "document_invoice_view",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/djtemplate/render.go",
         "BE_GO/internal/djtemplate/parse.go",
@@ -32989,7 +33074,10 @@
         "BE_GO/internal/repository/document_views.go",
         "BE_GO/internal/repository/document_render.go",
         "BE_GO/internal/handler/invoice_views.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "BE/docmanager/views/printing_views.py",
@@ -33023,10 +33111,10 @@
         ],
         "request": "Path uid; X-Group-Id (a value the UUID field rejects is ignored).",
         "response": "200 text/html invoice.html or invoice_classic.html (the association template) with the receipt context; request language.",
-        "errors": "401 DRF challenge without a session or a matching DOCUMENT_BYPASS_TOKEN; 403 admin without a session, collaborator 'No permission mapping', scoped reference denial; 405 other methods; the stable 500 page for unhandled exceptions and refused inputs (non-ASCII bypass header included). Missing/deleted/other-group invoice, none or two live payments, unknown payment type, invalid meta payment categories, a carnet subscription without a carnet, a course without a title in the courses list, a truthy non-dict custom_data: the 500 page.",
+        "errors": "401 DRF challenge without a session or a matching DOCUMENT_BYPASS_TOKEN; 403 admin without a session, collaborator 'No permission mapping', scoped reference denial; 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account outside its own records (after the invoice lookup); 405 other methods; the stable 500 page for unhandled exceptions and refused inputs (non-ASCII bypass header included). Missing/deleted/other-group invoice, none or two live payments, unknown payment type, invalid meta payment categories, a carnet subscription without a carnet, a course without a title in the courses list, a truthy non-dict custom_data: the 500 page.",
         "authentication": "DRF IsAuthenticated (JWT/session) | HasBypassAuthorizationHeader.",
-        "permissions": "IsAuthenticated | HasBypassAuthorizationHeader; no registry key (collaborators get the No permission mapping 403).",
-        "resource_scope": "scoped_queryset on Invoice and Payment (impersonation boundary), live and X-Group-Id aware; related rows through the base manager.",
+        "permissions": "IsAuthenticated | HasBypassAuthorizationHeader; no registry key (collaborators get the No permission mapping 403); by account: staff, superusers and the instance owner reach every invoice, an athlete account that is neither a superuser nor the instance owner needs the record among those of its user, of the associates of its subscriptions, of associates whose account it is and of associates sharing a non-empty tax code with them (docmanager.access; base managers).",
+        "resource_scope": "scoped_queryset on Invoice and Payment (impersonation boundary), live and X-Group-Id aware; related rows through the base manager. Outside a scoped session an athlete account is limited to the invoices of the member's payments.",
         "side_effects": "None (reads only).",
         "transaction": "None.",
         "execution_owner": "django"
@@ -33038,21 +33126,28 @@
         "TESTS/adapters/django/invoice_views_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-views.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-views --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-views-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "87966a37473b2a0912eb539fcb3557ebe143f05bf03c1258ddbe1dd631db5f79",
-          "scope": "HTTP family invoice-views: 76/76 cases on native Django and native Go, 76/76 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 86/86; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-views-http-secdoc-red-r3/results.json",
+          "receipt_sha256": "8544a08b8172628a784f9272c181ef0d01e0d7bc128d2c37f229b14ccd58ae97"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/invoice-views-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "2719dc29789b309498b7de6a5a9cd766eefd50e011641e16412d26825dd51e2d"
+        },
+        {
+          "revision": "the receipt page counting every invoice as the member's",
+          "result": "Mutation control: fails Go on invoice-views-invoice-athlete-direct (response.status).",
+          "artifact": "quality-reports/go-migration/invoice-views-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "69b0cb8c235b28a88e8f1f6a09fafec0a3f0b5ebaebc7823c5a7e4f7f4865e82"
         }
       ],
       "notes": [
-        "Implementing: Both views render in Go with byte parity: document/invoice/<uid>/view/ builds the receipt context (OTHER description, course/carnet category name, meta payment categories with the float remainder, tutor, get_subscription and the first membership, the plan block, mentions, custom_data) for djtemplate; document/einvoice/<uid>/view/ renders generate_invoice_html through internal/fatturapa (a38 0.1.8 model, validation, Decimal cleaning and VAT summary rounding; golden-tested against a38 on 630 invoices). Refused before rendering (no writes): main tutor promotion, stored JSON outside the handled shapes, mention keys/markup and template inputs outside the document-views subset, FatturaPA shapes outside the proven subset (fatturapa.ErrUnsupported). invoice-customers/add and invoice/<uid>/update stay uncharacterized (see invoice-views.md, follow-up).",
-        "Implementing evidence: docs/architecture/go-migration/invoice-views.md",
-        "Implementing evidence: RED: Django 76/76; Go 401 on the first case. (quality-reports/go-migration/invoice-views-http-native-r4/results.json)",
-        "Implementing evidence: GREEN: 76/76 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/invoice-views-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-views-invoice-deleted-second-payment (the 500 page instead of the receipt). (quality-reports/go-migration/invoice-views-http-mutation-r1/results.json)"
+        "Implementing: Both views render in Go with byte parity: document/invoice/<uid>/view/ builds the receipt context (OTHER description, course/carnet category name, meta payment categories with the float remainder, tutor, get_subscription and the first membership, the plan block, mentions, custom_data) for djtemplate; document/einvoice/<uid>/view/ renders generate_invoice_html through internal/fatturapa (a38 0.1.8 model, validation, Decimal cleaning and VAT summary rounding; golden-tested against a38 on 630 invoices). Refused before rendering (no writes): main tutor promotion, stored JSON outside the handled shapes, mention keys/markup and template inputs outside the document-views subset, FatturaPA shapes outside the proven subset (fatturapa.ErrUnsupported). invoice-customers/add and invoice/<uid>/update stay uncharacterized (see invoice-views.md, follow-up). Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -33070,7 +33165,7 @@
         "target": "document_medical_appointment",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/document_render.go",
         "BE_GO/internal/repository/document_render.go",
@@ -33079,7 +33174,10 @@
         "BE_GO/internal/pdfrender/client.go",
         "BE_GO/internal/pdfrender/header.go",
         "BE_GO/cmd/server/document_render.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "BE/docmanager/views/printing_views.py",
@@ -33128,21 +33226,28 @@
         "TESTS/adapters/django/document_render_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/document-render.md",
         {
-          "command": "python tools/go-migration/family.py run document-render --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/document-render-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "7972df8942d92b6f554917b57ab4e5979be388e16383384af014ef8f81e1e4b1",
-          "scope": "HTTP family document-render: 141/141 cases on native Django and native Go, 141/141 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 155/155; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "cc0f61f589746e07125972638f4bbbbd742548ac72d53f1928e4052d923a07f3"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 155/155 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "e5cf2503ecf56ff69febdc867b787ad29283609df5548ed90309545e79ab7f66"
+        },
+        {
+          "revision": "the subscription PDF counting every subscription as the member's (secdoc-mutation-r2: every invoice for the receipt)",
+          "result": "Mutation control: fails Go on document-render-subscription-athlete-other (response.status); secdoc-mutation-r2 fails on document-render-invoice-athlete-direct.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "8319bb1031694d9a6692e0875469cb761333ae2800765ad928175c14e463c820"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up).",
-        "Implementing evidence: docs/architecture/go-migration/document-render.md",
-        "Implementing evidence: RED: Django 141/141; Go 404 on the first case. (quality-reports/go-migration/document-render-http-native-r7/results.json)",
-        "Implementing evidence: GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages. (quality-reports/go-migration/document-render-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404). (quality-reports/go-migration/document-render-http-mutation-r1/results.json)"
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up). Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -33178,7 +33283,10 @@
         "BE_GO/internal/mentions/tree.go",
         "BE_GO/internal/pdfrender/client.go",
         "BE_GO/internal/repository/document_views.go",
-        "BE_GO/internal/service/document_views.go"
+        "BE_GO/internal/service/document_views.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "BE/application/impersonation_scope.py",
@@ -33230,25 +33338,25 @@
         "docs/architecture/go-migration/document-views.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 114/114; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/document-views-http-v2doc-red-r1/results.json",
-          "receipt_sha256": "92fa1453a8b64fde51f922e28241dce2ca1e6e19fae6f053a3b2b3c176df8a99"
+          "result": "RED: Django 123/123; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/document-views-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "d57eef82f07d5c113e93fda15ef3195d21f955b6d58fec5e10dbadae83a02312"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
-          "artifact": "quality-reports/go-migration/document-views-http-v2doc-versioned-r1/results.json",
-          "receipt_sha256": "9811ebc3648ad19909c3de98b6a8db99c6e26e53aead13b2934208f488aa9530"
+          "result": "GREEN: 123/123 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/document-views-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "e99b946d30a3cfdaa422f2986035accf08770ff5038b106ace2cb2c6cdeb367e"
         },
         {
-          "revision": "committing change preserving whitespace only for direct children of <pre>",
-          "result": "Mutation control: fails Go on document-views-subscription-fallback-template (html.body).",
-          "artifact": "quality-reports/go-migration/document-views-http-v2doc-mutation-r1/results.json",
-          "receipt_sha256": "ffece6e95cd5cf78df345a71e74a9b45b5882edef1fcad6a40d9719ac88bc55c"
+          "revision": "the subscription page counting every subscription as the member's",
+          "result": "Mutation control: fails Go on document-views-subscription-athlete-direct (response.status).",
+          "artifact": "quality-reports/go-migration/document-views-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "76f6922079890dcde6d5545c726c92b07ecf1dda958a2bb331d54e07b4d03c37"
         }
       ],
       "notes": [
-        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset with <pre> whitespace preservation, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset (comments, raw-text elements, textarea, mismatched tags), template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups."
+        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset with <pre> whitespace preservation, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset (comments, raw-text elements, textarea, mismatched tags), template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -33282,7 +33390,10 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/pyhtml/unescape.go",
         "BE_GO/internal/pyhtml/entities.go",
-        "BE_GO/internal/pyhtml/unescape_test.go"
+        "BE_GO/internal/pyhtml/unescape_test.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, impersonation scope, tenant_scope and audit index",
@@ -33331,25 +33442,25 @@
         "docs/architecture/go-migration/documents-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 124/124; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/documents-writes-http-v2sub-red-r1/results.json",
-          "receipt_sha256": "b073032a20ed35f9f6c7877270b8d24b65b23d854569df96b83cf5458519e60a"
+          "result": "RED: Django 130/130; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "9048ea6a5f36294ea4cd69eaa8dbeb24de7a05925569482f83eb6816e54a03ff"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 124/124 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/documents-writes-http-v2sub-merged-r1/results.json",
-          "receipt_sha256": "14afa7b2db67fd53b14e305fa3ed1d90c6d818720358cbb7686380d8eb7fd067"
+          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "644b549ebf9e77b80f2f0484f73b15af5381c005c946dd0b3b852df87ba20124"
         },
         {
-          "revision": "committing change without the longest-prefix named reference match in pyhtml.Unescape",
-          "result": "Mutation control: fails Go on documents-writes-certificate-ampersand-references (audit.document-values).",
-          "artifact": "quality-reports/go-migration/documents-writes-http-v2sub-mutation-r1/results.json",
-          "receipt_sha256": "de3e97e553e7e4bb99d5be85b9114847d884e4d79f97876e6158d994764d752d"
+          "revision": "upload-document counting every subscription as the member's",
+          "result": "Mutation control: fails Go on documents-writes-upload-athlete-other-subscription (response.status).",
+          "artifact": "quality-reports/go-migration/documents-writes-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "c5d10dfa84fe8cf3a66dd87076b7ce716f43e4bc84a0487ebf1a9a34608c2b40"
         }
       ],
       "notes": [
-        "Implementing: Multipart filenames go through html.unescape (internal/pyhtml, CPython 3.13 table and numeric rules) instead of refusing any &."
+        "Implementing: Multipart filenames go through html.unescape (internal/pyhtml, CPython 3.13 table and numeric rules) instead of refusing any &. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -33367,7 +33478,7 @@
         "target": "retrieve_document",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/docmanager_reads.go",
         "BE_GO/internal/repository/docmanager_reads.go",
@@ -33378,7 +33489,10 @@
         "BE_GO/pkg/pymime/pymime.go",
         "BE_GO/pkg/pymime/defaults.go",
         "BE_GO/pkg/storage/documentkey/stored.go",
-        "BE_GO/pkg/storage/documentobjects/s3.go"
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "PostgreSQL",
@@ -33397,10 +33511,10 @@
         ],
         "request": "Path uid (Python uuid.UUID grammar). Query: download ('false' selects view_file; any other value or none selects download_file, attachment when non-empty), token (a JWT or the Document's UUID token), download_token (django.core.signing, salt docmanager.association-export-download, max_age 3600). Headers: Authorization, Cookie BKN_AUTH, X-Group-Id, impersonation headers.",
         "response": "200 streamed object bytes with Content-Type from mimetypes.guess_type (else the object's, else application/octet-stream), Content-Length and Content-Encoding from the object, and Content-Disposition from content_disposition_header for download_file.",
-        "errors": "400 [ValueError text]; 401 {'error': 'Invalid token. Not Authorized.'} / {'error': 'Invalid download token.'} (no challenge); DRF 401 for an invalid bearer; 403 {'error': 'Not authorized to access this export.'}; 403 {'detail': 'Documento non disponibile per questa associazione.'}; 404 {'error': 'Document not found.'}; 500 {'exception': 'File not found'} / {'exception': \"Attempted access to '<name>' denied.\"}; 405; 500 page.",
+        "errors": "400 [ValueError text]; 401 {'error': 'Invalid token. Not Authorized.'} / {'error': 'Invalid download token.'} (no challenge); DRF 401 for an invalid bearer; 403 {'error': 'Not authorized to access this export.'}; 403 {'detail': 'Documento non disponibile per questa associazione.'}; 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account outside its own records (document reached by account); 404 {'error': 'Document not found.'}; 500 {'exception': 'File not found'} / {'exception': \"Attempted access to '<name>' denied.\"}; 405; 500 page.",
         "authentication": "DRF AllowAny with ScopedJWTAuthentication; the view recomputes request.user from the Authorization header, the BKN_AUTH cookie or ?token unless impersonating.",
-        "permissions": "No registry key (restricted collaborators denied by identity resolution); download tokens, document tokens or any authenticated user; export documents need the archive's association owner; association-scoped sessions need visible_documents.",
-        "resource_scope": "Document by id or token; related Subscription (group-aware), MedicalCertificate and Invoice (soft-delete, group-aware) ids; export archives.",
+        "permissions": "No registry key (restricted collaborators denied by identity resolution); download tokens and document tokens as before; by account: association accounts, collaborators, superusers and the instance owner reach every document, an athlete account that is neither a superuser nor the instance owner needs the record among those of its user, of the associates of its subscriptions, of associates whose account it is and of associates sharing a non-empty tax code with them (docmanager.access; base managers); export documents need the archive's association owner; association-scoped sessions need visible_documents.",
+        "resource_scope": "Document by id or token; related Subscription (group-aware), MedicalCertificate and Invoice (soft-delete, group-aware) ids; export archives. For athlete accounts: the PDF, medical certificate document and attached files of the member's subscriptions, the certificates of the user and the PDFs of the invoices of the member's payments.",
         "side_effects": "None (object storage is read with HEAD and GET).",
         "transaction": "None.",
         "execution_owner": "django"
@@ -33412,21 +33526,28 @@
         "TESTS/adapters/django/docmanager_reads_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/docmanager-reads.md",
         {
-          "command": "python tools/go-migration/family.py run docmanager-reads --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/docmanager-reads-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "bdfb41cabe12199b6ba102860e895197cf96307431cd1850aace3118e2d5b2b5",
-          "scope": "HTTP family docmanager-reads: 110/110 cases on native Django and native Go, 110/110 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 155/155; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "268bd67777896dd52e9b48e8137b9f309b21c387fd402a5b89fc5777268adbc0"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 155/155 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "69cc9c1557ccbb1983b21370b15e7142f15896d42ce3546454ca0f987bdf5ea3"
+        },
+        {
+          "revision": "retrieve without the member check for athlete accounts",
+          "result": "Mutation control: fails Go on docmanager-reads-retrieve-orphan-export-athlete (response.status).",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "26976f707cda6a5e87ba60d688f32cfe9ba2d3e3b0e8a2ee043ff66a1befdd88"
         }
       ],
       "notes": [
-        "Implementing: retrieve streams stored documents from S3 with Django's lookups, download tokens and headers; delete is implemented up to its ownership walk. Refused with the 500 page: re-rendering a missing subscription/invoice PDF, provider errors other than a 404 HEAD, URL-like or newline-terminated filenames, non-standard JSON in signed payloads, and delete of an existing document by a requester with an association. The PDF rendering routes, their /view/ variants, subscription/preview and medical/certificate are not part of this family.",
-        "Implementing evidence: docs/architecture/go-migration/docmanager-reads.md",
-        "Implementing evidence: RED: Django 110/110; Go 404 on the first case. (quality-reports/go-migration/docmanager-reads-http-native-r2/results.json)",
-        "Implementing evidence: GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact streamed bytes and headers. (quality-reports/go-migration/docmanager-reads-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on docmanager-reads-retrieve-owner-by-deleted-invoice (200 instead of 404). (quality-reports/go-migration/docmanager-reads-http-mutation-deleted-invoice/results.json)"
+        "Implementing: retrieve streams stored documents from S3 with Django's lookups, download tokens and headers; delete is implemented up to its ownership walk. Refused with the 500 page: re-rendering a missing subscription/invoice PDF, provider errors other than a 404 HEAD, URL-like or newline-terminated filenames, non-standard JSON in signed payloads, and delete of an existing document by a requester with an association. The PDF rendering routes, their /view/ variants, subscription/preview and medical/certificate are not part of this family. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -33444,7 +33565,7 @@
         "target": "document_subscription",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/document_render.go",
         "BE_GO/internal/repository/document_render.go",
@@ -33453,7 +33574,10 @@
         "BE_GO/internal/pdfrender/client.go",
         "BE_GO/internal/pdfrender/header.go",
         "BE_GO/cmd/server/document_render.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "BE/docmanager/views/printing_views.py",
@@ -33487,10 +33611,10 @@
         ],
         "request": "uid path; ?download (truthy: attachment); body ignored; X-Group-Id",
         "response": "200 application/pdf (renderer bytes), Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
-        "errors": "401 anonymous/invalid bearer (challenge); 403 admin without session, registry, scoped guard; 405; 500 {exception} for a missing row, a uid UUIDField rejects (Python repr list), no associate, renderer failures (500 {\"exception\": \"PDF rendering failed: Renderer returned HTTP <n>: <text[:500]>\"} or \"... invalid PDF data (content-type: <v>)\" with the Document kept)",
+        "errors": "401 anonymous/invalid bearer (challenge); 403 admin without session, registry, scoped guard; 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account outside its own records (before any write); 405; 500 {exception} for a missing row, a uid UUIDField rejects (Python repr list), no associate, renderer failures (500 {\"exception\": \"PDF rendering failed: Renderer returned HTTP <n>: <text[:500]>\"} or \"... invalid PDF data (content-type: <v>)\" with the Document kept)",
         "authentication": "DRF IsAuthenticated (JWT/session).",
-        "permissions": "IsAuthenticated. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid)",
-        "resource_scope": "scoped_queryset(Subscription.objects) (group-aware; impersonation boundary with the athlete family scope); otherwise resolves the row by id",
+        "permissions": "IsAuthenticated. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid) By account: staff, superusers and the instance owner reach every subscription, an athlete account that is neither a superuser nor the instance owner needs the record among those of its user, of the associates of its subscriptions, of associates whose account it is and of associates sharing a non-empty tax code with them (docmanager.access; base managers).",
+        "resource_scope": "scoped_queryset(Subscription.objects) (group-aware; impersonation boundary with the athlete family scope); otherwise resolves the row by id; outside a scoped session an athlete account is limited to the member's subscriptions",
         "side_effects": "Document.objects.create (audited, actor association index); one renderer POST (FastRender payload) to PUPPETEER_HOST:PORT/render; on a PDF: save_to_storage.delay(path, base64) then the row link (audited update) (Subscription.document_pdf, save(update_fields=['document_pdf']), index direct)",
         "transaction": "Not atomic in Django: Document, links and created rows commit one by one; the renderer call and Celery publishes sit between them. Go: one short transaction per write in the same order, publishes after the Document commit.",
         "execution_owner": "django"
@@ -33502,21 +33626,28 @@
         "TESTS/adapters/django/document_render_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/document-render.md",
         {
-          "command": "python tools/go-migration/family.py run document-render --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/document-render-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "7972df8942d92b6f554917b57ab4e5979be388e16383384af014ef8f81e1e4b1",
-          "scope": "HTTP family document-render: 141/141 cases on native Django and native Go, 141/141 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 155/155; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "cc0f61f589746e07125972638f4bbbbd742548ac72d53f1928e4052d923a07f3"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 155/155 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "e5cf2503ecf56ff69febdc867b787ad29283609df5548ed90309545e79ab7f66"
+        },
+        {
+          "revision": "the subscription PDF counting every subscription as the member's (secdoc-mutation-r2: every invoice for the receipt)",
+          "result": "Mutation control: fails Go on document-render-subscription-athlete-other (response.status); secdoc-mutation-r2 fails on document-render-invoice-athlete-direct.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "8319bb1031694d9a6692e0875469cb761333ae2800765ad928175c14e463c820"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up).",
-        "Implementing evidence: docs/architecture/go-migration/document-render.md",
-        "Implementing evidence: RED: Django 141/141; Go 404 on the first case. (quality-reports/go-migration/document-render-http-native-r7/results.json)",
-        "Implementing evidence: GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages. (quality-reports/go-migration/document-render-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404). (quality-reports/go-migration/document-render-http-mutation-r1/results.json)"
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up). Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -33552,7 +33683,10 @@
         "BE_GO/internal/mentions/tree.go",
         "BE_GO/internal/pdfrender/client.go",
         "BE_GO/internal/repository/document_views.go",
-        "BE_GO/internal/service/document_views.go"
+        "BE_GO/internal/service/document_views.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "BE/application/impersonation_scope.py",
@@ -33586,10 +33720,10 @@
         ],
         "request": "Path uid (UUIDField); X-Group-Id.",
         "response": "200 text/html; charset=utf-8: subscription.html or subscription_classic.html in the request language.",
-        "errors": "401 without identity; identity 403s (admin without session, registry, scoped reference); 405; 500 page for missing/invalid rows, additional_sections not a list of dicts, template exceptions.",
+        "errors": "401 without identity; identity 403s (admin without session, registry, scoped reference); 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account outside its own records; 405; 500 page for missing/invalid rows, additional_sections not a list of dicts, template exceptions.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
-        "permissions": "IsAuthenticated.",
-        "resource_scope": "scoped_queryset(Subscription.objects) (group-aware, athlete family scope during impersonation).",
+        "permissions": "IsAuthenticated; staff, superusers and the instance owner reach every subscription, an athlete account that is neither a superuser nor the instance owner needs the record among those of its user, of the associates of its subscriptions, of associates whose account it is and of associates sharing a non-empty tax code with them (docmanager.access; base managers).",
+        "resource_scope": "scoped_queryset(Subscription.objects) (group-aware, athlete family scope during impersonation). Outside a scoped session an athlete account is limited to the member's subscriptions.",
         "side_effects": "None.",
         "transaction": "Autocommit reads.",
         "execution_owner": "django"
@@ -33604,25 +33738,25 @@
         "docs/architecture/go-migration/document-views.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 114/114; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/document-views-http-v2doc-red-r1/results.json",
-          "receipt_sha256": "92fa1453a8b64fde51f922e28241dce2ca1e6e19fae6f053a3b2b3c176df8a99"
+          "result": "RED: Django 123/123; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/document-views-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "d57eef82f07d5c113e93fda15ef3195d21f955b6d58fec5e10dbadae83a02312"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
-          "artifact": "quality-reports/go-migration/document-views-http-v2doc-versioned-r1/results.json",
-          "receipt_sha256": "9811ebc3648ad19909c3de98b6a8db99c6e26e53aead13b2934208f488aa9530"
+          "result": "GREEN: 123/123 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/document-views-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "e99b946d30a3cfdaa422f2986035accf08770ff5038b106ace2cb2c6cdeb367e"
         },
         {
-          "revision": "committing change preserving whitespace only for direct children of <pre>",
-          "result": "Mutation control: fails Go on document-views-subscription-fallback-template (html.body).",
-          "artifact": "quality-reports/go-migration/document-views-http-v2doc-mutation-r1/results.json",
-          "receipt_sha256": "ffece6e95cd5cf78df345a71e74a9b45b5882edef1fcad6a40d9719ac88bc55c"
+          "revision": "the subscription page counting every subscription as the member's",
+          "result": "Mutation control: fails Go on document-views-subscription-athlete-direct (response.status).",
+          "artifact": "quality-reports/go-migration/document-views-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "76f6922079890dcde6d5545c726c92b07ecf1dda958a2bb331d54e07b4d03c37"
         }
       ],
       "notes": [
-        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset with <pre> whitespace preservation, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset (comments, raw-text elements, textarea, mismatched tags), template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups."
+        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset with <pre> whitespace preservation, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset (comments, raw-text elements, textarea, mismatched tags), template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -33658,7 +33792,10 @@
         "BE_GO/internal/mentions/tree.go",
         "BE_GO/internal/pdfrender/client.go",
         "BE_GO/internal/repository/document_views.go",
-        "BE_GO/internal/service/document_views.go"
+        "BE_GO/internal/service/document_views.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "BE/application/impersonation_scope.py",
@@ -33710,25 +33847,25 @@
         "docs/architecture/go-migration/document-views.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 114/114; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/document-views-http-v2doc-red-r1/results.json",
-          "receipt_sha256": "92fa1453a8b64fde51f922e28241dce2ca1e6e19fae6f053a3b2b3c176df8a99"
+          "result": "RED: Django 123/123; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/document-views-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "d57eef82f07d5c113e93fda15ef3195d21f955b6d58fec5e10dbadae83a02312"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
-          "artifact": "quality-reports/go-migration/document-views-http-v2doc-versioned-r1/results.json",
-          "receipt_sha256": "9811ebc3648ad19909c3de98b6a8db99c6e26e53aead13b2934208f488aa9530"
+          "result": "GREEN: 123/123 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/document-views-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "e99b946d30a3cfdaa422f2986035accf08770ff5038b106ace2cb2c6cdeb367e"
         },
         {
-          "revision": "committing change preserving whitespace only for direct children of <pre>",
-          "result": "Mutation control: fails Go on document-views-subscription-fallback-template (html.body).",
-          "artifact": "quality-reports/go-migration/document-views-http-v2doc-mutation-r1/results.json",
-          "receipt_sha256": "ffece6e95cd5cf78df345a71e74a9b45b5882edef1fcad6a40d9719ac88bc55c"
+          "revision": "the subscription page counting every subscription as the member's",
+          "result": "Mutation control: fails Go on document-views-subscription-athlete-direct (response.status).",
+          "artifact": "quality-reports/go-migration/document-views-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "76f6922079890dcde6d5545c726c92b07ecf1dda958a2bb331d54e07b4d03c37"
         }
       ],
       "notes": [
-        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset with <pre> whitespace preservation, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset (comments, raw-text elements, textarea, mismatched tags), template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups."
+        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset with <pre> whitespace preservation, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset (comments, raw-text elements, textarea, mismatched tags), template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -33746,7 +33883,7 @@
         "target": "document_template",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/document_render.go",
         "BE_GO/internal/repository/document_render.go",
@@ -33755,7 +33892,10 @@
         "BE_GO/internal/pdfrender/client.go",
         "BE_GO/internal/pdfrender/header.go",
         "BE_GO/cmd/server/document_render.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "BE/docmanager/views/printing_views.py",
@@ -33804,21 +33944,28 @@
         "TESTS/adapters/django/document_render_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/document-render.md",
         {
-          "command": "python tools/go-migration/family.py run document-render --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/document-render-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "7972df8942d92b6f554917b57ab4e5979be388e16383384af014ef8f81e1e4b1",
-          "scope": "HTTP family document-render: 141/141 cases on native Django and native Go, 141/141 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 155/155; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "cc0f61f589746e07125972638f4bbbbd742548ac72d53f1928e4052d923a07f3"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 155/155 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "e5cf2503ecf56ff69febdc867b787ad29283609df5548ed90309545e79ab7f66"
+        },
+        {
+          "revision": "the subscription PDF counting every subscription as the member's (secdoc-mutation-r2: every invoice for the receipt)",
+          "result": "Mutation control: fails Go on document-render-subscription-athlete-other (response.status); secdoc-mutation-r2 fails on document-render-invoice-athlete-direct.",
+          "artifact": "quality-reports/go-migration/document-render-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "8319bb1031694d9a6692e0875469cb761333ae2800765ad928175c14e463c820"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up).",
-        "Implementing evidence: docs/architecture/go-migration/document-render.md",
-        "Implementing evidence: RED: Django 141/141; Go 404 on the first case. (quality-reports/go-migration/document-render-http-native-r7/results.json)",
-        "Implementing evidence: GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages. (quality-reports/go-migration/document-render-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404). (quality-reports/go-migration/document-render-http-mutation-r1/results.json)"
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up). Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {
@@ -33854,7 +34001,10 @@
         "BE_GO/internal/mentions/tree.go",
         "BE_GO/internal/pdfrender/client.go",
         "BE_GO/internal/repository/document_views.go",
-        "BE_GO/internal/service/document_views.go"
+        "BE_GO/internal/service/document_views.go",
+        "BE_GO/internal/domain/document_access.go",
+        "BE_GO/internal/repository/document_access.go",
+        "BE_GO/internal/service/document_access.go"
       ],
       "dependencies": [
         "BE/application/impersonation_scope.py",
@@ -33906,25 +34056,25 @@
         "docs/architecture/go-migration/document-views.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 114/114; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/document-views-http-v2doc-red-r1/results.json",
-          "receipt_sha256": "92fa1453a8b64fde51f922e28241dce2ca1e6e19fae6f053a3b2b3c176df8a99"
+          "result": "RED: Django 123/123; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/document-views-http-secdoc-red-r1/results.json",
+          "receipt_sha256": "d57eef82f07d5c113e93fda15ef3195d21f955b6d58fec5e10dbadae83a02312"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
-          "artifact": "quality-reports/go-migration/document-views-http-v2doc-versioned-r1/results.json",
-          "receipt_sha256": "9811ebc3648ad19909c3de98b6a8db99c6e26e53aead13b2934208f488aa9530"
+          "result": "GREEN: 123/123 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/document-views-http-secdoc-versioned-final/results.json",
+          "receipt_sha256": "e99b946d30a3cfdaa422f2986035accf08770ff5038b106ace2cb2c6cdeb367e"
         },
         {
-          "revision": "committing change preserving whitespace only for direct children of <pre>",
-          "result": "Mutation control: fails Go on document-views-subscription-fallback-template (html.body).",
-          "artifact": "quality-reports/go-migration/document-views-http-v2doc-mutation-r1/results.json",
-          "receipt_sha256": "ffece6e95cd5cf78df345a71e74a9b45b5882edef1fcad6a40d9719ac88bc55c"
+          "revision": "the subscription page counting every subscription as the member's",
+          "result": "Mutation control: fails Go on document-views-subscription-athlete-direct (response.status).",
+          "artifact": "quality-reports/go-migration/document-views-http-secdoc-mutation-r1/results.json",
+          "receipt_sha256": "76f6922079890dcde6d5545c726c92b07ecf1dda958a2bb331d54e07b4d03c37"
         }
       ],
       "notes": [
-        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset with <pre> whitespace preservation, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset (comments, raw-text elements, textarea, mismatched tags), template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups."
+        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset with <pre> whitespace preservation, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset (comments, raw-text elements, textarea, mismatched tags), template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together."
       ]
     },
     {

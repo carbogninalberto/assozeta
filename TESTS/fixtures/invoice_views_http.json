@@ -1896,6 +1896,16 @@
    "payment_expiry_date": "2026-04-30"
   }
  },
+ "payment_users": {
+  "nobody": "athlete"
+ },
+ "extra_users": {
+  "member": {
+   "id": "a1000000-0000-4000-8000-000000986090",
+   "username": "invoice-views-member",
+   "email": "invoice-views-member@example.test"
+  }
+ },
  "cases": [
   {
    "name": "invoice-views-invoice-anonymous",
@@ -2273,238 +2283,6 @@
   {
    "name": "invoice-views-invoice-full-collaborator",
    "actor": "full_collaborator",
-   "method": "GET",
-   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
-   "headers": {},
-   "status": 200,
-   "response": "<html>",
-   "content_language": "en",
-   "html": {
-    "template": "document/application/invoice.html",
-    "language": "en",
-    "context": {
-     "uid": {
-      "t": "str",
-      "v": "a1000000-0000-4000-8000-000000986201"
-     },
-     "extra_text_invoices": {
-      "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
-     },
-     "total_amount": {
-      "t": "decimal",
-      "v": "10.00"
-     },
-     "body_style": {
-      "t": "str",
-      "v": ""
-     },
-     "payment": {
-      "t": "obj",
-      "v": [
-       [
-        "payment_category",
-        {
-         "t": "obj",
-         "v": [
-          [
-           "name",
-           {
-            "t": "str",
-            "v": "Kit & Maglia"
-           }
-          ]
-         ]
-        }
-       ],
-       [
-        "description",
-        {
-         "t": "none"
-        }
-       ],
-       [
-        "associate",
-        {
-         "t": "none"
-        }
-       ],
-       [
-        "supplier",
-        {
-         "t": "obj",
-         "v": [
-          [
-           "name",
-           {
-            "t": "str",
-            "v": "ACME <srl>"
-           }
-          ],
-          [
-           "address",
-           {
-            "t": "str",
-            "v": "Via X 1"
-           }
-          ],
-          [
-           "tax_code",
-           {
-            "t": "str",
-            "v": "IT123"
-           }
-          ]
-         ]
-        }
-       ],
-       [
-        "payment_date",
-        {
-         "t": "datetime",
-         "v": "2026-03-04T10:00:00+00:00"
-        }
-       ],
-       [
-        "notes",
-        {
-         "t": "str",
-         "v": "Nota 1\nNota <2>"
-        }
-       ],
-       [
-        "subject",
-        {
-         "t": "int",
-         "v": 0
-        }
-       ]
-      ]
-     },
-     "course_name": {
-      "t": "none"
-     },
-     "enumerate_invoices": {
-      "t": "bool",
-      "v": true
-     },
-     "payment_categories": {
-      "t": "none"
-     },
-     "custom_data": {
-      "t": "none"
-     },
-     "stamp_free": {
-      "t": "bool",
-      "v": false
-     },
-     "invoice": {
-      "t": "obj",
-      "v": [
-       [
-        "sport_association",
-        {
-         "t": "obj",
-         "v": [
-          [
-           "logo",
-           {
-            "t": "str",
-            "v": "data:image/png;base64,QUJD"
-           }
-          ],
-          [
-           "denomination",
-           {
-            "t": "str",
-            "v": "ASD Alfa & Figli"
-           }
-          ]
-         ]
-        }
-       ],
-       [
-        "number",
-        {
-         "t": "int",
-         "v": 7
-        }
-       ],
-       [
-        "description",
-        {
-         "t": "str",
-         "v": "Ricevuta di pagamento di <b>ACME &lt;srl&gt;</b> con causale <b>Kit &amp; Maglia</b> per l'associazione <b>ASD Alfa &amp; Figli</b>."
-        }
-       ],
-       [
-        "activity_fee",
-        {
-         "t": "decimal",
-         "v": "10.00"
-        }
-       ],
-       [
-        "membership_fee",
-        {
-         "t": "decimal",
-         "v": "0.00"
-        }
-       ]
-      ]
-     },
-     "payment_method": {
-      "t": "str",
-      "v": "Contanti"
-     },
-     "sub": {
-      "t": "none"
-     },
-     "sub_memebership": {
-      "t": "none"
-     },
-     "sub_period": {
-      "t": "str",
-      "v": ""
-     },
-     "sub_membership_period": {
-      "t": "str",
-      "v": "2024"
-     },
-     "override_label": {
-      "t": "bool",
-      "v": true
-     },
-     "got_plan_name": {
-      "t": "str",
-      "v": "-"
-     },
-     "got_membership_plan_name": {
-      "t": "str",
-      "v": "-"
-     },
-     "got_plan": {
-      "t": "bool",
-      "v": false
-     },
-     "got_membership_plan": {
-      "t": "bool",
-      "v": false
-     },
-     "header": {
-      "t": "str",
-      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per  (tutore ) - $today</p>"
-     },
-     "footer": {
-      "t": "str",
-      "v": "<p>Corsi: </p>"
-     }
-    }
-   }
-  },
-  {
-   "name": "invoice-views-invoice-athlete-direct",
-   "actor": "athlete",
    "method": "GET",
    "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
    "headers": {},
@@ -4309,6 +4087,518 @@
    }
   },
   {
+   "name": "invoice-views-invoice-athlete-own-payment",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986203/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986203"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "1234.57"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": ""
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Rimborso <spese>"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento con causale <b>Rimborso &lt;spese&gt;</b> per l'associazione <b>ASD Alfa &amp; Figli</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "1234.56"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.01"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "POS"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per  (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-athlete-direct",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-athlete-instructor-receipt",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986202/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-athlete-other-associate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986205/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-athlete-without-payment",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986217/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-athlete-deleted",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986220/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-athlete-unknown",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986999/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-member-of-athlete",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986203/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-member-of-associate",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986204/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-bypass-of-athlete",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986203/view/",
+   "headers": {
+    "Authorization": "$bypass"
+   },
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986203"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "1234.57"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": ""
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Rimborso <spese>"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento con causale <b>Rimborso &lt;spese&gt;</b> per l'associazione <b>ASD Alfa &amp; Figli</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "1234.56"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.01"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "POS"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per  (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
    "name": "invoice-views-invoice-other-associate-selected-tutor",
    "actor": "owner",
    "method": "GET",
@@ -4730,6 +5020,18 @@
      }
     }
    }
+  },
+  {
+   "name": "invoice-views-invoice-athlete-other-associate-receipt",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986204/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "content_language": "en"
   },
   {
    "name": "invoice-views-invoice-subscription-plans",

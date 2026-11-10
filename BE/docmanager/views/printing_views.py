@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.utils import translation
 from django.views.decorators.clickjacking import xframe_options_exempt
 from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
 
 from rest_framework.decorators import permission_classes, api_view
 
@@ -31,6 +32,7 @@ from application.utils.printing import Puppeteer, PrintingService
 import base64
 
 from core.tasks import send_mail_async
+from docmanager.access import require_document_access
 from docmanager.models import Document
 from docmanager.views.utils import HasDocumentToken, HasBypassAuthorizationHeader, get_pdf_fields
 
@@ -48,6 +50,7 @@ def document_subscription(request, uid):
         # template = os.path.join(BASE_DIR, 'templates/document/application/subscription.html')
         logger.info('document_subscription {}'.format(uid))
         subscription = scoped_queryset(request, Subscription.objects).get(subscription_id=uid)
+        require_document_access(request, subscription)
         filename = '[{}] Modulo di Iscrizione {}.pdf'.format(
             subscription.sport_association.denomination,
             subscription.associate.get_full_name())
@@ -64,6 +67,8 @@ def document_subscription(request, uid):
             # earlier instance cannot overwrite concurrent registration edits.
             subscription.save(update_fields=['document_pdf'])
         return response
+    except PermissionDenied:
+        raise
     except TypeError as e:
         return Response({'exception': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Exception as e:
@@ -198,6 +203,7 @@ def document_subscription_view(request, uid):
 
     logger.info('document_subscription_view {}'.format(uid))
     subscription = scoped_queryset(request, Subscription.objects).get(subscription_id=uid)
+    require_document_access(request, subscription)
     payment_data = None
     if subscription.payment and subscription.payment.meta:
         try:
@@ -291,6 +297,7 @@ def document_invoice(request, uid):
         logger.info('document_invoice {}'.format(uid))
         try:
             invoice = scoped_queryset(request, Invoice.objects).get(invoice_id=uid)
+            require_document_access(request, invoice)
             invoice.payment = scoped_queryset(request, Payment.objects).get(invoice=invoice)
         except Invoice.DoesNotExist:
             return Response({'exception': 'Invoice not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -329,6 +336,8 @@ def document_invoice(request, uid):
                     }
                 )
         return response
+    except PermissionDenied:
+        raise
     except TypeError as e:
         return Response({'exception': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Exception as e:
@@ -344,6 +353,7 @@ def document_invoice_view(request, uid):
 
     logger.info('document_invoice_view {}'.format(uid))
     invoice = scoped_queryset(request, Invoice.objects).get(invoice_id=uid)
+    require_document_access(request, invoice)
     payment = scoped_queryset(request, Payment.objects).get(invoice=invoice)
     total_amount = invoice.activity_fee + invoice.membership_fee
     user = User.objects.filter(user_id=invoice.sport_association.user_id).first()
