@@ -45,11 +45,14 @@ every statement and `save()` commits on its own. In Django's order:
     `expires_at = now()` and `save()` (update entry with both fields).
 11. 201 with the serializer's data: `{subscription, expires_at, requester, recipient, token, status: 2}`.
 
+## Stored data
+
+A subscription with an empty `start_date` or `end_date` is ported: `Subscription.save()` fills them from the owner's season
+settings and the audit entry lists the changed dates next to the new user (`None` as the old value).
+
 ## Not ported
 
-Refused with the 500 page before the first write (the expiry update), decided read-only with the same lookups:
-- a subscription with an empty `start_date` or `end_date` when the request would reach `Subscription.save()` (it fills them from
-  the owner's season settings).
+Nothing is refused for lack of a port at present.
 
 Names and e-mail domains outside ASCII are ported: the username is `str.upper()` with Python's full case mapping (`ß` becomes
 `SS`) followed by `normalize_username`'s NFKC (`Ǆ` becomes `DŽ`), and the domain is `str.lower()` (`İ` becomes `i` + U+0307).
