@@ -232,7 +232,7 @@ member, a member row subscribed by the owner and a course with a registry in the
 PDF export of the list (19 more cases, 350 in all):
 
 - RED (`v2pdf-red-r1`): Django 350/350; Go answers 500 on `list-pdf-owner`.
-- GREEN (`v2pdf-versioned-r1`): 350/350 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, each document compared
+- GREEN (`v2pdf-versioned-r1` (and `v2pdf-versioned-r2` after merging `codex/go-backend-parity`)): 350/350 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, each document compared
   in decoded form (`TESTS/contracts/pdf.py`).
 - Mutation (`v2pdf-mutation-r1`): a document titled with the default title instead of the view's fails
   `list-pdf-type-athletes-title` (CAUGHT).

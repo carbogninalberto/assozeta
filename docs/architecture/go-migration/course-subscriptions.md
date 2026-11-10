@@ -190,7 +190,7 @@ PDF export of the list (13 more cases, 145 in all):
 
 - RED (`v2pdf-red-r2`): Django 145/145; Go 500 on `course-subscriptions-list-pdf-course` (the first authored expectation
   carried the per-tag columns and failed on Django).
-- GREEN (`v2pdf-versioned-r1`): 145/145 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, each document compared in
+- GREEN (`v2pdf-versioned-r1` (and `v2pdf-versioned-r2` after merging `codex/go-backend-parity`)): 145/145 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, each document compared in
   decoded form.
 - Mutation (`v2pdf-mutation-r1`): a document titled with the list title instead of the last carnet title fails
   `course-subscriptions-list-pdf-subscription-carnet-title` (CAUGHT).

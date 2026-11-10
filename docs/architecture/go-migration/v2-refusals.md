@@ -113,11 +113,11 @@ decoded document, byte for byte; dates within the request window) and the Go wri
 
 | Family | Route | Was refused | Evidence |
 |---|---|---|---|
-| printing-generate | `POST printing/generate` | `format: 'pdf'` (the modal's default; all eleven reports) | 113 cases; RED `v2pdf-red-r2` Django 113/113, Go 500; GREEN `v2pdf-versioned-r1` 4 transports; mutation `v2pdf-mutation-r1` (header row padding) CAUGHT |
-| subscription-reads | `POST subscription/list` | current-view print `format: pdf` | 350 cases; RED `v2pdf-red-r1` Django 350/350, Go 500; GREEN `v2pdf-versioned-r1` 4 transports; mutation `v2pdf-mutation-r1` (default title in the document) CAUGHT |
-| course-list | `POST course/list` | print `format: pdf` | 159 cases; RED `v2pdf-red-r2` Django 159/159, Go 500; GREEN `v2pdf-versioned-r1` 4 transports; mutation `v2pdf-mutation-r1` (Tag column dropped) CAUGHT |
-| course-subscriptions | `POST course-subscriptions/list` | export `format: pdf` | 145 cases; RED `v2pdf-red-r2` Django 145/145, Go 500; GREEN `v2pdf-versioned-r1` 4 transports; mutation `v2pdf-mutation-r1` (list title instead of the carnet title) CAUGHT |
-| balance-sheet | `POST balance-sheet` | export `format: pdf` of a draft | 86 cases; RED `v2pdf-red-r1` Django 86/86, Go 500; GREEN `v2pdf-versioned-r1` 4 transports; mutation `v2pdf-mutation-r1` (closing date one day late) CAUGHT |
+| printing-generate | `POST printing/generate` | `format: 'pdf'` (the modal's default; all eleven reports) | 113 cases; RED `v2pdf-red-r2` Django 113/113, Go 500; GREEN `v2pdf-versioned-r2` 4 transports; mutation `v2pdf-mutation-r1` (header row padding) CAUGHT |
+| subscription-reads | `POST subscription/list` | current-view print `format: pdf` | 350 cases; RED `v2pdf-red-r1` Django 350/350, Go 500; GREEN `v2pdf-versioned-r2` 4 transports; mutation `v2pdf-mutation-r1` (default title in the document) CAUGHT |
+| course-list | `POST course/list` | print `format: pdf` | 159 cases; RED `v2pdf-red-r2` Django 159/159, Go 500; GREEN `v2pdf-versioned-r2` 4 transports; mutation `v2pdf-mutation-r1` (Tag column dropped) CAUGHT |
+| course-subscriptions | `POST course-subscriptions/list` | export `format: pdf` | 145 cases; RED `v2pdf-red-r2` Django 145/145, Go 500; GREEN `v2pdf-versioned-r2` 4 transports; mutation `v2pdf-mutation-r1` (list title instead of the carnet title) CAUGHT |
+| balance-sheet | `POST balance-sheet` | export `format: pdf` of a draft | 89 cases; RED `v2pdf-red-r1` Django 86/86 (before the account-delete cases), Go 500; GREEN `v2pdf-versioned-r2` 4 transports; mutation `v2pdf-mutation-r1` (closing date one day late) CAUGHT |
 
 Still refused in the balance-sheet PDF (B: unusual data): a denomination or address with `&`, `<` or a soft hyphen, and a
 `data:image/jpeg` logo that is not a plain 8-bit JPEG (balance-sheet.md, "Not ported").

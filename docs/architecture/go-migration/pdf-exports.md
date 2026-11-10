@@ -89,6 +89,14 @@ with colour and grey JPEG logos, on several pages, with long, unbroken, empty an
 fonts in the header, and the closing line on a page of its own: 35 documents), and checks the digest of a document against
 reportlab's invariant one. `refusal_test.go` pins the refused inputs.
 
+## Evidence
+
+Five families answer their `pdf` format in Go (receipts `<family>-http-v2pdf-*`): printing-generate 113/113,
+subscription-reads 350/350, course-list 159/159, course-subscriptions 145/145 and balance-sheet 89/89 on native Django, native
+Go, Caddy `/api/v1` and `/api/v2` (`v2pdf-versioned-r2`, after merging `codex/go-backend-parity`), each with a RED run on Go's
+earlier refusal and a mutation control (see the family docs). `xlsxexport` gained `Value.PythonStr`; payment-export 87/87
+and misc-exports 70/70 re-run natively (`v2pdf-rerun-r1`).
+
 ## Not ported: the saved-report files
 
 `saved-reports/<pk>/run` with the tools `export_data`, `export_multi_sheet` and `get_attendance_matrix` stays refused

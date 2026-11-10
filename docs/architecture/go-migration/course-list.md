@@ -97,5 +97,5 @@ differs). Re-run for the shared `xlsxexport` change (duplicate column names), `v
 
 PDF export: 17 more cases (159 in all). RED `v2pdf-red-r2`: Django 159/159, Go answers 500 on `pdf-owner` (the first
 authored expectation carried the per-tag columns and failed on Django; they belong to the workbook only). GREEN
-`v2pdf-versioned-r1`: 159/159 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, each document compared in decoded
+`v2pdf-versioned-r1` (and `v2pdf-versioned-r2` after merging `codex/go-backend-parity`): 159/159 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, each document compared in decoded
 form. Mutation `v2pdf-mutation-r1`: a document without the Tag column fails `pdf-owner` (CAUGHT).

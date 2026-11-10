@@ -62,6 +62,6 @@ modules-responses, instructor-writes (native, green).
 PDF format: 22 more cases (113 in all; one document per report type, no rows, a control character, group, collaborator,
 foreign association, form body, `PDF` in capitals). RED `v2pdf-red-r2`: Django 113/113, Go 500 on
 `pdf-expiring-medical-certificates` (taken with the service's `pdf` branch as it was before the change, the first RED run
-having started after the branch was written). GREEN `v2pdf-versioned-r1`: 113/113 on native Django, native Go, Caddy
+having started after the branch was written). GREEN `v2pdf-versioned-r1` (and `v2pdf-versioned-r2` after merging `codex/go-backend-parity`): 113/113 on native Django, native Go, Caddy
 `/api/v1` and `/api/v2`, each document compared in decoded form. Mutation `v2pdf-mutation-r1`: a header row with 3 points
 below the text instead of 6 fails `pdf-expiring-medical-certificates` (CAUGHT).

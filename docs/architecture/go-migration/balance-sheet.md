@@ -130,9 +130,11 @@ the payments' delete receiver skipped leaves the instalment in place
 (`v2del-rerun-r1`): balance-account-writes 29/29, balance-transfer-writes 30/30,
 balance-accounts 25/25.
 
-PDF export: 9 more cases (86 in all; the seeded association has no logo and no
-address). RED `v2pdf-red-r1`: Django 86/86, Go 500 on `pdf-draft`. GREEN
-`v2pdf-versioned-r1`: 86/86 on native Django, native Go, Caddy `/api/v1` and
+PDF export: 9 more cases (89 in all with the account-delete ones; the seeded
+association has no logo and no address). RED `v2pdf-red-r1` (before the
+account-delete cases were merged): Django 86/86, Go 500 on `pdf-draft`. GREEN
+`v2pdf-versioned-r1` (86/86) and, after merging `codex/go-backend-parity`,
+`v2pdf-versioned-r2`: 89/89 on native Django, native Go, Caddy `/api/v1` and
 `/api/v2` with exact effects, each document compared in decoded form. Mutation
 `v2pdf-mutation-r1`: balances dated the first day of the next balance year
 instead of the day before fail `pdf-draft`. The logo, long and unbroken
