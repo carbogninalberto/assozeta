@@ -343,6 +343,7 @@ families. Receipts are `quality-reports/go-migration/<family>-http-v2restb-*`; e
 | modules-responses | `GET modules/<link>/info` | not a refusal: the public module page returns the fields the form needs, and a module of an association marked deleted answers `module not found` (Django changed first) | 149 cases; Django unit tests first; GREEN `v2restb-green-r2` 4 transports; mutation `v2restb-mutation-r2` (deleted check dropped) CAUGHT; modules-reads 81/81 re-run |
 | supplier-writes | `PATCH supplier/<uid>/update` (B) | body naming a new `supplier_id` (the copy `Model.save()` inserts, with its two audit entries) | 34 cases; GREEN `v2restb-green-r3` 4 transports; mutation `v2restb-mutation-r1` (create entry indexed from its changes) CAUGHT |
 | payment-reads | `GET payment/list`, `payment/stats`, `subscription/<uid>/payments` (B) | infinite search term | 280 cases; GREEN `v2restb-green-r3` 4 transports; mutation `v2restb-mutation-r1` (infinity searched as an amount) CAUGHT |
+| camps-core | `PATCH camps-and-retreats/<uid>/update` (B) | body naming a new `camps_and_retreats_id` (the copy `Model.save()` inserts, with its two audit entries) | 90 cases; GREEN `v2restb-green-r1` 4 transports; mutation `v2restb-mutation-r1` (pre-save entry indexed directly) CAUGHT |
 
 Left refused in these families, with the reason: payment-reads random ordering with the text search (rows repeat in random
 order: nothing to compare); supplier list orderings through relations (open-ended paths); supplier deletes with references
@@ -490,7 +491,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
 | POST camps-and-retreats/add, PATCH <uid>/update | multipart body with file parts | dto/camps_core_write.go:28 (`ErrCampsFormNotPorted`) | B | Add sends JSON (`campsAndRetreats/modals/AddModal.svelte:31-32`); camp update route not called by UI. Cost: cheap. |
-| PATCH camps-and-retreats/<uid>/update | changed primary key passing validation | service/camps_core.go:178 (`ErrCampsPrimaryKeyChange`) | B | Route not called by UI. Cost: medium. |
+| PATCH camps-and-retreats/<uid>/update | changed primary key passing validation | service/camps_core.go (`Update`) | ported (v2-rest-b) | The copy under the new key is inserted as `Model.save()` does (`camps-core.md`). |
 
 ### associates-draft.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
