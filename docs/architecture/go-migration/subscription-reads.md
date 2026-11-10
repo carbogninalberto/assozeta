@@ -60,7 +60,8 @@ personas-reads and payment-reads.
   with `int()`), SubscriptionFastBasicSerializer rows by `-creation_date`, `meta` `{}`; POST answers the same.
 
 - Athletes (after the field mode, for GET and POST, every other parameter ignored): `get_optimized_subscriptions`. Their
-  own subscriptions and those whose associate has a tax code of one of them (both group-aware, soft-deleted rows included),
+  own subscriptions and those whose associate has a filled-in tax code of one of them (`family_tax_codes`: null and blank
+  tax codes link nothing; both group-aware, soft-deleted rows included),
   by `-creation_date`, as SubscriptionSerializerAthleteOptimizedList keyed by index with `meta` `{}`: the model fields
   (`signature_storage_key` excluded, forward relations and tags as keys), `is_current`, `carnets` (any CarnetSubscription),
   the certificate id, document, token and expiry, the live course subscriptions with their course (`one_fee` as a float),
@@ -110,8 +111,8 @@ payments that have no associate.
 
 ## subscription/<uid>/info
 
-`is_valid_uuid` (400 list). Athletes: their own subscriptions and those of associates sharing a tax code with one of
-theirs (the raw path text is compared with the canonical ids: `403 Subscription not found.`), the subscription's live
+`is_valid_uuid` (400 list). Athletes: their own subscriptions and those of associates sharing a filled-in tax code
+(`family_tax_codes`) with one of theirs (the raw path text is compared with the canonical ids: `403 Subscription not found.`), the subscription's live
 association (`403 Sport association not found.`). Others: the scoped association. The group-aware subscription
 (`404 {'msg': 'Subscription not found.'}`, another association `403 User not allowed.`). Courses: CourseDetailSerializer
 of each live course subscription's course (deleted courses included; the tags and locations as keys) with its
@@ -188,3 +189,11 @@ three membership payments of one course subscription (invoiced, open, invoiced w
   GREEN `v2xlsx-green-final`: 294/294 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation
   `v2xlsx-mutation-final`: `precedente` decided by an end date after today fails Go on `list-excel-owner` (sheet1.xml
   differs).
+
+Family matching by filled-in tax codes (296 cases; the seed adds two members stored with a blank tax code, one of an
+athlete and one of the own association):
+
+- RED (`secaw-red`): Django 296/296; Go answers 200 on `info-athlete-blank-tax-code-other-user`.
+- GREEN (`secaw-green`): 296/296 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`secaw-mutation`): `familyTaxCodeFilled` without the blank filter fails `info-athlete-blank-tax-code-other-user`
+  (CAUGHT).

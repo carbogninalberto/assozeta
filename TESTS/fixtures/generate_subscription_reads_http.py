@@ -17,7 +17,7 @@ subscription_list (GET, POST):
   empty or null; ``values_list('associate__<field>').distinct()`` (unordered);
   an unknown field is a FieldError (500).
 - athletes: get_optimized_subscriptions (SubscriptionSerializerAthleteOptimizedList) of their own subscriptions and those
-  whose associate has one of their tax codes, by ``-creation_date``, ``meta`` {} (association-scoped athlete sessions are
+  whose associate has one of their filled-in tax codes (family_tax_codes), by ``-creation_date``, ``meta`` {} (association-scoped athlete sessions are
   not authored).
 - the scoped live association (500 without one); ``m`` absent: the
   unarchived subscriptions by ``-creation_date`` with the tag, age, hide,
@@ -304,6 +304,21 @@ MEMBERSHIP_INVOICE = {'id': uid('1a5ef00d'), 'created': '2026-02-02T09:00:00Z', 
 PAYMENTS['membership'] = payment('2025-09-08T09:00:00Z', amount='25.00', paid=True, paid_on='2025-09-08T10:00:00Z', subject=2,
                                  description='Abbonamento: Corso nuoto', invoice=True, instructor=True)
 MEMBERSHIPS = {'giulia': ['membership']}
+# Members stored with a blank tax code (fixed ids: the generated sequence above stays as it was). A blank tax code
+# is not a family link: the athlete's list and info keep to the athlete's own subscription.
+BLANK = IDS['blank_athlete'] = 'a1000000-0000-4000-8000-0000005ab597'
+EXTRA_USERS['blank_athlete'] = {'id': BLANK, 'username': 'subscription-reads-blank-athlete',
+                                'email': 'subscription-reads-blank-athlete@example.test'}
+USERS[BLANK] = {'first_name': '', 'last_name': '', 'email': EXTRA_USERS['blank_athlete']['email'], 'phone': None,
+                'username': EXTRA_USERS['blank_athlete']['username'], 'role': 2}
+ASSOCIATES['e_self'] = {**ASSOCIATE_DEFAULTS, 'first_name': 'Elsa', 'last_name': 'Vuota', 'sex': 'F', 'tax_code': '', 'born_date': '1988-08-08',
+                        'user': BLANK, 'association': FOREIGN, 'id': 'decafbad-ffff-4fff-8fff-ffffffffffaa', 'created': '2023-08-15T08:00:00Z'}
+ASSOCIATES['e_other'] = {**ASSOCIATE_DEFAULTS, 'first_name': 'Enea', 'last_name': 'Zeri', 'sex': 'M', 'tax_code': '', 'born_date': '1977-07-07',
+                         'id': 'decafbad-ffff-4fff-8fff-ffffffffffab', 'created': '2023-08-16T08:00:00Z'}
+SUBSCRIPTIONS['e_own'] = {**SUB_DEFAULTS, 'association': FOREIGN, 'user': BLANK, 'associate': 'e_self',
+                          'id': '5ab5c0de-ffff-4fff-8fff-ffffffffffaa', 'created': '2025-09-19T08:00:00Z'}
+SUBSCRIPTIONS['e_other'] = {**SUB_DEFAULTS, 'associate': 'e_other', 'id': '5ab5c0de-ffff-4fff-8fff-ffffffffffab',
+                            'created': '2025-09-20T08:00:00Z'}
 S = {label: row['id'] for label, row in SUBSCRIPTIONS.items()}
 A = {label: row['id'] for label, row in ASSOCIATES.items()}
 
@@ -1246,6 +1261,7 @@ add('info-foreign-owner', 'foreign_owner', info_path('abroad'), 200, info_body('
 add('info-athlete-own', 'athlete', info_path('athlete'), 200, info_body('athlete'))
 add('info-athlete-other-association', 'multi_athlete', info_path('athlete_foreign'), 200, info_body('athlete_foreign'))
 add('info-athlete-same-tax-code', 'multi_athlete', info_path('abroad'), 200, info_body('abroad'))
+add('info-athlete-blank-tax-code-other-user', 'blank_athlete', info_path('e_other'), 403, {'detail': 'Subscription not found.'})
 add('info-athlete-not-own', 'athlete', info_path('cur_mario'), 403, {'detail': 'Subscription not found.'})
 add('info-athlete-uppercase', 'athlete', f"/subscription/{S['athlete'].upper()}/info", 403, {'detail': 'Subscription not found.'})
 add('info-athlete-unknown', 'athlete', f'/subscription/{UNKNOWN}/info', 403, {'detail': 'Subscription not found.'})
@@ -1330,7 +1346,7 @@ def athlete_item(label, group=None):
 def athlete_list(user, group=None):
     """Own subscriptions and those whose associate has a tax code of them (group-aware), by -creation_date."""
     own = [k for k, r in SUBSCRIPTIONS.items() if r['user'] == user and visible(r, group)]
-    taxes = {ASSOCIATES[SUBSCRIPTIONS[k]['associate']]['tax_code'] for k in own if SUBSCRIPTIONS[k]['associate']} - {None}
+    taxes = {ASSOCIATES[SUBSCRIPTIONS[k]['associate']]['tax_code'] for k in own if SUBSCRIPTIONS[k]['associate']} - {None, ''}
     labels = [k for k, r in SUBSCRIPTIONS.items() if visible(r, group) and (
         r['user'] == user or (r['associate'] and ASSOCIATES[r['associate']]['tax_code'] in taxes))]
     return {'data': {str(i): athlete_item(k, group) for i, k in enumerate(by_created(labels))}, 'meta': {}}
@@ -1343,6 +1359,7 @@ add('list-athlete-ignores-filters', 'list_athlete', LIST + '?query[status_flag]=
 add('list-athlete-group', 'list_athlete', LIST, 200, athlete_list(LISTER, FOREIGN_GROUP), headers={'X-Group-Id': FOREIGN_GROUP})
 add('list-athlete-own-association', 'athlete', LIST, 200, athlete_list(ATHLETE))
 add('list-athlete-tax-code-other-user', 'multi_athlete', LIST, 200, athlete_list(MULTI))
+add('list-athlete-blank-tax-code', 'blank_athlete', LIST, 200, athlete_list(BLANK))
 
 # --- subscription_info without document_pdf: print_document_subscription.delay(id, request.headers.get('authorization')) ---
 for name, actor, label in (('info-print-dispatch-owner', 'owner', 'baby'), ('info-print-dispatch-athlete', 'list_athlete', 'l_current')):

@@ -43,8 +43,8 @@ def scoped_queryset(identity, manager):
     if person.role != User.ATHLETE:
         return queryset
     # Match the application's family subscription visibility inside this tenant.
-    tax_codes = Subscription.objects.filter(user=person, sport_association=association).exclude(
-        associate__tax_code__isnull=True).exclude(associate__tax_code='').values('associate__tax_code')
+    from application.utils.subscriptions_utils import family_tax_codes
+    tax_codes = family_tax_codes(Subscription.objects.filter(user=person, sport_association=association))
     members = Associate.objects.filter(sport_association=association).filter(
         Q(user=person) | Q(tax_code__in=tax_codes))
     subscriptions = Subscription.objects.filter(sport_association=association).filter(

@@ -174,3 +174,20 @@ Shared changes are additive: `pymime.GuessType` (type and encoding), `documentob
 `docmanager-reads` (110/110), `documents-move` (19/19) and `subscription-medical` (127/127) re-ran green. Go unit tests
 compare the base64 decoder, upload names and keys, and the cache pickle with CPython 3.13.16, Django 5.2.18 and
 django-storages 1.14.5.
+
+Member documents (`secdoc-*`): documents are served to the association's staff and to the member they belong to.
+`docmanager.access` (Django, with `docmanager.test_document_access`) and `memberDocumentAccess` with
+`repository.MemberDocuments` (Go) decide it the same way: accounts other than athletes, superusers and the instance owner
+(`is_instance_owner`) reach every record; an athlete account reaches the records of its user, of the associates of its
+subscriptions, of associates whose account it is and of associates sharing a non-empty tax code with those (base managers:
+no group or soft-delete filter). Anything else answers `403 {"detail": "Risorsa non disponibile per questo utente e
+associazione."}`. Association-scoped sessions keep their own boundary, and requests admitted without an account (a document
+token, the renderer header) are decided by the view's permission classes as before.
+
+`subscription/<uid>/upload-document` applies it to the subscription right after the lookup, before `request.data` is read:
+the 403 leaves no Document, file row or stored object. The fixture has 130 cases (6 new): an athlete attaching a file to
+another member's subscription (JSON, form, a body without filename, another association's row) and another athlete account
+get the 403; the athlete's own subscription, collaborators and owners are unchanged. RED `secdoc-red-r1`: Django 130/130, Go
+200 on `documents-writes-upload-athlete-other-subscription` with the check switched off. GREEN `secdoc-versioned-final`
+(after merging the base; `secdoc-versioned-r1` before): 130/130 on the four transports with exact effects. Mutation
+`secdoc-mutation-r1` (every subscription counted as the member's) CAUGHT. The other routes are unchanged.

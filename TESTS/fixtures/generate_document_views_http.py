@@ -245,7 +245,12 @@ SUBSCRIPTIONS = {
                  'group': None},
     'own': {'id': uid(50), 'association': 'own', 'associate': 'athlete', 'type': 2, 'role': 1, 'created': '2026-08-08T08:08:08+00:00',
             'payment': None, 'additional_fields': None, 'signature_url': None, 'group': None, 'user': 'athlete'},
+    # A later subscription of the athlete's associate, entered by the association.
+    'renewal': {'id': uid(51), 'association': 'own', 'associate': 'athlete', 'type': 1, 'role': 2, 'created': '2026-09-09T09:09:09+00:00',
+                'payment': None, 'additional_fields': None, 'signature_url': None, 'group': None},
 }
+# Another member of the association (an athlete account without records).
+EXTRA_USERS = {'member': {'id': uid(52), 'username': 'document-views-member', 'email': 'document-views-member@example.test'}}
 COURSES = {'nuoto': {'id': uid(60), 'title': 'Nuoto & Acqua'}, 'yoga': {'id': uid(61), 'title': 'Yoga'},
            'untitled': {'id': uid(62), 'title': None}}
 COURSE_SUBSCRIPTIONS = [(uid(63), 'nuoto', 'mario', False), (uid(64), 'yoga', 'mario', True), (uid(65), 'untitled', 'luca', False)]
@@ -424,7 +429,6 @@ for name, actor, key, headers in (
         ('subscription-minor-without-tutor', 'owner', 'luca', {}),
         ('subscription-null-associate-fields', 'full_collaborator', 'nulls', {}),
         ('subscription-without-associate', 'owner', 'noassociate', {}),
-        ('subscription-athlete-direct', 'athlete', 'mario', {}),
         ('subscription-admin-impersonating-owner', 'admin', 'mario', ADMIN_OWNER),
         ('subscription-group-own', 'owner', 'group', {'X-Group-Id': IDS['own_group']}),
         ('subscription-group-malformed', 'owner', 'group', {'X-Group-Id': 'not-a-group'}),
@@ -435,6 +439,17 @@ for name, actor, key, headers in (
 add('subscription-classic-template', 'owner', SUB('classic'), 200, HTML, html=subscription_context('classic', '', '<p>Grazie</p>'))
 add('subscription-fallback-template', 'owner', SUB('fallback'), 200, HTML, html=subscription_context('fallback', '<p><br/></p>', FALLBACK_FOOTER_OUT))
 add('subscription-scoped-athlete', 'owner', SUB('own'), 200, HTML, headers=SCOPED, html=subscription_context('own', '', ''))
+# The page is rendered for the association's staff and for the member the subscription belongs to.
+add('subscription-athlete-own', 'athlete', SUB('own'), 200, HTML, html=subscription_context('own', '', ''))
+add('subscription-athlete-associate', 'athlete', SUB('renewal'), 200, HTML, html=subscription_context('renewal', '', ''))
+add('subscription-athlete-direct', 'athlete', SUB('mario'), 403, SCOPED_HIDDEN)
+add('subscription-athlete-without-associate', 'athlete', SUB('noassociate'), 403, SCOPED_HIDDEN)
+add('subscription-athlete-sections-not-a-list', 'athlete', SUB('badsections'), 403, SCOPED_HIDDEN)
+add('subscription-athlete-unknown', 'athlete', f'/document/subscription/{UNKNOWN}/view/', 500, SERVER)
+add('subscription-member-of-athlete', 'member', SUB('own'), 403, SCOPED_HIDDEN)
+add('subscription-member-of-associate', 'member', SUB('renewal'), 403, SCOPED_HIDDEN)
+add('subscription-full-collaborator-of-athlete', 'full_collaborator', SUB('own'), 200, HTML, html=subscription_context('own', '', ''))
+add('subscription-foreign-owner-of-athlete', 'foreign_owner', SUB('own'), 200, HTML, html=subscription_context('own', '', ''))
 add('subscription-scoped-athlete-hidden', 'owner', SUB('mario'), 403, SCOPED_HIDDEN, headers=SCOPED)
 add('subscription-group-other', 'owner', SUB('group'), 500, SERVER, headers={'X-Group-Id': IDS['foreign_group']})
 add('subscription-unknown', 'owner', f'/document/subscription/{UNKNOWN}/view/', 500, SERVER)
@@ -635,5 +650,5 @@ OUTPUT.write_text(json.dumps({
     'ids': IDS, 'associations': ASSOCIATIONS, 'associates': ASSOCIATES, 'tutors': TUTORS, 'payments': PAYMENTS,
     'subscriptions': SUBSCRIPTIONS, 'courses': COURSES, 'course_subscriptions': COURSE_SUBSCRIPTIONS, 'instructors': INSTRUCTORS,
     'signatures': SIGNATURES, 'compensations': COMPENSATIONS, 'hours': HOURS, 'templates': TEMPLATES, 'medical': MEDICAL,
-    'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+    'extra_users': EXTRA_USERS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

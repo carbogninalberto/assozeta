@@ -455,6 +455,76 @@ add('card-post-admin-without-session', 'admin', 'POST', card_path('card'), 403, 
 # The subscription is not the scoped athlete's: the scoped-request check of the path reference answers first.
 add('card-post-owner-scoped-athlete-resource', 'owner', 'POST', card_path('card'), 403,
     {'detail': 'Risorsa non disponibile per questo utente e associazione.'}, headers=SCOPED)
+
+# ---------------------------------------------------------------------------
+# Unknown tokens while a pairing is active (instance.sso.public_links.source_token)
+# ---------------------------------------------------------------------------
+# A canonical token no local row holds is asked of the paired server: POST <authority>/pairing/v1/public-token with the
+# kind, the token, the resource, the remote pairing id and the pairing secret. The answer must carry the protocol
+# version, the pairing's binding, the kind, a canonical generation and an aware expires_at in the future.
+PAIR = {'instance_id': 'a1000000-0000-4000-8000-0000e1880001', 'pairing_id': 'a1000000-0000-4000-8000-0000e1880002',
+        'remote_pairing_id': 'a1000000-0000-4000-8000-0000e1880003', 'generation': 'a1000000-0000-4000-8000-0000e1880004'}
+PAIR_ORIGIN = 'http://localhost'
+
+
+def grant(kind, **values):
+    return {'protocol': 'bakney-pairing-v1', 'instance_id': PAIR['instance_id'], 'pairing_id': PAIR['remote_pairing_id'],
+            'association_id': OWN, 'origin': PAIR_ORIGIN, 'callback_uri': PAIR_ORIGIN + '/bakney/v1/callback', 'kind': kind,
+            'generation': PAIR['generation'], 'expires_at': '$iso+600', **values}
+
+
+def paired(request=None, reply=None, *, state='paired', **row):
+    """The case's pairing; request/reply: the one exchange with the paired server (none expected otherwise)."""
+    authority = [] if request is None else [{'path': '/pairing/v1/public-token', 'reply': reply,
+                                             'body': {**request, 'pairing_id': PAIR['remote_pairing_id'], 'secret': '$secret'}}]
+    return {**PAIR, 'state': state, **row, 'authority': authority}
+
+
+def ok(body):
+    return {'status': 200, 'json': body}
+
+
+PAIR_TOKEN = 'a1000000-0000-4000-8000-0000e1880010'
+CARD_ID = SUBSCRIPTIONS['card']['id']
+ASK = {'kind': 'card', 'token': PAIR_TOKEN, 'resource_id': CARD_ID}
+
+
+def paired_card(name, status, response, pairing, *, label='card', token=PAIR_TOKEN, actor='anonymous', headers=None):
+    add(name, actor, 'GET', card_path(label) + '?token=' + token, status, response, headers=headers)
+    cases[-1]['pairing'] = pairing
+
+
+paired_card('card-paired-server-vouches', 200, member('card'), paired(ASK, ok(grant('card', resource_id=CARD_ID))))
+paired_card('card-pending-pairing-vouches-athlete', 200, member('card'), paired(ASK, ok(grant('card', resource_id=CARD_ID)), state='pending'),
+            actor='athlete')
+paired_card('card-paired-server-rejects', 400, EXPIRED, paired(ASK, {'status': 401, 'json': {'error': 'unknown'}}))
+paired_card('card-paired-server-refuses-token', 400, EXPIRED, paired(ASK, {'status': 410, 'json': {'error': 'gone'}}))
+paired_card('card-paired-server-unavailable', 400, EXPIRED, paired(ASK, {'status': 503, 'raw': 'unavailable'}))
+paired_card('card-paired-server-not-json', 400, EXPIRED, paired(ASK, {'status': 200, 'raw': '<html>'}))
+paired_card('card-paired-server-other-protocol', 400, EXPIRED,
+            paired(ASK, ok({**grant('card', resource_id=CARD_ID), 'protocol': 'bakney-pairing-v2'})))
+paired_card('card-paired-server-other-resource', 400, EXPIRED,
+            paired(ASK, ok(grant('card', resource_id=SUBSCRIPTIONS['second']['id']))))
+paired_card('card-paired-server-other-kind', 400, EXPIRED, paired(ASK, ok(grant('cumulative', resource_id=CARD_ID))))
+paired_card('card-paired-server-other-origin', 400, EXPIRED,
+            paired(ASK, ok({**grant('card', resource_id=CARD_ID), 'origin': 'http://localhost:8080'})))
+paired_card('card-paired-server-generation-not-canonical', 400, EXPIRED,
+            paired(ASK, ok({**grant('card', resource_id=CARD_ID), 'generation': PAIR['generation'].upper()})))
+paired_card('card-paired-server-expired-grant', 400, EXPIRED, paired(ASK, ok(grant('card', resource_id=CARD_ID, expires_at='$iso-60'))))
+paired_card('card-paired-server-naive-expiry', 400, EXPIRED, paired(ASK, ok(grant('card', resource_id=CARD_ID, expires_at='$naive+600'))))
+paired_card('card-paired-server-expiry-not-a-date', 400, EXPIRED, paired(ASK, ok(grant('card', resource_id=CARD_ID, expires_at='domani'))))
+paired_card('card-paired-server-expiry-number', 400, EXPIRED, paired(ASK, ok(grant('card', resource_id=CARD_ID, expires_at=4102444800))))
+# Nothing is asked for a subscription outside the paired association, a token or uid that is not canonical, a pairing
+# that is disconnected or whose binding no longer matches the settings, or an instance that is not self-hosted.
+paired_card('card-paired-other-association-not-asked', 400, EXPIRED, paired(), label='abroad')
+paired_card('card-paired-upper-case-token-not-asked', 400, EXPIRED, paired(), token=PAIR_TOKEN.upper())
+paired_card('card-pairing-disconnected-not-asked', 400, EXPIRED, paired(state='disconnected'))
+paired_card('card-pairing-other-origin-not-asked', 400, EXPIRED, paired(origin='http://localhost:8080'))
+paired_card('card-pairing-other-association-not-asked', 400, EXPIRED, paired(association=FOREIGN))
+paired_card('card-pairing-not-self-hosted-not-asked', 400, EXPIRED, paired(self_hosted=False))
+# A locally stored token never reaches the paired server.
+paired_card('card-paired-local-token-not-asked', 200, member('card'), paired(), token=TOKENS['card']['token'])
+
 add('card-wrong-method', 'owner', 'DELETE', card_path('card'), 405, {'detail': 'Method "DELETE" not allowed.'})
 add('card-options', 'anonymous', 'OPTIONS', card_path('card'), 200, options('Subscription Card'))
 

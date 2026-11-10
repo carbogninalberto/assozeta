@@ -546,9 +546,11 @@ func run() (runErr error) {
 	e.Any("/subscription/list/archived", subscriptionReadsHandler.Archived, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/info", subscriptionReadsHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/calendar", subscriptionReadsHandler.Calendar, middleware.DjangoSessionAudit(sessionAuthentication))
+	publicLinks, closePublicLinks := composeBakneyPublicLinks(cfg, db)
+	defer closePublicLinks()
 	subscriptionMiscHandler := handler.NewSubscriptionMiscHandler(service.NewSubscriptionMisc(repository.NewSubscriptionMisc(db),
 		service.NewSubscriptionReads(repository.NewSubscriptionReads(db), repository.NewCourseSubscriptions(db), time.Now), time.Now,
-		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+		uuid.NewString).WithPublicLinks(publicLinks), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/calculate-tax-code", subscriptionMiscHandler.TaxCode, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/import/status", subscriptionMiscHandler.ImportStatus, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/get-associations-for-federation", subscriptionMiscHandler.Federation, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -597,7 +599,7 @@ func run() (runErr error) {
 	e.Any("/calendar/events/update", courseCalendarHandler.EventsUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
 	miscRoutesHandler := handler.NewMiscRoutesHandler(service.NewCalendarExport(repository.NewCourseCalendars(db), time.Now),
 		service.NewCommunicationsPost(repository.NewMiscRoutes(db), time.Now, uuid.NewString),
-		service.NewSubscriptionCard(repository.NewMiscRoutes(db), time.Now, uuid.NewString),
+		service.NewSubscriptionCard(repository.NewMiscRoutes(db), time.Now, uuid.NewString).WithPublicLinks(publicLinks),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/calendar/events/export", miscRoutesHandler.CalendarExport, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/send/post", miscRoutesHandler.Post, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -669,7 +671,8 @@ func run() (runErr error) {
 	e.Any("/personas/all-with-subscriptions", personasHandler.AllWithSubscriptions, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/personas/:pk/info", personasHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	personasWritesHandler := handler.NewPersonasWritesHandler(personasService,
-		service.NewPersonaWrites(repository.NewPersonaWrites(db), personasService, time.Now, uuid.NewString),
+		service.NewPersonaWrites(repository.NewPersonaWrites(db), personasService, time.Now, uuid.NewString).
+			WithPictures(composePersonaPictures(cfg), cfg.Storage.FileOverwrite),
 		service.NewPersonaSubscriptions(repository.NewPersonaSubscriptions(db), personasService),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	personasHandler.WithWrites(personasWritesHandler)

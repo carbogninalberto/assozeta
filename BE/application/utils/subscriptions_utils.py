@@ -1270,11 +1270,15 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
     return True, subscription
 
 
+def family_tax_codes(subscriptions):
+    """Tax codes that link these subscriptions to their family's: only filled-in ones."""
+    return subscriptions.exclude(associate__tax_code__isnull=True).exclude(
+        associate__tax_code='').values_list('associate__tax_code', flat=True).distinct()
+
+
 def get_optimized_subscriptions(user):
     # get tax_code of the user
-    tax_codes = scoped_queryset(user, Subscription.objects).filter(user=user).values_list('associate__tax_code', flat=True).distinct()
-    if len(tax_codes) == 0:
-        []
+    tax_codes = family_tax_codes(scoped_queryset(user, Subscription.objects).filter(user=user))
     subscriptions = scoped_queryset(user, Subscription.objects).filter(
         Q(user=user) | Q(associate__tax_code__in=tax_codes)
     ).select_related(

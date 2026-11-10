@@ -252,6 +252,13 @@
   }
  },
  "unknown": "a1000000-0000-4000-8000-000000352999",
+ "extra_users": {
+  "member": {
+   "id": "a1000000-0000-4000-8000-000000352997",
+   "username": "documents-writes-member",
+   "email": "documents-writes-member@example.test"
+  }
+ },
  "cases": [
   {
    "name": "documents-writes-add-anonymous",
@@ -2238,6 +2245,97 @@
     "archive_inserted": null,
     "archive_deleted": []
    },
+   "body": {
+    "document": "Y2VydGlmaWNhdG8=",
+    "filename": "certificato.jpg"
+   }
+  },
+  {
+   "name": "documents-writes-upload-athlete-other-subscription",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "document": "Y2VydGlmaWNhdG8=",
+    "filename": "certificato.jpg"
+   }
+  },
+  {
+   "name": "documents-writes-upload-athlete-other-subscription-form",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352019/upload-document",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "raw_body": "document=cmlnYQ==&filename=modulo.txt",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "documents-writes-upload-athlete-other-subscription-missing-filename",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "document": "eA=="
+   }
+  },
+  {
+   "name": "documents-writes-upload-athlete-other-association-subscription",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352022/upload-document",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "document": "ZXN0ZXJv",
+    "filename": "estero.csv"
+   }
+  },
+  {
+   "name": "documents-writes-upload-athlete-unknown-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352999/upload-document",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document": "eA==",
+    "filename": "a.pdf"
+   }
+  },
+  {
+   "name": "documents-writes-upload-member-athlete-subscription",
+   "actor": "member",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352023/upload-document",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
    "body": {
     "document": "Y2VydGlmaWNhdG8=",
     "filename": "certificato.jpg"

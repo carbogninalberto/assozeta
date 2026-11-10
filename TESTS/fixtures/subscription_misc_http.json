@@ -5301,6 +5301,1153 @@
    "effect": null
   },
   {
+   "name": "subscription-misc-validate-paired-server-vouches",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": false,
+    "subscriptions": [
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410035",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410005",
+       "address": "Via Roma 1",
+       "address_cap": "37121",
+       "address_city": "Verona",
+       "born_city": "Verona",
+       "born_date": null,
+       "email": "mario@example.test",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sex": "M",
+       "tax_code": "RSSMRA90E10H501Z",
+       "phone": "3331112222",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 25.0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410036",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410006",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Giulia",
+       "last_name": "Verdi",
+       "is_minor": false,
+       "sex": "F",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "denomination": "Palestra Olimpya"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 2,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2021-01-01",
+      "end_date": "2021-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410043",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410008",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Anna",
+       "last_name": "Neri",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": "casa",
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 1,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2019-01-01",
+      "end_date": "2019-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410045",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": null,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "denomination": "Palestra Olimpia "
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410046",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410005",
+       "address": "Via Roma 1",
+       "address_cap": "37121",
+       "address_city": "Verona",
+       "born_city": "Verona",
+       "born_date": null,
+       "email": "mario@example.test",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sex": "M",
+       "tax_code": "RSSMRA90E10H501Z",
+       "phone": "3331112222",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 25.0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2018-01-01",
+      "end_date": "2018-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": true,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410047",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410009",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Paolo",
+       "last_name": "Gallo",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714001"
+     }
+    ],
+    "default_custom_data": {
+     "school_name": "Palestra Olimpia",
+     "school_teacher_name": "Mario Bianchi",
+     "responsible_instructor_name": "",
+     "principal_style": "Karate",
+     "type_of_associate": "atleta",
+     "denomination": "",
+     "type": 2
+    }
+   },
+   "effect": null,
+   "unordered": "subscription_id",
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "cumulative",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "gym_name": "Palestra Olimpia"
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-pending-pairing-vouches-group",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "expired": false,
+    "subscriptions": [
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410047",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410009",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Paolo",
+       "last_name": "Gallo",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714001"
+     }
+    ],
+    "default_custom_data": {
+     "school_name": "Palestra Olimpia",
+     "school_teacher_name": "Mario Bianchi",
+     "responsible_instructor_name": "",
+     "principal_style": "Karate",
+     "type_of_associate": "atleta",
+     "denomination": "",
+     "type": 2
+    }
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "pending",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "cumulative",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "gym_name": "Palestra Olimpia"
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-server-rejects",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 401,
+       "json": {
+        "error": "unknown"
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-server-unavailable",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 500,
+       "raw": "error"
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-server-card-kind",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "card",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "gym_name": "Palestra Olimpia"
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-server-without-gym-name",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "cumulative",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600"
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-server-gym-name-number",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "cumulative",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "gym_name": 7
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-server-gym-name-too-long",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "cumulative",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "gym_name": "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-server-expired-grant",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "cumulative",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso-60",
+        "gym_name": "Palestra Olimpia"
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-server-other-association",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701002",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "cumulative",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "gym_name": "Palestra Olimpia"
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-upper-case-token-not-asked",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=A1000000-0000-4000-8000-0000E1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": []
+   }
+  },
+  {
+   "name": "subscription-misc-validate-pairing-disconnected-not-asked",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "disconnected",
+    "authority": []
+   }
+  },
+  {
+   "name": "subscription-misc-validate-pairing-not-self-hosted-not-asked",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "self_hosted": false,
+    "authority": []
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-local-token-not-asked",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": false,
+    "subscriptions": [
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410051",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700007@example.test",
+       "phone": null,
+       "username": "message-reads-700007",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410010",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Jigoro",
+       "last_name": "Kano",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "denomination": "Kodokan Roma"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     }
+    ],
+    "default_custom_data": null
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": []
+   }
+  },
+  {
    "name": "subscription-misc-validate-without-token",
    "actor": "anonymous",
    "method": "GET",

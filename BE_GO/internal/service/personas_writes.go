@@ -30,6 +30,9 @@ type PersonaWrites struct {
 	personas *Personas
 	now      func() time.Time
 	ids      func() string
+	// pictures is the default storage of picture_path uploads (nil: refused).
+	pictures         PersonaPictureObjects
+	pictureOverwrite bool
 }
 
 func NewPersonaWrites(store domain.PersonaWritesStore, personas *Personas, now func() time.Time, ids func() string) *PersonaWrites {
@@ -650,7 +653,8 @@ func (s *PersonaWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 			rest = append(rest, field)
 		}
 	}
-	if err := pictureUnported(rest); err != nil {
+	picture, folder, upload, err := personaPicturePlan(rest)
+	if err != nil {
 		return "", err
 	}
 	if value, present := rest.Lookup("born_date"); present && dto.PersonaDMYUnported(value) {
@@ -662,6 +666,19 @@ func (s *PersonaWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 	run, err := s.begin(ctx, identity, header, audit)
 	if err != nil {
 		return "", err
+	}
+	if upload {
+		// The header group the create would refuse is refused before the upload.
+		if _, err = run.headerGroup(ctx); err == nil {
+			var url string
+			if url, err = s.uploadPicture(ctx, picture, folder); err == nil {
+				rest = personaPictureBody(rest, url)
+			}
+		}
+		if err != nil {
+			run.tx.Rollback()
+			return "", err
+		}
 	}
 	fields, invalid, err := dto.ParsePersonaFields(rest, dto.PersonaFieldOptions{Omit: []string{"associate_id", "creation_date"}}, run.related(ctx))
 	if err == nil && invalid != nil {
@@ -706,7 +723,8 @@ func (s *PersonaWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	if !present {
 		tutors = []any{}
 	}
-	if err := pictureUnported(object); err != nil {
+	picture, folder, upload, err := personaPicturePlan(object)
+	if err != nil {
 		return err
 	}
 	if value, present := object.Lookup("born_date"); present && dto.PersonaDMYUnported(value) {
@@ -714,6 +732,13 @@ func (s *PersonaWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	}
 	if err := planTutors(tutors, header, supplierGroup(header)); err != nil {
 		return err
+	}
+	if upload {
+		url, err := s.uploadPicture(ctx, picture, folder)
+		if err != nil {
+			return err
+		}
+		object = personaPictureBody(object, url)
 	}
 	run, err := s.begin(ctx, identity, header, audit)
 	if err != nil {

@@ -46,8 +46,10 @@ add and the installment payment are athlete views. Django remains the execution 
 ## course/<uid>/overview/<uid_subscription>/add (not atomic)
 
 `is_valid_uuid` on both (400 list), the caller's association (`filter().first()`), the live group-aware course and subscription.
-With an association: a missing course or one without association is a 500, another association's course `403 User not allowed.`.
-The subscription (missing or without association: 500) then supplies the association, also for athletes and owners without one.
+Athletes enrol subscriptions of their own user, as in `course_overview_update` (a missing subscription is a 500, another user's
+`403 User not allowed.`). Other callers need an association (`403 User not allowed.` without one): a missing course or one
+without association is a 500, another association's course `403 User not allowed.`. The subscription (missing or without
+association: 500) then supplies the association.
 `add_course_to_subscription`: for quote courses a `multiple_quote.value` matching a stored `quote_id` selects that quote, an
 unmatched value keeps the raw selection, no selection leaves none; an existing live row returns a `Response` the view cannot render
 (500, nothing written); the row is created (float fee default); payments belong to the subscription's user and association:
@@ -58,8 +60,9 @@ CourseSubscriptionSerializer}}` with float amounts and DRF-encoded dates.
 
 ## course-installment/<uid>/make-payment (not atomic)
 
-`is_valid_uuid` (400), the live group-aware installment by id (missing: 500), its course subscription (any state) and subscription
-(missing: 500). The payment takes the installment's amount and date, the subscription's user and associate and the course's
+`is_valid_uuid` (400), the live group-aware installment by id (missing: 500), its course subscription (any state). Athletes pay
+installments whose subscription belongs to their user, other callers those of their association's courses (`403 User not allowed.`
+otherwise); a row without subscription is then a 500. The payment takes the installment's amount and date, the subscription's user and associate and the course's
 association (default bank account, default category, `Quota Corso`); the installment's save records the new payment (index through
 the course). Response `{'data': PaymentSerializer}`.
 
@@ -102,3 +105,13 @@ Impersonation sessions and free-text quote amounts (102 cases):
 - GREEN (`v2c-green`): 102/102 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact effects.
 - Mutation (`v2c-mutation-half-down`): rounding cents half down fails `add-quote-amount-three-decimals` (CAUGHT).
 - `router-course-subscriptions-create` (reuses this seed; fixture regenerated) stays green on four transports (`v2c-rerun2`, 29/29).
+
+Enrolment owner checks (113 cases; fixture regenerated from Django):
+
+- RED (`secaw-red`): Django 113/113; Go answers 200 on `make-payment-athlete-other-subscription`.
+- GREEN (`secaw-green`): 113/113 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact effects.
+- Mutations (all CAUGHT): the installment payment without the athlete check (`secaw-mutation`) fails
+  `make-payment-athlete-other-subscription`; without the course association check (`secaw-mutation-association`) it fails
+  `make-payment-other-association-course`; course-overview add without the athlete check (`secaw-mutation-add`) fails
+  `overview-add-athlete-other-subscription`.
+- `router-course-subscriptions-create` and `course-subscriptions` stay green natively.
