@@ -271,7 +271,10 @@ def assert_effect(case, before, after, source, context):
         contract.require(listing() == STATE['objects'] | {name}, 'storage.placeholder-key')
         stored = STORAGE['client'].get_object(Bucket=BUCKET, Key=name)
         body = stored['Body'].read()
-        contract.require(body[:8] == b'\x89PNG\r\n\x1a\n' and body == buffer.getvalue(), f'storage.placeholder-bytes:{len(body)}')
+        expected = buffer.getvalue()
+        contract.require(body[:8] == b'\x89PNG\r\n\x1a\n' and body == expected,
+                         f'storage.placeholder-bytes:{len(body)}:{len(expected)}:ihdr={expected[16:29].hex()}:{body[16:29].hex()}:'
+                         f'dejavu={os.path.exists("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")}')
         contract.require(stored['ContentType'] == 'image/png' and stored.get('ContentEncoding') is None, 'storage.placeholder-metadata')
         STATE['objects'] = STATE['objects'] | {name}
         text = topup.auditlog_moment
