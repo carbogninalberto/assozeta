@@ -40,10 +40,36 @@ execution owner. CourseSerializer rendering is shared with `course/<uid>/overvie
   `subscription_id` and the associate's `first_name`, `last_name`, `born_date`, `sex`. A subscription without an
   associate raises inside the view's `try`: that entry keeps `paid`/`creation_date` and the course's list stops.
 
+## Excel export (POST without `all=1`)
+
+`current_view_course(sport_association, request.data, courses, title="Corsi filtrati")` runs over the whole
+filtered, sorted queryset (pagination parameters are ignored). `data['format']` must be `excel` or `pdf`: a missing
+key, another value, or a body that is not a dict is a 500. `excel` answers 200 with
+`{'file': <base64 workbook>, 'filename': '[<dd/mm/YYYY today>] Corsi filtrati - <denomination>.xlsx'}`.
+
+The workbook is `get_excel_base64` (`xlsxexport.PandasOpenpyxl`) of the columns Nome, Tipologia
+(`get_course_type_label`), Visibilità (`get_status_label`), Data inizio, Data fine, Data creazione (`%d/%m/%Y`, `-`
+when empty), In evidenza, Strutture (location titles joined with `, `), Iscritti (the course's live course
+subscriptions, counted per row), Tag (tag names joined with `, `), then one column per `CourseTags` of the
+association holding `assegnato` when the course has the tag. A tag named like another column gives duplicate column
+names: pandas keeps them, skips the numeric coercion for those columns and sizes them from the row count
+(`eu-dup-*` golden cases).
+
+### Row order
+
+- Courses: the list's own `ORDER BY` (the same clause the paginated list uses).
+- A course's tags and locations, and the association's tag columns: Django sends these three statements without
+  `ORDER BY`, and Go sends the same statements (`ExportCourseTags`, `ExportCourseLocations`,
+  `ExportAssociationTags` in `repository/course_list.go` are the compiled Django SQL, same tables, joins and
+  predicates), so both backends read the rows in the order the database returns them for that statement. The
+  fixture seeds tags, locations and their through rows in id order so heap, through-row and primary-key order agree.
+
 ## Not ported (refused with the stable 500 page before any work)
 
-- **Export files:** POST with `format` `pdf` or `excel` generates the PDF/XLSX in Django (200 with `file`,
-  `filename`); Go refuses it (`ErrCourseListExportUnported`).
+- **PDF export:** POST with `format` `pdf` renders a time-stamped PDF in Django (200 with `file`, `filename`); Go
+  refuses it (`ErrCourseListExportUnported`). The Excel export is ported (below), except workbook inputs
+  `xlsxexport` does not reproduce (formula-like text and the other cases in `xlsx-exports.md`) and an export whose
+  ordering is one of the lazy names below.
 - **Lazy orderings:** names Django resolves only when compiling the rows — transforms of a field (`title__lower`,
   `creation_date__year`, JSON keys), M2M/reverse relations (`tags`, `locations`, `coursesubscription`,
   `attendanceregistry`) and relation paths (`sport_association__...`). Go refuses them where Django compiles: after
@@ -61,3 +87,8 @@ check, the Italian invalid page) were added after the Go code; `red-r1` re-ran R
 unregistered: Django 113/113, Go 404. GREEN: 113/113 on native Django, native Go, Caddy `/api/v1` and `/api/v2`
 (`versioned-r1`). Mutation: counting `DISTINCT c.course_id` fails Go on `tags-or-duplicates` (`mutation-r1`).
 Shared code re-run: course-overview 22/22 and profile-settings 59/59 natively.
+
+Excel export: 29 more cases (142 in all). RED `v2xlsx-red-r1`: Django 142/142, Go answers 500 on the first export
+case. GREEN `v2xlsx-green-r2`: 142/142 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation
+`v2xlsx-mutation-r1`: see the commit. Re-run for the shared `xlsxexport` change (duplicate column names):
+payment-export, misc-exports and printing-generate.

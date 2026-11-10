@@ -52,3 +52,25 @@ type CourseListAthlete struct {
 	BornDate       *string   `db:"born_date"`
 	Sex            *string   `db:"sex"`
 }
+
+// CourseListExportRow is one course of current_view_course's rows.
+type CourseListExportRow struct {
+	ID           string     `db:"course_id"`
+	Title        *string    `db:"title"`
+	CourseType   int64      `db:"course_type"`
+	StatusFlag   int64      `db:"status_flag"`
+	StartDate    *time.Time `db:"start_date"`
+	EndDate      *time.Time `db:"end_date"`
+	CreationDate time.Time  `db:"creation_date"`
+	Pinned       bool       `db:"pinned"`
+}
+
+// CourseListExportTag is one CourseTags row; CourseID is the prefetch's
+// _prefetch_related_val_course_id (empty for the association's tags).
+type CourseListExportTag struct {
+	CourseID      string    `db:"course_id"`
+	ID            string    `db:"tag_id"`
+	Name          string    `db:"tag_name"`
+	AssociationID string    `db:"sport_association_id"`
+	CreationDate  time.Time `db:"creation_date"`
+}

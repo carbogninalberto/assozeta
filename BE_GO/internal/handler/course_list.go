@@ -36,6 +36,7 @@ func (h *CourseListHandler) List(c echo.Context) error {
 	body, err := h.courses.List(request.Context(), *identity, service.CourseListRequest{
 		Query: parseReferenceForm(request.URL.RawQuery), GroupHeader: request.Header.Get("X-Group-Id"), Method: request.Method})
 	var invalid *service.PaymentInfoUUIDError
+	var export *service.CourseListExport
 	switch {
 	case errors.As(err, &invalid):
 		return c.JSON(400, []string{invalid.Detail})
@@ -47,29 +48,25 @@ func (h *CourseListHandler) List(c echo.Context) error {
 			detail = "Pagina non valida."
 		}
 		return c.JSON(404, map[string]string{"detail": detail})
-	case errors.Is(err, service.ErrCourseListExport):
-		return courseListExport(c)
+	case errors.As(err, &export):
+		return h.export(c, export)
 	case err != nil:
 		return messageReadsError(c, err)
 	}
 	return c.JSON(200, body)
 }
 
-// courseListExport is the POST branch: request.data (a parse error is DRF's
-// 400), then current_view_course. A format other than pdf or excel is
-// Django's own 500; generating the PDF or XLSX file is not ported and is
-// refused with the same 500 page before any work.
-func courseListExport(c echo.Context) error {
+// export is the POST branch: request.data (a parse error is DRF's 400),
+// then current_view_course. Its exceptions, and the PDF file and inputs Go
+// does not reproduce, are the 500 page before any work.
+func (h *CourseListHandler) export(c echo.Context, export *service.CourseListExport) error {
 	data, err := readMessageMutationsBody(c)
 	if err != nil {
 		return restError(c, err)
 	}
-	if object, ok := data.(domain.RequestObject); ok {
-		if format, _ := object.Lookup("format"); format == "pdf" || format == "excel" {
-			return messageReadsError(c, service.ErrCourseListExportUnported)
-		}
+	body, err := h.courses.Export(c.Request().Context(), export, data)
+	if err != nil {
+		return messageReadsError(c, err)
 	}
-	// data['format'] is missing or not a supported format, or data is not a
-	// dict: current_view_course raises Exception('Error in parsing data').
-	return messageReadsError(c, service.ErrCourseListExport)
+	return c.JSON(200, body)
 }

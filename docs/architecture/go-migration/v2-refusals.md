@@ -161,7 +161,7 @@ Why these stay (v2-subscriptions):
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | POST course-subscriptions/list | export pdf/excel | `course-subscriptions-list.svelte:575-588` | `service/course_subscriptions.go:177` | medium |
-| POST course/list | print pdf/excel | `course/CourseList.svelte:806-812` | `handler/course_list.go:69` | expensive |
+| POST course/list | print pdf (excel is ported) | `course/CourseList.svelte:806-812` | `service/course_list.go:359` | expensive |
 
 Still refused: both "Stampa vista corrente" exports. The `pdf` format (the modal's default) is reportlab's in-process
 `generate_pdf_from_data` (time-stamped, not byte-reproducible); `excel` is portable with `xlsxexport.PandasOpenpyxl` but
@@ -404,7 +404,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### course-list.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST course/list | `format` `pdf`/`excel` | handler/course_list.go:69 (`ErrCourseListExportUnported`) | A | "Stampa vista corrente" in `association/course/CourseList.svelte:806-812` and `CourseListArchive.svelte:790-797` opens `components/modals/CurrentViewPrintingModal.svelte`, which POSTs `{"format": "pdf"|"excel"}` (:30-43). |
+| POST course/list | `format` `pdf` (`excel` is ported: course-list.md, "Excel export") | service/course_list.go:359 (`ErrCourseListExportUnported`) | A | "Stampa vista corrente" in `association/course/CourseList.svelte:806-812` and `CourseListArchive.svelte:790-797` opens `components/modals/CurrentViewPrintingModal.svelte`, which POSTs `{"format": "pdf"|"excel"}` (:30-43). |
 | GET/POST course/list | lazy orderings (`title__lower`, M2M, relation paths) | service/course_list.go:192,231 (`ErrCourseListUnported`) | B | UI sorts only by plain fields (`CourseList.svelte` columns: `title` sortable :295; `sort[field]` passes the column field). Cost: medium. |
 
 ### document-render.md
