@@ -5,6 +5,16 @@ from application.models.balance_sheet_models import CustomAccounts, CustomAccoun
 from application.models.payment_models import Payment
 
 
+def custom_account_in_use(account):
+    """True when a transfer or a payment references the account: such an account cannot be deleted."""
+    # account transfer from or to this account
+    if CustomAccountsTransfer.objects.filter(custom_account_from=account).exists() \
+            or CustomAccountsTransfer.objects.filter(custom_account_to=account).exists():
+        return True
+    # check if there are payments with this account
+    return Payment.objects.filter(custom_accounts_id=account.custom_account_id).exists()
+
+
 class CustomAccountSerializer(serializers.ModelSerializer):
     deletable = serializers.SerializerMethodField()
     current_balance = serializers.SerializerMethodField()
@@ -95,16 +105,7 @@ class CustomAccountSerializer(serializers.ModelSerializer):
         # check if is editable
         if not obj.editable:
             return False
-
-        # account transfer from or to this account
-        if CustomAccountsTransfer.objects.filter(custom_account_from=obj).exists() \
-                or CustomAccountsTransfer.objects.filter(custom_account_to=obj).exists():
-            return False
-        # check if there are payments with this account
-        payments = Payment.objects.filter(custom_accounts_id=obj.custom_account_id).count()
-        if payments > 0:
-            return False
-        return True
+        return not custom_account_in_use(obj)
 
     def create(self, validated_data):
         instance = CustomAccounts.objects.create(**validated_data)

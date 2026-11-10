@@ -41,12 +41,16 @@ Django remains the production execution owner.
   `No balance sheet found.`).
 - **Account delete**: the association's account (malformed/foreign/unknown:
   404 `{"exception": ...}`), non-editable is 403 `This account is not deletable.`;
-  then `custom_account.delete()`, Django's deletion collector (Go runs the shared
-  collector, `collaborator_delete_collector.go`): the account, the transfers
-  referencing it and every payment of the account (base manager: payments removed
-  from the list, of a group or never paid too) are deleted, each with a delete
-  entry indexed through `changes_json`, in that order, the payments in descending
-  key order. Before anything is deleted the payments' delete receiver runs: the
+  an account in use is 403 `An account with transfers or payments cannot be
+  deleted.`: the rule of the `deletable` flag in the accounts list
+  (`custom_account_in_use`, `BE/application/serializers/balance_sheet.py`), a
+  transfer from or to the account or a payment the payment manager returns
+  (in the payment list, and of the `X-Group-Id` group when the header is sent).
+  Then `custom_account.delete()`, Django's deletion collector (Go runs the shared
+  collector, `collaborator_delete_collector.go`): the account and the payments
+  still stored for it (base manager: the ones removed from the payment list)
+  are deleted, each with a delete entry indexed through `changes_json`, in that
+  order, the payments in descending key order. Before anything is deleted the payments' delete receiver runs: the
   instalments of a payment are deleted, and an instalment's own receiver deletes
   its unpaid payment first. That payment is audited, then the instalment (indexed
   to the actor's association, none for a collaborator), then the account's own

@@ -51,7 +51,7 @@ def account(name, initial, kind, *, editable=True, association=OWN, code='C'):
 ACCOUNTS = {'main': account('Banca', '100.00', 2, code='IT01'), 'alt': account('Banca 2', '0.50', 2, editable=False),
             'cash': account('Cassa', '10.25', 1), 'spare': account('Vuoto', '0.00', 1),
             'abroad': account('Estero', '1.00', 2, association=FOREIGN),
-            # Accounts whose payments no longer count: deleted with them (see the account delete cases).
+            # Accounts whose payments are all removed from the payment list: deleted with them (see the account delete cases).
             'ledger': account('Storico', '0.00', 1), 'ledger_transfers': account('Storico giri', '0.00', 1),
             'ledger_installment': account('Storico rate', '0.00', 1)}
 TRANSFERS = {'t1': {'id': next(ids), 'from': 'main', 'to': 'cash', 'amount': '20.00', 'date': '2025-06-01T10:00:00Z'},
@@ -85,12 +85,12 @@ PAYMENTS = {
     # A meta entry without a category key looks up 'senza_causale' as a UUID:
     # the ValidationError stops the generation with the partial data.
     'p22': payment('6.00', 'a', '2022-04-01T10:00:00Z', meta=[{'amount': 1}]),
-    # Payments of the accounts deleted at the end: removed from the payment list, of a group, never paid.
+    # Payments of the accounts deleted at the end, all removed from the payment list: paid, of a group, never paid.
     'l1': payment('15.00', None, '2015-03-01T10:00:00Z', account='ledger', deleted=True),
-    'l2': payment('16.00', None, '2015-03-02T10:00:00Z', account='ledger', paid=False, group='own_group'),
-    'l3': payment('17.00', None, '2015-03-03T10:00:00Z', account='ledger', paid=False),
+    'l2': payment('16.00', None, '2015-03-02T10:00:00Z', account='ledger', paid=False, deleted=True, group='own_group'),
+    'l3': payment('17.00', None, '2015-03-03T10:00:00Z', account='ledger', paid=False, deleted=True),
     'l4': payment('18.00', None, '2015-03-04T10:00:00Z', account='ledger_transfers', deleted=True),
-    'l5': payment('19.00', None, '2015-03-05T10:00:00Z', account='ledger_installment', paid=False),
+    'l5': payment('19.00', None, '2015-03-05T10:00:00Z', account='ledger_installment', paid=False, deleted=True),
     'l6': payment('20.00', None, '2015-03-06T10:00:00Z', account='ledger_installment', deleted=True, paid=False),
 }
 TRANSFERS['t4'] = {'id': next(ids), 'from': 'ledger_transfers', 'to': None, 'amount': '2.00', 'date': '2015-06-01T10:00:00Z'}
@@ -98,6 +98,11 @@ TRANSFERS['t4'] = {'id': next(ids), 'from': 'ledger_transfers', 'to': None, 'amo
 # delete removes the unpaid payment first.
 COURSE = {'course': next(ids), 'subscription': next(ids)}
 INSTALLMENTS = {'i1': {'id': next(ids), 'payment': 'l5', 'amount': '19.00', 'date': '2015-03-05T10:00:00Z'}}
+# Accounts with a payment still in the payment list: not deletable, like their `deletable` flag in the accounts list.
+ACCOUNTS['busy'] = account('In uso', '0.00', 1)
+ACCOUNTS['busy_group'] = account('In uso gruppo', '0.00', 1)
+PAYMENTS['l7'] = payment('21.00', None, '2015-03-07T10:00:00Z', account='busy', paid=False)
+PAYMENTS['l8'] = payment('22.00', None, '2015-03-08T10:00:00Z', account='busy_group', paid=False)
 
 
 def default_data():
@@ -421,18 +426,26 @@ add('account-non-editable-refused', 'owner', remove('alt'), 403, {'msg': 'This a
 DELETED = {'msg': 'bank accounts deleted'}
 add('account-deleted', 'full_collaborator', remove('spare'), 200, DELETED, method='DELETE',
     effect={'kind': 'delete-account', 'account': 'spare', 'transfers': [], 'actor': 'full_collaborator'})
-add('account-deleted-with-transfers', 'owner', remove('cash'), 200, DELETED, method='DELETE',
-    effect={'kind': 'delete-account', 'account': 'cash', 'transfers': ['t1', 't2', 't3'], 'actor': 'owner'})
+# The view applies the rule of the list's `deletable` flag: an account that a transfer (either side) or a payment
+# of the payment list references is refused.
+IN_USE = {'msg': 'An account with transfers or payments cannot be deleted.'}
+add('account-with-transfers-refused', 'owner', remove('cash'), 403, IN_USE, method='DELETE')
+add('account-with-payments-and-transfers-refused', 'full_collaborator', remove('main'), 403, IN_USE, method='DELETE')
+add('account-with-unpaid-payment-refused', 'owner', remove('busy'), 403, IN_USE, method='DELETE')
+add('account-with-outgoing-transfer-refused', 'owner', remove('ledger_transfers'), 403, IN_USE, method='DELETE')
 add('account-already-deleted-not-found', 'owner', remove('spare'), 404, MISSING, method='DELETE')
-# Account.delete() cascades to every payment of the account (base manager). 'audit' is the order of the
-# entries: the account, its transfers, then its payments in descending key order.
+# The payments left on a deletable account are the ones removed from the payment list: Account.delete() cascades
+# to them (base manager). 'audit' is the order of the entries: the account, then its payments in descending key order.
 by_id = lambda *labels: sorted(labels, key=lambda label: PAYMENTS[label]['id'], reverse=True)
 add('account-deleted-with-payments', 'owner', remove('ledger'), 200, DELETED, method='DELETE',
     effect={'kind': 'delete-account-cascade', 'account': 'ledger', 'transfers': [], 'payments': ['l1', 'l2', 'l3'], 'installments': [],
             'audit': [['account', 'ledger'], *(['payment', label] for label in by_id('l1', 'l2', 'l3'))], 'actor': 'owner'})
-add('account-deleted-with-payments-and-transfers', 'full_collaborator', remove('ledger_transfers'), 200, DELETED, method='DELETE',
-    effect={'kind': 'delete-account-cascade', 'account': 'ledger_transfers', 'transfers': ['t4'], 'payments': ['l4'], 'installments': [],
-            'audit': [['account', 'ledger_transfers'], ['transfer', 't4'], ['payment', 'l4']], 'actor': 'full_collaborator'})
+# The payment manager reads X-Group-Id: under a group header the rule counts that group's payments.
+add('account-with-payment-group-header-refused', 'owner', remove('busy_group'), 403, IN_USE, method='DELETE')
+add('account-deleted-under-group-header', 'full_collaborator', remove('busy_group'), 200, DELETED, method='DELETE',
+    headers={'X-Group-Id': IDS['own_group']},
+    effect={'kind': 'delete-account-cascade', 'account': 'busy_group', 'transfers': [], 'payments': ['l8'], 'installments': [],
+            'audit': [['account', 'busy_group'], ['payment', 'l8']], 'actor': 'full_collaborator'})
 # The payment's delete receiver runs before anything is deleted: it deletes the instalment, whose receiver
 # deletes the unpaid payment (audited), then the instalment is audited; the account's own pass audits the
 # payment again.
