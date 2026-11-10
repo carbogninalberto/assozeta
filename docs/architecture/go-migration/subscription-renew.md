@@ -87,7 +87,6 @@ Refused with the 500 page before anything is committed:
 - a renewal with `courses` items (`add_course_to_subscription` inside the renewal);
 - a `tags` string, tag ids that are not strings;
 - a `user.email` that is a list or dict;
-- renewal payment clean-up of a payment with an invoice;
 - `str(e)` bodies of the Python exceptions not listed above (unknown dateutil formats, out-of-range days, non-dict tutors and similar);
 - the inputs `subscription-create.md` refuses: preregistration, new member accounts, signature uploads, certificate expiration
   dates, `type_of_associate`, and the rest.
@@ -95,7 +94,7 @@ Refused with the 500 page before anything is committed:
 
 ## Evidence
 
-`TESTS/fixtures/subscription_renew_http.json` (54 cases, `TESTS/fixtures/generate_subscription_renew_http.py`), contract
+`TESTS/fixtures/subscription_renew_http.json` (55 cases, `TESTS/fixtures/generate_subscription_renew_http.py`), contract
 `TESTS/contracts/test_subscription_renew_http.py`, adapter `TESTS/adapters/django/subscription_renew_http.py`. Each case checks:
 - the complete state of the managed models: new rows against defaults, changed and deleted rows, tag links;
 - the auditlog entries and index rows in order (deletes against auditlog's own diff of the row loaded before the request);
@@ -111,3 +110,11 @@ Refused with the 500 page before anything is committed:
   `SendValidated` once the caller's transaction wrote `validate_broadcast`'s rows), re-run green (`rerun-renew-merge-r1`):
   `subscription-transfer` 29/29 and `subscription-create` 40/40 on all four transports, `websockets` 75/75, `associates-draft` 128/128
   and `email-render-routes` 82/82 natively.
+
+v2-subscriptions: the renewal's payment clean-up now deletes unpaid subscription payments that have an invoice
+(`QuerySet.delete()` leaves the invoice; `Payment.invoice` points from the payment). Case
+`subscription-renew-renew-cleans-invoiced-payment`.
+
+- RED (`v2sub-red-r1`): Django 55/55; Go 500 on that case.
+- GREEN (`v2sub-versioned-r1`): 55/55 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`v2sub-mutation-r1`): excluding invoiced payments from the clean-up query fails that case (CAUGHT).

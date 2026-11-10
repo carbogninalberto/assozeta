@@ -47,6 +47,7 @@ Receipts are `quality-reports/go-migration/<family>-http-v2sub-*`; each family d
 | subscription-lifecycle | `POST subscription/<uid>/delete` | signed subscription; rows of other models referencing it; unpaid invoiced payment | same run |
 | subscription-reads | `GET`/`POST subscription/list` (athlete) | every athlete request | 261 cases; RED `v2sub-red-r2` Django 261/261, Go 500; GREEN `v2sub-versioned-r1` 4 transports; mutation `v2sub-mutation-r1` (ascending order) CAUGHT |
 | subscription-reads | `GET subscription/<uid>/info` | subscription without `document_pdf` (now publishes `print_document_subscription`) | same run |
+| subscription-renew | `POST subscription/renew` | payment clean-up meets an unpaid invoiced payment | 55 cases; RED `v2sub-red-r1` Django 55/55, Go 500; GREEN `v2sub-versioned-r1` 4 transports; mutation `v2sub-mutation-r1` (invoiced payments excluded) CAUGHT |
 | subscription-transfer | `POST subscription/<uid>/transfer` (e-mail branch) | tutor/associate names starting with non-ASCII letters; non-ASCII e-mail domain | 31 cases; RED `v2sub-red-r1` Django 31/31, Go 500; GREEN `v2sub-versioned-r1` 4 transports 31/31; mutation `v2sub-mutation-r1` (no NFKC) CAUGHT |
 
 ## Remaining A items, per family
@@ -86,7 +87,6 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 | POST .../medical-certificate/set-certificate-expiration | member without a certificate | `Members/detail/sections/modals/AddMedicalCertificate.svelte:51` | `service/subscription_medical.go:389` | medium |
 | POST subscription/renew | athlete session | `activities/subscription/partials/subscription-element.svelte:231` | `service/subscription_renew.go:53` | medium |
 | POST subscription/renew | member with courses (pre-filled) | `Members/modals/RenewalModal.svelte:58` | `service/subscription_renew.go:96` | medium-expensive |
-| POST subscription/renew | clean-up meets an unpaid invoiced payment | same | `service/subscription_renew.go:119` | medium |
 | GET subscription card, validate-token-link | unknown token while a Bakney pairing is active | `Tessera.svelte:54`, `SubscribeMultiple.svelte:222` | `service/subscription_card.go:61`, `service/subscription_misc.go:318` | medium |
 
 ### course-subscriptions / course-enrolment / course-writes / course-list / course-locations / course-calendar
@@ -866,7 +866,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 |---|---|---|---|---|
 | POST subscription/renew | renewal by an athlete | `service/subscription_renew.go:52-53`, `domain.ErrSubscriptionCreateNotPorted` | **A** | The athlete area renews through `RenewalModal` (`routes/activities/subscription/partials/subscription-element.svelte:231`), which POSTs to `SUBSCRIPTION.RENEW` (`Members/modals/RenewalModal.svelte:65`) |
 | same | renewal with non-empty `courses` | `:96` | **A** | `RenewalModal.svelte:58` sends `courses: formData.renewal_info?.courses`. `partials/course-selection.svelte:17-29` pre-fills it with the member's current courses from info. Any member enrolled in a course hits it. Django `subscriptions_views.py:247` (`add_course_to_subscription`) |
-| same | renewal payment clean-up meets an unpaid payment with an invoice | `:119` | **A** | data from payment cancel (top) in the new period |
+| same | renewal payment clean-up meets an unpaid payment with an invoice | `:119` | **ported** (v2-subscriptions) | data from payment cancel (top) in the new period |
 | same | `X-Group-Id` non-empty; form body | `:53` | B | UI sends JSON and never sets a group |
 | same | `data['sport_association']` names another association | (renew service) | B | UI sends the row's own association |
 | same | `tags` string / non-string ids | `:188` etc. | B | UI sends the list row's tag objects (handled at `:190-198`) |

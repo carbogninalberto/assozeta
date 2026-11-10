@@ -110,13 +110,11 @@ func (s *SubscriptionRenewals) cleanPayments(ctx context.Context, tx domain.Subs
 	if created.start == nil || created.end == nil {
 		return domain.ErrSubscriptionCreateNotPorted
 	}
-	ids, invoiced, err := tx.RenewalPayments(ctx, created.association, created.first, created.last, created.tax, calendarTime(*created.start),
+	// QuerySet.delete() of invoiced payments leaves their invoices: Payment.invoice points from the payment.
+	ids, _, err := tx.RenewalPayments(ctx, created.association, created.first, created.last, created.tax, calendarTime(*created.start),
 		calendarTime(*created.end), created.result.PaymentID, paymentStateScope(identity))
 	if err != nil {
 		return err
-	}
-	if invoiced {
-		return domain.ErrSubscriptionCreateNotPorted
 	}
 	if len(ids) == 0 {
 		return nil

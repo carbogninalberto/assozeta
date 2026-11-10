@@ -73,6 +73,13 @@ PAYMENTS = {
     'removed_reused': {'id': next(ids), 'associate': 'removed', 'amount': '25.00', 'paid': False, 'subject': 1, 'date': '$today'},
     'removed_stale': {'id': next(ids), 'associate': 'removed', 'amount': '40.00', 'paid': False, 'subject': 1, 'date': '$today'},
 }
+# An unpaid subscription payment with an invoice (payment cancel and invoice generation leave them): the renewal's
+# QuerySet.delete() removes the payment; the invoice stays.
+ASSOCIATES['invoiced'] = {'id': next(ids), 'association': OWN, 'first': 'Ivo', 'last': 'Fatturato', 'tax_code': 'FTTVIO80A01H501E',
+                          'born': '1980-01-01', 'user': 'owner', 'email': None, 'deleted': False}
+INVOICES = {'stale_invoice': {'id': next(ids)}}
+PAYMENTS['invoiced_stale'] = {'id': next(ids), 'associate': 'invoiced', 'amount': '40.00', 'paid': False, 'subject': 1, 'date': '$today',
+                              'invoice': 'stale_invoice'}
 TAGS = {
     'tag_a': {'id': next(ids), 'association': OWN, 'name': 'Agonisti'},
     'tag_b': {'id': next(ids), 'association': OWN, 'name': 'Bambini'},
@@ -504,11 +511,26 @@ add('approve-draft-without-associate', 'approve', 'owner', 500, SERVER,
                   audit=[*status_entries(delete_new=False), *audit],
                   celery=celery, notifications=notifications))
 
+invoiced = {'associate_id': ASSOCIATES['invoiced']['id'], 'first_name': 'Ivo', 'last_name': 'Fatturato', 'tax_code': 'FTTVIO80A01H501E',
+            'born_date': '01/01/1980', 'sex': 'M', 'type': 1}
+rows = [new_payment('$invoiced_payment', ASSOCIATES['invoiced']['id']),
+        *subscription_rows('$invoiced_subscription', ASSOCIATES['invoiced']['id'], kind=1, payment='$invoiced_payment')]
+add('renew-cleans-invoiced-payment', 'renew', 'owner', 200, {'status': 'success', 'payment_id': '$new'},
+    body=renewal(invoiced),
+    effect=effect('owner', new=rows, changed={'associate': {'invoiced': {'sex': 'M'}}}, deleted={'payment': ['invoiced_stale']},
+                  audit=[entry('associate', 1, 'invoiced', {'sex': ['A', 'M']}),
+                         entry('payment', 0, '$invoiced_payment', {'amount': ['None', '25.0']}),
+                         entry('subscription', 0, '$invoiced_subscription'),
+                         entry('payment', 2, 'invoiced_stale', index=(OWN, 'changes_json.sport_association'), deleted=True),
+                         *notification_entries('owner')],
+                  celery=tasks('$invoiced_subscription'),
+                  notifications=[{'msg': 'Nuova Iscrizione aggiunta per Ivo Fatturato.', 'association': OWN}]))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/renew and associates-draft approve authored sequence with row, audit, Celery and '
                                   'notification effects',
     'ids': IDS, 'associates': ASSOCIATES, 'subscriptions': SUBSCRIPTIONS, 'payments': PAYMENTS, 'tags': TAGS,
-    'certificates': CERTIFICATES, 'target_user': TARGET_USER, 'account': ACCOUNT, 'drafts': DRAFTS, 'statuses': STATUSES,
+    'certificates': CERTIFICATES, 'invoices': INVOICES, 'target_user': TARGET_USER, 'account': ACCOUNT, 'drafts': DRAFTS, 'statuses': STATUSES,
     'settings': BASE_SETTINGS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

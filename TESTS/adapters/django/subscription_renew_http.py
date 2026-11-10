@@ -48,7 +48,7 @@ SOURCES = ('TESTS/fixtures/subscription_renew_http.json', 'TESTS/contracts/test_
            'BE/application/utils/notification_utils.py', 'BE/notifications/services.py', 'BE/notifications/utils.py',
            'BE/notifications/models.py', 'BE/notifications/realtime_layer.py', 'BE/application/audit_resolvers.py',
            'BE/application/mixin.py', 'BE/application/permissions_registry.py', 'BE/application/impersonation_scope.py',
-           'BE/core/celery.py', 'BE/core/settings.py') + harness.SOURCES
+           'BE/core/celery.py', 'BE/core/settings.py', 'BE/application/models/invoices_models.py') + harness.SOURCES
 TTL = create.TTL
 LABELS = {
     'associate': 'application.Associate', 'payment': 'application.Payment', 'subscription': 'application.Subscription',
@@ -131,8 +131,12 @@ def seed_rows(source, created):
                                     user_id=ids[row['user']] if row['user'] else None, email=row['email'], deleted=row['deleted']))
     for row in source['certificates'].values():
         insert(MedicalCertificate, MedicalCertificate(medical_id=row['id'], user_id=ids[row['user']] if row['user'] else None))
+    from application.models.invoices_models import Invoice
+    for row in source['invoices'].values():
+        insert(Invoice, Invoice(invoice_id=row['id'], sport_association_id=ids['own_association'], membership_fee=0, activity_fee=40,
+                                description='Fattura fixture', number=3))
     for row in source['payments'].values():
-        insert(Payment, Payment(payment_id=row['id'], associate_id=source['associates'][row['associate']]['id'],
+        insert(Payment, Payment(invoice_id=source['invoices'][row['invoice']]['id'] if row.get('invoice') else None,payment_id=row['id'], associate_id=source['associates'][row['associate']]['id'],
                                 sport_association_id=ids['own_association'], user_id=ids['owner'], subject=row['subject'],
                                 amount=row['amount'], paid=row['paid'], description='Iscrizione', payment_category_id=STATE['category'],
                                 payment_date=datetime.combine(resolve_date(row['date']), day_time(), tzinfo=timezone.utc)))
