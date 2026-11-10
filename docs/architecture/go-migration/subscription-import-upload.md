@@ -190,4 +190,4 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
 - v2subs3 (69 cases; `date-forms`: dashes, dots, month names, a time, a whole number, a word): RED: documented refusal
   (v2-refusals.md, "a non-zero number in a date column, or date text outside ..."). GREEN (`v2subs3-versioned-r1`, after
   merging the base): 69/69 on four transports. Mutation (`v2subs3-mutation-r1`): reading every date text day first, also
-  after a leading year, fails Go on `subscription-import-upload-date-forms` (CAUGHT).
+  after a leading year, fails Go on `subscription-import-upload-wizard-map` (`state.drafts`, CAUGHT).
