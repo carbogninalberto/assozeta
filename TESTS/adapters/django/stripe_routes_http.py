@@ -258,7 +258,7 @@ def seed_rows(source, created):
             payment_intent_id=row['intent'], invoice_id=source['invoices'][label]['id'] if row['invoice'] else None,
             group_id=ids[row['group']] if row['group'] else None, deleted=row['deleted'], payment_category_id=row['category'],
             creation_date=moment(row['created']), payment_date=moment(row['payment_date']), description=row['description'],
-            meta_payment_categories=row.get('meta_categories'), type=row['type']))
+            meta_payment_categories=row.get('meta_categories'), meta=row.get('meta'), type=row['type']))
     for label, row in source['supplier_invoices'].items():
         insert(InvoiceSuppliers, InvoiceSuppliers(invoice_supplier_id=row['id'], invoice_identifier=row['identifier'],
                                                   amount=Decimal(row['amount']), sport_association_id=payments[label]['association'],

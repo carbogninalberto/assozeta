@@ -331,6 +331,39 @@
    "elements": {},
    "id": "a1000000-0000-4000-8000-000000643009"
   },
+  "deleted_association": {
+   "association": "a1000000-0000-4000-8000-000000701003",
+   "link": "risposte-eliminata",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "heading",
+     "props": {
+      "label": "Titolo"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Nome",
+      "name": "nome"
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643010"
+  },
   "nullnum": {
    "association": "a1000000-0000-4000-8000-000000701001",
    "link": "risposte-nullo",
@@ -362,7 +395,7 @@
      }
     }
    ],
-   "id": "a1000000-0000-4000-8000-000000643010"
+   "id": "a1000000-0000-4000-8000-000000643011"
   },
   "export": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -766,29 +799,29 @@
  },
  "documents": {
   "d1": {
-   "id": "a1000000-0000-4000-8000-000000643011",
+   "id": "a1000000-0000-4000-8000-000000643012",
    "filename": "certificato è.pdf",
-   "token": "a1000000-0000-4000-8000-000000643012"
+   "token": "a1000000-0000-4000-8000-000000643013"
   },
   "d2": {
-   "id": "a1000000-0000-4000-8000-000000643013",
+   "id": "a1000000-0000-4000-8000-000000643014",
    "filename": "foto.png",
-   "token": "a1000000-0000-4000-8000-000000643014"
+   "token": "a1000000-0000-4000-8000-000000643015"
   },
   "d3": {
-   "id": "a1000000-0000-4000-8000-000000643015",
+   "id": "a1000000-0000-4000-8000-000000643016",
    "filename": "libero.txt",
-   "token": "a1000000-0000-4000-8000-000000643016"
+   "token": "a1000000-0000-4000-8000-000000643017"
   },
   "d4": {
-   "id": "a1000000-0000-4000-8000-000000643017",
+   "id": "a1000000-0000-4000-8000-000000643018",
    "filename": "condiviso.pdf",
-   "token": "a1000000-0000-4000-8000-000000643018"
+   "token": "a1000000-0000-4000-8000-000000643019"
   },
   "d5": {
-   "id": "a1000000-0000-4000-8000-000000643019",
+   "id": "a1000000-0000-4000-8000-000000643020",
    "filename": "anonimo.txt",
-   "token": "a1000000-0000-4000-8000-000000643020"
+   "token": "a1000000-0000-4000-8000-000000643021"
   },
   "d6": {
    "id": "a1000000-0000-4000-8000-000000643108",
@@ -814,7 +847,7 @@
    "attachments": [
     "d1"
    ],
-   "id": "a1000000-0000-4000-8000-000000643021",
+   "id": "a1000000-0000-4000-8000-000000643022",
    "module": "open",
    "number": 0,
    "export_user": null,
@@ -832,7 +865,7 @@
    "attachments": [
     "d2"
    ],
-   "id": "a1000000-0000-4000-8000-000000643022",
+   "id": "a1000000-0000-4000-8000-000000643023",
    "module": "open",
    "number": 1,
    "export_user": null,
@@ -847,7 +880,7 @@
    "attachments": [
     "d4"
    ],
-   "id": "a1000000-0000-4000-8000-000000643023",
+   "id": "a1000000-0000-4000-8000-000000643024",
    "module": "open",
    "number": 2,
    "export_user": null,
@@ -860,7 +893,7 @@
    "approved": true,
    "user": null,
    "attachments": [],
-   "id": "a1000000-0000-4000-8000-000000643024",
+   "id": "a1000000-0000-4000-8000-000000643025",
    "module": "full",
    "number": 0,
    "export_user": null,
@@ -875,7 +908,7 @@
    "approved": false,
    "user": null,
    "attachments": [],
-   "id": "a1000000-0000-4000-8000-000000643025",
+   "id": "a1000000-0000-4000-8000-000000643026",
    "module": "queue",
    "number": 0,
    "export_user": null,
@@ -890,7 +923,7 @@
    "approved": false,
    "user": null,
    "attachments": [],
-   "id": "a1000000-0000-4000-8000-000000643026",
+   "id": "a1000000-0000-4000-8000-000000643027",
    "module": "queue",
    "number": 1,
    "export_user": null,
@@ -905,7 +938,7 @@
    "approved": false,
    "user": null,
    "attachments": [],
-   "id": "a1000000-0000-4000-8000-000000643027",
+   "id": "a1000000-0000-4000-8000-000000643028",
    "module": "queue",
    "number": 2,
    "export_user": null,
@@ -918,7 +951,7 @@
    "approved": true,
    "user": null,
    "attachments": [],
-   "id": "a1000000-0000-4000-8000-000000643028",
+   "id": "a1000000-0000-4000-8000-000000643029",
    "module": "queue",
    "number": 3,
    "export_user": null,
@@ -933,7 +966,7 @@
    "approved": false,
    "user": null,
    "attachments": [],
-   "id": "a1000000-0000-4000-8000-000000643029",
+   "id": "a1000000-0000-4000-8000-000000643030",
    "module": "foreign",
    "number": 0,
    "export_user": null,
@@ -948,7 +981,7 @@
    "attachments": [
     "d4"
    ],
-   "id": "a1000000-0000-4000-8000-000000643030",
+   "id": "a1000000-0000-4000-8000-000000643031",
    "module": "foreign",
    "number": 1,
    "export_user": null,
@@ -961,7 +994,7 @@
    "approved": false,
    "user": null,
    "attachments": [],
-   "id": "a1000000-0000-4000-8000-000000643031",
+   "id": "a1000000-0000-4000-8000-000000643032",
    "module": "orphan",
    "number": 0,
    "export_user": null,
@@ -974,7 +1007,7 @@
    "approved": true,
    "user": null,
    "attachments": [],
-   "id": "a1000000-0000-4000-8000-000000643032",
+   "id": "a1000000-0000-4000-8000-000000643033",
    "module": "nullnum",
    "number": null,
    "export_user": null,
@@ -3012,7 +3045,7 @@
    "name": "modules-responses-info-response",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/modules/risposte-aperto/info?response_id=a1000000-0000-4000-8000-000000643021",
+   "path": "/modules/risposte-aperto/info?response_id=a1000000-0000-4000-8000-000000643022",
    "headers": {},
    "status": 200,
    "response": {
@@ -3140,7 +3173,7 @@
      ]
     },
     "response_data": {
-     "module_response_id": "a1000000-0000-4000-8000-000000643021",
+     "module_response_id": "a1000000-0000-4000-8000-000000643022",
      "module": "a1000000-0000-4000-8000-000000643001",
      "creation_date": "2026-09-02T10:00:00.500000Z",
      "progressive_response_number": 0,
@@ -3153,13 +3186,13 @@
      "user": "a1000000-0000-4000-8000-000000700004",
      "payment": null,
      "attachments": [
-      "a1000000-0000-4000-8000-000000643011"
+      "a1000000-0000-4000-8000-000000643012"
      ],
      "attachments_docs": [
       {
-       "document_id": "a1000000-0000-4000-8000-000000643011",
+       "document_id": "a1000000-0000-4000-8000-000000643012",
        "filename": "certificato è.pdf",
-       "token": "a1000000-0000-4000-8000-000000643012"
+       "token": "a1000000-0000-4000-8000-000000643013"
       }
      ]
     }
@@ -3170,7 +3203,7 @@
    "name": "modules-responses-info-response-of-another-module",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/modules/risposte-aperto/info?response_id=a1000000-0000-4000-8000-000000643029",
+   "path": "/modules/risposte-aperto/info?response_id=a1000000-0000-4000-8000-000000643030",
    "headers": {},
    "status": 200,
    "response": {
@@ -3298,7 +3331,7 @@
      ]
     },
     "response_data": {
-     "module_response_id": "a1000000-0000-4000-8000-000000643029",
+     "module_response_id": "a1000000-0000-4000-8000-000000643030",
      "module": "a1000000-0000-4000-8000-000000643007",
      "creation_date": "2026-09-02T10:00:00Z",
      "progressive_response_number": 0,
@@ -3319,7 +3352,7 @@
    "name": "modules-responses-info-response-hex-upper",
    "actor": "athlete",
    "method": "GET",
-   "path": "/modules/risposte-aperto/info?response_id=A1000000000040008000000000643023",
+   "path": "/modules/risposte-aperto/info?response_id=A1000000000040008000000000643024",
    "headers": {},
    "status": 200,
    "response": {
@@ -3447,7 +3480,7 @@
      ]
     },
     "response_data": {
-     "module_response_id": "a1000000-0000-4000-8000-000000643023",
+     "module_response_id": "a1000000-0000-4000-8000-000000643024",
      "module": "a1000000-0000-4000-8000-000000643001",
      "creation_date": "2026-09-02T10:00:00Z",
      "progressive_response_number": 2,
@@ -3457,13 +3490,13 @@
      "user": null,
      "payment": null,
      "attachments": [
-      "a1000000-0000-4000-8000-000000643017"
+      "a1000000-0000-4000-8000-000000643018"
      ],
      "attachments_docs": [
       {
-       "document_id": "a1000000-0000-4000-8000-000000643017",
+       "document_id": "a1000000-0000-4000-8000-000000643018",
        "filename": "condiviso.pdf",
-       "token": "a1000000-0000-4000-8000-000000643018"
+       "token": "a1000000-0000-4000-8000-000000643019"
       }
      ]
     }
@@ -3620,7 +3653,7 @@
    "name": "modules-responses-info-response-last-value",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/modules/risposte-aperto/info?response_id=abc&response_id=a1000000-0000-4000-8000-000000643022",
+   "path": "/modules/risposte-aperto/info?response_id=abc&response_id=a1000000-0000-4000-8000-000000643023",
    "headers": {},
    "status": 200,
    "response": {
@@ -3748,7 +3781,7 @@
      ]
     },
     "response_data": {
-     "module_response_id": "a1000000-0000-4000-8000-000000643022",
+     "module_response_id": "a1000000-0000-4000-8000-000000643023",
      "module": "a1000000-0000-4000-8000-000000643001",
      "creation_date": "2026-09-02T10:00:00Z",
      "progressive_response_number": 1,
@@ -3761,13 +3794,13 @@
      "user": null,
      "payment": null,
      "attachments": [
-      "a1000000-0000-4000-8000-000000643013"
+      "a1000000-0000-4000-8000-000000643014"
      ],
      "attachments_docs": [
       {
-       "document_id": "a1000000-0000-4000-8000-000000643013",
+       "document_id": "a1000000-0000-4000-8000-000000643014",
        "filename": "foto.png",
-       "token": "a1000000-0000-4000-8000-000000643014"
+       "token": "a1000000-0000-4000-8000-000000643015"
       }
      ]
     }
@@ -3944,6 +3977,424 @@
    "effect": null
   },
   {
+   "name": "modules-responses-info-foreign-association",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/risposte-estero/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643007",
+     "enabled": true,
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": null,
+      "demand": null,
+      "logo": null,
+      "subscription_fee": "0.00",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [],
+      "membership_fee": null,
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
+        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
+        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
+        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
+       }
+      ],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": [
+       "associate",
+       "associate-membership",
+       "membership"
+      ],
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": [
+       "card",
+       "sepa_debit"
+      ],
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": "invoice.html",
+      "subscription_template": "subscription.html",
+      "extra_text_invoices": null,
+      "imported_from_associami": false,
+      "groups": [
+       {
+        "label": "Scope foreign group",
+        "value": "a1000000-0000-4000-8000-000000714002"
+       }
+      ],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": true,
+      "show_demand_to_both": true,
+      "show_demand_to_athletes": true
+     },
+     "custom_link": "risposte-estero",
+     "creation_date": "2026-09-01T08:00:00Z",
+     "title": "Modulo",
+     "require_approval": false,
+     "start_date": null,
+     "end_date": null,
+     "always_active": true,
+     "max_responses": null,
+     "queue_mode": false,
+     "only_users": false,
+     "payment_required": false,
+     "payment_data": {},
+     "response_message": null,
+     "allow_attachments": false,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ]
+    },
+    "response_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-inactive-association",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/risposte-eliminata/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643010",
+     "enabled": true,
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701003",
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": null,
+      "demand": null,
+      "logo": null,
+      "subscription_fee": "0.00",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [],
+      "membership_fee": null,
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
+        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
+        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
+        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
+       }
+      ],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": [
+       "associate",
+       "associate-membership",
+       "membership"
+      ],
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": [
+       "card",
+       "sepa_debit"
+      ],
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": "invoice.html",
+      "subscription_template": "subscription.html",
+      "extra_text_invoices": null,
+      "imported_from_associami": false,
+      "groups": [],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": true,
+      "show_demand_to_both": true,
+      "show_demand_to_athletes": true
+     },
+     "custom_link": "risposte-eliminata",
+     "creation_date": "2026-09-01T08:00:00Z",
+     "title": "Modulo",
+     "require_approval": false,
+     "start_date": null,
+     "end_date": null,
+     "always_active": true,
+     "max_responses": null,
+     "queue_mode": false,
+     "only_users": false,
+     "payment_required": false,
+     "payment_data": {},
+     "response_message": null,
+     "allow_attachments": false,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ]
+    },
+    "response_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-inactive-association-response",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/risposte-eliminata/info?response_id=a1000000-0000-4000-8000-000000643022",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643010",
+     "enabled": true,
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701003",
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": null,
+      "demand": null,
+      "logo": null,
+      "subscription_fee": "0.00",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [],
+      "membership_fee": null,
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
+        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
+        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
+        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
+       }
+      ],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": [
+       "associate",
+       "associate-membership",
+       "membership"
+      ],
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": [
+       "card",
+       "sepa_debit"
+      ],
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": "invoice.html",
+      "subscription_template": "subscription.html",
+      "extra_text_invoices": null,
+      "imported_from_associami": false,
+      "groups": [],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": true,
+      "show_demand_to_both": true,
+      "show_demand_to_athletes": true
+     },
+     "custom_link": "risposte-eliminata",
+     "creation_date": "2026-09-01T08:00:00Z",
+     "title": "Modulo",
+     "require_approval": false,
+     "start_date": null,
+     "end_date": null,
+     "always_active": true,
+     "max_responses": null,
+     "queue_mode": false,
+     "only_users": false,
+     "payment_required": false,
+     "payment_data": {},
+     "response_message": null,
+     "allow_attachments": false,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ]
+    },
+    "response_data": {
+     "module_response_id": "a1000000-0000-4000-8000-000000643022",
+     "module": "a1000000-0000-4000-8000-000000643001",
+     "creation_date": "2026-09-02T10:00:00.500000Z",
+     "progressive_response_number": 0,
+     "queue_position": null,
+     "response": {
+      "nome": "Anna è",
+      "eta": 12
+     },
+     "approved": true,
+     "user": "a1000000-0000-4000-8000-000000700004",
+     "payment": null,
+     "attachments": [
+      "a1000000-0000-4000-8000-000000643012"
+     ],
+     "attachments_docs": [
+      {
+       "document_id": "a1000000-0000-4000-8000-000000643012",
+       "filename": "certificato è.pdf",
+       "token": "a1000000-0000-4000-8000-000000643013"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
    "name": "modules-responses-add-admin-without-session",
    "actor": "admin",
    "method": "POST",
@@ -4104,7 +4555,7 @@
    "name": "modules-responses-add-null-progressive-server-error",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/modules/a1000000-0000-4000-8000-000000643010/response/add",
+   "path": "/modules/a1000000-0000-4000-8000-000000643011/response/add",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -4871,7 +5322,7 @@
    "name": "modules-responses-approve-anonymous",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/approve",
    "headers": {},
    "status": 401,
    "response": {
@@ -4883,7 +5334,7 @@
    "name": "modules-responses-approve-admin-without-session",
    "actor": "admin",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/approve",
    "headers": {},
    "status": 403,
    "response": {
@@ -4895,7 +5346,7 @@
    "name": "modules-responses-approve-restricted-missing-permission",
    "actor": "restricted_collaborator",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/approve",
    "headers": {},
    "status": 403,
    "response": {
@@ -4907,7 +5358,7 @@
    "name": "modules-responses-approve-owner-scoped-athlete",
    "actor": "owner",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/approve",
    "headers": {
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
@@ -4922,7 +5373,7 @@
    "name": "modules-responses-approve-wrong-method",
    "actor": "owner",
    "method": "GET",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/approve",
    "headers": {},
    "status": 405,
    "response": {
@@ -4934,7 +5385,7 @@
    "name": "modules-responses-approve-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/approve",
    "headers": {},
    "status": 200,
    "response": {
@@ -4979,7 +5430,7 @@
    "name": "modules-responses-approve-athlete-denied",
    "actor": "athlete",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/approve",
    "headers": {},
    "status": 403,
    "response": {
@@ -4991,7 +5442,7 @@
    "name": "modules-responses-approve-owner-without-association",
    "actor": "owner_without_association",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/approve",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -5001,7 +5452,7 @@
    "name": "modules-responses-approve-deleted-association-owner",
    "actor": "deleted_association_owner",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/approve",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -5011,7 +5462,7 @@
    "name": "modules-responses-approve-foreign-response",
    "actor": "owner",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643029/approve",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643030/approve",
    "headers": {},
    "status": 404,
    "response": {
@@ -5023,7 +5474,7 @@
    "name": "modules-responses-approve-orphan-response",
    "actor": "owner",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643031/approve",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643032/approve",
    "headers": {},
    "status": 404,
    "response": {
@@ -5047,7 +5498,7 @@
    "name": "modules-responses-approve-owner-queue",
    "actor": "owner",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/approve",
    "headers": {},
    "status": 200,
    "response": {
@@ -5142,7 +5593,7 @@
    "name": "modules-responses-approve-repeat",
    "actor": "owner",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/approve",
    "headers": {},
    "status": 200,
    "response": {
@@ -5158,7 +5609,7 @@
    "name": "modules-responses-approve-foreign-owner",
    "actor": "foreign_owner",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643029/approve",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643030/approve",
    "headers": {},
    "status": 200,
    "response": {
@@ -5188,7 +5639,7 @@
    "name": "modules-responses-approve-full-collaborator-hex",
    "actor": "full_collaborator",
    "method": "POST",
-   "path": "/modules/response/a1000000000040008000000000643022/approve",
+   "path": "/modules/response/a1000000000040008000000000643023/approve",
    "headers": {},
    "status": 200,
    "response": {
@@ -5218,7 +5669,7 @@
    "name": "modules-responses-delete-anonymous",
    "actor": "anonymous",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643027/delete",
    "headers": {},
    "status": 401,
    "response": {
@@ -5230,7 +5681,7 @@
    "name": "modules-responses-delete-admin-without-session",
    "actor": "admin",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643027/delete",
    "headers": {},
    "status": 403,
    "response": {
@@ -5242,7 +5693,7 @@
    "name": "modules-responses-delete-restricted-missing-permission",
    "actor": "restricted_collaborator",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643027/delete",
    "headers": {},
    "status": 403,
    "response": {
@@ -5254,7 +5705,7 @@
    "name": "modules-responses-delete-owner-scoped-athlete",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643027/delete",
    "headers": {
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
@@ -5269,7 +5720,7 @@
    "name": "modules-responses-delete-wrong-method",
    "actor": "owner",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643027/delete",
    "headers": {},
    "status": 405,
    "response": {
@@ -5281,7 +5732,7 @@
    "name": "modules-responses-delete-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643027/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -5314,7 +5765,7 @@
    "name": "modules-responses-delete-athlete-denied",
    "actor": "athlete",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643027/delete",
    "headers": {},
    "status": 403,
    "response": {
@@ -5326,7 +5777,7 @@
    "name": "modules-responses-delete-owner-without-association",
    "actor": "owner_without_association",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643027/delete",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -5336,7 +5787,7 @@
    "name": "modules-responses-delete-foreign-response",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643030/delete",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643031/delete",
    "headers": {},
    "status": 404,
    "response": {
@@ -5360,7 +5811,7 @@
    "name": "modules-responses-delete-owner-queue",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643027/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -5427,7 +5878,7 @@
    "name": "modules-responses-delete-repeat",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643027/delete",
    "headers": {},
    "status": 404,
    "response": {
@@ -5439,7 +5890,7 @@
    "name": "modules-responses-delete-admin-impersonating-with-attachment",
    "actor": "admin",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643022/delete",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/delete",
    "headers": {
     "X-Impersonation-Id": "$session:admin_owner",
     "User-Id": "a1000000-0000-4000-8000-000000700001"
@@ -5470,7 +5921,7 @@
    "name": "modules-responses-delete-foreign-owner",
    "actor": "foreign_owner",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643029/delete",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643030/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -5498,7 +5949,7 @@
    "name": "modules-responses-attach-admin-without-session",
    "actor": "admin",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 403,
    "response": {
@@ -5511,7 +5962,7 @@
    "name": "modules-responses-attach-restricted-missing-permission",
    "actor": "restricted_collaborator",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 403,
    "response": {
@@ -5524,7 +5975,7 @@
    "name": "modules-responses-attach-restricted-delete-missing-permission",
    "actor": "restricted_collaborator",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 403,
    "response": {
@@ -5537,7 +5988,7 @@
    "name": "modules-responses-attach-owner-scoped-athlete",
    "actor": "owner",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
@@ -5553,7 +6004,7 @@
    "name": "modules-responses-attach-wrong-method",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 405,
    "response": {
@@ -5565,7 +6016,7 @@
    "name": "modules-responses-attach-put-method",
    "actor": "owner",
    "method": "PUT",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 405,
    "response": {
@@ -5578,7 +6029,7 @@
    "name": "modules-responses-attach-options",
    "actor": "anonymous",
    "method": "OPTIONS",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -5623,14 +6074,14 @@
    ],
    "effect": null,
    "body": {
-    "document_id": "a1000000-0000-4000-8000-000000643015"
+    "document_id": "a1000000-0000-4000-8000-000000643016"
    }
   },
   {
    "name": "modules-responses-attach-nothing-sent",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -5658,7 +6109,7 @@
    "name": "modules-responses-attach-list-body",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -5673,7 +6124,7 @@
    "name": "modules-responses-attach-string-body-server-error",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -5684,7 +6135,7 @@
    "name": "modules-responses-attach-anonymous",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -5742,7 +6193,7 @@
    "name": "modules-responses-attach-owner-data-uri-padding",
    "actor": "owner",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -5801,7 +6252,7 @@
    "name": "modules-responses-attach-full-collaborator-junk-characters",
    "actor": "full_collaborator",
    "method": "POST",
-   "path": "/modules/response/A1000000-0000-4000-8000-000000643021/add-attachment",
+   "path": "/modules/response/A1000000-0000-4000-8000-000000643022/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -5859,7 +6310,7 @@
    "name": "modules-responses-attach-compressed-tar-gz",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -5918,7 +6369,7 @@
    "name": "modules-responses-attach-compressed-tgz",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -5977,7 +6428,7 @@
    "name": "modules-responses-attach-compressed-gz-only",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -6036,7 +6487,7 @@
    "name": "modules-responses-attach-compressed-csv-bz2",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -6095,7 +6546,7 @@
    "name": "modules-responses-attach-compressed-txz",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -6154,7 +6605,7 @@
    "name": "modules-responses-attach-compressed-svgz",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -6213,7 +6664,7 @@
    "name": "modules-responses-attach-compressed-pdf-br",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -6272,7 +6723,7 @@
    "name": "modules-responses-attach-compressed-upper-z",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -6331,7 +6782,7 @@
    "name": "modules-responses-attach-compressed-lower-z",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -6389,7 +6840,7 @@
    "name": "modules-responses-attach-compressed-upper-gz",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -6503,7 +6954,7 @@
    "name": "modules-responses-attach-bad-padding-server-error",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -6554,7 +7005,7 @@
    "name": "modules-responses-attach-non-ascii-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -6605,7 +7056,7 @@
    "name": "modules-responses-attach-delete-missing-key",
    "actor": "anonymous",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 404,
    "response": {
@@ -6618,7 +7069,7 @@
    "name": "modules-responses-attach-delete-null-document",
    "actor": "anonymous",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 404,
    "response": {
@@ -6633,7 +7084,7 @@
    "name": "modules-responses-attach-delete-unknown-document",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 404,
    "response": {
@@ -6663,7 +7114,7 @@
    "name": "modules-responses-attach-delete-list-without-key",
    "actor": "anonymous",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 404,
    "response": {
@@ -6678,7 +7129,7 @@
    "name": "modules-responses-attach-delete-list-key-server-error",
    "actor": "anonymous",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -6691,7 +7142,7 @@
    "name": "modules-responses-attach-delete-malformed-document-server-error",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -6710,14 +7161,14 @@
    "response": "<stable-server-error-page>",
    "effect": null,
    "body": {
-    "document_id": "a1000000-0000-4000-8000-000000643011"
+    "document_id": "a1000000-0000-4000-8000-000000643012"
    }
   },
   {
    "name": "modules-responses-attach-delete-owner-unlinked",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -6742,14 +7193,14 @@
     ]
    },
    "body": {
-    "document_id": "a1000000-0000-4000-8000-000000643015"
+    "document_id": "a1000000-0000-4000-8000-000000643016"
    }
   },
   {
    "name": "modules-responses-attach-delete-repeat",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 404,
    "response": {
@@ -6757,14 +7208,14 @@
    },
    "effect": null,
    "body": {
-    "document_id": "a1000000-0000-4000-8000-000000643015"
+    "document_id": "a1000000-0000-4000-8000-000000643016"
    }
   },
   {
    "name": "modules-responses-attach-delete-full-collaborator-shared",
    "actor": "full_collaborator",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -6798,14 +7249,14 @@
     ]
    },
    "body": {
-    "document_id": "A1000000-0000-4000-8000-000000643017"
+    "document_id": "A1000000-0000-4000-8000-000000643018"
    }
   },
   {
    "name": "modules-responses-attach-delete-anonymous-other-response",
    "actor": "anonymous",
    "method": "DELETE",
-   "path": "/modules/response/a1000000-0000-4000-8000-000000643027/add-attachment",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643028/add-attachment",
    "headers": {},
    "status": 200,
    "response": {
@@ -6830,7 +7281,7 @@
     ]
    },
    "body": {
-    "document_id": "a1000000-0000-4000-8000-000000643019"
+    "document_id": "a1000000-0000-4000-8000-000000643020"
    }
   }
  ]

@@ -120,12 +120,10 @@ untouched. Responses `{'message': 'All payments archived'}` / `{'message': 'All 
 
 ## Not ported (refused with a 500 before any write)
 
-- Paid flow inputs outside the ported conversions: a non-canonical `X-Group-Id` spelling when an invoice is created,
-  float fees whose two-place rounding is an exact tie, `meta.subscription_data.name` values other than strings, booleans
-  and integers (invoice-generate's limits), a request.user that is not an owner or collaborator (no association id).
+- A paid flow whose request.user is not an owner or collaborator (no association id), and a `send_receipt_email` that
+  is not null, a boolean, a string or an int64. The other paid flow conversions are ported (v2-rest-a, below).
 - Delete of an invoiced payment while the print task is deferred for maintenance (a pending restore or a busy operation
   lock: Django re-applies the task synchronously); the invoice save is already committed, as in Django.
-- A `payment_date` containing non-ASCII decimal digits (accepted by `strptime`).
 
 ## Evidence
 
@@ -159,3 +157,30 @@ in-memory cancelled invoice, the stored meta, the published `print_document_invo
 rendering the stored invoice instead of the cancelled in-memory one) CAUGHT; an earlier control
 (`v2pay3-state-mutation-r1`) was caught on the stored invoice columns. Re-run after the merge: `invoice-generate`,
 `stripe-routes` (`v2pay3-rerun-r2`, shared `PaymentStates`) and `payment-misc` (`v2pay3-misc-versioned-r1`).
+
+## Paid flow rare inputs (v2-rest-a)
+
+Five more approve cases (158 in all):
+
+- `X-Group-Id` in another spelling the `uuid` module accepts (upper case): the invoice column stores the uuid, the
+  in-memory invoice keeps the text as sent, so the create entry and the response carry the sent text and the view's
+  `invoice.save()` records `group: [stored uuid, sent text]`.
+- Float fees that are an exact two-place tie (`0.125` out of `10.00`): the `numeric(9, 2)` column rounds half away
+  from zero (`0.13`, `9.88`), the response renders the in-memory floats half to even (`0.12`, `9.88`), and the re-save
+  audits `[column value, str(float)]`.
+- `meta.subscription_data.name` as a float, a list or a dict: formatted with `str()` (`dto.PythonStr`, the jsonb key
+  order) and escaped into the description.
+
+RED `v2resta-red-r3`: Django 158/158, Go 500 on `payment-state-approve-paid-flow-group-upper-case`. GREEN
+`v2resta-green-r3` (after merging `codex/go-backend-parity` `b64953a5`): 158/158 on native Django, native Go, Caddy
+`/api/v1` and `/api/v2`. Mutation `v2resta-mutation-r2` (the re-save comparing the response's half-even value instead of
+the column's) fails `payment-state-approve-paid-flow-fee-tie` (CAUGHT). `invoiceFees`, `floatFee` and `metaName` keep
+their refusals for `payment/<id>/generate-invoice` and `payment/add` (other families); the paid flow calls
+`invoiceFeesAny`/`floatFeeAny` and `InvoiceGenerations{anyMetaName: true}`. Re-run: `invoice-generate` and
+`payment-writes` (`v2resta-rerun-r1`), `stripe-routes` (`v2resta-green-r1`).
+
+Dates (v2-rest-a, second block): `payment_date` goes through `paymentStateDateAny`, so the year and the day's second
+digit accept decimal digits of any script, as `strptime`'s `\d` does; a month written with them is the same 500 as any
+other mismatch. Two more cases (160 in all). The old refusal is the RED (v2-refusals.md, payment-state row
+"approve/date"). GREEN `v2resta-green-r4`: 160/160 on the four transports. Mutation `v2resta-mutation-r3` (the year
+limited to ASCII digits) fails `payment-state-approve-other-script-date` (CAUGHT).
