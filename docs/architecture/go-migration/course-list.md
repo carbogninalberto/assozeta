@@ -90,5 +90,6 @@ Shared code re-run: course-overview 22/22 and profile-settings 59/59 natively.
 
 Excel export: 29 more cases (142 in all). RED `v2xlsx-red-r1`: Django 142/142, Go answers 500 on the first export
 case. GREEN `v2xlsx-green-r2`: 142/142 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation
-`v2xlsx-mutation-r1`: see the commit. Re-run for the shared `xlsxexport` change (duplicate column names):
-payment-export, misc-exports and printing-generate.
+`v2xlsx-mutation-r1`: counting deleted course subscriptions in Iscritti fails Go on `excel-owner` (sheet1.xml
+differs). Re-run for the shared `xlsxexport` change (duplicate column names), `v2xlsx-rerun-r1`: payment-export
+87/87, misc-exports 70/70 and printing-generate 91/91 natively.
