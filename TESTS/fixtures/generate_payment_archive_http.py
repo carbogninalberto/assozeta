@@ -14,7 +14,7 @@ from pathlib import Path
 OUTPUT = Path(__file__).with_name('payment_archive_http.json')
 IDS = json.loads(Path(__file__).with_name('message_mutations.json').read_text())['ids']
 OWN, FOREIGN = IDS['own_association'], IDS['foreign_association']
-ids = iter(f'a1000000-0000-4000-8000-{940001 + n:012d}' for n in range(20))
+ids = iter(f'a1000000-0000-4000-8000-{940001 + n:012d}' for n in range(40))
 CATEGORY = next(ids)
 PAYMENTS = {
     'open': {'id': next(ids), 'association': OWN, 'archived': False, 'category': True, 'deleted': False, 'group': None},
@@ -41,6 +41,17 @@ for label, values in SAVE_DEFAULTS.items():
     PAYMENTS[label] = {'id': next(ids), 'association': OWN, 'archived': False, 'category': True, 'deleted': False, 'group': None,
                        'subject': 0, 'description': 'Quota', 'meta': None, 'course': None, 'carnet': None, **values}
 CARNET = {'id': next(ids), 'title': 'Carnet dieci'}
+# Course payments whose description comes from a CourseSubscription (the course title) or a
+# CourseSubscriptionInstallment (the payment's meta description) in get_course_carnet_name.
+COURSE = {'id': next(ids), 'title': 'Corso nuoto'}
+LINKED = {
+    'course_subscription_title': dict(subject=2, description=None, link='subscription'),
+    'course_installment_meta': dict(subject=2, description=None, meta={'description': 'Rata dal meta'}, link='installment'),
+}
+for label, values in LINKED.items():
+    PAYMENTS[label] = {'id': next(ids), 'association': OWN, 'archived': False, 'category': True, 'deleted': False, 'group': None,
+                       'subject': 0, 'description': 'Quota', 'meta': None, 'course': None, 'carnet': None, **values}
+    PAYMENTS[label]['link_id'] = next(ids)
 path = lambda key: f'/payment/{PAYMENTS[key]["id"] if key in PAYMENTS else key}/archive'
 SERVER = '<stable-server-error-page>'
 ARCHIVED, UNARCHIVED = {'msg': 'Payment archived.'}, {'msg': 'Payment unarchived.'}
@@ -79,6 +90,10 @@ add('course-blank-name', 'owner', 'course_blank', 200, ARCHIVED,
     effect=toggled('course_blank', True, {**flip(False, True), 'description': ['None', 'Quota Corso']}))
 add('quota-meta-override', 'owner', 'quota_override', 200, ARCHIVED,
     effect=toggled('quota_override', True, {**flip(False, True), 'description': ['QUOTA corso', 'Rata uno']}))
+add('course-subscription-title-name', 'owner', 'course_subscription_title', 200, ARCHIVED,
+    effect=toggled('course_subscription_title', True, {**flip(False, True), 'description': ['None', 'Corso nuoto']}))
+add('course-installment-meta-name', 'owner', 'course_installment_meta', 200, ARCHIVED,
+    effect=toggled('course_installment_meta', True, {**flip(False, True), 'description': ['None', 'Rata dal meta']}))
 # The account-transfer description dereferences custom_accounts (None here).
 add('transfer-blank-server-error', 'owner', 'transfer_blank', 500, SERVER)
 add('other-group-server-error', 'owner', 'grouped', 500, SERVER, headers={'X-Group-Id': IDS['foreign_group']})
@@ -99,5 +114,5 @@ add('options', 'owner', 'open', 200, {'name': 'Payment Archive', 'description': 
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Payment archive authored sequence with audit effects', 'ids': IDS,
-                              'category': CATEGORY, 'carnet': CARNET, 'payments': PAYMENTS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+                              'category': CATEGORY, 'carnet': CARNET, 'course': COURSE, 'payments': PAYMENTS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

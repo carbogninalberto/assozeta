@@ -72,3 +72,9 @@ The welcome template is also pinned byte for byte by `go test ./internal/emailre
   `v2sub-mutation-r1` (no NFKC on the username) fails `subscription-transfer-email-new-account-expanding-names` (CAUGHT).
 - Mutation (`mutation-r1`): expiring only PENDING transfers (`AND status=1` in the expiry update) fails `subscription-transfer-pending-transfer` (CAUGHT).
 - `subscription-create` (38/38), `websockets` (75/75), `email-render-routes` (82/82) and `oauth-accounts` (109/109) re-run green after the notifier split and the new template (`Send` = store + push; `Deliver` swallows push errors).
+
+Model hooks ([model-hooks](model-hooks.md)): `subscription-transfer-invalid-season-settings-after-transfer-server-error`:
+the owner of a seeded association whose season start is 31 April (a minted access token) transfers its dated subscription.
+Django writes the notification and the PENDING transfer, then `subscription.save()` raises in the season range: 500, users
+unchanged. Go now checks the same range at that point. Native 30/30; mutation (`model-hooks-mutation`) fails Go with 201
+(CAUGHT).

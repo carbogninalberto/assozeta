@@ -9,7 +9,11 @@ complete object listing under AWS_LOCATION (key, size, sha256, ContentType,
 CacheControl, no ContentEncoding or user metadata) must equal the case's
 'storage'.
 
-Nothing is seeded: the sequence starts without an InstanceConfiguration.
+Only the import tasks' TaskResult rows are seeded: the sequence starts
+without an InstanceConfiguration. An import setup creates only the
+configuration (checked field by field, linked to the authored association or,
+for '$latest', to the last association by primary key) and the runner removes
+it after the check, so the next setup starts unconfigured again.
 Rows the fresh setup creates (configuration, owner, association, accounts,
 onboarding) are purged at cleanup. Reads and refusals must leave the complete
 model state unchanged. A configuration write may change only that row: every
@@ -39,7 +43,7 @@ SOURCES = ('TESTS/fixtures/instance_setup_http.json', 'TESTS/contracts/test_inst
            'BE/instance/permissions.py', 'BE/instance/serializers.py', 'BE/instance/models.py', 'BE/instance/defaults.py',
            'BE/application/models/user_models.py', 'BE/application/models/balance_sheet_models.py',
            'BE/application/models/utils.py', 'BE/application/audit_resolvers.py', 'BE/application/signals.py',
-           'BE/application/impersonation.py', 'BE/core/settings.py') + harness.SOURCES
+           'BE/application/impersonation.py', 'BE/core/settings.py', 'BE/application/tasks.py') + harness.SOURCES
 BUCKET = 'instance-setup-fixture'
 CONFIG, USER, ASSOCIATION = 'instance.InstanceConfiguration', 'application.User', 'application.SportAssociation'
 ACCOUNTS, ONBOARDING = 'application.CustomAccounts', 'application.UsersOnboarding'
@@ -96,8 +100,15 @@ def clear_storage():
 
 
 def seed_rows(source, created):
+    from django_celery_results.models import TaskResult
     from instance.models import InstanceConfiguration
     contract.require(not InstanceConfiguration._base_manager.exists(), 'fixture.instance-exists')
+    for row in source['import_tasks'].values():
+        contract.require(not TaskResult._base_manager.filter(task_id=row['task_id']).exists(), 'fixture.collision')
+        task = TaskResult(task_id=row['task_id'], status=row['status'], result=row['result'], content_type='application/json',
+                          content_encoding='utf-8', meta='{"children": []}', task_name='import_association_data')
+        TaskResult._base_manager.bulk_create([task])
+        created.append((TaskResult, TaskResult._base_manager.get(task_id=row['task_id']).pk))
 
 
 def models():
@@ -246,6 +257,31 @@ def check_configure(case, before, after, context):
     context['fixture']['tokens']['setup_owner'] = str(token)
 
 
+def check_import(case, before, after):
+    """An import setup creates only the configuration, linked to the imported association; it is then removed."""
+    from auditlog.context import disable_auditlog
+    from application.models import SportAssociation
+    Config = models()[0]
+    harness.require_unmanaged_unchanged(contract, before, after, (CONFIG,))
+    contract.require(not before[CONFIG] and len(after[CONFIG]) == 1, 'state.import-config-row')
+    config = Config.objects.get()
+    effect = case['effect']
+    for key, value in effect['config'].items():
+        actual = config.onboarding_completed_at is not None if key == 'onboarding_completed' else getattr(config, key)
+        contract.require(type(actual) is type(value) and actual == value, 'import.config:' + key)
+    contract.require(recent(config.configured_at) and recent(config.onboarding_completed_at)
+                     and config.configured_at <= config.updated_at and recent(config.updated_at), 'import.config-times')
+    defaults_kept(config, {'id', 'configured_at', 'updated_at', 'primary_association_id', 'onboarding_completed_at', *effect['config']},
+                  'import.config')
+    linked = effect['association']
+    if linked == '$latest':
+        linked = str(SportAssociation.original_objects.order_by('-sport_association_id').first().pk)
+    contract.require(str(config.primary_association_id) == linked, 'import.primary-association')
+    contract.require(contract.RUNTIME['response']['association_id'] == linked, 'import.association-id')
+    with disable_auditlog():
+        Config._base_manager.all().delete()
+
+
 def assert_effect(case, before, after, source, context):
     contract.require(stored_objects() == case['storage'], 'storage.objects')
     effect = case['effect']
@@ -253,6 +289,8 @@ def assert_effect(case, before, after, source, context):
         contract.require(before == after, 'state.unchanged')
     elif effect['kind'] == 'config':
         check_config(case, before, after)
+    elif effect['kind'] == 'import':
+        check_import(case, before, after)
     else:
         check_configure(case, before, after, context)
 

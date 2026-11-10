@@ -64,6 +64,11 @@ def assert_case(case, base_url, *, token, sessions, allowed, new=(), now=(), uno
     if 'raw_body' in case:
         body = case['raw_body'].encode()
         headers['Content-Type'] = case['content_type']
+    elif 'raw_b64' in case:
+        # Binary bodies (multipart uploads of archives).
+        import base64
+        body = base64.b64decode(case['raw_b64'], validate=True)
+        headers['Content-Type'] = case['content_type']
     status, raw, received = Client(base_url, token).request(case['method'], case['path'], body, headers, raw=True, include_headers=True)
 
     def check(condition, code):

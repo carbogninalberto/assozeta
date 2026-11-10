@@ -40,6 +40,68 @@
   "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
  },
  "location": "instance-setup-fixture",
+ "import_tasks": {
+  "own": {
+   "task_id": "b3000000-0000-4000-8000-000000000100",
+   "status": "SUCCESS",
+   "result": "{\"success\": true, \"sport_association_id\": \"a1000000-0000-4000-8000-000000701001\", \"counts\": {}}"
+  },
+  "alias": {
+   "task_id": "b3000000-0000-4000-8000-000000000101",
+   "status": "SUCCESS",
+   "result": "{\"association_id\": \"a1000000-0000-4000-8000-000000701002\"}"
+  },
+  "deleted": {
+   "task_id": "b3000000-0000-4000-8000-000000000102",
+   "status": "SUCCESS",
+   "result": "{\"success\": 1, \"sport_association_id\": \"A1000000-0000-4000-8000-000000701003\"}"
+  },
+  "fallback": {
+   "task_id": "b3000000-0000-4000-8000-000000000103",
+   "status": "SUCCESS",
+   "result": "{\"success\": true, \"sport_association_id\": \"\"}"
+  },
+  "text": {
+   "task_id": "b3000000-0000-4000-8000-000000000104",
+   "status": "SUCCESS",
+   "result": "\"Import completato\""
+  },
+  "null": {
+   "task_id": "b3000000-0000-4000-8000-000000000105",
+   "status": "SUCCESS",
+   "result": null
+  },
+  "failed": {
+   "task_id": "b3000000-0000-4000-8000-000000000106",
+   "status": "SUCCESS",
+   "result": "{\"success\": false, \"error\": \"Archivio non valido\"}"
+  },
+  "failed_plain": {
+   "task_id": "b3000000-0000-4000-8000-000000000107",
+   "status": "SUCCESS",
+   "result": "{\"success\": 0}"
+  },
+  "failed_null": {
+   "task_id": "b3000000-0000-4000-8000-000000000108",
+   "status": "SUCCESS",
+   "result": "{\"success\": null, \"error\": null}"
+  },
+  "unknown": {
+   "task_id": "b3000000-0000-4000-8000-000000000109",
+   "status": "SUCCESS",
+   "result": "{\"success\": true, \"sport_association_id\": \"b3000000-0000-4000-8000-00000000ffff\"}"
+  },
+  "running": {
+   "task_id": "b3000000-0000-4000-8000-000000000110",
+   "status": "STARTED",
+   "result": "{\"pid\": 1}"
+  },
+  "progress": {
+   "task_id": "b3000000-0000-4000-8000-000000000111",
+   "status": "PROGRESS",
+   "result": "{\"percent\": 50}"
+  }
+ },
  "cases": [
   {
    "name": "instance-setup-validate-anonymous",
@@ -1393,6 +1455,888 @@
     "initialization": {
      "type": "import",
      "importTaskId": "b3000000-0000-4000-8000-000000000001"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-linked",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Istanza configurata con successo",
+    "association_id": "$new",
+    "redirect": "/login"
+   },
+   "effect": {
+    "kind": "import",
+    "config": {
+     "domain": "setup.example.test",
+     "name": "Istanza Importata",
+     "abbreviation": "",
+     "primary_color": "#123ABC",
+     "support_email": "",
+     "logo_path": "",
+     "setup_provenance": "import",
+     "onboarding_completed": true,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": true,
+     "show_minor_exemption": true,
+     "show_tutorial": true,
+     "meta_title": "",
+     "meta_description": "",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000100",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-association-id-key",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Istanza configurata con successo",
+    "association_id": "$new",
+    "redirect": "/login"
+   },
+   "effect": {
+    "kind": "import",
+    "config": {
+     "domain": "setup.example.test",
+     "name": "Istanza Importata",
+     "abbreviation": "",
+     "primary_color": "#123ABC",
+     "support_email": "",
+     "logo_path": "",
+     "setup_provenance": "import",
+     "onboarding_completed": true,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": true,
+     "show_minor_exemption": true,
+     "show_tutorial": true,
+     "meta_title": "",
+     "meta_description": "",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "association": "a1000000-0000-4000-8000-000000701002"
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000101",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-deleted-association",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Istanza configurata con successo",
+    "association_id": "$new",
+    "redirect": "/login"
+   },
+   "effect": {
+    "kind": "import",
+    "config": {
+     "domain": "setup.example.test",
+     "name": "Istanza Importata",
+     "abbreviation": "",
+     "primary_color": "#123ABC",
+     "support_email": "",
+     "logo_path": "",
+     "setup_provenance": "import",
+     "onboarding_completed": true,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": true,
+     "show_minor_exemption": true,
+     "show_tutorial": true,
+     "meta_title": "",
+     "meta_description": "",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "association": "a1000000-0000-4000-8000-000000701003"
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000102",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-latest-association",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Istanza configurata con successo",
+    "association_id": "$new",
+    "redirect": "/login"
+   },
+   "effect": {
+    "kind": "import",
+    "config": {
+     "domain": "setup.example.test",
+     "name": "Istanza Importata",
+     "abbreviation": "",
+     "primary_color": "#123ABC",
+     "support_email": "",
+     "logo_path": "",
+     "setup_provenance": "import",
+     "onboarding_completed": true,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": true,
+     "show_minor_exemption": true,
+     "show_tutorial": true,
+     "meta_title": "",
+     "meta_description": "",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "association": "$latest"
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000103",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-text-result",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Istanza configurata con successo",
+    "association_id": "$new",
+    "redirect": "/login"
+   },
+   "effect": {
+    "kind": "import",
+    "config": {
+     "domain": "setup.example.test",
+     "name": "Istanza Importata",
+     "abbreviation": "",
+     "primary_color": "#123ABC",
+     "support_email": "",
+     "logo_path": "",
+     "setup_provenance": "import",
+     "onboarding_completed": true,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": true,
+     "show_minor_exemption": true,
+     "show_tutorial": true,
+     "meta_title": "",
+     "meta_description": "",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "association": "$latest"
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000104",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-empty-result",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Istanza configurata con successo",
+    "association_id": "$new",
+    "redirect": "/login"
+   },
+   "effect": {
+    "kind": "import",
+    "config": {
+     "domain": "setup.example.test",
+     "name": "Istanza Importata",
+     "abbreviation": "",
+     "primary_color": "#123ABC",
+     "support_email": "",
+     "logo_path": "",
+     "setup_provenance": "import",
+     "onboarding_completed": true,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": true,
+     "show_minor_exemption": true,
+     "show_tutorial": true,
+     "meta_title": "",
+     "meta_description": "",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "association": "$latest"
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000105",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-failed-result",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import failed: Archivio non valido"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000106",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-failed-without-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import failed: Unknown error"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000107",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-failed-null-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import failed: None"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000108",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-unknown-association",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Association b3000000-0000-4000-8000-00000000ffff not found after import."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000109",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-running-task",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import task is still in progress. Please wait for completion."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000110",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-progress-task",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import task is still in progress. Please wait for completion."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000111",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-owner-token",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Istanza configurata con successo",
+    "association_id": "$new",
+    "redirect": "/login"
+   },
+   "effect": {
+    "kind": "import",
+    "config": {
+     "domain": "setup.example.test",
+     "name": "Istanza Importata",
+     "abbreviation": "",
+     "primary_color": "#123ABC",
+     "support_email": "",
+     "logo_path": "",
+     "setup_provenance": "import",
+     "onboarding_completed": true,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": true,
+     "show_minor_exemption": true,
+     "show_tutorial": true,
+     "meta_title": "",
+     "meta_description": "",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000100",
+     "associationName": "ignored"
     }
    }
   },

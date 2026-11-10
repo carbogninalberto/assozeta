@@ -263,10 +263,7 @@
       "note": "Replaces schedule:BE/core/settings.py:bakney-pairing-maintenance, dropped from the ledger: main a7afd7ee moved the declaration unchanged (task instance.sso.tasks.maintain_bakney_pairings, schedule 60.0) from settings.py CELERY_BEAT_SCHEDULE to this core/celery.py beat_schedule entry, so this entry carries its tests and evidence."
     }
   },
-  "hold": {
-    "model_hook:BE/application/models/payment_models.py:Payment.save": "Its notes record component evidence only (description and background preparation): full save, default-account creation, audits and archive are recorded as not full model-hook parity.",
-    "model_hook:BE/application/models/subscriptions_models.py:Subscription.save": "Its notes say not to mark it verified from calendar-only evidence; general create/update/archive/delete parity is recorded as incomplete."
-  },
+  "hold": {},
   "revision_changes": [
     {
       "from": "2f3bc17190345125c132e66da0e7d27ce86af093",

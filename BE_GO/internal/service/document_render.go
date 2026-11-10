@@ -284,6 +284,17 @@ func (s *DocumentRender) print(ctx context.Context, identity domain.ResolvedIden
 		disposition = "attachment"
 	}
 	for _, link := range job.links {
+		if link.Table == "application_subscription" {
+			// save(update_fields=['document_pdf']) runs Subscription.save(): its season range raises before the
+			// write, inside the view's except clause.
+			season, err := s.store.SubscriptionSaveSeason(ctx, link.ID)
+			if err != nil {
+				return nil, err
+			}
+			if err = modelHooksSubscriptionSave(ctx, season); err != nil {
+				return renderException(500, err.Error()), nil
+			}
+		}
 		if err := s.store.Link(ctx, link, document.ID, audit, s.now()); err != nil {
 			return renderException(500, err.Error()), nil
 		}

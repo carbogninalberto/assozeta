@@ -141,7 +141,8 @@ def seed_rows(source, created):
                                     last_name=row['last'], tax_code=row['tax_code'], born_date=date.fromisoformat(row['born']),
                                     user_id=ids[row['user']] if row['user'] else None, email=row['email']))
     for row in source['certificates'].values():
-        insert(MedicalCertificate, MedicalCertificate(medical_id=row['id'], user_id=ids[row['user']] if row['user'] else None))
+        insert(MedicalCertificate, MedicalCertificate(medical_id=row['id'], user_id=ids[row['user']] if row['user'] else None,
+                                                      expiration_date=date.fromisoformat(row['expiration']) if row.get('expiration') else None))
     for row in source['subscriptions'].values():
         association = row.get('association', ids['own_association'])
         owner = ids['owner'] if association == ids['own_association'] else ids['foreign_owner']

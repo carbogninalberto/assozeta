@@ -51,6 +51,22 @@ def seed_fixture(apps, private_work, raw):
                 deleted=row['deleted'], payment_category_id=source['category'] if row['category'] else None,
                 group_id=ids[row['group']] if row['group'] else None)])
             fixture['created'].append((Payment, row['id']))
+            if row.get('link'):
+                from application.models import Course, CourseSubscription, CourseSubscriptionInstallment
+                from datetime import datetime, timezone
+                if not Course._base_manager.filter(pk=source['course']['id']).exists():
+                    Course._base_manager.bulk_create([Course(course_id=source['course']['id'], title=source['course']['title'],
+                                                             sport_association_id=ids['own_association'])])
+                    fixture['created'].append((Course, source['course']['id']))
+                parent = CourseSubscription(course_subscription_id=row['link_id'], course_id=source['course']['id'],
+                                            payment_id=row['id'] if row['link'] == 'subscription' else None)
+                CourseSubscription._base_manager.bulk_create([parent])
+                fixture['created'].append((CourseSubscription, parent.pk))
+                if row['link'] == 'installment':
+                    installment = CourseSubscriptionInstallment(course_subscription_id=parent.pk, payment_id=row['id'],
+                                                                payment_date=datetime(2026, 1, 5, tzinfo=timezone.utc))
+                    CourseSubscriptionInstallment._base_manager.bulk_create([installment])
+                    fixture['created'].append((CourseSubscriptionInstallment, installment.pk))
             if row['carnet']:
                 holding = CarnetSubscription(carnet_id_id=source['carnet']['id'], payment_id=row['id'])
                 CarnetSubscription._base_manager.bulk_create([holding])

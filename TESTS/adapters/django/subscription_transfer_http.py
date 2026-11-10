@@ -106,6 +106,14 @@ def seed_rows(source, created):
         created.append((model, row.pk))
         return row
 
+    season = source.get('season')
+    if season:
+        from application.models import SportAssociation, User
+        insert(User, User(user_id=season['owner'], username='subscription-transfer-season', password='!synthetic', role=1,
+                          email='subscription-transfer-season@example.test', first_name='Stagione', last_name='Fixture',
+                          subscription_start_day=season['start_day'], subscription_start_month=season['start_month']))
+        insert(SportAssociation, SportAssociation(sport_association_id=season['association'], user_id=season['owner'],
+                                                  denomination=season['denomination'], tax_code='79600000003'))
     for row in source['associates'].values():
         insert(Associate, Associate(associate_id=row['id'], sport_association_id=row.get('association', ids['own_association']),
                                     first_name=row['first'], last_name=row['last'], born_date=date(1990, 1, 1),
@@ -211,6 +219,11 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
     known = set(str(pk) for pk in models()[LABELS['user']]._base_manager.values_list('pk', flat=True))
     try:
         with _identity_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
+            if source.get('season'):
+                from rest_framework_simplejwt.tokens import AccessToken
+                token = AccessToken()
+                token['user_id'] = source['season']['owner']
+                fixture['tokens'] = {**fixture['tokens'], 'season_owner': str(token)}
             NotificationService.get_manager()
             for user in users:
                 store.delete(store_key(user))
@@ -306,6 +319,17 @@ def check_transfers(effect, before, after, since, until, binding):
     row = new[0]
     body = contract.LAST.get('body') or {}
     source, ids = STATE['source'], STATE['source']['ids']
+    if spec.get('status') == 1:
+        # Created, then the request failed before the acceptance: no response body to bind.
+        contract.require(uuid4_text(row['subscription_transfer_id']) and uuid4_text(row['token'])
+                         and in_window(moment(row['created_at']), since, until)
+                         and in_window(moment(row['expires_at']), since, until, TTL), 'state.transfer-pending-dates')
+        contract.require(row == {'subscription_transfer_id': row['subscription_transfer_id'],
+                                 'subscription_id': source['subscriptions'][spec['subscription']]['id'], 'created_at': row['created_at'],
+                                 'expires_at': row['expires_at'], 'requester_id': ids[spec['requester']],
+                                 'recipient_id': binding['$recipient'], 'token': row['token'], 'status': 1}, 'state.transfer-pending-row')
+        binding['$transfer'] = row['subscription_transfer_id']
+        return
     contract.require(uuid4_text(row['subscription_transfer_id']) and uuid4_text(row['token']) and body.get('token') == row['token'],
                      'state.transfer-keys')
     expires = moment(row['expires_at'])
@@ -455,7 +479,7 @@ def check_audit(case, effect, before, after, fixture, context, binding, since, u
                              and in_window(datetime.fromisoformat(old).replace(tzinfo=timezone.utc), since, until, TTL), 'audit.accepted' + where)
             expected = event['changes']
         elif spec['changes'] == '$created':
-            if model is SubscriptionTransfer:
+            if model is SubscriptionTransfer and accepted is not None:
                 # The create entry renders the instance before its acceptance.
                 original = datetime.fromisoformat(accepted['changes']['expires_at'][0]).replace(tzinfo=timezone.utc)
                 instance.status, instance.expires_at = SubscriptionTransfer.PENDING, original
@@ -577,8 +601,9 @@ def assert_effect(case, before, after, source, context):
         transfer = (effect or {}).get('transfer')
         if transfer:
             binding['$recipient'] = binding['$new_user'] if transfer['recipient'] == '$new_user' else ids[transfer['recipient']]
-            body = contract.LAST.get('body') or {}
-            contract.require(body.get('recipient') == binding['$recipient'], 'response.recipient-bound')
+            if transfer.get('status') != 1:
+                body = contract.LAST.get('body') or {}
+                contract.require(body.get('recipient') == binding['$recipient'], 'response.recipient-bound')
         check_transfers(effect, before, after, since, until, binding)
         check_rows(effect, before, after, binding)
         if welcome is not None:

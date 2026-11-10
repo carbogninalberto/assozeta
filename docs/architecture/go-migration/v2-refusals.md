@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 2 ported in the first change and 11 in v2-subscriptions, below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes and 11 in v2-subscriptions, below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -33,8 +33,20 @@ Cross-cutting facts used for the classes:
 | statistic-reads | `GET statistic/dashboard?widget=expiredPayments` | always | same run |
 | payment-writes | `PATCH payment/<id>/update` with the row's own `payment_id` (edit form) | always from the UI | `payment_writes_http.json` 124 cases; GREEN `v2gaps-versioned-r2` 4 transports; mutation `v2gaps-mutation-r1` CAUGHT |
 | payment-writes | `PATCH payment/<id>/update` of an invoiced payment (eager invoice print) | payment has an invoice | same run; mutation `v2gaps-mutation-r3` CAUGHT |
+| association-transfer | `GET association/export/active` | export snapshot key in the cache | fixture `association_transfer_http.json` 210 cases; RED Django 210/210, Go 500; GREEN 4 transports 210/210 (`v2-admin-green`); mutation (snapshot of another user accepted) CAUGHT |
+| association-transfer | `DELETE association/export/delete` | an existing export | same run |
+| association-transfer | `POST association/export/start` | always | same run |
+| association-transfer | `POST association/import/validate`, `start` | with a file | same run |
+| association-transfer | `association/import/*` with `X-Setup-Token` | before an instance exists | same run |
+| association-transfer | `GET association/export/list` (B, legacy: yes) | export without a stored size | 212 cases; RED Django 212/212, Go 500; GREEN 4 transports (`v2-admin-legacy-green`); mutation (size answered as 0) CAUGHT |
+| instance-setup | `POST instance/configure` | `type: import` with a finished task | fixture `instance_setup_http.json` 99 cases; RED Django 99/99, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (`association_id` key ignored) CAUGHT |
+| data-restore | `POST instance/admin/data-restore` | every upload | fixture `data_restore_http.json` 150 cases; RED Django 150/150, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (summary record count) CAUGHT |
+| instance-updates | `GET/POST admin/updates`, `POST admin/restarts` | production mode | fixture `instance_updates_http.json` 40 cases; RED Django 40/40, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (version check) CAUGHT |
+| payment-reads | `GET payment/list?sort[field]=user` ("Informazioni" column) | always | `payment_reads_http.json` 242 cases; GREEN `v2gaps-versioned-r1` 4 transports; mutation CAUGHT |
+| payment-reads | `GET payment/list` with instructor compensations (several hours, or no document yet: eager compensation print) | after any compensation | GREEN `v2gaps-versioned-r2` 4 transports; mutation `v2gaps-mutation-r3` CAUGHT |
+| subscription-create | `POST subscription/add` from the owner wizard: default certificate date (today), emptied date, uploaded certificate with its expiration | always (date always sent) | `subscription_create_http.json` 45 cases; RED `v2gaps-red-r1` Django 45/45, Go 500; GREEN `v2gaps-versioned-r1` 4 transports; mutation CAUGHT; subscription-renew 54/54 and associates-draft 128/128 re-run |
 
-Details in `statistic-reads.md`.
+Details in `statistic-reads.md`, `payment-writes.md`, `association-transfer.md`, `instance-setup.md`, `data-restore.md` and `instance-updates.md`.
 
 ### Ported in the v2-subscriptions change
 
@@ -62,8 +74,6 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 | POST payment/add | owner setting `auto_paid_payment` on | `routes/profile/sections/Settings.svelte:1013`, `AddEditModal.svelte:102` | `service/payment_writes.go:570` | medium-expensive |
 | payment cancel / delete | payment has an invoice | `PaymentList.svelte:575,689`, `partials/payment-overview.svelte:187` | `service/payment_state.go:322,363` | medium-expensive |
 | GET payment/list | athlete session (no `mode=compressed`) | `routes/activities/payment/PaymentList.svelte:36-38` | `service/payment_reads.go:349` | medium-expensive |
-| GET payment/list | instructor compensation payments in the page | `Instructor.svelte:358`, `PaymentList.svelte:1485` | `service/payment_reads.go:494,497` | medium |
-| GET payment/list | sort by the "Informazioni" column (`sort[field]=user`) | `PaymentList.svelte:227-236`, `components/tables/BKNDatatable.svelte:736` | `service/payment_reads.go:424` | medium |
 | GET payment/stats | Stripe configured | `PaymentList.svelte:997` | `service/payment_reads.go:579` | medium |
 | POST partial-quotes-apply | a subscription belongs to a member's own account | `components/modals/SubscriptionFeesPlanModal.svelte:46` | `service/payment_misc.go:478` | medium |
 | POST payment/sign | with a signature (instructor page) | `components/signature/DocumentSignatureModal.svelte:39-45` | `service/payment_misc.go:611` | medium |
@@ -71,7 +81,7 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 ### subscription-create / subscription-import-upload / subscription-memberships
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST subscription/add | owner wizard: certificate date always set; signature; "new member" | `routes/association/Members/add/AddMember.svelte:104-139` | `service/subscription_create.go:148,156,164` | medium each |
+| POST subscription/add | owner wizard: a typed certificate date without an upload (placeholder PNG drawn with PIL: image rendering, refused by the porting rules); signature; "new member" | `routes/association/Members/add/AddMember.svelte:104-139` | `service/subscription_create.go:148,156,164` | expensive (image) / medium / medium |
 | POST subscription/add | public forms: anonymous, `sport_association`, preregistration, family wizard | `Subscribe.svelte:124,147,167`, `SubscribeMultiple.svelte:183`, `SubscribeFamily.svelte:136-181` | `service/subscription_create.go:91,102,132,141` | expensive |
 | POST subscription/add?m=only_associate | quick re-subscription | `MembersList.svelte:1564`, `MembersBook.svelte:1318` | `service/subscription_create.go:121` | medium |
 | POST subscription/import/upload | final mapping step (every import) | `routes/association/Members/import/ImportMembers.svelte:46-52` | `service/subscription_import_upload.go:200` | expensive |
@@ -140,16 +150,16 @@ Why these stay (v2-subscriptions):
 ### association transfer, data restore, instance setup and administration
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| GET association/export/active | export snapshot key in the cache | `utils/NotificationService.js:177` | `service/association_transfer.go:88` | medium |
-| DELETE association/export/delete | an existing export | `routes/profile/sections/DataExports.svelte:154` | `service/association_transfer.go:230` | medium |
-| POST association/export/start | always | `DataExports.svelte:119` | `service/association_transfer.go:255` | expensive |
-| association/import/validate, start | with a file | `store/instanceStore.js:448-492` | `handler/association_transfer.go:186` | expensive |
-| association/import/* (setup wizard) | `X-Setup-Token` before an instance exists | `store/instanceStore.js:205-208` | `service/association_transfer.go:268` | cheap |
-| POST instance/configure | `type: import` | `SetupWizard.svelte:129-134` | `service/instance_setup.go:133-134` | medium |
-| POST instance/admin/data-restore | every upload | `DataImport.svelte:172-174` | `service/data_restore.go:407` | expensive |
 | POST admin/diagnostics | every run | `SelfInstance.svelte:155` | `service/instance_admin.go:1227` | expensive |
-| GET/POST admin/updates | production mode | `SelfInstance.svelte:249,307` | `service/instance_admin.go:183,194` | medium |
-| POST admin/restarts | production mode | `SelfInstance.svelte:190` | `service/instance_admin.go:211` | medium |
+
+Still refused: running the diagnostics needs the worker probe (`app.control.inspect().ping()`, Celery's remote
+control over the broker's pidbox fanout and reply queues, which the Go producer does not implement), the `api` probe
+fixed to `http://127.0.0.1:8000/healthz` (the Django process's own port, not the Go server's) and the probe
+subprocess semantics (10 s deadline, sanitized results). Every run executes all ten probes, so no partial port is
+possible. The other B items of these families that a long-lived dataset may hit and that stay refused: import/status
+and export/active on `FAILURE`/`REVOKED` task rows (Celery's exception reconstruction), data-restore archives with
+legacy Bakney invoices or tutors that would be reassigned (refused by the validation port), and a
+`WHITELABEL_NAME` that is not a plain atom list (`email.utils.parseaddr`).
 
 ### communications, camps, profile, personas, modules, oauth, google
 | Route | Condition | UI call | Go site | Cost |
@@ -187,15 +197,15 @@ Written from the family docs and the Go sources; `file:line` refer to `BE_GO/int
 ### association-transfer.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| GET association/export/active | active or last-export snapshot key exists in Django cache | service/association_transfer.go:88 (`ErrAssociationTransferNotPorted`) | A | `src/utils/NotificationService.js:177` calls it for each owner session; the last-export key is set by every completed export, so it stays set after any export. |
+| GET association/export/active | active or last-export snapshot key exists in Django cache | ported (`service/association_transfer_writes.go` activeExport) | ported | `src/utils/NotificationService.js:177` calls it for each owner session; the last-export key is set by every completed export, so it stays set after any export. |
 | GET association/export/status | task owner key exists | service/association_transfer.go:112 | B | Route not called by UI (`EXPORT.STATUS` defined in `endpoints.js:498`, no caller in `src/`). Key only exists after a start, which is itself refused. Cost: medium (cached progress + AsyncResult). |
-| GET association/export/list | row with `file_size_bytes` NULL and non-empty `filepath` | service/association_transfer.go:132 | B (legacy: yes) | UI calls list (`src/routes/profile/sections/DataExports.svelte:96`), but the export writer always sets the size (`application/services/export_service.py:1102`); NULL only for exports created before `docmanager/migrations/0006_document_file_size_bytes.py`. Cost: medium (storage size + save). |
-| DELETE association/export/delete | existing export found | service/association_transfer.go:230 | A | `DataExports.svelte:154` sends `{"document_id": <uuid from list>}` as JSON. |
-| POST association/export/start | past the count (<3) and active-key checks | service/association_transfer.go:255 | A | `DataExports.svelte:119` (POST, no body). Cost: expensive (Celery dispatch + cache registration). |
+| GET association/export/list | row with `file_size_bytes` NULL and non-empty `filepath` | ported (`exportSize`, v2-admin-legacy-green) | ported (was B, legacy: yes) | UI calls list (`src/routes/profile/sections/DataExports.svelte:96`), but the export writer always sets the size (`application/services/export_service.py:1102`); NULL only for exports created before `docmanager/migrations/0006_document_file_size_bytes.py`. Cost: medium (storage size + save). |
+| DELETE association/export/delete | existing export found | ported (deleteExport); a document other rows reference stays refused | ported | `DataExports.svelte:154` sends `{"document_id": <uuid from list>}` as JSON. |
+| POST association/export/start | past the count (<3) and active-key checks | ported (startExport) | ported | `DataExports.svelte:119` (POST, no body). Cost: expensive (Celery dispatch + cache registration). |
 | GET association/import/status | TaskResult row FAILURE/REVOKED/RETRY, non-utf-8 encoding, meta with `status`/children | service/association_transfer.go:300,303,312,317 | B | UI polls it (`src/store/instanceStore.js:535`), but rows only exist after an import start, which Go refuses; a FAILURE row could survive from a Django-era import that failed (legacy: yes, transient). Cost: medium (Celery exception reconstruction). |
 | GET association/import/status | result JSON with `__type__`, lone surrogates, floats beyond float64 | service/association_transfer.go:340,356,373 | B | Import task results are plain dicts. Cost: cheap-medium. |
-| POST association/import/validate, start | multipart body with a `file` upload | handler/association_transfer.go:186 | A | `src/store/instanceStore.js:448-453` (validate) and `:487-492` (start) send FormData with `file` from `src/routes/setup/StepImport.svelte`. Cost: expensive (ZIP validator; storage + Celery import). |
-| association/import/* (all) | no `InstanceConfiguration` and `X-Setup-Token` header present | service/association_transfer.go:268 | A | The first-run setup wizard (`StepImport.svelte` via `instanceStore.js:207` `getSetupTokenHeaders`) always sends `X-Setup-Token` before an instance is configured. Cost: cheap (read `INSTANCE_SETUP_TOKEN` into Go config and compare). |
+| POST association/import/validate, start | multipart body with a `file` upload | ported (ImportValidate, ImportStart); archives or values whose Python exception text would be answered stay refused (B) | ported | `src/store/instanceStore.js:448-453` (validate) and `:487-492` (start) send FormData with `file` from `src/routes/setup/StepImport.svelte`. Cost: expensive (ZIP validator; storage + Celery import). |
+| association/import/* (all) | no `InstanceConfiguration` and `X-Setup-Token` header present | ported (setupTokenMatches) | ported | The first-run setup wizard (`StepImport.svelte` via `instanceStore.js:207` `getSetupTokenHeaders`) always sends `X-Setup-Token` before an instance is configured. Cost: cheap (read `INSTANCE_SETUP_TOKEN` into Go config and compare). |
 | DELETE association/export/delete | `document_id` string containing `_`, `+` or whitespace | dto/association_transfer.go:28 | B | UI sends the UUID it received from list. Cost: cheap. |
 
 ### audit-logs.md
@@ -411,7 +421,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### data-restore.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST instance/admin/data-restore | multipart upload with a `file` part within the limit (archive validation) | `BE_GO/internal/service/data_restore.go:407`, `ErrDataRestoreNotPorted` | **A** | `routes/profile/sections/DataImport.svelte:172-174` posts `FormData` with `file`. Every restore upload is refused. |
+| POST instance/admin/data-restore | multipart upload with a `file` part within the limit (archive validation) | ported (`acceptUpload`); archives the validation port hands off (legacy invoices, tutor reassignments) stay refused (B, legacy: yes) | ported | `routes/profile/sections/DataImport.svelte:172-174` posts `FormData` with `file`. Every restore upload is refused. |
 | POSTs | non-JSON/multipart bodies, CTE, non-UTF-8 RFC 2231 names | `handler/data_restore.go:273,295,303,312` | B | UI sends JSON or browser FormData. (`&` in the archive filename also refused at :312, but the upload is refused anyway.) cheap. |
 | GET data-restore (progress) | cached progress outside pickle subset | `service/data_restore.go:167,228` | B | Written by Django's own task; non-str keys not produced. legacy: no; medium. |
 | GET …/<id>/download | backup path outside `AWS_LOCATION` | `service/data_restore.go:456` | C | Paths are written by the restore task under the location. |
@@ -450,8 +460,8 @@ Coordination/status doc; no refusals. Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST instance/admin/diagnostics | lease claimable (every real run) | `BE_GO/internal/service/instance_admin.go:1227`, `ErrInstanceAdminRefused` | **A** | `routes/profile/sections/SelfInstance.svelte:155`. |
-| GET/POST instance/admin/updates | production mode | `service/instance_admin.go:183,194` | **A** | `SelfInstance.svelte:249` (status), `:307` (request). Self-host installs run in production mode. |
-| POST instance/admin/restarts | production mode | `service/instance_admin.go:211` | **A** | `SelfInstance.svelte:190`. |
+| GET/POST instance/admin/updates | production mode | ported (`service/instance_updates.go`) | ported | `SelfInstance.svelte:249` (status), `:307` (request). Self-host installs run in production mode. |
+| POST instance/admin/restarts | production mode | ported (`service/instance_updates.go`) | ported | `SelfInstance.svelte:190`. |
 | writes | form/multipart bodies | `handler/instance_admin.go:67` | B | UI sends JSON (`InstanceEmail.svelte:55`, `InstanceIntegration.svelte:65`). cheap. |
 | PUT admin/integrations/<provider> | AI `base_url` with non-ASCII host | instance_admin service | B | Free-text field; IDN AI endpoints are unusual. legacy: no; cheap. |
 | admin, admin/email | env `EMAIL_PORT` non-integer, or `WHITELABEL_NAME`/`EMAIL_HOST_USER` outside the simple form | `service/instance_admin.go:470`; `BE_GO/internal/config/instance_admin.go:148-171` | B | Operator env, default `WHITELABEL_NAME=Assozeta` passes; a name with `.`, `,` or accents (e.g. "Polisportiva Città") would be refused when no stored e-mail config exists. legacy: yes (env); cheap. |
@@ -495,7 +505,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### instance-setup.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST instance/configure | `initialization.type: import` with a finished import task | `BE_GO/internal/service/instance_setup.go:133-134`, `ErrInstanceSetupRefused` | **A** | `routes/setup/SetupWizard.svelte:129-134` sends `{type:'import', importTaskId}` after `StepImport.svelte:103-119` polls the task to completion. Every "import" setup is refused. |
+| POST instance/configure | `initialization.type: import` with a finished import task | ported (`importedAssociation`, `CreateImported`); FAILURE/REVOKED rows and non-UUID ids stay refused (B) | ported | `routes/setup/SetupWizard.svelte:129-134` sends `{type:'import', importTaskId}` after `StepImport.svelte:103-119` polls the task to completion. Every "import" setup is refused. |
 | POST instance/configure | owner/support e-mail > 254 chars | `service/instance_setup.go:142` | B | Unusual input. cheap. |
 | configure/reconfigure | non-ASCII domain or e-mail domain, IDNA `clientPortal` | `service/instance_setup.go:122-123,208-209` | B | IDN domains are unusual. legacy: no; medium. |
 | logo, admin/logo | logo name exists again after the deletes (`AWS_S3_FILE_OVERWRITE=False`) | `service/instance_setup.go:283` | B | Only on a concurrent upload: names are `instance/logo.{png,jpg,webp}`, all deleted first (`:263-272`). cheap. |

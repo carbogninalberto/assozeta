@@ -83,6 +83,13 @@ TRANSFERS = {
     'accepted_past': {'id': next(ids), 'subscription': 'foreign', 'status': 2, 'expires': 'past', 'recipient': None},
     'rejected_future': {'id': next(ids), 'subscription': 'pending', 'status': 3, 'expires': 'future', 'recipient': None},
 }
+# An association whose owner's season settings make Subscription.save() raise
+# (get_range_from_year_and_starting_date: 31 April is not a date); its dated subscription belongs to the owner.
+SEASON = {'owner': next(ids), 'association': next(ids), 'start_day': 31, 'start_month': 4,
+          'denomination': 'Subscription transfer season'}
+IDS = {**IDS, 'season_owner': SEASON['owner']}  # its access token is minted by the adapter
+ASSOCIATES['season'] = {'id': next(ids), 'first': 'Sara', 'last': 'Stagione', 'user': 'season_owner', 'association': SEASON['association']}
+SUBSCRIPTIONS['season'] = {'id': next(ids), 'associate': 'season', 'user': 'season_owner', 'association': SEASON['association']}
 # Names outside ASCII (member forms accept any Unicode): str.upper() then NFKC of the username.
 ASSOCIATES['accented'] = {'id': next(ids), 'first': 'Émile', 'last': 'Çelik', 'user': 'owner'}
 ASSOCIATES['casefold'] = {'id': next(ids), 'first': 'ßöra', 'last': 'ǆukić', 'user': 'owner'}
@@ -230,6 +237,22 @@ add('athlete-email-denied-after-account', 'athlete', SUBSCRIPTIONS['athlete_emai
     {'detail': 'User is not a sport association'}, body={'email': 'creato@example.test'},
     effect={'expire': True, 'new_user': {'first_name': 'Ada', 'last_name': 'Atleta', 'email': 'creato@example.test', 'prefix': 'ADAATL'},
             'audit': [{'model': 'user', 'action': 0, 'ref': '$new_user', 'changes': '$created', 'index': None}]})
+# The notification and the PENDING transfer (create entry) are written, then subscription.save() raises in the
+# season range: 500, the subscription, associate and transfer status stay as they were.
+season_audit = []
+if 'athlete' not in NOTIFIED:
+    NOTIFIED.add('athlete')
+    season_audit += [{'model': model, 'action': 0, 'ref': '$' + model, 'changes': '$created', 'app': 'notifications',
+                      'index': [SEASON['association'], 'actor.sport_association']}
+                     for model in ('notificationsbroadcast', 'usernotificationsbroadcast')]
+season_audit.append({'model': 'subscriptiontransfer', 'action': 0, 'ref': '$transfer', 'changes': '$created',
+                     'index': [SEASON['association'], 'subscription.sport_association']})
+add('invalid-season-settings-after-transfer-server-error', 'season_owner', SUBSCRIPTIONS['season']['id'], 500, SERVER,
+    body={'recipient': ATHLETE},
+    effect={'expire': True, 'transfer': {'subscription': 'season', 'recipient': 'athlete', 'requester': 'season_owner', 'status': 1},
+            'associates': [], 'relation': None, 'new_user': None, 'welcome': False, 'audit': season_audit,
+            'notification': {'user': 'athlete', 'association': SEASON['association'],
+                             'msg': f"l'associazione {SEASON['denomination']} ha trasferito l'iscrizione Sara Stagione al tuo account"}})
 # The subscription now belongs to the athlete: the owner is no longer its owner.
 add('transferred-no-longer-owned', 'owner', ADULT, 403, NOT_OWNER, body={'recipient': ATHLETE})
 
@@ -244,5 +267,5 @@ assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/<uid>/transfer authored sequence with row, audit, Celery and notification effects',
     'ids': IDS, 'associates': ASSOCIATES, 'relations': RELATIONS, 'subscriptions': SUBSCRIPTIONS, 'transfers': TRANSFERS,
-    'denomination': DENOMINATION, 'unknown': UNKNOWN, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+    'denomination': DENOMINATION, 'season': SEASON, 'unknown': UNKNOWN, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')
