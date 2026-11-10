@@ -39,7 +39,7 @@ var errRestoreDamaged = &restoreError{message: restoreDamaged}
 type restoreLimits struct{ Expanded, JSON, File int64 }
 
 // restoreMissingRelation is one optional link Archive._validate_graph records.
-type restoreMissingRelation struct{ model, record, field string }
+type restoreMissingRelation struct{ model, record, field, targetModel, target string }
 
 // restoreArchive is instance.restore.archive.Archive after validate().
 type restoreArchive struct {
@@ -971,7 +971,8 @@ func (a *restoreArchive) validateGraph(plan *importeffects.Plan) error {
 					if err != nil {
 						return errConsumerImportUnsupported
 					}
-					a.missingRelations = append(a.missingRelations, restoreMissingRelation{model: name, record: record, field: field.Attname})
+					a.missingRelations = append(a.missingRelations, restoreMissingRelation{model: name, record: record, field: field.Attname,
+						targetModel: field.TargetModel, target: text})
 				}
 			}
 			for _, field := range model.M2M {

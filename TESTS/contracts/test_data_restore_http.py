@@ -6,7 +6,7 @@ DRF response (finalize_response), the attachment of the missing-relations
 report (exact JSON text), the streamed recovery archive (exact bytes,
 Content-Type, Content-Length, Content-Disposition) and the download view's
 Referrer-Policy. In JSON bodies '$now' accepts a request-time UTC 'Z'
-timestamp and '$download-token:<receipt>' a token the runner's
+timestamp, '$new' a uuid4 receipt id and '$download-token:<receipt>' a token the runner's
 verify_token(receipt, token) accepts. '<head>' is a body-less HEAD answer.
 LAST holds the most recent JSON body for the runner's effect check.
 """
@@ -42,6 +42,10 @@ def allowed(path):
 
 def accept(expected, actual, check, verify_token):
     """Copy of expected with '$now' and '$download-token:' placeholders replaced by the verified actual values."""
+    if expected == '$new':
+        check(isinstance(actual, str) and re.fullmatch(r'[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}', actual)
+              is not None, 'response.new-id')
+        return actual
     if expected == '$now':
         check(isinstance(actual, str) and NOW.match(actual), 'response.now')
         moment = datetime.fromisoformat(actual.replace('Z', '+00:00'))

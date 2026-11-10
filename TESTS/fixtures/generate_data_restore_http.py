@@ -45,7 +45,7 @@ BUSY = 'Un’altra operazione sui dati è in corso. Riprova tra poco.'
 PENDING = 'Un ripristino è già in corso.'
 UPLOAD = 'Carica un file ZIP entro il limite indicato.'
 NO_BACKUP = 'Backup di sicurezza non disponibile.'
-MAX_UPLOAD = 4096
+MAX_UPLOAD = 65536
 ROOT = '/instance/admin/data-restore'
 BACKUPS = ROOT + '/backups'
 OTHER_ASSOCIATION = 'd7000000-0000-4000-8000-00000000a5a5'
@@ -172,7 +172,7 @@ def overview(owner, *, available=True, progress=None):
 
 def add(name, actor, path, status, response, *, method='GET', body=None, raw=None, content_type=None, headers=None,
         single=True, lock=None, setup=None, cache=None, objects=None, objects_after=None, changes=None, celery=(),
-        no_store=True, stream=None, attachment=None, referrer=None):
+        no_store=True, stream=None, attachment=None, referrer=None, archive=None, created=None):
     """changes: {receipt: {field: value}} the request makes ('$now' for updated_at)."""
     merged = copy.deepcopy(dirty)
     for key, fields in (setup or {}).items():
@@ -190,13 +190,15 @@ def add(name, actor, path, status, response, *, method='GET', body=None, raw=Non
     case = {'name': f'data-restore-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'single': single, 'lock': lock, 'setup': merged or None,
             'cache': cache, 'objects': objects or {}, 'objects_after': sorted(objects or {}) if objects_after is None else sorted(objects_after),
-            'effect': {'receipts': copy.deepcopy(ops), 'celery': list(celery)},
+            'effect': {'receipts': {**copy.deepcopy(ops), **({'$new': created} if created else {})}, 'celery': list(celery)},
             'cache_control': 'no-store' if no_store and response != SERVER else None,
             'stream': stream, 'attachment': attachment, 'referrer_policy': referrer}
     if body is not None:
         case['body'] = body
     if raw is not None:
         case['raw_b64'], case['content_type'] = base64.b64encode(raw).decode(), content_type
+    if archive is not None:
+        case['archive'] = archive
     cases.append(case)
     # A '$now' updated_at is only known to the run: restore it before the next case.
     for key, fields in touched.items():
@@ -330,7 +332,7 @@ body, kind = multipart(('archive', 'backup.zip', ZIP), ('note', None, b'x'))
 add('upload-other-file-name', 'owner', ROOT, 400, error(UPLOAD), method='POST', raw=body, content_type=kind)
 body, kind = multipart(('file', 'backup.zip', b'P' * (MAX_UPLOAD + 1)))
 add('upload-too-large', 'owner', ROOT, 400, error(UPLOAD), method='POST', raw=body, content_type=kind)
-body, kind = multipart(('extra', 'notes.zip', b'N' * 3000), ('file', 'backup.zip', b'P' * 2000))
+body, kind = multipart(('extra', 'notes.zip', b'N' * 40000), ('file', 'backup.zip', b'P' * 30000))
 add('upload-cumulative-limit', 'owner', ROOT, 400, error(UPLOAD), method='POST', raw=body, content_type=kind)
 body, kind = multipart(('file', '', ZIP))
 add('upload-empty-filename', 'owner', ROOT, 400, error(UPLOAD), method='POST', raw=body, content_type=kind)
@@ -542,6 +544,90 @@ add('start-form-confirmation', 'owner', action('oldversion', 'start'), 202, lamb
 add('overview-final', 'owner', ROOT, 200, lambda: overview('owner'))
 add('admin-start-completed', 'admin', action('admin', 'start'), 200, lambda: public('admin'), method='POST', body={},
     setup={'oldversion': {'state': 'cancelled', 'stage': 'cancelled'}})
+
+# ---------------------------------------------------------------------------
+# POST admin/data-restore with archives. The runner builds each ZIP from
+# Django's export layout (AssociationExportService.EXPORT_ORDER: every
+# section listed with its file and count, empty unless given) and posts it as
+# 'file'. A created receipt is checked field by field ('$new'), then the
+# runner removes it so the next upload starts from the same receipts.
+# ---------------------------------------------------------------------------
+ARCHIVE_ASSOCIATION, ARCHIVE_OWNER = 'd7000000-0000-4000-8000-00000000e001', 'd7000000-0000-4000-8000-00000000e002'
+ARCHIVE_DOCUMENT, ARCHIVE_MEDIA_DOCUMENT = 'd7000000-0000-4000-8000-00000000e003', 'd7000000-0000-4000-8000-00000000e004'
+ARCHIVE_LINK = 'd7000000-0000-4000-8000-00000000e005'
+DAMAGED = 'Il backup ZIP è danneggiato o non rispetta il formato Bakney.'
+
+
+def archive(*, rows=None, members=None, manifest=None, drop=(), associations=None, raw=None):
+    if raw is not None:
+        return {'raw_b64': base64.b64encode(raw).decode()}
+    return {'association': ARCHIVE_ASSOCIATION, 'denomination': 'Associazione archiviata', 'owner': ARCHIVE_OWNER,
+            'export_date': '2026-03-30T10:00:00+00:00', 'rows': rows or {}, 'members': members or {},
+            'manifest': manifest or {}, 'drop': list(drop), 'associations': associations}
+
+
+def summary(*, records=2, files=0, missing_media=0, relations=()):
+    return {'association': 'Associazione archiviata', 'export_date': '2026-03-30T10:00:00+00:00', 'skipped_records': {},
+            'records': records, 'files': files, 'missing_media': missing_media, 'legacy_invoices': 0, 'reassigned_tutors': 0,
+            'tutor_tax_code_conflicts': 0, 'tutor_reassignment_details': [], 'missing_relations': len(relations),
+            'missing_relation_details': list(relations)}
+
+
+def created_receipt(preview, owner='owner'):
+    return {'id': '$new', 'owner': owner, 'association_id': IDS['own_association'], 'state': 'review', 'stage': 'validated',
+            'created_at': '$now', 'updated_at': '$now', 'completed_at': None, 'upload_path': 'restores/$new/upload/archive.zip',
+            'sha256': '$archive-sha256', 'version': '$version', 'preview': preview, 'backup_path': '', 'backup_sha256': '',
+            'media': {}, 'error': '', 'allow_missing_media': False, 'attempts': 0}
+
+
+def new_public(preview):
+    return {'id': '$new', 'state': 'review', 'stage': 'validated',
+            'preview': {k: v for k, v in preview.items() if k not in ('missing_relation_details', 'tutor_reassignment_details')},
+            'error': '', 'created_at': '$now', 'updated_at': '$now', 'has_recovery_backup': False, 'attempts': 0,
+            'progress': None, 'download_token': None}
+
+
+def upload(name, actor, status, response, spec, **extra):
+    add(name, actor, ROOT, status, response, method='POST', archive=spec, **extra)
+
+
+IDLE = {'review': {'state': 'failed', 'stage': 'failed', 'attempts': 1}}
+upload('upload-archive-not-a-zip', 'owner', 400, error(DAMAGED), archive(raw=b'not a zip archive'), setup=IDLE)
+upload('upload-archive-without-manifest', 'owner', 400, error(DAMAGED), archive(raw=ZIP))
+upload('upload-archive-other-version', 'owner', 400, error('Formato non supportato. Carica un export ZIP Bakney versione 1.0.0.'),
+       archive(manifest={'version': '2.0.0'}))
+upload('upload-archive-export-errors', 'owner', 400, error('Il backup segnala errori di esportazione. Genera un export completo.'),
+       archive(manifest={'errors': ['Documento mancante']}))
+upload('upload-archive-incomplete', 'owner', 400, error('Export incompleto: mancano Course.'), archive(drop=['Course']))
+upload('upload-archive-two-associations', 'owner', 400, error('Il backup deve contenere una sola associazione.'),
+       archive(associations=2))
+upload('upload-archive-manifest-mismatch', 'owner', 400, error('Il manifest non corrisponde all’associazione esportata.'),
+       archive(manifest={'association': {'sport_association_id': ARCHIVE_ASSOCIATION, 'denomination': 'Altro nome'}}))
+upload('upload-archive-orphan-attachment', 'owner', 400, error('Un allegato fa riferimento a un record mancante.'),
+       archive(members={f'files/documents/{ARCHIVE_DOCUMENT}/scheda.pdf': 'pdf'}))
+STALE, MOVED = ops['stale']['id'], ops['moved']['id']
+MINIMAL = summary()
+upload('upload-archive', 'owner', 201, new_public(MINIMAL), archive(),
+       objects={f'restores/{STALE}/upload/archive.zip': 'stale upload', f'restores/{STALE}/media/m1/a.pdf': 'stale media',
+                f'restores/{MOVED}/upload/archive.zip': 'moved upload', f'restores/{MOVED}/recovery/keep.zip': 'kept'},
+       objects_after=[f'restores/{MOVED}/recovery/keep.zip', 'restores/$new/upload/archive.zip'],
+       changes={key: {'state': 'cancelled', 'stage': 'cancelled', 'upload_path': '', 'media': {}, 'updated_at': NOW}
+                for key in ('stale', 'moved')},
+       created=created_receipt(MINIMAL))
+DOCUMENTS = [{'document_id': ARCHIVE_DOCUMENT, 'filename': 'scheda.pdf', 'filepath': 'documents/scheda.pdf'},
+             {'document_id': ARCHIVE_MEDIA_DOCUMENT, 'filename': 'foto.jpg', 'filepath': 'documents/foto.jpg'}]
+MEDIA = summary(records=4, files=1, missing_media=1)
+upload('upload-archive-with-media', 'owner', 201, new_public(MEDIA),
+       archive(rows={'Document': DOCUMENTS}, members={f'files/documents/{ARCHIVE_MEDIA_DOCUMENT}/foto.jpg': 'jpeg'}),
+       objects_after=['restores/$new/upload/archive.zip'], created=created_receipt(MEDIA))
+RELATION = {'model': 'SportAssociationDocumentsArchive', 'record_id': ARCHIVE_LINK, 'field': 'folder_id', 'target_model': 'Folder',
+            'target_id': '4242'}
+LINKED = summary(records=4, missing_media=1, relations=[RELATION])
+upload('upload-archive-missing-relation', 'admin', 201, new_public(LINKED),
+       archive(rows={'Document': DOCUMENTS[:1], 'SportAssociationDocumentsArchive': [
+           {'sport_association_documents_archive_id': ARCHIVE_LINK, 'sport_association_id': ARCHIVE_ASSOCIATION,
+            'document_id': ARCHIVE_DOCUMENT, 'date': '2026-03-01', 'folder_id': 4242}]}),
+       objects_after=['restores/$new/upload/archive.zip'], created=created_receipt(LINKED, owner='admin'))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'data restore administration (overview, upload admission, '

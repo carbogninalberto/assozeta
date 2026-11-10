@@ -37,8 +37,9 @@ Cross-cutting facts used for the classes:
 | association-transfer | `POST association/import/validate`, `start` | with a file | same run |
 | association-transfer | `association/import/*` with `X-Setup-Token` | before an instance exists | same run |
 | instance-setup | `POST instance/configure` | `type: import` with a finished task | fixture `instance_setup_http.json` 99 cases; RED Django 99/99, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (`association_id` key ignored) CAUGHT |
+| data-restore | `POST instance/admin/data-restore` | every upload | fixture `data_restore_http.json` 150 cases; RED Django 150/150, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (summary record count) CAUGHT |
 
-Details in `statistic-reads.md`, `association-transfer.md` and `instance-setup.md`.
+Details in `statistic-reads.md`, `association-transfer.md`, `instance-setup.md` and `data-restore.md`.
 
 ## Remaining A items, per family
 
@@ -129,7 +130,6 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 ### association transfer, data restore, instance setup and administration
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST instance/admin/data-restore | every upload | `DataImport.svelte:172-174` | `service/data_restore.go:407` | expensive |
 | POST admin/diagnostics | every run | `SelfInstance.svelte:155` | `service/instance_admin.go:1227` | expensive |
 | GET/POST admin/updates | production mode | `SelfInstance.svelte:249,307` | `service/instance_admin.go:183,194` | medium |
 | POST admin/restarts | production mode | `SelfInstance.svelte:190` | `service/instance_admin.go:211` | medium |
@@ -394,7 +394,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### data-restore.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST instance/admin/data-restore | multipart upload with a `file` part within the limit (archive validation) | `BE_GO/internal/service/data_restore.go:407`, `ErrDataRestoreNotPorted` | **A** | `routes/profile/sections/DataImport.svelte:172-174` posts `FormData` with `file`. Every restore upload is refused. |
+| POST instance/admin/data-restore | multipart upload with a `file` part within the limit (archive validation) | ported (`acceptUpload`); archives the validation port hands off (legacy invoices, tutor reassignments) stay refused (B, legacy: yes) | ported | `routes/profile/sections/DataImport.svelte:172-174` posts `FormData` with `file`. Every restore upload is refused. |
 | POSTs | non-JSON/multipart bodies, CTE, non-UTF-8 RFC 2231 names | `handler/data_restore.go:273,295,303,312` | B | UI sends JSON or browser FormData. (`&` in the archive filename also refused at :312, but the upload is refused anyway.) cheap. |
 | GET data-restore (progress) | cached progress outside pickle subset | `service/data_restore.go:167,228` | B | Written by Django's own task; non-str keys not produced. legacy: no; medium. |
 | GET …/<id>/download | backup path outside `AWS_LOCATION` | `service/data_restore.go:456` | C | Paths are written by the restore task under the location. |
