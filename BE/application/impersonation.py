@@ -47,19 +47,24 @@ def eligible_users(actor):
     users = User.objects.filter(is_active=True, is_superuser=False).select_related(
         'connected_user__sportassociation', 'sportassociation')
     if association:
-        from instance.permissions import is_instance_owner
         own_collaborators = Q(role=User.COLLABORATOR, connected_user_id=actor.pk)
-        if is_instance_owner(actor):
-            # Self-hosted installs serve a single association: its owner sees every athlete, like the admin.
-            return users.exclude(pk=actor.pk).filter(Q(role=User.ATHLETE) | own_collaborators)
         members = Associate.objects.all_objects().filter(
             sport_association=association, deleted=False, user__isnull=False).values('user_id')
         # Associations often register members themselves: the Associate row then
         # belongs to the owner and only the subscription points at the athlete.
         subscribers = Subscription._base_manager.filter(
             sport_association=association, deleted=False, user__isnull=False).values('user_id')
-        return users.exclude(pk=actor.pk).filter(
-            Q(role=User.ATHLETE, pk__in=members) | Q(role=User.ATHLETE, pk__in=subscribers) | own_collaborators)
+        # Impersonation is limited to athletes whose memberships are all within the
+        # actor's associations.
+        owned = SportAssociation._base_manager.filter(user=actor).values('pk')
+        members_elsewhere = Associate.objects.all_objects().filter(
+            deleted=False, user__isnull=False, sport_association__isnull=False).exclude(
+            sport_association__in=owned).values('user_id')
+        subscribers_elsewhere = Subscription._base_manager.filter(deleted=False, user__isnull=False).exclude(
+            sport_association__in=owned).values('user_id')
+        athletes = Q(role=User.ATHLETE) & (Q(pk__in=members) | Q(pk__in=subscribers)) & ~Q(pk__in=members_elsewhere) & \
+            ~Q(pk__in=subscribers_elsewhere)
+        return users.exclude(pk=actor.pk).filter(athletes | own_collaborators)
     return users.filter(Q(role=User.ATHLETE) | Q(role=User.ASSOCIATION, sportassociation__deleted=False) |
         Q(role=User.COLLABORATOR, connected_user__is_active=True, connected_user__deleted=False,
           connected_user__role=User.ASSOCIATION, connected_user__sportassociation__deleted=False))

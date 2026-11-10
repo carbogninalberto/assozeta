@@ -10,12 +10,11 @@ permission, pagination and audit evidence). Main 6b20715d changed two things, re
 
 ## Behaviour
 
-- `eligible_users(actor)` for an association owner:
-  - when the actor owns the self-hosted instance (`is_instance_owner`: the first `InstanceConfiguration` by pk is
-    `self_hosted` and its `primary_association` belongs to the actor), every active, non-deleted, non-superuser athlete
-    plus the owner's own collaborators, the owner excluded;
-  - otherwise the athletes with a live `Associate` row of the association (any group), the athletes with a non-deleted
-    `Subscription` of the association (`Subscription._base_manager`, any group), and the owner's own collaborators.
+- `eligible_users(actor)` for an association owner (the self-hosted instance owner included): the athletes with a live
+  `Associate` row of the association (any group) or a non-deleted `Subscription` of the association
+  (`Subscription._base_manager`, any group), and the owner's own collaborators, the owner excluded. Impersonation is
+  limited to athletes whose memberships are all within the actor's associations: an athlete with a live `Associate`
+  row (with an association) or a non-deleted `Subscription` of an association the actor does not own is not eligible.
   The administrator branch is unchanged.
 - Search (`query[generalSearch]`, else `q`; stripped, first 150 characters): `query.split()[:10]` (Python whitespace,
   U+001C..U+001F included); every word must match (`icontains`, `%`/`_` literal) one of username, email, first name,
@@ -24,7 +23,7 @@ permission, pagination and audit evidence). Main 6b20715d changed two things, re
 
 Go: `managementEligible` and `managementSearchWords` (`BE_GO/internal/repository/impersonation_management.go`, list and
 start/session target) and `IdentityRelations.EligibleTarget` (`BE_GO/internal/repository/identity.go`, the identity
-middleware's session recheck) apply the same predicate (`managementInstanceOwner`).
+middleware's session recheck) apply the same predicate (`impersonationLinksOwned`).
 
 ## Evidence
 
@@ -51,3 +50,22 @@ Read family: every case leaves the complete state unchanged.
   TESTS/adapters/django/accounts.py --only impersonation-management`).
 
 Receipts: `quality-reports/go-migration/payments-impersonation-reverify-*`.
+
+## Re-verification: memberships within the actor's associations
+
+Django `BE/application/impersonation.py` (tests: `BE/application/tests/test_association_impersonation.py`) now applies
+the linked-members rule to the self-hosted instance owner too and requires every live link of the athlete to belong to
+an association the actor owns. Fixture `TESTS/fixtures/impersonation_users_http.json` (35 cases) adds athletes linked to
+both associations (member of one, subscriber of the other; subscriber of both) and one whose foreign links are deleted.
+Identity (`TESTS/adapters/django/identity.py`, 53 cases, 10 transitions) adds the same shapes and a transition that
+restores a deleted foreign membership. Fixtures where another association's rows named the shared athlete now register
+them under that association's owner (`scoped_resources.py`).
+
+- RED (`sec-impersonation-red`): Django 35/35; Go fails `impersonation-users-instance-owner-association-athletes`.
+- GREEN (`sec-impersonation-green`): 35/35 on native Django, native Go, Caddy `/api/v1` and `/api/v2`; identity plus
+  impersonation-management 264 cases on the same four transports (`sec-impersonation-identity-green`).
+- Mutations: dropping the membership clause from `managementEligible` (CAUGHT on the list) and from
+  `IdentityRelations.EligibleTarget` (CAUGHT by `owner-member-subscribed-elsewhere-not-eligible`,
+  `owner-subscriber-member-elsewhere-not-eligible` and `membership-elsewhere-restored`).
+
+Receipts: `quality-reports/go-migration/sec-impersonation-*`.
