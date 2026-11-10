@@ -1,10 +1,14 @@
 # API v2 refusals: what the UI can reach on a Go-only backend
 
-With the Istanza switch the web UI talks only to `/api/v2` (Go); nothing under `/api/v2` falls back to Django.
+With the Istanza switch the web UI talks only to `/api/v2` (Go); Caddy routes nothing under `/api/v2` to Django.
 Go refuses some inputs that Django serves (sentinels such as `domain.Err*NotPorted`, `ErrUnsupported`,
 `ErrHandoff`): the stable 500 page, before any write. This page classifies every refusal listed in the family
 docs (`docs/architecture/go-migration/*.md`, "Not ported" / "handed off" / "Documented differences") and found in
 the Go sources.
+
+With `DJANGO_HANDOFF_URL` set (the self-hosted default), Go replays a refused request to Django and returns Django's
+response instead of the 500 page, as long as the request has changed nothing: see [handoff.md](handoff.md). The classes
+below describe what Go itself does not serve; with the handoff on, an A or B item costs one extra hop, not an error.
 
 - **A**: reachable by normal UI use (the UI sends that route with that parameter, value, body shape or encoding,
   or the condition is ordinary data the UI itself creates). Each A item is a functional gap of the beta switch.

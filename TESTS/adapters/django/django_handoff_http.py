@@ -4,8 +4,8 @@ Seeds the personas-reads, course-list and workflow-update rows (their own seed
 functions; the ids do not overlap) and runs Go with DJANGO_HANDOFF_URL set to
 the native Django of the run (GO_DJANGO_HANDOFF). Read cases must leave the
 complete state unchanged; workflow cases are checked by workflow-update's effect
-check (the authored row and audit entries, actor, impersonation data and
-correlation id), so a handed-off write must have exactly Django's effect.
+check (the authored row and audit entries, actor, correlation id and no
+published task), so a handed-off write must have exactly Django's effect.
 
 HANDOFF_FAMILY=off runs the same sequence with the handoff disabled: Go then
 answers the refused cases with its 500 page (the RED receipt of handoff.md).
@@ -42,5 +42,6 @@ def handoff(case, backend):
     return GO_DJANGO_HANDOFF and contract.handed_off(case, backend)
 
 
-fixture_context = harness.fixture_context_for(contract, seed_rows)
-run_workload = harness.run_workload_for(contract, assert_effect, handoff=handoff)
+# workflow-update's effect check also reads the Celery broker (these cases publish nothing).
+fixture_context = harness.with_celery_broker(harness.fixture_context_for(contract, seed_rows))
+run_workload = harness.run_workload_for(contract, assert_effect, prepare=workflow_update.prepare, handoff=handoff)
