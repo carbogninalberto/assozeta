@@ -230,7 +230,65 @@
   "ck12": "a1000000-0000-4000-8000-000000930188",
   "ck13": "a1000000-0000-4000-8000-000000930189",
   "ck14": "a1000000-0000-4000-8000-000000930190",
-  "ck_three": "a1000000-0000-4000-8000-000000930191"
+  "ck_three": "a1000000-0000-4000-8000-000000930191",
+  "owner_four": "a1000000-0000-4000-8000-000000930192",
+  "collab_four": "a1000000-0000-4000-8000-000000930193",
+  "association_four": "a1000000-0000-4000-8000-000000930194",
+  "a4_1": "a1000000-0000-4000-8000-000000930195",
+  "a4_2": "a1000000-0000-4000-8000-000000930196",
+  "a4_3": "a1000000-0000-4000-8000-000000930197",
+  "a4_4": "a1000000-0000-4000-8000-000000930198",
+  "s4_1": "a1000000-0000-4000-8000-000000930199",
+  "s4_dup": "a1000000-0000-4000-8000-000000930200",
+  "s4_arch": "a1000000-0000-4000-8000-000000930201",
+  "s4_2": "a1000000-0000-4000-8000-000000930202",
+  "s4_3": "a1000000-0000-4000-8000-000000930203",
+  "s4_5": "a1000000-0000-4000-8000-000000930204",
+  "cat4": "a1000000-0000-4000-8000-000000930205",
+  "e1": "a1000000-0000-4000-8000-000000930206",
+  "e2": "a1000000-0000-4000-8000-000000930207",
+  "e3": "a1000000-0000-4000-8000-000000930208",
+  "e4": "a1000000-0000-4000-8000-000000930209",
+  "e5": "a1000000-0000-4000-8000-000000930210",
+  "e6": "a1000000-0000-4000-8000-000000930211",
+  "e7": "a1000000-0000-4000-8000-000000930212",
+  "e8": "a1000000-0000-4000-8000-000000930213",
+  "e9": "a1000000-0000-4000-8000-000000930214",
+  "pp4": "a1000000-0000-4000-8000-000000930215",
+  "x_paid": "a1000000-0000-4000-8000-000000930216",
+  "x_archived": "a1000000-0000-4000-8000-000000930217",
+  "x_expense": "a1000000-0000-4000-8000-000000930218",
+  "x_zero": "a1000000-0000-4000-8000-000000930219",
+  "x_deleted": "a1000000-0000-4000-8000-000000930220",
+  "x_old": "a1000000-0000-4000-8000-000000930221",
+  "x_future": "a1000000-0000-4000-8000-000000930222",
+  "x_no_associate": "a1000000-0000-4000-8000-000000930223",
+  "k4c1": "a1000000-0000-4000-8000-000000930224",
+  "k4c2": "a1000000-0000-4000-8000-000000930225",
+  "cs4_1": "a1000000-0000-4000-8000-000000930226",
+  "cs4_del": "a1000000-0000-4000-8000-000000930227",
+  "cs4_2": "a1000000-0000-4000-8000-000000930228",
+  "kc4": "a1000000-0000-4000-8000-000000930229",
+  "ck4_four": "a1000000-0000-4000-8000-000000930230",
+  "ins_c": "a1000000-0000-4000-8000-000000930231",
+  "ins_x": "a1000000-0000-4000-8000-000000930232",
+  "ins_f": "a1000000-0000-4000-8000-000000930233",
+  "ev4a": "a1000000-0000-4000-8000-000000930234",
+  "ev4b": "a1000000-0000-4000-8000-000000930235",
+  "ev4c": "a1000000-0000-4000-8000-000000930236",
+  "ev4d": "a1000000-0000-4000-8000-000000930237",
+  "ev4e": "a1000000-0000-4000-8000-000000930238",
+  "ev4h": "a1000000-0000-4000-8000-000000930239",
+  "ev4z": "a1000000-0000-4000-8000-000000930240",
+  "rg4": "a1000000-0000-4000-8000-000000930241",
+  "rg4b": "a1000000-0000-4000-8000-000000930242",
+  "d4c": "a1000000-0000-4000-8000-000000930243",
+  "d4d": "a1000000-0000-4000-8000-000000930244",
+  "d4a": "a1000000-0000-4000-8000-000000930245",
+  "d4i": "a1000000-0000-4000-8000-000000930246",
+  "d4b": "a1000000-0000-4000-8000-000000930247",
+  "d4e": "a1000000-0000-4000-8000-000000930248",
+  "d4h": "a1000000-0000-4000-8000-000000930249"
  },
  "users": {
   "athlete_two": {
@@ -241,6 +299,13 @@
   },
   "owner_three": {
    "role": "association"
+  },
+  "owner_four": {
+   "role": "association"
+  },
+  "collab_four": {
+   "role": "collaborator",
+   "connected": "owner_four"
   }
  },
  "owner_balance": {
@@ -319,6 +384,39 @@
    "first": "Estero",
    "last": "Socio",
    "sex": "F",
+   "born": null,
+   "age": 0
+  },
+  "a4_1": {
+   "association": "association_four",
+   "first": "Lucia",
+   "last": "Neri",
+   "sex": "F",
+   "born": null,
+   "age": 0,
+   "tax": "NRELCU90A41H501X"
+  },
+  "a4_2": {
+   "association": "association_four",
+   "first": "Paolo",
+   "last": "Gialli",
+   "sex": "M",
+   "born": null,
+   "age": 0
+  },
+  "a4_3": {
+   "association": "association_four",
+   "first": "Sara",
+   "last": "Blu",
+   "sex": "F",
+   "born": null,
+   "age": 0
+  },
+  "a4_4": {
+   "association": "association_four",
+   "first": "Ugo",
+   "last": "Verde",
+   "sex": "M",
    "born": null,
    "age": 0
   }
@@ -838,7 +936,7 @@
    "medical": null,
    "archived": false,
    "group": null,
-   "user": "a1000000-0000-4000-8000-000000700004"
+   "user": "a1000000-0000-4000-8000-000000700007"
   },
   "sub_b1": {
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -885,6 +983,108 @@
    "archived": false,
    "group": null,
    "user": "owner_three"
+  },
+  "s4_1": {
+   "association": "association_four",
+   "status": 4,
+   "type": 2,
+   "start": {
+    "day": -60
+   },
+   "end": {
+    "day": 300
+   },
+   "created": "2023-03-01T10:00:00Z",
+   "associate": "a4_1",
+   "medical": null,
+   "archived": false,
+   "group": null,
+   "user": "owner_four"
+  },
+  "s4_dup": {
+   "association": "association_four",
+   "status": 4,
+   "type": 2,
+   "start": {
+    "day": -60
+   },
+   "end": {
+    "day": 300
+   },
+   "created": "2023-05-01T10:00:00Z",
+   "associate": "a4_1",
+   "medical": null,
+   "archived": false,
+   "group": null,
+   "user": "owner_four"
+  },
+  "s4_arch": {
+   "association": "association_four",
+   "status": 4,
+   "type": 2,
+   "start": {
+    "day": -400
+   },
+   "end": {
+    "day": 400
+   },
+   "created": "2023-06-01T10:00:00Z",
+   "associate": "a4_1",
+   "medical": null,
+   "archived": true,
+   "group": null,
+   "user": "owner_four"
+  },
+  "s4_2": {
+   "association": "association_four",
+   "status": 4,
+   "type": 2,
+   "start": {
+    "day": -60
+   },
+   "end": {
+    "day": -20
+   },
+   "created": "2023-02-01T10:00:00Z",
+   "associate": "a4_2",
+   "medical": null,
+   "archived": false,
+   "group": null,
+   "user": "owner_four"
+  },
+  "s4_3": {
+   "association": "association_four",
+   "status": 4,
+   "type": 2,
+   "start": {
+    "day": -19
+   },
+   "end": {
+    "day": 100
+   },
+   "created": "2023-04-01T10:00:00Z",
+   "associate": "a4_2",
+   "medical": null,
+   "archived": false,
+   "group": null,
+   "user": "owner_four"
+  },
+  "s4_5": {
+   "association": "association_four",
+   "status": 4,
+   "type": 2,
+   "start": {
+    "day": -30
+   },
+   "end": {
+    "day": -2
+   },
+   "created": "2023-07-01T10:00:00Z",
+   "associate": "a4_4",
+   "medical": null,
+   "archived": false,
+   "group": null,
+   "user": "owner_four"
   }
  },
  "payments": {
@@ -1351,6 +1551,311 @@
    "created": "2024-03-03T10:00:00Z",
    "payment_date": "2024-08-31T00:00:00Z",
    "group": null
+  },
+  "e1": {
+   "association": "association_four",
+   "amount": "12.50",
+   "paid": false,
+   "expense": false,
+   "archived": false,
+   "deleted": false,
+   "subject": 2,
+   "created": {
+    "day": -3,
+    "at": "10:00:00"
+   },
+   "payment_date": {
+    "day": -3,
+    "at": "10:00:00"
+   },
+   "group": null,
+   "associate": "a4_1",
+   "meta": {
+    "description": "Rata judo è"
+   }
+  },
+  "e2": {
+   "association": "association_four",
+   "amount": "30.00",
+   "paid": false,
+   "expense": false,
+   "archived": false,
+   "deleted": false,
+   "subject": 1,
+   "created": {
+    "day": -10,
+    "at": "09:00:00"
+   },
+   "payment_date": null,
+   "group": null,
+   "associate": "a4_1"
+  },
+  "e3": {
+   "association": "association_four",
+   "amount": "20.00",
+   "paid": false,
+   "expense": false,
+   "archived": false,
+   "deleted": false,
+   "subject": 2,
+   "created": {
+    "day": -5,
+    "at": "11:00:00"
+   },
+   "payment_date": {
+    "day": -30,
+    "at": "12:00:00"
+   },
+   "group": null,
+   "associate": "a4_2"
+  },
+  "e4": {
+   "association": "association_four",
+   "amount": "7.00",
+   "paid": false,
+   "expense": false,
+   "archived": false,
+   "deleted": false,
+   "subject": 0,
+   "created": {
+    "day": 2,
+    "at": "08:00:00"
+   },
+   "payment_date": null,
+   "group": null,
+   "associate": "a4_2",
+   "category": "cat4"
+  },
+  "e5": {
+   "association": "association_four",
+   "amount": "15.00",
+   "paid": false,
+   "expense": false,
+   "archived": false,
+   "deleted": false,
+   "subject": 2,
+   "created": {
+    "day": -7,
+    "at": "10:00:00"
+   },
+   "payment_date": null,
+   "group": null,
+   "associate": "a4_1",
+   "course": {
+    "label": "Corso estivo"
+   },
+   "description": "luglio"
+  },
+  "e6": {
+   "association": "association_four",
+   "amount": "5.00",
+   "paid": false,
+   "expense": false,
+   "archived": false,
+   "deleted": false,
+   "subject": 2,
+   "created": {
+    "day": -12,
+    "at": "10:00:00"
+   },
+   "payment_date": null,
+   "group": null,
+   "associate": "a4_1"
+  },
+  "e7": {
+   "association": "association_four",
+   "amount": "3.00",
+   "paid": false,
+   "expense": false,
+   "archived": false,
+   "deleted": false,
+   "subject": 0,
+   "created": {
+    "day": -15,
+    "at": "10:00:00"
+   },
+   "payment_date": null,
+   "group": null,
+   "associate": "a4_1"
+  },
+  "e8": {
+   "association": "association_four",
+   "amount": "9.00",
+   "paid": false,
+   "expense": false,
+   "archived": false,
+   "deleted": false,
+   "subject": 0,
+   "created": {
+    "day": -4,
+    "at": "10:00:00"
+   },
+   "payment_date": null,
+   "group": null,
+   "associate": "a4_3"
+  },
+  "e9": {
+   "association": "association_four",
+   "amount": "4.00",
+   "paid": false,
+   "expense": false,
+   "archived": false,
+   "deleted": false,
+   "subject": 0,
+   "created": {
+    "day": -6,
+    "at": "10:00:00"
+   },
+   "payment_date": {
+    "day": -2,
+    "at": "10:00:00"
+   },
+   "group": null,
+   "associate": "a4_4"
+  },
+  "pp4": {
+   "association": "association_four",
+   "amount": "1.00",
+   "paid": true,
+   "expense": false,
+   "archived": false,
+   "deleted": false,
+   "subject": 0,
+   "created": "2023-01-01T10:00:00Z",
+   "payment_date": {
+    "day": -1,
+    "at": "10:00:00"
+   },
+   "group": null,
+   "associate": "a4_2"
+  },
+  "x_paid": {
+   "association": "association_four",
+   "amount": "8.00",
+   "paid": true,
+   "expense": false,
+   "archived": false,
+   "deleted": false,
+   "subject": 0,
+   "created": {
+    "day": -2,
+    "at": "10:00:00"
+   },
+   "payment_date": null,
+   "group": null,
+   "associate": "a4_1"
+  },
+  "x_archived": {
+   "association": "association_four",
+   "amount": "8.00",
+   "paid": false,
+   "expense": false,
+   "archived": true,
+   "deleted": false,
+   "subject": 0,
+   "created": {
+    "day": -2,
+    "at": "10:00:00"
+   },
+   "payment_date": null,
+   "group": null,
+   "associate": "a4_1"
+  },
+  "x_expense": {
+   "association": "association_four",
+   "amount": "8.00",
+   "paid": false,
+   "expense": true,
+   "archived": false,
+   "deleted": false,
+   "subject": 0,
+   "created": {
+    "day": -2,
+    "at": "10:00:00"
+   },
+   "payment_date": null,
+   "group": null,
+   "associate": "a4_1"
+  },
+  "x_zero": {
+   "association": "association_four",
+   "amount": "0.00",
+   "paid": false,
+   "expense": false,
+   "archived": false,
+   "deleted": false,
+   "subject": 0,
+   "created": {
+    "day": -2,
+    "at": "10:00:00"
+   },
+   "payment_date": null,
+   "group": null,
+   "associate": "a4_1"
+  },
+  "x_deleted": {
+   "association": "association_four",
+   "amount": "8.00",
+   "paid": false,
+   "expense": false,
+   "archived": false,
+   "deleted": true,
+   "subject": 0,
+   "created": {
+    "day": -2,
+    "at": "10:00:00"
+   },
+   "payment_date": null,
+   "group": null,
+   "associate": "a4_1"
+  },
+  "x_old": {
+   "association": "association_four",
+   "amount": "8.00",
+   "paid": false,
+   "expense": false,
+   "archived": false,
+   "deleted": false,
+   "subject": 0,
+   "created": {
+    "day": -40,
+    "at": "10:00:00"
+   },
+   "payment_date": null,
+   "group": null,
+   "associate": "a4_1"
+  },
+  "x_future": {
+   "association": "association_four",
+   "amount": "8.00",
+   "paid": false,
+   "expense": false,
+   "archived": false,
+   "deleted": false,
+   "subject": 0,
+   "created": {
+    "day": 9,
+    "at": "10:00:00"
+   },
+   "payment_date": null,
+   "group": null,
+   "associate": "a4_1"
+  },
+  "x_no_associate": {
+   "association": "association_four",
+   "amount": "8.00",
+   "paid": false,
+   "expense": false,
+   "archived": false,
+   "deleted": false,
+   "subject": 0,
+   "created": {
+    "day": -2,
+    "at": "10:00:00"
+   },
+   "payment_date": null,
+   "group": null,
+   "associate": null
   }
  },
  "invoices": {
@@ -1516,6 +2021,26 @@
   "c3": {
    "association": "a1000000-0000-4000-8000-000000701001",
    "title": "Eventi rotti",
+   "status": 2,
+   "fee": "10.00",
+   "created": "2023-01-01T10:00:00Z",
+   "deleted": false,
+   "description": null,
+   "group": null
+  },
+  "k4c1": {
+   "association": "association_four",
+   "title": "Judo",
+   "status": 2,
+   "fee": "10.00",
+   "created": "2023-01-01T10:00:00Z",
+   "deleted": false,
+   "description": null,
+   "group": null
+  },
+  "k4c2": {
+   "association": "association_four",
+   "title": "Karate",
    "status": 2,
    "fee": "10.00",
    "created": "2023-01-01T10:00:00Z",
@@ -1857,6 +2382,26 @@
    "created": "2023-01-01T10:00:00Z",
    "deleted": false,
    "subscription": "sub_b1"
+  },
+  "cs4_1": {
+   "course": "k4c1",
+   "created": "2023-01-01T10:00:00Z",
+   "deleted": false,
+   "subscription": "s4_1",
+   "payment": "e1"
+  },
+  "cs4_del": {
+   "course": "k4c1",
+   "created": "2023-01-01T10:00:00Z",
+   "deleted": true,
+   "subscription": "s4_1"
+  },
+  "cs4_2": {
+   "course": "k4c2",
+   "created": "2023-01-01T10:00:00Z",
+   "deleted": false,
+   "subscription": "s4_3",
+   "payment": "e3"
   }
  },
  "registries": {
@@ -2000,6 +2545,185 @@
    "events": [
     "not-an-event"
    ]
+  },
+  "rg4": {
+   "course": "k4c1",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-000000930236",
+     "title": "Lezione",
+     "start": {
+      "$fmt": [
+       {
+        "day": -1,
+        "at": "22:30:00"
+       },
+       "%Y-%m-%dT%H:%M:%S.000Z"
+      ]
+     },
+     "end": {
+      "$fmt": [
+       {
+        "day": -1,
+        "at": "22:30:00"
+       },
+       "%Y-%m-%dT%H:%M:%S.000Z"
+      ]
+     }
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-000000930237",
+     "title": "Lezione",
+     "start": {
+      "$fmt": [
+       {
+        "day": -1,
+        "at": "21:00:00"
+       },
+       "%Y-%m-%dT%H:%M:%S.000Z"
+      ]
+     },
+     "end": {
+      "$fmt": [
+       {
+        "day": -1,
+        "at": "21:00:00"
+       },
+       "%Y-%m-%dT%H:%M:%S.000Z"
+      ]
+     }
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-000000930234",
+     "title": "Lezione",
+     "start": {
+      "$fmt": [
+       {
+        "day": 0,
+        "at": "09:00:00"
+       },
+       "%Y-%m-%dT%H:%M:%S.000Z"
+      ]
+     },
+     "end": {
+      "$fmt": [
+       {
+        "day": 0,
+        "at": "09:00:00"
+       },
+       "%Y-%m-%dT%H:%M:%S.000Z"
+      ]
+     },
+     "allDay": false,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "A1000000-0000-4000-8000-000000930231"
+      },
+      "location": "Palestra"
+     }
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-000000930235",
+     "title": "Serale",
+     "start": {
+      "$fmt": [
+       {
+        "day": 0,
+        "at": "18:00:00"
+       },
+       "%Y-%m-%dT%H:%M:%S.000Z"
+      ]
+     },
+     "end": {
+      "$fmt": [
+       {
+        "day": 0,
+        "at": "18:00:00"
+       },
+       "%Y-%m-%dT%H:%M:%S.000Z"
+      ]
+     },
+     "allDay": true,
+     "extendedProps": {
+      "instructor": [
+       {
+        "instructor_id": "a1000000-0000-4000-8000-000000930232"
+       },
+       {
+        "instructor_id": "a1000000-0000-4000-8000-000000930233"
+       },
+       {
+        "name": "esterno"
+       }
+      ]
+     }
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-000000930238",
+     "title": "Lezione",
+     "start": {
+      "$fmt": [
+       {
+        "day": 1,
+        "at": "01:30:00"
+       },
+       "%Y-%m-%dT%H:%M:%S.000Z"
+      ]
+     },
+     "end": {
+      "$fmt": [
+       {
+        "day": 1,
+        "at": "01:30:00"
+       },
+       "%Y-%m-%dT%H:%M:%S.000Z"
+      ]
+     }
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-000000930239",
+     "title": "Lezione",
+     "start": {
+      "$fmt": [
+       {
+        "day": 1,
+        "at": "03:00:00"
+       },
+       "%Y-%m-%dT%H:%M:%S.000Z"
+      ]
+     },
+     "end": {
+      "$fmt": [
+       {
+        "day": 1,
+        "at": "03:00:00"
+       },
+       "%Y-%m-%dT%H:%M:%S.000Z"
+      ]
+     }
+    }
+   ]
+  },
+  "rg4b": {
+   "course": "k4c2",
+   "events": [
+    {
+     "title": "Senza id",
+     "start": {
+      "$fmt": [
+       {
+        "day": 0,
+        "at": "15:00:00"
+       },
+       "%Y-%m-%dT%H:%M:%S.000Z"
+      ]
+     },
+     "end": null,
+     "extendedProps": {
+      "note": "libera"
+     }
+    }
+   ]
   }
  },
  "days": {
@@ -2065,6 +2789,73 @@
     "day": 1,
     "at": "08:00:00"
    }
+  },
+  "d4c": {
+   "registry": "rg4",
+   "date": {
+    "day": -1,
+    "at": "22:30:00"
+   },
+   "title": "Lezione",
+   "event": "ev4c"
+  },
+  "d4d": {
+   "registry": "rg4",
+   "date": {
+    "day": -1,
+    "at": "21:00:00"
+   },
+   "title": "Lezione",
+   "event": "ev4d"
+  },
+  "d4a": {
+   "registry": "rg4",
+   "date": {
+    "day": 0,
+    "at": "09:00:00"
+   },
+   "title": "Lezione",
+   "event": "ev4a",
+   "attendees": [
+    "cs4_1"
+   ],
+   "absences": [
+    "cs4_2"
+   ]
+  },
+  "d4i": {
+   "registry": "rg4b",
+   "date": {
+    "day": 0,
+    "at": "15:00:00"
+   },
+   "title": "Senza id"
+  },
+  "d4b": {
+   "registry": "rg4",
+   "date": {
+    "day": 0,
+    "at": "18:00:00"
+   },
+   "title": "Serale"
+  },
+  "d4e": {
+   "registry": "rg4",
+   "date": {
+    "day": 1,
+    "at": "01:30:00"
+   },
+   "title": "Notturna",
+   "event": "ev4z"
+  },
+  "d4h": {
+   "registry": "rg4",
+   "date": {
+    "day": 1,
+    "at": "03:00:00"
+   },
+   "title": "Lezione",
+   "event": "ev4h"
   }
  },
  "messages": {
@@ -2147,6 +2938,14 @@
    "description": null,
    "lessons": 3,
    "fee": "1.00",
+   "public": true
+  },
+  "kc4": {
+   "association": "association_four",
+   "title": "Carnet judo",
+   "description": null,
+   "lessons": 8,
+   "fee": "40.00",
    "public": true
   }
  },
@@ -2305,11 +3104,51 @@
     "lessons_left": 1
    },
    "created": "2026-09-01T10:00:00.123456Z"
+  },
+  "ck4_four": {
+   "subscription": "s4_1",
+   "carnet": "kc4",
+   "meta": {
+    "lessons_left": 10
+   },
+   "payment": "e6",
+   "created": "2026-09-01T10:00:00.123456Z"
   }
  },
  "association_three": {
   "denomination": "Statistiche terza",
   "tax_code": "93000000003"
+ },
+ "extra_associations": {
+  "association_four": {
+   "owner": "owner_four",
+   "denomination": "Statistiche quarta",
+   "tax_code": "93000000004"
+  }
+ },
+ "payment_categories": {
+  "cat4": {
+   "association": "association_four",
+   "name": "Quota extra"
+  }
+ },
+ "instructors": {
+  "ins_c": {
+   "owner": "owner_four",
+   "first": "Carla",
+   "last": "Rossi",
+   "associated_user": "collab_four"
+  },
+  "ins_x": {
+   "owner": "owner_four",
+   "first": "Dario",
+   "last": "Neri"
+  },
+  "ins_f": {
+   "owner": "a1000000-0000-4000-8000-000000700007",
+   "first": "Elena",
+   "last": "Estera"
+  }
  },
  "own_review": {
   "review_url": "https://example.test/recensioni",
@@ -3163,6 +4002,1226 @@
      "total_expenses": null
     }
    }
+  },
+  {
+   "name": "statistic-reads-todaylessons-links-unlinked-day",
+   "actor": "owner_four",
+   "method": "GET",
+   "path": "/statistic/dashboard?widget=todaylessons",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "lessons": [
+      {
+       "title": "Lezione",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000930243",
+       "attendance_registry": "a1000000-0000-4000-8000-000000930241",
+       "date": {
+        "$drf": {
+         "day": -1,
+         "at": "22:30:00"
+        }
+       },
+       "start": {
+        "$fmt": [
+         {
+          "day": -1,
+          "at": "22:30:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "end": {
+        "$fmt": [
+         {
+          "day": -1,
+          "at": "22:30:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "course_id": "a1000000-0000-4000-8000-000000930224",
+       "total_attendees": 0,
+       "total_expected_absences": 0,
+       "potential_attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000930226",
+         "subscription": {
+          "associate": {
+           "first_name": "Lucia",
+           "last_name": "Neri",
+           "tax_code": "NRELCU90A41H501X",
+           "medical_label": "<span class=\"text-success font-weight-boldest\">Esente per 0 giorni</span>"
+          }
+         }
+        }
+       ],
+       "total_expected_total": 1,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Lezione",
+       "allDay": false,
+       "extended_props": {
+        "instructor": {
+         "instructor_id": "A1000000-0000-4000-8000-000000930231",
+         "label": "Carla Rossi"
+        },
+        "location": "Palestra"
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000930245",
+       "attendance_registry": "a1000000-0000-4000-8000-000000930241",
+       "date": {
+        "$drf": {
+         "day": 0,
+         "at": "09:00:00"
+        }
+       },
+       "start": {
+        "$fmt": [
+         {
+          "day": 0,
+          "at": "09:00:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "end": {
+        "$fmt": [
+         {
+          "day": 0,
+          "at": "09:00:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "course_id": "a1000000-0000-4000-8000-000000930224",
+       "total_attendees": 1,
+       "total_expected_absences": 1,
+       "potential_attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000930226",
+         "subscription": {
+          "associate": {
+           "first_name": "Lucia",
+           "last_name": "Neri",
+           "tax_code": "NRELCU90A41H501X",
+           "medical_label": "<span class=\"text-success font-weight-boldest\">Esente per 0 giorni</span>"
+          }
+         }
+        }
+       ],
+       "total_expected_total": 0,
+       "attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000930226"
+        }
+       ],
+       "expected_absences": []
+      },
+      {
+       "title": "Senza id",
+       "allDay": false,
+       "extended_props": {
+        "note": "libera"
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000930246",
+       "attendance_registry": "a1000000-0000-4000-8000-000000930242",
+       "date": {
+        "$drf": {
+         "day": 0,
+         "at": "15:00:00"
+        }
+       },
+       "start": {
+        "$fmt": [
+         {
+          "day": 0,
+          "at": "15:00:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "end": null,
+       "course_id": "a1000000-0000-4000-8000-000000930225",
+       "total_attendees": 0,
+       "total_expected_absences": 0,
+       "potential_attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000930228",
+         "subscription": {
+          "associate": {
+           "first_name": "Paolo",
+           "last_name": "Gialli",
+           "tax_code": null,
+           "medical_label": "<span class=\"text-success font-weight-boldest\">Esente per 0 giorni</span>"
+          }
+         }
+        }
+       ],
+       "total_expected_total": 1,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Serale",
+       "allDay": true,
+       "extended_props": {
+        "instructor": [
+         {
+          "instructor_id": "a1000000-0000-4000-8000-000000930232",
+          "label": "Dario Neri"
+         },
+         {
+          "instructor_id": "a1000000-0000-4000-8000-000000930233"
+         },
+         {
+          "name": "esterno"
+         }
+        ]
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000930247",
+       "attendance_registry": "a1000000-0000-4000-8000-000000930241",
+       "date": {
+        "$drf": {
+         "day": 0,
+         "at": "18:00:00"
+        }
+       },
+       "start": {
+        "$fmt": [
+         {
+          "day": 0,
+          "at": "18:00:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "end": {
+        "$fmt": [
+         {
+          "day": 0,
+          "at": "18:00:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "course_id": "a1000000-0000-4000-8000-000000930224",
+       "total_attendees": 0,
+       "total_expected_absences": 0,
+       "potential_attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000930226",
+         "subscription": {
+          "associate": {
+           "first_name": "Lucia",
+           "last_name": "Neri",
+           "tax_code": "NRELCU90A41H501X",
+           "medical_label": "<span class=\"text-success font-weight-boldest\">Esente per 0 giorni</span>"
+          }
+         }
+        }
+       ],
+       "total_expected_total": 1,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Notturna",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000930248",
+       "attendance_registry": "a1000000-0000-4000-8000-000000930241",
+       "date": {
+        "$drf": {
+         "day": 1,
+         "at": "01:30:00"
+        }
+       },
+       "start": null,
+       "end": null,
+       "course_id": "a1000000-0000-4000-8000-000000930224",
+       "total_attendees": 0,
+       "total_expected_absences": 0,
+       "potential_attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000930226",
+         "subscription": {
+          "associate": {
+           "first_name": "Lucia",
+           "last_name": "Neri",
+           "tax_code": "NRELCU90A41H501X",
+           "medical_label": "<span class=\"text-success font-weight-boldest\">Esente per 0 giorni</span>"
+          }
+         }
+        }
+       ],
+       "total_expected_total": 1,
+       "attendees": [],
+       "expected_absences": []
+      }
+     ]
+    }
+   },
+   "link": {
+    "day": "a1000000-0000-4000-8000-000000930247",
+    "associated_event": "a1000000-0000-4000-8000-000000930235",
+    "attendees": null,
+    "expected_absences": [],
+    "changes": {
+     "associated_event": [
+      "None",
+      "a1000000-0000-4000-8000-000000930235"
+     ],
+     "expected_absences": [
+      "null",
+      "[]"
+     ]
+    },
+    "actor": "owner_four",
+    "association": "a1000000-0000-4000-8000-000000930194",
+    "path": "attendance_registry.course.sport_association"
+   }
+  },
+  {
+   "name": "statistic-reads-todaylessons-owner",
+   "actor": "owner_four",
+   "method": "GET",
+   "path": "/statistic/dashboard?widget=todaylessons",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "lessons": [
+      {
+       "title": "Lezione",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000930243",
+       "attendance_registry": "a1000000-0000-4000-8000-000000930241",
+       "date": {
+        "$drf": {
+         "day": -1,
+         "at": "22:30:00"
+        }
+       },
+       "start": {
+        "$fmt": [
+         {
+          "day": -1,
+          "at": "22:30:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "end": {
+        "$fmt": [
+         {
+          "day": -1,
+          "at": "22:30:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "course_id": "a1000000-0000-4000-8000-000000930224",
+       "total_attendees": 0,
+       "total_expected_absences": 0,
+       "potential_attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000930226",
+         "subscription": {
+          "associate": {
+           "first_name": "Lucia",
+           "last_name": "Neri",
+           "tax_code": "NRELCU90A41H501X",
+           "medical_label": "<span class=\"text-success font-weight-boldest\">Esente per 0 giorni</span>"
+          }
+         }
+        }
+       ],
+       "total_expected_total": 1,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Lezione",
+       "allDay": false,
+       "extended_props": {
+        "instructor": {
+         "instructor_id": "A1000000-0000-4000-8000-000000930231",
+         "label": "Carla Rossi"
+        },
+        "location": "Palestra"
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000930245",
+       "attendance_registry": "a1000000-0000-4000-8000-000000930241",
+       "date": {
+        "$drf": {
+         "day": 0,
+         "at": "09:00:00"
+        }
+       },
+       "start": {
+        "$fmt": [
+         {
+          "day": 0,
+          "at": "09:00:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "end": {
+        "$fmt": [
+         {
+          "day": 0,
+          "at": "09:00:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "course_id": "a1000000-0000-4000-8000-000000930224",
+       "total_attendees": 1,
+       "total_expected_absences": 1,
+       "potential_attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000930226",
+         "subscription": {
+          "associate": {
+           "first_name": "Lucia",
+           "last_name": "Neri",
+           "tax_code": "NRELCU90A41H501X",
+           "medical_label": "<span class=\"text-success font-weight-boldest\">Esente per 0 giorni</span>"
+          }
+         }
+        }
+       ],
+       "total_expected_total": 0,
+       "attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000930226"
+        }
+       ],
+       "expected_absences": []
+      },
+      {
+       "title": "Senza id",
+       "allDay": false,
+       "extended_props": {
+        "note": "libera"
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000930246",
+       "attendance_registry": "a1000000-0000-4000-8000-000000930242",
+       "date": {
+        "$drf": {
+         "day": 0,
+         "at": "15:00:00"
+        }
+       },
+       "start": {
+        "$fmt": [
+         {
+          "day": 0,
+          "at": "15:00:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "end": null,
+       "course_id": "a1000000-0000-4000-8000-000000930225",
+       "total_attendees": 0,
+       "total_expected_absences": 0,
+       "potential_attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000930228",
+         "subscription": {
+          "associate": {
+           "first_name": "Paolo",
+           "last_name": "Gialli",
+           "tax_code": null,
+           "medical_label": "<span class=\"text-success font-weight-boldest\">Esente per 0 giorni</span>"
+          }
+         }
+        }
+       ],
+       "total_expected_total": 1,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Serale",
+       "allDay": true,
+       "extended_props": {
+        "instructor": [
+         {
+          "instructor_id": "a1000000-0000-4000-8000-000000930232",
+          "label": "Dario Neri"
+         },
+         {
+          "instructor_id": "a1000000-0000-4000-8000-000000930233"
+         },
+         {
+          "name": "esterno"
+         }
+        ]
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000930247",
+       "attendance_registry": "a1000000-0000-4000-8000-000000930241",
+       "date": {
+        "$drf": {
+         "day": 0,
+         "at": "18:00:00"
+        }
+       },
+       "start": {
+        "$fmt": [
+         {
+          "day": 0,
+          "at": "18:00:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "end": {
+        "$fmt": [
+         {
+          "day": 0,
+          "at": "18:00:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "course_id": "a1000000-0000-4000-8000-000000930224",
+       "total_attendees": 0,
+       "total_expected_absences": 0,
+       "potential_attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000930226",
+         "subscription": {
+          "associate": {
+           "first_name": "Lucia",
+           "last_name": "Neri",
+           "tax_code": "NRELCU90A41H501X",
+           "medical_label": "<span class=\"text-success font-weight-boldest\">Esente per 0 giorni</span>"
+          }
+         }
+        }
+       ],
+       "total_expected_total": 1,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Notturna",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000930248",
+       "attendance_registry": "a1000000-0000-4000-8000-000000930241",
+       "date": {
+        "$drf": {
+         "day": 1,
+         "at": "01:30:00"
+        }
+       },
+       "start": null,
+       "end": null,
+       "course_id": "a1000000-0000-4000-8000-000000930224",
+       "total_attendees": 0,
+       "total_expected_absences": 0,
+       "potential_attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000930226",
+         "subscription": {
+          "associate": {
+           "first_name": "Lucia",
+           "last_name": "Neri",
+           "tax_code": "NRELCU90A41H501X",
+           "medical_label": "<span class=\"text-success font-weight-boldest\">Esente per 0 giorni</span>"
+          }
+         }
+        }
+       ],
+       "total_expected_total": 1,
+       "attendees": [],
+       "expected_absences": []
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "statistic-reads-todaylessons-instructor-collaborator",
+   "actor": "collab_four",
+   "method": "GET",
+   "path": "/statistic/dashboard?widget=todaylessons",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "lessons": [
+      {
+       "title": "Lezione",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000930243",
+       "attendance_registry": "a1000000-0000-4000-8000-000000930241",
+       "date": {
+        "$drf": {
+         "day": -1,
+         "at": "22:30:00"
+        }
+       },
+       "start": {
+        "$fmt": [
+         {
+          "day": -1,
+          "at": "22:30:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "end": {
+        "$fmt": [
+         {
+          "day": -1,
+          "at": "22:30:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "course_id": "a1000000-0000-4000-8000-000000930224",
+       "total_attendees": 0,
+       "total_expected_absences": 0,
+       "potential_attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000930226",
+         "subscription": {
+          "associate": {
+           "first_name": "Lucia",
+           "last_name": "Neri",
+           "tax_code": "NRELCU90A41H501X",
+           "medical_label": "<span class=\"text-success font-weight-boldest\">Esente per 0 giorni</span>"
+          }
+         }
+        }
+       ],
+       "total_expected_total": 1,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Lezione",
+       "allDay": false,
+       "extended_props": {
+        "instructor": {
+         "instructor_id": "A1000000-0000-4000-8000-000000930231",
+         "label": "Carla Rossi"
+        },
+        "location": "Palestra"
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000930245",
+       "attendance_registry": "a1000000-0000-4000-8000-000000930241",
+       "date": {
+        "$drf": {
+         "day": 0,
+         "at": "09:00:00"
+        }
+       },
+       "start": {
+        "$fmt": [
+         {
+          "day": 0,
+          "at": "09:00:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "end": {
+        "$fmt": [
+         {
+          "day": 0,
+          "at": "09:00:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "course_id": "a1000000-0000-4000-8000-000000930224",
+       "total_attendees": 1,
+       "total_expected_absences": 1,
+       "potential_attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000930226",
+         "subscription": {
+          "associate": {
+           "first_name": "Lucia",
+           "last_name": "Neri",
+           "tax_code": "NRELCU90A41H501X",
+           "medical_label": "<span class=\"text-success font-weight-boldest\">Esente per 0 giorni</span>"
+          }
+         }
+        }
+       ],
+       "total_expected_total": 0,
+       "attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000930226"
+        }
+       ],
+       "expected_absences": []
+      },
+      {
+       "title": "Serale",
+       "allDay": true,
+       "extended_props": {
+        "instructor": [
+         {
+          "instructor_id": "a1000000-0000-4000-8000-000000930232",
+          "label": "Dario Neri"
+         },
+         {
+          "instructor_id": "a1000000-0000-4000-8000-000000930233"
+         },
+         {
+          "name": "esterno"
+         }
+        ]
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000930247",
+       "attendance_registry": "a1000000-0000-4000-8000-000000930241",
+       "date": {
+        "$drf": {
+         "day": 0,
+         "at": "18:00:00"
+        }
+       },
+       "start": {
+        "$fmt": [
+         {
+          "day": 0,
+          "at": "18:00:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "end": {
+        "$fmt": [
+         {
+          "day": 0,
+          "at": "18:00:00"
+         },
+         "%Y-%m-%dT%H:%M:%S.000Z"
+        ]
+       },
+       "course_id": "a1000000-0000-4000-8000-000000930224",
+       "total_attendees": 0,
+       "total_expected_absences": 0,
+       "potential_attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000930226",
+         "subscription": {
+          "associate": {
+           "first_name": "Lucia",
+           "last_name": "Neri",
+           "tax_code": "NRELCU90A41H501X",
+           "medical_label": "<span class=\"text-success font-weight-boldest\">Esente per 0 giorni</span>"
+          }
+         }
+        }
+       ],
+       "total_expected_total": 1,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Notturna",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000930248",
+       "attendance_registry": "a1000000-0000-4000-8000-000000930241",
+       "date": {
+        "$drf": {
+         "day": 1,
+         "at": "01:30:00"
+        }
+       },
+       "start": null,
+       "end": null,
+       "course_id": "a1000000-0000-4000-8000-000000930224",
+       "total_attendees": 0,
+       "total_expected_absences": 0,
+       "potential_attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000930226",
+         "subscription": {
+          "associate": {
+           "first_name": "Lucia",
+           "last_name": "Neri",
+           "tax_code": "NRELCU90A41H501X",
+           "medical_label": "<span class=\"text-success font-weight-boldest\">Esente per 0 giorni</span>"
+          }
+         }
+        }
+       ],
+       "total_expected_total": 1,
+       "attendees": [],
+       "expected_absences": []
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "statistic-reads-todaylessons-other-association-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/statistic/dashboard?widget=todaylessons",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "lessons": []
+    }
+   }
+  },
+  {
+   "name": "statistic-reads-expiredpayments-owner",
+   "actor": "owner_four",
+   "method": "GET",
+   "path": "/statistic/dashboard?widget=expiredPayments",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "expired_payments": [
+      {
+       "payment_id": "a1000000-0000-4000-8000-000000930209",
+       "expired_days": -2,
+       "amount": 7.0,
+       "payment_date": null,
+       "creation_date": {
+        "$drf": {
+         "day": 2,
+         "at": "08:00:00"
+        }
+       },
+       "title": "Quota extra",
+       "date": {
+        "$dmy": {
+         "day": 2,
+         "at": "08:00:00"
+        }
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000930196",
+        "first_name": "Paolo",
+        "last_name": "Gialli"
+       },
+       "subscription_id": "a1000000-0000-4000-8000-000000930203"
+      },
+      {
+       "payment_id": "a1000000-0000-4000-8000-000000930206",
+       "expired_days": 3,
+       "amount": 12.5,
+       "payment_date": {
+        "$drf": {
+         "day": -3,
+         "at": "10:00:00"
+        }
+       },
+       "creation_date": {
+        "$drf": {
+         "day": -3,
+         "at": "10:00:00"
+        }
+       },
+       "title": "Rata judo è",
+       "date": {
+        "$dmy": {
+         "day": -3,
+         "at": "10:00:00"
+        }
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000930195",
+        "first_name": "Lucia",
+        "last_name": "Neri"
+       },
+       "subscription_id": "a1000000-0000-4000-8000-000000930199"
+      },
+      {
+       "payment_id": "a1000000-0000-4000-8000-000000930208",
+       "expired_days": 5,
+       "amount": 20.0,
+       "payment_date": {
+        "$drf": {
+         "day": -30,
+         "at": "12:00:00"
+        }
+       },
+       "creation_date": {
+        "$drf": {
+         "day": -5,
+         "at": "11:00:00"
+        }
+       },
+       "title": "Karate",
+       "date": {
+        "$dmy": {
+         "day": -30,
+         "at": "12:00:00"
+        }
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000930196",
+        "first_name": "Paolo",
+        "last_name": "Gialli"
+       },
+       "subscription_id": "a1000000-0000-4000-8000-000000930202"
+      },
+      {
+       "payment_id": "a1000000-0000-4000-8000-000000930210",
+       "expired_days": 7,
+       "amount": 15.0,
+       "payment_date": null,
+       "creation_date": {
+        "$drf": {
+         "day": -7,
+         "at": "10:00:00"
+        }
+       },
+       "title": "Corso estivo, luglio",
+       "date": {
+        "$dmy": {
+         "day": -7,
+         "at": "10:00:00"
+        }
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000930195",
+        "first_name": "Lucia",
+        "last_name": "Neri"
+       },
+       "subscription_id": "a1000000-0000-4000-8000-000000930199"
+      },
+      {
+       "payment_id": "a1000000-0000-4000-8000-000000930207",
+       "expired_days": 10,
+       "amount": 30.0,
+       "payment_date": null,
+       "creation_date": {
+        "$drf": {
+         "day": -10,
+         "at": "09:00:00"
+        }
+       },
+       "title": "Iscrizione",
+       "date": {
+        "$dmy": {
+         "day": -10,
+         "at": "09:00:00"
+        }
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000930195",
+        "first_name": "Lucia",
+        "last_name": "Neri"
+       },
+       "subscription_id": "a1000000-0000-4000-8000-000000930199"
+      },
+      {
+       "payment_id": "a1000000-0000-4000-8000-000000930211",
+       "expired_days": 12,
+       "amount": 5.0,
+       "payment_date": null,
+       "creation_date": {
+        "$drf": {
+         "day": -12,
+         "at": "10:00:00"
+        }
+       },
+       "title": "Carnet judo",
+       "date": {
+        "$dmy": {
+         "day": -12,
+         "at": "10:00:00"
+        }
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000930195",
+        "first_name": "Lucia",
+        "last_name": "Neri"
+       },
+       "subscription_id": "a1000000-0000-4000-8000-000000930199"
+      },
+      {
+       "payment_id": "a1000000-0000-4000-8000-000000930212",
+       "expired_days": 15,
+       "amount": 3.0,
+       "payment_date": null,
+       "creation_date": {
+        "$drf": {
+         "day": -15,
+         "at": "10:00:00"
+        }
+       },
+       "title": null,
+       "date": {
+        "$dmy": {
+         "day": -15,
+         "at": "10:00:00"
+        }
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000930195",
+        "first_name": "Lucia",
+        "last_name": "Neri"
+       },
+       "subscription_id": "a1000000-0000-4000-8000-000000930199"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "statistic-reads-expiredpayments-collaborator",
+   "actor": "collab_four",
+   "method": "GET",
+   "path": "/statistic/dashboard?widget=expiredPayments",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "expired_payments": [
+      {
+       "payment_id": "a1000000-0000-4000-8000-000000930209",
+       "expired_days": -2,
+       "amount": 7.0,
+       "payment_date": null,
+       "creation_date": {
+        "$drf": {
+         "day": 2,
+         "at": "08:00:00"
+        }
+       },
+       "title": "Quota extra",
+       "date": {
+        "$dmy": {
+         "day": 2,
+         "at": "08:00:00"
+        }
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000930196",
+        "first_name": "Paolo",
+        "last_name": "Gialli"
+       },
+       "subscription_id": "a1000000-0000-4000-8000-000000930203"
+      },
+      {
+       "payment_id": "a1000000-0000-4000-8000-000000930206",
+       "expired_days": 3,
+       "amount": 12.5,
+       "payment_date": {
+        "$drf": {
+         "day": -3,
+         "at": "10:00:00"
+        }
+       },
+       "creation_date": {
+        "$drf": {
+         "day": -3,
+         "at": "10:00:00"
+        }
+       },
+       "title": "Rata judo è",
+       "date": {
+        "$dmy": {
+         "day": -3,
+         "at": "10:00:00"
+        }
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000930195",
+        "first_name": "Lucia",
+        "last_name": "Neri"
+       },
+       "subscription_id": "a1000000-0000-4000-8000-000000930199"
+      },
+      {
+       "payment_id": "a1000000-0000-4000-8000-000000930208",
+       "expired_days": 5,
+       "amount": 20.0,
+       "payment_date": {
+        "$drf": {
+         "day": -30,
+         "at": "12:00:00"
+        }
+       },
+       "creation_date": {
+        "$drf": {
+         "day": -5,
+         "at": "11:00:00"
+        }
+       },
+       "title": "Karate",
+       "date": {
+        "$dmy": {
+         "day": -30,
+         "at": "12:00:00"
+        }
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000930196",
+        "first_name": "Paolo",
+        "last_name": "Gialli"
+       },
+       "subscription_id": "a1000000-0000-4000-8000-000000930202"
+      },
+      {
+       "payment_id": "a1000000-0000-4000-8000-000000930210",
+       "expired_days": 7,
+       "amount": 15.0,
+       "payment_date": null,
+       "creation_date": {
+        "$drf": {
+         "day": -7,
+         "at": "10:00:00"
+        }
+       },
+       "title": "Corso estivo, luglio",
+       "date": {
+        "$dmy": {
+         "day": -7,
+         "at": "10:00:00"
+        }
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000930195",
+        "first_name": "Lucia",
+        "last_name": "Neri"
+       },
+       "subscription_id": "a1000000-0000-4000-8000-000000930199"
+      },
+      {
+       "payment_id": "a1000000-0000-4000-8000-000000930207",
+       "expired_days": 10,
+       "amount": 30.0,
+       "payment_date": null,
+       "creation_date": {
+        "$drf": {
+         "day": -10,
+         "at": "09:00:00"
+        }
+       },
+       "title": "Iscrizione",
+       "date": {
+        "$dmy": {
+         "day": -10,
+         "at": "09:00:00"
+        }
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000930195",
+        "first_name": "Lucia",
+        "last_name": "Neri"
+       },
+       "subscription_id": "a1000000-0000-4000-8000-000000930199"
+      },
+      {
+       "payment_id": "a1000000-0000-4000-8000-000000930211",
+       "expired_days": 12,
+       "amount": 5.0,
+       "payment_date": null,
+       "creation_date": {
+        "$drf": {
+         "day": -12,
+         "at": "10:00:00"
+        }
+       },
+       "title": "Carnet judo",
+       "date": {
+        "$dmy": {
+         "day": -12,
+         "at": "10:00:00"
+        }
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000930195",
+        "first_name": "Lucia",
+        "last_name": "Neri"
+       },
+       "subscription_id": "a1000000-0000-4000-8000-000000930199"
+      },
+      {
+       "payment_id": "a1000000-0000-4000-8000-000000930212",
+       "expired_days": 15,
+       "amount": 3.0,
+       "payment_date": null,
+       "creation_date": {
+        "$drf": {
+         "day": -15,
+         "at": "10:00:00"
+        }
+       },
+       "title": null,
+       "date": {
+        "$dmy": {
+         "day": -15,
+         "at": "10:00:00"
+        }
+       },
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000930195",
+        "first_name": "Lucia",
+        "last_name": "Neri"
+       },
+       "subscription_id": "a1000000-0000-4000-8000-000000930199"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "statistic-reads-expiredpayments-group-empty",
+   "actor": "owner_four",
+   "method": "GET",
+   "path": "/statistic/dashboard?widget=expiredPayments",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "expired_payments": []
+    }
+   }
+  },
+  {
+   "name": "statistic-reads-expiredpayments-other-association-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/statistic/dashboard?widget=expiredPayments",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "expired_payments": []
+    }
+   }
+  },
+  {
+   "name": "statistic-reads-widget-expiredpayments-lowercase",
+   "actor": "owner_four",
+   "method": "GET",
+   "path": "/statistic/dashboard?widget=expiredpayments",
+   "headers": {},
+   "status": 404,
+   "response": [
+    "error: widget not found."
+   ]
   },
   {
    "name": "statistic-reads-widget-missing",

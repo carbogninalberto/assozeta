@@ -123,12 +123,12 @@ func TestIdentityResolutionWithDjangoDatabaseAndSessions(t *testing.T) {
 		t.Fatal(err)
 	}
 	// Persisted sessions of the fixture: 9 on its member 15 (212), 9 on its subscriber 22 (210),
-	// the instance owner 8 on the unlinked athlete 15 (200).
+	// 8 on its subscriber 24 whose link to association 90 is deleted (213).
 	ownMember := domain.IdentityRequest{Path: "/profile/info", Method: "GET", SessionID: "00000000-0000-4000-8000-000000000212", References: &domain.RequestReferences{Operation: "profile_info"}}
 	subscriber := ownMember
 	subscriber.SessionID = "00000000-0000-4000-8000-000000000210"
-	unlinked := ownMember
-	unlinked.SessionID = "00000000-0000-4000-8000-000000000200"
+	linkedElsewhere := ownMember
+	linkedElsewhere.SessionID = "00000000-0000-4000-8000-000000000213"
 	transitions := []struct {
 		name, table, column, key, id, detail string
 		changed, original                    bool
@@ -142,7 +142,7 @@ func TestIdentityResolutionWithDjangoDatabaseAndSessions(t *testing.T) {
 		{"association-deleted", "application_sportassociation", "deleted", "sport_association_id", "00000000-0000-4000-8000-000000000080", "Associazione non disponibile.", true, false, &actor, request},
 		{"membership-removed", "application_associate", "deleted", "associate_id", "00000000-0000-4000-8000-000000000091", "Utente non disponibile per l’impersonificazione.", true, false, &foreignOwner, ownMember},
 		{"subscription-removed", "application_subscription", "deleted", "subscription_id", "00000000-0000-4000-8000-000000000092", "Utente non disponibile per l’impersonificazione.", true, false, &foreignOwner, subscriber},
-		{"instance-not-self-hosted", "instance_instanceconfiguration", "self_hosted", "domain", "identity.example.test", "Utente non disponibile per l’impersonificazione.", false, true, &actor, unlinked},
+		{"membership-elsewhere-restored", "application_associate", "deleted", "associate_id", "00000000-0000-4000-8000-000000000095", "Utente non disponibile per l’impersonificazione.", false, true, &actor, linkedElsewhere},
 	}
 	for _, change := range transitions {
 		t.Run(change.name, func(t *testing.T) {

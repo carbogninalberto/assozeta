@@ -47,9 +47,9 @@ A non-default build-time `__bakney.env.HOST` disables the switch.
   rewritten `Request` is rebuilt from its buffered body
   (`rewriteFetchInput`), because copying the body stream makes Chromium send a
   streaming upload, which fails on HTTP/1.1 (`ERR_ALPN_NEGOTIATION_FAILED`).
-- Known v2 gap seen in the browser: the dashboard widget
-  `statistic/dashboard?widget=todaylessons` is refused by Go (500, not
-  ported; see `statistic_reads.go`). The widget fails, the page still loads.
+- Requests the UI can send that Go still refuses on v2 are listed in
+  `v2-refusals.md` (the dashboard widgets `todaylessons` and
+  `expiredPayments` are now ported).
 
 ## Evidence
 

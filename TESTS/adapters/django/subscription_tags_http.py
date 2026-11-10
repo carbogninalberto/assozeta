@@ -40,7 +40,7 @@ def seed_rows(source, created):
     day = lambda text: date.fromisoformat(text) if text else None
     for row in source['subscriptions'].values():
         Subscription._base_manager.bulk_create([Subscription(subscription_id=row['id'], sport_association_id=row['association'],
-            user_id=ids['athlete'], start_date=day(row['start']), end_date=day(row['end']), deleted=row['deleted'],
+            user_id=ids['foreign_owner'] if row['association'] == ids['foreign_association'] else ids['athlete'], start_date=day(row['start']), end_date=day(row['end']), deleted=row['deleted'],
             group_id=ids[row['group']] if row['group'] else None, status_flag=Subscription.ACCEPTED,
             creation_date=datetime.fromisoformat(row['created'].replace('Z', '+00:00')))])
         Subscription.tags.through.objects.bulk_create([Subscription.tags.through(subscription_id=row['id'], tags_id=source['tags'][label]['id'])

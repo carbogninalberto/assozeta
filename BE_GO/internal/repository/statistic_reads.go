@@ -318,3 +318,67 @@ func (r *StatisticReads) FirstAttendanceDay(ctx context.Context, scope domain.St
 	}
 	return &row, nil
 }
+
+// --- expiredPayments --------------------------------------------------------------------------
+
+func (r *StatisticReads) ExpiredPayments(ctx context.Context, scope domain.StatisticScope, from, to time.Time) ([]domain.StatisticExpiredPayment, error) {
+	rows := []domain.StatisticExpiredPayment{}
+	err := r.db.SelectContext(ctx, &rows, `SELECT p.payment_id, p.amount::text AS amount, p.payment_date, p.creation_date, p.subject,
+ p.meta::text AS meta, p.course::text AS course, p.description, pc.payment_category_id IS NOT NULL AS has_category, pc.name AS category_name,
+ a.associate_id, a.first_name, a.last_name
+ FROM application_payment p JOIN application_associate a ON a.associate_id=p.associate_id
+ LEFT JOIN application_paymentcategory pc ON pc.payment_category_id=p.payment_category_id
+ WHERE NOT p.deleted AND ($2::uuid IS NULL OR p.group_id=$2::uuid) AND NOT p.paid AND NOT p.archived AND p.sport_association_id=$1
+ AND NOT p.expense AND p.amount > 0 AND p.creation_date BETWEEN $3 AND $4
+ AND ($5::uuid IS NULL OR p.sport_association_id=$5::uuid)
+ ORDER BY p.creation_date DESC, p.payment_date DESC, p.payment_id LIMIT 100`, scope.Association, scope.Group, from, to, scope.Impersonation)
+	return rows, err
+}
+
+// ExpiredPaymentSubscriptions keeps the view's join through associate__payment:
+// a DateField compared with the payment's timestamp (midnight UTC).
+func (r *StatisticReads) ExpiredPaymentSubscriptions(ctx context.Context, scope domain.StatisticScope, associates []string) ([]domain.StatisticSubscriptionSpan, error) {
+	rows := []domain.StatisticSubscriptionSpan{}
+	err := r.db.SelectContext(ctx, &rows, `SELECT s.subscription_id, s.associate_id, s.start_date, s.end_date
+ FROM application_subscription s JOIN application_payment p ON p.associate_id=s.associate_id
+ WHERE NOT s.archived AND s.sport_association_id=$1 AND ($2::uuid IS NULL OR s.group_id=$2::uuid)
+ AND ($4::uuid IS NULL OR s.sport_association_id=$4::uuid) AND s.associate_id=ANY($3::uuid[])
+ AND (s.start_date::timestamp AT TIME ZONE 'UTC') <= p.payment_date AND (s.end_date::timestamp AT TIME ZONE 'UTC') >= p.payment_date
+ ORDER BY s.creation_date DESC, s.subscription_id, p.payment_id`, scope.Association, scope.Group, uuidArray(associates), scope.Impersonation)
+	return rows, err
+}
+
+// PaymentLink is get_course_carnet_name's lookups: the first course
+// subscription (all_objects), else the first group-aware installment
+// (all_objects), else the first carnet subscription paid by the payment.
+func (r *StatisticReads) PaymentLink(ctx context.Context, payment string, group *string) (domain.StatisticPaymentLink, error) {
+	lookups := []struct {
+		query string
+		args  []any
+	}{
+		{`SELECT c.title, false AS missing FROM application_coursesubscription s JOIN application_course c ON c.course_id=s.course_id
+ WHERE s.payment_id=$1 ORDER BY s.course_subscription_id LIMIT 1`, []any{payment}},
+		{`SELECT c.title, false AS missing FROM application_coursesubscriptioninstallment i
+ JOIN application_coursesubscription s ON s.course_subscription_id=i.course_subscription_id
+ JOIN application_course c ON c.course_id=s.course_id WHERE i.payment_id=$1 AND ($2::uuid IS NULL OR i.group_id=$2::uuid)
+ ORDER BY i.course_subscription_installment_id LIMIT 1`, []any{payment, group}},
+		{`SELECT k.title, k.carnet_id IS NULL AS missing FROM application_carnetsubscription s
+ LEFT JOIN application_carnet k ON k.carnet_id=s.carnet_id_id WHERE s.payment_id=$1 ORDER BY s.carnet_subscription_id LIMIT 1`,
+			[]any{payment}},
+	}
+	for slot, lookup := range lookups {
+		var row struct {
+			Title   *string `db:"title"`
+			Missing bool    `db:"missing"`
+		}
+		err := r.db.GetContext(ctx, &row, lookup.query, lookup.args...)
+		if errors.Is(err, sql.ErrNoRows) {
+			continue
+		}
+		if err != nil {
+			return domain.StatisticPaymentLink{}, err
+		}
+		return domain.StatisticPaymentLink{Slot: slot, Title: row.Title, MissingCarnet: row.Missing}, nil
+	}
+	return domain.StatisticPaymentLink{Slot: -1}, nil
+}

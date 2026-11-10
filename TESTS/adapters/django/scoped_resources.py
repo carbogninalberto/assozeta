@@ -33,9 +33,10 @@ def prepare(work):
                         password='!scope-only', role=2) for n in (30, 31)])
     insert(m.Group, [dict(group_id=uid(n), sport_association_id=uid(a), name=f'Scope {n}')
                      for n, a in [(1001, 80), (1002, 80), (1003, 90)]])
+    # The foreign association (90) registered its rows under its owner (9).
     members = [
         (1010, 80, 30, 1001, 'OWN', False), (1011, 80, 31, 1001, 'FAMILY', False),
-        (1012, 80, 31, 1001, 'STRANGER', False), (1013, 90, 30, 1003, 'FOREIGN', False),
+        (1012, 80, 31, 1001, 'STRANGER', False), (1013, 90, 9, 1003, 'FOREIGN', False),
         (1014, 80, 30, 1001, 'DELETED', True), (1015, 80, 30, 1002, 'OTHER_GROUP', False),
         (1016, 80, 30, None, '', False), (1017, 80, 31, 1001, 'LEGACY', True),
         (1018, 80, 31, 1001, 'LEGACY', False),
@@ -48,7 +49,7 @@ def prepare(work):
     subscriptions = [
         (2010, 80, 1010, 30, 1001, False, 1101), (2011, 80, 1011, 30, 1001, False, None),
         (2012, 80, 1011, 31, 1001, False, 1102), (2013, 80, 1012, 31, 1001, False, 1103),
-        (2014, 90, 1013, 30, 1003, False, 1104), (2015, 80, 1015, 30, 1002, False, None),
+        (2014, 90, 1013, 9, 1003, False, 1104), (2015, 80, 1015, 30, 1002, False, None),
         (2016, 80, 1016, 30, None, False, None), (2017, 80, 1010, 30, 1001, True, None),
         (2018, 80, 1017, 30, 1001, True, None), (2019, 80, 1018, 31, 1001, False, None),
         (2021, 80, 1011, 31, 1002, False, None), (2022, 80, 1015, 31, 1001, False, None),

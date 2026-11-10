@@ -26,7 +26,9 @@ def seed_fixture(apps, private_work, raw):
     from TESTS.adapters.django.historical_read_cache import snapshot_historical_read_cache
     with disable_auditlog(), transaction.atomic():
         fixture = scopes.seed_fixture(apps, Path(private_work), raw)
-        carnets.seed_rows(contract.load_source(), fixture['created'])
+        source = contract.load_source()
+        carnets.seed_rows(source, fixture['created'])
+        carnets.add_extra_tokens(source, fixture)
         fixture['baseline_state'] = scopes.snapshot_state(apps)
         fixture['baseline_cache'] = snapshot_historical_read_cache(raw)
     return fixture

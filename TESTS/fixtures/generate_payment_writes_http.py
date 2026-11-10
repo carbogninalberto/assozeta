@@ -116,6 +116,10 @@ def payment(**values):
     return {'id': next(ids), **seeded}
 
 
+# An invoice of two updated payments: the update prints it (print_document_invoice.apply) after the save.
+INVOICE = {'id': next(ids), 'number': 41, 'created': '2026-09-01T08:00:00Z', 'membership_fee': '0.00', 'activity_fee': '10.00',
+           'description': 'Ricevuta fixture'}
+
 PAYMENTS = {
     'up_plain': payment(supplier_id=SUPPLIER['id'], payment_intent_id='pi_fixture', notes='Nota'),
     'up_fields': payment(subject=2, instructor_id=INSTRUCTOR['id'], course={'label': 'Corso'}),
@@ -132,14 +136,21 @@ PAYMENTS = {
     'up_removed': payment(deleted=True),
     'up_orphan': payment(sport_association_id=None),
     'abroad': payment(sport_association_id=FOREIGN, user_id=IDS['foreign_owner'], payment_category_id=CATEGORIES['foreign']['id']),
+    # The edit form posts its hidden payment_id input: the row's own key, unchanged by the save.
+    'up_own_id': payment(),
+    'up_own_upper': payment(),
+    'up_invoiced': payment(invoice_id=INVOICE['id']),
+    'up_invoiced_print_fails': payment(invoice_id=INVOICE['id']),
 }
 STATE = copy.deepcopy(PAYMENTS)
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='POST', body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, path, status, response, *, method='POST', body=None, raw_body=None, content_type=None, headers=None, effect=None,
+        prints=()):
+    """prints: the CURRENT_HOST requests the case makes, each with the stub's reply."""
     case = {'name': f'payment-writes-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'effect': effect}
+            'status': status, 'response': response, 'effect': effect, 'prints': list(prints)}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -257,7 +268,7 @@ def payment_item(values, key, amount=None):
             'instructor_id': values['instructor_id'], 'instructor': instructor_item() if values['instructor_id'] else None,
             'supplier': supplier_item() if values['supplier_id'] else None, 'supplier_id': values['supplier_id'],
             'custom_account_type': account['type'] if account else None, 'custom_account_name': account['name'] if account else None,
-            'invoice': None, 'attachments': [], 'payment_category_name': CATEGORY_NAMES.get(category) if category else None,
+            'invoice': invoice_item() if values['invoice_id'] else None, 'attachments': [], 'payment_category_name': CATEGORY_NAMES.get(category) if category else None,
             'type': values['type'], 'subject': values['subject'], 'amount': amount or values['amount'], 'creation_date': values['creation_date'],
             'payment_date': values['payment_date'], 'paid': values['paid'], 'expense': values['expense'], 'description': values['description'],
             'meta_payment_categories': values['meta_payment_categories'], 'payment_intent_id': values['payment_intent_id'],
@@ -265,6 +276,15 @@ def payment_item(values, key, amount=None):
             'deleted': values['deleted'], 'course': values['course'], 'payment_category': category,
             'sport_association': values['sport_association_id'], 'custom_accounts': values['custom_accounts_id'], 'signature': None,
             'group': values['group_id']}
+
+
+def invoice_item():
+    """InvoiceSerializer of the fixture invoice (no PDF, no attached documents)."""
+    return {'invoice_id': INVOICE['id'], 'document_token': None, 'creation_date': INVOICE['created'],
+            'membership_fee': INVOICE['membership_fee'], 'activity_fee': INVOICE['activity_fee'], 'meta_payment_categories': None,
+            'description': INVOICE['description'], 'number': INVOICE['number'], 'archived': False, 'cancelled': False, 'meta': None,
+            'imported_from_associami': False, 'deleted': False, 'document_pdf': None, 'sport_association': OWN, 'selected_tutor': None,
+            'group': None, 'attached_documents': []}
 
 
 # --- effects ---------------------------------------------------------------
@@ -540,7 +560,7 @@ add('update-transfer-without-description-server-error', 'owner', UPDATE('up_tran
     body={'description': None}, effect=effect('owner'))
 
 
-def updated(name, actor, label, body, changes, *, amount=None, headers=None, status=200, response=None):
+def updated(name, actor, label, body, changes, *, amount=None, headers=None, status=200, response=None, prints=()):
     """Payment.save() of the in-memory payment; amount: (str(float), stored, rendered) for a float amount."""
     old = STATE[label]
     new = {**old, **changes}
@@ -554,7 +574,7 @@ def updated(name, actor, label, body, changes, *, amount=None, headers=None, sta
     if response is None:
         response = {'data': {'payment': payment_item(new, old['id'], shown)}}
     add(name, actor, UPDATE(label), status, response, method='PATCH', body=body, headers=headers,
-        effect=effect(actor, changed={label: columns}, audit=audit))
+        effect=effect(actor, changed={label: columns}, audit=audit), prints=prints)
 
 
 updated('update-empty-body-clears-parties', 'owner', 'up_plain', {}, {'supplier_id': None, 'payment_intent_id': None})
@@ -587,6 +607,20 @@ updated('update-admin-impersonating-owner', 'admin', 'up_admin', {'amount': '14'
 updated('update-attachment-without-keys', 'owner', 'up_attachment', {'amount': '15', 'attachments_data': [{'filename': 'x.pdf'}]},
         {'amount': '15.00'}, status=400, response={'exception': 'document key not present'})
 updated('update-unchanged-no-audit', 'owner', 'up_collab', {'amount': '13.00'}, {})
+# payment_id is a writable serializer field (UUID primary key with a default): the row's own key validates
+# (UniqueValidator excludes the instance) and the save updates the same row.
+updated('update-own-payment-id', 'owner', 'up_own_id', {'payment_id': PAYMENTS['up_own_id']['id'], 'amount': '16'}, {'amount': '16.00'})
+updated('update-own-payment-id-uppercase', 'owner', 'up_own_upper',
+        {'payment_id': PAYMENTS['up_own_upper']['id'].upper(), 'amount': '17', 'description': 'Modificata'},
+        {'amount': '17.00', 'description': 'Modificata'})
+
+PRINT_INVOICE = f'/document/invoice/{INVOICE["id"]}?send_receipt_email=False'
+# print_document_invoice.apply(args=[invoice_id, Authorization]) after the save: a GET of CURRENT_HOST whose
+# failure is kept in the eager result (the view answers normally).
+updated('update-invoiced-prints-invoice', 'owner', 'up_invoiced', {'amount': '18'}, {'amount': '18.00'},
+        prints=[{'path': PRINT_INVOICE, 'reply': {'status': 200, 'body': 'printed'}}])
+updated('update-invoiced-print-failure-ignored', 'owner', 'up_invoiced_print_fails', {'amount': '19', 'payment_id': PAYMENTS['up_invoiced_print_fails']['id']},
+        {'amount': '19.00'}, prints=[{'path': PRINT_INVOICE, 'reply': {'status': 500, 'body': 'renderer down'}}])
 
 # --- payment/bulk-add ------------------------------------------------------------
 
@@ -680,6 +714,6 @@ add('bulk-add-invalid-payment-date-server-error', 'owner', BULK, 500, SERVER,
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Payment add, update and bulk add authored sequence with payment and audit effects',
                               'ids': IDS, 'categories': CATEGORIES, 'accounts': ACCOUNTS, 'associates': ASSOCIATES,
-                              'subscriptions': SUBSCRIPTIONS, 'instructor': INSTRUCTOR, 'supplier': SUPPLIER, 'payments': PAYMENTS,
+                              'subscriptions': SUBSCRIPTIONS, 'instructor': INSTRUCTOR, 'supplier': SUPPLIER, 'payments': PAYMENTS, 'invoice': INVOICE,
                               'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

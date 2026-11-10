@@ -39,6 +39,7 @@ def seed_fixture(apps, private_work, raw, *, source_contract=contract):
     with disable_auditlog(), transaction.atomic():
         fixture = scopes.seed_fixture(apps, Path(private_work), raw)
         carnets.seed_rows(source, fixture['created'])
+        carnets.add_extra_tokens(source, fixture)
         for row in source['accounts'].values():
             CustomAccounts._base_manager.bulk_create([CustomAccounts(custom_account_id=row['id'], sport_association_id=row['association'],
                 name=row['name'], initial_balance=Decimal('0.00'), account_type=row['type'], account_code='', editable=row['editable'],

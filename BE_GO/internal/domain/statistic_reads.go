@@ -121,6 +121,44 @@ type StatisticDashboardStore interface {
 	Medicals(ctx context.Context, scope StatisticScope, today string, expiring bool, year StatisticYear) ([]StatisticMedical, error)
 	Approvals(ctx context.Context, scope StatisticScope, today string) ([]StatisticApproval, error)
 	IncomeAndExpenses(ctx context.Context, scope StatisticScope, from, to time.Time) (StatisticSums, error)
+	ExpiredPayments(ctx context.Context, scope StatisticScope, from, to time.Time) ([]StatisticExpiredPayment, error)
+	ExpiredPaymentSubscriptions(ctx context.Context, scope StatisticScope, associates []string) ([]StatisticSubscriptionSpan, error)
+	PaymentLink(ctx context.Context, payment string, group *string) (StatisticPaymentLink, error)
+}
+
+// StatisticExpiredPayment is a payment of the expiredPayments widget with what
+// get_course_carnet_name reads and its associate (select_related).
+type StatisticExpiredPayment struct {
+	PaymentID    string     `db:"payment_id"`
+	Amount       string     `db:"amount"`
+	PaymentDate  *time.Time `db:"payment_date"`
+	CreationDate time.Time  `db:"creation_date"`
+	Subject      int        `db:"subject"`
+	Meta         *string    `db:"meta"`
+	Course       *string    `db:"course"`
+	Description  *string    `db:"description"`
+	HasCategory  bool       `db:"has_category"`
+	CategoryName *string    `db:"category_name"`
+	AssociateID  string     `db:"associate_id"`
+	FirstName    *string    `db:"first_name"`
+	LastName     *string    `db:"last_name"`
+}
+
+// StatisticSubscriptionSpan is one row of the expiredPayments subscription
+// query (one per matching payment of the associate).
+type StatisticSubscriptionSpan struct {
+	SubscriptionID string    `db:"subscription_id"`
+	AssociateID    string    `db:"associate_id"`
+	Start          time.Time `db:"start_date"`
+	End            time.Time `db:"end_date"`
+}
+
+// StatisticPaymentLink is get_course_carnet_name's linked row: Slot 0 course
+// subscription, 1 installment, 2 carnet subscription; -1 none.
+type StatisticPaymentLink struct {
+	Slot          int
+	Title         *string
+	MissingCarnet bool
 }
 
 type StatisticReportStore interface {

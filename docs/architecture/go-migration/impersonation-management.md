@@ -311,3 +311,9 @@ on this evidence.
 non-deleted subscription of the association too; the list search splits into up to ten words, each matching one
 field. Go `managementEligible`, `managementSearchWords` and `IdentityRelations.EligibleTarget` follow; evidence in
 `impersonation-users.md` (authored family on four transports, identity cases and transitions).
+
+## Re-verification: memberships within the actor's associations
+
+Owners, the self-hosted instance owner included, select the association's members and subscribers whose memberships
+are all within the actor's associations (`impersonationLinksOwned`, shared by the list, the session start and the
+identity session recheck). Evidence in `impersonation-users.md`; the 264 cases here pass unchanged on four transports.

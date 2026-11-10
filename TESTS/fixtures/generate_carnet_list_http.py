@@ -32,7 +32,8 @@ ASSOCIATES = {
     'child': {'id': next(ids), 'association': OWN, 'user': 'athlete', 'first_name': 'Figlio', 'last_name': 'Rossi', 'born_date': None,
               'email': None, 'sex': 'M', 'tax_code': None, 'address': None, 'address_cap': None, 'address_city': None, 'born_city': None,
               'is_minor': True, 'phone': None, 'family_role': None},
-    'abroad': {'id': next(ids), 'association': FOREIGN, 'user': 'athlete', 'first_name': 'Atleta', 'last_name': 'Estero', 'born_date': '1991-01-01',
+    # The foreign association registered the same person under its own account.
+    'abroad': {'id': next(ids), 'association': FOREIGN, 'user': 'foreign_owner', 'first_name': 'Atleta', 'last_name': 'Estero', 'born_date': '1991-01-01',
                'email': None, 'sex': 'A', 'tax_code': None, 'address': None, 'address_cap': None, 'address_city': None, 'born_city': None,
                'is_minor': False, 'phone': None, 'family_role': None},
     # No user: AssociateSerializer.get_user falls back to the association owner.
@@ -46,7 +47,7 @@ SUBSCRIPTIONS = {
     # Held by the owner, but its associate belongs to the athlete.
     'family_next': {'id': next(ids), 'association': OWN, 'user': 'owner', 'associate': 'child', 'start': '2098-01-01', 'end': '2099-01-01',
                     'year': 'successivo'},
-    'abroad_past': {'id': next(ids), 'association': FOREIGN, 'user': 'athlete', 'associate': 'abroad', 'start': '2000-01-01', 'end': '2001-01-01',
+    'abroad_past': {'id': next(ids), 'association': FOREIGN, 'user': 'foreign_owner', 'associate': 'abroad', 'start': '2000-01-01', 'end': '2001-01-01',
                     'year': 'precedente'},
     'other_open': {'id': next(ids), 'association': OWN, 'user': 'owner', 'associate': 'other', 'start': None, 'end': None, 'year': 'corrente'},
 }

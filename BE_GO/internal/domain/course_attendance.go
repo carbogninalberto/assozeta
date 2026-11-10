@@ -80,6 +80,7 @@ type CourseAttendanceStore interface {
 }
 
 type CourseAttendanceTransaction interface {
+	AttendanceTodayStore
 	Commit() error
 	Rollback() error
 	// OwnerAssociation is scoped SportAssociation.objects.get(user=owner) (ErrAssociationNotFound).
@@ -128,4 +129,22 @@ type CourseAttendanceTransaction interface {
 	UpdateDay(ctx context.Context, id string, attendees, absences, event *string) error
 	UpdateHoldingMeta(ctx context.Context, id string, meta *string) error
 	AppendAudit(ctx context.Context, entry AttendanceAudit) error
+}
+
+// AttendanceTodayDay is a day of statistic/dashboard?widget=todaylessons with
+// its registry's events (jsonb text).
+type AttendanceTodayDay struct {
+	AttendanceDayRow
+	Events *string `db:"events"`
+}
+
+// AttendanceTodayStore reads the todaylessons days inside a CourseAttendance
+// transaction (the widget's links are saved through the same transaction).
+type AttendanceTodayStore interface {
+	// InstructorOfUser is Instructor.objects.filter(associated_user_id=user).first().
+	InstructorOfUser(ctx context.Context, user string) (*string, error)
+	// TodayDays is the scoped days of the association's courses dated in
+	// [from, to], ordered by date; instructor (when given) keeps the days of
+	// registries whose events text matches it case-insensitively (events__iregex).
+	TodayDays(ctx context.Context, association string, from, to time.Time, instructor, scope *string) ([]AttendanceTodayDay, error)
 }

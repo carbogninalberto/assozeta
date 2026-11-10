@@ -52,6 +52,9 @@ def associate(first, *, association=OWN, user='owner', born='2015-03-10', minor=
             'is_minor': minor, 'group': group, 'deleted': deleted, 'tax_code': tax}
 
 
+IDS['multi_athlete'] = 'a1000000-0000-4000-8000-000000676998'
+EXTRA_USERS = {'multi_athlete': {'id': IDS['multi_athlete'], 'username': 'subscription-writes-multi-athlete',
+                                 'email': 'subscription-writes-multi-athlete@example.test'}}
 ASSOCIATES = {
     'plain': associate('Plain'),
     'adult': associate('Adulto', born='1980-06-01'),
@@ -75,11 +78,13 @@ ASSOCIATES = {
     'twin_old': associate('Gemello', born='1961-01-01', association=None, tax='GMLTWN61A01H501A'),
     'twin_new': associate('Gemello', born='1962-01-01', association=None, tax='gmltwn61a01h501a'),
     'collab': associate('Collaborato'),
-    'athletic': associate('Atletico', user='athlete', association=FOREIGN),
+    # An athlete linked to both associations: its member row here and in the own association.
+    'athletic': associate('Atletico', user='multi_athlete', association=FOREIGN),
     'admin_case': associate('Amministrato'),
     'group_create': associate('Gruppocrea', group='own_group'),
     'group_match': associate('Gruppoabbina', group='own_group'),
     'group_target': associate('Bersaglio', born='1966-06-06', tax='GRPTGT66H06H501B'),
+    'multi_home': associate('Casa', user='multi_athlete', born='1990-01-01'),
 }
 # Creation dates order the MultipleObjectsReturned pick.
 CREATED = {'twin_old': '2025-01-01T08:00:00Z', 'twin_new': '2025-06-01T08:00:00Z'}
@@ -332,7 +337,7 @@ add('full-collaborator', 'full_collaborator', 'collab', 200, EDITED, body=tutor(
 ], created=row, changed={'collab': {'is_minor': True}}))
 # An athlete's own associate and its tutor.
 row = new_row(association=FOREIGN)
-add('athlete-own-associate', 'athlete', 'athletic', 200, EDITED, body=tutor(sport_association=FOREIGN), effect=effect('athlete', [
+add('athlete-own-associate', 'multi_athlete', 'athletic', 200, EDITED, body=tutor(sport_association=FOREIGN), effect=effect('multi_athlete', [
     created(row, [FOREIGN, 'direct']),
     updated('associate', 'athletic', MINOR, [FOREIGN, 'direct']),
 ], created=row, changed={'athletic': {'is_minor': True}}))
@@ -362,6 +367,6 @@ add('tax-code-match-outside-group-server-error', 'owner', 'grouped', 500, SERVER
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'subscription/<uid>/edit authored sequence with associate, tutor relation and audit effects',
-                              'ids': IDS, 'family': FAMILY, 'associates': ASSOCIATES, 'created': CREATED, 'relations': RELATIONS,
+                              'ids': IDS, 'extra_users': EXTRA_USERS, 'family': FAMILY, 'associates': ASSOCIATES, 'created': CREATED, 'relations': RELATIONS,
                               'reverse': REVERSE, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')
