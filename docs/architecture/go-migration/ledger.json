@@ -6992,7 +6992,7 @@
         "target": "camps_and_retreats_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/camps_core.go",
         "BE_GO/internal/dto/camps_core_write.go",
@@ -7037,21 +7037,28 @@
         "TESTS/adapters/django/camps_core_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/camps-core.md",
         {
-          "command": "python tools/go-migration/family.py run camps-core --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/camps-core-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "cd5e020e4a695b5614b0c76676727ef7415bfc9a5555cf20173374e0885008b3",
-          "scope": "HTTP family camps-core: 88/88 cases on native Django and native Go, 88/88 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 90/90; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-core-http-red-r1/results.json",
+          "receipt_sha256": "18c28e06032e78ff299c667af612cbef09d6648e9d0f98e66b1cee2549c14f9a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 90/90 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-core-http-v2restb-green-r1/results.json",
+          "receipt_sha256": "4241ca06cece2e0d0772f4ace339dd3e80441fef08c0b59c6e6839c4f2bee10d"
+        },
+        {
+          "revision": "the pre-save audit entry of the copied camp indexed directly instead of from its changes (service/camps_core.go)",
+          "result": "Mutation control: fails Go on camps-core-update-new-id-inserts-copy (index.fields): CAUGHT.",
+          "artifact": "quality-reports/go-migration/camps-core-http-v2restb-mutation-r1/results.json",
+          "receipt_sha256": "8729b9f3ca8d69af9d661d76bfe2a2e8d31610974a859869b822d51a48870c4c"
         }
       ],
       "notes": [
-        "Implementing: camps and retreats list/add/info/update/delete (camp_and_retreats_views.py) with CampsAndRetreatsSerializer.save, the public info serializer and the camp delete cascade. Not ported (500 before any write): multipart file parts on add or update, and a changed primary key on update.",
-        "Implementing evidence: docs/architecture/go-migration/camps-core.md",
-        "Implementing evidence: RED: Django 88/88; Go 404 on the first case. (quality-reports/go-migration/camps-core-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 88/88 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp, period, service, subscription, subscription period, payment, link, audit and index effects. (quality-reports/go-migration/camps-core-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on delete-owner-cascade (index.fields); a second control skipping the camp subscriptions' cascade (mutation-r2) fails the same case (500). (quality-reports/go-migration/camps-core-http-mutation-r1/results.json)"
+        "Implementing: camps and retreats list/add/info/update/delete (camp_and_retreats_views.py) with CampsAndRetreatsSerializer.save, the public info serializer and the camp delete cascade. Not ported (500 before any write): multipart file parts on add or update. v2-rest-b: an update naming a camps_and_retreats_id no row has inserts the copy Model.save() inserts (the named camp stays; auditlog writes the pre-save update against nothing, indexed from its changes, then the create, indexed directly); a key another camp has is the unique error (RED: documented refusal, see v2-refusals.md camps-core row)."
       ]
     },
     {
@@ -7069,7 +7076,7 @@
         "target": "camps_and_retreats_info",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/camps_core.go",
         "BE_GO/internal/dto/camps_core_write.go",
@@ -7114,21 +7121,28 @@
         "TESTS/adapters/django/camps_core_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/camps-core.md",
         {
-          "command": "python tools/go-migration/family.py run camps-core --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/camps-core-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "cd5e020e4a695b5614b0c76676727ef7415bfc9a5555cf20173374e0885008b3",
-          "scope": "HTTP family camps-core: 88/88 cases on native Django and native Go, 88/88 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 90/90; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-core-http-red-r1/results.json",
+          "receipt_sha256": "18c28e06032e78ff299c667af612cbef09d6648e9d0f98e66b1cee2549c14f9a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 90/90 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-core-http-v2restb-green-r1/results.json",
+          "receipt_sha256": "4241ca06cece2e0d0772f4ace339dd3e80441fef08c0b59c6e6839c4f2bee10d"
+        },
+        {
+          "revision": "the pre-save audit entry of the copied camp indexed directly instead of from its changes (service/camps_core.go)",
+          "result": "Mutation control: fails Go on camps-core-update-new-id-inserts-copy (index.fields): CAUGHT.",
+          "artifact": "quality-reports/go-migration/camps-core-http-v2restb-mutation-r1/results.json",
+          "receipt_sha256": "8729b9f3ca8d69af9d661d76bfe2a2e8d31610974a859869b822d51a48870c4c"
         }
       ],
       "notes": [
-        "Implementing: camps and retreats list/add/info/update/delete (camp_and_retreats_views.py) with CampsAndRetreatsSerializer.save, the public info serializer and the camp delete cascade. Not ported (500 before any write): multipart file parts on add or update, and a changed primary key on update.",
-        "Implementing evidence: docs/architecture/go-migration/camps-core.md",
-        "Implementing evidence: RED: Django 88/88; Go 404 on the first case. (quality-reports/go-migration/camps-core-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 88/88 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp, period, service, subscription, subscription period, payment, link, audit and index effects. (quality-reports/go-migration/camps-core-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on delete-owner-cascade (index.fields); a second control skipping the camp subscriptions' cascade (mutation-r2) fails the same case (500). (quality-reports/go-migration/camps-core-http-mutation-r1/results.json)"
+        "Implementing: camps and retreats list/add/info/update/delete (camp_and_retreats_views.py) with CampsAndRetreatsSerializer.save, the public info serializer and the camp delete cascade. Not ported (500 before any write): multipart file parts on add or update. v2-rest-b: an update naming a camps_and_retreats_id no row has inserts the copy Model.save() inserts (the named camp stays; auditlog writes the pre-save update against nothing, indexed from its changes, then the create, indexed directly); a key another camp has is the unique error (RED: documented refusal, see v2-refusals.md camps-core row)."
       ]
     },
     {
@@ -7502,7 +7516,7 @@
         "target": "camps_and_retreats_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/camps_core.go",
         "BE_GO/internal/dto/camps_core_write.go",
@@ -7536,7 +7550,7 @@
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "association.campsandretreats.update",
         "resource_scope": "camp association against request.user.sport_association; tenant-scoped sport_association field",
-        "side_effects": "updates the camp; audit update of changed fields indexed direct",
+        "side_effects": "updates the camp; audit update of changed fields indexed direct; a body naming an unused camps_and_retreats_id inserts a copy under that key (two audit entries) and leaves the named camp",
         "transaction": "not atomic (Go: one transaction)",
         "execution_owner": "django"
       },
@@ -7547,21 +7561,28 @@
         "TESTS/adapters/django/camps_core_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/camps-core.md",
         {
-          "command": "python tools/go-migration/family.py run camps-core --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/camps-core-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "cd5e020e4a695b5614b0c76676727ef7415bfc9a5555cf20173374e0885008b3",
-          "scope": "HTTP family camps-core: 88/88 cases on native Django and native Go, 88/88 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 90/90; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-core-http-red-r1/results.json",
+          "receipt_sha256": "18c28e06032e78ff299c667af612cbef09d6648e9d0f98e66b1cee2549c14f9a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 90/90 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-core-http-v2restb-green-r1/results.json",
+          "receipt_sha256": "4241ca06cece2e0d0772f4ace339dd3e80441fef08c0b59c6e6839c4f2bee10d"
+        },
+        {
+          "revision": "the pre-save audit entry of the copied camp indexed directly instead of from its changes (service/camps_core.go)",
+          "result": "Mutation control: fails Go on camps-core-update-new-id-inserts-copy (index.fields): CAUGHT.",
+          "artifact": "quality-reports/go-migration/camps-core-http-v2restb-mutation-r1/results.json",
+          "receipt_sha256": "8729b9f3ca8d69af9d661d76bfe2a2e8d31610974a859869b822d51a48870c4c"
         }
       ],
       "notes": [
-        "Implementing: camps and retreats list/add/info/update/delete (camp_and_retreats_views.py) with CampsAndRetreatsSerializer.save, the public info serializer and the camp delete cascade. Not ported (500 before any write): multipart file parts on add or update, and a changed primary key on update.",
-        "Implementing evidence: docs/architecture/go-migration/camps-core.md",
-        "Implementing evidence: RED: Django 88/88; Go 404 on the first case. (quality-reports/go-migration/camps-core-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 88/88 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp, period, service, subscription, subscription period, payment, link, audit and index effects. (quality-reports/go-migration/camps-core-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on delete-owner-cascade (index.fields); a second control skipping the camp subscriptions' cascade (mutation-r2) fails the same case (500). (quality-reports/go-migration/camps-core-http-mutation-r1/results.json)"
+        "Implementing: camps and retreats list/add/info/update/delete (camp_and_retreats_views.py) with CampsAndRetreatsSerializer.save, the public info serializer and the camp delete cascade. Not ported (500 before any write): multipart file parts on add or update. v2-rest-b: an update naming a camps_and_retreats_id no row has inserts the copy Model.save() inserts (the named camp stays; auditlog writes the pre-save update against nothing, indexed from its changes, then the create, indexed directly); a key another camp has is the unique error (RED: documented refusal, see v2-refusals.md camps-core row)."
       ]
     },
     {
@@ -7579,7 +7600,7 @@
         "target": "camps_and_retreats_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/camps_core.go",
         "BE_GO/internal/dto/camps_core_write.go",
@@ -7624,21 +7645,28 @@
         "TESTS/adapters/django/camps_core_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/camps-core.md",
         {
-          "command": "python tools/go-migration/family.py run camps-core --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/camps-core-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "cd5e020e4a695b5614b0c76676727ef7415bfc9a5555cf20173374e0885008b3",
-          "scope": "HTTP family camps-core: 88/88 cases on native Django and native Go, 88/88 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 90/90; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-core-http-red-r1/results.json",
+          "receipt_sha256": "18c28e06032e78ff299c667af612cbef09d6648e9d0f98e66b1cee2549c14f9a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 90/90 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-core-http-v2restb-green-r1/results.json",
+          "receipt_sha256": "4241ca06cece2e0d0772f4ace339dd3e80441fef08c0b59c6e6839c4f2bee10d"
+        },
+        {
+          "revision": "the pre-save audit entry of the copied camp indexed directly instead of from its changes (service/camps_core.go)",
+          "result": "Mutation control: fails Go on camps-core-update-new-id-inserts-copy (index.fields): CAUGHT.",
+          "artifact": "quality-reports/go-migration/camps-core-http-v2restb-mutation-r1/results.json",
+          "receipt_sha256": "8729b9f3ca8d69af9d661d76bfe2a2e8d31610974a859869b822d51a48870c4c"
         }
       ],
       "notes": [
-        "Implementing: camps and retreats list/add/info/update/delete (camp_and_retreats_views.py) with CampsAndRetreatsSerializer.save, the public info serializer and the camp delete cascade. Not ported (500 before any write): multipart file parts on add or update, and a changed primary key on update.",
-        "Implementing evidence: docs/architecture/go-migration/camps-core.md",
-        "Implementing evidence: RED: Django 88/88; Go 404 on the first case. (quality-reports/go-migration/camps-core-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 88/88 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp, period, service, subscription, subscription period, payment, link, audit and index effects. (quality-reports/go-migration/camps-core-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on delete-owner-cascade (index.fields); a second control skipping the camp subscriptions' cascade (mutation-r2) fails the same case (500). (quality-reports/go-migration/camps-core-http-mutation-r1/results.json)"
+        "Implementing: camps and retreats list/add/info/update/delete (camp_and_retreats_views.py) with CampsAndRetreatsSerializer.save, the public info serializer and the camp delete cascade. Not ported (500 before any write): multipart file parts on add or update. v2-rest-b: an update naming a camps_and_retreats_id no row has inserts the copy Model.save() inserts (the named camp stays; auditlog writes the pre-save update against nothing, indexed from its changes, then the create, indexed directly); a key another camp has is the unique error (RED: documented refusal, see v2-refusals.md camps-core row)."
       ]
     },
     {
@@ -7656,7 +7684,7 @@
         "target": "camps_and_retreats_list",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/camps_core.go",
         "BE_GO/internal/dto/camps_core_write.go",
@@ -7701,21 +7729,28 @@
         "TESTS/adapters/django/camps_core_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/camps-core.md",
         {
-          "command": "python tools/go-migration/family.py run camps-core --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/camps-core-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "cd5e020e4a695b5614b0c76676727ef7415bfc9a5555cf20173374e0885008b3",
-          "scope": "HTTP family camps-core: 88/88 cases on native Django and native Go, 88/88 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 90/90; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-core-http-red-r1/results.json",
+          "receipt_sha256": "18c28e06032e78ff299c667af612cbef09d6648e9d0f98e66b1cee2549c14f9a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 90/90 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-core-http-v2restb-green-r1/results.json",
+          "receipt_sha256": "4241ca06cece2e0d0772f4ace339dd3e80441fef08c0b59c6e6839c4f2bee10d"
+        },
+        {
+          "revision": "the pre-save audit entry of the copied camp indexed directly instead of from its changes (service/camps_core.go)",
+          "result": "Mutation control: fails Go on camps-core-update-new-id-inserts-copy (index.fields): CAUGHT.",
+          "artifact": "quality-reports/go-migration/camps-core-http-v2restb-mutation-r1/results.json",
+          "receipt_sha256": "8729b9f3ca8d69af9d661d76bfe2a2e8d31610974a859869b822d51a48870c4c"
         }
       ],
       "notes": [
-        "Implementing: camps and retreats list/add/info/update/delete (camp_and_retreats_views.py) with CampsAndRetreatsSerializer.save, the public info serializer and the camp delete cascade. Not ported (500 before any write): multipart file parts on add or update, and a changed primary key on update.",
-        "Implementing evidence: docs/architecture/go-migration/camps-core.md",
-        "Implementing evidence: RED: Django 88/88; Go 404 on the first case. (quality-reports/go-migration/camps-core-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 88/88 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp, period, service, subscription, subscription period, payment, link, audit and index effects. (quality-reports/go-migration/camps-core-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on delete-owner-cascade (index.fields); a second control skipping the camp subscriptions' cascade (mutation-r2) fails the same case (500). (quality-reports/go-migration/camps-core-http-mutation-r1/results.json)"
+        "Implementing: camps and retreats list/add/info/update/delete (camp_and_retreats_views.py) with CampsAndRetreatsSerializer.save, the public info serializer and the camp delete cascade. Not ported (500 before any write): multipart file parts on add or update. v2-rest-b: an update naming a camps_and_retreats_id no row has inserts the copy Model.save() inserts (the named camp stays; auditlog writes the pre-save update against nothing, indexed from its changes, then the create, indexed directly); a key another camp has is the unique error (RED: documented refusal, see v2-refusals.md camps-core row)."
       ]
     },
     {
@@ -16786,8 +16821,8 @@
           "/api/modules/<custom_link>/info"
         ],
         "request": "Path custom_link; optional query response_id (last value).",
-        "response": "200 {data: ModulesSerializer with the nested SportAssociationSerializer of module.sport_association (the row the foreign key resolves by id; null without one), response_data}",
-        "errors": "400 ['badly formed hexadecimal UUID string'] for response_id; 403 registry / scoped session / admin without session; 404 {'error': 'module not found'} and {'error': 'module not active'}.",
+        "response": "200 {data: PublicModuleSerializer (module_id, title, response_message, allow_attachments, only_users, elements, sport_association {denomination} or null), response_data: {attachments_docs: [{document_id, filename}]} or null}",
+        "errors": "404 {error: 'module not found'} (unknown link, or a module of an association marked deleted); 400 badly formed response_id; 404 {error: 'module not active'}",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.modules.read.",
         "resource_scope": "Module by exact custom_link; response by id. request.user is not read.",
@@ -16805,25 +16840,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 148/148; Go 500 on the first case.",
+          "result": "RED: Django 149/149; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
           "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 148/148 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-green-r4/results.json",
-          "receipt_sha256": "180a8230e593534adc84c33475437a5afb121e0f99aabac8327eec8bd580ece4"
+          "result": "GREEN: 149/149 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-green-r2/results.json",
+          "receipt_sha256": "38f57a0c9d60e22c335ff7fb17da4c3a33a11a51538a6ec6a584ee1ac9c39b7f"
         },
         {
-          "revision": "the by-id association reader given the owner reader's row condition (repository/association_profile.go)",
-          "result": "Mutation control: fails Go on modules-responses-info-inactive-association (500): CAUGHT.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-mutation-r2/results.json",
-          "receipt_sha256": "b68314715a577884494c1139153f93498bfaa74343fc921944addfc89dac7ded"
+          "revision": "the deleted-association check of the public module page dropped (service/modules_responses.go)",
+          "result": "Mutation control: fails Go on modules-responses-info-deleted-association (200): CAUGHT.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-mutation-r2/results.json",
+          "receipt_sha256": "2d55b0839331a86a390f727ba3d59fbe884f30d6d418bc4cfb9ae3161a5ff98f"
         }
       ],
       "notes": [
-        "Implementing: API v2 (v2-rest-a): modules/<link>/info renders the nested association profile of the row the module points to, resolved by id (AssociationProfiles.ReadAssociation). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
+        "Implementing: v2-rest-b: the public module page returns the fields the form needs (module_id, title, response_message, allow_attachments, only_users, elements, sport_association.denomination; response_data.attachments_docs with document_id and filename), and a module of an association marked deleted answers 404 'module not found' before the response id is read. Django changed first (RED: application.tests.test_modules_views.ModulesCustomLinkInfoPublicFieldsTests, 4 of 5 failing before the view change; the recorded family RED receipt stays). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
       ]
     },
     {
@@ -17053,25 +17088,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 148/148; Go 500 on the first case.",
+          "result": "RED: Django 149/149; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
           "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 148/148 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-green-r4/results.json",
-          "receipt_sha256": "180a8230e593534adc84c33475437a5afb121e0f99aabac8327eec8bd580ece4"
+          "result": "GREEN: 149/149 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-green-r2/results.json",
+          "receipt_sha256": "38f57a0c9d60e22c335ff7fb17da4c3a33a11a51538a6ec6a584ee1ac9c39b7f"
         },
         {
-          "revision": "the by-id association reader given the owner reader's row condition (repository/association_profile.go)",
-          "result": "Mutation control: fails Go on modules-responses-info-inactive-association (500): CAUGHT.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-mutation-r2/results.json",
-          "receipt_sha256": "b68314715a577884494c1139153f93498bfaa74343fc921944addfc89dac7ded"
+          "revision": "the deleted-association check of the public module page dropped (service/modules_responses.go)",
+          "result": "Mutation control: fails Go on modules-responses-info-deleted-association (200): CAUGHT.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-mutation-r2/results.json",
+          "receipt_sha256": "2d55b0839331a86a390f727ba3d59fbe884f30d6d418bc4cfb9ae3161a5ff98f"
         }
       ],
       "notes": [
-        "Implementing: API v2 (v2-rest-a): modules/<link>/info renders the nested association profile of the row the module points to, resolved by id (AssociationProfiles.ReadAssociation). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
+        "Implementing: v2-rest-b: the public module page returns the fields the form needs (module_id, title, response_message, allow_attachments, only_users, elements, sport_association.denomination; response_data.attachments_docs with document_id and filename), and a module of an association marked deleted answers 404 'module not found' before the response id is read. Django changed first (RED: application.tests.test_modules_views.ModulesCustomLinkInfoPublicFieldsTests, 4 of 5 failing before the view change; the recorded family RED receipt stays). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
       ]
     },
     {
@@ -17224,25 +17259,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 148/148; Go 500 on the first case.",
+          "result": "RED: Django 149/149; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
           "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 148/148 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-green-r4/results.json",
-          "receipt_sha256": "180a8230e593534adc84c33475437a5afb121e0f99aabac8327eec8bd580ece4"
+          "result": "GREEN: 149/149 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-green-r2/results.json",
+          "receipt_sha256": "38f57a0c9d60e22c335ff7fb17da4c3a33a11a51538a6ec6a584ee1ac9c39b7f"
         },
         {
-          "revision": "the by-id association reader given the owner reader's row condition (repository/association_profile.go)",
-          "result": "Mutation control: fails Go on modules-responses-info-inactive-association (500): CAUGHT.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-mutation-r2/results.json",
-          "receipt_sha256": "b68314715a577884494c1139153f93498bfaa74343fc921944addfc89dac7ded"
+          "revision": "the deleted-association check of the public module page dropped (service/modules_responses.go)",
+          "result": "Mutation control: fails Go on modules-responses-info-deleted-association (200): CAUGHT.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-mutation-r2/results.json",
+          "receipt_sha256": "2d55b0839331a86a390f727ba3d59fbe884f30d6d418bc4cfb9ae3161a5ff98f"
         }
       ],
       "notes": [
-        "Implementing: API v2 (v2-rest-a): modules/<link>/info renders the nested association profile of the row the module points to, resolved by id (AssociationProfiles.ReadAssociation). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
+        "Implementing: v2-rest-b: the public module page returns the fields the form needs (module_id, title, response_message, allow_attachments, only_users, elements, sport_association.denomination; response_data.attachments_docs with document_id and filename), and a module of an association marked deleted answers 404 'module not found' before the response id is read. Django changed first (RED: application.tests.test_modules_views.ModulesCustomLinkInfoPublicFieldsTests, 4 of 5 failing before the view change; the recorded family RED receipt stays). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
       ]
     },
     {
@@ -17619,25 +17654,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 148/148; Go 500 on the first case.",
+          "result": "RED: Django 149/149; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
           "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 148/148 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-green-r4/results.json",
-          "receipt_sha256": "180a8230e593534adc84c33475437a5afb121e0f99aabac8327eec8bd580ece4"
+          "result": "GREEN: 149/149 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-green-r2/results.json",
+          "receipt_sha256": "38f57a0c9d60e22c335ff7fb17da4c3a33a11a51538a6ec6a584ee1ac9c39b7f"
         },
         {
-          "revision": "the by-id association reader given the owner reader's row condition (repository/association_profile.go)",
-          "result": "Mutation control: fails Go on modules-responses-info-inactive-association (500): CAUGHT.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-mutation-r2/results.json",
-          "receipt_sha256": "b68314715a577884494c1139153f93498bfaa74343fc921944addfc89dac7ded"
+          "revision": "the deleted-association check of the public module page dropped (service/modules_responses.go)",
+          "result": "Mutation control: fails Go on modules-responses-info-deleted-association (200): CAUGHT.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-mutation-r2/results.json",
+          "receipt_sha256": "2d55b0839331a86a390f727ba3d59fbe884f30d6d418bc4cfb9ae3161a5ff98f"
         }
       ],
       "notes": [
-        "Implementing: API v2 (v2-rest-a): modules/<link>/info renders the nested association profile of the row the module points to, resolved by id (AssociationProfiles.ReadAssociation). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
+        "Implementing: v2-rest-b: the public module page returns the fields the form needs (module_id, title, response_message, allow_attachments, only_users, elements, sport_association.denomination; response_data.attachments_docs with document_id and filename), and a module of an association marked deleted answers 404 'module not found' before the response id is read. Django changed first (RED: application.tests.test_modules_views.ModulesCustomLinkInfoPublicFieldsTests, 4 of 5 failing before the view change; the recorded family RED receipt stays). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
       ]
     },
     {
@@ -17717,25 +17752,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 148/148; Go 500 on the first case.",
+          "result": "RED: Django 149/149; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
           "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 148/148 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-green-r4/results.json",
-          "receipt_sha256": "180a8230e593534adc84c33475437a5afb121e0f99aabac8327eec8bd580ece4"
+          "result": "GREEN: 149/149 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-green-r2/results.json",
+          "receipt_sha256": "38f57a0c9d60e22c335ff7fb17da4c3a33a11a51538a6ec6a584ee1ac9c39b7f"
         },
         {
-          "revision": "the by-id association reader given the owner reader's row condition (repository/association_profile.go)",
-          "result": "Mutation control: fails Go on modules-responses-info-inactive-association (500): CAUGHT.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-mutation-r2/results.json",
-          "receipt_sha256": "b68314715a577884494c1139153f93498bfaa74343fc921944addfc89dac7ded"
+          "revision": "the deleted-association check of the public module page dropped (service/modules_responses.go)",
+          "result": "Mutation control: fails Go on modules-responses-info-deleted-association (200): CAUGHT.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-mutation-r2/results.json",
+          "receipt_sha256": "2d55b0839331a86a390f727ba3d59fbe884f30d6d418bc4cfb9ae3161a5ff98f"
         }
       ],
       "notes": [
-        "Implementing: API v2 (v2-rest-a): modules/<link>/info renders the nested association profile of the row the module points to, resolved by id (AssociationProfiles.ReadAssociation). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
+        "Implementing: v2-rest-b: the public module page returns the fields the form needs (module_id, title, response_message, allow_attachments, only_users, elements, sport_association.denomination; response_data.attachments_docs with document_id and filename), and a module of an association marked deleted answers 404 'module not found' before the response id is read. Django changed first (RED: application.tests.test_modules_views.ModulesCustomLinkInfoPublicFieldsTests, 4 of 5 failing before the view change; the recorded family RED receipt stays). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
       ]
     },
     {
@@ -17815,25 +17850,25 @@
         "docs/architecture/go-migration/modules-responses.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 148/148; Go 500 on the first case.",
+          "result": "RED: Django 149/149; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-red-r2/results.json",
           "receipt_sha256": "0004ff893fb05e49d705da6cfac20c5983d6e6110f8bfde72d345205d4af0ac1"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 148/148 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-green-r4/results.json",
-          "receipt_sha256": "180a8230e593534adc84c33475437a5afb121e0f99aabac8327eec8bd580ece4"
+          "result": "GREEN: 149/149 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-green-r2/results.json",
+          "receipt_sha256": "38f57a0c9d60e22c335ff7fb17da4c3a33a11a51538a6ec6a584ee1ac9c39b7f"
         },
         {
-          "revision": "the by-id association reader given the owner reader's row condition (repository/association_profile.go)",
-          "result": "Mutation control: fails Go on modules-responses-info-inactive-association (500): CAUGHT.",
-          "artifact": "quality-reports/go-migration/modules-responses-http-v2resta-mutation-r2/results.json",
-          "receipt_sha256": "b68314715a577884494c1139153f93498bfaa74343fc921944addfc89dac7ded"
+          "revision": "the deleted-association check of the public module page dropped (service/modules_responses.go)",
+          "result": "Mutation control: fails Go on modules-responses-info-deleted-association (200): CAUGHT.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-v2restb-mutation-r2/results.json",
+          "receipt_sha256": "2d55b0839331a86a390f727ba3d59fbe884f30d6d418bc4cfb9ae3161a5ff98f"
         }
       ],
       "notes": [
-        "Implementing: API v2 (v2-rest-a): modules/<link>/info renders the nested association profile of the row the module points to, resolved by id (AssociationProfiles.ReadAssociation). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
+        "Implementing: v2-rest-b: the public module page returns the fields the form needs (module_id, title, response_message, allow_attachments, only_users, elements, sport_association.denomination; response_data.attachments_docs with document_id and filename), and a module of an association marked deleted answers 404 'module not found' before the response id is read. Django changed first (RED: application.tests.test_modules_views.ModulesCustomLinkInfoPublicFieldsTests, 4 of 5 failing before the view change; the recorded family RED receipt stays). Still refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with a non-string filename/base64 or a filename that is empty, ./.., contains / \\ or NUL or is longer than 255 characters; add-attachment DELETE with a non-string document_id or a document other rows reference; export labels and values the workbook writer does not take (xlsx-exports.md)."
       ]
     },
     {
@@ -20937,25 +20972,25 @@
         "docs/architecture/go-migration/payment-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 276/276; Go 500 on the first case.",
+          "result": "RED: Django 280/280; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/payment-reads-http-secath-red-r1/results.json",
           "receipt_sha256": "7ab6ed34b26b9ec8889d3e0bd6127c271aeb428702d6c6a73e5882c690e6d066"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 276/276 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/payment-reads-http-secath-versioned-r1/results.json",
-          "receipt_sha256": "00d101c2f4361c4de4c907df9ea79613c2b124cf81343dd94a723f5ff800fb6c"
+          "result": "GREEN: 280/280 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2restb-green-r3/results.json",
+          "receipt_sha256": "88d5bc238f58cf18b19efefdfb89794cb123dcb3b88a3bdb94ba048e8502b12b"
         },
         {
-          "revision": "the athlete's course subscription lookup without the condition on the athlete's user and associates",
-          "result": "Mutation control: fails Go on payment-reads-athlete-course-subscription-of-associate-group (response.status).",
-          "artifact": "quality-reports/go-migration/payment-reads-http-secath-mutation-r1/results.json",
-          "receipt_sha256": "a16194cc22d860e9589e0df264dc8d209c280fdd985cb1f55fb640e5f48f52da"
+          "revision": "an infinite search term searched as an amount instead of following NaN (service/payment_reads.go)",
+          "result": "Mutation control: fails Go on payment-reads-list-search-infinite (200): CAUGHT.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2restb-mutation-r1/results.json",
+          "receipt_sha256": "6b4c5bf82bc8e99622b70fb4f95fd37583a4595b2e3fd9847d3580d6de26c630"
         }
       ],
       "notes": [
-        "Implementing: Payment list (owner/collaborator listing, compressed mode and the athlete list), payment stats and subscription payments with HTTP parity. API v2: the athlete list is ported (both query variants, course_subscription_id limited to the course subscriptions of the athlete's user and of the associates of their subscriptions, installment and zero-amount exclusions, PaymentCompressedSerializer with get_meta, online payment flags, index-keyed response, receipts through document_invoice in-process, association-scoped sessions). Still refused (500): compile-time orderings, random ordering with the text search, infinite search terms, and an athlete receipt whose filename is not a valid header value. Earlier API v2 ports: sort[field]=user, instructor compensations (eager compensation print), payment/stats with Stripe configured."
+        "Implementing: Payment list (owner/collaborator listing, compressed mode and the athlete list), payment stats and subscription payments with HTTP parity. API v2: the athlete list is ported (both query variants, course_subscription_id limited to the course subscriptions of the athlete's user and of the associates of their subscriptions, installment and zero-amount exclusions, PaymentCompressedSerializer with get_meta, online payment flags, index-keyed response, receipts through document_invoice in-process, association-scoped sessions). Still refused (500): compile-time orderings, random ordering with the text search, and an athlete receipt whose filename is not a valid header value. Earlier API v2 ports: sort[field]=user, instructor compensations (eager compensation print), payment/stats with Stripe configured. v2-rest-b: an infinite search term follows NaN (500 on payment/list and payment/stats, the text search on subscription/<uid>/payments; RED: documented refusal, see v2-refusals.md payment-reads search row)."
       ]
     },
     {
@@ -21353,25 +21388,25 @@
         "docs/architecture/go-migration/payment-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 276/276; Go 500 on the first case.",
+          "result": "RED: Django 280/280; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/payment-reads-http-secath-red-r1/results.json",
           "receipt_sha256": "7ab6ed34b26b9ec8889d3e0bd6127c271aeb428702d6c6a73e5882c690e6d066"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 276/276 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/payment-reads-http-secath-versioned-r1/results.json",
-          "receipt_sha256": "00d101c2f4361c4de4c907df9ea79613c2b124cf81343dd94a723f5ff800fb6c"
+          "result": "GREEN: 280/280 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2restb-green-r3/results.json",
+          "receipt_sha256": "88d5bc238f58cf18b19efefdfb89794cb123dcb3b88a3bdb94ba048e8502b12b"
         },
         {
-          "revision": "the athlete's course subscription lookup without the condition on the athlete's user and associates",
-          "result": "Mutation control: fails Go on payment-reads-athlete-course-subscription-of-associate-group (response.status).",
-          "artifact": "quality-reports/go-migration/payment-reads-http-secath-mutation-r1/results.json",
-          "receipt_sha256": "a16194cc22d860e9589e0df264dc8d209c280fdd985cb1f55fb640e5f48f52da"
+          "revision": "an infinite search term searched as an amount instead of following NaN (service/payment_reads.go)",
+          "result": "Mutation control: fails Go on payment-reads-list-search-infinite (200): CAUGHT.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2restb-mutation-r1/results.json",
+          "receipt_sha256": "6b4c5bf82bc8e99622b70fb4f95fd37583a4595b2e3fd9847d3580d6de26c630"
         }
       ],
       "notes": [
-        "Implementing: Payment list (owner/collaborator listing, compressed mode and the athlete list), payment stats and subscription payments with HTTP parity. API v2: the athlete list is ported (both query variants, course_subscription_id limited to the course subscriptions of the athlete's user and of the associates of their subscriptions, installment and zero-amount exclusions, PaymentCompressedSerializer with get_meta, online payment flags, index-keyed response, receipts through document_invoice in-process, association-scoped sessions). Still refused (500): compile-time orderings, random ordering with the text search, infinite search terms, and an athlete receipt whose filename is not a valid header value. Earlier API v2 ports: sort[field]=user, instructor compensations (eager compensation print), payment/stats with Stripe configured."
+        "Implementing: Payment list (owner/collaborator listing, compressed mode and the athlete list), payment stats and subscription payments with HTTP parity. API v2: the athlete list is ported (both query variants, course_subscription_id limited to the course subscriptions of the athlete's user and of the associates of their subscriptions, installment and zero-amount exclusions, PaymentCompressedSerializer with get_meta, online payment flags, index-keyed response, receipts through document_invoice in-process, association-scoped sessions). Still refused (500): compile-time orderings, random ordering with the text search, and an athlete receipt whose filename is not a valid header value. Earlier API v2 ports: sort[field]=user, instructor compensations (eager compensation print), payment/stats with Stripe configured. v2-rest-b: an infinite search term follows NaN (500 on payment/list and payment/stats, the text search on subscription/<uid>/payments; RED: documented refusal, see v2-refusals.md payment-reads search row)."
       ]
     },
     {
@@ -26377,25 +26412,25 @@
         "docs/architecture/go-migration/payment-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 276/276; Go 500 on the first case.",
+          "result": "RED: Django 280/280; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/payment-reads-http-secath-red-r1/results.json",
           "receipt_sha256": "7ab6ed34b26b9ec8889d3e0bd6127c271aeb428702d6c6a73e5882c690e6d066"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 276/276 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/payment-reads-http-secath-versioned-r1/results.json",
-          "receipt_sha256": "00d101c2f4361c4de4c907df9ea79613c2b124cf81343dd94a723f5ff800fb6c"
+          "result": "GREEN: 280/280 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2restb-green-r3/results.json",
+          "receipt_sha256": "88d5bc238f58cf18b19efefdfb89794cb123dcb3b88a3bdb94ba048e8502b12b"
         },
         {
-          "revision": "the athlete's course subscription lookup without the condition on the athlete's user and associates",
-          "result": "Mutation control: fails Go on payment-reads-athlete-course-subscription-of-associate-group (response.status).",
-          "artifact": "quality-reports/go-migration/payment-reads-http-secath-mutation-r1/results.json",
-          "receipt_sha256": "a16194cc22d860e9589e0df264dc8d209c280fdd985cb1f55fb640e5f48f52da"
+          "revision": "an infinite search term searched as an amount instead of following NaN (service/payment_reads.go)",
+          "result": "Mutation control: fails Go on payment-reads-list-search-infinite (200): CAUGHT.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2restb-mutation-r1/results.json",
+          "receipt_sha256": "6b4c5bf82bc8e99622b70fb4f95fd37583a4595b2e3fd9847d3580d6de26c630"
         }
       ],
       "notes": [
-        "Implementing: Payment list (owner/collaborator listing, compressed mode and the athlete list), payment stats and subscription payments with HTTP parity. API v2: the athlete list is ported (both query variants, course_subscription_id limited to the course subscriptions of the athlete's user and of the associates of their subscriptions, installment and zero-amount exclusions, PaymentCompressedSerializer with get_meta, online payment flags, index-keyed response, receipts through document_invoice in-process, association-scoped sessions). Still refused (500): compile-time orderings, random ordering with the text search, infinite search terms, and an athlete receipt whose filename is not a valid header value. Earlier API v2 ports: sort[field]=user, instructor compensations (eager compensation print), payment/stats with Stripe configured."
+        "Implementing: Payment list (owner/collaborator listing, compressed mode and the athlete list), payment stats and subscription payments with HTTP parity. API v2: the athlete list is ported (both query variants, course_subscription_id limited to the course subscriptions of the athlete's user and of the associates of their subscriptions, installment and zero-amount exclusions, PaymentCompressedSerializer with get_meta, online payment flags, index-keyed response, receipts through document_invoice in-process, association-scoped sessions). Still refused (500): compile-time orderings, random ordering with the text search, and an athlete receipt whose filename is not a valid header value. Earlier API v2 ports: sort[field]=user, instructor compensations (eager compensation print), payment/stats with Stripe configured. v2-rest-b: an infinite search term follows NaN (500 on payment/list and payment/stats, the text search on subscription/<uid>/payments; RED: documented refusal, see v2-refusals.md payment-reads search row)."
       ]
     },
     {
@@ -29424,7 +29459,7 @@
         "target": "supplier_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/dto/supplier_write.go",
         "BE_GO/internal/domain/supplier_writes.go",
@@ -29450,11 +29485,11 @@
         ],
         "request": "JSON/form: SupplierSerializer fields.",
         "response": "200 serialized supplier.",
-        "errors": "400 malformed uid / {\"msg\": \"validation errors.\"}; 401; 403 User not allowed. / tenant scope / registry; 500 missing association or supplier, a new supplier_id (not ported).",
+        "errors": "400 malformed uid / {\"msg\": \"validation errors.\"}; 401; 403 User not allowed. / tenant scope / registry; 500 missing association or supplier, a new supplier_id together with a cleared sport_association (not ported).",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry bookeeping.management.suppliers.update.",
         "resource_scope": "The owner's association; tenant-scoped relations.",
-        "side_effects": "Saves every field; one auditlog update entry with the changed fields, indexed directly.",
+        "side_effects": "Saves every field; one auditlog update entry with the changed fields, indexed directly. A body naming an unused supplier_id inserts a copy under that key (two audit entries) and leaves the named row.",
         "transaction": "One transaction.",
         "execution_owner": "django"
       },
@@ -29462,25 +29497,31 @@
         "TESTS/fixtures/supplier_writes_http.json",
         "TESTS/fixtures/generate_supplier_writes_http.py",
         "TESTS/contracts/test_supplier_writes_http.py",
-        "TESTS/adapters/django/supplier_writes_http.py",
-        "BE_GO/internal/dto/supplier_write_test.go"
+        "TESTS/adapters/django/supplier_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/suppliers.md",
         {
-          "command": "python tools/go-migration/family.py run supplier-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/supplier-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "d74d6bf7cc73f499eb88e03d1ade8dee24ea0a7b285d4d132e5ba24f827d150e",
-          "scope": "HTTP family supplier-writes: 31/31 cases on native Django and native Go, 31/31 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 34/34; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/supplier-writes-http-red-r1/results.json",
+          "receipt_sha256": "f996f26bec78af31685dbde151053c8b0192c0b8150a8ab1acf2553ba3e6e10d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 34/34 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/supplier-writes-http-v2restb-green-r3/results.json",
+          "receipt_sha256": "66f104e1c283bbefe8178640cc7561a687c2c59d00045d2164cf57e51aadb8f0"
+        },
+        {
+          "revision": "the create entry of the copied supplier indexed from its changes instead of directly (service/supplier_writes.go)",
+          "result": "Mutation control: fails Go on supplier-writes-update-new-id-inserts-copy (index.fields:0): CAUGHT.",
+          "artifact": "quality-reports/go-migration/supplier-writes-http-v2restb-mutation-r1/results.json",
+          "receipt_sha256": "43355f5f07be0be62f51668ae28cdc531136304d8d4433f08fd49aa3f2efe309"
         }
       ],
       "notes": [
-        "Implementing: SupplierSerializer validation (EmailValidator port, repr errors), tenant-scoped relations and auditlog semantics on four transports; a supplier_id change on update is refused (Django would insert a copy).",
-        "Implementing evidence: docs/architecture/go-migration/suppliers.md",
-        "Implementing evidence: RED: Django 31/31; Go 404 on the first case. (quality-reports/go-migration/supplier-writes-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 31/31 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/supplier-writes-http-versioned-r3/results.json)",
-        "Implementing evidence: Mutation control: fails Go on the full add case. (quality-reports/go-migration/supplier-writes-http-mutation-r1/results.json)"
+        "Implementing: SupplierSerializer validation (EmailValidator port, repr errors), tenant-scoped relations and auditlog semantics on four transports. v2-rest-b: an update naming a supplier_id no row has inserts the copy Model.save() inserts with the validated values (the named row stays; auditlog writes the pre-save update against nothing, indexed from its changes, then the create, indexed directly); a key another row has is the unique error (RED: documented refusal, see v2-refusals.md suppliers row). Still refused (500): such a body that also clears sport_association."
       ]
     },
     {
@@ -29498,7 +29539,7 @@
         "target": "supplier_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/dto/supplier_write.go",
         "BE_GO/internal/domain/supplier_writes.go",
@@ -29536,25 +29577,31 @@
         "TESTS/fixtures/supplier_writes_http.json",
         "TESTS/fixtures/generate_supplier_writes_http.py",
         "TESTS/contracts/test_supplier_writes_http.py",
-        "TESTS/adapters/django/supplier_writes_http.py",
-        "BE_GO/internal/dto/supplier_write_test.go"
+        "TESTS/adapters/django/supplier_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/suppliers.md",
         {
-          "command": "python tools/go-migration/family.py run supplier-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/supplier-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "d74d6bf7cc73f499eb88e03d1ade8dee24ea0a7b285d4d132e5ba24f827d150e",
-          "scope": "HTTP family supplier-writes: 31/31 cases on native Django and native Go, 31/31 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 34/34; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/supplier-writes-http-red-r1/results.json",
+          "receipt_sha256": "f996f26bec78af31685dbde151053c8b0192c0b8150a8ab1acf2553ba3e6e10d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 34/34 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/supplier-writes-http-v2restb-green-r3/results.json",
+          "receipt_sha256": "66f104e1c283bbefe8178640cc7561a687c2c59d00045d2164cf57e51aadb8f0"
+        },
+        {
+          "revision": "the create entry of the copied supplier indexed from its changes instead of directly (service/supplier_writes.go)",
+          "result": "Mutation control: fails Go on supplier-writes-update-new-id-inserts-copy (index.fields:0): CAUGHT.",
+          "artifact": "quality-reports/go-migration/supplier-writes-http-v2restb-mutation-r1/results.json",
+          "receipt_sha256": "43355f5f07be0be62f51668ae28cdc531136304d8d4433f08fd49aa3f2efe309"
         }
       ],
       "notes": [
-        "Implementing: SupplierSerializer validation (EmailValidator port, repr errors), tenant-scoped relations and auditlog semantics on four transports; a supplier_id change on update is refused (Django would insert a copy).",
-        "Implementing evidence: docs/architecture/go-migration/suppliers.md",
-        "Implementing evidence: RED: Django 31/31; Go 404 on the first case. (quality-reports/go-migration/supplier-writes-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 31/31 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/supplier-writes-http-versioned-r3/results.json)",
-        "Implementing evidence: Mutation control: fails Go on the full add case. (quality-reports/go-migration/supplier-writes-http-mutation-r1/results.json)"
+        "Implementing: SupplierSerializer validation (EmailValidator port, repr errors), tenant-scoped relations and auditlog semantics on four transports. v2-rest-b: an update naming a supplier_id no row has inserts the copy Model.save() inserts with the validated values (the named row stays; auditlog writes the pre-save update against nothing, indexed from its changes, then the create, indexed directly); a key another row has is the unique error (RED: documented refusal, see v2-refusals.md suppliers row). Still refused (500): such a body that also clears sport_association."
       ]
     },
     {
@@ -33042,11 +33089,11 @@
         ],
         "request": "uid; ?download; ?token",
         "response": "200 application/pdf (renderer bytes), Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
-        "errors": "401 (no account and no token of a document of the compensation's hours; the renderer header is not accepted); 403 (scoped athlete: not an athlete view); 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account that is not tied to the payment's instructor (after the lookup, before any write); 404 {exception: Compensation not found} (missing, deleted); 500 {exception} for invalid uid, no instructor, no payment date, renderer failures",
+        "errors": "401 (no account and no token of a document of the compensation's hours; the renderer header is not accepted); 403 (scoped athlete: not an athlete view); 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account that is not tied to the payment's instructor (after the lookup, before any write); 404 {exception: Compensation not found} (missing, deleted); 500 {exception} for invalid uid, no instructor, no payment date, renderer failures  500 {'exception': \"Header values can't contain newlines (got '<disposition>; filename=<name>')\"} for a filename with CR or LF, after the Document, the renderer request and the storage task; nothing is linked.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated | HasCompensationDocumentToken. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid). ?token admits a caller without an account when it is the token of a document of the record the uid names (base managers); a record without a document, another document's token, a malformed token or uid admit nothing (401). By account: staff, superusers and the instance owner reach every compensation; another athlete account needs to be the one tied to the payment's instructor (Instructor.associated_user_id; docmanager.access).",
         "resource_scope": "scoped_queryset(Payment.objects) live + group; outside a scoped session an athlete account is limited to the compensations of the instructor it is tied to",
-        "side_effects": "Document.objects.create (audited, actor association index); one renderer POST (FastRender payload) to PUPPETEER_HOST:PORT/render; on a PDF: save_to_storage.delay(path, base64) then the row link (audited update) (every InstructorHours of the payment: document, index instructor.user.sport_association)",
+        "side_effects": "Document.objects.create (audited, actor association index); one renderer POST (FastRender payload) to PUPPETEER_HOST:PORT/render; on a PDF: save_to_storage.delay(path, base64) then the row link (audited update) (every InstructorHours of the payment: document, index instructor.user.sport_association) Hours whose instructor's owner has no association: each link's audit index row is the actor's association with path actor.sport_association, or absent when the actor has none.",
         "transaction": "Not atomic in Django: Document, links and created rows commit one by one; the renderer call and Celery publishes sit between them. Go: one short transaction per write in the same order, publishes after the Document commit.",
         "execution_owner": "django"
       },
@@ -33060,25 +33107,25 @@
         "docs/architecture/go-migration/document-render.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 199/199; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-red-r3/results.json",
-          "receipt_sha256": "28f9b34b6f98a12e7c9dc7935ceba1f4835316dbb0912bf73236301a872755a2"
+          "result": "RED: Django 239/239; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-red-r1/results.json",
+          "receipt_sha256": "fc1403818bde5c6a34d6b6db1f266234ba9eed52c25abc2871406ce03b54431b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 199/199 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and the stored form objects.",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-versioned-r1/results.json",
-          "receipt_sha256": "dd8d72ac41356f65fc5c9c0ffd45c7ff60c305dcd7feb87f447bd23ae7ec3aee"
+          "result": "GREEN: 239/239 on native Django, native Go, Caddy /api/v1 and /api/v2 with the renderer requests, storage tasks, audit rows and their index rows checked.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-final-r1/results.json",
+          "receipt_sha256": "7d9b18240e9e91e9dbebee34ce8088389a2cb3a9c6f1666a4b6d38f0ff89bbfa"
         },
         {
-          "revision": "committing change without the YYYY-MM-DD to DD/MM/YYYY rewrite of the form values",
-          "result": "Mutation control: fails Go on document-render-medical-form-biella (pdf.body).",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-mutation-r1/results.json",
-          "receipt_sha256": "94ff4cf536962c4b0332007e1c53fcc582c3a8de1f1746bc53b6bed7a43ddfd0"
+          "revision": "committing change with the fallback audit index row written with the instructor path",
+          "result": "Mutation control: fails Go on document-render-compensation-instructor-owner-without-association (index.fields:instructorhours).",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-mutation-r1/results.json",
+          "receipt_sha256": "e0647e3ebbd6b0428f96bb23ca32492985480fc7b60f7f2739f035eb7d5adab4"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc2: the Piemonte Biella medical form is filled in Go (internal/medicalform: pypdf's output for the template with the values written as TextStringObject does) and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing), a tutor promotion, header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
+        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc3 (RED: documented refusals, see the document-render.md rows of v2-refusals.md; receipt v2doc3-red-r1): a filename with CR or LF answers Django's header check text after the storage task and links nothing; the template route reads request.data with Python's in/.get/[] on any body shape (lists, text, null, numbers, malformed JSON, other media types, multipart, a non-object additionalData, any subscription value) and answers the view's 500 {'exception'} with the Document kept; the invoice route reads request.POST from multipart and answers DRF's 415/400 for bodies the parsers refuse; compensation hours whose instructor's owner has no association are linked with the actor's audit index row (actor.sport_association) or none. v2doc2: the Piemonte Biella medical form is filled in Go and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing; the hand-off covers it), a tutor promotion, filenames with other control characters or email.header separators without a line break, multipart bodies over the upload limit. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc) and staff documents and document tokens (secdoc2) as recorded before. Final run on the merged base: v2doc3-final-r1."
       ]
     },
     {
@@ -33260,7 +33307,7 @@
         ],
         "request": "uid; ?download; ?token; bypass Authorization",
         "response": "200 application/pdf (renderer bytes), Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
-        "errors": "401; 403; 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account (after the lookup, before any write); 405; 500 {exception} for a missing row (CustomerInvoice.DoesNotExist is not caught as 404), invalid uid, renderer failures",
+        "errors": "401; 403; 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account (after the lookup, before any write); 405; 500 {exception} for a missing row (CustomerInvoice.DoesNotExist is not caught as 404), invalid uid, renderer failures  500 {'exception': \"Header values can't contain newlines (got '<disposition>; filename=<name>')\"} for a filename with CR or LF, after the Document, the renderer request and the storage task; nothing is linked.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated | HasCustomerInvoiceDocumentToken | HasBypassAuthorizationHeader. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid). ?token admits a caller without an account when it is the token of a document of the record the uid names (base managers); a record without a document, another document's token, a malformed token or uid admit nothing (401). By account: staff, superusers and the instance owner reach every record; other athlete accounts get the 403 of docmanager.access (customer invoices and module templates are the staff's).",
         "resource_scope": "CustomerInvoice.objects.get(pk=uid): resolves the row by id (no scope, no group); served to the staff",
@@ -33278,25 +33325,25 @@
         "docs/architecture/go-migration/document-render.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 199/199; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-red-r3/results.json",
-          "receipt_sha256": "28f9b34b6f98a12e7c9dc7935ceba1f4835316dbb0912bf73236301a872755a2"
+          "result": "RED: Django 239/239; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-red-r1/results.json",
+          "receipt_sha256": "fc1403818bde5c6a34d6b6db1f266234ba9eed52c25abc2871406ce03b54431b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 199/199 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and the stored form objects.",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-versioned-r1/results.json",
-          "receipt_sha256": "dd8d72ac41356f65fc5c9c0ffd45c7ff60c305dcd7feb87f447bd23ae7ec3aee"
+          "result": "GREEN: 239/239 on native Django, native Go, Caddy /api/v1 and /api/v2 with the renderer requests, storage tasks, audit rows and their index rows checked.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-final-r1/results.json",
+          "receipt_sha256": "7d9b18240e9e91e9dbebee34ce8088389a2cb3a9c6f1666a4b6d38f0ff89bbfa"
         },
         {
-          "revision": "committing change without the YYYY-MM-DD to DD/MM/YYYY rewrite of the form values",
-          "result": "Mutation control: fails Go on document-render-medical-form-biella (pdf.body).",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-mutation-r1/results.json",
-          "receipt_sha256": "94ff4cf536962c4b0332007e1c53fcc582c3a8de1f1746bc53b6bed7a43ddfd0"
+          "revision": "committing change with the fallback audit index row written with the instructor path",
+          "result": "Mutation control: fails Go on document-render-compensation-instructor-owner-without-association (index.fields:instructorhours).",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-mutation-r1/results.json",
+          "receipt_sha256": "e0647e3ebbd6b0428f96bb23ca32492985480fc7b60f7f2739f035eb7d5adab4"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc2: the Piemonte Biella medical form is filled in Go (internal/medicalform: pypdf's output for the template with the values written as TextStringObject does) and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing), a tutor promotion, header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
+        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc3 (RED: documented refusals, see the document-render.md rows of v2-refusals.md; receipt v2doc3-red-r1): a filename with CR or LF answers Django's header check text after the storage task and links nothing; the template route reads request.data with Python's in/.get/[] on any body shape (lists, text, null, numbers, malformed JSON, other media types, multipart, a non-object additionalData, any subscription value) and answers the view's 500 {'exception'} with the Document kept; the invoice route reads request.POST from multipart and answers DRF's 415/400 for bodies the parsers refuse; compensation hours whose instructor's owner has no association are linked with the actor's audit index row (actor.sport_association) or none. v2doc2: the Piemonte Biella medical form is filled in Go and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing; the hand-off covers it), a tutor promotion, filenames with other control characters or email.header separators without a line break, multipart bodies over the upload limit. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc) and staff documents and document tokens (secdoc2) as recorded before. Final run on the merged base: v2doc3-final-r1."
       ]
     },
     {
@@ -33484,9 +33531,9 @@
           "/api/v2/document/invoice/<uid>",
           "/api/document/invoice/<uid>"
         ],
-        "request": "uid; ?download; send_receipt_email from the query, else the urlencoded form ('true'/'True'/'1'); ?token; bypass Authorization",
+        "request": "uid; ?download; send_receipt_email from the query, else the urlencoded form ('true'/'True'/'1'); ?token; bypass Authorization With a falsy query flag request.POST is read before the try block: a urlencoded or multipart field send_receipt_email counts; JSON bodies are parsed and ignored.",
         "response": "200 application/pdf (renderer bytes), Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
-        "errors": "400 DRF JSON parse error (body read when the query flag is falsy); 401; 403; 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account outside its own records (after the invoice lookup, before any write); 404 {exception: Invoice not found} (missing, deleted, other group); 500 {exception} for the payment get() (none/several), payment without date, invalid uid, renderer failures",
+        "errors": "400 DRF JSON parse error (body read when the query flag is falsy); 401; 403; 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account outside its own records (after the invoice lookup, before any write); 404 {exception: Invoice not found} (missing, deleted, other group); 500 {exception} for the payment get() (none/several), payment without date, invalid uid, renderer failures  500 {'exception': \"Header values can't contain newlines (got '<disposition>; filename=<name>')\"} for a filename with CR or LF, after the Document, the renderer request and the storage task; nothing is linked. 415 {'detail': 'Unsupported media type \"<type>\" in request.'} and 400 {'detail': '<parse error>'} (malformed JSON, multipart without a boundary) when request.POST is read, before any lookup.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated | HasInvoiceDocumentToken | HasBypassAuthorizationHeader. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid) By account: staff, superusers and the instance owner reach every invoice, an athlete account that is neither a superuser nor the instance owner needs the record among those of its user, of the associates of its subscriptions, of associates whose account it is and of associates sharing a non-empty tax code with them (docmanager.access; base managers). ?token admits a caller without an account when it is the token of a document of the record the uid names (base managers); a record without a document, another document's token, a malformed token or uid admit nothing (401).",
         "resource_scope": "scoped_queryset(Invoice.objects) live + group; scoped_queryset(Payment.objects).get(invoice=...) live + group; outside a scoped session an athlete account is limited to the invoices of the member's payments",
@@ -33504,25 +33551,25 @@
         "docs/architecture/go-migration/document-render.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 199/199; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-red-r3/results.json",
-          "receipt_sha256": "28f9b34b6f98a12e7c9dc7935ceba1f4835316dbb0912bf73236301a872755a2"
+          "result": "RED: Django 239/239; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-red-r1/results.json",
+          "receipt_sha256": "fc1403818bde5c6a34d6b6db1f266234ba9eed52c25abc2871406ce03b54431b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 199/199 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and the stored form objects.",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-versioned-r1/results.json",
-          "receipt_sha256": "dd8d72ac41356f65fc5c9c0ffd45c7ff60c305dcd7feb87f447bd23ae7ec3aee"
+          "result": "GREEN: 239/239 on native Django, native Go, Caddy /api/v1 and /api/v2 with the renderer requests, storage tasks, audit rows and their index rows checked.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-final-r1/results.json",
+          "receipt_sha256": "7d9b18240e9e91e9dbebee34ce8088389a2cb3a9c6f1666a4b6d38f0ff89bbfa"
         },
         {
-          "revision": "committing change without the YYYY-MM-DD to DD/MM/YYYY rewrite of the form values",
-          "result": "Mutation control: fails Go on document-render-medical-form-biella (pdf.body).",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-mutation-r1/results.json",
-          "receipt_sha256": "94ff4cf536962c4b0332007e1c53fcc582c3a8de1f1746bc53b6bed7a43ddfd0"
+          "revision": "committing change with the fallback audit index row written with the instructor path",
+          "result": "Mutation control: fails Go on document-render-compensation-instructor-owner-without-association (index.fields:instructorhours).",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-mutation-r1/results.json",
+          "receipt_sha256": "e0647e3ebbd6b0428f96bb23ca32492985480fc7b60f7f2739f035eb7d5adab4"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc2: the Piemonte Biella medical form is filled in Go (internal/medicalform: pypdf's output for the template with the values written as TextStringObject does) and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing), a tutor promotion, header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
+        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc3 (RED: documented refusals, see the document-render.md rows of v2-refusals.md; receipt v2doc3-red-r1): a filename with CR or LF answers Django's header check text after the storage task and links nothing; the template route reads request.data with Python's in/.get/[] on any body shape (lists, text, null, numbers, malformed JSON, other media types, multipart, a non-object additionalData, any subscription value) and answers the view's 500 {'exception'} with the Document kept; the invoice route reads request.POST from multipart and answers DRF's 415/400 for bodies the parsers refuse; compensation hours whose instructor's owner has no association are linked with the actor's audit index row (actor.sport_association) or none. v2doc2: the Piemonte Biella medical form is filled in Go and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing; the hand-off covers it), a tutor promotion, filenames with other control characters or email.header separators without a line break, multipart bodies over the upload limit. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc) and staff documents and document tokens (secdoc2) as recorded before. Final run on the merged base: v2doc3-final-r1."
       ]
     },
     {
@@ -33730,25 +33777,25 @@
         "docs/architecture/go-migration/document-render.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 199/199; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-red-r3/results.json",
-          "receipt_sha256": "28f9b34b6f98a12e7c9dc7935ceba1f4835316dbb0912bf73236301a872755a2"
+          "result": "RED: Django 239/239; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-red-r1/results.json",
+          "receipt_sha256": "fc1403818bde5c6a34d6b6db1f266234ba9eed52c25abc2871406ce03b54431b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 199/199 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and the stored form objects.",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-versioned-r1/results.json",
-          "receipt_sha256": "dd8d72ac41356f65fc5c9c0ffd45c7ff60c305dcd7feb87f447bd23ae7ec3aee"
+          "result": "GREEN: 239/239 on native Django, native Go, Caddy /api/v1 and /api/v2 with the renderer requests, storage tasks, audit rows and their index rows checked.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-final-r1/results.json",
+          "receipt_sha256": "7d9b18240e9e91e9dbebee34ce8088389a2cb3a9c6f1666a4b6d38f0ff89bbfa"
         },
         {
-          "revision": "committing change without the YYYY-MM-DD to DD/MM/YYYY rewrite of the form values",
-          "result": "Mutation control: fails Go on document-render-medical-form-biella (pdf.body).",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-mutation-r1/results.json",
-          "receipt_sha256": "94ff4cf536962c4b0332007e1c53fcc582c3a8de1f1746bc53b6bed7a43ddfd0"
+          "revision": "committing change with the fallback audit index row written with the instructor path",
+          "result": "Mutation control: fails Go on document-render-compensation-instructor-owner-without-association (index.fields:instructorhours).",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-mutation-r1/results.json",
+          "receipt_sha256": "e0647e3ebbd6b0428f96bb23ca32492985480fc7b60f7f2739f035eb7d5adab4"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc2: the Piemonte Biella medical form is filled in Go (internal/medicalform: pypdf's output for the template with the values written as TextStringObject does) and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing), a tutor promotion, header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
+        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc3 (RED: documented refusals, see the document-render.md rows of v2-refusals.md; receipt v2doc3-red-r1): a filename with CR or LF answers Django's header check text after the storage task and links nothing; the template route reads request.data with Python's in/.get/[] on any body shape (lists, text, null, numbers, malformed JSON, other media types, multipart, a non-object additionalData, any subscription value) and answers the view's 500 {'exception'} with the Document kept; the invoice route reads request.POST from multipart and answers DRF's 415/400 for bodies the parsers refuse; compensation hours whose instructor's owner has no association are linked with the actor's audit index row (actor.sport_association) or none. v2doc2: the Piemonte Biella medical form is filled in Go and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing; the hand-off covers it), a tutor promotion, filenames with other control characters or email.header separators without a line break, multipart bodies over the upload limit. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc) and staff documents and document tokens (secdoc2) as recorded before. Final run on the merged base: v2doc3-final-r1."
       ]
     },
     {
@@ -34022,8 +34069,8 @@
           "/api/document/retrieve/<uid>"
         ],
         "request": "Path uid (Python uuid.UUID grammar). Query: download ('false' selects view_file; any other value or none selects download_file, attachment when non-empty), token (a JWT or the Document's UUID token), download_token (django.core.signing, salt docmanager.association-export-download, max_age 3600). Headers: Authorization, Cookie BKN_AUTH, X-Group-Id, impersonation headers.",
-        "response": "200 streamed object bytes with Content-Type from mimetypes.guess_type (else the object's, else application/octet-stream), Content-Length and Content-Encoding from the object, and Content-Disposition from content_disposition_header for download_file. A filename urllib.parse reads as a URL (scheme of two or more characters) is guessed from the URL path; a data: name answers the type it spells.",
-        "errors": "400 [ValueError text]; 401 {'error': 'Invalid token. Not Authorized.'} / {'error': 'Invalid download token.'} (no challenge); DRF 401 for an invalid bearer; 403 {'error': 'Not authorized to access this export.'}; 403 {'detail': 'Documento non disponibile per questa associazione.'}; 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account outside its own records (document reached by account); 404 {'error': 'Document not found.'}; 500 {'exception': 'File not found'} / {'exception': 'An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist.'} (a missing PDF printed again and not stored yet) / {'exception': \"Attempted access to '<name>' denied.\"}; 405; 500 page.",
+        "response": "200 streamed object bytes. Content-Type is mimetypes.guess_type of the name when it is application/pdf, image/png, image/jpeg, image/gif or image/webp; every other file is application/octet-stream with Content-Disposition attachment (content_disposition_header(True, name)) on the view path too. Inline types carry no Content-Disposition on the view path (download=false) and content_disposition_header(bool(?download), name) on download_file. X-Content-Type-Options: nosniff always; Content-Length and Content-Encoding from the object. A filename urllib.parse reads as a URL (scheme of two or more characters) is guessed from the URL path; a data: name answers the type it spells. An empty name is a bare attachment.",
+        "errors": "400 [ValueError text]; 401 {'error': 'Invalid token. Not Authorized.'} / {'error': 'Invalid download token.'} (no challenge); DRF 401 for an invalid bearer; 403 {'error': 'Not authorized to access this export.'}; 403 {'detail': 'Documento non disponibile per questa associazione.'}; 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account outside its own records (document reached by account); 404 {'error': 'Document not found.'}; 500 {'exception': 'File not found'} / {'exception': 'An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist.'} (a missing PDF printed again and not stored yet) / {'exception': \"Attempted access to '<name>' denied.\"}; 405; 500 page. 500 {'exception': \"Header values can't contain newlines (got '<header>')\"} for a quotable name ending in a newline, after the object is open; 500 {'exception': 'An error occurred (<status>) when calling the HeadObject operation: <reason>'} for a storage HEAD answered with a client error other than 404.",
         "authentication": "DRF AllowAny with ScopedJWTAuthentication; the view recomputes request.user from the Authorization header, the BKN_AUTH cookie or ?token unless impersonating.",
         "permissions": "No registry key (restricted collaborators denied by identity resolution); download tokens and document tokens as before; by account: association accounts, collaborators, superusers and the instance owner reach every document, an athlete account that is neither a superuser nor the instance owner needs the record among those of its user, of the associates of its subscriptions, of associates whose account it is and of associates sharing a non-empty tax code with them (docmanager.access; base managers); export documents need the archive's association owner; association-scoped sessions need visible_documents.",
         "resource_scope": "Document by id or token; related Subscription (group-aware), MedicalCertificate and Invoice (soft-delete, group-aware) ids; export archives. For athlete accounts: the PDF, medical certificate document and attached files of the member's subscriptions, the certificates of the user and the PDFs of the invoices of the member's payments.",
@@ -34041,25 +34088,25 @@
         "docs/architecture/go-migration/docmanager-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 175/175; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/docmanager-reads-http-v2doc2-red-r2/results.json",
-          "receipt_sha256": "e917cd757c65288112c12e6612ea43048ce72f9c32ca874c7a237255a3ffe186"
+          "result": "RED: Django 201/201; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-v2doc3-red-r2/results.json",
+          "receipt_sha256": "3b40eda973cbf8c91cf9cdcd27a6e4d813c1c23cea1bd8840bb4a747d26f885e"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 175/175 on native Django, native Go, Caddy /api/v1 and /api/v2 with the renderer requests, storage tasks and URL-like names checked.",
-          "artifact": "quality-reports/go-migration/docmanager-reads-http-v2doc2-versioned-r2/results.json",
-          "receipt_sha256": "9c64cf73e68a746ccbcffc897c7b8f49838bcf3e3fecf7aa32a1ffa380f0caf0"
+          "result": "GREEN: 201/201 on native Django, native Go, Caddy /api/v1 and /api/v2 with the inline type list, the header and storage answers, the renderer requests and storage tasks checked.",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-v2doc3-final-r1/results.json",
+          "receipt_sha256": "a17c36ab0a9953edf92f2b6c2adea034a512218bedbbdb64c36618a2fb85f45e"
         },
         {
-          "revision": "committing change with the query left in a URL-like name's path (v2doc2-mutation-r1: the reprinted PDF stored under the document's filepath)",
-          "result": "Mutation control: fails Go on docmanager-reads-retrieve-url-name-parts (stream.content-type); v2doc2-mutation-r1 fails on docmanager-reads-reprint-filepath-first-try (celery.headers:0).",
-          "artifact": "quality-reports/go-migration/docmanager-reads-http-v2doc2-mutation-r2/results.json",
-          "receipt_sha256": "8c5bd89959c6f35608eb366589f49359f242256050de90d1caf6e22ac4522b84"
+          "revision": "committing change with the header check ignoring a newline (v2doc3-mutation-r1: the inline type list not consulted)",
+          "result": "Mutation control: fails Go on docmanager-reads-retrieve-newline-name-view (response.status); v2doc3-mutation-r1 fails on docmanager-reads-retrieve-export-owner (stream.content-type).",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-v2doc3-mutation-r2/results.json",
+          "receipt_sha256": "83688b15b8a244a844ec92fc1e2bde4a8823a2d4f885b684a5fa77c7c1769af9"
         }
       ],
       "notes": [
-        "Implementing: retrieve streams stored documents from S3 with Django's lookups, download tokens and headers. v2doc2: a missing PDF that one subscription or invoice references is printed again (renderer, then save_to_storage) and the stream answers the provider's missing-key text until the worker has stored the file. A filename urllib.parse reads as a URL has its type guessed from the URL path, as mimetypes.guess_type does (RED v2doc2-red-r2; the missing-PDF RED is v2doc2-red-r1). Refused with the 500 page: provider errors other than a 404 HEAD or a missing key, URL-like filenames with a bracketed or non-ASCII network location, newline-terminated filenames, non-standard JSON in signed payloads. The delete route is recorded by document-delete. The PDF rendering routes, their /view/ variants, subscription/preview and medical/certificate are not part of this family. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to."
+        "Implementing: retrieve streams stored documents from S3 with Django's lookups, download tokens and headers. v2doc3: documents are served with a fixed set of inline types (application/pdf, image/png, image/jpeg, image/gif, image/webp); every other file is application/octet-stream with an attachment Content-Disposition on both paths, and X-Content-Type-Options: nosniff is always sent (Django changed first: application.tests.test_printing_service; RED v2doc3-red-r1, GREEN v2doc3-versioned-r1, mutation v2doc3-mutation-r1 with the type list not consulted). A quotable name ending in a newline answers Django's header check text once the object is open, an empty name is an attachment without a filename, and a storage HEAD answered with a client error other than 404 answers botocore's text (RED: documented refusal, see the docmanager-reads.md rows of v2-refusals.md; receipt v2doc3-red-r2). v2doc2: a missing PDF that one subscription or invoice references is printed again and the stream answers the provider's missing-key text until the worker has stored the file; a filename urllib.parse reads as a URL has its type guessed from the URL path. Refused with the 500 page: storage answers of 429, 5xx or none and GetObject failures other than a missing key, URL-like filenames with a bracketed or non-ASCII network location, non-standard JSON in signed payloads. The delete route is recorded by document-delete. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to. Final run on the merged base: v2doc3-final-r1; documents-writes re-run native (v2doc3-rerun-r1)."
       ]
     },
     {
@@ -34129,7 +34176,7 @@
         ],
         "request": "uid path; ?download (truthy: attachment); body ignored; X-Group-Id",
         "response": "200 application/pdf (renderer bytes), Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
-        "errors": "401 anonymous/invalid bearer (challenge); 403 admin without session, registry, scoped guard; 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account outside its own records (before any write); 405; 500 {exception} for a missing row, a uid UUIDField rejects (Python repr list), no associate, renderer failures (500 {\"exception\": \"PDF rendering failed: Renderer returned HTTP <n>: <text[:500]>\"} or \"... invalid PDF data (content-type: <v>)\" with the Document kept)",
+        "errors": "401 anonymous/invalid bearer (challenge); 403 admin without session, registry, scoped guard; 403 {'detail': 'Risorsa non disponibile per questo utente e associazione.'} for an athlete account outside its own records (before any write); 405; 500 {exception} for a missing row, a uid UUIDField rejects (Python repr list), no associate, renderer failures (500 {\"exception\": \"PDF rendering failed: Renderer returned HTTP <n>: <text[:500]>\"} or \"... invalid PDF data (content-type: <v>)\" with the Document kept)  500 {'exception': \"Header values can't contain newlines (got '<disposition>; filename=<name>')\"} for a filename with CR or LF, after the Document, the renderer request and the storage task; nothing is linked.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid) By account: staff, superusers and the instance owner reach every subscription, an athlete account that is neither a superuser nor the instance owner needs the record among those of its user, of the associates of its subscriptions, of associates whose account it is and of associates sharing a non-empty tax code with them (docmanager.access; base managers).",
         "resource_scope": "scoped_queryset(Subscription.objects) (group-aware; impersonation boundary with the athlete family scope); otherwise resolves the row by id; outside a scoped session an athlete account is limited to the member's subscriptions",
@@ -34147,25 +34194,25 @@
         "docs/architecture/go-migration/document-render.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 199/199; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-red-r3/results.json",
-          "receipt_sha256": "28f9b34b6f98a12e7c9dc7935ceba1f4835316dbb0912bf73236301a872755a2"
+          "result": "RED: Django 239/239; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-red-r1/results.json",
+          "receipt_sha256": "fc1403818bde5c6a34d6b6db1f266234ba9eed52c25abc2871406ce03b54431b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 199/199 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and the stored form objects.",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-versioned-r1/results.json",
-          "receipt_sha256": "dd8d72ac41356f65fc5c9c0ffd45c7ff60c305dcd7feb87f447bd23ae7ec3aee"
+          "result": "GREEN: 239/239 on native Django, native Go, Caddy /api/v1 and /api/v2 with the renderer requests, storage tasks, audit rows and their index rows checked.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-final-r1/results.json",
+          "receipt_sha256": "7d9b18240e9e91e9dbebee34ce8088389a2cb3a9c6f1666a4b6d38f0ff89bbfa"
         },
         {
-          "revision": "committing change without the YYYY-MM-DD to DD/MM/YYYY rewrite of the form values",
-          "result": "Mutation control: fails Go on document-render-medical-form-biella (pdf.body).",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-mutation-r1/results.json",
-          "receipt_sha256": "94ff4cf536962c4b0332007e1c53fcc582c3a8de1f1746bc53b6bed7a43ddfd0"
+          "revision": "committing change with the fallback audit index row written with the instructor path",
+          "result": "Mutation control: fails Go on document-render-compensation-instructor-owner-without-association (index.fields:instructorhours).",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-mutation-r1/results.json",
+          "receipt_sha256": "e0647e3ebbd6b0428f96bb23ca32492985480fc7b60f7f2739f035eb7d5adab4"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc2: the Piemonte Biella medical form is filled in Go (internal/medicalform: pypdf's output for the template with the values written as TextStringObject does) and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing), a tutor promotion, header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
+        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc3 (RED: documented refusals, see the document-render.md rows of v2-refusals.md; receipt v2doc3-red-r1): a filename with CR or LF answers Django's header check text after the storage task and links nothing; the template route reads request.data with Python's in/.get/[] on any body shape (lists, text, null, numbers, malformed JSON, other media types, multipart, a non-object additionalData, any subscription value) and answers the view's 500 {'exception'} with the Document kept; the invoice route reads request.POST from multipart and answers DRF's 415/400 for bodies the parsers refuse; compensation hours whose instructor's owner has no association are linked with the actor's audit index row (actor.sport_association) or none. v2doc2: the Piemonte Biella medical form is filled in Go and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing; the hand-off covers it), a tutor promotion, filenames with other control characters or email.header separators without a line break, multipart bodies over the upload limit. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc) and staff documents and document tokens (secdoc2) as recorded before. Final run on the merged base: v2doc3-final-r1."
       ]
     },
     {
@@ -34457,13 +34504,13 @@
           "/api/v2/document/template/<uid>",
           "/api/document/template/<uid>"
         ],
-        "request": "uid; JSON body additionalData {parent: folder id, subscription: id}",
+        "request": "GET or POST; request.data is read after the Document exists: optional additionalData {parent: folder id, subscription: any value}. Any body the default parsers accept (JSON of any shape, urlencoded, multipart).",
         "response": "200 {\"msg\": \"Generato con successo.\"} whatever the renderer answered",
-        "errors": "401 (no account: ?token and the renderer header are not accepted); 403; 404 {exception: Template not found}; 500 {exception} for request.user.sport_association (athlete, none/several) and an invalid uid",
+        "errors": "401 (no account: ?token and the renderer header are not accepted); 403; 404 {exception: Template not found}; 500 {exception} for request.user.sport_association (athlete, none/several) and an invalid uid ; 500 {'exception': str(e)} with the Document kept and nothing printed for what reading request.data raises: argument of type '<type>' is not iterable (null, numbers, booleans as the body or as additionalData), '<type>' object has no attribute 'get' (a list or text holding the key), string/list indices errors for a subscription key in text or a list, 'JSON parse error - ...', 'Multipart form parse error - ...', 'Unsupported media type \"<type>\" in request.'",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid)",
         "resource_scope": "Template by pk and request.user.sport_association; Folder by id; scoped_queryset(Subscription.objects) for the subscription value",
-        "side_effects": "Document create; SportAssociationDocumentsArchive for a found folder (audited, direct); SubscriptionFile for a found subscription (audited); renderer POST with view?subscription_id=<str(value)>&; save_to_storage on a PDF; no link",
+        "side_effects": "Document create; SportAssociationDocumentsArchive for a found folder (audited, direct); SubscriptionFile for a found subscription (audited); renderer POST with view?subscription_id=<str(value)>&; save_to_storage on a PDF; no link A subscription value of any JSON type is written in the view URL as Python formats it (floats, lists, objects).",
         "transaction": "Not atomic in Django: Document, links and created rows commit one by one; the renderer call and Celery publishes sit between them. Go: one short transaction per write in the same order, publishes after the Document commit.",
         "execution_owner": "django"
       },
@@ -34477,25 +34524,25 @@
         "docs/architecture/go-migration/document-render.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 199/199; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-red-r3/results.json",
-          "receipt_sha256": "28f9b34b6f98a12e7c9dc7935ceba1f4835316dbb0912bf73236301a872755a2"
+          "result": "RED: Django 239/239; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-red-r1/results.json",
+          "receipt_sha256": "fc1403818bde5c6a34d6b6db1f266234ba9eed52c25abc2871406ce03b54431b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 199/199 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and the stored form objects.",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-versioned-r1/results.json",
-          "receipt_sha256": "dd8d72ac41356f65fc5c9c0ffd45c7ff60c305dcd7feb87f447bd23ae7ec3aee"
+          "result": "GREEN: 239/239 on native Django, native Go, Caddy /api/v1 and /api/v2 with the renderer requests, storage tasks, audit rows and their index rows checked.",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-final-r1/results.json",
+          "receipt_sha256": "7d9b18240e9e91e9dbebee34ce8088389a2cb3a9c6f1666a4b6d38f0ff89bbfa"
         },
         {
-          "revision": "committing change without the YYYY-MM-DD to DD/MM/YYYY rewrite of the form values",
-          "result": "Mutation control: fails Go on document-render-medical-form-biella (pdf.body).",
-          "artifact": "quality-reports/go-migration/document-render-http-v2doc2-mutation-r1/results.json",
-          "receipt_sha256": "94ff4cf536962c4b0332007e1c53fcc582c3a8de1f1746bc53b6bed7a43ddfd0"
+          "revision": "committing change with the fallback audit index row written with the instructor path",
+          "result": "Mutation control: fails Go on document-render-compensation-instructor-owner-without-association (index.fields:instructorhours).",
+          "artifact": "quality-reports/go-migration/document-render-http-v2doc3-mutation-r1/results.json",
+          "receipt_sha256": "e0647e3ebbd6b0428f96bb23ca32492985480fc7b60f7f2739f035eb7d5adab4"
         }
       ],
       "notes": [
-        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc2: the Piemonte Biella medical form is filled in Go (internal/medicalform: pypdf's output for the template with the values written as TextStringObject does) and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing), a tutor promotion, header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc): documents are served to the association's staff, the instance owner and administrators, and to the member they belong to; Django (docmanager.access) and Go (memberDocumentAccess, repository.MemberDocuments) changed together. Staff documents and document tokens (secdoc2): customer invoices are generated for the staff, a compensation also for the account tied to its instructor, a medical appointment for the member of its subscription; HasDocumentToken reads the document of the record the uid names and the template route takes accounts only."
+        "Implementing: PDF routes via the renderer service (stubbed per run). v2doc3 (RED: documented refusals, see the document-render.md rows of v2-refusals.md; receipt v2doc3-red-r1): a filename with CR or LF answers Django's header check text after the storage task and links nothing; the template route reads request.data with Python's in/.get/[] on any body shape (lists, text, null, numbers, malformed JSON, other media types, multipart, a non-object additionalData, any subscription value) and answers the view's 500 {'exception'} with the Document kept; the invoice route reads request.POST from multipart and answers DRF's 415/400 for bodies the parsers refuse; compensation hours whose instructor's owner has no association are linked with the actor's audit index row (actor.sport_association) or none. v2doc2: the Piemonte Biella medical form is filled in Go and saved in the default storage; regions without a form answer Django's missing-template 500 after the Document. Refused before any write: the Biella form for an association with a stored president signature (PyMuPDF draws it: image processing; the hand-off covers it), a tutor promotion, filenames with other control characters or email.header separators without a line break, multipart bodies over the upload limit. The /view/ variants and subscription/preview are recorded by document-views and invoice-views. Member documents (secdoc) and staff documents and document tokens (secdoc2) as recorded before. Final run on the merged base: v2doc3-final-r1."
       ]
     },
     {

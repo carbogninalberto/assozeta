@@ -59,6 +59,7 @@ func docmanagerRespond(c echo.Context, reply *service.DocmanagerReply, err error
 	if stream.ContentEncoding != "" {
 		header.Set("Content-Encoding", stream.ContentEncoding)
 	}
+	header.Set("X-Content-Type-Options", "nosniff")
 	if stream.Disposition != nil {
 		header.Set("Content-Disposition", *stream.Disposition)
 	}

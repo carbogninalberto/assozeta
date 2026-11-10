@@ -339,6 +339,71 @@ class ModulesCustomLinkInfoTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
+class ModulesCustomLinkInfoPublicFieldsTests(BaseAPITestCase):
+    """The public module page returns the fields the form needs."""
+
+    MODULE_FIELDS = {'module_id', 'title', 'response_message', 'allow_attachments', 'only_users', 'elements',
+                     'sport_association'}
+
+    def setUp(self):
+        super().setUp()
+        self.client.force_authenticate(user=None)
+
+    def test_module_fields(self):
+        module = create_test_module(
+            sport_association=self.sport_association, custom_link='public-fields', title='Modulo',
+            response_message='Grazie', allow_attachments=True, only_users=True,
+            elements=[{'type': 'text', 'props': {'name': 'a', 'label': 'A'}}],
+        )
+        response = self.client.get('/modules/public-fields/info')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(set(response.data), {'data', 'response_data'})
+        self.assertIsNone(response.data['response_data'])
+        data = response.data['data']
+        self.assertEqual(set(data), self.MODULE_FIELDS)
+        self.assertEqual(str(data['module_id']), str(module.module_id))
+        self.assertEqual(data['title'], 'Modulo')
+        self.assertEqual(data['response_message'], 'Grazie')
+        self.assertIs(data['allow_attachments'], True)
+        self.assertIs(data['only_users'], True)
+        self.assertEqual(data['elements'], [{'type': 'text', 'props': {'name': 'a', 'label': 'A'}}])
+        self.assertEqual(data['sport_association'], {'denomination': self.sport_association.denomination})
+
+    def test_module_without_association(self):
+        create_test_module(sport_association=None, custom_link='public-orphan')
+        response = self.client.get('/modules/public-orphan/info')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsNone(response.data['data']['sport_association'])
+
+    def test_deleted_association_is_not_found(self):
+        create_test_module(sport_association=self.sport_association, custom_link='public-deleted')
+        type(self.sport_association).objects.filter(pk=self.sport_association.pk).update(deleted=True)
+        response = self.client.get('/modules/public-deleted/info')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data, {'error': 'module not found'})
+        # The lookup ends before the response id is read.
+        response = self.client.get('/modules/public-deleted/info?response_id=abc')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_response_data_fields(self):
+        from docmanager.models import Document
+        module = create_test_module(sport_association=self.sport_association, custom_link='public-response')
+        mod_response = create_test_module_response(module)
+        document = Document.objects.create(filename='allegato.pdf')
+        mod_response.attachments.add(document)
+        response = self.client.get(f'/modules/public-response/info?response_id={mod_response.module_response_id}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['response_data'], {
+            'attachments_docs': [{'document_id': document.document_id, 'filename': 'allegato.pdf'}],
+        })
+
+    def test_unknown_response(self):
+        create_test_module(sport_association=self.sport_association, custom_link='public-unknown-response')
+        response = self.client.get(f'/modules/public-unknown-response/info?response_id={uuid.uuid4()}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsNone(response.data['response_data'])
+
+
 class ModulesExportTests(BaseAPITestCase):
     """Tests for modules_response_export endpoint."""
 
