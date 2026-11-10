@@ -27571,20 +27571,30 @@
         "target": "subscription_import_upload",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/pandascsv/pandascsv.go",
         "BE_GO/internal/pandascsv/pandascsv_test.go",
+        "BE_GO/internal/pandasxlsx/frame.go",
+        "BE_GO/internal/pandasxlsx/reader.go",
+        "BE_GO/internal/pandasxlsx/pandasxlsx_test.go",
+        "BE_GO/internal/codicefiscale/birthplace_name.go",
+        "BE_GO/internal/codicefiscale/birthplace_name_test.go",
         "BE_GO/internal/domain/subscription_import_upload.go",
         "BE_GO/internal/repository/subscription_import_upload.go",
         "BE_GO/internal/service/subscription_import_upload.go",
+        "BE_GO/internal/service/subscription_import_rows.go",
         "BE_GO/internal/handler/subscription_import_upload.go",
         "BE_GO/cmd/server/subscription_import_upload.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
         "pandascsv.Columns (8,379 pandas 2.2.3 golden inputs, TESTS/adapters/go/pandas_csv_golden.py)",
-        "service.DocumentUploads (new storeImportFile: Document create + object save)",
+        "pandasxlsx.Read (1,550 workbooks read by pandas 2.2.3 + openpyxl 3.1.5, TESTS/adapters/go/pandas_xlsx_golden.py)",
+        "codicefiscale.DecodedBirthplaceName (1,897 codes, TESTS/adapters/go/codicefiscale_decode_golden.py; names.txt.gz from tools/go-migration/codicefiscale_data.py)",
+        "dto.DateutilDate (associates-draft), dto.PythonJSONDumps, dto.PythonStrip",
+        "service.DocumentUploads (storeImportFile: Document create + object save); documentobjects.S3.Open for the stored file",
+        "repository appendModelAudit, createdModelChanges, deleteModelWithAudit",
         "handler bufferMultipart/uploadBody/parseDjangoMultipart"
       ],
       "contract": {
@@ -27597,14 +27607,14 @@
           "/api/v2/subscription/import/upload",
           "/api/subscription/import/upload"
         ],
-        "request": "multipart associates_file (CSV), or document_id + map (only its failure paths are ported).",
-        "response": "200 {'columns': [...], 'map': MAP, 'document_id': id}",
-        "errors": "401 (DRF and the view's bodiless 401 without an association); 403 admin without session, restricted collaborator, association-scoped context; 405; 400 [str(exception)] for an invalid document_id; 500 non-dict bodies, missing keys, non-file associates_file, unknown document, pandas errors and unknown extensions (after the writes).",
+        "request": "multipart associates_file (CSV or Excel workbook), or document_id + map with optional default, unmapped_static and unmapped_static_tutor (the import of the stored workbook).",
+        "response": "upload: 200 {'columns': [...], 'map': MAP, 'document_id': id}; import: 200 {'columns': [...], 'map': MAP}",
+        "errors": "401 (DRF and the view's bodiless 401 without an association); 403 admin without session, restricted collaborator, association-scoped context; 405; 400 [str(exception)] for an invalid document_id; 500 non-dict bodies, missing keys, non-file associates_file, unknown document, a stored file that cannot be read (before any write), pandas errors and unknown extensions on upload (after the writes).",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated; registry association.members.create.",
-        "resource_scope": "scoped SportAssociation of request.user; Document resolved by id.",
-        "side_effects": "Document create (audited, actor's association) and S3 PutObject; process-wide MAP update.",
-        "transaction": "autocommit create, then storage",
+        "resource_scope": "scoped SportAssociation of request.user; Document resolved by id; drafts and statuses of that association; certificates of request.user.",
+        "side_effects": "upload: Document create (audited, actor's association) and S3 PutObject; process-wide MAP update. import: S3 GetObject; IMPORTING AssociateImportDraftStatus rows deleted, one created and deleted (audited, association index); MedicalCertificate create + expiration update or delete per true certificate cell (audited, actor's association index); AssociateImportDraft rows inserted without audit entries.",
+        "transaction": "upload: autocommit create, then storage. import: Django autocommits each write and swallows exceptions; Go plans the rows first and applies the same writes in one transaction",
         "execution_owner": "django"
       },
       "tests": [
@@ -27614,21 +27624,28 @@
         "TESTS/adapters/django/subscription_import_upload_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/subscription-import-upload.md",
         {
-          "command": "python tools/go-migration/family.py run subscription-import-upload --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/subscription-import-upload-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "9ddfc6421d8d643fd172f3c076a1d5bb0f67db97f5942e78c25ef4c25c65779e",
-          "scope": "HTTP family subscription-import-upload: 29/29 cases on native Django and native Go, 29/29 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 44/44; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-import-upload-http-v2imp-red-r1/results.json",
+          "receipt_sha256": "32d1d63646fc7196b2e73a823209464967d7286cc91202cfe4a2a40cc97c1cca"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 44/44 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-import-upload-http-v2imp-versioned-r1/results.json",
+          "receipt_sha256": "53eff7e0e6ca06f4c46a09dcf3702343c9fe87a071e4b0997e86ade0d27d884d"
+        },
+        {
+          "revision": "filling born_city from the tax code even when the row already has one",
+          "result": "Mutation control: fails Go on subscription-import-upload-defaults-tutor-static (state.drafts)",
+          "artifact": "quality-reports/go-migration/subscription-import-upload-http-v2imp-mutation-r1/results.json",
+          "receipt_sha256": "6d630ed2fdfaab01dfc2082629d91b924ba434148216784375b14522e821a336"
         }
       ],
       "notes": [
-        "Implementing: SubscriptionMaps.MAP is updated in place per process; Go keeps one process-wide map. Refused before any write: Excel uploads, the import of an existing document (codicefiscale, dateutil), CSV outside the pandascsv subset (invalid UTF-8, NUL, bare CR), columns with İ/Σ, a file as document_id.",
-        "Implementing evidence: docs/architecture/go-migration/subscription-import-upload.md",
-        "Implementing evidence: RED: Django 29/29; Go 404 on the first case. (quality-reports/go-migration/subscription-import-upload-http-native-r5/results.json)",
-        "Implementing evidence: GREEN: 29/29 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/subscription-import-upload-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on subscription-import-upload-csv-keeps-earlier-map (quality-reports/go-migration/subscription-import-upload-http-mutation-r1/results.json)"
+        "Implementing: SubscriptionMaps.MAP is updated in place per process; Go keeps one process-wide map. The mapping branch on a stored Excel workbook is ported with the view's swallowed exceptions (what was saved before one stays, no draft is created). Refused before any write: the import of a stored CSV document (read_csv value typing), workbooks outside the pandasxlsx subset (1904 dates, boolean/error/time cells, non-text headers, whole-number-only sheets, exponent or long decimal text), non-zero numbers and unported date text in date columns, tax codes beyond ASCII in a complete row, a non-object default when a value is missing, CSV outside the pandascsv subset (invalid UTF-8, NUL, bare CR), columns with İ/Σ, a file as document_id."
       ]
     },
     {

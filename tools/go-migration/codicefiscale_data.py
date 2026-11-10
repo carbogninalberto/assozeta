@@ -17,6 +17,11 @@ data.txt.gz format (UTF-8 text, tab separated, one item per line):
   CODE<TAB>CREATED<TAB>DELETED       x N (dates "YYYY-MM-DDTHH:MM:SS" or empty)
   index NAME N                       NAME in municipalities, countries, codes
   KEY<TAB>I,J,K                      x N (record indexes, in lookup order)
+
+names.txt.gz (UTF-8 text, tab separated): one line per key of the codes index,
+  CODE<TAB>NAME<TAB>NAME...          the 'name' of each option, in lookup order
+(decode() resolves the birthplace by code; no code slug is a municipality or
+country key).
 """
 import gzip
 import io
@@ -78,6 +83,24 @@ def build_data():
     lines.append(f'records {len(records)}')
     lines.extend('\t'.join(row) for row in records)
     lines.extend(index_lines)
+    payload = ('\n'.join(lines) + '\n').encode('utf-8')
+    buffer = io.BytesIO()
+    with gzip.GzipFile(filename='', mode='wb', fileobj=buffer, compresslevel=9, mtime=0) as gz:
+        gz.write(payload)
+    return buffer.getvalue()
+
+
+def build_names():
+    from slugify import slugify
+    codes = _DATA['codes']
+    lines = []
+    for key in sorted(codes):
+        assert slugify(key).upper() == key, key
+        assert slugify(key) not in _DATA['municipalities'] and slugify(key) not in _DATA['countries'], key
+        names = [record['name'] for record in codes[key]]
+        for name in names:
+            assert name and '\t' not in name and '\n' not in name, repr(name)
+        lines.append('\t'.join([key] + names))
     payload = ('\n'.join(lines) + '\n').encode('utf-8')
     buffer = io.BytesIO()
     with gzip.GzipFile(filename='', mode='wb', fileobj=buffer, compresslevel=9, mtime=0) as gz:
@@ -173,6 +196,7 @@ def build_html_entities():
 def main():
     PKG.mkdir(parents=True, exist_ok=True)
     (PKG / 'data.txt.gz').write_bytes(build_data())
+    (PKG / 'names.txt.gz').write_bytes(build_names())
     (PKG / 'unidecode_table.go').write_text(build_unidecode_table(), encoding='utf-8')
     (PKG / 'html_entities.go').write_text(build_html_entities(), encoding='utf-8')
 

@@ -9,6 +9,9 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandascsv"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandasxlsx"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
+	"github.com/google/uuid"
 )
 
 var (
@@ -17,9 +20,10 @@ var (
 	// ErrSubscriptionImportServerError is an exception the view does not handle: the 500 page.
 	ErrSubscriptionImportServerError = errors.New("subscription_import_upload raised")
 	// ErrSubscriptionImportNotPorted refuses, before any write, what Go does
-	// not reproduce: Excel workbooks, CSV input outside pandascsv's subset,
-	// columns whose str.lower() differs from Go's, the import of an existing
-	// document (codicefiscale and dateutil) and a file given as document_id.
+	// not reproduce: workbooks outside pandasxlsx's subset, CSV input outside
+	// pandascsv's subset, columns whose str.lower() differs from Go's, the
+	// import of a stored CSV document, import values outside the ported
+	// dateutil and codicefiscale subsets and a file given as document_id.
 	ErrSubscriptionImportNotPorted = errors.New("subscription import path not ported")
 )
 
@@ -90,6 +94,11 @@ func subscriptionImportAutoMap(columns []string) domain.RequestObject {
 			keys = append(keys[:chosen], keys[chosen+1:]...)
 		}
 	}
+	return subscriptionImportRendered()
+}
+
+// subscriptionImportRendered is MAP as the response renders it (lock held).
+func subscriptionImportRendered() domain.RequestObject {
 	rendered := make(domain.RequestObject, 0, len(subscriptionImportKeys))
 	for _, key := range subscriptionImportKeys {
 		var value any
@@ -101,14 +110,23 @@ func subscriptionImportAutoMap(columns []string) domain.RequestObject {
 	return rendered
 }
 
-// SubscriptionImportUpload ports subscription_import_upload's upload branch.
+func subscriptionImportRenderedMap() domain.RequestObject {
+	subscriptionImportMap.Lock()
+	defer subscriptionImportMap.Unlock()
+	return subscriptionImportRendered()
+}
+
+// SubscriptionImportUpload ports subscription_import_upload: the upload
+// branch and the import of a stored workbook.
 type SubscriptionImportUpload struct {
 	store   domain.SubscriptionImportStore
 	uploads *DocumentUploads
+	objects domain.SubscriptionImportObjects
 }
 
-func NewSubscriptionImportUpload(store domain.SubscriptionImportStore, uploads *DocumentUploads) *SubscriptionImportUpload {
-	return &SubscriptionImportUpload{store: store, uploads: uploads}
+func NewSubscriptionImportUpload(store domain.SubscriptionImportStore, uploads *DocumentUploads,
+	objects domain.SubscriptionImportObjects) *SubscriptionImportUpload {
+	return &SubscriptionImportUpload{store: store, uploads: uploads, objects: objects}
 }
 
 // storeImportFile is upload_and_store_file: Document.objects.create (audited,
@@ -190,45 +208,114 @@ func (s *SubscriptionImportUpload) Upload(ctx context.Context, identity domain.R
 	default:
 		return nil, &PaymentInfoUUIDError{Detail: "'" + pythonTypeNameOf(value) + "' object has no attribute 'replace'"}
 	}
-	found, err := tx.DocumentExists(ctx, id)
+	document, err := tx.Document(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	if !found {
+	if document == nil {
 		return nil, ErrSubscriptionImportServerError // ValueError('No document found')
 	}
-	return nil, ErrSubscriptionImportNotPorted
+	if err = tx.Rollback(); err != nil {
+		return nil, err
+	}
+	return s.importDocument(ctx, identity, *association, id, *document, data, audit)
+}
+
+// subscriptionImportExcel reports whether get_pandas_df_from_file reads the
+// lower-cased name with read_excel.
+func subscriptionImportExcel(lower string) bool {
+	for _, suffix := range []string{"xls", "xlsx", "xlsm", "xlsb", "odf", "ods", "odt"} {
+		if strings.HasSuffix(lower, suffix) {
+			return true
+		}
+	}
+	return false
+}
+
+// importDocument is the mapping branch after the lookup: the stored file's
+// frame (a failure is the 500 page, before any write), then the import
+// between the two status changes; the answer names the columns and MAP.
+func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity domain.ResolvedIdentity, association, id string,
+	document domain.SubscriptionImportDocument, data domain.RequestObject, audit domain.LoginAuditContext) (domain.RequestObject, error) {
+	lower := strings.ToLower(document.Filename)
+	switch {
+	case strings.HasSuffix(lower, ".csv"):
+		return nil, ErrSubscriptionImportNotPorted // read_csv's values
+	case !subscriptionImportExcel(lower):
+		return nil, ErrSubscriptionImportServerError // TypeError: file extension not recognized
+	}
+	name, err := documentkey.UploadName(document.Created, uuid.MustParse(id), document.Filename)
+	if err != nil {
+		return nil, errors.Join(ErrSubscriptionImportNotPorted, err)
+	}
+	key, err := documentkey.S3Key(name, s.uploads.objects.Location())
+	if err != nil {
+		return nil, errors.Join(ErrSubscriptionImportNotPorted, err)
+	}
+	content, err := s.objects.Read(ctx, key)
+	if err != nil {
+		return nil, errors.Join(ErrSubscriptionImportServerError, err) // default_storage.open(...).read()
+	}
+	frame, err := pandasxlsx.Read(content)
+	switch {
+	case errors.Is(err, pandasxlsx.ErrInvalid):
+		return nil, ErrSubscriptionImportServerError
+	case err != nil:
+		return nil, errors.Join(ErrSubscriptionImportNotPorted, err)
+	}
+	effects, err := s.subscriptionImportPlan(frame, data)
+	if err != nil {
+		return nil, err
+	}
+	var actor *string
+	if identity.Actor != nil {
+		actor = &identity.Actor.ID
+	}
+	if err = s.store.ImportRows(ctx, association, identity.ScopeUser.ID, actor, effects, uploadAuditContext(identity, audit), s.uploads.at); err != nil {
+		return nil, err
+	}
+	list := make([]any, len(frame.Columns))
+	for i, column := range frame.Columns {
+		list[i] = column
+	}
+	return domain.RequestObject{{Name: "columns", Value: list}, {Name: "map", Value: subscriptionImportRenderedMap()}}, nil
 }
 
 func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.ResolvedIdentity, file domain.RequestFile,
 	audit domain.LoginAuditContext) (domain.RequestObject, error) {
 	lower := strings.ToLower(file.Name)
 	csv := strings.HasSuffix(lower, ".csv")
-	if !csv {
-		for _, suffix := range []string{"xls", "xlsx", "xlsm", "xlsb", "odf", "ods", "odt"} {
-			if strings.HasSuffix(lower, suffix) {
-				return nil, ErrSubscriptionImportNotPorted // read_excel (openpyxl, then xlrd)
-			}
-		}
-	}
+	excel := !csv && subscriptionImportExcel(lower)
 	var columns []string
 	var parseErr error
-	if csv {
+	switch {
+	case csv:
 		columns, parseErr = pandascsv.Columns(file.Content)
 		if errors.Is(parseErr, pandascsv.ErrUnsupported) {
 			return nil, errors.Join(ErrSubscriptionImportNotPorted, parseErr)
 		}
-		for _, column := range columns {
-			if _, ok := subscriptionImportLower(column); !ok {
-				return nil, ErrSubscriptionImportNotPorted
-			}
+	case excel:
+		// read_excel reads the bytes whatever the suffix; a failure (then the
+		// xlrd fallback's ImportError) is the 500 page after the writes.
+		var frame *pandasxlsx.Frame
+		frame, parseErr = pandasxlsx.Read(file.Content)
+		if errors.Is(parseErr, pandasxlsx.ErrUnsupported) {
+			return nil, errors.Join(ErrSubscriptionImportNotPorted, parseErr)
+		}
+		if parseErr == nil {
+			columns = frame.Columns
+		}
+	}
+	for _, column := range columns {
+		if _, ok := subscriptionImportLower(column); !ok {
+			return nil, ErrSubscriptionImportNotPorted
 		}
 	}
 	document, err := s.uploads.storeImportFile(ctx, identity, file, audit)
 	if err != nil {
 		return nil, err
 	}
-	if !csv || parseErr != nil {
+	if !csv && !excel || parseErr != nil {
 		return nil, ErrSubscriptionImportServerError // TypeError, EmptyDataError or ParserError after the writes
 	}
 	list := make([]any, len(columns))
