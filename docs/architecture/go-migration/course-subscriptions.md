@@ -6,7 +6,7 @@
 implemented in Go (`BE_GO/internal/{domain,dto,repository,handler}/course_subscriptions.go`,
 `BE_GO/internal/service/course_subscriptions.go` and `course_subscription_update.go`). Registry `association.courses.read`,
 `.update` and `.delete`. Django remains the execution owner. `course-subscriptions/add` is another family
-([course-enrolment](course-enrolment.md)); the list's `excel` export is ported, its `pdf` export is not.
+([course-enrolment](course-enrolment.md)); the list's `excel` and `pdf` exports are ported.
 
 ## Routing and lookups
 
@@ -57,6 +57,11 @@ not an object is the 500 page). `excel` answers `{"file": <base64 workbook>, "fi
 - the carnet loop rebinds the function's `title`, so the filename carries the last carnet title it handled (else
   `Iscrizioni ai corsi`);
 - the workbook is `get_excel_base64` (pandas with openpyxl, `xlsxexport.PandasOpenpyxl`).
+
+`pdf` answers the same shape with a reportlab table document (`pdfexport.DataTable`, [pdf-exports](pdf-exports.md)): the same
+columns as rows up to `Tags` and `Carnet` (the per-tag columns belong to the workbook), titled `<title> (giorno stampa
+DD/MM/YYYY)` with the rebound title, in a file always named `[DD/MM/YYYY] Iscrizioni corsi filtrate - <denomination>.pdf`.
+A member without phone or e-mail is an empty cell.
 
 Row order. None of the export's statements has an ORDER BY: the rows, the tags and the carnets come in the order the database
 returns them. Go sends the statements the ORM compiles, with the same tables, join types, predicates and selected columns
@@ -134,8 +139,7 @@ Membership payments render PaymentSerializer's nested `instructor` and `invoice`
 
 ## Not ported (refused before any write)
 
-- The list export for `pdf` (reportlab in process, time-stamped): 500. In the `excel` export a carnet `lessons_left` that is a
-  float or a container: 500.
+- In the list exports a carnet `lessons_left` that is a float or a container: 500.
 - Update: `events` given as an object or a string (Python iterates keys or characters), unmatched installments sharing one
   payment, a non-canonical `X-Group-Id` spelling with new events, a changed primary key (Model.save() would insert a copy)
   and HTML-form input for the JSON fields `multiple_quote` and `events`: 500.
@@ -181,3 +185,12 @@ Excel export of the list (132 cases):
   and `/api/v2`.
 - Re-run green natively (`famwiz-rerun-r1`): `router-course-subscriptions` 45/45, `course-enrolment` 113/113,
   `course-attendance` 99/99.
+
+PDF export of the list (13 more cases, 145 in all):
+
+- RED (`v2pdf-red-r2`): Django 145/145; Go 500 on `course-subscriptions-list-pdf-course` (the first authored expectation
+  carried the per-tag columns and failed on Django).
+- GREEN (`v2pdf-versioned-r1`): 145/145 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, each document compared in
+  decoded form.
+- Mutation (`v2pdf-mutation-r1`): a document titled with the list title instead of the last carnet title fails
+  `course-subscriptions-list-pdf-subscription-carnet-title` (CAUGHT).

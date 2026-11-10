@@ -12,6 +12,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfexport"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 )
 
@@ -98,7 +99,6 @@ func (s *CourseSubscriptions) Export(ctx context.Context, export *CourseSubscrip
 	switch format {
 	case "excel":
 	case "pdf":
-		return nil, ErrCourseSubscriptionExportUnsupported
 	default:
 		return nil, domain.ErrCourseSubscriptionServer // Exception('Format not valid')
 	}
@@ -203,6 +203,29 @@ func (s *CourseSubscriptions) Export(ctx context.Context, export *CourseSubscrip
 		for column, value := range values {
 			cells[column] = append(cells[column], value)
 		}
+	}
+	if format == "pdf" {
+		// generate_pdf_from_data(zip(*rows), columns, title=...): the
+		// document carries the title, the filename a fixed one; the per-tag
+		// columns belong to the workbook.
+		document, err := pdfexport.DataTable{Columns: columns, Rows: pdfexport.RowsOf(cells),
+			Title: title + " (giorno stampa " + printingDate(today) + ")"}.Build(today)
+		switch {
+		case errors.Is(err, pdfexport.ErrNotPorted):
+			return nil, ErrCourseSubscriptionExportUnsupported
+		case err != nil:
+			return nil, domain.ErrCourseSubscriptionServer // an exception of reportlab
+		}
+		denomination, err := tx.AssociationDenomination(ctx, export.query.AssociationID)
+		if err != nil {
+			return nil, err
+		}
+		name := "None"
+		if denomination != nil {
+			name = *denomination
+		}
+		return map[string]any{"file": base64.StdEncoding.EncodeToString(document),
+			"filename": fmt.Sprintf("[%s] Iscrizioni corsi filtrate - %s.pdf", printingDate(today), name)}, nil
 	}
 	association, err := tx.ExportAssociationTags(ctx, export.query.AssociationID)
 	if err != nil {
