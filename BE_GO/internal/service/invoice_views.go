@@ -44,6 +44,7 @@ func (s *InvoiceViews) AuthorizeBypass(authorization *string) (bool, error) {
 func (s *InvoiceViews) Render(ctx context.Context, identity domain.ResolvedIdentity, request DocumentViewRequest) (*DocumentViewReply, error) {
 	var reply *DocumentViewReply
 	var err error
+	ctx = withViewPromotion(ctx, identity, request.Promotion)
 	switch request.View {
 	case ViewInvoice:
 		reply, err = s.invoice(ctx, identity, request)
@@ -171,7 +172,7 @@ func (s *InvoiceViews) invoice(ctx context.Context, identity domain.ResolvedIden
 			if tutor, err = s.views.store.Associate(ctx, *invoice.SelectedTutor); err != nil {
 				return nil, lookupError(err)
 			}
-		} else if tutor, err = s.views.store.MainTutor(ctx, associate.ID); err != nil {
+		} else if tutor, err = s.views.mainTutor(ctx, associate.ID); err != nil {
 			return nil, err
 		}
 		object := s.views.associateObject(ctx, associate)

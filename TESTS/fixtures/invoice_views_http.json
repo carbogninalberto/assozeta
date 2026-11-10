@@ -208,6 +208,21 @@
    "phone": null,
    "email": null,
    "is_minor": true
+  },
+  "sara": {
+   "id": "a1000000-0000-4000-8000-000000986024",
+   "first": "Sara",
+   "last": "Neri",
+   "tax_code": null,
+   "sex": "F",
+   "born": "2014-04-04",
+   "born_city": null,
+   "address": null,
+   "city": null,
+   "cap": null,
+   "phone": null,
+   "email": null,
+   "is_minor": false
   }
  },
  "tutors": [
@@ -215,6 +230,16 @@
    "giulia",
    "paolo",
    true
+  ],
+  [
+   "sara",
+   "paolo",
+   false
+  ],
+  [
+   "sara",
+   "mario",
+   false
   ]
  ],
  "suppliers": {
@@ -663,6 +688,18 @@
    "association": "fallback",
    "activity": "10.00",
    "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "promote": {
+   "id": "a1000000-0000-4000-8000-000000986225",
+   "association": "fallback",
+   "activity": "0.00",
+   "membership": "5.00",
    "description": "Salvata",
    "number": 7,
    "cancelled": false,
@@ -1179,6 +1216,25 @@
    "category": null,
    "meta_categories": null,
    "associate": "mario",
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986126",
+   "invoice": "promote",
+   "association": "fallback",
+   "type": "cash",
+   "subject": 0,
+   "description": "X & Y",
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": null,
+   "associate": "sara",
    "supplier": null,
    "instructor": null,
    "course": null,
@@ -1917,7 +1973,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-invalid-bearer",
@@ -1939,7 +1996,8 @@
      }
     ]
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-admin-without-session",
@@ -1951,7 +2009,8 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-restricted-collaborator",
@@ -1963,7 +2022,8 @@
    "response": {
     "detail": "Access denied: No permission mapping for endpoint 'document/invoice/a1000000-0000-4000-8000-000000986201/view'. Contact administrator to grant access."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-put-not-allowed",
@@ -1975,7 +2035,8 @@
    "response": {
     "detail": "Method \"PUT\" not allowed."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-post-not-allowed",
@@ -1987,7 +2048,8 @@
    "response": {
     "detail": "Method \"POST\" not allowed."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-options",
@@ -2008,7 +2070,8 @@
      "multipart/form-data"
     ]
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-document-token",
@@ -2020,7 +2083,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-bypass-invalid",
@@ -2034,7 +2098,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-bypass-non-ascii",
@@ -2046,7 +2111,8 @@
    },
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-owner",
@@ -2057,6 +2123,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -2289,6 +2356,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -2524,6 +2592,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -2758,6 +2827,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -2990,6 +3060,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -3222,6 +3293,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -3456,6 +3528,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "it",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "it",
@@ -3688,6 +3761,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -3886,6 +3960,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -4095,6 +4170,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -4305,7 +4381,8 @@
    "response": {
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-athlete-instructor-receipt",
@@ -4317,7 +4394,8 @@
    "response": {
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-athlete-other-associate",
@@ -4329,7 +4407,8 @@
    "response": {
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-athlete-without-payment",
@@ -4341,7 +4420,8 @@
    "response": {
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-athlete-deleted",
@@ -4351,7 +4431,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-athlete-unknown",
@@ -4361,7 +4442,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-member-of-athlete",
@@ -4373,7 +4455,8 @@
    "response": {
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-member-of-associate",
@@ -4385,7 +4468,8 @@
    "response": {
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-bypass-of-athlete",
@@ -4398,6 +4482,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -4609,6 +4694,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "it",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "it",
@@ -5031,7 +5117,8 @@
    "response": {
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-subscription-plans",
@@ -5042,6 +5129,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -5533,6 +5621,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -5863,6 +5952,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -6072,6 +6162,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice_classic.html",
     "language": "en",
@@ -6280,6 +6371,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -6622,6 +6714,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -6935,6 +7028,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -7229,6 +7323,779 @@
    }
   },
   {
+   "name": "invoice-views-invoice-promotes-tutor",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986225/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "promoted": [
+    [
+     "sara",
+     "owner"
+    ]
+   ],
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986225"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": ""
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "5.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "X & Y"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Sara"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Neri"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "F"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "date",
+            "v": "2014-04-04"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Sara Neri"
+            }
+           }
+          ],
+          [
+           "tutor",
+           {
+            "t": "obj",
+            "v": [
+             [
+              "first_name",
+              {
+               "t": "str",
+               "v": "Paolo"
+              }
+             ],
+             [
+              "last_name",
+              {
+               "t": "str",
+               "v": "Bianchi"
+              }
+             ],
+             [
+              "tax_code",
+              {
+               "t": "str",
+               "v": "BNCPLA75C03L219Z"
+              }
+             ],
+             [
+              "sex",
+              {
+               "t": "str",
+               "v": "M"
+              }
+             ],
+             [
+              "born_date",
+              {
+               "t": "date",
+               "v": "1975-03-03"
+              }
+             ],
+             [
+              "born_city",
+              {
+               "t": "str",
+               "v": "Straße"
+              }
+             ],
+             [
+              "address",
+              {
+               "t": "str",
+               "v": "Corso Francia 9"
+              }
+             ],
+             [
+              "address_city",
+              {
+               "t": "str",
+               "v": "Torino"
+              }
+             ],
+             [
+              "address_cap",
+              {
+               "t": "str",
+               "v": "10138"
+              }
+             ],
+             [
+              "phone",
+              {
+               "t": "str",
+               "v": "011 123"
+              }
+             ],
+             [
+              "email",
+              {
+               "t": "none"
+              }
+             ],
+             [
+              "get_full_name",
+              {
+               "t": "call",
+               "v": {
+                "t": "str",
+                "v": "Paolo Bianchi"
+               }
+              }
+             ]
+            ]
+           }
+          ],
+          [
+           "is_minor",
+           {
+            "t": "bool",
+            "v": true
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": false
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": ""
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "Ripiego <srl>"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento con causale <b>X &amp; Y</b> per l'associazione <b>Ripiego &lt;srl&gt;</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "5.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": false
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p><br/></p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": ""
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-promoted-tutor-again",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986225/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "promoted": [],
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986225"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": ""
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "5.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "X & Y"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Sara"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Neri"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "F"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "date",
+            "v": "2014-04-04"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Sara Neri"
+            }
+           }
+          ],
+          [
+           "tutor",
+           {
+            "t": "obj",
+            "v": [
+             [
+              "first_name",
+              {
+               "t": "str",
+               "v": "Paolo"
+              }
+             ],
+             [
+              "last_name",
+              {
+               "t": "str",
+               "v": "Bianchi"
+              }
+             ],
+             [
+              "tax_code",
+              {
+               "t": "str",
+               "v": "BNCPLA75C03L219Z"
+              }
+             ],
+             [
+              "sex",
+              {
+               "t": "str",
+               "v": "M"
+              }
+             ],
+             [
+              "born_date",
+              {
+               "t": "date",
+               "v": "1975-03-03"
+              }
+             ],
+             [
+              "born_city",
+              {
+               "t": "str",
+               "v": "Straße"
+              }
+             ],
+             [
+              "address",
+              {
+               "t": "str",
+               "v": "Corso Francia 9"
+              }
+             ],
+             [
+              "address_city",
+              {
+               "t": "str",
+               "v": "Torino"
+              }
+             ],
+             [
+              "address_cap",
+              {
+               "t": "str",
+               "v": "10138"
+              }
+             ],
+             [
+              "phone",
+              {
+               "t": "str",
+               "v": "011 123"
+              }
+             ],
+             [
+              "email",
+              {
+               "t": "none"
+              }
+             ],
+             [
+              "get_full_name",
+              {
+               "t": "call",
+               "v": {
+                "t": "str",
+                "v": "Paolo Bianchi"
+               }
+              }
+             ]
+            ]
+           }
+          ],
+          [
+           "is_minor",
+           {
+            "t": "bool",
+            "v": true
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": false
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": ""
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "Ripiego <srl>"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento con causale <b>X &amp; Y</b> per l'associazione <b>Ripiego &lt;srl&gt;</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "5.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": false
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p><br/></p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": ""
+     }
+    }
+   }
+  },
+  {
    "name": "invoice-views-invoice-plans-stop-at-exception",
    "actor": "owner",
    "method": "GET",
@@ -7237,6 +8104,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -7556,6 +8424,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -7758,6 +8627,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -7960,6 +8830,7 @@
    "status": 200,
    "response": "<html>",
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/invoice.html",
     "language": "en",
@@ -8161,7 +9032,8 @@
    },
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-group-filters-supplier",
@@ -8173,7 +9045,8 @@
    },
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-carnet-without-carnet",
@@ -8183,7 +9056,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-unknown-payment-type",
@@ -8193,7 +9067,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-meta-string-amount",
@@ -8203,7 +9078,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-meta-unknown-category",
@@ -8213,7 +9089,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-meta-not-a-list",
@@ -8223,7 +9100,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-without-payment",
@@ -8233,7 +9111,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-two-payments",
@@ -8243,7 +9122,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-deleted",
@@ -8253,7 +9133,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-custom-data-list",
@@ -8263,7 +9144,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-course-without-title",
@@ -8273,7 +9155,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-unknown",
@@ -8283,7 +9166,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-invalid-uuid",
@@ -8293,7 +9177,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-invoice-scoped-athlete-hidden",
@@ -8308,7 +9193,8 @@
    "response": {
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-anonymous",
@@ -8320,7 +9206,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-invalid-bearer",
@@ -8342,7 +9229,8 @@
      }
     ]
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-admin-without-session",
@@ -8354,7 +9242,8 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-restricted-collaborator",
@@ -8366,7 +9255,8 @@
    "response": {
     "detail": "Access denied: No permission mapping for endpoint 'document/einvoice/a1000000-0000-4000-8000-000000986301/view'. Contact administrator to grant access."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-put-not-allowed",
@@ -8378,7 +9268,8 @@
    "response": {
     "detail": "Method \"PUT\" not allowed."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-post-not-allowed",
@@ -8390,7 +9281,8 @@
    "response": {
     "detail": "Method \"POST\" not allowed."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-options",
@@ -8411,7 +9303,8 @@
      "multipart/form-data"
     ]
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-document-token",
@@ -8423,7 +9316,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-bypass-invalid",
@@ -8437,7 +9331,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-bypass-non-ascii",
@@ -8449,7 +9344,8 @@
    },
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-owner",
@@ -8460,6 +9356,7 @@
    "status": 200,
    "response": "<einvoice>",
    "content_language": "en",
+   "promoted": [],
    "einvoice": "basic"
   },
   {
@@ -8473,6 +9370,7 @@
    "status": 200,
    "response": "<einvoice>",
    "content_language": "en",
+   "promoted": [],
    "einvoice": "basic"
   },
   {
@@ -8487,6 +9385,7 @@
    "status": 200,
    "response": "<einvoice>",
    "content_language": "en",
+   "promoted": [],
    "einvoice": "basic"
   },
   {
@@ -8498,6 +9397,7 @@
    "status": 200,
    "response": "<einvoice>",
    "content_language": "en",
+   "promoted": [],
    "einvoice": "mixed"
   },
   {
@@ -8509,6 +9409,7 @@
    "status": 200,
    "response": "<einvoice>",
    "content_language": "en",
+   "promoted": [],
    "einvoice": "foreign"
   },
   {
@@ -8522,6 +9423,7 @@
    "status": 200,
    "response": "<einvoice>",
    "content_language": "en",
+   "promoted": [],
    "einvoice": "basic"
   },
   {
@@ -8533,6 +9435,7 @@
    "status": 200,
    "response": "<einvoice>",
    "content_language": "en",
+   "promoted": [],
    "einvoice": "rounding"
   },
   {
@@ -8544,6 +9447,7 @@
    "status": 200,
    "response": "<einvoice>",
    "content_language": "en",
+   "promoted": [],
    "einvoice": "zerovatint"
   },
   {
@@ -8557,6 +9461,7 @@
    "status": 200,
    "response": "<einvoice>",
    "content_language": "it",
+   "promoted": [],
    "einvoice": "basic"
   },
   {
@@ -8567,7 +9472,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-assignor-without-vat",
@@ -8577,7 +9483,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-zero-vat",
@@ -8587,7 +9494,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-line-without-price",
@@ -8597,7 +9505,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-without-lines",
@@ -8607,7 +9516,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-empty-province",
@@ -8617,7 +9527,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-long-description",
@@ -8627,7 +9538,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-athlete",
@@ -8639,7 +9551,8 @@
    "response": {
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-athlete-other-association",
@@ -8651,7 +9564,8 @@
    "response": {
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-athlete-without-pec",
@@ -8663,7 +9577,8 @@
    "response": {
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-athlete-unknown",
@@ -8673,7 +9588,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-member",
@@ -8685,7 +9601,8 @@
    "response": {
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-unknown",
@@ -8695,7 +9612,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "invoice-views-einvoice-invalid-uuid",
@@ -8705,7 +9623,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   }
  ]
 }

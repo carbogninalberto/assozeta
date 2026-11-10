@@ -69,15 +69,24 @@ whatsapp, address, address_city, address_cap, logo, user.email, federation, spor
 `associate.*`/`main_tutor.*` (the editor's associate fields and `sex`), and `other.<key>`. A key for an object the view does not pass
 is `''`, as in Django.
 
+## Main tutor promotion (`v2doc4`)
+
+`get_main_tutor()` for an associate whose tutor relations have no primary one saves the first relation (by id) with
+`is_primary=True` while the page renders: one auditlog update entry (`is_primary` False -> True) indexed through
+`associate.sport_association` (the actor's association when the associate has none). Go does the same for signed-in
+requests, committing the relation as soon as the view asks for the tutor, so a page that fails later keeps it, as in
+Django. The invoice views share the code.
+
+`HEAD` answers the views' 405 without a body. The slash-less paths answer Django's `APPEND_SLASH` redirect (the
+unknown-paths family covers them).
+
 ## Not ported (refused with the 500 page; the views write nothing)
 
-- `get_main_tutor()` for an associate whose tutor relations have no primary one: Django promotes and saves the first relation (a write
-  with an audit entry) while rendering.
+- `get_main_tutor()` promotion on a request authorized only by the bypass header (no signed-in actor for the audit entry).
 - `get_signature_base64()` (a subscription with a signature): it reads private storage or fetches the legacy URL.
 - Mention keys outside the list above (and every `subscription.*` key), and markup outside the `filter_mentions` subset.
 - Template inputs outside `djtemplate`'s subset (for example `format` of a non-number raises in Django as well), non-ASCII
   compensation periods, an association whose user is a collaborator (preview).
-- `HEAD` and the slash-less paths (Django's `APPEND_SLASH` redirect) are not served by these Go routes.
 - The course list keeps Django's query without `ORDER BY`; several course subscriptions follow the database's order on both sides.
 
 ## Routes not in this family
@@ -89,6 +98,11 @@ is `''`, as in Django.
   (which decides between the page and a 500) and VAT summary rounding. Not attempted here.
 
 ## Evidence (TDD)
+
+`v2doc4`: 162 cases (tutor promotion from the subscription and template views, a second request that finds the
+relation primary, `HEAD`). RED `v2doc4-red-r1` (the refusal restored in Go: Django 162/162, Go 500). GREEN `v2doc4-final-r2` on
+Django, Go, `/api/v1` and `/api/v2`. Mutation `v2doc4-mutation-r1` (the last relation promoted instead of the first)
+CAUGHT on `subscription-minor-promotes-tutor`. invoice-views has its own case and receipts.
 
 `TESTS/fixtures/document_views_http.json` (generator alongside) authors 114 cases. HTML expectations are authored template contexts
 (header, footer and body `filter_mentions` output written out by hand) that the contract renders with Django's own template engine.

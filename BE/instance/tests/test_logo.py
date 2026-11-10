@@ -94,3 +94,33 @@ class InstanceLogoTests(TestCase):
         self.assertEqual(response.status_code, 400)
         config = self.client.get('/instance/config')
         self.assertEqual(config.data['oem']['logo'], first.data['logo_url'])
+
+    def test_logo_responses_carry_a_restrictive_content_policy(self):
+        from django.core.files.base import ContentFile
+        from django.core.files.storage import default_storage
+
+        stored = {
+            'svg': b'<svg xmlns="http://www.w3.org/2000/svg"><text>logo</text></svg>',
+            'png': self.image_file().read(),
+        }
+        for ext, content_type in (('svg', 'image/svg+xml'), ('png', 'image/png')):
+            with self.subTest(ext=ext):
+                path = default_storage.save(f'instance/logo.{ext}', ContentFile(stored[ext]))
+                self.addCleanup(default_storage.delete, path)
+                for method in ('get', 'head'):
+                    response = getattr(self.client, method)('/instance/logo.png')
+                    self.assertEqual(response.status_code, 200)
+                    self.assertEqual(response['Content-Type'], content_type)
+                    self.assertEqual(
+                        response['Content-Security-Policy'],
+                        "sandbox; default-src 'none'; style-src 'unsafe-inline'",
+                    )
+                    self.assertEqual(response['X-Content-Type-Options'], 'nosniff')
+                    if method == 'get':
+                        self.assertEqual(b''.join(response.streaming_content), stored[ext])
+                default_storage.delete(path)
+
+    def test_missing_logo_has_no_content_policy(self):
+        response = self.client.get('/instance/logo.png')
+        self.assertEqual(response.status_code, 404)
+        self.assertNotIn('Content-Security-Policy', response)

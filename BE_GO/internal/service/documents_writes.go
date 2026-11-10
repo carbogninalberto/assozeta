@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -181,6 +182,43 @@ func storedText(value any) (string, bool) {
 
 const tooLongText = "value too long for type character varying(255)\n"
 
+// documentsUnstorableText is the text of the exception psycopg2 raises while
+// quoting a filename, before any statement runs: a lone surrogate fails the
+// UTF-8 encode (UnicodeEncodeError, consecutive surrogates reported as one
+// range), then a NUL character is refused. Empty for None, files and text
+// the driver accepts.
+func documentsUnstorableText(value any) string {
+	switch value.(type) {
+	case nil, domain.RequestUpload, domain.RequestFile:
+		return ""
+	}
+	text := dto.PythonStr(value)
+	isSurrogate := func(i int) bool {
+		return i+2 < len(text) && text[i] == 0xed && text[i+1] >= 0xa0 && text[i+1] <= 0xbf
+	}
+	position := 0
+	for i := 0; i < len(text); position++ {
+		if !isSurrogate(i) {
+			_, size := utf8.DecodeRuneInString(text[i:])
+			i += size
+			continue
+		}
+		first := rune(text[i]&0x0f)<<12 | rune(text[i+1]&0x3f)<<6 | rune(text[i+2]&0x3f)
+		end := position
+		for j := i + 3; isSurrogate(j); j += 3 {
+			end++
+		}
+		if end == position {
+			return fmt.Sprintf("'utf-8' codec can't encode character '\\u%04x' in position %d: surrogates not allowed", first, position)
+		}
+		return fmt.Sprintf("'utf-8' codec can't encode characters in position %d-%d: surrogates not allowed", position, end)
+	}
+	if strings.ContainsRune(text, 0) {
+		return "A string literal cannot contain NUL (0x00) characters."
+	}
+	return ""
+}
+
 // addItem is one iteration of add's loop before any write: an error raised
 // before the Document exists (before), after it was created (after), or the
 // decoded bytes and filename to store.
@@ -231,6 +269,9 @@ func planAddItem(item any) (addItem, error) {
 	value, _ := object.Lookup("filename")
 	text, ok := storedText(value)
 	if !ok {
+		if message := documentsUnstorableText(value); message != "" {
+			return addItem{before: message}, nil
+		}
 		return addItem{}, domain.ErrDocumentWritesNotPorted
 	}
 	if utf8.RuneCountInString(text) > 255 {
@@ -543,6 +584,9 @@ func (s *DocumentUploads) UploadDocument(ctx context.Context, identity domain.Re
 	}
 	text, storable := storedText(value)
 	if !storable {
+		if documentsUnstorableText(value) != "" {
+			return domain.ErrDocumentWritesFailed // the driver refuses the text: no row
+		}
 		return domain.ErrDocumentWritesNotPorted
 	}
 	if utf8.RuneCountInString(text) > 255 {

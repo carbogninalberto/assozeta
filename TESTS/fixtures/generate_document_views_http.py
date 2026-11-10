@@ -212,8 +212,15 @@ ASSOCIATES = {
     'greek': {'id': uid(25), 'association': 'alpha', 'first': 'Δημήτρης', 'last': 'Παπαδόπουλος ', 'tax_code': 'xx', 'sex': 'M',
               'born': '1990-12-31', 'born_city': 'Αθήνα', 'address': 'Οδός 1', 'city': 'Αθήνα', 'cap': '10431', 'phone': None,
               'email': 'd@example.test', 'notes': None},
+    # Minors whose tutor relations have no primary one: get_main_tutor() promotes the first.
+    'sara': {'id': uid(26), 'association': 'alpha', 'first': 'Sara', 'last': 'Neri', 'tax_code': None, 'sex': 'F',
+             'born': '2014-04-04', 'born_city': 'Cuneo', 'address': None, 'city': None, 'cap': None, 'phone': None, 'email': None,
+             'notes': None},
+    'tino': {'id': uid(27), 'association': 'alpha', 'first': 'Tino', 'last': 'Gialli', 'tax_code': 'GLLTNI13A01L219B', 'sex': 'M',
+             'born': '2013-01-01', 'born_city': None, 'address': None, 'city': None, 'cap': None, 'phone': None, 'email': None,
+             'notes': None},
 }
-TUTORS = [('giulia', 'paolo', True)]
+TUTORS = [('giulia', 'paolo', True), ('sara', 'paolo', False), ('sara', 'mario', False), ('tino', 'mario', False)]
 PAYMENTS = {
     'meta': {'id': uid(40), 'association': 'alpha', 'meta': {'subscription_data': {'name': 'Annuale <b>', 'subscription_fee': 30}}},
     'emptymeta': {'id': uid(41), 'association': 'alpha', 'meta': {}},
@@ -246,6 +253,10 @@ SUBSCRIPTIONS = {
     'fallback': {'id': uid(39), 'association': 'fallback', 'associate': 'greek', 'type': 3, 'role': 6, 'created': '2026-07-07T07:07:07+00:00',
                  'payment': None, 'additional_fields': [{'props': {'label': 'Città', 'value': 'roma'}}], 'signature_url': None,
                  'group': None},
+    'sara': {'id': uid(44), 'association': 'alpha', 'associate': 'sara', 'type': 1, 'role': 1, 'created': '2026-04-04T04:04:04+00:00',
+             'payment': None, 'additional_fields': None, 'signature_url': None, 'group': None},
+    'tino': {'id': uid(45), 'association': 'alpha', 'associate': 'tino', 'type': 1, 'role': 1, 'created': '2026-04-05T04:04:04+00:00',
+             'payment': None, 'additional_fields': None, 'signature_url': None, 'group': None},
     'own': {'id': uid(50), 'association': 'own', 'associate': 'athlete', 'type': 2, 'role': 1, 'created': '2026-08-08T08:08:08+00:00',
             'payment': None, 'additional_fields': None, 'signature_url': None, 'group': None, 'user': 'athlete'},
     # A later subscription of the athlete's associate, entered by the association.
@@ -332,9 +343,11 @@ method = lambda verb: {'detail': f'Method "{verb}" not allowed.'}
 unmapped = lambda path: {'detail': f"Access denied: No permission mapping for endpoint '{path.strip('/')}'. Contact administrator to grant access."}
 
 
-def add(name, actor, path, status, response, *, headers=None, html=None, method_='GET', renders=(), language='en'):
+def add(name, actor, path, status, response, *, headers=None, html=None, method_='GET', renders=(), language='en', promoted=()):
+    # promoted: [associate, actor] pairs whose first tutor relation the case saves as primary.
     case = {'name': f'document-views-{name}', 'actor': actor, 'method': method_, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'renders': list(renders), 'content_language': language}
+            'status': status, 'response': response, 'renders': list(renders), 'content_language': language,
+            'promoted': [list(pair) for pair in promoted]}
     if html is not None:
         case['html'] = html
     cases.append(case)
@@ -400,7 +413,9 @@ def associate_object(label, *, with_tutor=True):
                  address_city=opt(row['city']), address_cap=opt(row['cap']), phone=opt(row['phone']), email=opt(row['email']),
                  get_full_name=call(s(name)), full_name=s(name), is_minor_now=b(age_minor(row['born'])))
     if with_tutor:
-        tutor = next((t for a, t, primary in TUTORS if a == label and primary), None)
+        # The primary relation's tutor, else the first relation's (promoted by the view).
+        tutor = next((t for a, t, primary in TUTORS if a == label and primary), None) or next(
+            (t for a, t, primary in TUTORS if a == label), None)
         attrs['main_tutor'] = call(associate_object(tutor, with_tutor=False) if tutor else NONE)
     return obj(**attrs)
 
@@ -442,6 +457,13 @@ for name, actor, key, headers in (
     path = SUB(key) if name != 'subscription-uppercase-uid' else SUB(key).replace(S(key), S(key).upper())
     add(name, actor, path, 200, HTML, headers=headers,
         html=subscription_context(key, *ALPHA_SUB, uid_value=S(key).upper() if 'uppercase' in name else None))
+# get_main_tutor() without a primary relation: the first relation is saved as primary while the page renders.
+add('subscription-minor-promotes-tutor', 'owner', SUB('sara'), 200, HTML, html=subscription_context('sara', *ALPHA_SUB),
+    promoted=[('sara', 'owner')])
+add('subscription-minor-promoted-tutor-again', 'owner', SUB('sara'), 200, HTML, html=subscription_context('sara', *ALPHA_SUB))
+# HEAD is not among the view's methods (the body is not sent).
+add('subscription-head', 'owner', SUB('mario'), 405, method('HEAD'), method_='HEAD')
+add('subscription-head-anonymous', 'anonymous', SUB('mario'), 401, ANONYMOUS, method_='HEAD')
 add('subscription-classic-template', 'owner', SUB('classic'), 200, HTML, html=subscription_context('classic', '', '<p>Grazie</p>'))
 add('subscription-fallback-template', 'owner', SUB('fallback'), 200, HTML, html=subscription_context('fallback', '<p><br/></p>', FALLBACK_FOOTER_OUT))
 add('subscription-scoped-athlete', 'owner', SUB('own'), 200, HTML, headers=SCOPED, html=subscription_context('own', '', ''))
@@ -614,6 +636,10 @@ add('template-subscription', 'owner', f"{TPL('plain')}?subscription_id={S('mario
 add('template-subscription-tutor', 'owner', f"{TPL('plain')}?subscription_id={S('mario')}&subscription_id={S('giulia')}", 200, HTML,
     html=model_context(plain_body('Giulia Bianchi', 'bncgli15h55l219k', '15/06/2015', 'Paolo', ''), ALPHA_HEADER_OUT,
                        alpha_footer_out('')))
+add('template-subscription-promotes-tutor', 'full_collaborator', f"{TPL('plain')}?subscription_id={S('tino')}", 200, HTML,
+    html=model_context(plain_body('Tino Gialli', 'GLLTNI13A01L219B', '01/01/2013', 'Mario', ''), ALPHA_HEADER_OUT,
+                       alpha_footer_out('')), promoted=[('tino', 'full_collaborator')])
+add('template-head', 'owner', TPL('plain'), 405, method('HEAD'), method_='HEAD')
 add('template-subscription-without-associate', 'owner', f"{TPL('plain')}?subscription_id={S('noassociate')}", 200, HTML,
     html=model_context(plain_body(' '), ALPHA_HEADER_OUT, alpha_footer_out('')))
 add('template-subscription-bypass', 'anonymous', f"{TPL('plain')}?subscription_id={S('mario')}", 200, HTML,

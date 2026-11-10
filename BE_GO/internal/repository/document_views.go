@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -177,6 +178,62 @@ func (r *DocumentViews) MainTutor(ctx context.Context, associate string) (*domai
 		return nil, err
 	}
 	return r.Associate(ctx, tutor)
+}
+
+// PromoteMainTutor: tutor_relations.first() saved with is_primary=True. The
+// auditlog entry is indexed through associate.sport_association, or the
+// actor's association when the associate has none.
+func (r *DocumentViews) PromoteMainTutor(ctx context.Context, associate string, promotion domain.ViewTutorPromotion) (*domain.ViewAssociate, error) {
+	tx, err := r.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	var row struct {
+		ID          int64   `db:"id"`
+		Tutor       string  `db:"tutor"`
+		Primary     bool    `db:"is_primary"`
+		Association *string `db:"association"`
+	}
+	err = tx.GetContext(ctx, &row, `SELECT r.id, r.tutor_id::text AS tutor, r.is_primary, a.sport_association_id::text AS association
+ FROM application_associatetutorrelation r JOIN application_associate a ON a.associate_id=r.associate_id
+ WHERE r.associate_id=$1::uuid ORDER BY r.is_primary DESC, r.id LIMIT 1 FOR UPDATE OF r`, associate)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	if !row.Primary {
+		if _, err = tx.ExecContext(ctx, `UPDATE application_associatetutorrelation SET is_primary=true WHERE id=$1`, row.ID); err != nil {
+			return nil, err
+		}
+		path, association := "associate.sport_association", row.Association
+		if association == nil {
+			path = "actor.sport_association"
+			var id string
+			err = tx.GetContext(ctx, &id, `SELECT sport_association_id::text FROM application_sportassociation
+ WHERE user_id=$1 AND NOT deleted ORDER BY sport_association_id LIMIT 1`, promotion.ActorID)
+			if err == nil {
+				association = &id
+			} else if !errors.Is(err, sql.ErrNoRows) {
+				return nil, err
+			}
+		}
+		key := strconv.FormatInt(row.ID, 10)
+		entry := modelAuditEntry{Model: "associatetutorrelation", Key: key, Representation: "AssociateTutorRelation object (" + key + ")",
+			Action: 1, Changes: map[string][2]string{"is_primary": {"False", "True"}}, Context: promotion.Context, At: promotion.At}
+		if association != nil {
+			entry.AssociationID, entry.ResolutionPath = association, &path
+		}
+		if err = appendModelAudit(ctx, tx, entry); err != nil {
+			return nil, err
+		}
+	}
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+	return r.Associate(ctx, row.Tutor)
 }
 
 func (r *DocumentViews) Subscription(ctx context.Context, id string, scope domain.RenderScope) (*domain.ViewSubscription, error) {

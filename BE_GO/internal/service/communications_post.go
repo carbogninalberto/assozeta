@@ -55,10 +55,10 @@ func communicationsPostMessage(value any) (string, []string, error) {
 		text = v
 	case json.Number:
 		raw := string(v)
-		if strings.ContainsAny(raw, ".eE") {
-			return "", nil, domain.ErrMiscRoutesNotPorted // str(float): Python repr
-		}
 		text = raw
+		if strings.ContainsAny(raw, ".eE") {
+			text = dto.PythonStr(v) // str(float): Python repr
+		}
 	default:
 		return "", []string{"Not a valid string."}, nil
 	}
