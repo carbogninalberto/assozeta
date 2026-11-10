@@ -36,6 +36,7 @@ func (*socialQueryCounter) TraceQueryEnd(context.Context, *pgx.Conn, pgx.TraceQu
 type controlledSocialVerifier struct {
 	db           *sqlx.DB
 	token, email any
+	verified     any
 	provider     string
 	valid, fail  bool
 	calls        int
@@ -54,14 +55,14 @@ func (v *controlledSocialVerifier) Verify(ctx context.Context, provider string, 
 	if v.fail {
 		return SocialIdentity{}, false, socialProviderFailure
 	}
-	return SocialIdentity{Email: v.email}, v.valid, nil
+	return SocialIdentity{Email: v.email, EmailVerified: v.verified}, v.valid, nil
 }
 
 type batchSocialVerifier struct{ calls atomic.Int64 }
 
 func (v *batchSocialVerifier) Verify(ctx context.Context, provider string, token any) (SocialIdentity, bool, error) {
 	v.calls.Add(1)
-	return SocialIdentity{Email: token}, true, ctx.Err()
+	return SocialIdentity{Email: token, EmailVerified: true}, true, ctx.Err()
 }
 
 func TestSocialPostgres(t *testing.T) {
@@ -74,6 +75,7 @@ func TestSocialPostgres(t *testing.T) {
 			Name, Selected, Outcome, Provider      string
 			BackendText                            string `json:"backend_text"`
 			Identifier, Token, Backend, Email, OTP json.RawMessage
+			Verified                               any
 			Valid, Present                         bool
 			ProviderError                          bool `json:"provider_error"`
 			ProviderCalls                          int  `json:"provider_calls"`
@@ -83,7 +85,7 @@ func TestSocialPostgres(t *testing.T) {
 		Batches []struct{ Identifier, Selected string }
 	}
 	// The case count is an explicit gate, not silently inferred from discovery.
-	if json.Unmarshal(raw, &fixture) != nil || len(fixture.Cases) != 41 || len(fixture.Batches) != 4 {
+	if json.Unmarshal(raw, &fixture) != nil || len(fixture.Cases) != 48 || len(fixture.Batches) != 4 {
 		t.Fatal("invalid social fixture")
 	}
 	cfg, err := pgx.ParseConfig(os.Getenv("ASSOZETA_ACCOUNT_TEST_DSN"))
@@ -105,7 +107,7 @@ func TestSocialPostgres(t *testing.T) {
 	accounts := repository.NewAccounts(db)
 	for _, tc := range fixture.Cases {
 		t.Run(tc.Name, func(t *testing.T) {
-			verifier := &controlledSocialVerifier{db: db, token: parse(tc.Token), email: parse(tc.Email), provider: tc.Provider, valid: tc.Valid, fail: tc.ProviderError}
+			verifier := &controlledSocialVerifier{db: db, token: parse(tc.Token), email: parse(tc.Email), verified: tc.Verified, provider: tc.Provider, valid: tc.Valid, fail: tc.ProviderError}
 			flow := NewSocialAdmission(NewSocialLogin(accounts, verifier, 2), NewLoginPreparation(repository.NewLoginPreparations(db), time.Now), NewSecondFactor(func() time.Time { return time.Unix(59, 0) }))
 			remote, actorEmail := "127.0.0.1", "social-audit-actor@example.test"
 			audit := domain.LoginAuditContext{ActorID: tc.Actor, RemoteAddress: &remote}

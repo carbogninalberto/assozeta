@@ -49,13 +49,14 @@ func TestPasswordSessionPostgres(t *testing.T) {
 			Name, ID, Identifier, Password, Outcome string
 			Mode, Backend, Token                    string
 			SocialValid                             bool `json:"social_valid"`
+			SocialVerified                          any  `json:"social_verified"`
 			OTP                                     json.RawMessage
 			Present                                 bool
 			Queries                                 int
 			Expected                                json.RawMessage
 		}
 	}
-	if err = json.Unmarshal(data, &fixture); err != nil || len(fixture.Cases) != 26 {
+	if err = json.Unmarshal(data, &fixture); err != nil || len(fixture.Cases) != 28 {
 		t.Fatal("invalid session fixture", err)
 	}
 	now, err := time.Parse(time.RFC3339Nano, fixture.Now)
@@ -86,7 +87,7 @@ func TestPasswordSessionPostgres(t *testing.T) {
 			if strings.HasPrefix(tc.Backend, "apple") {
 				provider = "apple"
 			}
-			socialTokens.values[tc.Token] = sessionSocialIdentity{email: tc.Identifier, valid: tc.SocialValid, provider: provider}
+			socialTokens.values[tc.Token] = sessionSocialIdentity{email: tc.Identifier, verified: tc.SocialVerified, valid: tc.SocialValid, provider: provider}
 		}
 	}
 	social := NewSocialAdmission(NewSocialLogin(repository.NewAccounts(db), socialTokens, 2), NewLoginPreparation(repository.NewLoginPreparations(db), clock), NewSecondFactor(func() time.Time { return time.Unix(59, 0) }))
@@ -97,32 +98,34 @@ func TestPasswordSessionPostgres(t *testing.T) {
 	// Count each acknowledged transaction fence in addition to the unchanged
 	// Django business baseline; early exits reach fewer transaction boundaries.
 	fenceQueries := map[string]int{
-		"athlete complete session":                       4,
-		"association creates default card":               7,
-		"association existing card":                      7,
-		"collaborator owner association":                 7,
-		"administrator avoids association":               4,
-		"valid OTP":                                      4,
-		"missing OTP retains normalization":              2,
-		"wrong OTP retains normalization":                2,
-		"wrong password prevents normalization":          1,
-		"disabled account":                               1,
-		"deleted account":                                1,
-		"unsupported role retains normalization":         2,
-		"missing association retains normalization":      3,
-		"future deletion clears after response":          4,
-		"today deletion clears after response":           4,
-		"past deletion retained":                         4,
-		"historical zero role":                           4,
-		"final database write fails after card creation": 7,
-		"social Google athlete session":                  3,
-		"social Apple creates default card":              6,
-		"social Google collaborator session":             6,
-		"social missing OTP retains normalization":       1,
-		"social wrong OTP retains normalization":         1,
-		"social token denial prevents normalization":     0,
-		"social Apple administrator session":             3,
-		"social finalization fails after card creation":  6,
+		"athlete complete session":                        4,
+		"association creates default card":                7,
+		"association existing card":                       7,
+		"collaborator owner association":                  7,
+		"administrator avoids association":                4,
+		"valid OTP":                                       4,
+		"missing OTP retains normalization":               2,
+		"wrong OTP retains normalization":                 2,
+		"wrong password prevents normalization":           1,
+		"disabled account":                                1,
+		"deleted account":                                 1,
+		"unsupported role retains normalization":          2,
+		"missing association retains normalization":       3,
+		"future deletion clears after response":           4,
+		"today deletion clears after response":            4,
+		"past deletion retained":                          4,
+		"historical zero role":                            4,
+		"final database write fails after card creation":  7,
+		"social Google athlete session":                   3,
+		"social Apple creates default card":               6,
+		"social Google collaborator session":              6,
+		"social missing OTP retains normalization":        1,
+		"social wrong OTP retains normalization":          1,
+		"social token denial prevents normalization":      0,
+		"social Apple administrator session":              3,
+		"social finalization fails after card creation":   6,
+		"social unverified e-mail prevents normalization": 0,
+		"social Apple text verification session":          3,
 	}
 	for i, tc := range fixture.Cases {
 		t.Run(tc.Name, func(t *testing.T) {
@@ -238,6 +241,7 @@ func TestPasswordSessionPostgres(t *testing.T) {
 
 type sessionSocialIdentity struct {
 	email, provider string
+	verified        any
 	valid           bool
 }
 type sessionSocialVerifier struct {
@@ -256,5 +260,5 @@ func (v *sessionSocialVerifier) Verify(ctx context.Context, provider string, tok
 	if !ok || provider != value.provider || v.db.Stats().InUse != 0 {
 		return SocialIdentity{}, false, errors.New("social dispatch or database lifetime differs")
 	}
-	return SocialIdentity{Email: value.email}, value.valid, ctx.Err()
+	return SocialIdentity{Email: value.email, EmailVerified: value.verified}, value.valid, ctx.Err()
 }
