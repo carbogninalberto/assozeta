@@ -33,6 +33,7 @@ const (
 	Decimal             // decimal.Decimal (Text is str(value))
 	Bool                // bool
 	Object              // a list or dict: Text is str(value) (its repr)
+	BigInt              // an int outside the int64 range: Text is its decimal digits (column labels only)
 )
 
 // Value is one Python value.
@@ -52,6 +53,9 @@ func FloatValue(number float64) Value { return Value{Kind: Float, Float: number}
 // DecimalValue is a Decimal whose str() is text (a finite value).
 func DecimalValue(text string) Value { return Value{Kind: Decimal, Text: text} }
 func BoolValue(value bool) Value     { return Value{Kind: Bool, Bool: value} }
+
+// BigIntValue is an int outside the int64 range, by its decimal digits.
+func BigIntValue(digits string) Value { return Value{Kind: BigInt, Text: digits} }
 
 // ObjectValue is a list or dict whose str() (repr) is text.
 func ObjectValue(repr string) Value { return Value{Kind: Object, Text: repr} }

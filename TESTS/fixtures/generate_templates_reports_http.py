@@ -496,6 +496,22 @@ run('export-xlsx-label-values', 'export_data', {**NUOTO, 'format': 'xlsx', 'colu
 run('export-xlsx-label-float-boolean', 'export_data', {**NUOTO, 'format': 'xlsx', 'column_labels': {'tag_name': 1.5, 'creation_date': True}},
     200, download('Tags.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
         {'title': 'Tags', 'columns': [F(1.5), {'bool': True}], 'rows': [['Nuoto', '15/09/2026 08:30']]}]}))
+# Labels that are equal numbers name the same pandas columns (neither is converted, their widths follow the row count); an
+# integer label of any size is a number in the header row.
+run('export-xlsx-label-equal-numbers', 'export_data', {**NUOTO, 'format': 'xlsx', 'column_labels': {'tag_name': 1, 'creation_date': 1.0}},
+    200, download('Tags.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': [I(1), F(1.0)], 'rows': [['Nuoto', '15/09/2026 08:30']]}]}))
+run('export-xlsx-label-equal-boolean', 'export_data', {**NUOTO, 'format': 'xlsx', 'column_labels': {'tag_name': True, 'creation_date': 1}},
+    200, download('Tags.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': [{'bool': True}, I(1)], 'rows': [['Nuoto', '15/09/2026 08:30']]}]}))
+run('export-xlsx-label-big-integer', 'export_data',
+    {**NUOTO, 'format': 'xlsx', 'column_labels': {'tag_name': 2 ** 70, 'creation_date': -2 ** 63 - 1}},
+    200, download('Tags.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': [I(2 ** 70), I(-2 ** 63 - 1)], 'rows': [['Nuoto', '15/09/2026 08:30']]}]}))
+run('export-xlsx-label-unsigned-integers', 'export_data',
+    {**NUOTO, 'format': 'xlsx', 'column_labels': {'tag_name': 2 ** 63, 'creation_date': 2 ** 63}},
+    200, download('Tags.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': [I(2 ** 63), I(2 ** 63)], 'rows': [['Nuoto', '15/09/2026 08:30']]}]}))
 run('export-xlsx-label-list-error', 'export_data', {**NUOTO, 'format': 'xlsx', 'column_labels': {'tag_name': ['a']}}, 500, FAILED)
 run('sheets-label-dict-error', 'export_multi_sheet', {'sheets': [{**NUOTO, 'column_labels': {'tag_name': {'a': 1}}}]}, 500, FAILED)
 run('export-pdf-no-columns-error', 'export_data', {**ONLY_IDS, 'format': 'pdf'}, 500, FAILED)

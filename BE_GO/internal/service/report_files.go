@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math"
+	"math/big"
 	"strconv"
 	"strings"
 
@@ -168,7 +169,9 @@ func mcpReportSheet(title string, data []any, labels domain.RequestObject) (xlsx
 				label = xlsxexport.BoolValue(typed)
 			case json.Number:
 				var err error
-				if label, err = mcpExportXLSXValue(typed); err != nil {
+				if whole, ok := new(big.Int).SetString(string(typed), 10); ok && !whole.IsInt64() {
+					label = xlsxexport.BigIntValue(whole.String()) // an int label of any size names the column
+				} else if label, err = mcpExportXLSXValue(typed); err != nil {
 					return xlsxexport.ReportSheet{}, err
 				}
 			default:

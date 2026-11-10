@@ -450,6 +450,23 @@ report_xlsx('rx-label-types', 'T', [I(5), F(1.5), None, {'bool': True}, 'testo',
             [['x', 'yy', 'z', I(1), 'w', '', ''], ['una cella più larga', 'w', '', I(2), '', '', '']])
 report_xlsx('rx-label-numbers', 'T', [I(5), F(1.5), I(7)], [['x', 'yy', 'z']])
 report_xlsx('rx-label-integers', 'T', [I(5), I(70)], [['x', 'yy']])
+# Labels that are equal in Python (1, 1.0, True) select the same columns: none of them is converted and their widths
+# follow the number of rows. An integer label outside the 64-bit ranges makes an object index, one in the unsigned range
+# an unsigned or a float one; a None before the integers reads them as floats.
+BIG = 2 ** 70
+for label_name, label_set in (
+        ('equal-numbers', [I(1), F(1.0), 'c']), ('equal-all-numbers', [I(1), F(1.0)]), ('equal-integers', [I(7), I(7), I(8)]),
+        ('equal-bool', [I(1), {'bool': True}, I(0), F(0.0), 'x']), ('equal-false', [{'bool': False}, I(0)]),
+        ('big', [I(BIG), I(5), 'c']), ('big-numbers', [I(BIG), I(5)]), ('big-float', [I(BIG), F(1.5)]),
+        ('unsigned', [I(2 ** 63), I(5)]), ('unsigned-max', [I(2 ** 64 - 1), I(2 ** 63)]), ('unsigned-negative', [I(2 ** 63), I(-1)]),
+        ('unsigned-float', [I(2 ** 63), F(1.5)]), ('none-then-big', [None, I(BIG)]), ('big-then-none', [I(BIG), None]),
+        ('none-then-unsigned-negative', [None, I(2 ** 63), I(-1)]), ('big-equal', [I(BIG), I(BIG), 'c']),
+        ('big-equal-float', [I(BIG), F(float(BIG))]), ('unsigned-equal-float', [I(2 ** 63 + 1), F(float(2 ** 63))]),
+        ('unsigned-not-equal', [I(2 ** 63 + 1), I(2 ** 63)]), ('negative-big', [I(-2 ** 64), 'k']),
+        ('beyond-unsigned', [I(2 ** 64), I(2 ** 63)]), ('equal-wide', [I(3), F(3.0), I(3)])):
+    report_xlsx('rx-label-' + label_name, 'T', label_set,
+                [(['x', '12', 'y', '4', 'z'] * 2)[:len(label_set)], (['zz', '7', '3', '5.5', ''] * 2)[:len(label_set)],
+                 (['w' * 30, '8', '1', '6', 'q'] * 2)[:len(label_set)]])
 report_xlsx('rx-label-booleans', 'T', [{'bool': True}, {'bool': False}], [['x', 'yy']])
 report_xlsx('rx-label-number-boolean', 'T', [F(1.5), {'bool': True}, None], [['x', 'yy', 'z']])
 report_xlsx('rx-label-null', 'T', [None, 'b'], [['x', 'yy']])
