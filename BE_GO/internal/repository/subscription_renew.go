@@ -74,6 +74,19 @@ func (t *subscriptionRenewTransaction) RenewAssociationOwner(ctx context.Context
 	return &owner, nil
 }
 
+func (t *subscriptionRenewTransaction) MemberRenewable(ctx context.Context, requester, association string, associate, taxCode *string) (bool, error) {
+	const own = ` FROM application_subscription s2 INNER JOIN application_associate a2 ON a2.associate_id=s2.associate_id WHERE s2.user_id=$1`
+	var found bool
+	err := t.tx.GetContext(ctx, &found, `SELECT EXISTS (SELECT 1 FROM application_subscription s
+ INNER JOIN application_associate a ON a.associate_id=s.associate_id
+ WHERE s.sport_association_id=$2 AND (s.user_id=$1
+  OR a.tax_code IN (SELECT a2.tax_code`+own+` AND a2.tax_code IS NOT NULL)
+  OR a.family_id IN (SELECT a2.family_id`+own+` AND a2.family_id IS NOT NULL))
+ AND (($3::uuid IS NOT NULL AND s.associate_id=$3::uuid)
+  OR ($3::uuid IS NULL AND UPPER(a.tax_code::text)=UPPER($4::text))))`, requester, association, associate, taxCode)
+	return found, err
+}
+
 type SubscriptionRenewals struct{ db *sqlx.DB }
 
 func NewSubscriptionRenewals(db *sqlx.DB) *SubscriptionRenewals { return &SubscriptionRenewals{db: db} }

@@ -103,6 +103,9 @@ func (h *SubscriptionCreateHandler) Add(c echo.Context) error {
 	case err != nil:
 		return messageReadsError(c, err)
 	}
+	if result.Family {
+		return c.JSON(200, map[string]any{"status": "success", "subs": []any{}, "payments": result.Payments})
+	}
 	payment := "null"
 	if result.PaymentID != nil {
 		payment = `"` + *result.PaymentID + `"`

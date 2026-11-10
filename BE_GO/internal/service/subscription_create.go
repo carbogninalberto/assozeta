@@ -26,6 +26,9 @@ type SubscriptionCreateResult struct {
 	PaymentID *string
 	// Amount is the JSON number: repr() of the payment's float amount, or 0.
 	Amount string
+	// Family marks the family wizard's answer; Payments are its serialized payments.
+	Family   bool
+	Payments []map[string]any
 }
 
 // SubscriptionCreateRequest is subscription_add's input after admission.
@@ -44,6 +47,9 @@ type SubscriptionCreateRequest struct {
 	Anonymous bool
 	// AthleteRequest is is_athlete_request: an account other than an association naming one.
 	AthleteRequest bool
+	// RequesterID is create_subscription's requester when it is not request.user (a member
+	// account's renewal runs as the association's owner).
+	RequesterID string
 }
 
 // SubscriptionCreates ports subscription_add and create_subscription
@@ -121,8 +127,7 @@ func (s *SubscriptionCreates) Add(ctx context.Context, identity domain.ResolvedI
 	request.AthleteRequest = user.Role != domain.RoleAssociation && objectHas(data, "sport_association")
 	if quick {
 		if user.Role != domain.RoleAssociation && objectHas(data, "sport_association") && objectHas(data, "associate") {
-			// _handle_quick_subscription's lookups for other accounts are not ported.
-			return nil, domain.ErrSubscriptionCreateNotPorted
+			return nil, s.quickMember(ctx, identity, data)
 		}
 		if user.Role == domain.RoleAssociation {
 			tx, err := s.store.BeginSubscriptionCreate(ctx)
@@ -151,7 +156,7 @@ func (s *SubscriptionCreates) Add(ctx context.Context, identity domain.ResolvedI
 		}
 	}
 	if family, _ := data.Lookup("is_family_wizard"); family == true {
-		return nil, domain.ErrSubscriptionCreateNotPorted
+		return s.family(ctx, identity, data, request)
 	}
 	return s.create(ctx, identity, data, request)
 }
@@ -328,6 +333,8 @@ type subscriptionCreated struct {
 	welcome, athleteMail *celery.Task
 	// notifyUser receives the notification (create_subscription's user); empty: request.user.
 	notifyUser string
+	// paymentCreated marks a payment created by this registration (not a reused one).
+	paymentCreated bool
 }
 
 func (s *SubscriptionCreates) create(ctx context.Context, identity domain.ResolvedIdentity, data domain.RequestObject,
@@ -603,6 +610,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	if invalid != nil {
 		return nil, &domain.SubscriptionCreateInvalid{Fields: invalid}
 	}
+	paymentCreated := false
 	if signature.Signed {
 		// Signature.objects.create(signature=signature.data, user=user).
 		if err = tx.InsertSignature(ctx, uuid.NewString(), memberID, *signature.Data, request.Audit,
@@ -625,7 +633,16 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			return nil, djangoInvalidUUID(text)
 		}
 		id := parsed.String()
-		found, owner, err := tx.Certificate(ctx, id)
+		// The association account's and the requester's certificates, those of the
+		// association's subscriptions and uploads without an account; any other id is
+		// treated like an unknown one.
+		accounts := []string{settings.OwnerID}
+		if requester := request.RequesterID; requester != "" {
+			accounts = append(accounts, requester)
+		} else if !request.Anonymous {
+			accounts = append(accounts, identity.ScopeUser.ID)
+		}
+		found, owner, err := tx.LinkableCertificate(ctx, id, association, accounts)
 		if err != nil {
 			return nil, err
 		}
@@ -735,6 +752,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			}
 			paymentID = &id
 			amountJSON = dto.PythonFloatText(fees.amount)
+			paymentCreated = true
 		}
 	}
 	latest, err := tx.LatestNumber(ctx, association)
@@ -939,7 +957,8 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	name := strings.TrimSpace(subscriptionCreateValue(saved.FirstName) + " " + subscriptionCreateValue(saved.LastName))
 	created := &subscriptionCreated{id: subscriptionID, association: association, associateName: name,
 		result: SubscriptionCreateResult{PaymentID: paymentID, Amount: amountJSON}, first: saved.FirstName, last: saved.LastName,
-		tax: saved.TaxCode, start: dates.Start, end: dates.End, userID: memberID, welcome: welcome, notifyUser: memberID}
+		tax: saved.TaxCode, start: dates.Start, end: dates.End, userID: memberID, welcome: welcome, notifyUser: memberID,
+		paymentCreated: paymentCreated}
 	if member.Role == domain.RoleAthlete {
 		created.athleteMail = s.athleteMail(settings, saved.FirstName, saved.LastName)
 	}

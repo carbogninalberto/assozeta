@@ -146,6 +146,10 @@ type SubscriptionCreateTransaction interface {
 	Existing(ctx context.Context, association string, first, last, tax *string, start, end CalendarDate) (*SubscriptionCreateExisting, error)
 	FutureRenewal(ctx context.Context, association string, end CalendarDate, tax *string) (bool, error)
 	Certificate(ctx context.Context, id string) (found bool, user *string, err error)
+	// LinkableCertificate is _linkable_medical_certificates: the certificate by id when it
+	// belongs to one of accounts, is the certificate of a subscription of the association, or
+	// has no account and no subscription of another association (locked).
+	LinkableCertificate(ctx context.Context, id, association string, accounts []string) (found bool, user *string, err error)
 	SaveCertificateUser(ctx context.Context, id, user string) error
 	// CertificateExpiration is the stored expiration_date of the certificate.
 	CertificateExpiration(ctx context.Context, id string) (*time.Time, error)
@@ -164,6 +168,12 @@ type SubscriptionCreateTransaction interface {
 	AuditEntry(ctx context.Context, entry SubscriptionCreateAudit) error
 	// QuickAssociate is Associate.objects.get(associate_id=id): a live row (nil when none).
 	QuickAssociate(ctx context.Context, id string) (*SubscriptionEditAssociate, error)
+	// InsertFamily is Family.objects.create(type=kind) with its create entry.
+	InsertFamily(ctx context.Context, id, kind string, audit LoginAuditContext, at time.Time) error
+	// RenderPayment is what PaymentSerializer reads for a stored payment.
+	RenderPayment(ctx context.Context, id string) (PaymentStateRender, error)
+	// QuickAssociationExists is SportAssociation.objects.get(sport_association_id=id) finding a row.
+	QuickAssociationExists(ctx context.Context, id string) (bool, error)
 	// QuickCertificates are the certificates of Subscription.objects.filter(associate=...), one per subscription.
 	QuickCertificates(ctx context.Context, associate string) ([]SubscriptionQuickCertificate, error)
 	// InsertSignature is Signature.objects.create(signature=data, user=user) with its create entry.
