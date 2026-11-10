@@ -105,6 +105,7 @@ type InvoiceViewCustomerInvoice struct {
 
 // InvoiceViewStore reads the rows of the invoice HTML views.
 type InvoiceViewStore interface {
+	MemberDocumentStore
 	// Invoice is scoped_queryset(Invoice.objects).get(invoice_id=id).
 	Invoice(ctx context.Context, id string, scope RenderScope) (*InvoiceViewInvoice, error)
 	// Payments is scoped_queryset(Payment.objects).filter(invoice=id)[:21] (get()).

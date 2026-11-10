@@ -449,6 +449,12 @@ func (s *DocumentUploads) uploadSubscription(ctx context.Context, tx domain.Docu
 	if subscription == nil {
 		return nil, domain.ErrDocumentWritesFailed // TypeError("subscription not found!")
 	}
+	// Files are attached by the association's staff and by the member the subscription belongs to.
+	if err := memberDocumentAccess(ctx, s.store, identity, identity.ScopeUser, func(ctx context.Context, member string) (bool, error) {
+		return s.store.MemberSubscription(ctx, member, subscription.ID)
+	}); err != nil {
+		return nil, err
+	}
 	return subscription, nil
 }
 
