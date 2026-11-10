@@ -25,7 +25,7 @@ import re
 from zoneinfo import ZoneInfo
 
 from TESTS.contracts import http_family as family
-from TESTS.contracts import xlsx
+from TESTS.contracts import pdf, xlsx
 from TESTS.http_client import Client
 from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, ResponseFailure, difference, require, substitute
 
@@ -156,12 +156,14 @@ def assert_case(case, base_url, *, token, sessions):
     for day in dict.fromkeys((before, after)):
         expected = normalized(dated(materialized(case['response'], datetime.now(timezone.utc)), day))
         expected, reason = xlsx.resolve(expected, actual, started, finished)
+        if reason is None:
+            expected, reason = pdf.resolve(expected, actual, started, finished)
         got = actual
         if case['unordered']:
             expected, got = unordered(expected), unordered(actual)
         if reason is None and got == expected:
             break
-        reasons.append(f'response.xlsx: {reason}'[:600] if reason else 'response.body' + difference(expected, got))
+        reasons.append(f'response.file: {reason}'[:600] if reason else 'response.body' + difference(expected, got))
     else:
         check(False, reasons[-1])
     check(received.get('Content-Type', '').split(';')[0] == 'application/json', 'response.type')
