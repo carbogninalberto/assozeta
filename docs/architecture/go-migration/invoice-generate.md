@@ -63,12 +63,19 @@ logged and the answer stays 200 (robust). Go: commit, publish, log on failure.
 Both views call `apply_async(args=[...])` with a **list**: Celery's `argsrepr` is then `['…', '…']`, not the tuple repr of `.delay`.
 The producer gained `Task.ArgsList` with a golden case captured from Celery/kombu (`list-args`), and the harness spec `'args_list': True`.
 
+## Rare inputs (v2-rest-docs)
+
+Same behaviour as the paid flow of `payment-state`: the header is read as a uuid in any spelling `uuid` accepts, the column stores
+its canonical form and the new invoice keeps the text as sent (create entry, response, and the re-save's diff when the invoice is
+dated by its payment); float fees on an exact tie are stored half away from zero and answered half even (the re-save compares the
+stored column value with the float); `meta.subscription_data.name` is formatted with `str()` for floats, lists and dicts. Cases
+`group-header-upper-case`, `subscription-subject-fee-tie`, `flag-payment-date-fee-tie`, `meta-name-{float,list,dict}`: 56 cases,
+receipt `invoice-generate-http-sweep-restdocs-4` (GitHub run RUN4): 4 transports. Mutation (the re-save compared with the rendered fee)
+CAUGHT.
+
 ## Not ported (refused with the 500 page before any write)
 
-- A non-canonical `X-Group-Id` spelling on generation (Django renders the raw header as the invoice's group).
-- Float fees whose 2-place rounding is an exact tie (PostgreSQL rounds half away from zero, DRF half even) and non-finite sums
-  (`float('inf')` amounts).
-- `meta.subscription_data.name` values other than strings, booleans and integers (`str()` of floats, lists, dicts).
+- Non-finite sums (`float('inf')` amounts).
 - Approve with a `send_receipt_email` that is not None, a bool, a string or an int64 (floats, lists, dicts), or without a configured
   Celery producer.
 - Not authored (ordering only): a malformed JSON body from an athlete is DRF's 400 in Go and the association 500 in Django (Go reads the

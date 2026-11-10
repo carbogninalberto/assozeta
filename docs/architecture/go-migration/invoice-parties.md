@@ -98,6 +98,12 @@ invoice. Validation ports the serializers field by field (DRF's exact
 boolean sets, `UUIDField`, `IntegerField` bounds, `DecimalField` precision,
 ISO datetimes, ChoiceFields, `PrimaryKeyRelatedField` with `''` as None).
 
+## Customer update with a file part (v2-rest-docs)
+
+A file part as `paid` or `transmitted` is written to the entry as the file's name (`str()` of the upload) and the column rejects
+it: 500 with the entry kept (case `customer-update-paid-as-file-audited-server-error`). 139 cases, receipt
+`invoice-parties-http-sweep-restdocs-2` (GitHub run 42908069516): 4 transports. Mutation (the entry written with another name) CAUGHT.
+
 ## Not ported (refused with a 500 before any write)
 
 - Customer-list invoices without a PDF whose FatturaPA inputs are outside `internal/fatturapa`'s subset (`ErrUnsupported`,

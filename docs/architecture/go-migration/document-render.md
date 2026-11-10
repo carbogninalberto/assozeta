@@ -131,14 +131,22 @@ PDFDocEncoding table. `FillBiella` writes the values as `TextStringObject.write_
 rows (`AppointmentForm`, `AppointmentFormTutor`), creates the Document, saves the bytes through `service.DocumentUploads`
 (`SaveGenerated`: the upload views' `default_storage.save`) and links the appointment. Go does not read the object back.
 
+## Biella without a primary tutor (v2-rest-docs)
+
+`get_main_tutor()` runs while the view maps the form's fields, after the Document exists. Go does the same: the Document is
+created first and the first tutor relation is then saved as primary (its audit entry indexed to the associate's association) in
+the same transaction, before the fields are filled. A refusal after that point (for example a signature) is decided before the
+Document is created, so nothing is written; the promotion itself runs only on the admitted path. Cases
+`medical-form-biella-promotes-tutor` and `medical-form-biella-promoted-tutor-again`: 241 cases, receipt
+`document-render-http-sweep-restdocs-3` (GitHub run 42910943209), 4 transports. Mutation (the promotion read instead of saved) CAUGHT.
+
 ## Not ported (refused with the 500 page before any write)
 
 - **medical-appointment**, Piemonte Biella, when the association has a stored president signature (any text that is not empty
   and not `None`): `fill_pdf_fields` first draws the signature, and then the stamp, on the first page with PyMuPDF
   (`insert_image`, then a full `save`). That is image decoding and recompression inside MuPDF; the rules of this migration
   keep image processing out of Go. Without a signature the stamp is never drawn (its text only fills the field).
-- **medical-appointment**, Piemonte Biella, for an associate whose tutor relations have no primary one
-  (`get_main_tutor()` would promote the first: a write), and for a filename `default_storage.save` rejects.
+- **medical-appointment**, Piemonte Biella, for a filename `default_storage.save` rejects.
 - A storage failure while saving a filled form is the 500 page (Django answers the provider's text); the Document stays.
 - Filenames with a C0 control other than tab, CR and LF, or DEL (the HTTP server refuses the header, and each server
   does it its own way), and filenames that would split `email.header` words (`\x85`, `\u2028`, `\u2029`) without a

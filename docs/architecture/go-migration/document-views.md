@@ -84,10 +84,23 @@ unknown-paths family covers them).
 
 - `get_main_tutor()` promotion on a request authorized only by the bypass header (no signed-in actor for the audit entry).
 - `get_signature_base64()` (a subscription with a signature): it reads private storage or fetches the legacy URL.
-- Mention keys outside the list above (and every `subscription.*` key), and markup outside the `filter_mentions` subset.
-- Template inputs outside `djtemplate`'s subset (for example `format` of a non-number raises in Django as well), non-ASCII
-  compensation periods, an association whose user is a collaborator (preview).
+- Markup outside the `filter_mentions` subset, and mention paths that name an attribute the port declares but does not read
+  (for example the model's methods and relations).
+- Template inputs outside `djtemplate`'s subset (for example `format` of a non-number raises in Django as well), an association
+  whose user is a collaborator (preview).
 - The course list keeps Django's query without `ORDER BY`; several course subscriptions follow the database's order on both sides.
+
+## Mention keys and periods (v2-rest-docs)
+
+A mention path whose first name is not an attribute of the object (`get_nested_attr` ends in `getattr(obj, name, None)`) reads as
+the empty text, for the association, the associate, the subscription and (in the invoice views) the invoice, the payment and the
+associate; a longer path under `other` after a missing key does as well. The object attribute lists are in
+`service/document_views_attributes.go`. A compensation period written with decimal digits of other scripts is read by
+`strptime` (a day's second digit and the year), as in the subscription views. Cases: 166 (`v2-rest-docs`). Receipt
+`document-views-http-sweep-restdocs-3` (GitHub run 42910943209): 4 transports. Mutation (an unknown first name refused instead of read as
+empty) CAUGHT. A refusal after the tutor promotion is not replayed to Django:
+`internal/handler/document_views_handoff_test.go` runs the promotion's statements on the admitted request and then a refusal
+(500, no upstream call), and the same refusal without the promotion (replayed once).
 
 ## Routes not in this family
 

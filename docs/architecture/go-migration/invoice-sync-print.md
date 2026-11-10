@@ -66,11 +66,18 @@ The validation is invoice-parties' (see [invoice-parties](invoice-parties.md)). 
 ProgressivoInvio is a38's `(int(time.time()) << 16) + sequence` in base 43, the sequence kept per process and reset every second;
 Go keeps the same process-wide counter (`invoiceSyncNextProgressivo`), one value per generated output (the XML's, then the JSON's).
 
+## Update bodies with file parts (v2-rest-docs)
+
+A file part is truthy for `cancelled` (the invoice is cancelled), ignored as `payment_date` (strptime of a file fails and the
+view keeps None), and a 500 as `number` (`int()` of a file) or as `selected_tutor` (not a uuid), before any write. Cases
+`update-plain-cancelled-as-file-is-truthy`, `update-number-as-file-server-error`, `update-tutor-as-file-server-error`,
+`update-other-payment-date-as-file-ignored`: 74 cases, receipt `invoice-sync-print-http-sweep-restdocs-2` (GitHub run 42908069516): 4
+transports. Mutation (the cancelled flag taken from a literal true) CAUGHT.
+
 ## Not ported (refused with the 500 page before any write unless noted)
 
 - A restore that becomes pending (or a lock that becomes busy) between the request's admission and the task: Django re-applies the
   eager task synchronously until admission passes. Go answers the 500 page after the writes (`ErrInvoiceSyncPrintDeferred`).
-- Update bodies with uploaded files (multipart file parts).
 - Add dates before year 1000 (`strftime('%Y')` is unpadded on glibc) and FatturaPA inputs outside `internal/fatturapa`'s subset
   (`ErrUnsupported`, checked with a dry run before the insert).
 - Not compared: the outbound header order (Go writes `Host`, `User-Agent`, then the rest sorted); redirects to another host follow Go's

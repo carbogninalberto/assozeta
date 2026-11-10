@@ -41,9 +41,20 @@
 - auditlog: certificate and document entries resolve no association of their own and are indexed to the actor's association (`actor.sport_association`), or not indexed when the actor has none. Appointment deletes are indexed the same way. Subscription and draft updates are indexed `direct`. Impersonated requests carry the session in `additional_data`.
 - Requests are not atomic: in edit and set-certificate-expiration, a failure after a write (a copy, a draft's default entry, a created certificate) keeps the earlier writes and answers 500. Go commits them before answering.
 
+## List with appointments without a document (v2-rest-docs)
+
+For each row without a document the view calls `print_document_medical_appointment(id, authorization)` directly, in the order of
+the list (`-date`): a GET to `CURRENT_HOST/document/medical-appointment/<id>` with requests' default headers and the request's
+`Authorization`, every reply and error ignored, behind the restore operation lock like the add route (same `InvoiceSyncPrint`
+printer). The row is serialized as it was loaded (`document` and `document_token` null). Cases
+`list-appointments-without-document`, `-renderer-fails` and `-impersonated` (the CURRENT_HOST stub records the requests): 136 cases.
+Native Django and Go 136/136 (`restdocs-sm-local`). On GitHub the family stops at the placeholder image case
+(`storage.placeholder-bytes`), also on the base branch (the CI image's zlib; not caused by this change). Mutation (the print sent
+for the subscription id) CAUGHT.
+
 ## Not ported
 
-- **list** rows without a document: the view prints each one synchronously (`print_document_medical_appointment`, an HTTP call to the document renderer). Go answers 500 before rendering; no write happens either way.
+- **list** rows without a document are ported: see "List with appointments without a document".
 - **set-certificate-expiration** for a subscription without a certificate is ported: the account's new certificate, the placeholder image (`generate_image_with_text` saved as PNG; Go: `internal/pilplaceholder`, byte for byte, with `PIL_PLACEHOLDER_ZLIB` naming the zlib of the Django side's Pillow), its `Document`, the object `<timestamp>/<document id>/medical_certificate_<first>_<last>.png`, `subscription.save()` with the certificate, then the certificate's save with the document and the date. The request is not atomic: without a member, or with a value that is no `%d/%m/%Y` date, the new certificate stays and the answer is the 500 page. Still refused before any write: a member without a first or last name, a file name that is not storable (over 255 characters, control characters, a path the storage rejects), an unknown `PIL_PLACEHOLDER_ZLIB`.
 - `subscription/<uid>/medical-appointments/add` is ported in [medical-appointment-add](medical-appointment-add.md) (its synchronous print is an HTTP request to `CURRENT_HOST`). `subscription/<uid>/medical-certificate/upload` is in `documents-writes.md`. `subscription/<uid>/medical-certificate/send-email-reminder` is ported in [celery-routes-a](celery-routes-a.md) (it publishes `send_email_template` through the Celery producer).
 
