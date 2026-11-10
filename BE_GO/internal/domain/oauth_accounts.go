@@ -59,6 +59,8 @@ type OAuthAccountsStore interface {
 	Invite(ctx context.Context, token *string) (*OAuthInvite, error)
 	DeleteInvite(ctx context.Context, id string, at time.Time, audit LoginAuditContext) error
 	CreateUser(ctx context.Context, user OAuthNewUser, audit LoginAuditContext) error
+	// SecondFactor reads two_fa and two_fa_secret of a live account.
+	SecondFactor(ctx context.Context, id string) (enabled bool, secret *string, err error)
 	InstanceConfig(ctx context.Context) (EmailRenderInstanceConfig, error)
 }
 

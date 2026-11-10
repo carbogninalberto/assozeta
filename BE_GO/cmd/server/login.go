@@ -19,10 +19,11 @@ import (
 
 // composeLogin constructs login providers and credential admission pools. The
 // composition root supplies the shared image pool used by all image-bearing routes.
-func composeLogin(cfg config.Config, db *sqlx.DB, cache *redis.Client, tokens *jwt.Manager, accounts *repository.Accounts, identities *service.IdentityResolver, images domain.LoginImageProcessor) (*handler.LoginHandler, *service.LoginRate, func(), error) {
+// The provider verifier is returned for oauth2/signup, which shares it.
+func composeLogin(cfg config.Config, db *sqlx.DB, cache *redis.Client, tokens *jwt.Manager, accounts *repository.Accounts, identities *service.IdentityResolver, images domain.LoginImageProcessor) (*handler.LoginHandler, *service.LoginRate, *service.SocialProviders, func(), error) {
 	counter, err := repository.NewDjangoLoginRateCache(cache)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.MaxConnsPerHost = 8
@@ -41,7 +42,7 @@ func composeLogin(cfg config.Config, db *sqlx.DB, cache *redis.Client, tokens *j
 		domain.RegistrationChoices{Family: cfg.FamilyRegistrationEnabled, Federation: cfg.FederationRegistrationEnabled, Multiple: cfg.MultipleRegistrationEnabled})
 	sessions := service.NewLoginSessions(passwords, socialAdmission, tokens, responses, service.NewLoginFinalization(repository.NewLoginFinalizations(db), time.Now))
 	return handler.NewLoginHandler(sessions, service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext),
-		service.NewLoginRate(counter, time.Now), func() {
+		service.NewLoginRate(counter, time.Now), providers, func() {
 			requestsTransport.CloseIdleConnections()
 			transport.CloseIdleConnections()
 		}, nil

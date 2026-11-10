@@ -232,13 +232,36 @@ func (t *subscriptionCreateTransaction) LatestNumber(ctx context.Context, associ
 	return &number, nil
 }
 
+func (t *subscriptionCreateTransaction) GroupedCustomData(ctx context.Context, user string) ([]domain.SubscriptionGroupedCustomData, error) {
+	rows := []domain.SubscriptionGroupedCustomData{}
+	err := t.tx.SelectContext(ctx, &rows, `SELECT custom_data::text AS custom_data, creation_date FROM application_subscription
+ WHERE user_id=$1 AND (UPPER(custom_data::text) LIKE UPPER('%asd-o-ssd%') OR UPPER(custom_data::text) LIKE UPPER('%scuola-asc%'))
+ ORDER BY creation_date DESC LIMIT 2`, user)
+	return rows, err
+}
+
+func (t *subscriptionCreateTransaction) RenewalSource(ctx context.Context, id, association string) (*domain.SubscriptionRenewalSource, error) {
+	rows := []domain.SubscriptionRenewalSource{}
+	if err := t.tx.SelectContext(ctx, &rows, `SELECT s.user_id, a.user_id AS owner_id, s.associate_id, s.medical_id, s.role, s.subscription_number,
+ s.subscription_type, s.custom_data::text AS custom_data, s.additional_fields::text AS additional_fields
+ FROM application_subscription s JOIN application_sportassociation a ON a.sport_association_id=s.sport_association_id
+ WHERE s.subscription_id=$1 AND s.sport_association_id=$2`, id, association); err != nil || len(rows) == 0 {
+		return nil, err
+	}
+	return &rows[0], nil
+}
+
 func (t *subscriptionCreateTransaction) InsertSubscription(ctx context.Context, row domain.SubscriptionCreateRow) error {
+	user := &row.UserID
+	if row.Renewal {
+		user = row.RenewedUser
+	}
 	_, err := t.tx.ExecContext(ctx, `INSERT INTO application_subscription (subscription_id, sport_association_id, associate_id, supplier_id,
  instructor_id, custom_data, additional_fields, user_id, type, role, acceptance_date, resignation_date, medical_id, status_flag, creation_date,
  start_date, end_date, signature_url, signature_storage_key, document_pdf_id, payment_id, deleted, archived, draft, trial, meta,
  subscription_number, subscription_type, group_id, competitive, notes)
  VALUES ($1,$2,$3,NULL,NULL,$4::jsonb,$5::jsonb,$6,$7,$8,NULL,NULL,$9,$10,$11,$12::date,$13::date,NULL,NULL,NULL,$14,false,false,true,false,
- $15::jsonb,$16,$17,NULL,false,NULL)`, row.ID, row.AssociationID, row.AssociateID, row.CustomData, row.AdditionalFields, row.UserID, row.Type,
+ $15::jsonb,$16,$17,NULL,false,NULL)`, row.ID, row.AssociationID, row.AssociateID, row.CustomData, row.AdditionalFields, user, row.Type,
 		row.Role, row.MedicalID, row.Status, row.Created, calendarValue(row.Start), calendarValue(row.End), row.PaymentID, row.Meta,
 		row.Number, row.SubscriptionType)
 	return err
