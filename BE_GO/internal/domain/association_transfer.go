@@ -30,6 +30,8 @@ type AssociationTaskResult struct {
 	Result   *string `db:"result"`
 	Meta     *string `db:"meta"`
 	Encoding string  `db:"content_encoding"`
+	// TaskName is null unless the worker stores extended results.
+	TaskName *string `db:"task_name"`
 }
 
 // AssociationTransferStore reads what the export/import views read.

@@ -4644,68 +4644,11 @@
     "audit": [
      {
       "model": "attendanceday",
-      "label": "p1",
-      "changes": {
-       "associated_event": [
-        "None",
-        "vecchio-1"
-       ],
-       "expected_absences": [
-        "null",
-        "[]"
-       ]
-      },
-      "actor": "owner",
-      "index": [
-       "own_association",
-       "attendance_registry.course.sport_association"
-      ]
-     },
-     {
-      "model": "attendanceday",
       "label": "p2",
       "changes": {
        "associated_event": [
         "None",
         "7"
-       ],
-       "expected_absences": [
-        "null",
-        "[]"
-       ]
-      },
-      "actor": "owner",
-      "index": [
-       "own_association",
-       "attendance_registry.course.sport_association"
-      ]
-     },
-     {
-      "model": "attendanceday",
-      "label": "p3",
-      "changes": {
-       "associated_event": [
-        "None",
-        "1.5"
-       ],
-       "expected_absences": [
-        "null",
-        "[]"
-       ]
-      },
-      "actor": "owner",
-      "index": [
-       "own_association",
-       "attendance_registry.course.sport_association"
-      ]
-     },
-     {
-      "model": "attendanceday",
-      "label": "p4",
-      "changes": {
-       "associated_event": [
-        "None",
-        "['x']"
        ],
        "expected_absences": [
         "null",
@@ -4735,49 +4678,11 @@
      },
      {
       "model": "attendanceday",
-      "label": "p6",
-      "changes": {
-       "associated_event": [
-        "None",
-        "{'k': 1}"
-       ],
-       "expected_absences": [
-        "null",
-        "[]"
-       ]
-      },
-      "actor": "owner",
-      "index": [
-       "own_association",
-       "attendance_registry.course.sport_association"
-      ]
-     },
-     {
-      "model": "attendanceday",
       "label": "p7",
       "changes": {
        "associated_event": [
         "None",
         "True"
-       ],
-       "expected_absences": [
-        "null",
-        "[]"
-       ]
-      },
-      "actor": "owner",
-      "index": [
-       "own_association",
-       "attendance_registry.course.sport_association"
-      ]
-     },
-     {
-      "model": "attendanceday",
-      "label": "p8",
-      "changes": {
-       "associated_event": [
-        "None",
-        "340282366920938463463374607431768211456"
        ],
        "expected_absences": [
         "null",
@@ -5031,108 +4936,7 @@
      ]
     }
    },
-   "effect": {
-    "days": {},
-    "holdings": {},
-    "audit": [
-     {
-      "model": "attendanceday",
-      "label": "p1",
-      "changes": {
-       "associated_event": [
-        "None",
-        "vecchio-1"
-       ],
-       "expected_absences": [
-        "null",
-        "[]"
-       ]
-      },
-      "actor": "owner",
-      "index": [
-       "own_association",
-       "attendance_registry.course.sport_association"
-      ]
-     },
-     {
-      "model": "attendanceday",
-      "label": "p3",
-      "changes": {
-       "associated_event": [
-        "None",
-        "1.5"
-       ],
-       "expected_absences": [
-        "null",
-        "[]"
-       ]
-      },
-      "actor": "owner",
-      "index": [
-       "own_association",
-       "attendance_registry.course.sport_association"
-      ]
-     },
-     {
-      "model": "attendanceday",
-      "label": "p4",
-      "changes": {
-       "associated_event": [
-        "None",
-        "['x']"
-       ],
-       "expected_absences": [
-        "null",
-        "[]"
-       ]
-      },
-      "actor": "owner",
-      "index": [
-       "own_association",
-       "attendance_registry.course.sport_association"
-      ]
-     },
-     {
-      "model": "attendanceday",
-      "label": "p6",
-      "changes": {
-       "associated_event": [
-        "None",
-        "{'k': 1}"
-       ],
-       "expected_absences": [
-        "null",
-        "[]"
-       ]
-      },
-      "actor": "owner",
-      "index": [
-       "own_association",
-       "attendance_registry.course.sport_association"
-      ]
-     },
-     {
-      "model": "attendanceday",
-      "label": "p8",
-      "changes": {
-       "associated_event": [
-        "None",
-        "340282366920938463463374607431768211456"
-       ],
-       "expected_absences": [
-        "null",
-        "[]"
-       ]
-      },
-      "actor": "owner",
-      "index": [
-       "own_association",
-       "attendance_registry.course.sport_association"
-      ]
-     }
-    ],
-    "impersonation": null
-   }
+   "effect": null
   },
   {
    "name": "course-attendance-attendees-old-integer-id-mapped",
