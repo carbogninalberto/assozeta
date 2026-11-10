@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"regexp"
 	"strconv"
@@ -14,6 +15,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celeryworker"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/smtpsend"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/updaterrunner"
 )
@@ -83,10 +85,13 @@ func (s *ConsumerBackupFailures) Task() celeryworker.Task {
 	return celeryworker.Task{MaxRetries: 3, Plan: s.plan, Run: s.run}
 }
 
-// backupFailure is one item _failures yields: (key, when, reason).
+// backupFailure is one item _failures yields: (key, when, reason, name). The
+// reason (the runner's message, any JSON value) is only logged; name is the
+// remote failure's archive name when it is one.
 type backupFailure struct {
-	key, reason string
-	when        time.Time
+	key, name string
+	reason    any
+	when      time.Time
 }
 
 // backupFailuresCall is what the plan prepared.
@@ -312,13 +317,12 @@ func backupFailuresParse(value any) (*time.Time, error) {
 }
 
 // backupFailuresReason is `x.get('error') or ”` (a string in the subset).
-func backupFailuresReason(object celery.Dict) (string, error) {
+func backupFailuresReason(object celery.Dict) any {
 	value := backupFailuresOr(object, "error", "")
-	text, ok := value.(string)
-	if !ok {
-		return "", celeryworker.ErrHandoff
+	if !backupFailuresTruth(value) {
+		return ""
 	}
-	return text, nil
+	return value
 }
 
 // consumerBackupFailuresList is _failures(status, inventory) before the
@@ -357,11 +361,7 @@ func consumerBackupFailuresList(status, inventory any) ([]backupFailure, error) 
 			if !found || !isText {
 				return nil, celeryworker.ErrHandoff // KeyError, or str() of another type
 			}
-			reason, err := backupFailuresReason(operation)
-			if err != nil {
-				return nil, err
-			}
-			out = append(out, backupFailure{key: key, when: *when, reason: reason})
+			out = append(out, backupFailure{key: key, when: *when, reason: backupFailuresReason(operation)})
 		}
 	case string:
 		if v != "" {
@@ -403,25 +403,30 @@ func consumerBackupFailuresList(status, inventory any) ([]backupFailure, error) 
 				continue
 			}
 		}
-		reason, err := backupFailuresReason(entry)
-		if err != nil {
-			return nil, err
+		failure := backupFailure{key: section.prefix + raw.(string), when: *when, reason: backupFailuresReason(entry)}
+		if !section.status {
+			// name if isinstance(name, str) and ARCHIVE.fullmatch(name) else ''
+			if name, ok := backupFailuresOr(entry, "name", nil).(string); ok && dto.InstanceBackupActionsArchive.MatchString(name) {
+				failure.name = name
+			}
 		}
-		out = append(out, backupFailure{key: section.prefix + raw.(string), when: *when, reason: reason})
+		out = append(out, failure)
 	}
 	return out, nil
 }
 
-// consumerBackupFailuresNotice is the subject and body of one notice
-// (TIME_ZONE is UTC: timezone.localtime is the UTC time).
+// consumerBackupFailuresNotice is the subject and body of one notice: the
+// time (TIME_ZONE is UTC: timezone.localtime is the UTC time), the archive
+// when known and the page; the runner's message is not part of it.
 func consumerBackupFailuresNotice(failure backupFailure, link string) (string, string) {
 	local := failure.when.UTC().Format("02/01/2006 15:04")
 	subject, body := "Backup non riuscito", "Il backup del "+local+" non è riuscito.\n\n"
 	if strings.HasPrefix(failure.key, "remote:") {
-		subject, body = "Copia remota non riuscita", "La copia remota del backup non è riuscita ("+local+").\n\n"
-	}
-	if failure.reason != "" {
-		body += "Motivo: " + failure.reason + "\n\n"
+		name := ""
+		if failure.name != "" {
+			name = " " + failure.name
+		}
+		subject, body = "Copia remota non riuscita", "La copia remota del backup"+name+" non è riuscita ("+local+").\n\n"
 	}
 	suffix := ""
 	if link != "" {
@@ -463,6 +468,7 @@ func (s *ConsumerBackupFailures) run(ctx context.Context, request *celeryworker.
 		if !added {
 			continue
 		}
+		s.logger.Warn("Backup failure", "key", failure.key, "reason", fmt.Sprint(failure.reason))
 		subject, body := consumerBackupFailuresNotice(failure, call.link)
 		mail := &sendMailAsyncCall{subject: subject, message: body, from: s.from, recipients: []string{call.email}, source: call.source}
 		if exc := s.mail.send(ctx, mail); exc != nil {

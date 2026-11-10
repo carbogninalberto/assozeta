@@ -72,12 +72,14 @@ Receipts: `beat-reverify-schedule-due`, `beat-reverify-occurrence`, `beat-reveri
 4. `_failures`: history operations with `kind == 'backup'`, `status == 'failed'` and
    `updated_at or created_at` within 48 hours (key: the operation id); the schedule's `last_run`
    when failed without an operation (key `schedule:<at>`); the remote copy's `last_failure`
-   (key `remote:<at>`).
+   (key `remote:<at>`, with its `name` when that is a string matching the archive pattern).
 5. Per failure: `cache.add('instance:backup-failure-notified:<key>', True, 7 days)`; when added,
+   the runner's message is logged (warning) and
    `send_mail(subject, body, None, [owner.email])` (subject `Backup non riuscito` or, for a
-   `remote:` key, `Copia remota non riuscita`; the UTC time as `%d/%m/%Y %H:%M`, `Motivo:` when
-   there is a reason, the `https://<domain>/#/profile?page=self-instance&tab=backups` link when
-   the domain is set). Any exception from the send deletes the key again. Returns the count sent.
+   `remote:` key, `Copia remota non riuscita`; the UTC time as `%d/%m/%Y %H:%M`, the archive name
+   of a remote failure when known, the `https://<domain>/#/profile?page=self-instance&tab=backups`
+   link when the domain is set). The notice is generic: the runner's message stays in the log and
+   on the owner's page. Any exception from the send deletes the key again. Returns the count sent.
 
 Go: `internal/service/consumer_backup_failures.go`, `internal/repository/consumer_backup_failures.go`,
 `internal/domain/consumer_backup_failures.go`, registered by `cmd/celery-consumer/consumer_backup_failures.go`.
@@ -90,7 +92,7 @@ Plan reads the runner and the owner (reads only) and hands the message to Django
 effect, for: positional or keyword arguments; runner answers Go would decode differently (NaN,
 Infinity, unpaired surrogates, a byte order mark) or that Python reads with an exception (a
 non-object body or error body, a non-list history, entries that are not objects, a missing or
-non-string id or reason on a failed backup, a non-object schedule or remote section); timestamps
+non-string id on a failed backup, a non-object schedule or remote section); timestamps
 outside the runner's `isoformat()` of an aware value (`YYYY-MM-DDTHH:MM:SS[.ffffff](Z|±HH:MM)`);
 notices outside the rendered mail subset. When the restore barrier will defer or refuse the
 message (a pending restore, or a restore completed after the publish stamp), Plan does not read
@@ -127,6 +129,10 @@ fails with TypeError).
 - GREEN: 15/15, race-built consumer (`beat-reverify-notify-process`).
 - Mutation CAUGHT: the mark is not released after a failed send (`beat-reverify-notify-mutation`).
 - Unit tests: `go test ./internal/service -run 'ConsumerBackupFailures|ScheduleDue'`.
+- Generic notice (Django `instance.tests.test_backup_password_confirmation`): the harness also
+  requires that no runner message reaches an e-mail and that the remote notice names the archive.
+  GREEN 15/15 (`sec-backups-consumer-green`); putting the runner's message back into the Go
+  notice is CAUGHT on the first scenario (`sec-backups-consumer-mutation`).
 - Re-run after the consumer change: `celery_consumer_process.py` and
   `celery_consumer_capabilities_process.py` (`beat-reverify-consumer-process`,
   `beat-reverify-consumer-capabilities`).

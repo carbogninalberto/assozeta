@@ -63,6 +63,9 @@ type BackupActionsField struct {
 	Pattern              *regexp.Regexp
 	Min, Max             *big.Int
 	Choices              []string
+	// Check is the serializer's validate_<field> on the field's value: an
+	// error code (rendered as is), or "" when the value stands.
+	Check func(string) string
 }
 
 // Field sets of the backup views' serializers.
@@ -81,7 +84,9 @@ var (
 		{Name: "password", Kind: BackupActionsChar, MaxLength: 256},
 		{Name: "confirm", Kind: BackupActionsChar, Trim: true, MaxLength: 32},
 	}
-	BackupRemoteSettingsFields = []BackupActionsField{
+	// BackupPasswordFields is backups.PasswordSerializer.
+	BackupPasswordFields       = []BackupActionsField{backupActionsPassword}
+	backupRemoteSettingsFields = []BackupActionsField{
 		{Name: "endpoint", Kind: BackupActionsChar, Optional: true, AllowBlank: true, Trim: true, MaxLength: 255},
 		{Name: "region", Kind: BackupActionsChar, Optional: true, AllowBlank: true, Trim: true, MaxLength: 64},
 		{Name: "bucket", Kind: BackupActionsChar, Optional: true, AllowBlank: true, Trim: true, MaxLength: 63},
@@ -95,12 +100,29 @@ var (
 	BackupKeyConfirmFields = []BackupActionsField{
 		{Name: "key_id", Kind: BackupActionsChar, Trim: true, Pattern: backupActionsKeyID},
 		{Name: "tail", Kind: BackupActionsChar, Trim: true, MinLength: 6, MaxLength: 6},
+		backupActionsPassword,
 	}
 	BackupFetchFields = []BackupActionsField{
 		{Name: "name", Kind: BackupActionsChar, Trim: true, Pattern: InstanceBackupActionsArchive},
 		{Name: "recovery_key", Kind: BackupActionsChar, MaxLength: 4096},
 	}
 )
+
+// backupActionsPassword is the re-entered owner password:
+// CharField(max_length=256, trim_whitespace=False).
+var backupActionsPassword = BackupActionsField{Name: "password", Kind: BackupActionsChar, MaxLength: 256}
+
+// BackupRemoteSettingsFields is RemoteSettingsSerializer (the connection
+// test) with validate_endpoint; withPassword adds the password of
+// RemoteSettingsChangeSerializer (saving the settings).
+func BackupRemoteSettingsFields(allowHTTP, withPassword bool) []BackupActionsField {
+	fields := append([]BackupActionsField(nil), backupRemoteSettingsFields...)
+	fields[0].Check = func(value string) string { return BackupRemoteEndpointProblem(value, allowHTTP) }
+	if withPassword {
+		fields = append(fields, backupActionsPassword)
+	}
+	return fields
+}
 
 // ValidateBackupActions is Serializer(data=body).is_valid(): validated_data
 // in declared field order (omitted optional fields without a default are
@@ -119,6 +141,11 @@ func ValidateBackupActions(body any, fields []BackupActionsField) (domain.Reques
 		internal, set, fieldErrors, err := backupActionsRun(field, value, present)
 		if err != nil {
 			return nil, nil, err
+		}
+		if text, ok := internal.(string); ok && set && fieldErrors == nil && field.Check != nil {
+			if problem := field.Check(text); problem != "" {
+				fieldErrors = []any{problem}
+			}
 		}
 		if fieldErrors != nil {
 			errs = append(errs, domain.RequestField{Name: field.Name, Value: fieldErrors})

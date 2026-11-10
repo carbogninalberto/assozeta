@@ -26,17 +26,18 @@ func TestConsumerBackupFailuresList(t *testing.T) {
 	 {"kind": "backup", "status": "failed"},
 	 {"id": "d", "kind": "backup", "status": "succeeded", "updated_at": "2026-11-09T10:00:00+01:00"}]}`)
 	inventory := backupFailuresDecode(t, `{"schedule": {"last_run": {"at": "2026-11-09T08:00:00+00:00", "status": "failed", "operation": ""}},
-	 "remote": {"last_failure": {"at": "2026-11-09T07:00:00+02:00", "error": "rifiutato"}}}`)
+	 "remote": {"last_failure": {"at": "2026-11-09T07:00:00+02:00", "name": "assozeta-20261109T050000Z.tar.gz", "error": "rifiutato"}}}`)
 	failures, err := consumerBackupFailuresList(status, inventory)
 	if err != nil {
 		t.Fatal(err)
 	}
 	var keys []string
 	for _, failure := range failures {
-		keys = append(keys, failure.key+"|"+failure.reason+"|"+failure.when.UTC().Format(time.RFC3339Nano))
+		keys = append(keys, failure.key+"|"+failure.name+"|"+failure.when.UTC().Format(time.RFC3339Nano))
 	}
-	want := []string{"a|disco|2026-11-09T10:00:00.123456Z", "c||2026-11-09T09:00:00Z",
-		"schedule:2026-11-09T08:00:00+00:00||2026-11-09T08:00:00Z", "remote:2026-11-09T07:00:00+02:00|rifiutato|2026-11-09T05:00:00Z"}
+	want := []string{"a||2026-11-09T10:00:00.123456Z", "c||2026-11-09T09:00:00Z",
+		"schedule:2026-11-09T08:00:00+00:00||2026-11-09T08:00:00Z",
+		"remote:2026-11-09T07:00:00+02:00|assozeta-20261109T050000Z.tar.gz|2026-11-09T05:00:00Z"}
 	if len(keys) != len(want) {
 		t.Fatalf("got %q", keys)
 	}
@@ -45,9 +46,34 @@ func TestConsumerBackupFailuresList(t *testing.T) {
 			t.Fatalf("got %q, want %q", keys, want)
 		}
 	}
+	// The notice names the time and the archive; the runner's message is not in it.
 	subject, body := consumerBackupFailuresNotice(failures[3], "")
-	if subject != "Copia remota non riuscita" || body != "La copia remota del backup non è riuscita (09/11/2026 05:00).\n\nMotivo: rifiutato\n\nControlla in Istanza > Backup.\n" {
+	if subject != "Copia remota non riuscita" ||
+		body != "La copia remota del backup assozeta-20261109T050000Z.tar.gz non è riuscita (09/11/2026 05:00).\n\nControlla in Istanza > Backup.\n" {
 		t.Fatalf("notice %q %q", subject, body)
+	}
+	subject, body = consumerBackupFailuresNotice(failures[0], "https://istanza.example.test/#/profile?page=self-instance&tab=backups")
+	if subject != "Backup non riuscito" || body != "Il backup del 09/11/2026 10:00 non è riuscito.\n\n"+
+		"Controlla in Istanza > Backup: https://istanza.example.test/#/profile?page=self-instance&tab=backups.\n" {
+		t.Fatalf("notice %q %q", subject, body)
+	}
+}
+
+func TestConsumerBackupFailuresRemoteNameMustBeAnArchive(t *testing.T) {
+	for _, name := range []string{`null`, `7`, `"notes.txt"`, `["assozeta-20261109T050000Z.tar.gz"]`} {
+		inventory := backupFailuresDecode(t, `{"remote": {"last_failure": {"at": "2026-11-09T07:00:00+00:00", "name": `+name+`, "error": 3}}}`)
+		failures, err := consumerBackupFailuresList(backupFailuresDecode(t, `{}`), inventory)
+		if err != nil || len(failures) != 1 || failures[0].name != "" {
+			t.Fatalf("name %s: %+v %v", name, failures, err)
+		}
+		if _, body := consumerBackupFailuresNotice(failures[0], ""); body != "La copia remota del backup non è riuscita (09/11/2026 07:00).\n\nControlla in Istanza > Backup.\n" {
+			t.Fatalf("name %s: %q", name, body)
+		}
+	}
+	// The runner's message is only logged: any JSON value is accepted.
+	status := backupFailuresDecode(t, `{"history": [{"id": "a", "kind": "backup", "status": "failed", "updated_at": "2026-11-09T10:00:00Z", "error": 3}]}`)
+	if failures, err := consumerBackupFailuresList(status, backupFailuresDecode(t, `{}`)); err != nil || len(failures) != 1 {
+		t.Fatalf("numeric reason: %+v %v", failures, err)
 	}
 }
 
@@ -57,7 +83,6 @@ func TestConsumerBackupFailuresListHandsOff(t *testing.T) {
 		"numeric timestamp":      {`{"history": [{"id": "a", "updated_at": 5}]}`, `{}`},
 		"missing id":             {`{"history": [{"kind": "backup", "status": "failed", "updated_at": "2026-11-09T10:00:00Z"}]}`, `{}`},
 		"numeric id":             {`{"history": [{"id": 4, "kind": "backup", "status": "failed", "updated_at": "2026-11-09T10:00:00Z"}]}`, `{}`},
-		"numeric reason":         {`{"history": [{"id": "a", "kind": "backup", "status": "failed", "updated_at": "2026-11-09T10:00:00Z", "error": 3}]}`, `{}`},
 		"null history":           {`{"history": null}`, `{}`},
 		"history of strings":     {`{"history": ["x"]}`, `{}`},
 		"status list":            {`[]`, `{}`},

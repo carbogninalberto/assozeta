@@ -69,7 +69,8 @@ class BackupActionTests(TestCase):
         runner.assert_not_called()
         self.assertEqual(self.client.patch(f'/instance/admin/backups/{ARCHIVE}', {'keep': True}, format='json').status_code, 200)
         runner.assert_called_with('PATCH', f'/backups/{ARCHIVE}', {'keep': True})
-        self.assertEqual(self.client.delete(f'/instance/admin/backups/{ARCHIVE}', {'confirm': True}, format='json').status_code, 200)
+        self.assertEqual(self.client.delete(f'/instance/admin/backups/{ARCHIVE}', {'confirm': True, 'password': 'OwnerSecret'},
+                                            format='json').status_code, 200)
         runner.assert_called_with('DELETE', f'/backups/{ARCHIVE}', {'confirm': True})
         self.assertEqual(self.client.delete(f'/instance/admin/backups/{ARCHIVE}', {'confirm': 'x'}, format='json').status_code, 400)
         self.assertEqual((self.audited('backup_keep'), self.audited('backup_delete')), (1, 1))
@@ -99,7 +100,8 @@ class BackupActionTests(TestCase):
             self.assertEqual(notify_failures(), 0)
         self.assertEqual(len(mail.outbox), 2)
         self.assertEqual(mail.outbox[0].to, ['owner@example.test'])
-        self.assertIn('Spazio su disco insufficiente.', mail.outbox[0].body)
+        self.assertNotIn('Spazio su disco insufficiente.', mail.outbox[0].body)
+        self.assertIn('non è riuscito', mail.outbox[0].body)
         self.assertIn('tab=backups', mail.outbox[0].body)
 
     @override_settings(ASSOZETA_DEPLOYMENT_MODE='development')

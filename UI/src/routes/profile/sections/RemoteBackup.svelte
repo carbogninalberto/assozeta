@@ -9,6 +9,7 @@
     import InstanceMenu from './InstanceMenu.svelte';
     import {formatDate} from './instanceFormat.js';
     import {remoteStatus, keyFile} from './remoteBackup.js';
+    import {remoteSettingsBody, remoteTestBody, remoteToggleBody, keyBody, keyConfirmBody, WRONG_PASSWORD} from './backupPassword.js';
 
     export let request;
     // Summary from the backup overview: configured, enabled, key_id, last_upload, last_failure, status, error.
@@ -26,6 +27,10 @@
     let testing = false;
     let testResult = null;
     let toggling = false;
+    // Every settings change needs the owner password; it is cleared after each request.
+    let password = '';
+    let togglePrompt = null; // {enabled, target} while the switch waits for the password
+    let toggleError = '';
 
     let wizard = false;
     let step = 1;
@@ -33,6 +38,9 @@
     let tail = '';
     let wizardError = '';
     let working = false;
+    // Typed once for the wizard, kept in memory until it closes or the key is confirmed.
+    let keyPassword = '';
+    let askKeyPassword = false;
 
     $: status = remoteStatus(remote);
     $: hasKey = !!config?.key;
@@ -49,31 +57,34 @@
         draft = config ? {...blank, ...Object.fromEntries(Object.keys(blank).map(key => [key, config[key] ?? blank[key]])), secret_key: ''} : {...blank};
         formError = '';
         testResult = null;
+        password = '';
         drawer = true;
     }
 
-    function settings() {
-        const value = {...draft, retention: Number(draft.retention)};
-        if (!value.secret_key) delete value.secret_key;
-        return value;
+    function closeDrawer() {
+        if (saving) return;
+        drawer = false;
+        password = '';
     }
 
     async function save() {
-        if (saving) return;
+        if (saving || !password) return;
         saving = true;
         formError = '';
+        const typed = password;
         try {
-            config = await request('/admin/backups/remote', {method: 'PUT', body: JSON.stringify(settings())});
+            config = await request('/admin/backups/remote', {method: 'PUT', body: JSON.stringify(remoteSettingsBody(draft, typed))});
             saving = false;
             drawer = false;
             toast.success('Impostazioni salvate.');
             onSaved();
-            if (!config.key) openWizard();
+            // Same owner, same minute: reuse the password for the first key.
+            if (!config.key) openWizard(typed);
         } catch (e) { formError = e.message; }
-        finally { saving = false; draft.secret_key = ''; }
+        finally { saving = false; password = ''; draft.secret_key = ''; }
     }
 
-    async function test(body = settings()) {
+    async function test(body = remoteTestBody(draft)) {
         if (testing) return;
         testing = true;
         testResult = null;
@@ -83,28 +94,54 @@
         if (!drawer) testResult.ok ? toast.success(testResult.message) : toast.error(testResult.message);
     }
 
-    async function toggle(event) {
-        const enabled = event.target.checked;
-        toggling = true;
-        try {
-            config = await request('/admin/backups/remote', {method: 'PUT', body: JSON.stringify({enabled})});
-            toast.success(enabled ? 'Copia remota attivata.' : 'Copia remota disattivata.');
-            onSaved();
-        } catch (e) {
-            event.target.checked = !enabled;
-            toast.error(e.message);
-        } finally { toggling = false; }
+    // The switch asks for the password first; cancelling puts it back.
+    function toggle(event) {
+        togglePrompt = {enabled: event.target.checked, target: event.target};
+        password = '';
+        toggleError = '';
     }
 
-    async function openWizard() {
+    function cancelToggle() {
+        if (toggling || !togglePrompt) return;
+        togglePrompt.target.checked = !togglePrompt.enabled;
+        togglePrompt = null;
+        password = '';
+        toggleError = '';
+    }
+
+    async function confirmToggle() {
+        if (toggling || !password || !togglePrompt) return;
+        const {enabled} = togglePrompt;
+        toggling = true;
+        toggleError = '';
+        try {
+            config = await request('/admin/backups/remote', {method: 'PUT', body: JSON.stringify(remoteToggleBody(enabled, password))});
+            togglePrompt = null;
+            toast.success(enabled ? 'Copia remota attivata.' : 'Copia remota disattivata.');
+            onSaved();
+        } catch (e) { toggleError = e.message; }
+        finally { password = ''; toggling = false; }
+    }
+
+    // With a password (right after saving the settings) the key is generated at once;
+    // otherwise step 1 asks for it first.
+    function openWizard(typed = '') {
         wizard = true;
         step = 1;
         tail = '';
         wizardError = '';
         recovery = null;
+        askKeyPassword = false;
+        keyPassword = typeof typed === 'string' ? typed : '';
+        if (keyPassword) generateKey();
+    }
+
+    async function generateKey() {
+        if (working || !keyPassword) return;
         working = true;
-        try { recovery = await request('/admin/backups/remote/key', {method: 'POST', body: '{}'}); }
-        catch (e) { wizardError = e.message; }
+        wizardError = '';
+        try { recovery = await request('/admin/backups/remote/key', {method: 'POST', body: JSON.stringify(keyBody(keyPassword))}); }
+        catch (e) { wizardError = e.message; keyPassword = ''; }
         finally { working = false; }
     }
 
@@ -114,6 +151,8 @@
         wizard = false;
         recovery = null;
         tail = '';
+        keyPassword = '';
+        askKeyPassword = false;
         if (done) onSaved();
     }
 
@@ -134,15 +173,20 @@
     }
 
     async function confirm() {
-        if (working || tail.trim().length !== 6) return;
+        if (working || tail.trim().length !== 6 || !keyPassword) return;
         working = true;
         wizardError = '';
         try {
-            config = await request('/admin/backups/remote/key/confirm', {method: 'POST', body: JSON.stringify({key_id: recovery.key_id, tail: tail.trim()})});
+            config = await request('/admin/backups/remote/key/confirm', {method: 'POST', body: JSON.stringify(keyConfirmBody(recovery.key_id, tail, keyPassword))});
             step = 3;
             recovery = {key_id: recovery.key_id};
-        } catch (e) { wizardError = e.message; }
-        finally { working = false; }
+            keyPassword = '';
+            askKeyPassword = false;
+        } catch (e) {
+            wizardError = e.message;
+            // Let the owner type it again right here.
+            if (e.message === WRONG_PASSWORD) { keyPassword = ''; askKeyPassword = true; }
+        } finally { working = false; }
     }
 </script>
 
@@ -158,7 +202,7 @@
             {#if config?.configured}
                 <InstanceMenu label="Altre azioni copia remota" items={[
                     {label: testing ? 'Prova in corso…' : 'Prova connessione', disabled: testing, onSelect: () => test({})},
-                    {label: hasKey ? 'Genera nuova chiave' : 'Genera chiave', hint: hasKey ? 'Le copie già fatte restano con la chiave attuale.' : '', disabled, onSelect: openWizard},
+                    {label: hasKey ? 'Genera nuova chiave' : 'Genera chiave', hint: hasKey ? 'Le copie già fatte restano con la chiave attuale.' : '', disabled, onSelect: () => openWizard()},
                 ]} />
             {/if}
         </div>
@@ -174,7 +218,7 @@
     {#if config?.configured}
         <Switch id="remote-backup-enabled" label="Attiva copia remota" checked={config.enabled} disabled={disabled || toggling || !!enableReason} on:change={toggle} />
         {#if enableReason && !config.enabled}
-            <p class="si-reason mb-0">{enableReason} <button type="button" class="si-link" {disabled} on:click={openWizard}>Genera chiave</button></p>
+            <p class="si-reason mb-0">{enableReason} <button type="button" class="si-link" {disabled} on:click={() => openWizard()}>Genera chiave</button></p>
         {/if}
         <dl class="facts">
             <div><dt>Bucket</dt><dd>{config.bucket}{config.prefix ? `/${config.prefix}` : ''}</dd></div>
@@ -184,9 +228,10 @@
     {/if}
 </section>
 
-<InstanceDialog open={drawer} variant="drawer" title="Copia remota" locked={saving} on:close={() => { drawer = false; }}>
+<InstanceDialog open={drawer} variant="drawer" title="Copia remota" locked={saving} on:close={closeDrawer}>
     <form id="remote-backup-form" class="si-stack" on:submit|preventDefault={save}>
-        <label class="si-field">Endpoint<input class="form-control" type="url" bind:value={draft.endpoint} placeholder="Vuoto per AWS S3" autocomplete="off" /></label>
+        <label class="si-field">Endpoint<input class="form-control" type="url" bind:value={draft.endpoint} placeholder="https://… (vuoto per AWS S3)" autocomplete="off" aria-describedby="remote-backup-endpoint-hint" /></label>
+        <p id="remote-backup-endpoint-hint" class="si-hint mb-0">Indirizzo https:// del servizio S3 compatibile.</p>
         <div class="pair">
             <label class="si-field">Regione<input class="form-control" bind:value={draft.region} placeholder="eu-south-1" autocomplete="off" /></label>
             <label class="si-field">Bucket<input class="form-control" bind:value={draft.bucket} required autocomplete="off" /></label>
@@ -198,12 +243,15 @@
         <Switch id="remote-backup-path-style" label="Indirizzi path-style" bind:checked={draft.path_style} />
         <label class="si-field">Copie da conservare<input class="form-control" type="number" min="1" max="30" step="1" bind:value={draft.retention} required /></label>
         {#if testResult}<p class="si-small mb-0 {testResult.ok ? 'text-success' : 'text-danger'}" role="status">{testResult.message}</p>{/if}
+        <label class="si-field" for="remote-backup-password">Conferma la tua password
+            <input id="remote-backup-password" class="form-control" type="password" autocomplete="current-password" bind:value={password} disabled={saving} />
+        </label>
         {#if formError}<p class="text-danger mb-0" role="alert">{formError}</p>{/if}
     </form>
     <svelte:fragment slot="footer">
         <button type="button" class="btn btn-light mr-auto si-btn" disabled={testing || saving || !draft.bucket || !draft.access_key} on:click={() => test()}><Plugs size={18} weight="duotone" />{testing ? 'Prova in corso…' : 'Prova connessione'}</button>
-        <button type="button" class="btn btn-light" disabled={saving} on:click={() => { drawer = false; }}>Annulla</button>
-        <button type="submit" form="remote-backup-form" class="btn btn-primary si-btn" disabled={saving}><FloppyDisk size={18} weight="duotone" />{saving ? 'Salvataggio…' : 'Salva'}</button>
+        <button type="button" class="btn btn-light" disabled={saving} on:click={closeDrawer}>Annulla</button>
+        <button type="submit" form="remote-backup-form" class="btn btn-primary si-btn" disabled={saving || !password}><FloppyDisk size={18} weight="duotone" />{saving ? 'Salvataggio…' : 'Salva'}</button>
     </svelte:fragment>
 </InstanceDialog>
 
@@ -211,7 +259,13 @@
     <p class="si-muted si-small">Passo {step} di 3</p>
     {#if step === 1}
         <p class="note" role="note">Senza questa chiave le copie remote non si possono ripristinare. Viene mostrata solo ora.</p>
-        {#if recovery?.recovery_key}
+        {#if !recovery && !working}
+            <form id="remote-key-password" on:submit|preventDefault={generateKey}>
+                <label class="si-field" for="remote-key-password-input">Conferma la tua password
+                    <input id="remote-key-password-input" class="form-control" type="password" autocomplete="current-password" bind:value={keyPassword} />
+                </label>
+            </form>
+        {:else if recovery?.recovery_key}
             <label class="si-field" for="remote-recovery-key">Chiave {recovery.key_id}</label>
             <textarea id="remote-recovery-key" class="form-control key" rows="3" readonly on:focus={event => event.target.select()}>{recovery.recovery_key}</textarea>
             <div class="si-actions mt-3">
@@ -225,6 +279,11 @@
         <form id="remote-key-confirm" on:submit|preventDefault={confirm}>
             <label class="si-field" for="remote-key-tail">Ultimi 6 caratteri della chiave</label>
             <input id="remote-key-tail" class="form-control tail" bind:value={tail} maxlength="6" autocomplete="off" spellcheck="false" />
+            {#if askKeyPassword}
+                <label class="si-field mt-3" for="remote-key-confirm-password">Conferma la tua password
+                    <input id="remote-key-confirm-password" class="form-control" type="password" autocomplete="current-password" bind:value={keyPassword} disabled={working} />
+                </label>
+            {/if}
         </form>
     {:else}
         <p class="done"><CheckCircle size={22} weight="fill" /> Chiave {recovery?.key_id} attiva.</p>
@@ -232,15 +291,31 @@
     {/if}
     {#if wizardError}<p class="text-danger mt-2 mb-0" role="alert">{wizardError}</p>{/if}
     <svelte:fragment slot="footer">
-        {#if step === 1}
+        {#if step === 1 && !recovery}
+            <button type="button" class="btn btn-light" disabled={working} on:click={closeWizard}>Annulla</button>
+            <button type="submit" form="remote-key-password" class="btn btn-primary" disabled={working || !keyPassword}>{working ? 'Generazione…' : 'Genera chiave'}</button>
+        {:else if step === 1}
             <button type="button" class="btn btn-light" disabled={working} on:click={closeWizard}>Annulla</button>
             <button type="button" class="btn btn-primary" disabled={working || !recovery?.recovery_key} on:click={() => { step = 2; wizardError = ''; }}>Avanti</button>
         {:else if step === 2}
             <button type="button" class="btn btn-light" disabled={working} on:click={() => { step = 1; wizardError = ''; }}>Indietro</button>
-            <button type="submit" form="remote-key-confirm" class="btn btn-primary" disabled={working || tail.trim().length !== 6}>{working ? 'Verifica…' : 'Conferma'}</button>
+            <button type="submit" form="remote-key-confirm" class="btn btn-primary" disabled={working || tail.trim().length !== 6 || !keyPassword}>{working ? 'Verifica…' : 'Conferma'}</button>
         {:else}
             <button type="button" class="btn btn-primary" data-autofocus on:click={closeWizard}>Fine</button>
         {/if}
+    </svelte:fragment>
+</InstanceDialog>
+
+<InstanceDialog open={!!togglePrompt} title={togglePrompt?.enabled ? 'Attivare la copia remota?' : 'Disattivare la copia remota?'} locked={toggling} on:close={cancelToggle}>
+    <form id="remote-toggle-form" on:submit|preventDefault={confirmToggle}>
+        <label class="si-field" for="remote-toggle-password">Conferma la tua password
+            <input id="remote-toggle-password" class="form-control" type="password" autocomplete="current-password" bind:value={password} disabled={toggling} />
+        </label>
+        {#if toggleError}<p class="text-danger mt-2 mb-0" role="alert">{toggleError}</p>{/if}
+    </form>
+    <svelte:fragment slot="footer">
+        <button type="button" class="btn btn-light" disabled={toggling} on:click={cancelToggle}>Annulla</button>
+        <button type="submit" form="remote-toggle-form" class="btn btn-primary" disabled={!password || toggling}>{toggling ? 'Salvataggio…' : togglePrompt?.enabled ? 'Attiva' : 'Disattiva'}</button>
     </svelte:fragment>
 </InstanceDialog>
 
