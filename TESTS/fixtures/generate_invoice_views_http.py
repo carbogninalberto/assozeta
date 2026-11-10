@@ -18,7 +18,7 @@ HasBypassAuthorizationHeader):
   (a blank extra text becomes None); hide_category_name and override_label;
   custom_data with is_multiple.
 - document/einvoice/<uid>/view/: CustomerInvoice.objects.get(pk=uid) (no scope,
-  no group) and generate_invoice_html (a38's FatturaPA model, its validation and
+  no group), served to the association's staff, and generate_invoice_html (a38's FatturaPA model, its validation and
   VAT summary); every exception is the 500 page.
 
 Every invoice HTML expectation is an authored template context (the
@@ -514,7 +514,7 @@ CUSTOMER_INVOICES = {
 }
 EIN = lambda key: f"/document/einvoice/{CUSTOMER_INVOICES[key]['id']}/view/"
 common('einvoice', EIN('basic'), 'Document Einvoice View')
-for name, actor, key, headers in (('einvoice-owner', 'owner', 'basic', {}), ('einvoice-athlete', 'athlete', 'basic', {}),
+for name, actor, key, headers in (('einvoice-owner', 'owner', 'basic', {}),
                                   ('einvoice-bypass', 'anonymous', 'basic', {'Authorization': '$bypass'}),
                                   ('einvoice-admin-impersonating-owner', 'admin', 'basic', ADMIN_OWNER),
                                   ('einvoice-mixed-rates', 'owner', 'mixed', {}),
@@ -528,6 +528,12 @@ for name, key in (('einvoice-without-pec', 'nopec'), ('einvoice-assignor-without
                   ('einvoice-line-without-price', 'missingkey'), ('einvoice-without-lines', 'nolines'),
                   ('einvoice-empty-province', 'badprovince'), ('einvoice-long-description', 'longdescription')):
     add(name, 'owner', EIN(key), 500, SERVER)
+# The page is served to the association's staff and to the renderer.
+add('einvoice-athlete', 'athlete', EIN('basic'), 403, SCOPED_HIDDEN)
+add('einvoice-athlete-other-association', 'athlete', EIN('foreign'), 403, SCOPED_HIDDEN)
+add('einvoice-athlete-without-pec', 'athlete', EIN('nopec'), 403, SCOPED_HIDDEN)
+add('einvoice-athlete-unknown', 'athlete', f'/document/einvoice/{UNKNOWN}/view/', 500, SERVER)
+add('einvoice-member', 'member', EIN('basic'), 403, SCOPED_HIDDEN)
 add('einvoice-unknown', 'owner', f'/document/einvoice/{UNKNOWN}/view/', 500, SERVER)
 add('einvoice-invalid-uuid', 'owner', '/document/einvoice/12/view/', 500, SERVER)
 

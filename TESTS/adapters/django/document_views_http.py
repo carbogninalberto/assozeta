@@ -191,7 +191,8 @@ def seed_rows(source, created):
             instructor_id=row['id'], user_id=alpha_user, first_name=row['first'], last_name=row['last'], is_volunteer=row['volunteer'],
             tax_code=row['tax_code'], address=row['address'], civic_number=row['civic'], address_city=row['city'],
             born_date=day(row['born']), born_city=row['born_city'], born_province=row['province'], phone=row['phone'],
-            email=row['email'], study_title=row['study_title'], role=row['role'], stipulated_contract_in=day(row['contract'])))
+            email=row['email'], study_title=row['study_title'], role=row['role'], stipulated_contract_in=day(row['contract']),
+            associated_user_id=source['extra_users'][row['account']]['id'] if row['account'] else None))
     for label, row in source['signatures'].items():
         insert(Signature, Signature(signature_id=row['id'], user_id=alpha_user, signature=row['signature']))
     for label, row in source['compensations'].items():

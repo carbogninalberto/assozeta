@@ -134,6 +134,31 @@
    "id": "a1000000-0000-4000-8000-000000984026",
    "token": "a1000000-0000-4000-8000-000000984125",
    "filename": "dup b.pdf"
+  },
+  "tok_invoice": {
+   "id": "a1000000-0000-4000-8000-000000984014",
+   "token": "a1000000-0000-4000-8000-000000984130",
+   "filename": "token invoice.pdf"
+  },
+  "tok_invoice_hex": {
+   "id": "a1000000-0000-4000-8000-000000984015",
+   "token": "a1000000-0000-4000-8000-000000984131",
+   "filename": "token invoice hex.pdf"
+  },
+  "tok_customer": {
+   "id": "a1000000-0000-4000-8000-000000984016",
+   "token": "a1000000-0000-4000-8000-000000984132",
+   "filename": "token customer invoice.pdf"
+  },
+  "tok_hours": {
+   "id": "a1000000-0000-4000-8000-000000984017",
+   "token": "a1000000-0000-4000-8000-000000984133",
+   "filename": "token compensation.pdf"
+  },
+  "tok_medical": {
+   "id": "a1000000-0000-4000-8000-000000984018",
+   "token": "a1000000-0000-4000-8000-000000984134",
+   "filename": "token medical.pdf"
   }
  },
  "subscriptions": {
@@ -311,6 +336,20 @@
    "deleted": false,
    "group": null,
    "document": "old_invoice"
+  },
+  "tokened": {
+   "id": "a1000000-0000-4000-8000-000000984051",
+   "association": "own",
+   "deleted": false,
+   "group": null,
+   "document": "tok_invoice"
+  },
+  "tokened_hex": {
+   "id": "a1000000-0000-4000-8000-000000984052",
+   "association": "own",
+   "deleted": false,
+   "group": null,
+   "document": "tok_invoice_hex"
   }
  },
  "payments": {
@@ -446,6 +485,30 @@
    "deleted": false,
    "group": null
   },
+  "tokened": {
+   "id": "a1000000-0000-4000-8000-000000984077",
+   "invoice": "tokened",
+   "association": "own",
+   "amount": "15.00",
+   "date": "2026-03-12T10:00:00+00:00",
+   "associate": "mario",
+   "user": null,
+   "instructor": null,
+   "deleted": false,
+   "group": null
+  },
+  "tokened_hex": {
+   "id": "a1000000-0000-4000-8000-000000984078",
+   "invoice": "tokened_hex",
+   "association": "own",
+   "amount": "16.00",
+   "date": "2026-03-13T10:00:00+00:00",
+   "associate": "mario",
+   "user": null,
+   "instructor": null,
+   "deleted": false,
+   "group": null
+  },
   "comp": {
    "id": "a1000000-0000-4000-8000-000000984071",
    "invoice": null,
@@ -517,6 +580,18 @@
    "instructor": "paolo",
    "deleted": false,
    "group": null
+  },
+  "comp_tokened": {
+   "id": "a1000000-0000-4000-8000-000000984079",
+   "invoice": null,
+   "association": "own",
+   "amount": "20.00",
+   "date": "2026-04-10T09:00:00+00:00",
+   "associate": null,
+   "user": null,
+   "instructor": "luca",
+   "deleted": false,
+   "group": null
   }
  },
  "instructors": {
@@ -524,13 +599,15 @@
    "id": "a1000000-0000-4000-8000-000000984080",
    "user": "owner",
    "first": "Luca",
-   "last": "Bianchi"
+   "last": "Bianchi",
+   "account": "coach"
   },
   "paolo": {
    "id": "a1000000-0000-4000-8000-000000984081",
    "user": "foreign_owner",
    "first": "Paolo",
-   "last": "Gialli"
+   "last": "Gialli",
+   "account": null
   }
  },
  "hours": {
@@ -538,25 +615,36 @@
    "id": "a1000000-0000-4000-8000-000000984085",
    "instructor": "luca",
    "payment": "comp",
-   "date": "2026-04-01"
+   "date": "2026-04-01",
+   "document": null
   },
   "h2": {
    "id": "a1000000-0000-4000-8000-000000984086",
    "instructor": "luca",
    "payment": "comp",
-   "date": "2026-04-02"
+   "date": "2026-04-02",
+   "document": null
   },
   "h_other": {
    "id": "a1000000-0000-4000-8000-000000984087",
    "instructor": "luca",
    "payment": null,
-   "date": "2026-04-03"
+   "date": "2026-04-03",
+   "document": null
   },
   "h_foreign": {
    "id": "a1000000-0000-4000-8000-000000984088",
    "instructor": "paolo",
    "payment": "comp_foreign",
-   "date": "2026-04-04"
+   "date": "2026-04-04",
+   "document": null
+  },
+  "h_tokened": {
+   "id": "a1000000-0000-4000-8000-000000984089",
+   "instructor": "luca",
+   "payment": "comp_tokened",
+   "date": "2026-04-05",
+   "document": "tok_hours"
   }
  },
  "customer_invoices": {
@@ -583,6 +671,14 @@
    "number": 12,
    "year": 2025,
    "document": "old_customer"
+  },
+  "tokened": {
+   "id": "a1000000-0000-4000-8000-000000984093",
+   "association": "own",
+   "prefix": "T",
+   "number": 3,
+   "year": 2026,
+   "document": "tok_customer"
   }
  },
  "templates": {
@@ -636,6 +732,20 @@
    "region": "non-agonistica",
    "date": "2026-05-09",
    "document": "old_medical"
+  },
+  "athlete": {
+   "id": "a1000000-0000-4000-8000-000000984115",
+   "subscription": "athlete",
+   "region": "agonistica",
+   "date": "2026-05-10",
+   "document": null
+  },
+  "tokened": {
+   "id": "a1000000-0000-4000-8000-000000984116",
+   "subscription": "plain",
+   "region": "agonistica",
+   "date": "2026-05-11",
+   "document": "tok_medical"
   }
  },
  "extra_users": {
@@ -643,6 +753,11 @@
    "id": "a1000000-0000-4000-8000-000000984027",
    "username": "document-render-member",
    "email": "document-render-member@example.test"
+  },
+  "coach": {
+   "id": "a1000000-0000-4000-8000-000000984019",
+   "username": "document-render-coach",
+   "email": "document-render-coach@example.test"
   }
  },
  "cases": [
@@ -2214,16 +2329,84 @@
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
   },
   {
-   "name": "document-render-invoice-document-token",
+   "name": "document-render-invoice-athlete-other-document-token",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984051?token=a1000000-0000-4000-8000-000000984130",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-document-token-other-document",
    "actor": "anonymous",
    "method": "GET",
    "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?token=a1000000-0000-4000-8000-000000984124",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-document-token-other-invoice",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?token=a1000000-0000-4000-8000-000000984130",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-document-token-post",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984049?token=a1000000-0000-4000-8000-000000984130",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null,
+   "body": {
+    "send_receipt_email": "true"
+   }
+  },
+  {
+   "name": "document-render-invoice-document-token-invalid-uuid",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/abc?token=a1000000-0000-4000-8000-000000984130",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984051?token=a1000000-0000-4000-8000-000000984130",
    "headers": {},
    "status": 200,
    "response": "<pdf>",
    "renders": [
     {
-     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984051/view",
      "authorization": null,
      "reply": {
       "status": 200,
@@ -2233,31 +2416,44 @@
     }
    ],
    "effect": {
-    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "document": "[Message reads own] Ricevuta 2026-03-12.pdf",
     "actor": null,
     "storage_task": true,
     "links": [
      [
       "invoice",
-      "plain"
+      "tokened"
      ]
     ],
     "creates": [],
     "mail": null
    },
-   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-12.pdf"
+  },
+  {
+   "name": "document-render-invoice-document-token-replaced",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984051?token=a1000000-0000-4000-8000-000000984130",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
   },
   {
    "name": "document-render-invoice-document-token-hex",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?token=A1000000000040008000000000984124",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984052?token=A1000000000040008000000000984131&send_receipt_email=1",
    "headers": {},
    "status": 200,
    "response": "<pdf>",
    "renders": [
     {
-     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984052/view",
      "authorization": null,
      "reply": {
       "status": 200,
@@ -2267,19 +2463,23 @@
     }
    ],
    "effect": {
-    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "document": "[Message reads own] Ricevuta 2026-03-13.pdf",
     "actor": null,
     "storage_task": true,
     "links": [
      [
       "invoice",
-      "plain"
+      "tokened_hex"
      ]
     ],
     "creates": [],
-    "mail": null
+    "mail": {
+     "subject": "Ricevuta di pagamento 13/03/26",
+     "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 16,00 € del 13/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
+     "recipient": "mario.rossi@example.test"
+    }
    },
-   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-13.pdf"
   },
   {
    "name": "document-render-invoice-group-own",
@@ -2509,10 +2709,12 @@
    "name": "document-render-invoice-document-token-garbage",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?token=garbage",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984050?token=garbage",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
    "renders": [],
    "effect": null
   },
@@ -2520,10 +2722,12 @@
    "name": "document-render-invoice-document-token-empty",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?token=",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984050?token=",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
    "renders": [],
    "effect": null
   },
@@ -2533,8 +2737,10 @@
    "method": "GET",
    "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?token=a1000000-0000-4000-8000-000000984125",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
    "renders": [],
    "effect": null
   },
@@ -2943,6 +3149,160 @@
    "disposition": "inline; filename=[Message reads own] Fattura FPR 7/2026.pdf"
   },
   {
+   "name": "document-render-einvoice-document-token-other-document",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984093?token=a1000000-0000-4000-8000-000000984124",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-document-token-other-invoice",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984090?token=a1000000-0000-4000-8000-000000984132",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-document-token-garbage",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984093?token=garbage",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-athlete-document-token",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984093?token=a1000000-0000-4000-8000-000000984132",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984093?token=a1000000-0000-4000-8000-000000984132",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/einvoice/a1000000-0000-4000-8000-000000984093/view",
+     "authorization": null,
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Fattura T 3/2026.pdf",
+    "actor": null,
+    "storage_task": true,
+    "links": [
+     [
+      "customerinvoice",
+      "tokened"
+     ]
+    ],
+    "creates": [],
+    "mail": null
+   },
+   "disposition": "inline; filename=[Message reads own] Fattura T 3/2026.pdf"
+  },
+  {
+   "name": "document-render-einvoice-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984090",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-athlete-post",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984092?download=1",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null,
+   "body": {
+    "ignored": true
+   }
+  },
+  {
+   "name": "document-render-einvoice-athlete-unknown",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984999",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "CustomerInvoice matching query does not exist."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-member",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984090",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-instructor-account",
+   "actor": "coach",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984090",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
    "name": "document-render-einvoice-unknown",
    "actor": "owner",
    "method": "GET",
@@ -3200,13 +3560,13 @@
    "name": "document-render-compensation-document-token",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071?token=a1000000-0000-4000-8000-000000984124",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984079?token=a1000000-0000-4000-8000-000000984133",
    "headers": {},
    "status": 200,
    "response": "<pdf>",
    "renders": [
     {
-     "url": "document/compensation/a1000000-0000-4000-8000-000000984071/view",
+     "url": "document/compensation/a1000000-0000-4000-8000-000000984079/view",
      "authorization": null,
      "reply": {
       "status": 200,
@@ -3216,8 +3576,81 @@
     }
    ],
    "effect": {
-    "document": "[Message reads own] Compenso per Luca Bianchi del 2026-04-05.pdf",
+    "document": "[Message reads own] Compenso per Luca Bianchi del 2026-04-10.pdf",
     "actor": null,
+    "storage_task": true,
+    "links": [
+     [
+      "instructorhours",
+      "h_tokened"
+     ]
+    ],
+    "creates": [],
+    "mail": null
+   },
+   "disposition": "inline; filename=[Message reads own] Compenso per Luca Bianchi del 2026-04-10.pdf"
+  },
+  {
+   "name": "document-render-compensation-document-token-other-document",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071?token=a1000000-0000-4000-8000-000000984124",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-document-token-other-compensation",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984072?token=a1000000-0000-4000-8000-000000984133",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-document-token-garbage",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071?token=garbage",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-instructor-account",
+   "actor": "coach",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/compensation/a1000000-0000-4000-8000-000000984071/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Compenso per Luca Bianchi del 2026-04-05.pdf",
+    "actor": "coach",
     "storage_task": true,
     "links": [
      [
@@ -3233,6 +3666,97 @@
     "mail": null
    },
    "disposition": "inline; filename=[Message reads own] Compenso per Luca Bianchi del 2026-04-05.pdf"
+  },
+  {
+   "name": "document-render-compensation-instructor-account-other",
+   "actor": "coach",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984076",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-instructor-account-unknown",
+   "actor": "coach",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984999",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Compensation not found"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-athlete-post",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984072?download=true",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-athlete-without-instructor",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984073",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-athlete-deleted",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984075",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Compensation not found"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-member",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
   },
   {
    "name": "document-render-compensation-bypass-header",
@@ -3934,9 +4458,24 @@
    "method": "GET",
    "path": "/document/template/a1000000-0000-4000-8000-000000984100?token=a1000000-0000-4000-8000-000000984124",
    "headers": {},
-   "status": 500,
+   "status": 401,
    "response": {
-    "exception": "'AnonymousUser' object has no attribute 'sport_association'"
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-template-bypass-header",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {
+    "Authorization": "$bypass"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
    },
    "renders": [],
    "effect": null
@@ -4178,13 +4717,13 @@
    "name": "document-render-medical-document-token",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984110?token=a1000000-0000-4000-8000-000000984124",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984116?token=a1000000-0000-4000-8000-000000984134",
    "headers": {},
    "status": 200,
    "response": "<pdf>",
    "renders": [
     {
-     "url": "document/medical-appointment/a1000000-0000-4000-8000-000000984110/view",
+     "url": "document/medical-appointment/a1000000-0000-4000-8000-000000984116/view",
      "authorization": null,
      "reply": {
       "status": 200,
@@ -4194,19 +4733,172 @@
     }
    ],
    "effect": {
-    "document": "[Message reads own] Visita Agonistica del 2026-05-06.pdf",
+    "document": "[Message reads own] Visita Agonistica del 2026-05-11.pdf",
     "actor": null,
     "storage_task": true,
     "links": [
      [
       "medicalappointments",
-      "agonistica"
+      "tokened"
      ]
     ],
     "creates": [],
     "mail": null
    },
-   "disposition": "inline; filename=[Message reads own] Visita Agonistica del 2026-05-06.pdf"
+   "disposition": "inline; filename=[Message reads own] Visita Agonistica del 2026-05-11.pdf"
+  },
+  {
+   "name": "document-render-medical-athlete-own",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984115",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/medical-appointment/a1000000-0000-4000-8000-000000984115/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Visita Agonistica del 2026-05-10.pdf",
+    "actor": "athlete",
+    "storage_task": true,
+    "links": [
+     [
+      "medicalappointments",
+      "athlete"
+     ]
+    ],
+    "creates": [],
+    "mail": null
+   },
+   "disposition": "inline; filename=[Message reads own] Visita Agonistica del 2026-05-10.pdf"
+  },
+  {
+   "name": "document-render-medical-document-token-other-document",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984110?token=a1000000-0000-4000-8000-000000984124",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-document-token-other-appointment",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984110?token=a1000000-0000-4000-8000-000000984134",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-document-token-garbage",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984114?token=garbage",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-bypass-header",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984110",
+   "headers": {
+    "Authorization": "$bypass"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-athlete-other",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984110",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-athlete-other-post",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984114?download=1",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-athlete-other-unknown-region",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984113",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-athlete-unknown",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984999",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'NoneType' object has no attribute 'subscription'"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-member-of-athlete",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984115",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
   },
   {
    "name": "document-render-medical-unknown",

@@ -215,7 +215,8 @@ def seed_rows(source, created):
                                 document_pdf_id=document(row['document']), deleted=row['deleted'],
                                 group_id=ids[row['group']] if row['group'] else None))
     for row in source['instructors'].values():
-        insert(Instructor, Instructor(instructor_id=row['id'], user_id=ids[row['user']], first_name=row['first'], last_name=row['last']))
+        insert(Instructor, Instructor(instructor_id=row['id'], user_id=ids[row['user']], first_name=row['first'], last_name=row['last'],
+                                      associated_user_id=source['extra_users'][row['account']]['id'] if row['account'] else None))
     for row in source['payments'].values():
         insert(Payment, Payment(
             payment_id=row['id'], sport_association_id=associations[row['association']], subject=0, amount=Decimal(row['amount']),
@@ -228,7 +229,7 @@ def seed_rows(source, created):
         insert(InstructorHours, InstructorHours(
             instructor_hours_id=row['id'], instructor_id=source['instructors'][row['instructor']]['id'],
             payment_id=source['payments'][row['payment']]['id'] if row['payment'] else None, date=date.fromisoformat(row['date']),
-            hours=Decimal('1.50'), creation_date=seeded))
+            hours=Decimal('1.50'), creation_date=seeded, document_id=document(row['document'])))
     for row in source['customer_invoices'].values():
         insert(CustomerInvoice, CustomerInvoice(customer_invoice_id=row['id'], sport_association_id=associations[row['association']],
                                                 prefix=row['prefix'], number=row['number'], fiscal_year=row['year'],
@@ -347,7 +348,7 @@ def assert_effect(case, before, after, source, context):
     events.sort(key=lambda row: row['id'])
     types_ = {(ct['app_label'], ct['model']): ct['id'] for ct in before['contenttypes.ContentType']}
     users = keyed(before['application.User'], 'user_id')
-    actor = ids[spec['actor']] if spec['actor'] else None
+    actor = (ids.get(spec['actor']) or source['extra_users'][spec['actor']]['id']) if spec['actor'] else None
     own_actor = actor_association(spec['actor'], ids)
     additional = None
     session = case['headers'].get('X-Impersonation-Id')

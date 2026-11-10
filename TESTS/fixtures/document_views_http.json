@@ -645,7 +645,8 @@
    "email": "anna@example.test",
    "study_title": "Laurea",
    "role": "Allenatrice",
-   "contract": "2024-09-01"
+   "contract": "2024-09-01",
+   "account": "coach"
   },
   "volunteer": {
    "id": "a1000000-0000-4000-8000-000000985071",
@@ -663,7 +664,8 @@
    "email": null,
    "study_title": null,
    "role": null,
-   "contract": null
+   "contract": null,
+   "account": null
   }
  },
  "signatures": {
@@ -892,6 +894,14 @@
    "date": null,
    "sport": "",
    "meta": null
+  },
+  "athlete": {
+   "id": "a1000000-0000-4000-8000-000000985116",
+   "subscription": "own",
+   "region": "agonistica",
+   "date": "2026-03-03",
+   "sport": "Vela",
+   "meta": {}
   }
  },
  "extra_users": {
@@ -899,6 +909,11 @@
    "id": "a1000000-0000-4000-8000-000000985052",
    "username": "document-views-member",
    "email": "document-views-member@example.test"
+  },
+  "coach": {
+   "id": "a1000000-0000-4000-8000-000000985053",
+   "username": "document-views-coach",
+   "email": "document-views-coach@example.test"
   }
  },
  "cases": [
@@ -10347,10 +10362,10 @@
    "content_language": "en"
   },
   {
-   "name": "document-views-compensation-athlete-direct",
-   "actor": "athlete",
+   "name": "document-views-compensation-instructor-account",
+   "actor": "coach",
    "method": "GET",
-   "path": "/document/compensation/a1000000-0000-4000-8000-000000985081/view/",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000985080/view/",
    "headers": {},
    "status": 200,
    "response": "<html>",
@@ -10449,93 +10464,105 @@
            "is_volunteer",
            {
             "t": "bool",
-            "v": true
+            "v": false
            }
           ],
           [
            "first_name",
            {
             "t": "str",
-            "v": "Vito"
+            "v": "Anna"
            }
           ],
           [
            "last_name",
            {
             "t": "str",
-            "v": "Volontario"
+            "v": "D'Amico"
            }
           ],
           [
            "tax_code",
            {
-            "t": "none"
+            "t": "str",
+            "v": "dmcnna85l48l219q"
            }
           ],
           [
            "address",
            {
-            "t": "none"
+            "t": "str",
+            "v": "Via Nizza"
            }
           ],
           [
            "civic_number",
            {
-            "t": "none"
+            "t": "str",
+            "v": "12/b"
            }
           ],
           [
            "address_city",
            {
-            "t": "none"
+            "t": "str",
+            "v": "Torino"
            }
           ],
           [
            "born_date",
            {
-            "t": "none"
+            "t": "date",
+            "v": "1985-07-08"
            }
           ],
           [
            "born_city",
            {
-            "t": "none"
+            "t": "str",
+            "v": "Cuneo"
            }
           ],
           [
            "born_province",
            {
-            "t": "none"
+            "t": "str",
+            "v": "cn"
            }
           ],
           [
            "phone",
            {
-            "t": "none"
+            "t": "str",
+            "v": "333"
            }
           ],
           [
            "email",
            {
-            "t": "none"
+            "t": "str",
+            "v": "anna@example.test"
            }
           ],
           [
            "study_title",
            {
-            "t": "none"
+            "t": "str",
+            "v": "Laurea"
            }
           ],
           [
            "role",
            {
-            "t": "none"
+            "t": "str",
+            "v": "Allenatrice"
            }
           ],
           [
            "stipulated_contract_in",
            {
-            "t": "none"
+            "t": "date",
+            "v": "2024-09-01"
            }
           ]
          ]
@@ -10545,37 +10572,137 @@
         "amount",
         {
          "t": "decimal",
-         "v": "0.00"
+         "v": "80.00"
         }
        ],
        [
         "payment_date",
         {
-         "t": "none"
+         "t": "datetime",
+         "v": "2026-04-05T09:00:00+00:00"
         }
        ],
        [
         "signature",
         {
-         "t": "none"
+         "t": "obj",
+         "v": [
+          [
+           "signature",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,U0lH"
+           }
+          ]
+         ]
         }
        ],
        [
         "notes",
         {
-         "t": "none"
+         "t": "str",
+         "v": "Riga 1\nRiga <2> & 3"
         }
        ]
       ]
      },
      "from_date": {
-      "t": "none"
+      "t": "date",
+      "v": "2026-02-05"
      },
      "to_date": {
-      "t": "none"
+      "t": "date",
+      "v": "2026-04-01"
      }
     }
    }
+  },
+  {
+   "name": "document-views-compensation-instructor-account-other",
+   "actor": "coach",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000985081/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-compensation-instructor-account-without-instructor",
+   "actor": "coach",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000985083/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-compensation-instructor-account-unknown",
+   "actor": "coach",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000985999/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-compensation-athlete-direct",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000985081/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-compensation-athlete-invalid-period",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000985082/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-compensation-athlete-deleted",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000985084/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-compensation-member",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000985080/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
   },
   {
    "name": "document-views-compensation-admin-impersonating-owner",
@@ -11123,35 +11250,6 @@
    }
   },
   {
-   "name": "document-views-template-athlete",
-   "actor": "athlete",
-   "method": "GET",
-   "path": "/document/template/a1000000-0000-4000-8000-000000985100/view/",
-   "headers": {},
-   "status": 200,
-   "response": "<html>",
-   "renders": [],
-   "content_language": "en",
-   "html": {
-    "template": "document/application/model.html",
-    "language": "en",
-    "context": {
-     "template": {
-      "t": "str",
-      "v": "<h1>Modulo</h1><p>Io sottoscritto/a   (), nato il , tutore , corsi: , oggi $today.</p>"
-     },
-     "header": {
-      "t": "str",
-      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli &amp; soci - CF 01234567890<br/>Data: $today, contatto alfa@example.test, iscritto </p>"
-     },
-     "footer": {
-      "t": "str",
-      "v": "<p>Grazie da @Denominazione — []</p>\n<p> </p>"
-     }
-    }
-   }
-  },
-  {
    "name": "document-views-template-unknown-subscription",
    "actor": "owner",
    "method": "GET",
@@ -11504,6 +11602,82 @@
    }
   },
   {
+   "name": "document-views-template-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000985100/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-template-athlete-own-subscription",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000985100/view/?subscription_id=a1000000-0000-4000-8000-000000985050",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-template-athlete-other-subscription",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000985103/view/?subscription_id=a1000000-0000-4000-8000-000000985030",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-template-athlete-unknown",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000985999/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-template-member",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000985102/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-template-instructor-account",
+   "actor": "coach",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000985100/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
    "name": "document-views-template-unknown",
    "actor": "owner",
    "method": "GET",
@@ -11537,6 +11711,19 @@
    "status": 403,
    "response": {
     "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-medical-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985110/view/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
    },
    "renders": [],
    "content_language": "en"
@@ -11592,7 +11779,7 @@
   },
   {
    "name": "document-views-medical-put-not-allowed",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "PUT",
    "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985110/view/",
    "headers": {},
@@ -11604,8 +11791,21 @@
    "content_language": "en"
   },
   {
+   "name": "document-views-medical-post-not-allowed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985110/view/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
    "name": "document-views-medical-options",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "OPTIONS",
    "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985110/view/",
    "headers": {},
@@ -11626,248 +11826,58 @@
    "content_language": "en"
   },
   {
-   "name": "document-views-medical-anonymous",
+   "name": "document-views-medical-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985110/view/?token=a1000000-0000-4000-8000-000000985999",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-medical-bypass-invalid",
    "actor": "anonymous",
    "method": "GET",
    "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985110/view/",
-   "headers": {},
-   "status": 200,
-   "response": "<html>",
+   "headers": {
+    "Authorization": "not-the-token"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
    "renders": [],
-   "content_language": "it",
-   "html": {
-    "template": "document/medical-appointments/agonistica.html",
-    "language": "it",
-    "context": {
-     "medical_appointment": {
-      "t": "obj",
-      "v": [
-       [
-        "date",
-        {
-         "t": "date",
-         "v": "2026-05-06"
-        }
-       ],
-       [
-        "sport",
-        {
-         "t": "str",
-         "v": "Calcio & corsa"
-        }
-       ]
-      ]
-     },
-     "sport_association": {
-      "t": "obj",
-      "v": [
-       [
-        "logo",
-        {
-         "t": "str",
-         "v": "data:image/png;base64,QUJD"
-        }
-       ],
-       [
-        "denomination",
-        {
-         "t": "str",
-         "v": "ASD Alfa & Figli"
-        }
-       ],
-       [
-        "tax_code",
-        {
-         "t": "str",
-         "v": "01234567890"
-        }
-       ],
-       [
-        "address",
-        {
-         "t": "str",
-         "v": "Via Roma 1"
-        }
-       ],
-       [
-        "address_city",
-        {
-         "t": "str",
-         "v": "Torino"
-        }
-       ],
-       [
-        "address_cap",
-        {
-         "t": "str",
-         "v": "10100"
-        }
-       ],
-       [
-        "federation",
-        {
-         "t": "str",
-         "v": "FIDAL"
-        }
-       ],
-       [
-        "enroll_number",
-        {
-         "t": "str",
-         "v": "ab-12"
-        }
-       ],
-       [
-        "regulation",
-        {
-         "t": "str",
-         "v": "<p>Regolamento <b>interno</b></p>"
-        }
-       ],
-       [
-        "demand",
-        {
-         "t": "none"
-        }
-       ]
-      ]
-     },
-     "associate": {
-      "t": "obj",
-      "v": [
-       [
-        "first_name",
-        {
-         "t": "str",
-         "v": "Mario"
-        }
-       ],
-       [
-        "last_name",
-        {
-         "t": "str",
-         "v": "Rossi"
-        }
-       ],
-       [
-        "tax_code",
-        {
-         "t": "str",
-         "v": "RSSMRA80A01L219X"
-        }
-       ],
-       [
-        "sex",
-        {
-         "t": "str",
-         "v": "M"
-        }
-       ],
-       [
-        "born_date",
-        {
-         "t": "date",
-         "v": "1980-01-01"
-        }
-       ],
-       [
-        "born_city",
-        {
-         "t": "str",
-         "v": "Torino"
-        }
-       ],
-       [
-        "address",
-        {
-         "t": "str",
-         "v": "Via Po 2"
-        }
-       ],
-       [
-        "address_city",
-        {
-         "t": "str",
-         "v": "Torino"
-        }
-       ],
-       [
-        "address_cap",
-        {
-         "t": "str",
-         "v": "10123"
-        }
-       ],
-       [
-        "phone",
-        {
-         "t": "str",
-         "v": "+39 333 0000000"
-        }
-       ],
-       [
-        "email",
-        {
-         "t": "str",
-         "v": "mario@example.test"
-        }
-       ],
-       [
-        "get_full_name",
-        {
-         "t": "call",
-         "v": {
-          "t": "str",
-          "v": "Mario Rossi"
-         }
-        }
-       ],
-       [
-        "full_name",
-        {
-         "t": "str",
-         "v": "Mario Rossi"
-        }
-       ],
-       [
-        "is_minor_now",
-        {
-         "t": "bool",
-         "v": false
-        }
-       ],
-       [
-        "main_tutor",
-        {
-         "t": "call",
-         "v": {
-          "t": "none"
-         }
-        }
-       ]
-      ]
-     },
-     "meta": {
-      "t": "dict",
-      "v": [
-       [
-        "first_affiliation",
-        {
-         "t": "bool",
-         "v": true
-        }
-       ],
-       [
-        "renewal",
-        {
-         "t": "bool",
-         "v": false
-        }
-       ]
-      ]
-     }
-    }
-   }
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-medical-bypass-non-ascii",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985110/view/",
+   "headers": {
+    "Authorization": "tokèn"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-medical-anonymous-invalid-uuid",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/nope/view/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "content_language": "en"
   },
   {
    "name": "document-views-medical-owner",
@@ -12114,8 +12124,254 @@
    }
   },
   {
-   "name": "document-views-medical-minor",
+   "name": "document-views-medical-bypass",
    "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985110/view/",
+   "headers": {
+    "Authorization": "$bypass"
+   },
+   "status": 200,
+   "response": "<html>",
+   "renders": [],
+   "content_language": "it",
+   "html": {
+    "template": "document/medical-appointments/agonistica.html",
+    "language": "it",
+    "context": {
+     "medical_appointment": {
+      "t": "obj",
+      "v": [
+       [
+        "date",
+        {
+         "t": "date",
+         "v": "2026-05-06"
+        }
+       ],
+       [
+        "sport",
+        {
+         "t": "str",
+         "v": "Calcio & corsa"
+        }
+       ]
+      ]
+     },
+     "sport_association": {
+      "t": "obj",
+      "v": [
+       [
+        "logo",
+        {
+         "t": "str",
+         "v": "data:image/png;base64,QUJD"
+        }
+       ],
+       [
+        "denomination",
+        {
+         "t": "str",
+         "v": "ASD Alfa & Figli"
+        }
+       ],
+       [
+        "tax_code",
+        {
+         "t": "str",
+         "v": "01234567890"
+        }
+       ],
+       [
+        "address",
+        {
+         "t": "str",
+         "v": "Via Roma 1"
+        }
+       ],
+       [
+        "address_city",
+        {
+         "t": "str",
+         "v": "Torino"
+        }
+       ],
+       [
+        "address_cap",
+        {
+         "t": "str",
+         "v": "10100"
+        }
+       ],
+       [
+        "federation",
+        {
+         "t": "str",
+         "v": "FIDAL"
+        }
+       ],
+       [
+        "enroll_number",
+        {
+         "t": "str",
+         "v": "ab-12"
+        }
+       ],
+       [
+        "regulation",
+        {
+         "t": "str",
+         "v": "<p>Regolamento <b>interno</b></p>"
+        }
+       ],
+       [
+        "demand",
+        {
+         "t": "none"
+        }
+       ]
+      ]
+     },
+     "associate": {
+      "t": "obj",
+      "v": [
+       [
+        "first_name",
+        {
+         "t": "str",
+         "v": "Mario"
+        }
+       ],
+       [
+        "last_name",
+        {
+         "t": "str",
+         "v": "Rossi"
+        }
+       ],
+       [
+        "tax_code",
+        {
+         "t": "str",
+         "v": "RSSMRA80A01L219X"
+        }
+       ],
+       [
+        "sex",
+        {
+         "t": "str",
+         "v": "M"
+        }
+       ],
+       [
+        "born_date",
+        {
+         "t": "date",
+         "v": "1980-01-01"
+        }
+       ],
+       [
+        "born_city",
+        {
+         "t": "str",
+         "v": "Torino"
+        }
+       ],
+       [
+        "address",
+        {
+         "t": "str",
+         "v": "Via Po 2"
+        }
+       ],
+       [
+        "address_city",
+        {
+         "t": "str",
+         "v": "Torino"
+        }
+       ],
+       [
+        "address_cap",
+        {
+         "t": "str",
+         "v": "10123"
+        }
+       ],
+       [
+        "phone",
+        {
+         "t": "str",
+         "v": "+39 333 0000000"
+        }
+       ],
+       [
+        "email",
+        {
+         "t": "str",
+         "v": "mario@example.test"
+        }
+       ],
+       [
+        "get_full_name",
+        {
+         "t": "call",
+         "v": {
+          "t": "str",
+          "v": "Mario Rossi"
+         }
+        }
+       ],
+       [
+        "full_name",
+        {
+         "t": "str",
+         "v": "Mario Rossi"
+        }
+       ],
+       [
+        "is_minor_now",
+        {
+         "t": "bool",
+         "v": false
+        }
+       ],
+       [
+        "main_tutor",
+        {
+         "t": "call",
+         "v": {
+          "t": "none"
+         }
+        }
+       ]
+      ]
+     },
+     "meta": {
+      "t": "dict",
+      "v": [
+       [
+        "first_affiliation",
+        {
+         "t": "bool",
+         "v": true
+        }
+       ],
+       [
+        "renewal",
+        {
+         "t": "bool",
+         "v": false
+        }
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "document-views-medical-minor",
+   "actor": "full_collaborator",
    "method": "GET",
    "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985111/view/",
    "headers": {},
@@ -12557,10 +12813,12 @@
   },
   {
    "name": "document-views-medical-adult-non-agonistica",
-   "actor": "athlete",
+   "actor": "anonymous",
    "method": "GET",
    "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985114/view/",
-   "headers": {},
+   "headers": {
+    "Authorization": "$bypass"
+   },
    "status": 200,
    "response": "<html>",
    "renders": [],
@@ -12794,7 +13052,7 @@
   },
   {
    "name": "document-views-medical-null-meta",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "GET",
    "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985115/view/",
    "headers": {},
@@ -13010,8 +13268,528 @@
    }
   },
   {
+   "name": "document-views-medical-athlete-own",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985116/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "renders": [],
+   "content_language": "it",
+   "html": {
+    "template": "document/medical-appointments/agonistica.html",
+    "language": "it",
+    "context": {
+     "medical_appointment": {
+      "t": "obj",
+      "v": [
+       [
+        "date",
+        {
+         "t": "date",
+         "v": "2026-03-03"
+        }
+       ],
+       [
+        "sport",
+        {
+         "t": "str",
+         "v": "Vela"
+        }
+       ]
+      ]
+     },
+     "sport_association": {
+      "t": "obj",
+      "v": [
+       [
+        "logo",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "denomination",
+        {
+         "t": "str",
+         "v": "Message reads own"
+        }
+       ],
+       [
+        "tax_code",
+        {
+         "t": "str",
+         "v": "70000000001"
+        }
+       ],
+       [
+        "address",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "address_city",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "address_cap",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "federation",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "enroll_number",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "regulation",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "demand",
+        {
+         "t": "none"
+        }
+       ]
+      ]
+     },
+     "associate": {
+      "t": "obj",
+      "v": [
+       [
+        "first_name",
+        {
+         "t": "str",
+         "v": "Athlete"
+        }
+       ],
+       [
+        "last_name",
+        {
+         "t": "str",
+         "v": "Fixture"
+        }
+       ],
+       [
+        "tax_code",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "sex",
+        {
+         "t": "str",
+         "v": "A"
+        }
+       ],
+       [
+        "born_date",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "born_city",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "address",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "address_city",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "address_cap",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "phone",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "email",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "get_full_name",
+        {
+         "t": "call",
+         "v": {
+          "t": "str",
+          "v": "Athlete Fixture"
+         }
+        }
+       ],
+       [
+        "full_name",
+        {
+         "t": "str",
+         "v": "Athlete Fixture"
+        }
+       ],
+       [
+        "is_minor_now",
+        {
+         "t": "bool",
+         "v": true
+        }
+       ],
+       [
+        "main_tutor",
+        {
+         "t": "call",
+         "v": {
+          "t": "none"
+         }
+        }
+       ]
+      ]
+     },
+     "meta": {
+      "t": "dict",
+      "v": []
+     }
+    }
+   }
+  },
+  {
+   "name": "document-views-medical-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985116/view/",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": "<html>",
+   "renders": [],
+   "content_language": "it",
+   "html": {
+    "template": "document/medical-appointments/agonistica.html",
+    "language": "it",
+    "context": {
+     "medical_appointment": {
+      "t": "obj",
+      "v": [
+       [
+        "date",
+        {
+         "t": "date",
+         "v": "2026-03-03"
+        }
+       ],
+       [
+        "sport",
+        {
+         "t": "str",
+         "v": "Vela"
+        }
+       ]
+      ]
+     },
+     "sport_association": {
+      "t": "obj",
+      "v": [
+       [
+        "logo",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "denomination",
+        {
+         "t": "str",
+         "v": "Message reads own"
+        }
+       ],
+       [
+        "tax_code",
+        {
+         "t": "str",
+         "v": "70000000001"
+        }
+       ],
+       [
+        "address",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "address_city",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "address_cap",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "federation",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "enroll_number",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "regulation",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "demand",
+        {
+         "t": "none"
+        }
+       ]
+      ]
+     },
+     "associate": {
+      "t": "obj",
+      "v": [
+       [
+        "first_name",
+        {
+         "t": "str",
+         "v": "Athlete"
+        }
+       ],
+       [
+        "last_name",
+        {
+         "t": "str",
+         "v": "Fixture"
+        }
+       ],
+       [
+        "tax_code",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "sex",
+        {
+         "t": "str",
+         "v": "A"
+        }
+       ],
+       [
+        "born_date",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "born_city",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "address",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "address_city",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "address_cap",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "phone",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "email",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "get_full_name",
+        {
+         "t": "call",
+         "v": {
+          "t": "str",
+          "v": "Athlete Fixture"
+         }
+        }
+       ],
+       [
+        "full_name",
+        {
+         "t": "str",
+         "v": "Athlete Fixture"
+        }
+       ],
+       [
+        "is_minor_now",
+        {
+         "t": "bool",
+         "v": true
+        }
+       ],
+       [
+        "main_tutor",
+        {
+         "t": "call",
+         "v": {
+          "t": "none"
+         }
+        }
+       ]
+      ]
+     },
+     "meta": {
+      "t": "dict",
+      "v": []
+     }
+    }
+   }
+  },
+  {
+   "name": "document-views-medical-athlete-other",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985114/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-medical-athlete-other-without-associate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985112/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-medical-athlete-other-unsupported-region",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985113/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-medical-athlete-unknown",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985999/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-medical-athlete-invalid-uuid",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/medical-appointment/nope/view/",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-medical-member-of-athlete",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985116/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-medical-instructor-account",
+   "actor": "coach",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985110/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
    "name": "document-views-medical-unsupported-region",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "GET",
    "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985113/view/",
    "headers": {},
@@ -13023,8 +13801,23 @@
    "content_language": "en"
   },
   {
-   "name": "document-views-medical-unknown",
+   "name": "document-views-medical-unsupported-region-bypass",
    "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985113/view/",
+   "headers": {
+    "Authorization": "$bypass"
+   },
+   "status": 303,
+   "response": {
+    "error": "This kind of medical appointment is not supported in this endpoint"
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-medical-unknown",
+   "actor": "owner",
    "method": "GET",
    "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985999/view/",
    "headers": {},
@@ -13034,8 +13827,21 @@
    "content_language": "en"
   },
   {
-   "name": "document-views-medical-invalid-uuid",
+   "name": "document-views-medical-unknown-bypass",
    "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000985999/view/",
+   "headers": {
+    "Authorization": "$bypass"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-medical-invalid-uuid",
+   "actor": "owner",
    "method": "GET",
    "path": "/document/medical-appointment/nope/view/",
    "headers": {},
@@ -13051,7 +13857,9 @@
    "actor": "anonymous",
    "method": "GET",
    "path": "/document/medical-appointment/gggggggggggggggggggggggggggggggg/view/",
-   "headers": {},
+   "headers": {
+    "Authorization": "$bypass"
+   },
    "status": 400,
    "response": [
     "invalid literal for int() with base 16: 'gggggggggggggggggggggggggggggggg'"

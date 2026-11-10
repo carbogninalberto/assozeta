@@ -15,14 +15,17 @@ service prints (@api_view(['GET'])):
   scoped association named by ?sport_association_id with a placeholder
   subscription (no parameter: 500).
 - document/compensation/<uid>/view/ (IsAuthenticated): the scoped, live,
-  group-aware payment; from/to are the min/max of its hours' dates (hourly)
+  group-aware payment, served to the association's staff and to the account
+  tied to its instructor; from/to are the min/max of its hours' dates (hourly)
   and periods ('dd/mm/YYYY al dd/mm/YYYY'); Italian is activated.
 - document/template/<uid>/view/ (IsAuthenticated | HasBypassAuthorizationHeader):
-  the module template by pk, its association's (or custom) header/footer when
+  the module template by pk, served to the association's staff; its association's (or custom) header/footer when
   enabled and its body through filter_mentions; ?subscription_id adds the
   subscription's associate, main tutor and courses list when every step works.
-- document/medical-appointment/<uid>/view/ (AllowAny): is_valid_uuid (400),
-  the appointment by pk (missing: 500), 303 for regions without an HTML
+- document/medical-appointment/<uid>/view/ (IsAuthenticated |
+  HasBypassAuthorizationHeader): is_valid_uuid (400), the appointment by pk
+  (missing: 500), served to the association's staff and to the member of its
+  subscription, 303 for regions without an HTML
   template, then agonistica/non-agonistica.html in Italian.
 
 Every HTML expectation is an authored template context (the values the view
@@ -250,17 +253,19 @@ SUBSCRIPTIONS = {
                 'payment': None, 'additional_fields': None, 'signature_url': None, 'group': None},
 }
 # Another member of the association (an athlete account without records).
-EXTRA_USERS = {'member': {'id': uid(52), 'username': 'document-views-member', 'email': 'document-views-member@example.test'}}
+EXTRA_USERS = {'member': {'id': uid(52), 'username': 'document-views-member', 'email': 'document-views-member@example.test'},
+               # The account tied to the instructor anna.
+               'coach': {'id': uid(53), 'username': 'document-views-coach', 'email': 'document-views-coach@example.test'}}
 COURSES = {'nuoto': {'id': uid(60), 'title': 'Nuoto & Acqua'}, 'yoga': {'id': uid(61), 'title': 'Yoga'},
            'untitled': {'id': uid(62), 'title': None}}
 COURSE_SUBSCRIPTIONS = [(uid(63), 'nuoto', 'mario', False), (uid(64), 'yoga', 'mario', True), (uid(65), 'untitled', 'luca', False)]
 INSTRUCTORS = {
     'anna': {'id': uid(70), 'volunteer': False, 'first': 'Anna', 'last': "D'Amico", 'tax_code': 'dmcnna85l48l219q', 'address': 'Via Nizza',
              'civic': '12/b', 'city': 'Torino', 'born': '1985-07-08', 'born_city': 'Cuneo', 'province': 'cn', 'phone': '333',
-             'email': 'anna@example.test', 'study_title': 'Laurea', 'role': 'Allenatrice', 'contract': '2024-09-01'},
+             'email': 'anna@example.test', 'study_title': 'Laurea', 'role': 'Allenatrice', 'contract': '2024-09-01', 'account': 'coach'},
     'volunteer': {'id': uid(71), 'volunteer': True, 'first': 'Vito', 'last': 'Volontario', 'tax_code': None, 'address': None,
                   'civic': None, 'city': None, 'born': None, 'born_city': None, 'province': None, 'phone': None, 'email': None,
-                  'study_title': None, 'role': None, 'contract': None},
+                  'study_title': None, 'role': None, 'contract': None, 'account': None},
 }
 SIGNATURES = {'anna': {'id': uid(72), 'signature': 'data:image/png;base64,U0lH'}}
 COMPENSATIONS = {
@@ -309,6 +314,7 @@ MEDICAL = {
     'adult': {'id': uid(114), 'subscription': 'mario', 'region': 'non-agonistica', 'date': '2026-02-28', 'sport': 'Tennis',
               'meta': {'renewal': True}},
     'nometa': {'id': uid(115), 'subscription': 'nulls', 'region': 'agonistica', 'date': None, 'sport': '', 'meta': None},
+    'athlete': {'id': uid(116), 'subscription': 'own', 'region': 'agonistica', 'date': '2026-03-03', 'sport': 'Vela', 'meta': {}},
 }
 
 cases = []
@@ -549,8 +555,16 @@ add('compensation-bare', 'full_collaborator', COMP('bare'), 200, HTML, language=
 add('compensation-group-own', 'owner', COMP('group'), 200, HTML, language='it', headers={'X-Group-Id': IDS['own_group']},
     html=compensation_context('group', None, None))
 add('compensation-group-other', 'owner', COMP('group'), 500, SERVER, headers={'X-Group-Id': IDS['foreign_group']})
-add('compensation-athlete-direct', 'athlete', COMP('volunteer'), 200, HTML, language='it',
-    html=compensation_context('volunteer', None, None))
+# The page is served to the association's staff and to the account tied to the instructor.
+add('compensation-instructor-account', 'coach', COMP('hours'), 200, HTML, language='it',
+    html=compensation_context('hours', '2026-02-05', '2026-04-01'))
+add('compensation-instructor-account-other', 'coach', COMP('volunteer'), 403, SCOPED_HIDDEN)
+add('compensation-instructor-account-without-instructor', 'coach', COMP('bare'), 403, SCOPED_HIDDEN)
+add('compensation-instructor-account-unknown', 'coach', f'/document/compensation/{UNKNOWN}/view/', 500, SERVER)
+add('compensation-athlete-direct', 'athlete', COMP('volunteer'), 403, SCOPED_HIDDEN)
+add('compensation-athlete-invalid-period', 'athlete', COMP('badperiod'), 403, SCOPED_HIDDEN)
+add('compensation-athlete-deleted', 'athlete', COMP('deleted'), 500, SERVER)
+add('compensation-member', 'member', COMP('hours'), 403, SCOPED_HIDDEN)
 add('compensation-admin-impersonating-owner', 'admin', COMP('volunteer'), 200, HTML, language='it', headers=ADMIN_OWNER,
     html=compensation_context('volunteer', None, None))
 add('compensation-scoped-athlete-denied', 'owner', COMP('hours'), 403, SCOPED_DENIED, headers=SCOPED)
@@ -583,7 +597,6 @@ for name, actor, query, headers in (
         ('template-owner', 'owner', '', {}),
         ('template-bypass', 'anonymous', '', {'Authorization': '$bypass'}),
         ('template-foreign-owner', 'foreign_owner', '', {}),
-        ('template-athlete', 'athlete', '', {}),
         ('template-unknown-subscription', 'owner', '?subscription_id=' + UNKNOWN, {}),
         ('template-invalid-subscription', 'owner', '?subscription_id=nope', {}),
         ('template-empty-subscription', 'owner', '?subscription_id=', {}),
@@ -607,11 +620,18 @@ add('template-custom-header', 'owner', TPL('custom'), 200, HTML,
     html=model_context('<p>Corpo  <b>$today</b></p>', '<p><br/></p>', ''))
 add('template-without-header-footer', 'owner', TPL('bare'), 200, HTML, html=model_context('', '', ''))
 add('template-foreign-custom-footer', 'owner', TPL('foreign'), 200, HTML, html=model_context('<p>Ciao </p>', '', '<p>Piè </p>'))
+# The page is served to the association's staff.
+add('template-athlete', 'athlete', TPL('plain'), 403, SCOPED_HIDDEN)
+add('template-athlete-own-subscription', 'athlete', f"{TPL('plain')}?subscription_id={S('own')}", 403, SCOPED_HIDDEN)
+add('template-athlete-other-subscription', 'athlete', f"{TPL('foreign')}?subscription_id={S('mario')}", 403, SCOPED_HIDDEN)
+add('template-athlete-unknown', 'athlete', f'/document/template/{UNKNOWN}/view/', 500, SERVER)
+add('template-member', 'member', TPL('bare'), 403, SCOPED_HIDDEN)
+add('template-instructor-account', 'coach', TPL('plain'), 403, SCOPED_HIDDEN)
 add('template-unknown', 'owner', f'/document/template/{UNKNOWN}/view/', 500, SERVER)
 add('template-invalid-uuid', 'owner', '/document/template/x/view/', 500, SERVER)
 add('template-scoped-athlete-denied', 'owner', TPL('plain'), 403, SCOPED_DENIED, headers=SCOPED)
 
-# --- document/medical-appointment/<uid>/view/ (AllowAny) ---------------------------------------
+# --- document/medical-appointment/<uid>/view/ (IsAuthenticated | HasBypassAuthorizationHeader) ---
 MED = lambda key: f"/document/medical-appointment/{MEDICAL[key]['id']}/view/"
 
 
@@ -626,22 +646,36 @@ def medical_context(key):
         'meta': json_value(row['meta'])}}
 
 
-add('medical-invalid-bearer', 'anonymous', MED('agonistica'), 401, INVALID_JWT, headers={'Authorization': 'Bearer not-a-jwt'})
-add('medical-admin-without-session', 'admin', MED('agonistica'), 403, ADMIN)
-add('medical-restricted-collaborator', 'restricted_collaborator', MED('agonistica'), 403, unmapped(MED('agonistica')))
-add('medical-put-not-allowed', 'anonymous', MED('agonistica'), 405, method('PUT'), method_='PUT')
-add('medical-options', 'anonymous', MED('agonistica'), 200, {'name': 'Document Medical Appointment View', 'description': '',
-                                                             'renders': ['application/json'], 'parses': PARSES}, method_='OPTIONS')
-for name, actor, key in (('medical-anonymous', 'anonymous', 'agonistica'), ('medical-owner', 'owner', 'agonistica'),
-                         ('medical-minor', 'anonymous', 'minor'), ('medical-without-associate', 'foreign_owner', 'noassociate'),
-                         ('medical-adult-non-agonistica', 'athlete', 'adult'), ('medical-null-meta', 'anonymous', 'nometa')):
-    add(name, actor, MED(key), 200, HTML, language='it', html=medical_context(key))
-add('medical-unsupported-region', 'anonymous', MED('biella'), 303,
+common('medical', MED('agonistica'), 'Document Medical Appointment View')
+add('medical-document-token', 'anonymous', MED('agonistica') + '?token=' + UNKNOWN, 401, ANONYMOUS)
+add('medical-bypass-invalid', 'anonymous', MED('agonistica'), 401, ANONYMOUS, headers={'Authorization': 'not-the-token'})
+add('medical-bypass-non-ascii', 'anonymous', MED('agonistica'), 500, SERVER, headers={'Authorization': 'tokèn'})
+add('medical-anonymous-invalid-uuid', 'anonymous', '/document/medical-appointment/nope/view/', 401, ANONYMOUS)
+BYPASS = {'Authorization': '$bypass'}
+# The page is served to the association's staff, to the renderer and to the member of the appointment's subscription.
+for name, actor, key, headers in (('medical-owner', 'owner', 'agonistica', {}), ('medical-bypass', 'anonymous', 'agonistica', BYPASS),
+                                  ('medical-minor', 'full_collaborator', 'minor', {}),
+                                  ('medical-without-associate', 'foreign_owner', 'noassociate', {}),
+                                  ('medical-adult-non-agonistica', 'anonymous', 'adult', BYPASS),
+                                  ('medical-null-meta', 'owner', 'nometa', {}), ('medical-athlete-own', 'athlete', 'athlete', {}),
+                                  ('medical-admin-impersonating-owner', 'admin', 'athlete', ADMIN_OWNER)):
+    add(name, actor, MED(key), 200, HTML, language='it', headers=headers, html=medical_context(key))
+add('medical-athlete-other', 'athlete', MED('adult'), 403, SCOPED_HIDDEN)
+add('medical-athlete-other-without-associate', 'athlete', MED('noassociate'), 403, SCOPED_HIDDEN)
+add('medical-athlete-other-unsupported-region', 'athlete', MED('biella'), 403, SCOPED_HIDDEN)
+add('medical-athlete-unknown', 'athlete', f'/document/medical-appointment/{UNKNOWN}/view/', 500, SERVER)
+add('medical-athlete-invalid-uuid', 'athlete', '/document/medical-appointment/nope/view/', 400, ['badly formed hexadecimal UUID string'])
+add('medical-member-of-athlete', 'member', MED('athlete'), 403, SCOPED_HIDDEN)
+add('medical-instructor-account', 'coach', MED('agonistica'), 403, SCOPED_HIDDEN)
+add('medical-unsupported-region', 'owner', MED('biella'), 303,
     {'error': 'This kind of medical appointment is not supported in this endpoint'})
-add('medical-unknown', 'anonymous', f'/document/medical-appointment/{UNKNOWN}/view/', 500, SERVER)
-add('medical-invalid-uuid', 'anonymous', '/document/medical-appointment/nope/view/', 400, ['badly formed hexadecimal UUID string'])
+add('medical-unsupported-region-bypass', 'anonymous', MED('biella'), 303,
+    {'error': 'This kind of medical appointment is not supported in this endpoint'}, headers=BYPASS)
+add('medical-unknown', 'owner', f'/document/medical-appointment/{UNKNOWN}/view/', 500, SERVER)
+add('medical-unknown-bypass', 'anonymous', f'/document/medical-appointment/{UNKNOWN}/view/', 500, SERVER, headers=BYPASS)
+add('medical-invalid-uuid', 'owner', '/document/medical-appointment/nope/view/', 400, ['badly formed hexadecimal UUID string'])
 add('medical-invalid-uuid-digits', 'anonymous', '/document/medical-appointment/' + 'g' * 32 + '/view/', 400,
-    ["invalid literal for int() with base 16: '" + 'g' * 32 + "'"])
+    ["invalid literal for int() with base 16: '" + 'g' * 32 + "'"], headers=BYPASS)
 add('medical-scoped-athlete-denied', 'owner', MED('agonistica'), 403, SCOPED_DENIED, headers=SCOPED)
 
 assert len({c['name'] for c in cases}) == len(cases)

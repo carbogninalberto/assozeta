@@ -8463,17 +8463,6 @@
    "einvoice": "basic"
   },
   {
-   "name": "invoice-views-einvoice-athlete",
-   "actor": "athlete",
-   "method": "GET",
-   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
-   "headers": {},
-   "status": 200,
-   "response": "<einvoice>",
-   "content_language": "en",
-   "einvoice": "basic"
-  },
-  {
    "name": "invoice-views-einvoice-bypass",
    "actor": "anonymous",
    "method": "GET",
@@ -8638,6 +8627,64 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-athlete-other-association",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986303/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-athlete-without-pec",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986305/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-athlete-unknown",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986999/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-member",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
    "content_language": "en"
   },
   {
