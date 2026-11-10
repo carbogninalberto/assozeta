@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments and 5 in v2-documents, below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2 and 5 in v2-documents, below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -73,6 +73,22 @@ Receipts are `quality-reports/go-migration/<family>-http-v2sub-*`; each family d
 | subscription-reads | `GET subscription/<uid>/info` | subscription without `document_pdf` (now publishes `print_document_subscription`) | same run |
 | subscription-renew | `POST subscription/renew` | payment clean-up meets an unpaid invoiced payment | 55 cases; RED `v2sub-red-r1` Django 55/55, Go 500; GREEN `v2sub-versioned-r1` 4 transports; mutation `v2sub-mutation-r1` (invoiced payments excluded) CAUGHT |
 | subscription-transfer | `POST subscription/<uid>/transfer` (e-mail branch) | tutor/associate names starting with non-ASCII letters; non-ASCII e-mail domain | 31 cases; RED `v2sub-red-r1` Django 31/31, Go 500; GREEN `v2sub-versioned-r1` 4 transports 31/31; mutation `v2sub-mutation-r1` (no NFKC) CAUGHT |
+
+### Ported in the v2-payments-2 change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2pay2-*`.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| payment-reads | `GET payment/stats` | Stripe configured (instance integration or environment) | 248 cases; RED `v2pay2-stats-red-r1` Django 248/248, Go 500; GREEN `v2pay2-stats-versioned-r1` 4 transports; mutation `v2pay2-stats-mutation-r1` (refunds skipped instead of payouts) CAUGHT; stripe-routes 101/101 re-run |
+
+Go reads and writes the Django cache entry in django-redis format (the adapter writes it with `cache.set` and reads
+Go's back with `cache.get`) and calls the balance transactions list through a per-run Stripe stub.
+
+## Remaining A items, per family
+
+UI paths under `UI/src/`, Go under `BE_GO/internal/`. Cost: cheap (hours), medium (a family change with new
+helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascades over many models).
 
 ### Ported in the v2-documents change
 
