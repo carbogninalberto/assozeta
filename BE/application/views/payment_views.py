@@ -60,6 +60,35 @@ from application.services import InvoiceService
 logger = logging.getLogger(__name__)
 
 
+def _payment_party(request, sport_association, item):
+    """Resolve the complex_item party; payment parties only apply to the caller's association."""
+    if item['group'] == 'Istruttori':
+        instructor = Instructor.objects.get(instructor_id=item['instructor_id'])
+        if instructor.user_id != sport_association.user_id:
+            raise PermissionDenied("User not allowed.")
+        return 'instructor', instructor
+    if item['group'] == 'Fornitori':
+        supplier = SupplierAndCustomers.objects.get(supplier_id=item['supplier_id'])
+        if supplier.sport_association_id != sport_association.sport_association_id:
+            raise PermissionDenied("User not allowed.")
+        return 'supplier', supplier
+    if item['group'] == 'Iscrizioni':
+        return 'associate', _payment_subscription_associate(request, sport_association, item['subscription_id'])
+    if item['group'] == 'Persone':
+        associate = scoped_queryset(request, Associate.objects).get(associate_id=item['associate_id'])
+        if associate.sport_association_id != sport_association.sport_association_id:
+            raise PermissionDenied("User not allowed.")
+        return 'associate', associate
+    return None, None
+
+
+def _payment_subscription_associate(request, sport_association, subscription_id):
+    subscription = scoped_queryset(request, Subscription.objects).get(subscription_id=subscription_id)
+    if subscription.sport_association_id != sport_association.sport_association_id:
+        raise PermissionDenied("User not allowed.")
+    return subscription.associate
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def payment_add(request):
@@ -110,15 +139,9 @@ def payment_add(request):
         payment.sport_association = sport_association
         # checking the complex_item
         if data['complex_item']:
-            if data['complex_item']['group'] == 'Istruttori':
-                payment.instructor = Instructor.objects.get(instructor_id=data['complex_item']['instructor_id'])
-            if data['complex_item']['group'] == 'Fornitori':
-                payment.supplier = SupplierAndCustomers.objects.get(supplier_id=data['complex_item']['supplier_id'])
-            if data['complex_item']['group'] == 'Iscrizioni':
-                payment.associate = scoped_queryset(request, Subscription.objects).get(
-                    subscription_id=data['complex_item']['subscription_id']).associate
-            if data['complex_item']['group'] == 'Persone':
-                payment.associate = scoped_queryset(request, Associate.objects).get(associate_id=data['complex_item']['associate_id'])
+            field, party = _payment_party(request, sport_association, data['complex_item'])
+            if field is not None:
+                setattr(payment, field, party)
 
         payment.save()
 
@@ -279,7 +302,7 @@ def payment_bulk_add(request):
     # Payment category
     payment_category_id = data.get('payment_category')
     if payment_category_id:
-        payment_category = PaymentCategory.objects.filter(pk=payment_category_id).first()
+        payment_category = PaymentCategory.get_all_categories(sport_association).filter(pk=payment_category_id).first()
     else:
         payment_category = PaymentCategory.objects.filter(
             name__iexact='entrate e proventi da attività tipiche'
@@ -400,6 +423,9 @@ def payment_sign(request):
             payment = scoped_queryset(request, Payment.objects).filter(payment_id=data['payment_id']).first()
             if payment is None:
                 raise ValidationError('payment not found')
+            # payment signing only applies to the caller's association
+            if payment.sport_association_id != request.user.sport_association.sport_association_id:
+                raise PermissionDenied("User not allowed.")
 
         signature = SignatureRequestSerializer(data=data['signature'])
 
@@ -543,18 +569,12 @@ def payment_update(request, uid):
             payment.instructor = None
             payment.supplier = None
             payment.associate = None
-            if data['complex_item']['group'] == 'Istruttori':
-                payment.instructor = Instructor.objects.get(instructor_id=data['complex_item']['instructor_id'])
-            if data['complex_item']['group'] == 'Fornitori':
-                payment.supplier = SupplierAndCustomers.objects.get(supplier_id=data['complex_item']['supplier_id'])
-            if data['complex_item']['group'] == 'Iscrizioni':
-                payment.associate = scoped_queryset(request, Subscription.objects).get(
-                    subscription_id=data['complex_item']['subscription_id']).associate
-            if data['complex_item']['group'] == 'Persone':
-                payment.associate = scoped_queryset(request, Associate.objects).get(associate_id=data['complex_item']['associate_id'])
+            field, party = _payment_party(request, sport_association, data['complex_item'])
+            if field is not None:
+                setattr(payment, field, party)
 
         if 'subscription_id' in data.keys() and data['subscription_id']:
-            payment.associate = scoped_queryset(request, Subscription.objects).get(subscription_id=data['subscription_id']).associate
+            payment.associate = _payment_subscription_associate(request, sport_association, data['subscription_id'])
         payment.payment_intent_id = None # reset payment intent id if changing the payment info
         serializer.save()
         # get the invoice for the payment and refresh the document
