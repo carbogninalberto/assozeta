@@ -7,16 +7,21 @@ previously embedded in views, following the service layer pattern.
 
 All services are stateless and use static methods for better testability.
 """
-from datetime import datetime
+from datetime import date, datetime
 import logging
 import os
 import re
+import uuid
 import dateutil
+import dateutil.parser
 import editdistance
+import numpy
 import pandas
 
+from django.conf import settings as django_settings
 from django.core.files.storage import default_storage
 from django.db import transaction
+from django.utils import timezone
 from django.utils.timezone import make_aware
 from rest_framework.exceptions import ValidationError, PermissionDenied
 
@@ -643,6 +648,85 @@ class SubscriptionImportService:
 
     # Storage folder of the files uploaded for an import, under which each association has its own folder.
     IMPORT_DIR = 'subscription-import'
+    # Fields read as text, as written in the file: codes and numbers that are no quantities.
+    TEXT_FIELDS = ('tax_code', 'address_cap', 'phone', 'subscription_number')
+    DATE_FIELDS = ('born_date', 'born_data_tutor', 'membership_start_date', 'membership_end_date')
+    FAILED_MESSAGE = 'Importazione non riuscita. Controlla i dati e riprova.'
+    # Text that starts with the year is read as written; any other date text has the day first.
+    YEAR_FIRST = re.compile(r'\s*\d{4}\D')
+    STAMP_FOLDER = re.compile(r'[0-9]+(\.[0-9]+)?')
+    DOCUMENT_FOLDER = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
+
+    @staticmethod
+    def upload_limit():
+        """Largest accepted import file, in bytes."""
+        return django_settings.SUBSCRIPTION_IMPORT_MAX_UPLOAD_BYTES
+
+    @staticmethod
+    def too_large_message(limit):
+        """Message for a file above the limit."""
+        mebibyte = 1024 * 1024
+        size = f'{limit // mebibyte} MB' if limit % mebibyte == 0 else f'{limit} byte'
+        return f'Il file supera la dimensione massima consentita ({size}).'
+
+    @staticmethod
+    def text_columns(column_map):
+        """
+        Columns the map gives to the fields read as text.
+
+        Args:
+            column_map: The request's map (key -> column)
+
+        Returns:
+            list: Column names
+        """
+        columns = []
+        if not isinstance(column_map, dict):
+            return columns
+        for key, column in column_map.items():
+            field = SubscriptionMaps.KEY_TO_FIELD_ASSOCIATE.get(key.replace("tutore", "").strip())
+            if field in SubscriptionImportService.TEXT_FIELDS and isinstance(column, str) and column not in columns:
+                columns.append(column)
+        return columns
+
+    @staticmethod
+    def remove_upload(document, file_path):
+        """
+        Remove an import upload: its Document, then its stored file.
+
+        Args:
+            document: Document of the upload
+            file_path: Path of its stored file
+        """
+        document.delete()
+        default_storage.delete(file_path)
+
+    @staticmethod
+    def remove_expired_uploads(sport_association):
+        """
+        Remove the association's import uploads older than the retention time
+        (SUBSCRIPTION_IMPORT_RETENTION_HOURS): their Documents and stored files.
+
+        Args:
+            sport_association: SportAssociation whose import folder is cleaned
+        """
+        folder = os.path.join(STORAGE_DIR, SubscriptionImportService.IMPORT_DIR, str(sport_association.sport_association_id))
+        cutoff = timezone.now().timestamp() - django_settings.SUBSCRIPTION_IMPORT_RETENTION_HOURS * 3600
+        try:
+            stamps = sorted(default_storage.listdir(folder)[0])
+        except FileNotFoundError:
+            return
+        for stamp in stamps:
+            if not SubscriptionImportService.STAMP_FOLDER.fullmatch(stamp) or not float(stamp) < cutoff:
+                continue
+            for document_id in sorted(default_storage.listdir(os.path.join(folder, stamp))[0]):
+                if not SubscriptionImportService.DOCUMENT_FOLDER.fullmatch(document_id):
+                    continue
+                names = sorted(default_storage.listdir(os.path.join(folder, stamp, document_id))[1])
+                for document in Document.objects.filter(document_id=document_id):
+                    document.delete()
+                for name in names:
+                    default_storage.delete(os.path.join(folder, stamp, document_id, name))
 
     @staticmethod
     def import_file_path(document, sport_association):
@@ -718,16 +802,16 @@ class SubscriptionImportService:
                 column_map[key_to_remove] = key_to_map
 
     @staticmethod
-    def retrieve_document_path(document_id, sport_association):
+    def retrieve_document(document_id, sport_association):
         """
-        Retrieve the file path of a document uploaded for an import of the association.
+        Retrieve a document uploaded for an import of the association and the path of its file.
 
         Args:
             document_id: UUID of the document
             sport_association: SportAssociation running the import
 
         Returns:
-            str: File path
+            tuple: (Document, file_path)
 
         Raises:
             ValueError: If document not found
@@ -743,7 +827,28 @@ class SubscriptionImportService:
         if not default_storage.exists(file_path):
             raise ValueError('No document found')
 
-        return file_path
+        return document, file_path
+
+    @staticmethod
+    def import_date(value):
+        """
+        Day/month/year text of a date value of the file: a date cell, or text
+        read with the day first unless it starts with the year.
+
+        Args:
+            value: Processed value of the cell
+
+        Returns:
+            str or None: '%d/%m/%Y' text, None when the value is no date
+        """
+        try:
+            if isinstance(value, (datetime, date)):
+                return value.strftime('%d/%m/%Y')
+            text = str(value)
+            day_first = SubscriptionImportService.YEAR_FIRST.match(text) is None
+            return dateutil.parser.parse(text, dayfirst=day_first).date().strftime('%d/%m/%Y')
+        except Exception:
+            return None
 
     @staticmethod
     def process_row_value(value, inverse_mapped_key):
@@ -764,22 +869,14 @@ class SubscriptionImportService:
         # An empty cell of a date column
         if value is pandas.NaT:
             value = None
+        # A value of a numeric column, as a Python number
+        if isinstance(value, numpy.generic):
+            value = value.item()
 
-        # Handle membership dates
-        if inverse_mapped_key in ('membership_start_date', 'membership_end_date'):
+        # Handle birth and membership dates
+        if inverse_mapped_key in SubscriptionImportService.DATE_FIELDS:
             if value:
-                try:
-                    value = dateutil.parser.parse(str(value)).date().strftime('%d/%m/%Y')
-                except Exception:
-                    value = None
-
-        # Handle birth dates
-        elif inverse_mapped_key in ('born_date', 'born_data_tutor'):
-            if value:
-                try:
-                    value = dateutil.parser.parse(str(value)).date().strftime('%d/%m/%Y')
-                except Exception:
-                    value = None
+                value = SubscriptionImportService.import_date(value)
 
         # Handle sex field default
         elif inverse_mapped_key == 'sex' and value is None:
@@ -802,7 +899,7 @@ class SubscriptionImportService:
         if inverse_mapped_key == 'certificate_expiring_date' and value:
             medical_certificate = MedicalCertificate.objects.create(user=user)
             try:
-                parsed_date = dateutil.parser.parse(str(value)).date().strftime('%d/%m/%Y')
+                parsed_date = SubscriptionImportService.import_date(value)
                 medical_certificate.expiration_date = make_aware(
                     datetime.strptime(parsed_date, '%d/%m/%Y')
                 )
@@ -818,10 +915,10 @@ class SubscriptionImportService:
                 medical_certificate.delete()
 
     @staticmethod
-    def stored_certificate_date(value):
+    def stored_value(value):
         """
-        Value of certificate_expiring_date as the draft stores it: a date cell
-        becomes the day/month/year text the certificate data carries.
+        Value as the draft stores it: a date cell becomes day/month/year text,
+        the format of the dates the draft carries.
 
         Args:
             value: Processed value of the cell
@@ -829,7 +926,7 @@ class SubscriptionImportService:
         Returns:
             Value to store
         """
-        if isinstance(value, datetime):
+        if isinstance(value, (datetime, date)):
             return value.strftime('%d/%m/%Y')
         return value
 
@@ -942,8 +1039,7 @@ class SubscriptionImportService:
                 SubscriptionImportService.create_medical_certificate_if_needed(
                     inverse_mapped_key, value, user, row_data
                 )
-                if inverse_mapped_key == 'certificate_expiring_date':
-                    value = SubscriptionImportService.stored_certificate_date(value)
+                value = SubscriptionImportService.stored_value(value)
 
                 # Assign value to appropriate target (tutor or associate)
                 target = row_data['associate_tutor'] if "tutore" in key else row_data['associate']

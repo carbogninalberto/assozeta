@@ -40,8 +40,11 @@ Golden tests: `TESTS/adapters/go/document_template_golden.py` renders all eight 
   that is not a list of dicts is the 500 page. `show_regulation_to`/`show_demand_to` from the flags; header and footer through
   `filter_mentions` with `sport_association`, `subscription` and `other.today` (`datetime.now()` in UTC). The template is
   `subscription_classic.html` when configured, otherwise `subscription.html`. Rendered in the request language.
-- **subscription/preview** (AllowAny): `?print` (any value) posts `'<request.path>?sport_association_id=<value or None>'` to the renderer
-  with no headers and answers `{"file": base64(pdf)}` or `500 {"error": "PDF not rendered"}` (any renderer failure). Otherwise the
+- **subscription/preview** (`IsAuthenticated`; a request without an account is the DRF 401 whatever its method and query, and
+  the renderer is not called): `?print` (any value) posts `'<request.path>?sport_association_id=<value or None>'` to the renderer
+  with the request's own `Authorization` header, so the renderer opens the page as the requester, and answers
+  `{"file": base64(pdf)}` or `500 {"error": "PDF not rendered"}` (any renderer failure). The editor loads the page with the
+  session and shows it from memory (`UI/src/utils/framedDocument.js`). Otherwise the
   live, scoped association named by the last `?sport_association_id` and a placeholder subscription (`is_preview`, show lists
   `[1, 2, 3]`, the association's `additional_fields`); no parameter, a value the UUID field rejects or a missing row is the 500 page; an
   association whose user is an athlete is `403 "User is not a sport association"`.
@@ -137,3 +140,13 @@ the PDF-form regions never fetch the page. A caller without either gets the 401,
 The fixture has 152 cases (29 new or changed). RED `secdoc2-red-r1`: Django 152/152, Go 200 on
 `document-views-compensation-instructor-account-other`. GREEN `secdoc2-versioned-final` (after merging the base; `secdoc2-versioned-r1` before): 152/152 on the four transports.
 Mutation `secdoc2-mutation-r1` (the appointment page counting every subscription as the member's) CAUGHT.
+
+### Preview for signed-in users (`imphard`)
+
+`document/subscription/preview/` asks for an account and its PDF is rendered with the request's `Authorization` header. The
+fixture has 156 cases (4 new): anonymous requests (page, no parameter, `?print`, `PUT`) are 401 with no renderer call; the
+owner and a member account get the page; the four print cases check the renderer payload's `Authorization`.
+`BE/docmanager/test_printing_views.py` (`SubscriptionPreviewTests`, 3 tests) covers the view. RED (`imphard-red-r1`): Django
+156/156; Go 200 on `document-views-preview-anonymous`. GREEN (`imphard-versioned-r1`): 156/156 on native Django, native Go,
+Caddy `/api/v1` and `/api/v2`. Mutation (`imphard-mutation-r1`): rendering the PDF without the header fails Go on
+`document-views-preview-print` (`renderer.body:0`).

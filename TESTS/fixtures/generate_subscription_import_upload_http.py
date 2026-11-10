@@ -23,28 +23,37 @@ subscription_import_upload (BE/application/views/subscriptions_views.py),
    whatever the suffix says (a failure falls back to xlrd, which is not
    installed: 500 after the writes). Number-like text becomes numbers, a
    column with a missing value is float, date cells are datetimes.
+   A file above SUBSCRIPTION_IMPORT_MAX_UPLOAD_BYTES is 413 {'msg': ...} before
+   any write. Once the upload is stored, remove_expired_uploads removes
+   the association's import uploads older than
+   SUBSCRIPTION_IMPORT_RETENTION_HOURS: Document.delete() (audited) and the
+   stored objects.
 4. 'document_id' and 'map': is_valid_uuid(document_id) (400 [str(exception)]),
    Document.objects.filter(document_id=...).first() (None: ValueError, 500),
    default_storage.exists of its path in the association's import folder
    (False: the same ValueError, 500: a document that is no import upload of
    the association), the same read of the stored object (500 when it fails),
-   then the import
-   inside try/except/finally: manage_import_status('start') deletes the
-   association's IMPORTING statuses and creates one; process_import_rows walks
-   the rows and the map's keys in order (KEY_TO_FIELD_ASSOCIATE[key without
-   'tutore']; the cell, stripped; 'nan' is None; birth and membership dates
-   through dateutil.parse(str(value)) to %d/%m/%Y or None; a missing 'sesso'
-   is 'A'; a true 'scadenza certificato medico' creates a MedicalCertificate
-   for request.user and saves its expiration, or deletes it when the text is
-   not a date; a date cell of that column is stored as %d/%m/%Y and an empty
-   cell of a date column is None; a None value takes data['default'][key]),
-   fills born_city from
-   the tax code (codicefiscale.decode, once more with the expected control
-   character), applies unmapped_static(_tutor), and validates the mandatory
-   fields and the tax code pattern; AssociateImportDraft.objects.bulk_create
-   (no audit entries). Any exception is logged and swallowed: what was saved
-   before it stays, no draft is created. 'end' deletes the status. The answer
-   is 200 {'columns', 'map'} either way, the map with every key None.
+   then the import. The columns the map gives to tax code, CAP, phone and
+   card number are read as text (text_columns: numbers as their str(), text
+   as written). manage_import_status('start') deletes the association's
+   IMPORTING statuses and creates one; inside transaction.atomic()
+   process_import_rows walks the rows and the map's keys in order
+   (KEY_TO_FIELD_ASSOCIATE[key without 'tutore']; the cell, stripped; 'nan' is
+   None; birth and membership dates through import_date to %d/%m/%Y or None: a
+   date cell, or text read with the day first unless it starts with the year;
+   a missing 'sesso' is 'A'; a true 'scadenza certificato medico' creates a
+   MedicalCertificate for request.user and saves its expiration, or deletes it
+   when the text is not a date; a date cell of any other field is stored as
+   %d/%m/%Y and an empty cell of a date column is None; a None value takes
+   data['default'][key]), fills born_city from the tax code
+   (codicefiscale.decode, once more with the expected control character),
+   applies unmapped_static(_tutor), and validates the mandatory fields and the
+   tax code pattern; AssociateImportDraft.objects.bulk_create (no audit
+   entries). 'end' deletes the status. An exception rolls the rows back (no
+   certificate, no draft) and answers 400 {'msg': ...}; the upload stays.
+   Otherwise the upload is removed (Document.delete() audited, then its
+   stored object) and the answer is 200 {'columns', 'map'}, the map with every
+   key None.
 5. Otherwise TypeError: 500.
 
 Run with ``python3 -I`` after the message-mutations fixture.
@@ -70,6 +79,8 @@ MAP = {key: None for key in KEYS}
 cases = []
 OWN, FOREIGN = IDS['own_association'], IDS['foreign_association']
 # AssociateImportDraftStatus rows: status_type 1 is IMPORTING, 2 APPROVING.
+# SUBSCRIPTION_IMPORT_MAX_UPLOAD_BYTES of the run (both servers).
+LIMIT = 16384
 STATUSES = {
     'own_importing': {'id': 'a1000000-0000-4000-8000-000000984101', 'association': OWN, 'doing': True, 'type': 1, 'created': '2026-05-01T08:00:00Z'},
     'own_importing_done': {'id': 'a1000000-0000-4000-8000-000000984102', 'association': OWN, 'doing': False, 'type': 1, 'created': '2026-05-02T08:00:00Z'},
@@ -130,10 +141,11 @@ def add(name, actor, status, response, *, method='POST', body=None, raw=None, bi
 
 
 def upload(name, actor, filename, content, *, status=200, columns=None, kind='text/csv', content_type='text/csv', headers=None,
-           session=None, keep=None, association='own_association'):
-    """A stored upload: the Document (audited) and its object in the association's import folder, then the columns or the 500 page."""
+           session=None, keep=None, association='own_association', expired=()):
+    """A stored upload: the Document (audited) and its object in the association's import folder, then the columns or the 500 page.
+    expired: the seeded uploads past their retention that this upload removes once stored."""
     effect = {'actor': actor, 'session': session, 'filename': filename, 'body_b64': base64.b64encode(content).decode(),
-              'content_type': content_type, 'association': association}
+              'content_type': content_type, 'association': association, 'expired': list(expired)}
     if keep:
         # The object stays for the imports that name '$document:<keep>'; the case that lists it in 'release' removes it.
         effect['keep'] = keep
@@ -194,7 +206,8 @@ upload('csv-maps-every-key', 'owner', 'soci.csv', FIRST, columns=[
     'Nome', 'COGNOME', 'Sesso', 'Codice fiscal', 'Data di Nascita', 'Città di nascita', 'Indirizzo', 'Città di residenza', 'CAP',
     'E-mail', 'Telefono', 'Nome tutore', 'Cognome tutore', 'Sesso tutore', 'Codice fiscale tutore', 'Data nascita tutore',
     'Città nascita tutore', 'Città residenza tutore', 'Indirizzo tutore', 'Cap tutore', 'Email tutore', 'Telefono tutore',
-    'Scadenza certificato med', 'Data tesseramento', 'Scadenza tesseramento', 'Numero tessera', 'Note', 'Nome.1'])
+    'Scadenza certificato med', 'Data tesseramento', 'Scadenza tesseramento', 'Numero tessera', 'Note', 'Nome.1'],
+    expired=['own'])
 assert all(value is not None for value in cases[-1]['response']['map'].values()), cases[-1]['response']['map']
 upload('csv-maps-its-own-columns', 'owner', 'altri.csv', SIMPLE, columns=['Nome', 'Cognome'])
 upload('csv-bom-crlf-quoted-unnamed-duplicates', 'full_collaborator', 'Esportazione.CSV',
@@ -208,6 +221,12 @@ upload('csv-too-many-fields-server-error', 'owner', 'errore.csv', b'a;b\n1;2\n1;
 upload('csv-unterminated-quote-server-error', 'owner', 'virgolette.csv', b'a;b\n"1;2\n', status=500)
 upload('csv-empty-server-error', 'owner', 'nulla.csv', b'\n\n', status=500)
 upload('text-extension-server-error', 'owner', 'soci.txt', SIMPLE, status=500, kind='text/plain', content_type='text/plain')
+# The size limit: a file of exactly the limit is stored, one byte more is refused before any write.
+AT_LIMIT = b'Nome;Cognome\n' + b'M' * (LIMIT - 20) + b';Rossi\n'
+assert len(AT_LIMIT) == LIMIT
+upload('csv-at-the-limit', 'owner', 'limite.csv', AT_LIMIT, columns=['Nome', 'Cognome'])
+add('csv-above-the-limit', 'owner', 413, {'msg': f'Il file supera la dimensione massima consentita ({LIMIT} byte).'},
+    raw=multipart(files=[('associates_file', 'grande.csv', AT_LIMIT + b'x', 'text/csv')]))
 
 
 # --- Excel workbooks (stdlib only: fixed parts, deterministic archive) -----------------------------------------
@@ -314,7 +333,21 @@ upload('ods-archive-server-error', 'owner', 'soci.ods', archive([('mimetype', 'a
        status=500, kind='application/vnd.oasis.opendocument.spreadsheet', content_type='application/vnd.oasis.opendocument.spreadsheet')
 # The same workbook uploaded for the import of another association.
 upload('xlsx-members-other-association', 'foreign_owner', 'Soci 2026.xlsx', MEMBERS, columns=COLUMNS, kind=XLSX, content_type=XLSX,
-       keep='other', association='foreign_association')
+       keep='other', association='foreign_association', expired=['foreign'])
+# A second upload of the workbook: an import removes the upload it reads.
+upload('xlsx-members-again', 'full_collaborator', 'Soci 2026.xlsx', MEMBERS, columns=COLUMNS, kind=XLSX, content_type=XLSX, keep='again')
+# Cells of every type. Serials: 46024 is 2026-01-02, 46085 is 2026-03-04, 29252 is 1980-02-01.
+TYPED_COLUMNS = ['Nome', 'Indirizzo', 'CAP', 'Telefono', 'Tessera', 'Nascita', 'Tesseramento', 'Scadenza', 'Certificato', 'Codice']
+TYPED = workbook([
+    TYPED_COLUMNS,
+    ['Mario', ('date', 46024), ('date', 46085), 3331234567, 7, '03/02/1990', '1/9/2026', '2027-08-31', '05/03/2027', 'RSSMRA80A01H501U'],
+    ['Anna', 'Via Po 3', 20100, '0612345678', '0042', '1975-12-25', '25/12/2026', 'domani', '2027-03-05 00:00:00', 12345],
+    ['Luca', None, 12.5, None, None, ('date', 29252), '12/25/2026', None, None, None],
+    ['Ugo', 5, '00100', 'True', 'NA', '31/02/1990', None, None, 'abc', None],
+])
+upload('xlsx-typed-cells', 'owner', 'tipi.xlsx', TYPED, columns=TYPED_COLUMNS, kind=XLSX, content_type=XLSX, keep='typed')
+upload('xlsx-whole-numbers', 'owner', 'numeri.xlsx', workbook([['Nome', 'CAP'], [1, 100], [2, 20100]]), columns=['Nome', 'CAP'], kind=XLSX,
+       content_type=XLSX, keep='numbers')
 
 # --- The import of a stored workbook ---------------------------------------------------------------------------
 pending_statuses = ['own_importing', 'own_importing_done']
@@ -322,27 +355,41 @@ pending_statuses = ['own_importing', 'own_importing_done']
 # runner registers it as '$document:stored'.
 STORED = {'id': 'a1000000-0000-4000-8000-000000984201', 'token': 'a1000000-0000-4000-8000-000000984202', 'filename': 'elenco.xlsx',
           'created': '2026-04-01T08:00:00Z', 'body_b64': base64.b64encode(MEMBERS).decode(), 'content_type': XLSX}
+# Import uploads seeded past their retention, each in its association's import folder: the association's next upload
+# removes them.
+EXPIRED = {
+    'own': {'id': 'a1000000-0000-4000-8000-000000984301', 'token': 'a1000000-0000-4000-8000-000000984302', 'filename': 'vecchio.csv',
+            'created': '2026-04-02T08:00:00.250000Z', 'association': OWN, 'body_b64': base64.b64encode(SIMPLE).decode(),
+            'content_type': 'text/csv'},
+    'foreign': {'id': 'a1000000-0000-4000-8000-000000984303', 'token': 'a1000000-0000-4000-8000-000000984304', 'filename': 'vecchio.xlsx',
+                'created': '2026-04-03T08:00:00Z', 'association': FOREIGN, 'body_b64': base64.b64encode(MEMBERS).decode(),
+                'content_type': XLSX},
+}
+FAILED = {'msg': 'Importazione non riuscita. Controlla i dati e riprova.'}
 
 
-def imported(name, actor, document, body, *, columns, steps=(), drafts=(), headers=None, session=None, release=(), form=False):
-    """A 200 import: the association's IMPORTING statuses go, one is created and deleted around the rows.
+def imported(name, actor, document, body, *, columns, steps=(), drafts=(), headers=None, session=None, form=False, failed=False):
+    """An import: the association's IMPORTING statuses go, one is created and deleted around the rows.
     steps: the certificates in order, ('kept', label, 'YYYY-MM-DD') or ('deleted',). drafts: [(data, valid)] with
-    '$mc:<label>' for a kept certificate's id."""
+    '$mc:<label>' for a kept certificate's id. A 200 removes the upload it read (the Document and its object).
+    failed: the rows raise: 400, no certificate and no draft, and the upload stays."""
+    assert not (failed and (steps or drafts))
     effect = {'kind': 'import', 'actor': actor, 'session': session, 'statuses': list(pending_statuses), 'steps': [list(step) for step in steps],
-              'drafts': [{'data': data, 'valid': valid} for data, valid in drafts], 'release': list(release)}
+              'drafts': [{'data': data, 'valid': valid} for data, valid in drafts], 'document': document, 'failed': failed}
     pending_statuses.clear()
-    response = {'columns': columns, 'map': dict(MAP)}  # no upload in this request: every key None
+    status = 400 if failed else 200
+    response = FAILED if failed else {'columns': columns, 'map': dict(MAP)}  # no upload in this request: every key None
     if form:
-        add(name, actor, 200, response, raw=multipart(fields=[('document_id', f'$document:{document}'), *body]), headers=headers,
+        add(name, actor, status, response, raw=multipart(fields=[('document_id', f'$document:{document}'), *body]), headers=headers,
             effect=effect)
     else:
-        add(name, actor, 200, response, body={'document_id': f'$document:{document}', **body}, headers=headers, effect=effect)
+        add(name, actor, status, response, body={'document_id': f'$document:{document}', **body}, headers=headers, effect=effect)
 
 
 HEADER_COLUMNS = ['Telefono', 'Unnamed: 1', 'Altro', 'Altro.1', 'Unnamed: 4', 'Fine']
-# No rows: only the statuses move, whatever the map is.
+# No rows: only the statuses move, whatever the map is, and the upload is removed.
 imported('header-only-statuses', 'admin', 'header', {'map': ['non', 'un', 'oggetto'], 'default': 5}, columns=HEADER_COLUMNS,
-         headers=ADMIN_OWNER, session='admin_owner', release=['header'])
+         headers=ADMIN_OWNER, session='admin_owner')
 
 UI_MAP = {**{key: None for key in KEYS}, 'nome': 'Nome', 'cognome': 'COGNOME', 'sesso': 'Sesso', 'codice fiscale': 'Codice fiscal',
           'data di nascita': 'Data di Nascita', 'città di nascita': 'Città di nascita', 'indirizzo': 'Indirizzo',
@@ -350,29 +397,17 @@ UI_MAP = {**{key: None for key in KEYS}, 'nome': 'Nome', 'cognome': 'COGNOME', '
           'scadenza certificato medico': 'Scadenza certificato med', 'data tesseramento': 'Data tesseramento',
           'data scadenza tesseramento': 'Scadenza tesseramento', 'numero tessera': 'Numero tessera'}
 TUTOR = {'sex': 'A'}  # 'sesso tutore' without a column
-# The wizard's request: every key, most tutor keys unmapped. CAP and the card number are float columns (a row lacks them).
-imported('wizard-map', 'owner', 'members', {'map': UI_MAP, 'default': {}}, columns=COLUMNS,
-         steps=[('kept', 'mario', '2026-12-31'), ('deleted',), ('kept', 'ugo', '2027-01-15')],
-         drafts=[
-             ({'associate': {'first_name': 'Mario', 'last_name': 'Rossi', 'sex': 'M', 'tax_code': 'RSSMRA80A01H501U', 'born_date': '01/01/1980',
-                             'born_city': 'Roma', 'address': 'Via Roma 1', 'address_city': 'Roma', 'address_cap': 100.0,
-                             'email': 'mario@example.test', 'phone': '3330000000', 'certificate_expiring_date': '31/12/2026',
-                             'membership_start_date': '01/09/2026', 'membership_end_date': '31/08/2027', 'subscription_number': 42.0},
-               'associate_tutor': TUTOR,
-               'medical_certificate': {'medical_id': '$mc:mario', 'filename': None, 'certificate_expring_date': '31/12/2026'}}, True),
-             # 03/02/1990 reads month first; the birth city comes from the tax code; 'abc' is no date.
-             ({'associate': {'first_name': 'Anna', 'last_name': 'Bianchi', 'sex': 'F', 'tax_code': ANNA, 'born_date': '02/03/1990',
-                             'born_city': 'Milano', 'address': 'Via Milano 2', 'address_city': 'Milano', 'address_cap': 20100.0,
-                             'email': 'anna@example.test', 'certificate_expiring_date': 'abc', 'subscription_number': 43.0},
-               'associate_tutor': TUTOR}, True),
-             ({'associate': {'first_name': 'Luca', 'last_name': 'Verdi', 'sex': 'A', 'tax_code': 'XXX', 'phone': '02 1234567'},
-               'associate_tutor': TUTOR}, False),
-             ({'associate': {'first_name': 'Ugo', 'last_name': 'Neri', 'sex': 'm', 'tax_code': WRONG_CONTROL, 'born_date': '25/12/1975',
-                             'born_city': 'Roma', 'address': 'Via Po 3', 'address_city': 'Torino', 'address_cap': 10100.0,
-                             'certificate_expiring_date': '2027-01-15'},
-               'associate_tutor': TUTOR,
-               'medical_certificate': {'medical_id': '$mc:ugo', 'filename': None, 'certificate_expring_date': '15/01/2027'}}, True),
-         ])
+# Imports that raise: nothing of the rows stays and the upload can be imported again.
+# A key outside KEY_TO_FIELD_ASSOCIATE raises at the first row, after that row's certificate.
+imported('unknown-key-fails', 'owner', 'members', {'map': {'scadenza certificato medico': 'Scadenza certificato med', 'tessera oro': 'Note'}},
+         columns=COLUMNS, failed=True)
+imported('list-map-fails', 'owner', 'members', {'map': []}, columns=COLUMNS, failed=True)
+imported('form-map-fails', 'owner', 'members', [('map', '{"nome": "Nome"}')], columns=COLUMNS, form=True, failed=True)
+# A tax code that is not text raises at the pattern check of the first complete row.
+imported('number-tax-code-fails', 'owner', 'members', {
+    'map': {key: UI_MAP[key] for key in ('nome', 'cognome', 'sesso', 'data di nascita', 'città di nascita', 'indirizzo',
+                                         'città di residenza', 'cap')} | {'codice fiscale': None},
+    'default': {'codice fiscale': 12345}}, columns=COLUMNS, failed=True)
 # Defaults for missing values, an absent column, tutor keys and the static values.
 STATIC = {'address': 'Sede', 'extra': [1, {'a': None}]}
 imported('defaults-tutor-static', 'full_collaborator', 'members', {
@@ -385,23 +420,66 @@ imported('defaults-tutor-static', 'full_collaborator', 'members', {
             for first, last, code, tutor in (('Mario', 'Rossi', 'RSSMRA80A01H501U', {'first_name': 'x', 'born_city': 'Roma'}),
                                              ('Anna', 'Bianchi', ANNA, {'born_city': 'Milano'}), ('Luca', 'Verdi', 'XXX', {}),
                                              ('Ugo', 'Neri', WRONG_CONTROL, {'born_city': 'Roma'}))])
-# A key outside KEY_TO_FIELD_ASSOCIATE stops the import at the first row, after that row's certificate.
-imported('unknown-key-stops', 'owner', 'members', {'map': {'scadenza certificato medico': 'Scadenza certificato med', 'tessera oro': 'Note'}},
-         columns=COLUMNS, steps=[('kept', 'mario', '2026-12-31')])
-imported('list-map-stops', 'owner', 'members', {'map': []}, columns=COLUMNS)
-imported('form-map-stops', 'owner', 'members', [('map', '{"nome": "Nome"}')], columns=COLUMNS, form=True)
-# A tax code that is not text stops at the pattern check of the first complete row.
-imported('number-tax-code-stops', 'owner', 'members', {
-    'map': {key: UI_MAP[key] for key in ('nome', 'cognome', 'sesso', 'data di nascita', 'città di nascita', 'indirizzo',
-                                         'città di residenza', 'cap')} | {'codice fiscale': None},
-    'default': {'codice fiscale': 12345}}, columns=COLUMNS, release=['members'])
+# The wizard's request on the second upload: every key, most tutor keys unmapped. CAP and the card number are read as
+# text: the CAP keeps its zeros.
+imported('wizard-map', 'owner', 'again', {'map': UI_MAP, 'default': {}}, columns=COLUMNS,
+         steps=[('kept', 'mario', '2026-12-31'), ('deleted',), ('kept', 'ugo', '2027-01-15')],
+         drafts=[
+             ({'associate': {'first_name': 'Mario', 'last_name': 'Rossi', 'sex': 'M', 'tax_code': 'RSSMRA80A01H501U', 'born_date': '01/01/1980',
+                             'born_city': 'Roma', 'address': 'Via Roma 1', 'address_city': 'Roma', 'address_cap': '00100',
+                             'email': 'mario@example.test', 'phone': '3330000000', 'certificate_expiring_date': '31/12/2026',
+                             'membership_start_date': '01/09/2026', 'membership_end_date': '31/08/2027', 'subscription_number': '42'},
+               'associate_tutor': TUTOR,
+               'medical_certificate': {'medical_id': '$mc:mario', 'filename': None, 'certificate_expring_date': '31/12/2026'}}, True),
+             # 03/02/1990 has the day first; the birth city comes from the tax code; 'abc' is no date.
+             ({'associate': {'first_name': 'Anna', 'last_name': 'Bianchi', 'sex': 'F', 'tax_code': ANNA, 'born_date': '03/02/1990',
+                             'born_city': 'Milano', 'address': 'Via Milano 2', 'address_city': 'Milano', 'address_cap': '20100',
+                             'email': 'anna@example.test', 'certificate_expiring_date': 'abc', 'subscription_number': '43'},
+               'associate_tutor': TUTOR}, True),
+             ({'associate': {'first_name': 'Luca', 'last_name': 'Verdi', 'sex': 'A', 'tax_code': 'XXX', 'phone': '02 1234567'},
+               'associate_tutor': TUTOR}, False),
+             ({'associate': {'first_name': 'Ugo', 'last_name': 'Neri', 'sex': 'm', 'tax_code': WRONG_CONTROL, 'born_date': '25/12/1975',
+                             'born_city': 'Roma', 'address': 'Via Po 3', 'address_city': 'Torino', 'address_cap': '10100',
+                             'certificate_expiring_date': '2027-01-15'},
+               'associate_tutor': TUTOR,
+               'medical_certificate': {'medical_id': '$mc:ugo', 'filename': None, 'certificate_expring_date': '15/01/2027'}}, True),
+         ])
 # Date cells in the certificate column: the certificate is saved and the draft stores the date as day/month/year;
 # an empty cell is no value (no certificate). The upload was the collaborator's, for the same association.
 imported('date-cell-certificates', 'owner', 'dated', {'map': {'nome': 'Nome', 'scadenza certificato medico': 'Scadenza certificato med'}},
-         columns=['Nome', 'Scadenza certificato med'], steps=[('kept', 'mario', '2027-03-05')], release=['dated'],
+         columns=['Nome', 'Scadenza certificato med'], steps=[('kept', 'mario', '2027-03-05')],
          drafts=[({'associate': {'first_name': 'Mario', 'certificate_expiring_date': '05/03/2027'}, 'associate_tutor': {},
                    'medical_certificate': {'medical_id': '$mc:mario', 'filename': None, 'certificate_expring_date': '05/03/2027'}}, False),
                  ({'associate': {'first_name': 'Anna'}, 'associate_tutor': {}}, False)])
+# Cells of every type. Columns of codes are text (numbers as written, the NA text missing); a date cell of a text
+# field is day/month/year; date text has the day first unless it starts with the year or its second number is no month;
+# an impossible date and a word are no date.
+imported('typed-cells', 'owner', 'typed', {'map': {
+    'nome': 'Nome', 'indirizzo': 'Indirizzo', 'cap': 'CAP', 'telefono': 'Telefono', 'numero tessera': 'Tessera', 'data di nascita': 'Nascita',
+    'data tesseramento': 'Tesseramento', 'data scadenza tesseramento': 'Scadenza', 'scadenza certificato medico': 'Certificato',
+    'codice fiscale': 'Codice', 'data di nascita tutore': 'Nascita', 'cap tutore': 'CAP'}}, columns=TYPED_COLUMNS,
+    steps=[('kept', 'mario', '2027-03-05'), ('kept', 'anna', '2027-03-05'), ('deleted',)],
+    drafts=[
+        ({'associate': {'first_name': 'Mario', 'address': '02/01/2026', 'address_cap': '04/03/2026', 'phone': '3331234567',
+                        'subscription_number': '7', 'born_date': '03/02/1990', 'membership_start_date': '01/09/2026',
+                        'membership_end_date': '31/08/2027', 'certificate_expiring_date': '05/03/2027', 'tax_code': 'RSSMRA80A01H501U',
+                        'born_city': 'Roma'},
+          'associate_tutor': {'born_date': '03/02/1990', 'address_cap': '04/03/2026'},
+          'medical_certificate': {'medical_id': '$mc:mario', 'filename': None, 'certificate_expring_date': '05/03/2027'}}, False),
+        ({'associate': {'first_name': 'Anna', 'address': 'Via Po 3', 'address_cap': '20100', 'phone': '0612345678',
+                        'subscription_number': '0042', 'born_date': '25/12/1975', 'membership_start_date': '25/12/2026',
+                        'certificate_expiring_date': '2027-03-05 00:00:00', 'tax_code': '12345'},
+          'associate_tutor': {'born_date': '25/12/1975', 'address_cap': '20100'},
+          'medical_certificate': {'medical_id': '$mc:anna', 'filename': None, 'certificate_expring_date': '05/03/2027'}}, False),
+        ({'associate': {'first_name': 'Luca', 'address_cap': '12.5', 'born_date': '01/02/1980', 'membership_start_date': '25/12/2026'},
+          'associate_tutor': {'born_date': '01/02/1980', 'address_cap': '12.5'}}, False),
+        ({'associate': {'first_name': 'Ugo', 'address': 5, 'address_cap': '00100', 'phone': 'True', 'certificate_expiring_date': 'abc'},
+          'associate_tutor': {'address_cap': '00100'}}, False),
+    ])
+# A sheet of whole numbers: the CAP is text, the other column keeps its numbers.
+imported('whole-numbers', 'owner', 'numbers', {'map': {'nome': 'Nome', 'cap': 'CAP'}}, columns=['Nome', 'CAP'],
+         drafts=[({'associate': {'first_name': 1, 'address_cap': '100'}, 'associate_tutor': {}}, False),
+                 ({'associate': {'first_name': 2, 'address_cap': '20100'}, 'associate_tutor': {}}, False)])
 # The import reads the association's own import uploads: another association's upload and a Document stored outside
 # the import folder answer like an unknown document, before any write.
 add('upload-of-another-association-server-error', 'owner', 500, SERVER,
@@ -410,8 +488,11 @@ add('document-outside-import-folder-server-error', 'owner', 500, SERVER,
     body={'document_id': '$document:stored', 'map': {'nome': 'Nome'}}, effect={'kind': 'release', 'release': ['stored']})
 add('unreadable-document-server-error', 'owner', 500, SERVER, body={'document_id': '$document:broken', 'map': {'nome': 'Nome'}},
     effect={'kind': 'release', 'release': ['broken']})
+# An imported upload is gone: the same request again answers like an unknown document.
+add('imported-upload-again-server-error', 'owner', 500, SERVER, body={'document_id': '$document:numbers-imported', 'map': {'nome': 'Nome'}})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'subscription/import/upload', 'ids': IDS, 'location': 'import-uploads',
-                              'statuses': STATUSES, 'stored': STORED, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+                              'limit': LIMIT, 'statuses': STATUSES, 'stored': STORED, 'expired': EXPIRED, 'cases': cases},
+                             ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

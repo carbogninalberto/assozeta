@@ -26,7 +26,7 @@ func NewDocumentViewsHandler(views *service.DocumentViews, actors *service.Actor
 const (
 	viewAuthenticated = iota // IsAuthenticated
 	viewOrBypass             // IsAuthenticated | HasBypassAuthorizationHeader
-	viewAllowAny             // the AllowAny default (the subscription preview)
+	viewAllowAny             // the AllowAny default (no view of this family)
 )
 
 func (h *DocumentViewsHandler) Subscription(c echo.Context) error {
@@ -34,7 +34,7 @@ func (h *DocumentViewsHandler) Subscription(c echo.Context) error {
 }
 
 func (h *DocumentViewsHandler) Preview(c echo.Context) error {
-	return h.serve(c, service.ViewPreview, "document_subscription_preview", "Document Subscription Preview", viewAllowAny)
+	return h.serve(c, service.ViewPreview, "document_subscription_preview", "Document Subscription Preview", viewAuthenticated)
 }
 
 func (h *DocumentViewsHandler) Compensation(c echo.Context) error {
@@ -76,7 +76,7 @@ func (h *DocumentViewsHandler) serve(c echo.Context, view, operation, name strin
 	}
 	reply, err := h.views.Render(request.Context(), *identity, service.DocumentViewRequest{
 		View: view, UID: c.Param("uid"), Path: request.URL.Path, Query: parseReferenceForm(request.URL.RawQuery),
-		Group: request.Header.Get("X-Group-Id"), Language: restLanguage(request),
+		Group: request.Header.Get("X-Group-Id"), Language: restLanguage(request), Authorization: requestAuthorization(request),
 	})
 	if err != nil {
 		if errors.Is(err, service.ErrDocumentViewNotPorted) {

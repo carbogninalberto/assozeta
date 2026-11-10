@@ -13,8 +13,14 @@ type SubscriptionImportStore interface {
 	// expiration saved or the row deleted), bulk_create of the drafts (no
 	// audit entries) and manage_import_status('end'). at gives each write's
 	// timezone.now().
+	// With effects.Failed only the two status changes are written. Otherwise
+	// document.delete() of the upload follows them (audited, indexed to the
+	// actor's association).
 	ImportRows(ctx context.Context, association, user string, actor *string, effects SubscriptionImportEffects, audit LoginAuditContext,
 		at func() time.Time) error
+	// RemoveDocuments is Document.delete() of each existing id, in order
+	// (audited, indexed to the actor's association).
+	RemoveDocuments(ctx context.Context, ids []string, actor *string, audit LoginAuditContext, at func() time.Time) error
 }
 
 // SubscriptionImportDocument is the Document whose stored file is imported.
@@ -40,6 +46,10 @@ type SubscriptionImportDraft struct {
 }
 
 type SubscriptionImportEffects struct {
+	// Failed is process_import_rows raising: the rows are rolled back.
+	Failed bool
+	// DocumentID is the upload a completed import removes.
+	DocumentID   string
 	StatusID     string
 	Certificates []SubscriptionImportCertificate
 	Drafts       []SubscriptionImportDraft
@@ -48,6 +58,10 @@ type SubscriptionImportEffects struct {
 // SubscriptionImportObjects is default_storage.open(...).read().
 type SubscriptionImportObjects interface {
 	Read(ctx context.Context, key string) ([]byte, error)
+	// Delete is default_storage.delete(name).
+	Delete(ctx context.Context, key string) error
+	// Keys are the object keys under prefix, in key order.
+	Keys(ctx context.Context, prefix string) ([]string, error)
 }
 
 type SubscriptionImportTransaction interface {

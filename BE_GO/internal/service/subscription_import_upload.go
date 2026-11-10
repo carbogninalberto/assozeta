@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"errors"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -26,7 +28,36 @@ var (
 	// import of a stored CSV document, import values outside the ported
 	// dateutil and codicefiscale subsets and a file given as document_id.
 	ErrSubscriptionImportNotPorted = refusal.New("subscription import path not ported")
+	// ErrSubscriptionImportFailed is the import whose rows raised: 400
+	// {'msg': FAILED_MESSAGE}, nothing of the rows kept.
+	ErrSubscriptionImportFailed = errors.New("subscription import: rows failed")
 )
+
+// SubscriptionImportFailedMessage is SubscriptionImportService.FAILED_MESSAGE.
+const SubscriptionImportFailedMessage = "Importazione non riuscita. Controlla i dati e riprova."
+
+// SubscriptionImportTooLarge is an upload above upload_limit(): 413 {'msg': too_large_message(limit)}.
+type SubscriptionImportTooLarge struct{ Limit int64 }
+
+func (e *SubscriptionImportTooLarge) Error() string {
+	return "subscription import: file above the limit"
+}
+
+// Message is too_large_message(limit).
+func (e *SubscriptionImportTooLarge) Message() string {
+	size := strconv.FormatInt(e.Limit, 10) + " byte"
+	if e.Limit%(1<<20) == 0 {
+		size = strconv.FormatInt(e.Limit/(1<<20), 10) + " MB"
+	}
+	return "Il file supera la dimensione massima consentita (" + size + ")."
+}
+
+// SubscriptionImportLimits are SUBSCRIPTION_IMPORT_MAX_UPLOAD_BYTES and
+// SUBSCRIPTION_IMPORT_RETENTION_HOURS.
+type SubscriptionImportLimits struct {
+	MaxUploadBytes int64
+	RetentionHours int64
+}
 
 // subscriptionImportKeys is SubscriptionMaps.MAP's key order.
 var subscriptionImportKeys = []string{"nome", "cognome", "sesso", "codice fiscale", "data di nascita", "città di nascita", "indirizzo",
@@ -125,11 +156,66 @@ type SubscriptionImportUpload struct {
 	store   domain.SubscriptionImportStore
 	uploads *DocumentUploads
 	objects domain.SubscriptionImportObjects
+	limits  SubscriptionImportLimits
 }
 
 func NewSubscriptionImportUpload(store domain.SubscriptionImportStore, uploads *DocumentUploads,
-	objects domain.SubscriptionImportObjects) *SubscriptionImportUpload {
-	return &SubscriptionImportUpload{store: store, uploads: uploads, objects: objects}
+	objects domain.SubscriptionImportObjects, limits SubscriptionImportLimits) *SubscriptionImportUpload {
+	return &SubscriptionImportUpload{store: store, uploads: uploads, objects: objects, limits: limits}
+}
+
+var (
+	subscriptionImportStampFolder    = regexp.MustCompile(`^[0-9]+(\.[0-9]+)?$`)
+	subscriptionImportDocumentFolder = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
+)
+
+// removeExpired is remove_expired_uploads: the association's import uploads
+// whose folder timestamp is older than the retention time lose their
+// Document (audited) and their stored objects, in folder order.
+func (s *SubscriptionImportUpload) removeExpired(ctx context.Context, identity domain.ResolvedIdentity, association string,
+	audit domain.LoginAuditContext) error {
+	prefix, err := documentkey.S3Key(subscriptionImportFolder(association), s.uploads.objects.Location())
+	if err != nil {
+		return err
+	}
+	keys, err := s.objects.Keys(ctx, prefix)
+	if err != nil {
+		return err
+	}
+	cutoff := float64(s.uploads.now().UnixMicro())/1e6 - float64(s.limits.RetentionHours)*3600
+	var ids, expired []string
+	seen := map[string]bool{}
+	for _, key := range keys {
+		parts := strings.Split(strings.TrimPrefix(key, prefix), "/")
+		if len(parts) != 3 || parts[2] == "" || !subscriptionImportStampFolder.MatchString(parts[0]) ||
+			!subscriptionImportDocumentFolder.MatchString(parts[1]) {
+			continue
+		}
+		if created, err := strconv.ParseFloat(parts[0], 64); err != nil || !(created < cutoff) {
+			continue
+		}
+		if !seen[parts[1]] {
+			seen[parts[1]] = true
+			ids = append(ids, parts[1])
+		}
+		expired = append(expired, key)
+	}
+	if len(expired) == 0 {
+		return nil
+	}
+	var actor *string
+	if identity.Actor != nil {
+		actor = &identity.Actor.ID
+	}
+	if err = s.store.RemoveDocuments(ctx, ids, actor, uploadAuditContext(identity, audit), s.uploads.at); err != nil {
+		return err
+	}
+	for _, key := range expired {
+		if err = s.objects.Delete(ctx, key); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // storeImportFile is upload_and_store_file: Document.objects.create (audited,
@@ -190,6 +276,9 @@ func (s *SubscriptionImportUpload) Upload(ctx context.Context, identity domain.R
 		if !isFile {
 			return nil, ErrSubscriptionImportServerError // associates_file.name
 		}
+		if int64(len(file.Content)) > s.limits.MaxUploadBytes {
+			return nil, &SubscriptionImportTooLarge{Limit: s.limits.MaxUploadBytes}
+		}
 		if err = tx.Rollback(); err != nil {
 			return nil, err
 		}
@@ -243,8 +332,11 @@ func subscriptionImportExcel(lower string) bool {
 // importDocument is the mapping branch after the lookup: the stored file's
 // frame, read from the association's import folder (a document with no
 // object there, or a failed read, is the 500 page before any write), then
-// the import between the two status changes; the answer names the columns
-// and the request's map, which no upload filled.
+// the import between the two status changes, the columns of codes read as
+// text. Rows that raise answer ErrSubscriptionImportFailed after the status
+// changes; otherwise the upload is removed (its Document with the import, then
+// its object) and the answer names the columns and the request's map, which
+// no upload filled.
 func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity domain.ResolvedIdentity, association, id string,
 	document domain.SubscriptionImportDocument, data domain.RequestObject, audit domain.LoginAuditContext) (domain.RequestObject, error) {
 	lower := strings.ToLower(document.Filename)
@@ -266,7 +358,9 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 	if err != nil {
 		return nil, errors.Join(ErrSubscriptionImportServerError, err) // ValueError('No document found') or the failed read
 	}
-	frame, err := pandasxlsx.Read(content)
+	mapping, _ := data.Lookup("map")
+	text := subscriptionImportTextColumns(mapping)
+	frame, err := pandasxlsx.ReadText(content, func(column string) bool { return text[column] })
 	switch {
 	case errors.Is(err, pandasxlsx.ErrInvalid):
 		return nil, ErrSubscriptionImportServerError
@@ -281,9 +375,15 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 	if identity.Actor != nil {
 		actor = &identity.Actor.ID
 	}
+	effects.DocumentID = id
 	if err = s.store.ImportRows(ctx, association, identity.ScopeUser.ID, actor, effects, uploadAuditContext(identity, audit), s.uploads.at); err != nil {
 		return nil, err
 	}
+	if effects.Failed {
+		return nil, ErrSubscriptionImportFailed
+	}
+	// remove_upload's default_storage.delete: a failure is logged by the view and the import stands.
+	_ = s.objects.Delete(ctx, key)
 	list := make([]any, len(frame.Columns))
 	for i, column := range frame.Columns {
 		list[i] = column
@@ -325,6 +425,8 @@ func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.R
 	if err != nil {
 		return nil, err
 	}
+	// The view logs a failed cleanup and goes on.
+	_ = s.removeExpired(ctx, identity, association, audit)
 	if !csv && !excel || parseErr != nil {
 		return nil, ErrSubscriptionImportServerError // TypeError, EmptyDataError or ParserError after the writes
 	}

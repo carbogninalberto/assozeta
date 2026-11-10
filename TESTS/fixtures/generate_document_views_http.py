@@ -9,8 +9,8 @@ service prints (@api_view(['GET'])):
   [3] athletes); show_regulation_to/show_demand_to from the association flags;
   header/footer through filter_mentions; the association's subscription
   template (subscription.html unless subscription_classic.html).
-- document/subscription/preview/ (AllowAny): ?print asks the renderer for
-  '<path>?sport_association_id=<value>' with no headers and answers
+- document/subscription/preview/ (IsAuthenticated): ?print asks the renderer for
+  '<path>?sport_association_id=<value>' with the request's Authorization header and answers
   {'file': base64} or 500 {'error': 'PDF not rendered'}; otherwise the live,
   scoped association named by ?sport_association_id with a placeholder
   subscription (no parameter: 500).
@@ -463,7 +463,7 @@ add('subscription-invalid-uuid', 'owner', '/document/subscription/not-a-uuid/vie
 add('subscription-sections-not-a-list', 'owner', SUB('badsections'), 500, SERVER)
 add('subscription-meta-list-format', 'owner', SUB('listmeta'), 500, SERVER)
 
-# --- document/subscription/preview/ (AllowAny) -------------------------------------------------
+# --- document/subscription/preview/ (IsAuthenticated) -------------------------------------------------
 PREVIEW = '/document/subscription/preview/'
 BLANK = '____________________________'
 
@@ -493,37 +493,43 @@ A = lambda label: ASSOCIATIONS[label]['id']
 add('preview-restricted-collaborator', 'restricted_collaborator', PREVIEW, 403, unmapped(PREVIEW))
 add('preview-admin-without-session', 'admin', PREVIEW, 403, ADMIN)
 add('preview-invalid-bearer', 'anonymous', PREVIEW, 401, INVALID_JWT, headers={'Authorization': 'Bearer not-a-jwt'})
-add('preview-put-not-allowed', 'anonymous', PREVIEW, 405, method('PUT'), method_='PUT')
-add('preview-options', 'anonymous', PREVIEW, 200, {'name': 'Document Subscription Preview', 'description': '',
+add('preview-put-not-allowed', 'owner', PREVIEW, 405, method('PUT'), method_='PUT')
+# Anonymous requests are asked for credentials, whatever the query; the renderer is not called.
+add('preview-anonymous', 'anonymous', f"{PREVIEW}?sport_association_id={A('alpha')}", 401, ANONYMOUS)
+add('preview-anonymous-without-association', 'anonymous', PREVIEW, 401, ANONYMOUS)
+add('preview-anonymous-print', 'anonymous', f"{PREVIEW}?print&sport_association_id={A('alpha')}", 401, ANONYMOUS)
+add('preview-anonymous-put', 'anonymous', PREVIEW, 401, ANONYMOUS, method_='PUT')
+add('preview-athlete', 'athlete', f"{PREVIEW}?sport_association_id={A('classic')}", 200, HTML,
+    html=preview_context('classic', '', '<p>Grazie</p>'))
+add('preview-options', 'owner', PREVIEW, 200, {'name': 'Document Subscription Preview', 'description': '',
                                                    'renders': ['application/json'], 'parses': PARSES}, method_='OPTIONS')
-add('preview-anonymous', 'anonymous', f"{PREVIEW}?sport_association_id={A('alpha')}", 200, HTML,
+add('preview-owner-alpha', 'owner', f"{PREVIEW}?sport_association_id={A('alpha')}", 200, HTML,
     html=preview_context('alpha', ALPHA_HEADER_OUT, alpha_footer_out('')))
 add('preview-owner-classic', 'owner', f"{PREVIEW}?sport_association_id={A('classic')}", 200, HTML,
     html=preview_context('classic', '', '<p>Grazie</p>'))
-add('preview-fallback-italian', 'anonymous', f"{PREVIEW}?sport_association_id={A('fallback')}&x=1", 200, HTML,
+add('preview-fallback-italian', 'owner', f"{PREVIEW}?sport_association_id={A('fallback')}&x=1", 200, HTML,
     headers={'Accept-Language': 'it'}, language='it', html=preview_context('fallback', '<p><br/></p>', FALLBACK_FOOTER_OUT, 'it'))
-add('preview-repeated-parameter', 'anonymous', f"{PREVIEW}?sport_association_id={A('classic')}&sport_association_id={A('alpha')}", 200,
+add('preview-repeated-parameter', 'owner', f"{PREVIEW}?sport_association_id={A('classic')}&sport_association_id={A('alpha')}", 200,
     HTML, html=preview_context('alpha', ALPHA_HEADER_OUT, alpha_footer_out('')))
 add('preview-without-association', 'owner', PREVIEW, 500, SERVER)
-add('preview-anonymous-without-association', 'anonymous', PREVIEW, 500, SERVER)
-add('preview-empty-association', 'anonymous', f'{PREVIEW}?sport_association_id=', 500, SERVER)
-add('preview-invalid-association', 'anonymous', f'{PREVIEW}?sport_association_id=xyz', 500, SERVER)
-add('preview-unknown-association', 'anonymous', f'{PREVIEW}?sport_association_id={UNKNOWN}', 500, SERVER)
-add('preview-deleted-association', 'anonymous', f"{PREVIEW}?sport_association_id={A('deleted')}", 500, SERVER)
-add('preview-athlete-user', 'anonymous', f"{PREVIEW}?sport_association_id={A('athleteowned')}", 403,
+add('preview-empty-association', 'owner', f'{PREVIEW}?sport_association_id=', 500, SERVER)
+add('preview-invalid-association', 'owner', f'{PREVIEW}?sport_association_id=xyz', 500, SERVER)
+add('preview-unknown-association', 'owner', f'{PREVIEW}?sport_association_id={UNKNOWN}', 500, SERVER)
+add('preview-deleted-association', 'owner', f"{PREVIEW}?sport_association_id={A('deleted')}", 500, SERVER)
+add('preview-athlete-user', 'owner', f"{PREVIEW}?sport_association_id={A('athleteowned')}", 403,
     {'detail': 'User is not a sport association'})
 add('preview-scoped-foreign', 'owner', f"{PREVIEW}?sport_association_id={FOREIGN}", 403, SCOPED_HIDDEN, headers=SCOPED)
 PDF_OK = {'status': 200, 'content_type': 'application/pdf', 'body': '$pdf'}
-add('preview-print', 'anonymous', f"{PREVIEW}?print&sport_association_id={A('alpha')}", 200, {'file': '$pdf-base64'},
-    renders=[{'url': f"/document/subscription/preview/?sport_association_id={A('alpha')}", 'reply': PDF_OK}])
+add('preview-print', 'owner', f"{PREVIEW}?print&sport_association_id={A('alpha')}", 200, {'file': '$pdf-base64'},
+    renders=[{'url': f"/document/subscription/preview/?sport_association_id={A('alpha')}", 'authorization': '$bearer', 'reply': PDF_OK}])
 add('preview-print-without-association', 'owner', f'{PREVIEW}?print=0', 200, {'file': '$pdf-base64'},
-    renders=[{'url': '/document/subscription/preview/?sport_association_id=None', 'reply': PDF_OK}])
-add('preview-print-renderer-error', 'anonymous', f"{PREVIEW}?print=1&sport_association_id=x%20y", 500, {'error': 'PDF not rendered'},
+    renders=[{'url': '/document/subscription/preview/?sport_association_id=None', 'authorization': '$bearer', 'reply': PDF_OK}])
+add('preview-print-renderer-error', 'owner', f"{PREVIEW}?print=1&sport_association_id=x%20y", 500, {'error': 'PDF not rendered'},
     renders=[{'url': '/document/subscription/preview/?sport_association_id=x y',
-              'reply': {'status': 502, 'content_type': 'text/plain', 'body': 'down'}}])
-add('preview-print-not-pdf', 'anonymous', f'{PREVIEW}?print=', 500, {'error': 'PDF not rendered'},
+              'authorization': '$bearer', 'reply': {'status': 502, 'content_type': 'text/plain', 'body': 'down'}}])
+add('preview-print-not-pdf', 'owner', f'{PREVIEW}?print=', 500, {'error': 'PDF not rendered'},
     renders=[{'url': '/document/subscription/preview/?sport_association_id=None',
-              'reply': {'status': 200, 'content_type': 'application/pdf', 'body': 'not a pdf'}}])
+              'authorization': '$bearer', 'reply': {'status': 200, 'content_type': 'application/pdf', 'body': 'not a pdf'}}])
 
 # --- document/compensation/<uid>/view/ (IsAuthenticated) ---------------------------------------
 COMP = lambda key: f"/document/compensation/{COMPENSATIONS[key]['id']}/view/"

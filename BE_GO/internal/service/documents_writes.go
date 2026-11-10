@@ -26,6 +26,36 @@ type DocumentUploads struct {
 	overwrite bool
 	now       func() time.Time
 	ids       func() string
+	// certificateLimit is MEDICAL_CERTIFICATE_MAX_UPLOAD_BYTES (0: the default).
+	certificateLimit int64
+}
+
+// certificateDefaultLimit is core.settings' default of MEDICAL_CERTIFICATE_MAX_UPLOAD_BYTES.
+const certificateDefaultLimit = 10 << 20
+
+// WithCertificateLimit sets MEDICAL_CERTIFICATE_MAX_UPLOAD_BYTES.
+func (s *DocumentUploads) WithCertificateLimit(limit int64) *DocumentUploads {
+	s.certificateLimit = limit
+	return s
+}
+
+// certificateAccepted is medical_certificate_type_allowed: a PDF or an
+// image, by mimetypes.guess_type of the file name.
+func certificateAccepted(name string) (bool, error) {
+	kind, _, _, err := pymime.GuessType(name)
+	if err != nil {
+		return false, err
+	}
+	return kind == "application/pdf" || strings.HasPrefix(kind, "image/"), nil
+}
+
+// certificateTooLarge is medical_certificate_too_large_message(limit).
+func certificateTooLarge(limit int64) string {
+	size := strconv.FormatInt(limit, 10) + " byte"
+	if limit%(1<<20) == 0 {
+		size = strconv.FormatInt(limit/(1<<20), 10) + " MB"
+	}
+	return "Il file supera la dimensione massima consentita (" + size + ")."
 }
 
 func NewDocumentUploads(store domain.DocumentUploadStore, objects domain.DocumentObjectStore, grants domain.MedicalUploadGrants,
@@ -589,6 +619,21 @@ func (s *DocumentUploads) CertificateDocument(ctx context.Context, identity doma
 	file, isFile := value.(domain.RequestFile)
 	if !isFile {
 		return "", domain.ErrDocumentWritesFailed // .name
+	}
+	accepted, err := certificateAccepted(file.Name)
+	if err != nil {
+		// A name mimetypes reads as a URL: not reproduced, refused before any write.
+		return "", errors.Join(domain.ErrDocumentWritesFailed, err)
+	}
+	if !accepted {
+		return "", &MedicalUploadError{Status: 400, Message: "Seleziona un file PDF o un’immagine."}
+	}
+	limit := s.certificateLimit
+	if limit == 0 {
+		limit = certificateDefaultLimit
+	}
+	if int64(len(file.Content)) > limit {
+		return "", &MedicalUploadError{Status: 413, Message: certificateTooLarge(limit)}
 	}
 	tx, err := s.store.BeginDocumentUpload(ctx)
 	if err != nil {

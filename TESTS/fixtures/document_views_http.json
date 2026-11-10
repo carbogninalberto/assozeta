@@ -7336,7 +7336,7 @@
   },
   {
    "name": "document-views-preview-put-not-allowed",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "PUT",
    "path": "/document/subscription/preview/",
    "headers": {},
@@ -7348,8 +7348,450 @@
    "content_language": "en"
   },
   {
-   "name": "document-views-preview-options",
+   "name": "document-views-preview-anonymous",
    "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/subscription/preview/?sport_association_id=a1000000-0000-4000-8000-000000985002",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-preview-anonymous-without-association",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/subscription/preview/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-preview-anonymous-print",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/subscription/preview/?print&sport_association_id=a1000000-0000-4000-8000-000000985002",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-preview-anonymous-put",
+   "actor": "anonymous",
+   "method": "PUT",
+   "path": "/document/subscription/preview/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "content_language": "en"
+  },
+  {
+   "name": "document-views-preview-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/subscription/preview/?sport_association_id=a1000000-0000-4000-8000-000000985004",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "renders": [],
+   "content_language": "en",
+   "html": {
+    "template": "document/application/subscription_classic.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "none"
+     },
+     "subscription": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "Club Classico"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "09876543210"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "federation",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "enroll_number",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "regulation",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "demand",
+           {
+            "t": "str",
+            "v": "<p>Domanda</p>"
+           }
+          ],
+          [
+           "additional_sections",
+           {
+            "t": "list",
+            "v": []
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "creation_date",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "type",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "role",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "____________________________"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "____________________________"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "____________________________"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "str",
+            "v": "____________________________"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "str",
+            "v": "____________________________"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "____________________________"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "str",
+            "v": "______________"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "str",
+            "v": "____________________________"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "[ ] M [ ] F [ ] Altro"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "str",
+            "v": "____________________________"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "str",
+            "v": "____________________________"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "____________________________ ____________________________"
+            }
+           }
+          ],
+          [
+           "is_minor_now",
+           {
+            "t": "bool",
+            "v": true
+           }
+          ],
+          [
+           "main_tutor",
+           {
+            "t": "call",
+            "v": {
+             "t": "obj",
+             "v": [
+              [
+               "first_name",
+               {
+                "t": "str",
+                "v": "____________________________"
+               }
+              ],
+              [
+               "last_name",
+               {
+                "t": "str",
+                "v": "____________________________"
+               }
+              ],
+              [
+               "tax_code",
+               {
+                "t": "str",
+                "v": "____________________________"
+               }
+              ],
+              [
+               "born_city",
+               {
+                "t": "str",
+                "v": "____________________________"
+               }
+              ],
+              [
+               "born_date",
+               {
+                "t": "str",
+                "v": "____________________________"
+               }
+              ],
+              [
+               "address",
+               {
+                "t": "str",
+                "v": "____________________________"
+               }
+              ],
+              [
+               "address_cap",
+               {
+                "t": "str",
+                "v": "______________"
+               }
+              ],
+              [
+               "address_city",
+               {
+                "t": "str",
+                "v": "____________________________"
+               }
+              ],
+              [
+               "sex",
+               {
+                "t": "str",
+                "v": "[ ] M [ ] F [ ] Altro"
+               }
+              ],
+              [
+               "phone",
+               {
+                "t": "str",
+                "v": "____________________________"
+               }
+              ],
+              [
+               "email",
+               {
+                "t": "str",
+                "v": "____________________________"
+               }
+              ],
+              [
+               "get_full_name",
+               {
+                "t": "call",
+                "v": {
+                 "t": "str",
+                 "v": "____________________________ ____________________________"
+                }
+               }
+              ],
+              [
+               "is_minor_now",
+               {
+                "t": "bool",
+                "v": true
+               }
+              ]
+             ]
+            }
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "additional_fields",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "has_signature",
+        {
+         "t": "bool",
+         "v": false
+        }
+       ]
+      ]
+     },
+     "payment_data": {
+      "t": "none"
+     },
+     "show_regulation_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 1
+       },
+       {
+        "t": "int",
+        "v": 2
+       },
+       {
+        "t": "int",
+        "v": 3
+       }
+      ]
+     },
+     "show_demand_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 1
+       },
+       {
+        "t": "int",
+        "v": 2
+       },
+       {
+        "t": "int",
+        "v": 3
+       }
+      ]
+     },
+     "is_preview": {
+      "t": "bool",
+      "v": true
+     },
+     "header": {
+      "t": "str",
+      "v": ""
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Grazie</p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "document-views-preview-options",
+   "actor": "owner",
    "method": "OPTIONS",
    "path": "/document/subscription/preview/",
    "headers": {},
@@ -7370,8 +7812,8 @@
    "content_language": "en"
   },
   {
-   "name": "document-views-preview-anonymous",
-   "actor": "anonymous",
+   "name": "document-views-preview-owner-alpha",
+   "actor": "owner",
    "method": "GET",
    "path": "/document/subscription/preview/?sport_association_id=a1000000-0000-4000-8000-000000985002",
    "headers": {},
@@ -8316,7 +8758,7 @@
   },
   {
    "name": "document-views-preview-fallback-italian",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "GET",
    "path": "/document/subscription/preview/?sport_association_id=a1000000-0000-4000-8000-000000985008&x=1",
    "headers": {
@@ -8714,7 +9156,7 @@
   },
   {
    "name": "document-views-preview-repeated-parameter",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "GET",
    "path": "/document/subscription/preview/?sport_association_id=a1000000-0000-4000-8000-000000985004&sport_association_id=a1000000-0000-4000-8000-000000985002",
    "headers": {},
@@ -9279,19 +9721,8 @@
    "content_language": "en"
   },
   {
-   "name": "document-views-preview-anonymous-without-association",
-   "actor": "anonymous",
-   "method": "GET",
-   "path": "/document/subscription/preview/",
-   "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
-   "renders": [],
-   "content_language": "en"
-  },
-  {
    "name": "document-views-preview-empty-association",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "GET",
    "path": "/document/subscription/preview/?sport_association_id=",
    "headers": {},
@@ -9302,7 +9733,7 @@
   },
   {
    "name": "document-views-preview-invalid-association",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "GET",
    "path": "/document/subscription/preview/?sport_association_id=xyz",
    "headers": {},
@@ -9313,7 +9744,7 @@
   },
   {
    "name": "document-views-preview-unknown-association",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "GET",
    "path": "/document/subscription/preview/?sport_association_id=a1000000-0000-4000-8000-000000985999",
    "headers": {},
@@ -9324,7 +9755,7 @@
   },
   {
    "name": "document-views-preview-deleted-association",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "GET",
    "path": "/document/subscription/preview/?sport_association_id=a1000000-0000-4000-8000-000000985012",
    "headers": {},
@@ -9335,7 +9766,7 @@
   },
   {
    "name": "document-views-preview-athlete-user",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "GET",
    "path": "/document/subscription/preview/?sport_association_id=a1000000-0000-4000-8000-000000985010",
    "headers": {},
@@ -9364,7 +9795,7 @@
   },
   {
    "name": "document-views-preview-print",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "GET",
    "path": "/document/subscription/preview/?print&sport_association_id=a1000000-0000-4000-8000-000000985002",
    "headers": {},
@@ -9375,6 +9806,7 @@
    "renders": [
     {
      "url": "/document/subscription/preview/?sport_association_id=a1000000-0000-4000-8000-000000985002",
+     "authorization": "$bearer",
      "reply": {
       "status": 200,
       "content_type": "application/pdf",
@@ -9397,6 +9829,7 @@
    "renders": [
     {
      "url": "/document/subscription/preview/?sport_association_id=None",
+     "authorization": "$bearer",
      "reply": {
       "status": 200,
       "content_type": "application/pdf",
@@ -9408,7 +9841,7 @@
   },
   {
    "name": "document-views-preview-print-renderer-error",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "GET",
    "path": "/document/subscription/preview/?print=1&sport_association_id=x%20y",
    "headers": {},
@@ -9419,6 +9852,7 @@
    "renders": [
     {
      "url": "/document/subscription/preview/?sport_association_id=x y",
+     "authorization": "$bearer",
      "reply": {
       "status": 502,
       "content_type": "text/plain",
@@ -9430,7 +9864,7 @@
   },
   {
    "name": "document-views-preview-print-not-pdf",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "GET",
    "path": "/document/subscription/preview/?print=",
    "headers": {},
@@ -9441,6 +9875,7 @@
    "renders": [
     {
      "url": "/document/subscription/preview/?sport_association_id=None",
+     "authorization": "$bearer",
      "reply": {
       "status": 200,
       "content_type": "application/pdf",
