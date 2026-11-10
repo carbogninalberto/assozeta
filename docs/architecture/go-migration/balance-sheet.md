@@ -108,3 +108,18 @@ the payments' delete receiver skipped leaves the instalment in place
 (`state.deleted:application.CourseSubscriptionInstallment`). Re-run green
 (`v2del-rerun-r1`): balance-account-writes 29/29, balance-transfer-writes 30/30,
 balance-accounts 25/25.
+
+Account delete rule (`v2doc2-*`): the view refuses an account in use, with the
+rule of the list's `deletable` flag. Django first: three tests in
+`BE/application/tests/test_balance_sheet_views.py` (payments, transfers on
+either side, the flag and the refusal agreeing) failed, then passed with the
+fix. The fixture has 84 cases: accounts with transfers, with payments, with an
+unpaid payment and with an outgoing transfer are refused; the deleted accounts
+are the ones whose payments are all removed from the payment list, plus one
+under an `X-Group-Id` header. RED `v2doc2-red-r1`: Django 84/84, Go 200 on
+`account-with-transfers-refused`. GREEN `v2doc2-versioned-r2` (after merging
+`codex/go-backend-parity`): 84/84 on native Django, native Go, Caddy `/api/v1`
+and `/api/v2`. Mutation `v2doc2-mutation-r2`: the rule requiring both a transfer
+and a payment fails `account-with-transfers-refused`. Re-run green
+(`v2doc2-rerun-r1`): balance-accounts 25/25, balance-account-writes 29/29,
+balance-transfer-writes 30/30.
