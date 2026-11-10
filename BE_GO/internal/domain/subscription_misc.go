@@ -88,11 +88,6 @@ type SubscriptionMiscTransaction interface {
 	// file (Model.delete() of the view's stale instance).
 	RecordFileDelete(ctx context.Context, id string, changes map[string][2]string, actorAssociation *string, audit LoginAuditContext,
 		at time.Time) error
-	// DeleteSharedDocument is document.delete() of a document other rows
-	// reference: the deletion collector with its audit entries. It returns the
-	// delete diff of the file, which the collector deleted.
-	DeleteSharedDocument(ctx context.Context, document, file string, group *string, audit LoginAuditContext, at time.Time) (
-		map[string][2]string, error)
 	// DeleteDocument deletes the document with its auditlog delete entry.
 	DeleteDocument(ctx context.Context, id string, actorAssociation *string, audit LoginAuditContext, at time.Time) error
 	Commit() error

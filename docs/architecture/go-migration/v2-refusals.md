@@ -393,10 +393,8 @@ family doc has the details.
 | Family | Route | Was refused | Evidence |
 |---|---|---|---|
 | course-attendance | `GET course/<uid>/attendees` (B, legacy: yes) | events of older calendars: an `event_id` that is not a UUID string (integers link as `UUID(int=...)`, other values leave the day unlinked after the audit entry of the failing save), `extendedProps` and `instructor` values of other JSON types | 111 cases; RED `v2restc-red-r1` Django 111/111, Go 500; GREEN `v2restc-green-r3` 4 transports; mutation `v2restc-mutation-r1` (day stored although the field rejects the id) CAUGHT |
-| subscription-misc | `DELETE subscription/<uid>/delete-document/<id>` (B, legacy: yes) | a Document other rows reference: `Document.delete()` with the shared deletion collector | 159 cases; RED `v2restc-red-r1` Django 159/159, Go 500; GREEN `v2restc-green-r3` 4 transports; mutation `v2restc-mutation-r1` (last entry with a diff of the document only) CAUGHT |
 | misc-routes | `GET calendar/events/export` (B, legacy: yes) | `start`/`end` with a non-zero UTC offset: the `TZID` icalendar names the offset with. Also float titles, event ids and labels (B) | 137 cases; RED `v2restc-red-r2` Django 137/137, Go 500; GREEN `v2restc-green-r3` 4 transports; mutation `v2restc-mutation-r2` (table read with the reversed sign) CAUGHT; google-calendar re-run |
 | misc-routes | `POST communications/send/post` (B) | a JSON float `message` (`str()` of the Python float) | same receipts |
-| association-transfer | `GET association/import/status`, `GET association/export/active` (B, legacy: yes) | `FAILURE`, `REVOKED` and `RETRY` task rows: the exception Celery rebuilds and its text | 235 cases; RED `v2restc-red-r1` Django 235/235, Go 500; GREEN `v2restc-green-r3` 4 transports; mutation `v2restc-mutation-r1` (single-argument `repr` on the wrong classes) CAUGHT |
 
 Left refused in these families, with the reason: course-attendance integer attendee, absence, instructor and check-in ids
 and float `lessons_left` (each site has its own lookup or arithmetic failure in Django; no writer produces them);

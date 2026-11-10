@@ -106,8 +106,8 @@ and whose `extendedProps` are of other JSON types:
   as `UUID(int=...)`: the day is stored with that UUID and the audit diff shows `str()` of the value (`7`, `True`). A day
   linked this way no longer matches its event on the next listing (`str(uuid) != event_id`).
 - A value the field rejects (other text, a float, a list, an object, an integer outside 128 bits) fails the save while the
-  UPDATE is prepared. The view ignores the failure; auditlog's entry of the diff, written before the save, stays: the
-  day keeps its values and every listing logs the same entry again. `null` is saved as no link.
+  UPDATE is prepared. The view checks the value with the field first and ignores the failure: nothing is written (no
+  row change, no auditlog entry) and the day keeps its values on every listing. `null` is saved as no link.
 - The view sets a missing `expected_absences` to `[]` before the save, which both the row (when saved) and the entry show.
 - `map_unlinked_attendance` looks days up by the event id first: an integer id links, any other non-UUID value is the
   500 page.

@@ -507,10 +507,13 @@ add('delete-association-scoped-session', 'owner', DELETE('d_own', F['impersonate
 add('delete-admin-impersonating-owner-grouped', 'admin', DELETE('d_grouped', F['grouped']), 200, DELETED, method='DELETE',
     headers={**ADMIN_OWNER, 'X-Group-Id': OWN_GROUP},
     effect={'kind': 'document', 'file': 'grouped', 'document': True, 'actor': 'admin', 'association': IDS['admin_association']})
-# A document another file references: Document.delete() collects both files.
+# A document another file references stays with it: only the caller's link goes.
 add('delete-document-of-two-files', 'owner', DELETE('d_own', F['shared_own']), 200, DELETED, method='DELETE',
-    effect={'kind': 'document', 'file': 'shared_own', 'cascade': ['shared_grouped'], 'document': True, 'actor': 'owner', 'association': OWN})
-add('delete-document-of-two-files-other-gone', 'owner', DELETE('d_grouped', F['shared_grouped']), 500, SERVER, method='DELETE')
+    effect={'kind': 'document', 'file': 'shared_own', 'document': False, 'actor': 'owner', 'association': OWN})
+add('delete-document-of-two-files-again', 'owner', DELETE('d_own', F['shared_own']), 500, SERVER, method='DELETE')
+# The last link takes the document with it.
+add('delete-document-of-two-files-last-link', 'owner', DELETE('d_grouped', F['shared_grouped']), 200, DELETED, method='DELETE',
+    effect={'kind': 'document', 'file': 'shared_grouped', 'document': True, 'actor': 'owner', 'association': OWN})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'subscription-misc', 'ids': IDS, 'users': USERS, 'statuses': STATUSES,

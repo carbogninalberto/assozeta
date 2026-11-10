@@ -72,6 +72,8 @@ const (
 	exportActiveName    = "association-export-active:"
 	exportLastName      = "association-export-last:"
 	exportTaskName      = "association-export-task:"
+	importTaskCacheName = "association-import-task:"
+	importTaskTimeout   = 24 * time.Hour // IMPORT_TASK_CACHE_TIMEOUT
 )
 
 // setupTokenMatches is constant_time_compare(provided, expected) on the
@@ -157,46 +159,14 @@ func transferJSON(value any) (any, error) {
 	return nil, domain.ErrAssociationTransferNotPorted
 }
 
-// taskReady is AsyncResult(task_id).ready() on the django-db result backend:
-// the stored status is SUCCESS, FAILURE or REVOKED. Rows whose decoding
-// rebuilds exceptions or merges meta keys are refused, as in ImportStatus.
+// taskReady is stored_task(task_id)['status'] in TASK_READY_STATES: the
+// stored status alone (no row is not ready).
 func (s *AssociationTransfer) taskReady(ctx context.Context, task string) (bool, error) {
 	row, err := s.store.TaskResult(ctx, task)
 	if err != nil || row == nil {
 		return false, err
 	}
-	if row.Encoding != "utf-8" {
-		return false, domain.ErrAssociationTransferNotPorted
-	}
-	if row.Meta != nil && *row.Meta != "" {
-		meta, err := celeryJSON(*row.Meta)
-		if err != nil {
-			return false, err
-		}
-		object, ok := meta.(map[string]any)
-		if !ok {
-			return false, domain.ErrAssociationTransferNotPorted
-		}
-		children, _ := object["children"].([]any)
-		_, status := object["status"]
-		if status || len(children) > 0 || (object["children"] != nil && children == nil) {
-			return false, domain.ErrAssociationTransferNotPorted
-		}
-	}
-	switch row.Status {
-	case "FAILURE", "REVOKED", "RETRY":
-		// The exception is rebuilt for these states (see ImportStatus).
-		if _, err := celeryExceptionText(row.Result); err != nil {
-			return false, err
-		}
-		return row.Status != "RETRY", nil
-	}
-	if row.Result != nil && *row.Result != "" {
-		if _, err := celeryJSON(*row.Result); err != nil {
-			return false, err
-		}
-	}
-	return row.Status == "SUCCESS", nil
+	return row.Status == "SUCCESS" || row.Status == "FAILURE" || row.Status == "REVOKED", nil
 }
 
 // activeExport mirrors active_export after the permission and association checks.
@@ -422,14 +392,23 @@ func (s *AssociationTransfer) ImportStart(ctx context.Context, upload Associatio
 	if err = s.options.Objects.Put(ctx, key, upload.File.Content, kind, encoding); err != nil {
 		return nil, err
 	}
+	// The task is registered before dispatch: import/status answers registered imports only.
+	id := s.options.NewID()
+	rollback := func(cause error) (*AssociationTransferReply, error) {
+		// Django deletes the saved archive and the registration and answers its own 500 with the exception text.
+		_ = s.options.Objects.Delete(context.WithoutCancel(ctx), key)
+		_ = s.options.Writes.CacheDelete(context.WithoutCancel(ctx), importTaskCacheName+id)
+		return nil, cause
+	}
+	if err = s.options.Writes.CacheSet(ctx, importTaskCacheName+id, associationexport.Dict{{Key: "task", Value: importTaskName}},
+		importTaskTimeout); err != nil {
+		return rollback(err)
+	}
 	publish, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
 	defer cancel()
-	id, err := s.options.Tasks.Publish(publish, celery.Task{Name: "import_association_data", Kwargs: celery.Dict{
-		{Key: "zip_file_path", Value: name}, {Key: "owner_password", Value: password}}})
-	if err != nil {
-		// Django deletes the saved archive and answers its own 500 with the exception text.
-		_ = s.options.Objects.Delete(context.WithoutCancel(ctx), key)
-		return nil, err
+	if _, err = s.options.Tasks.Publish(publish, celery.Task{Name: importTaskName, ID: id, Kwargs: celery.Dict{
+		{Key: "zip_file_path", Value: name}, {Key: "owner_password", Value: password}}}); err != nil {
+		return rollback(err)
 	}
 	return &AssociationTransferReply{Status: 202, Body: map[string]any{"task_id": id, "status": "started",
 		"message": "Import avviato. Controlla lo stato con task_id."}}, nil
