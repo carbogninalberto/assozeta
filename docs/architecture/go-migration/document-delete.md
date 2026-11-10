@@ -56,6 +56,8 @@ Fixture `TESTS/fixtures/document_delete_http.json` (57 cases: every relation to 
 association and unowned; the creation-entry rule; collaborator actor; cascades and their audit order).
 
 - RED `v2del-red-r3`: Django 57/57, Go 500 on the first existing document.
-- GREEN `v2del-versioned-r1`: native Django, native Go, Caddy `/api/v1` and `/api/v2`, 57/57 each.
-- Mutation `v2del-mutation-r1`: see the ledger notes.
+- GREEN `v2del-versioned-r1`, and `v2del-final-r1` after merging `codex/go-backend-parity`: native Django, native Go, Caddy
+  `/api/v1` and `/api/v2`, 57/57 each.
+- Mutation `v2del-mutation-r1`: counting audit entries of any action as creation entries fails
+  `unreferenced-update-entry-only` (200 instead of 404).
 - docmanager-reads re-run natively (`v2del-rerun-r1`).

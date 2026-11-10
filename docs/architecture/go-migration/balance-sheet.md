@@ -97,7 +97,8 @@ minus sign fail `excel-draft` (sheet1.xml differs).
 Account delete with payments: 3 more cases (80 in all; accounts with payments
 removed from the list, of a group and unpaid, with a transfer, and with an unpaid
 payment and its course instalment). RED `v2del-red-r1`: Django 80/80, Go 500 on
-`account-deleted-with-payments`. GREEN `v2del-versioned-r1`: 80/80 on native
+`account-deleted-with-payments`. GREEN `v2del-versioned-r1` (and `v2del-final-r1`
+after merging `codex/go-backend-parity`): 80/80 on native
 Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `v2del-mutation-r1`:
 the payments' delete receiver skipped leaves the instalment in place
 (`state.deleted:application.CourseSubscriptionInstallment`). Re-run green
