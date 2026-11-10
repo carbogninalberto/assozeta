@@ -2531,7 +2531,7 @@
         "file": "BE/application/models/payment_models.py",
         "line": 179,
         "symbol": "Payment.save",
-        "sha256": "9dbcab8698adbde447a9c4f6eb52143409cf197fde3ce90d0aa8da56a1f8ebda"
+        "sha256": "30d4c9c5bf5b21d78a0fdda78edb45edc9266e9c0fc42e2ff83a3c9e3fcf0a4b"
       },
       "source_present": true,
       "declaration": {
@@ -2565,7 +2565,18 @@
         "BE_GO/internal/repository/tasks_db_d.go",
         "BE_GO/internal/service/payment_archive.go",
         "BE_GO/internal/service/payment_description.go",
-        "BE_GO/internal/service/payment_save_inputs.go"
+        "BE_GO/internal/service/payment_save_inputs.go",
+        "BE_GO/internal/repository/sec_category_default.go",
+        "BE_GO/internal/service/payment_writes.go",
+        "BE_GO/internal/service/camps_subscriptions.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/service/carnet_writes.go",
+        "BE_GO/internal/service/course_enrolment.go",
+        "BE_GO/internal/service/course_writes.go",
+        "BE_GO/internal/service/course_writes_overview.go",
+        "BE_GO/internal/service/course_subscription_update.go",
+        "BE_GO/internal/service/invoice_parties.go",
+        "BE_GO/internal/service/subscription_create.go"
       ],
       "dependencies": [
         "BE/application/models/courses_models.py",
@@ -2621,13 +2632,123 @@
         "TESTS/adapters/go/stripe_paid_check_worker_process.py",
         "TESTS/adapters/go/quote_assign_worker_process.py",
         "TESTS/adapters/go/nightly_subscriptions_worker_process.py",
-        "TESTS/adapters/go/celery_consumer_import_process.py"
+        "TESTS/adapters/go/celery_consumer_import_process.py",
+        "TESTS/fixtures/generate_camps_subscriptions_http.py",
+        "TESTS/contracts/test_camps_subscriptions_http.py",
+        "TESTS/adapters/django/camps_subscriptions_http.py",
+        "TESTS/fixtures/generate_subscription_create_http.py",
+        "TESTS/contracts/test_subscription_create_http.py",
+        "TESTS/adapters/django/subscription_create_http.py",
+        "TESTS/fixtures/generate_course_enrolment_http.py",
+        "TESTS/contracts/test_course_enrolment_http.py",
+        "TESTS/adapters/django/course_enrolment_http.py",
+        "BE/application/tests/test_payment_default_category.py",
+        "TESTS/adapters/django/default_payment_category.py"
       ],
       "evidence": [
         "Production Python 3.13.2 actual Payment.save oracle: 81 required cases, including failed calculations with no managed-row changes; matching Go calculation cases pass.",
         "Actual default-category defect: lower-PK foreign deleted/archived category chosen before global category.",
         "Go race/vet, tagged oracle vet, inventory/drift, formatting and workflow lint pass. Full accounts at 30f9c10 passed this component then failed concurrent credential selection. The corrected complete production-Python accounts rerun now passes, including all 81 description cases; see quality-reports/go-migration/credential-concurrency/full-accounts-results.json.",
-        "Payment-save preparation: twelve actual Django model-save descriptions, eleven scope/missing-reference denial inputs and eight required PostgreSQL groups pass. One statement for 1/16/128/512 payments with course relations; 32 concurrent reads in four connections; actual blocked-query cancellation/recovery. Executed plan over 4,096 payments/course subscriptions uses the existing relationship payment FK index after ANALYZE; primary payment scan remains sequential. Whole managed snapshots and cleanup unchanged. Evidence: quality-reports/go-migration/payment-save-inputs/."
+        "Payment-save preparation: twelve actual Django model-save descriptions, eleven scope/missing-reference denial inputs and eight required PostgreSQL groups pass. One statement for 1/16/128/512 payments with course relations; 32 concurrent reads in four connections; actual blocked-query cancellation/recovery. Executed plan over 4,096 payments/course subscriptions uses the existing relationship payment FK index after ANALYZE; primary payment scan remains sequential. Whole managed snapshots and cleanup unchanged. Evidence: quality-reports/go-migration/payment-save-inputs/.",
+        "docs/architecture/go-migration/default-payment-category.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 111/111; Go fails state.created-row:application.Payment on the first case.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-sec-category-red/results.json",
+          "receipt_sha256": "5fa826a7f880fc063ae78f237ca99c9921300faf0412ef335c97f310d4ea4261"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by camps-subscriptions-add-owner-two-periods.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-sec-category-green/results.json",
+          "receipt_sha256": "10c3bafd4a549d453958b6da93485172111bb5f6c73945f24e2d4b1a21ca98d9"
+        },
+        {
+          "revision": "secCategoryDefaultSQL without the association clause (the earlier name-only lookup)",
+          "result": "Mutation control: fails Go on camps-subscriptions-add-owner-two-periods (state.created-row:application.Payment).",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-sec-category-mutation/results.json",
+          "receipt_sha256": "6733f7aeb976250ba7c657da94aa22b5c8e68b96659d8d0e51ef3bfb47aaf115"
+        },
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 40/40; Go fails state.row:application.Payment{\"payment_category_id\": [\"964214dc-9123-4c11-878e-f465556ba7d1\", \"00000000-0000-4000-8000-0 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-create-http-sec-category-red/results.json",
+          "receipt_sha256": "a51220974d138e635de5fb95041d4aab24eced9eed617666d107f6e4a830000c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 45/45 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by subscription-create-basic.",
+          "artifact": "quality-reports/go-migration/subscription-create-http-sec-category-green/results.json",
+          "receipt_sha256": "25ba6a36ccc6e5e43948bab602ac1a72932ef7ed8e5b596ba712c2d6722abd16"
+        },
+        {
+          "revision": "secCategoryDefaultSQL without the association clause (the earlier name-only lookup)",
+          "result": "Mutation control: fails Go on subscription-create-basic (state.row:application.Payment{\"payment_category_id\": [\"2a5647e8-4172-4cbd-b769-03b96b9d8678\", \"00000000-0000-4000-8000-0).",
+          "artifact": "quality-reports/go-migration/subscription-create-http-sec-category-mutation/results.json",
+          "receipt_sha256": "483b3756263c50bc8d5332359dfb2d9fe2090a5727baaa4a299fe64b6fbeeaaf"
+        },
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 80/80; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-sec-category-red/results.json",
+          "receipt_sha256": "53378ab633d660b1a7cfb1a0602ae2741ac0143ae51cdf979abc958452835015"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 Final GREEN on the merged tree (102 cases, includes the v2 course cases); exercised by course-enrolment-make-payment-owner, course-enrolment-make-payment-course-association.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-merged-category-r1/results.json",
+          "receipt_sha256": "638f3d048da0da0ae70e8e6b8b978f91e5e6402e579f64c8c00c5e5208118198"
+        },
+        {
+          "revision": "secCategoryDefaultSQL without the association clause (the earlier name-only lookup)",
+          "result": "Mutation control: fails Go on course-enrolment-make-payment-owner (response.body:data:payment_category_name).",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-sec-category-mutation/results.json",
+          "receipt_sha256": "24e89ad5fcb519fe66c8a12a1f3799f0721721096cbbd0c06a2da09fc83f4861"
+        },
+        {
+          "command": "manage.py test application.tests.test_payment_default_category",
+          "result": "red: 4 failures, 1 error of 6",
+          "artifact": "quality-reports/go-migration/sec-category-django-red/test.log",
+          "receipt_sha256": "3b85f77760e67ea0fa79945e90f623d4de6275a33c0efbfd83a6d70282e1e6a0"
+        },
+        {
+          "command": "manage.py test application.tests.test_payment_default_category",
+          "result": "green: 6/6",
+          "artifact": "quality-reports/go-migration/sec-category-django-green/test.log",
+          "receipt_sha256": "4e5f6af888e5248a8d0b03c0a1f458ccf03576affbc036fb46ff28136b8309d2"
+        },
+        {
+          "command": "python -m TESTS.adapters.go.model_hooks_process --label sec-category-final",
+          "result": "green: 32/32 families on native Django and Go; required branch payment.category.default-other-association-first taken by payment-writes and course-enrolment",
+          "artifact": "quality-reports/go-migration/sec-category-model-hooks-final/results.json",
+          "receipt_sha256": "460213aa2c05ece636c92078c04f01ecf828474f9e51416e7e0c3e734a3ee552"
+        },
+        {
+          "command": "tasks_db_d / quote_assign / stripe_paid_check worker, celery_consumer_import, accounts.py --only payment-save-inputs",
+          "result": "green (fixtures unchanged)",
+          "artifacts": [
+            {
+              "artifact": "quality-reports/go-migration/sec-category-worker-tasks-db-d-worker-process/results.json",
+              "receipt_sha256": "9f85680ca3f771033201a3fc276855944c8da94e06d30a15d46be09f72ea8c73"
+            },
+            {
+              "artifact": "quality-reports/go-migration/sec-category-worker-quote-assign-worker-process/results.json",
+              "receipt_sha256": "a5293f33d111900baae9974f9224df693fc8f35309623eb4ecbf425fd9dc2eab"
+            },
+            {
+              "artifact": "quality-reports/go-migration/sec-category-worker-stripe-paid-check-worker-process/results.json",
+              "receipt_sha256": "0b09c759a4c395d4581b87dd853bafc2bd42c895893abff8fcee894979abaed7"
+            },
+            {
+              "artifact": "quality-reports/go-migration/sec-category-celery_consumer_import_process.log",
+              "receipt_sha256": "c529f0f0eeb3fbd174b43de6da2451d8f85bab0e0c4380f1bae469e6e4da15c1"
+            },
+            {
+              "artifact": "quality-reports/go-migration/sec-category-payment-save-inputs.log",
+              "receipt_sha256": "94e10be94a35ad9f840edc9019cff6942bb6ca84ada6485d3cd09c48b6e1da99"
+            }
+          ]
+        }
       ],
       "notes": [
         "Description calculation and bounded existing-payment background preparation implemented; not full model-hook parity or automatic archive.",
@@ -2636,7 +2757,10 @@
         "See BE_GO/internal/service/payment_description.md.",
         "See BE_GO/internal/service/payment_save_inputs.md. The complete production-Python accounts rerun passes with all eight reader groups and existing suites; evidence: quality-reports/go-migration/payment-save-inputs/full-accounts-results.json. It started before the automatic-archive fixture was added; that task has separate thirteen-group and combined five-task evidence.",
         "Automatic archive now composes the existing-record save defaults with scoped atomic writes/audits in BE_GO/internal/service/subscription_auto_archive.go. General model-hook/create/update and manual archive/delete parity remain incomplete.",
-        "Closed by the model-hooks work: every Go writer of application_payment inventoried and traced (model_hooks_process.py, model-hooks.md). Fixed: supplier-invoice update now derives a NULL description and the quota corso override; the Stripe paid check rolls back a payment whose save() calculation fails and goes on."
+        "Closed by the model-hooks work: every Go writer of application_payment inventoried and traced (model_hooks_process.py, model-hooks.md). Fixed: supplier-invoice update now derives a NULL description and the quota corso override; the Stripe paid check rolls back a payment whose save() calculation fails and goes on.",
+        "Implementing via camps-subscriptions: Default payment category taken from the payment's association (PaymentCategory.default_for).",
+        "Implementing via subscription-create: Default payment category taken from the payment's association (PaymentCategory.default_for).",
+        "Implementing via course-enrolment: Default payment category taken from the payment's association (PaymentCategory.default_for)."
       ]
     },
     {
