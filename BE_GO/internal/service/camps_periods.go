@@ -21,9 +21,6 @@ var (
 	// ErrCampsTenant is the tenant scope's PermissionDenied raised while a
 	// related field validates.
 	ErrCampsTenant = errors.New("camps relation of another tenant")
-	// ErrCampsPrimaryKeyChange refuses a new primary key on update before any
-	// write: Model.save() would insert a copy under the new key (not ported).
-	ErrCampsPrimaryKeyChange = refusal.New("camps primary key change is not ported")
 	// ErrCampsPaymentNotPorted refuses a payment walk outcome this port does
 	// not reproduce before any write.
 	ErrCampsPaymentNotPorted = refusal.New("camps payment walk is not ported")
