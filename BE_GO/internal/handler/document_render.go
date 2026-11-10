@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
@@ -55,6 +56,11 @@ func (h *DocumentRenderHandler) MedicalAppointment(c echo.Context) error {
 func (h *DocumentRenderHandler) serve(c echo.Context, route, operation, name string) error {
 	request := c.Request()
 	c.Response().Header().Set("Allow", "POST, GET, OPTIONS")
+	// Kept in memory so identity resolution and the view read the same bytes.
+	multipart, err := bufferMultipart(c)
+	if err != nil {
+		return messageReadsError(c, err)
+	}
 	identity, err := messageMutationsIdentityFor(c, h.actors, h.identities, request.Method, operation, true)
 	if identity == nil {
 		return err
@@ -90,7 +96,7 @@ func (h *DocumentRenderHandler) serve(c echo.Context, route, operation, name str
 	}
 	reply, err := h.renders.Render(ctx, *identity, service.DocumentRenderRequest{
 		Route: route, UID: c.Param("uid"), Query: query, Authorization: authorization, Group: request.Header.Get("X-Group-Id"),
-		Body: func() (any, bool, error) { return documentRenderBody(c) }, Audit: audit,
+		Body: func() (any, bool, error) { return documentRenderBody(c, multipart) }, Audit: audit,
 	})
 	if err != nil {
 		var input *restInputError
@@ -108,21 +114,36 @@ func (h *DocumentRenderHandler) serve(c echo.Context, route, operation, name str
 	return c.JSON(reply.Status, reply.JSON)
 }
 
-// documentRenderBody is request.data for an empty body, JSON or a urlencoded
-// form (whether it is a form); other media types are not ported.
-func documentRenderBody(c echo.Context) (any, bool, error) {
+// documentRenderBody is request.data for the default parsers (whether it is a
+// form): an empty dict without a body, JSON, a urlencoded form or multipart
+// (raw: the buffered multipart body). What the parsers raise is a
+// service.DocumentRenderBodyError wrapping the DRF answer.
+func documentRenderBody(c echo.Context, raw []byte) (any, bool, error) {
 	request := c.Request()
 	if request.ContentLength == 0 {
-		return nil, false, nil
+		return domain.RequestObject{}, false, nil
 	}
-	media, _, _ := mime.ParseMediaType(request.Header.Get("Content-Type"))
+	wrap := func(body any, form bool, err error) (any, bool, error) {
+		var input *restInputError
+		if errors.As(err, &input) {
+			return nil, false, &service.DocumentRenderBodyError{Detail: input.Detail, Err: err}
+		}
+		return body, form, err
+	}
+	media, params, _ := mime.ParseMediaType(request.Header.Get("Content-Type"))
 	switch media {
 	case "application/json":
 		body, err := readMessageMutationsBody(c)
-		return body, false, err
+		return wrap(body, false, err)
 	case "application/x-www-form-urlencoded":
 		body, err := readMessageMutationsBody(c)
-		return body, true, err
+		return wrap(body, true, err)
+	case "multipart/form-data":
+		if raw == nil {
+			return nil, false, service.ErrDocumentRenderNotPorted
+		}
+		body, err := parseDjangoMultipart(raw, params["boundary"])
+		return wrap(body, true, err)
 	}
-	return nil, false, service.ErrDocumentRenderNotPorted
+	return wrap(nil, false, &restInputError{Status: 415, Detail: restText(request, "media")})
 }

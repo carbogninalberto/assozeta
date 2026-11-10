@@ -65,6 +65,10 @@ func TestContentDisposition(t *testing.T) {
 		{true, `say "hi" \ x.png`, `attachment; filename="say \"hi\" \\ x.png"`},
 		{false, "ricevuta è.pdf", "inline; filename*=utf-8''ricevuta%20%C3%A8.pdf"},
 		{true, "", "attachment"},
+		// One trailing newline stays in the quoted form; the caller answers Django's header check.
+		{false, "x\n", "inline; filename=\"x\n\""},
+		{true, "è\n", "attachment; filename*=utf-8''%C3%A8%0A"},
+		{true, "a\nb", "attachment; filename*=utf-8''a%0Ab"},
 	} {
 		got, ok := contentDisposition(tc.attachment, tc.name)
 		if !ok || got == nil || *got != tc.want {
@@ -73,8 +77,5 @@ func TestContentDisposition(t *testing.T) {
 	}
 	if _, ok := contentDisposition(false, ""); ok {
 		t.Error("inline without a filename is refused")
-	}
-	if _, ok := contentDisposition(false, "x\n"); ok {
-		t.Error("a trailing newline is refused")
 	}
 }
