@@ -149,9 +149,7 @@ func (s *CampsCore) Info(ctx context.Context, identity domain.ResolvedIdentity, 
 
 func (r *campsCoreRequest) validateCamp(ctx context.Context, input *dto.CampInput, instance *domain.Camp) (*CampsValidationError, error) {
 	errs := input.Errors
-	// UniqueValidator excludes the instance; a different free key would make
-	// Model.save() insert a copy, which is refused once validation passes.
-	keyChange := false
+	// UniqueValidator excludes the instance.
 	if input.ID.Present && (instance == nil || input.ID.ID != instance.ID) {
 		taken, err := r.core.CampIDTaken(ctx, input.ID.ID)
 		if err != nil {
@@ -159,8 +157,6 @@ func (r *campsCoreRequest) validateCamp(ctx context.Context, input *dto.CampInpu
 		}
 		if taken {
 			errs["camps_and_retreats_id"] = []string{"unique:camps and retreats:camps and retreats id"}
-		} else {
-			keyChange = instance != nil
 		}
 	}
 	if input.Association.Present {
@@ -172,10 +168,19 @@ func (r *campsCoreRequest) validateCamp(ctx context.Context, input *dto.CampInpu
 			errs["sport_association"] = []string{code}
 		}
 	}
-	if failure := campsOrdered(errs, dto.CampFieldOrder); failure != nil || !keyChange {
-		return failure, nil
+	return campsOrdered(errs, dto.CampFieldOrder), nil
+}
+
+// campCreatedChanges is auditlog's diff of a camp against nothing.
+func campCreatedChanges(row domain.Camp) map[string][2]string {
+	changes := map[string][2]string{"camps_and_retreats_id": {"None", row.ID}, "sport_association": {"None", row.AssociationID}}
+	if row.Title != nil {
+		changes["title"] = [2]string{"None", *row.Title}
 	}
-	return nil, ErrCampsPrimaryKeyChange
+	if row.Description != nil {
+		changes["description"] = [2]string{"None", *row.Description}
+	}
+	return changes
 }
 
 func applyCamp(row *domain.Camp, input *dto.CampInput) {
@@ -236,14 +241,7 @@ func (s *CampsCore) Add(ctx context.Context, identity domain.ResolvedIdentity, b
 	if err = r.core.InsertCamp(ctx, row); err != nil {
 		return nil, err
 	}
-	changes := map[string][2]string{"camps_and_retreats_id": {"None", row.ID}, "sport_association": {"None", row.AssociationID}}
-	if row.Title != nil {
-		changes["title"] = [2]string{"None", *row.Title}
-	}
-	if row.Description != nil {
-		changes["description"] = [2]string{"None", *row.Description}
-	}
-	if err = r.emit(ctx, r.campAudit(row, 0, changes)); err != nil {
+	if err = r.emit(ctx, r.campAudit(row, 0, campCreatedChanges(row))); err != nil {
 		return nil, err
 	}
 	return &row, r.tx.Commit()
@@ -282,6 +280,24 @@ func (s *CampsCore) Update(ctx context.Context, identity domain.ResolvedIdentity
 	}
 	row := *old
 	applyCamp(&row, input)
+	if row.ID != old.ID {
+		// Model.save() under a key no row has inserts a copy with the validated
+		// values and the camp the path names stays. auditlog's pre_save finds no
+		// row under the new key and logs the whole row as an update (indexed
+		// from its changes), then post_save logs the create (indexed directly).
+		if err = r.core.InsertCamp(ctx, row); err != nil {
+			return nil, err
+		}
+		before := r.campAudit(row, 1, campCreatedChanges(row))
+		before.Path = "changes_json.sport_association"
+		if err = r.emit(ctx, before); err != nil {
+			return nil, err
+		}
+		if err = r.emit(ctx, r.campAudit(row, 0, campCreatedChanges(row))); err != nil {
+			return nil, err
+		}
+		return &row, r.tx.Commit()
+	}
 	if err = r.core.UpdateCamp(ctx, row); err != nil {
 		return nil, err
 	}

@@ -139,9 +139,8 @@ func (s *PaymentReads) paymentReadsSearch(filter *domain.PaymentReadsFilter, raw
 	}
 	if value, ok := dto.PythonFloatParse(strings.ReplaceAll(raw, ",", ".")); ok {
 		switch {
-		case math.IsInf(value, 0):
-			return domain.ErrPaymentReadsNotPorted
-		case math.IsNaN(value):
+		case math.IsInf(value, 0) || math.IsNaN(value):
+			// The DecimalField lookup refuses NaN and Infinity when the filter is built.
 			if smart {
 				return domain.ErrPaymentReadsServer
 			}

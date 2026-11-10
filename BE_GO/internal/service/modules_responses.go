@@ -18,7 +18,8 @@ import (
 
 type modulesResponsesReader interface {
 	ModuleByLink(ctx context.Context, link string) (*domain.ModuleRow, error)
-	Response(ctx context.Context, id string) (*domain.ModuleResponseRow, error)
+	ResponseAttachments(ctx context.Context, id string) (*string, error)
+	PublicAssociation(ctx context.Context, association string) (domain.ModulePublicAssociation, error)
 	AssociationOwner(ctx context.Context, association string) (string, error)
 }
 
@@ -34,11 +35,6 @@ type ModuleAttachmentSettings struct {
 	CacheControl  string
 	DefaultACL    *string
 	FileOverwrite bool
-}
-
-// modulesResponsesAssociations reads the profile of an association by id.
-type modulesResponsesAssociations interface {
-	ReadAssociation(ctx context.Context, association string) (*dto.AssociationProfile, error)
 }
 
 // ModulesResponses follows modules_custom_link_info, modules_response_add,
@@ -76,23 +72,6 @@ func (s *ModulesResponses) enabled(row domain.ModuleRow) bool {
 	return *row.StartDate <= today && today <= *row.EndDate
 }
 
-// moduleInitial is ModuleResponseSerializer(None).data: get_initial() of the
-// writable fields.
-func moduleInitial() map[string]any {
-	return map[string]any{"module_response_id": nil, "module": nil, "creation_date": nil, "progressive_response_number": nil,
-		"queue_position": nil, "response": nil, "approved": false, "user": nil, "payment": nil, "attachments": []any{}}
-}
-
-func moduleResponseData(response domain.ModuleResponseRow) map[string]any {
-	return map[string]any{
-		"module_response_id": response.ID, "module": response.ModuleID, "creation_date": dto.DRFUTCDateTime(response.CreationDate),
-		"progressive_response_number": response.ProgressiveNumber, "queue_position": response.QueuePosition,
-		"response": json.RawMessage(response.Response), "approved": response.Approved, "user": response.UserID,
-		"payment": response.PaymentID, "attachments": json.RawMessage(response.Attachments),
-		"attachments_docs": json.RawMessage(response.AttachmentsDocs),
-	}
-}
-
 // Info follows modules_custom_link_info. request.user is never read.
 func (s *ModulesResponses) Info(ctx context.Context, link string, responseID *string) (map[string]any, error) {
 	row, err := s.reader.ModuleByLink(ctx, link)
@@ -102,39 +81,41 @@ func (s *ModulesResponses) Info(ctx context.Context, link string, responseID *st
 	if row == nil {
 		return nil, domain.ErrModuleNotFound
 	}
+	// The association is module.sport_association, the row the foreign key
+	// resolves by id; the page of a deleted one answers as an unknown link.
+	var association any
+	if row.AssociationID != nil {
+		public, err := s.reader.PublicAssociation(ctx, *row.AssociationID)
+		if err != nil {
+			return nil, err
+		}
+		if public.Deleted {
+			return nil, domain.ErrModuleNotFound
+		}
+		association = map[string]any{"denomination": public.Denomination}
+	}
 	var data any
 	if responseID != nil {
 		id, err := paymentInfoParseUUID(*responseID)
 		if err != nil {
 			return nil, err
 		}
-		response, err := s.reader.Response(ctx, id.String())
+		docs, err := s.reader.ResponseAttachments(ctx, id.String())
 		if err != nil {
 			return nil, err
 		}
-		if response == nil {
-			data = moduleInitial()
-		} else {
-			data = moduleResponseData(*response)
+		if docs != nil {
+			data = map[string]any{"attachments_docs": json.RawMessage(*docs)}
 		}
 	}
 	if !s.enabled(*row) {
 		return nil, domain.ErrModuleNotActive
 	}
-	module := (&ModulesReads{now: s.now}).moduleFields(*row)
-	module["sport_association"] = nil
-	if row.AssociationID != nil {
-		// The nested SportAssociationSerializer renders module.sport_association,
-		// the row the related descriptor resolves by id.
-		associations, ok := s.profiles.(modulesResponsesAssociations)
-		if !ok {
-			return nil, domain.ErrModuleResponsesNotPorted
-		}
-		profile, err := associations.ReadAssociation(ctx, *row.AssociationID)
-		if err != nil {
-			return nil, err
-		}
-		module["sport_association"] = profile
+	// PublicModuleSerializer: the fields the form reads.
+	module := map[string]any{
+		"module_id": row.ID, "title": row.Title, "response_message": row.ResponseMessage,
+		"allow_attachments": row.AllowAttachments, "only_users": row.OnlyUsers, "elements": json.RawMessage(row.Elements),
+		"sport_association": association,
 	}
 	return map[string]any{"data": module, "response_data": data}, nil
 }
