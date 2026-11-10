@@ -39,16 +39,20 @@
 
 ## Not ported (refused with the 500 page before any write)
 
-- An SMTP delivery whose message or envelope is outside `smtpsend`'s subset (a subject with a line break, a recipient with a
-  quoted local part or an IP literal, a non-ASCII address). The check runs whenever the configuration would take the SMTP
-  path (configured and under the limit), so Go also refuses such a request when Django's verify would fail and fall back to
-  Celery. Covered by `TestCommunicationSendEmailRenderSubset`.
+- An SMTP delivery whose message `smtpsend` still cannot render (restb2): text that is not valid Unicode, a header over
+  200,000 bytes, a recipient or sender text outside what `smtpsend/python_addr.go` reads like `email.utils.parseaddr`
+  (covered by `TestSend*` in `smtpsend/python_full_test.go`, which replays Python's own answers from
+  `testdata/python_full.json`, recorded by `TESTS/adapters/go/smtpsend_full_golden.py`). The check runs whenever the
+  configuration would take the SMTP path.
+- Ported (restb2): subjects with line breaks (continuation lines are folded as Python writes them; a break not followed by
+  a space or tab is the 500 page after the verify connection, as `as_string()` raises inside `send_email`), quoted local
+  parts, address literals, and non-ASCII recipients (the commands before the failing one are sent, then the 500).
 - Not compared: the EHLO name follows `socket.getfqdn()` (normalized in the evidence, as in [tasks-db-c](tasks-db-c.md));
   the MIME boundary is random in both.
 
 ## Evidence (TDD)
 
-`TESTS/fixtures/communications_send_email_http.json` (55 cases, `generate_communications_send_email_http.py`). The adapter
+`TESTS/fixtures/communications_send_email_http.json` (61 cases, `generate_communications_send_email_http.py`). The adapter
 owns four fake SMTP servers (STARTTLS, implicit TLS, plain with AUTH, plain without AUTH/STARTTLS) and a closed port, and
 runs with the run's private Redis as Celery broker. A case may first replace the own configuration (audit disabled; ports
 as `$port:<server>`). Each case checks the response, the complete model state (messages, transactions, configurations,

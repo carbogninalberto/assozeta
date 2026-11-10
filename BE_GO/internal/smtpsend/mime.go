@@ -30,6 +30,10 @@ const maxHeaderRunes = 4096
 // with boundary as the generated boundary (Python's random base; the
 // collision suffix is applied here as _make_boundary does).
 func Render(m Message, boundary string) (string, error) {
+	return render(m, boundary, func(_, value string) (string, error) { return headerValue(value) })
+}
+
+func render(m Message, boundary string, fold func(name, value string) (string, error)) (string, error) {
 	from := m.SenderUser
 	if m.SenderName != "" {
 		from = m.SenderName + " <" + m.SenderUser + ">"
@@ -47,7 +51,7 @@ func Render(m Message, boundary string) (string, error) {
 	}
 	var folded []string
 	for _, header := range headers {
-		value, err := headerValue(header[1])
+		value, err := fold(header[0], header[1])
 		if err != nil {
 			return "", err
 		}

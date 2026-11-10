@@ -148,23 +148,30 @@ def header_value(value):
     return f'=?utf-8?b?{b64}?=' if len(b64) < len(qp) else f'=?utf-8?q?{qp}?='
 
 
-def mime(sender, recipients, subject, text):
-    """msg.as_string() of send_email's MIMEMultipart, CRLF line ends, boundary normalized."""
+def mime(sender, recipients, subject, text, subject_header=None):
+    """msg.as_string() of send_email's MIMEMultipart, CRLF line ends, boundary normalized.
+
+    subject_header: the folded Subject value of a subject with line breaks (one line per source line).
+    """
     from_header = f'{sender} <{SMTP_USER}>' if sender else SMTP_USER
     body = base64.encodebytes(text.encode()).decode()
     message = ('Content-Type: multipart/mixed; boundary="<boundary>"\nMIME-Version: 1.0\n'
-               f'From: {header_value(from_header)}\nTo: {", ".join(recipients)}\nSubject: {header_value(subject)}\n\n'
+               f'From: {header_value(from_header)}\nTo: {header_value(", ".join(recipients))}\n'
+               f'Subject: {subject_header or header_value(subject)}\n\n'
                '--<boundary>\nContent-Type: text/plain; charset="utf-8"\nMIME-Version: 1.0\nContent-Transfer-Encoding: base64\n\n'
                f'{body}\n--<boundary>--\n')
     return message.replace('\n', '\r\n')
 
 
-def delivery(mode, sender, recipients, subject, text, *, refused=()):
+def delivery(mode, sender, recipients, subject, text, *, refused=(), subject_header=None, accepted=None):
+    """accepted: how many RCPT commands are sent before one fails to encode (the connection is then dropped)."""
     units = handshake(mode) + [f'mail from:<{SMTP_USER}> size=<size>\r\n']
-    units += [f'rcpt to:<{r}>\r\n' for r in recipients]
+    units += [f'rcpt to:<{r}>\r\n' for r in recipients[:accepted]]
+    if accepted is not None:
+        return units + ['<closed>']
     if len(refused) == len(recipients):
         return units + ['rset\r\n', '<closed>']
-    return units + ['data\r\n', mime(sender, recipients, subject, text) + '.\r\n', 'quit\r\n', '<quit>']
+    return units + ['data\r\n', mime(sender, recipients, subject, text, subject_header) + '.\r\n', 'quit\r\n', '<quit>']
 
 
 def verified(mode, password=SMTP_PASSWORD):
@@ -301,6 +308,48 @@ add('plain-all-refused-server-error', 'owner', 500, SERVER, body={**VALID, 'emai
                   smtp={'server': 'plain', 'connections': [
                       verified('plain'), delivery('plain', 'Associazione Prova', ['rifiutato@example.test'], 'Avviso', 'Ciao a tutti',
                                                  refused=['rifiutato@example.test'])]}))
+
+# Subjects with a line break: each continuation line must start with a space or a tab, otherwise as_string() raises
+# inside send_email (after the verify connection) and the view cannot render the result.
+FOLDED = 'Avviso\n seconda riga'
+add('subject-continuation-line-delivered', 'owner', 200, OK, body={**VALID, 'subject': FOLDED}, setup={'configuration': PLAIN},
+    effect=effect('owner', message=(FOLDED, 'Ciao a tutti'), recipients=['socio@example.test'], configuration=after(PLAIN, 11),
+                  balance_audit=['10', '11'], smtp={'server': 'plain', 'connections': [
+                      verified('plain'), delivery('plain', 'Associazione Prova', ['socio@example.test'], FOLDED, 'Ciao a tutti',
+                                                 subject_header=FOLDED)]}))
+BROKEN = 'Avviso\nseconda riga'
+add('subject-line-break-server-error', 'owner', 500, SERVER, body={**VALID, 'subject': BROKEN}, setup={'configuration': PLAIN},
+    effect=effect('owner', message=(BROKEN, 'Ciao a tutti'), recipients=['socio@example.test'], configuration=after(PLAIN),
+                  smtp={'server': 'plain', 'connections': [verified('plain')]}))
+ACCENTED = 'Novità\r\nper i soci \x0b fine'
+add('subject-unicode-lines-delivered', 'owner', 200, OK, body={**VALID, 'subject': ACCENTED}, setup={'configuration': PLAIN},
+    effect=effect('owner', message=(ACCENTED, 'Ciao a tutti'), recipients=['socio@example.test'], configuration=after(PLAIN, 11),
+                  balance_audit=['10', '11'], smtp={'server': 'plain', 'connections': [
+                      verified('plain'), delivery('plain', 'Associazione Prova', ['socio@example.test'], ACCENTED, 'Ciao a tutti',
+                                                 subject_header='=?utf-8?q?Novit=C3=A0?=\n =?utf-8?q?_per_i_soci_?=\n'
+                                                                ' =?utf-8?q?_fine?=')]}))
+
+# Recipients smtplib.quoteaddr reads through email.utils.parseaddr: a quoted local part is kept, an address literal is
+# passed as written, and a recipient that is not ASCII fails to encode after the commands before it.
+QUOTED = '"socio..uno"@example.test'
+add('quoted-local-part-delivered', 'owner', 200, OK, body={**VALID, 'email': QUOTED}, setup={'configuration': PLAIN},
+    effect=effect('owner', message=('Avviso', 'Ciao a tutti'), recipients=[QUOTED], configuration=after(PLAIN, 11),
+                  balance_audit=['10', '11'], smtp={'server': 'plain', 'connections': [
+                      verified('plain'), delivery('plain', 'Associazione Prova', [QUOTED], 'Avviso', 'Ciao a tutti')]}))
+LITERAL = 'socio@[127.0.0.1]'
+add('address-literal-delivered', 'owner', 200, OK, body={**VALID, 'email': f'{LITERAL},due@example.test'},
+    setup={'configuration': PLAIN},
+    effect=effect('owner', message=('Avviso', 'Ciao a tutti'), recipients=[LITERAL, 'due@example.test'],
+                  configuration=after(PLAIN, 11), balance_audit=['10', '11'], smtp={'server': 'plain', 'connections': [
+                      verified('plain'), delivery('plain', 'Associazione Prova', [LITERAL, 'due@example.test'], 'Avviso',
+                                                 'Ciao a tutti')]}))
+IDN = 'socio@citta\u0300-2.example'
+add('non-ascii-recipient-server-error', 'owner', 500, SERVER, body={**VALID, 'email': f'uno@example.test,{IDN},due@example.test'},
+    setup={'configuration': PLAIN},
+    effect=effect('owner', message=('Avviso', 'Ciao a tutti'), recipients=['uno@example.test', IDN, 'due@example.test'],
+                  configuration=after(PLAIN), smtp={'server': 'plain', 'connections': [
+                      verified('plain'), delivery('plain', 'Associazione Prova', ['uno@example.test', IDN, 'due@example.test'],
+                                                 'Avviso', 'Ciao a tutti', accepted=1)]}))
 
 # verify_smtp failures fall back to send_mail_async.
 WRONG = server('starttls', email_encryption='TLS', email_smtp_password='placeholder-wrong')

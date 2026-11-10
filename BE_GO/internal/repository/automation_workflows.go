@@ -111,6 +111,9 @@ func (t *automationWorkflowTransaction) AppendAutomationWorkflowAudit(ctx contex
 	if event.Action == 2 {
 		path = "changes_json.sport_association"
 	}
+	if event.Path != "" {
+		path = event.Path
+	}
 	return appendModelAuditForApp(ctx, t.tx, "communications", modelAuditEntry{Model: "automationworkflow", Key: event.ID,
 		Representation: "AutomationWorkflow object (" + event.ID + ")", Action: event.Action, Changes: event.Changes,
 		Context: event.Context, AssociationID: &event.AssociationID, ResolutionPath: &path, At: event.At})

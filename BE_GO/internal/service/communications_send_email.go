@@ -30,7 +30,7 @@ func (communicationSendEmailSMTP) Verify(ctx context.Context, server smtpsend.Se
 }
 
 func (communicationSendEmailSMTP) Send(ctx context.Context, server smtpsend.Server, from string, to []string, message string) error {
-	return smtpsend.Send(ctx, server, from, to, message)
+	return smtpsend.Deliver(ctx, server, from, to, message)
 }
 
 // CommunicationSendEmail ports configuration_send_email.
@@ -190,24 +190,13 @@ func (s *CommunicationSendEmail) render(row domain.CommunicationConfigurationRec
 	if row.SenderName != nil {
 		sender = *row.SenderName
 	}
-	message, err := smtpsend.Render(smtpsend.Message{SenderName: sender, SenderUser: *row.User, To: recipients, Subject: input.Subject,
+	return smtpsend.RenderAny(smtpsend.Message{SenderName: sender, SenderUser: *row.User, To: recipients, Subject: input.Subject,
 		Text: input.Message}, s.boundary())
-	if err == nil {
-		err = smtpsend.CheckEnvelope(*row.User, recipients)
-	}
-	if err == nil {
-		for i := 0; i < len(message); i++ {
-			if message[i] >= 0x80 {
-				return "", smtpsend.ErrUnsupported
-			}
-		}
-	}
-	return message, err
 }
 
 // refuseUnsupported reads the configuration before any write: when it would
-// take the SMTP path, a message or envelope outside smtpsend's subset is
-// refused (Django would send it).
+// take the SMTP path, a message smtpsend does not render is refused (text
+// that is not valid Unicode, a header over its size bound).
 func (s *CommunicationSendEmail) refuseUnsupported(ctx context.Context, association string, input dto.SendEmailInput, recipients []string) error {
 	return s.step(ctx, func(tx domain.CommunicationSendEmailTransaction) error {
 		row, err := tx.FirstConfiguration(ctx, association, false)
@@ -220,7 +209,7 @@ func (s *CommunicationSendEmail) refuseUnsupported(ctx context.Context, associat
 		if _, err = s.render(row, input, recipients); errors.Is(err, smtpsend.ErrUnsupported) {
 			return errors.Join(domain.ErrSendEmailNotPorted, err)
 		}
-		return err
+		return nil
 	})
 }
 
@@ -236,6 +225,10 @@ func (s *CommunicationSendEmail) sendEmail(ctx context.Context, row domain.Commu
 		server := sendEmailServer(row)
 		if err := s.smtp.Verify(work, server); err == nil {
 			message, err := s.render(row, input, recipients)
+			if errors.Is(err, smtpsend.ErrHeader) {
+				// as_string() raises inside send_email's try: (False, exception).
+				return SendEmailResult{}, errors.Join(domain.ErrSendEmailServerError, err)
+			}
 			if err != nil {
 				return SendEmailResult{}, errors.Join(domain.ErrSendEmailNotPorted, err)
 			}

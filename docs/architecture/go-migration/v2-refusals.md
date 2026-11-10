@@ -630,8 +630,8 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### automation-workflows.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH communications/workflows/<uid>/update | enabling a cron workflow whose time text is outside the parsed form (`20200101`, hour-only) | service/automation_workflow_update.go (`automationWorkflowEnablePlan`) | B | Future times ported in v2-misc (Celery eta). The editor's `datetime-local` gives `YYYY-MM-DDTHH:MM`, a parsed form. |
-| PATCH communications/workflows/<uid>/update | body with a new `automation_workflow_id` not yet used | service/automation_workflow_update.go:169 | B | UI update bodies carry only `automation_tree`/`name` (`AutomationEditor.svelte:148-155`), `automation_tree` (`components/inputs/email-builder/EmailBuilder.svelte:32-36`) or `enabled`. Cost: medium. |
+| PATCH communications/workflows/<uid>/update | enabling a cron workflow whose time text is outside the parsed form (`20200101`, hour-only) | service/automation_workflow_update.go (`automationWorkflowEnablePlan`) | B | Future times ported in v2-misc (Celery eta). The editor's `datetime-local` gives `YYYY-MM-DDTHH:MM`, a parsed form. **Ported in restb2** (`workflow-update.md`). |
+| PATCH communications/workflows/<uid>/update | body with a new `automation_workflow_id` not yet used | service/automation_workflow_update.go:169 | B | UI update bodies carry only `automation_tree`/`name` (`AutomationEditor.svelte:148-155`), `automation_tree` (`components/inputs/email-builder/EmailBuilder.svelte:32-36`) or `enabled`. Cost: medium. **Ported in restb2** (`workflow-update.md`). |
 | PATCH communications/workflows/<uid>/update | form-encoded `automation_tree` | dto/automation_workflow_write.go:145 (`ErrAutomationWorkflowFormTreeNotPorted`) | B | UI sends JSON. Cost: cheap. |
 
 ### chat-test.md
@@ -643,7 +643,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### communications-send-email.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST communications/send/email | SMTP path with a subject containing a line break, a recipient with a quoted local part / IP literal / non-ASCII address | service/communications_send_email.go:221,240 (`ErrSendEmailNotPorted`) | B (legacy: yes) | UI sends it (`association/communication/messages/modals/Send.svelte:32`, `automation/Automation.svelte:58`). Subjects come from single-line inputs. Recipients are stored member emails; Django's EmailValidator accepts IDN domains, so a long-lived dataset may hold a non-ASCII address. Cost: medium (SMTPUTF8/IDNA in `smtpsend`). |
+| POST communications/send/email | SMTP path with a subject containing a line break, a recipient with a quoted local part / IP literal / non-ASCII address | service/communications_send_email.go:221,240 (`ErrSendEmailNotPorted`) | B (legacy: yes) | UI sends it (`association/communication/messages/modals/Send.svelte:32`, `automation/Automation.svelte:58`). Subjects come from single-line inputs. Recipients are stored member emails; Django's EmailValidator accepts IDN domains, so a long-lived dataset may hold a non-ASCII address. Cost: medium (SMTPUTF8/IDNA in `smtpsend`). **Ported in restb2** (`communications-send-email.md`). |
 
 ### collaborators-writes.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
@@ -693,8 +693,8 @@ Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples)
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
 | GET communications/settings/smtp/verify | configuration with a host that would connect | `service/communications_smtp.go` (`Verify`) | ported | Ported in v2-misc-2 (`communications-smtp.md`, `v2misc2-green-r2`). |
-| GET communications/settings/smtp/verify | connect timeout, unreachable resolver, TLS handshake timeout or another OpenSSL reason, reset; falsy port with a plain host; missing user or password; sender name outside letters, digits, spaces and `. - _ &` | `service/communications_smtp.go` (`Verify`, `smtpVerifyPlan`) | A (connect timeout) / B (the rest) | `SSL` on a plain-SMTP port and an unknown host are ported in v2-misc-3 (`v2misc3-final-r1`). A wrong port behind a firewall still reaches the connect timeout: not byte-reproducible (`communications-smtp.md`). |
-| GET communications/settings/smtp/verify | host port suffix with non-ASCII/separator characters | service/communications_smtp.go:217 | B | Needs a host typed as `smtp:２５` or similar. Cost: cheap. |
+| GET communications/settings/smtp/verify | connect timeout, unreachable resolver, TLS handshake timeout or another OpenSSL reason, reset; falsy port with a plain host; missing user or password; sender name outside letters, digits, spaces and `. - _ &` | `service/communications_smtp.go` (`Verify`, `smtpVerifyPlan`) | A (connect timeout) / B (the rest) | `SSL` on a plain-SMTP port and an unknown host are ported in v2-misc-3 (`v2misc3-final-r1`). A wrong port behind a firewall still reaches the connect timeout: not byte-reproducible (`communications-smtp.md`). Falsy port, missing user or password and the sender-name forms are ported in restb2 (`communications-smtp.md`); the rest stays. |
+| GET communications/settings/smtp/verify | host port suffix with non-ASCII/separator characters | service/communications_smtp.go:217 | B | Needs a host typed as `smtp:２５` or similar. Cost: cheap. **Ported in restb2** (`communications-smtp.md`). |
 
 ### course-writes.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
@@ -1268,9 +1268,9 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### workflow-update.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH communications/workflows/<id>/update | a cron time Go does not classify | `service/automation_workflow_update.go` | B | Future times ported in v2-misc (see workflow-update.md). |
+| PATCH communications/workflows/<id>/update | a cron time Go does not classify | `service/automation_workflow_update.go` | B | Future times ported in v2-misc (see workflow-update.md). **Ported in restb2** (`workflow-update.md`). |
 | same | time string not starting with 4 ASCII digits / out-of-range field | (500 after saves, Django too) | — | parity, not a refusal |
-| same | new `automation_workflow_id` | `:169` | B | UI PATCH bodies carry only `enabled`, or `automation_tree` and `name` (`AutomationEditor.svelte:145-156`, `EmailBuilder.svelte:32`). legacy: no |
+| same | new `automation_workflow_id` | `:169` | B | UI PATCH bodies carry only `enabled`, or `automation_tree` and `name` (`AutomationEditor.svelte:145-156`, `EmailBuilder.svelte:32`). legacy: no **Ported in restb2** (`workflow-update.md`). |
 | same | form-encoded `automation_tree` | `dto/automation_workflow_write.go:145` | B | UI sends JSON |
 
 ### suppliers.md

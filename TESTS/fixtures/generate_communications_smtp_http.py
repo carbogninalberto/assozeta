@@ -35,6 +35,7 @@ record the client bytes; a case's setup writes the listed columns of the own row
 Run with ``python3 -I`` after the message-mutations fixture.
 """
 import base64
+import hmac
 import json
 from pathlib import Path
 
@@ -266,6 +267,75 @@ verify('verify-ssl-on-starttls-port', 'owner', 'starttls',
        failed('[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032)'), None, opaque=1, email_encryption='SSL')
 verify('verify-ssl-on-plain-port', 'full_collaborator', 'plain',
        failed('[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032)'), None, opaque=1, email_encryption='SSL')
+# --- configurations smtplib reads its own way -------------------------------------------------------
+B64 = lambda text: base64.b64encode(text.encode()).decode()  # noqa: E731
+LOGIN_USER = f'AUTH LOGIN {B64(SMTP_USER)}\r\n'
+# connect() with a falsy port takes the number after the host's only ':' (int() of the text).
+verify('verify-port-in-host', 'owner', 'plain', VERIFIED, [handshake('plain') + [plain_auth()] + DELIVERY],
+       email_smtp_host='127.0.0.1:{port:plain}', email_smtp_port=None, email_encryption='NONE', email_sender_name=None)
+verify('verify-port-in-host-wide-digits', 'full_collaborator', 'plain', VERIFIED, [handshake('plain') + [plain_auth()] + DELIVERY],
+       email_smtp_host='127.0.0.1: +{wideport:plain}　', email_smtp_port=0, email_encryption='NONE', email_sender_name=None)
+verify('verify-port-in-host-ssl', 'owner', 'ssl', VERIFIED, [handshake('ssl') + [plain_auth()] + DELIVERY],
+       email_smtp_host='127.0.0.1:{port:ssl}', email_smtp_port=0, email_encryption='SSL', email_sender_name=None)
+verify('verify-port-in-host-starttls', 'owner', 'starttls', VERIFIED, [handshake('starttls') + [plain_auth()] + DELIVERY],
+       email_smtp_host='127.0.0.1:{port:starttls}', email_smtp_port=None, email_encryption='TLS', email_sender_name=None)
+# login(None, ...): AUTH PLAIN formats the missing value as the text None; the from text does the same.
+verify('verify-missing-password', 'owner', 'plain', failed("(535, b'denied')"),
+       [handshake('plain') + [f'AUTH PLAIN {B64(chr(0) + SMTP_USER + chr(0) + "None")}\r\n', LOGIN_USER, '<closed>']],
+       email_smtp_password=None, email_encryption='NONE', email_sender_name=None)
+verify('verify-missing-user', 'owner', 'plain', VERIFIED,
+       [handshake('plain') + [f'AUTH PLAIN {B64(chr(0) + "None" + chr(0) + SMTP_PASSWORD)}\r\n',
+                              f'mail from:<None> size={len(MESSAGE.encode())}\r\n'] + DELIVERY[1:]],
+       email_smtp_user=None, email_encryption='NONE', email_sender_name=None)
+verify('verify-missing-user-and-password', 'owner', 'plain', failed("(535, b'denied')"),
+       [handshake('plain') + [f'AUTH PLAIN {B64(chr(0) + "None" + chr(0) + "None")}\r\n', 'AUTH LOGIN\r\n', '<closed>']],
+       email_smtp_user=None, email_smtp_password=None, email_encryption='NONE', email_sender_name=None)
+# Servers that challenge: CRAM-MD5 first when offered, then LOGIN with one challenge per value still to send.
+NONE_ENCODE = "'NoneType' object has no attribute 'encode'"
+CRAM = base64.b64encode(f'{SMTP_USER} '.encode() + hmac.new(SMTP_PASSWORD.encode(), b'<12345.67890@fake.smtp.test>', 'md5')
+                        .hexdigest().encode()).decode() + '\r\n'
+verify('verify-cram-md5', 'owner', 'cram', VERIFIED, [handshake('cram') + ['AUTH CRAM-MD5\r\n', CRAM] + DELIVERY],
+       email_encryption='NONE', email_sender_name=None)
+CRAM_NONE = base64.b64encode(b'None ' + hmac.new(SMTP_PASSWORD.encode(), b'<12345.67890@fake.smtp.test>', 'md5')
+                             .hexdigest().encode()).decode() + '\r\n'
+verify('verify-cram-md5-missing-user', 'owner', 'cram', VERIFIED,
+       [handshake('cram') + ['AUTH CRAM-MD5\r\n', CRAM_NONE, f'mail from:<None> size={len(MESSAGE.encode())}\r\n'] + DELIVERY[1:]],
+       email_smtp_user=None, email_encryption='NONE', email_sender_name=None)
+verify('verify-cram-md5-missing-password', 'owner', 'cram', failed(NONE_ENCODE),
+       [handshake('cram') + ['AUTH CRAM-MD5\r\n', '<closed>']], email_smtp_password=None, email_encryption='NONE',
+       email_sender_name=None)
+verify('verify-cram-md5-accented-password', 'owner', 'cram',
+       failed("'ascii' codec can't encode characters in position 4-5: ordinal not in range(128)"),
+       [handshake('cram') + ['AUTH CRAM-MD5\r\n', '<closed>']], email_smtp_password='segrèòto', email_encryption='NONE',
+       email_sender_name=None)
+verify('verify-login-challenges', 'full_collaborator', 'challenge', VERIFIED,
+       [handshake('challenge') + [LOGIN_USER, B64(SMTP_PASSWORD) + '\r\n'] + DELIVERY], email_encryption='NONE',
+       email_sender_name=None)
+verify('verify-login-missing-user', 'owner', 'challenge', failed(NONE_ENCODE),
+       [handshake('challenge') + ['AUTH LOGIN\r\n', '<closed>']], email_smtp_user=None, email_encryption='NONE',
+       email_sender_name=None)
+verify('verify-login-missing-password', 'owner', 'challenge', failed(NONE_ENCODE),
+       [handshake('challenge') + [LOGIN_USER, '<closed>']], email_smtp_password=None, email_encryption='NONE',
+       email_sender_name=None)
+verify('verify-login-accented-user', 'owner', 'challenge',
+       failed("'ascii' codec can't encode character '\\xe0' in position 4: ordinal not in range(128)"),
+       [handshake('challenge') + ['<closed>']], email_smtp_user='città@example.test', email_encryption='NONE',
+       email_sender_name=None)
+# The from text '<sender name> <user>' goes through smtplib.quoteaddr: a name the address parser reads as a second
+# address is sent whole, a comment is dropped, and a command that is not ASCII is never sent.
+verify('verify-sender-name-with-comma', 'owner', 'plain', VERIFIED,
+       [handshake('plain') + [plain_auth(), f'mail from:<Sport, Club <{SMTP_USER}>> size={len(MESSAGE.encode())}\r\n'] + DELIVERY[1:]],
+       email_encryption='NONE', email_sender_name='Sport, Club')
+verify('verify-sender-name-with-comment', 'owner', 'plain', VERIFIED, [handshake('plain') + [plain_auth()] + DELIVERY],
+       email_encryption='NONE', email_sender_name='Segreteria (A.S.D.) "2024": soci')
+verify('verify-sender-name-with-address', 'owner', 'plain',
+       failed("'ascii' codec can't encode character '\\xe0' in position 15: ordinal not in range(128)"),
+       [handshake('plain') + [plain_auth(), '<closed>']], email_encryption='NONE', email_sender_name='Città <info@example.test>')
+verify('verify-sender-refused-quoted-name', 'owner', 'nomail',
+       failed(f"(550, b'sender refused', 'L\\'Aquila \"Sport\" 🏐 <{SMTP_USER}>')"),
+       [['ehlo <local>\r\n', plain_auth(), MAIL, 'rset\r\n', '<closed>']], email_encryption='NONE',
+       email_sender_name='L\'Aquila "Sport" 🏐')
+
 # A host name the resolver does not know: str(socket.gaierror) with the C library's EAI_NONAME code and text
 # ('$unresolved'; the names are reserved ones, RFC 6761).
 verify('verify-unknown-host', 'owner', 'closed', failed('$unresolved'), None, email_encryption='TLS',

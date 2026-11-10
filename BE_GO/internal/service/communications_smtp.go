@@ -22,11 +22,11 @@ type CommunicationSMTP struct {
 	now   func() time.Time
 	// whitelabel is settings.WHITELABEL_NAME.
 	whitelabel string
-	verifySend func(ctx context.Context, server smtpsend.Server, given, address, to string, message []byte) error
+	verifySend func(ctx context.Context, server smtpsend.Server, given, to string, message []byte) error
 }
 
 func NewCommunicationSMTP(store domain.CommunicationSMTPStore, now func() time.Time) *CommunicationSMTP {
-	return &CommunicationSMTP{store: store, now: now, whitelabel: "Bakney Sport", verifySend: smtpsend.VerifySend}
+	return &CommunicationSMTP{store: store, now: now, whitelabel: "Bakney Sport", verifySend: smtpsend.VerifySendAny}
 }
 
 // WithWhitelabelName sets settings.WHITELABEL_NAME (the default sender name
@@ -222,7 +222,7 @@ func (s *CommunicationSMTP) Verify(ctx context.Context, identity domain.Resolved
 	if err != nil {
 		return false, "", err
 	}
-	err = s.verifySend(ctx, plan.server, plan.given, plan.address, recipient, plan.message)
+	err = s.verifySend(ctx, plan.server, plan.given, recipient, plan.message)
 	if err == nil {
 		return true, "Ok", nil
 	}
@@ -236,49 +236,127 @@ func (s *CommunicationSMTP) Verify(ctx context.Context, identity domain.Resolved
 }
 
 type smtpVerifyPlan struct {
-	server         smtpsend.Server
-	given, address string
-	message        []byte
+	server  smtpsend.Server
+	given   string
+	message []byte
 }
 
 // smtpVerifyTimeout is SMTP_TIMEOUT_SECONDS.
 const smtpVerifyTimeout = 10 * time.Second
 
-// smtpVerifyPlan builds the connection and the test email of verify_smtp().
-// Refused (domain.ErrSMTPVerifyNotPorted): a falsy or out-of-range port (the
-// smtplib default port), a missing user or password, a user or owner email
-// outside smtpsend.CheckEnvelope and a sender name that
-// email.utils.parseaddr would not read as a plain display name.
+// smtpVerifyPlan builds the connection and the test email of verify_smtp():
+// smtplib's connect() of a falsy port (the number after the host's only ':',
+// else the default port, 465 for SSL), login(None, ...) for a missing user or
+// password, and the from text with the sender name as it is.
+// Refused (domain.ErrSMTPVerifyNotPorted): a port outside 1-65535 and an
+// empty host in front of the port.
 func (s *CommunicationSMTP) smtpVerifyPlan(row domain.CommunicationConfigurationRecord, recipient string) (smtpVerifyPlan, error) {
-	if row.Port == nil || *row.Port < 1 || *row.Port > 65535 || row.User == nil || row.Password == nil {
+	server := smtpsend.Server{Host: *row.Host, Encryption: row.Encryption, Timeout: smtpVerifyTimeout}
+	port := int64(0)
+	if row.Port != nil {
+		port = int64(*row.Port)
+	}
+	if port == 0 {
+		if strings.Count(server.Host, ":") == 1 {
+			host, suffix, _ := strings.Cut(server.Host, ":")
+			number, ok := smtpVerifyPythonInt(suffix)
+			if !ok || host == "" {
+				return smtpVerifyPlan{}, domain.ErrSMTPVerifyNotPorted
+			}
+			if (row.Encryption == "SSL" || row.Encryption == "TLS") && !smtpsend.PlainHostName(server.Host) {
+				// The whole text is the TLS server name ('idna' codec).
+				return smtpVerifyPlan{}, domain.ErrSMTPVerifyNotPorted
+			}
+			server.ConnectHost, port = host, number
+		}
+		if port == 0 {
+			port = 25
+			if row.Encryption == "SSL" {
+				port = 465
+			}
+		}
+	}
+	if port < 1 || port > 65535 {
 		return smtpVerifyPlan{}, domain.ErrSMTPVerifyNotPorted
 	}
+	server.Port = int(port)
+	user := "None"
+	if row.User != nil {
+		user, server.User = *row.User, *row.User
+	}
+	server.NoUser = row.User == nil
+	if row.Password != nil {
+		server.Password = *row.Password
+	}
+	server.NoPassword = row.Password == nil
 	name := s.whitelabel
 	if row.SenderName != nil && *row.SenderName != "" {
 		name = *row.SenderName
 	}
-	if !smtpVerifyDisplayName(name) || smtpsend.CheckEnvelope(*row.User, []string{recipient}) != nil {
-		return smtpVerifyPlan{}, domain.ErrSMTPVerifyNotPorted
-	}
 	// 'Subject: {}\n\n{}'.format(...).encode('utf-8').strip()
 	message := bytes.Trim([]byte("Subject: Email di test da "+s.whitelabel+", SMTP configurato correttamente.\n\n"+
 		"Se hai ricevuto questa email, significa che hai configurato il server SMTP correttamente."), " \t\n\r\v\f")
-	return smtpVerifyPlan{server: smtpsend.Server{Host: *row.Host, Port: int(*row.Port), User: *row.User, Password: *row.Password,
-		Encryption: row.Encryption, Timeout: smtpVerifyTimeout}, given: name + " <" + *row.User + ">", address: *row.User, message: message}, nil
+	return smtpVerifyPlan{server: server, given: name + " <" + user + ">", message: message}, nil
 }
 
-// smtpVerifyDisplayName reports a display name email.utils.parseaddr reads as
-// one phrase in front of the angle address: letters, digits, spaces and . - _ & only.
-func smtpVerifyDisplayName(name string) bool {
-	if name == "" || strings.TrimSpace(name) != name {
-		return false
-	}
-	for _, r := range name {
-		if !(unicode.IsLetter(r) || r >= '0' && r <= '9' || r == ' ' || r == '.' || r == '-' || r == '_' || r == '&') {
-			return false
+// smtpVerifyPythonInt is int(text) of a str: ok is false for a ValueError.
+// A value over the port range is returned as 65536.
+func smtpVerifyPythonInt(text string) (int64, bool) {
+	var ascii []byte
+	for _, r := range text {
+		switch {
+		case r < 0x80:
+			ascii = append(ascii, byte(r))
+		case smtpVerifySpace(r):
+			ascii = append(ascii, ' ')
+		default:
+			digit, ok := smtpVerifyDecimal(r)
+			if !ok {
+				return 0, false
+			}
+			ascii = append(ascii, '0'+digit)
 		}
 	}
-	return true
+	trimmed := strings.Trim(string(ascii), " \t\n\r\v\f")
+	if !pythonASCIIInt.MatchString(trimmed) {
+		return 0, false
+	}
+	negative := trimmed[0] == '-'
+	value := int64(0)
+	for i := 0; i < len(trimmed); i++ {
+		if c := trimmed[i]; c >= '0' && c <= '9' && value <= 65535 {
+			value = value*10 + int64(c-'0')
+		}
+	}
+	if negative {
+		value = -value
+	}
+	return value, true
+}
+
+// smtpVerifySpace is Py_UNICODE_ISSPACE for a non-ASCII code point.
+func smtpVerifySpace(r rune) bool {
+	switch {
+	case r == 0x85, r == 0xa0, r == 0x1680, r >= 0x2000 && r <= 0x200a, r == 0x2028, r == 0x2029, r == 0x202f, r == 0x205f, r == 0x3000:
+		return true
+	}
+	return false
+}
+
+// smtpVerifyDecimal is the decimal value of a digit (category Nd): every run
+// of such digits in the Unicode tables starts at a zero and counts in tens.
+func smtpVerifyDecimal(r rune) (byte, bool) {
+	for _, span := range unicode.Nd.R16 {
+		if r >= rune(span.Lo) && r <= rune(span.Hi) && span.Stride == 1 {
+			return byte((r - rune(span.Lo)) % 10), true
+		}
+	}
+	for _, span := range unicode.Nd.R32 {
+		if r >= rune(span.Lo) && r <= rune(span.Hi) && span.Stride == 1 {
+			return byte((r - rune(span.Lo)) % 10), true
+		}
+	}
+	return 0, false
 }
 
 var pythonASCIIInt = regexp.MustCompile(`^[+-]?[0-9](?:_?[0-9])*$`)
@@ -288,21 +366,14 @@ var pythonASCIIInt = regexp.MustCompile(`^[+-]?[0-9](?:_?[0-9])*$`)
 // host, so login() or starttls() raise SMTPServerDisconnected('please run
 // connect() first'); connect() with a falsy port splits a host holding exactly
 // one ':' and int() of a non-numeric suffix raises OSError('nonnumeric port').
-// Anything else would connect: it is refused.
+// Anything else would connect: domain.ErrSMTPVerifyNotPorted.
 func SMTPVerifyWithoutConnection(row domain.CommunicationConfigurationRecord) (string, error) {
 	if row.Host == nil || *row.Host == "" {
 		return "please run connect() first", nil
 	}
 	host := *row.Host
 	if (row.Port == nil || *row.Port == 0) && strings.Count(host, ":") == 1 {
-		suffix := host[strings.Index(host, ":")+1:]
-		for _, character := range suffix {
-			// Python int() accepts non-ASCII digits and whitespace; only ASCII is classified here.
-			if character >= 0x80 || character >= 0x1c && character <= 0x1f {
-				return "", domain.ErrSMTPVerifyNotPorted
-			}
-		}
-		if !pythonASCIIInt.MatchString(strings.Trim(suffix, " \t\n\r\v\f")) {
+		if _, ok := smtpVerifyPythonInt(host[strings.Index(host, ":")+1:]); !ok {
 			return "nonnumeric port", nil
 		}
 	}
