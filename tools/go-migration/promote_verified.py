@@ -42,7 +42,8 @@ TRANSPORTS = ['django-native', 'go-native', 'caddy-v1', 'caddy-v2']
 # the ledger and this promotion tooling, none of which a parity harness executes.
 NON_PRODUCT = {'docs/architecture/go-migration/ledger.json', 'docs/architecture/go-migration/ledger-verified-patch.json',
                'tools/go-migration/promote_verified.py', 'tools/go-migration/run_components.py',
-               'tools/go-migration/ledger_components.json', 'TESTS/inventory/test_promote_verified.py'}
+               'tools/go-migration/ledger_components.json', 'tools/go-migration/rerun_keys.py',
+               'TESTS/inventory/test_promote_verified.py'}
 
 
 class PromotionError(Exception):
