@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
 	"database/sql"
@@ -8,6 +9,7 @@ import (
 	"errors"
 	"math/big"
 	"time"
+	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -240,4 +242,59 @@ func (r *GoogleCalendars) CreateSession(ctx context.Context, state string) (stri
 			return string(key), nil
 		}
 	}
+}
+
+// googleSessionState reads a googleSessionPickle back: ok only when the
+// bytes are exactly the pickle of {'state': <str>}.
+func googleSessionState(raw []byte) (string, bool) {
+	head := []byte{'}', 0x94, 0x8c, 5}
+	head = append(head, "state"...)
+	head = append(head, 0x94)
+	if len(raw) < 11+len(head) || raw[0] != 0x80 || raw[1] != 4 || raw[2] != 0x95 {
+		return "", false
+	}
+	body := raw[11:]
+	if !bytes.HasPrefix(body, head) {
+		return "", false
+	}
+	rest := body[len(head):]
+	var state []byte
+	switch {
+	case len(rest) >= 2 && rest[0] == 0x8c:
+		size := int(rest[1])
+		if len(rest) < 2+size {
+			return "", false
+		}
+		state = rest[2 : 2+size]
+	case len(rest) >= 5 && rest[0] == 'X':
+		size := int(binary.LittleEndian.Uint32(rest[1:5]))
+		if size > len(rest)-5 {
+			return "", false
+		}
+		state = rest[5 : 5+size]
+	default:
+		return "", false
+	}
+	if !utf8.Valid(state) || !bytes.Equal(googleSessionPickle(string(state)), raw) {
+		return "", false
+	}
+	return string(state), true
+}
+
+// SessionState is load(): GET of the session key.
+func (r *GoogleCalendars) SessionState(ctx context.Context, key string) (bool, bool, error) {
+	raw, err := r.cache.Get(ctx, djangoSessionPrefix+key).Bytes()
+	if errors.Is(err, redis.Nil) {
+		return false, false, nil
+	}
+	if err != nil {
+		return false, false, err
+	}
+	_, ok := googleSessionState(raw)
+	return true, !ok, nil
+}
+
+// SaveSession is save(must_create=False): cache.set of an existing key.
+func (r *GoogleCalendars) SaveSession(ctx context.Context, key, state string) (bool, error) {
+	return r.cache.SetXX(ctx, djangoSessionPrefix+key, googleSessionPickle(state), googleSessionAge).Result()
 }

@@ -108,7 +108,7 @@ func campSubscriptionJSON(row domain.CampSubscription) map[string]any {
 }
 
 // campSubscriptionListJSON is CampsAndRetreatsSubscriptionListInfoSerializer's data.
-func campSubscriptionListJSON(item *service.CampSubscriptionListItem) map[string]any {
+func campSubscriptionListJSON(item *service.CampSubscriptionListItem) (map[string]any, error) {
 	data := campSubscriptionJSON(item.Row)
 	registration := item.Registration
 	var associate any
@@ -125,7 +125,11 @@ func campSubscriptionListJSON(item *service.CampSubscriptionListItem) map[string
 		period := &item.Periods[index]
 		var payment any
 		if period.Payment != nil {
-			payment = dto.CampsListPayment(*period.Payment)
+			rendered, err := dto.CampsListPayment(*period.Payment)
+			if err != nil {
+				return nil, err
+			}
+			payment = rendered
 		}
 		all := make([]map[string]any, 0, len(period.Services))
 		for position := range period.Services {
@@ -149,7 +153,7 @@ func campSubscriptionListJSON(item *service.CampSubscriptionListItem) map[string
 		paid[period] = true
 	}
 	data["periods"], data["selected_periods"], data["selected_services"], data["paid_periods"] = periods, selected, services, paid
-	return data
+	return data, nil
 }
 
 func (h *CampsSubscriptionsHandler) List(c echo.Context) error {
@@ -162,7 +166,11 @@ func (h *CampsSubscriptionsHandler) List(c echo.Context) error {
 			}
 			data := make([]map[string]any, 0, len(items))
 			for index := range items {
-				data = append(data, campSubscriptionListJSON(&items[index]))
+				item, err := campSubscriptionListJSON(&items[index])
+				if err != nil {
+					return campsSubscriptionsError(c, err, "You are not a sport association")
+				}
+				data = append(data, item)
 			}
 			return c.JSON(200, map[string]any{"data": data})
 		})

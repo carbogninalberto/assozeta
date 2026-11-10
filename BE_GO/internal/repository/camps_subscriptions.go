@@ -346,7 +346,13 @@ func (t *campsTransaction) DeleteCampSubscription(ctx context.Context, id string
 }
 
 func (t *campsTransaction) ListPayment(ctx context.Context, id string, group *string) (domain.CourseSubscriptionPayment, error) {
-	return t.courseSubscriptions().payment(ctx, id, group)
+	payment, err := t.courseSubscriptions().payment(ctx, id, group)
+	if err != nil {
+		return payment, err
+	}
+	// PaymentSerializer's nested instructor and invoice.
+	payment.Instructor, payment.Invoice, err = paymentNestedRows(ctx, t.tx, payment.InvoicePartyPayment)
+	return payment, err
 }
 
 // PaidPeriodsOf is get_paid_periods: the periods of the subscription periods

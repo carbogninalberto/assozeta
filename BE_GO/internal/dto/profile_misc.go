@@ -9,6 +9,7 @@ import (
 	"unicode"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/google/uuid"
 )
 
 // DRFFieldError is one serializer field's error codes, in serializer field
@@ -160,15 +161,16 @@ var OnboardingFlagFields = []string{"show", "create_membership", "view_membershi
 	"view_collaborators", "view_settings"}
 
 // ParseOnboardingFlags is UsersOnboardingSerializer(partial=True) for the
-// boolean fields. present reports a users_onboarding_id or user key, which
-// the caller refuses.
-func ParseOnboardingFlags(value any) (map[string]bool, bool, []DRFFieldError) {
+// boolean fields. users_onboarding_id and user are accepted when they name
+// the row itself and its user (uuid.UUID text of the same value: the save
+// keeps both); any other value reports refused, which the caller refuses.
+func ParseOnboardingFlags(value any, rowID, userID string) (map[string]bool, bool, []DRFFieldError) {
 	object, invalid := drfSerializerData(value)
 	if invalid != nil {
 		return nil, false, invalid
 	}
-	for _, name := range []string{"users_onboarding_id", "user"} {
-		if _, present := object.Lookup(name); present {
+	for name, stored := range map[string]string{"users_onboarding_id": rowID, "user": userID} {
+		if raw, present := object.Lookup(name); present && !profileMiscSameUUID(raw, stored) {
 			return nil, true, nil
 		}
 	}
@@ -191,6 +193,21 @@ func ParseOnboardingFlags(value any) (map[string]bool, bool, []DRFFieldError) {
 		flags[name] = parsed
 	}
 	return flags, false, errors
+}
+
+// profileMiscSameUUID reports a JSON string that uuid.UUID(hex=...) reads as
+// the stored UUID.
+func profileMiscSameUUID(raw any, stored string) bool {
+	text, ok := raw.(string)
+	if !ok {
+		return false
+	}
+	parsed, err := uuid.Parse(text)
+	if err != nil {
+		return false
+	}
+	want, err := uuid.Parse(stored)
+	return err == nil && parsed == want
 }
 
 var pythonDecimalSpecial = regexp.MustCompile(`(?i)^[+-]?(nan|snan|inf|infinity)$`)

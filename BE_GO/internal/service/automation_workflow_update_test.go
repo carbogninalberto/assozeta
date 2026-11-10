@@ -22,8 +22,9 @@ func TestAutomationWorkflowEnablePlan(t *testing.T) {
 		{`[{"value":"new_subscription"}]`, false, automationWorkflowTriggerNone},
 		{`[{"value":"cron","data":{"time":"2020-01-01T10:00","triggered":true}}]`, true, automationWorkflowTriggerNone},
 		{`[{"value":"cron","data":{"time":"2020-01-01","triggered":1}}]`, false, automationWorkflowTriggerNone},
-		{`[{"value":"cron","data":{"time":"2099-01-01T10:00","triggered":true}}]`, true, automationWorkflowTriggerNotPorted},
-		{`[{"value":"cron","data":{"time":"2026-11-09T12:30"}}]`, false, automationWorkflowTriggerNotPorted},
+		{`[{"value":"cron","data":{"time":"2099-01-01T10:00","triggered":true}}]`, true, automationWorkflowTriggerSchedule},
+		{`[{"value":"cron","data":{"time":"2026-11-09T12:30"}}]`, false, automationWorkflowTriggerNone},
+		{`[{"value":"cron","data":{"time":"2026-11-09T13:30"}}]`, false, automationWorkflowTriggerSchedule},
 		{`[{"value":"cron","data":{"time":"20200101"}}]`, false, automationWorkflowTriggerNotPorted},
 		{`[{"value":"cron","data":{"time":"2020-01-01T10"}}]`, false, automationWorkflowTriggerNotPorted},
 		{`[{"value":"cron","data":{"time":"2020-01-01T10:00:00Z"}}]`, false, automationWorkflowTriggerError},
@@ -40,7 +41,7 @@ func TestAutomationWorkflowEnablePlan(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		reset, outcome := automationWorkflowEnablePlan(tree, now, rome)
+		reset, outcome, _ := automationWorkflowEnablePlan(tree, now, rome)
 		if reset != test.reset || outcome != test.outcome {
 			t.Fatalf("%s: got %v %v, want %v %v", test.tree, reset, outcome, test.reset, test.outcome)
 		}
@@ -52,6 +53,33 @@ func TestAutomationWorkflowEnablePlan(t *testing.T) {
 	}
 	if got := string(dto.PythonJSONDumpsSorted(tree)); got != `[{"data": {"time": "2020-01-01", "triggered": true}, "value": "cron"}, {"id": "m"}]` {
 		t.Fatalf("original tree changed %s", got)
+	}
+}
+
+// pytz's localize(is_dst=False) of Europe/Rome wall times: standard offset for
+// ambiguous and skipped times, +01:00 after the table's last transition.
+func TestAutomationWorkflowRomeLocalize(t *testing.T) {
+	rome, err := time.LoadLocation("Europe/Rome")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, test := range []struct {
+		wall [6]int
+		want string
+	}{
+		{[6]int{2027, 1, 15, 10, 30, 0}, "2027-01-15T09:30:00Z"},
+		{[6]int{2027, 7, 1, 8, 0, 0}, "2027-07-01T06:00:00Z"},
+		{[6]int{2027, 10, 31, 2, 30, 0}, "2027-10-31T01:30:00Z"},
+		{[6]int{2027, 3, 28, 2, 30, 0}, "2027-03-28T01:30:00Z"},
+		{[6]int{2037, 10, 25, 2, 30, 0}, "2037-10-25T01:30:00Z"},
+		{[6]int{2038, 7, 1, 10, 0, 0}, "2038-07-01T09:00:00Z"},
+		{[6]int{2099, 7, 1, 8, 0, 0}, "2099-07-01T07:00:00Z"},
+	} {
+		w := test.wall
+		got := automationWorkflowRomeLocalize(w[0], w[1], w[2], w[3], w[4], w[5], 0, rome).UTC().Format(time.RFC3339)
+		if got != test.want {
+			t.Fatalf("%v: got %s, want %s", w, got, test.want)
+		}
 	}
 }
 
