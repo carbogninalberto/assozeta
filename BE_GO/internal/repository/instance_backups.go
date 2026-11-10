@@ -99,18 +99,20 @@ if (exists == 1) then
 return redis.call('INCRBY', KEYS[1], ARGV[1])
 else return false end`)
 
-// FailAttempt is cache.add(key, 0, timeout=900) then cache.incr(key); a key
-// that vanished in between is incr's ValueError.
-func (r *InstanceBackups) FailAttempt(ctx context.Context, actor string) error {
+// CountAttempt is cache.add(key, 0, timeout=900) then cache.incr(key): the
+// try is counted before the password is checked and the counted value is
+// returned (INCRBY is atomic, so simultaneous tries get distinct values). A
+// key that vanished in between is incr's ValueError.
+func (r *InstanceBackups) CountAttempt(ctx context.Context, actor string) (int64, error) {
 	key := instanceBackupsAttemptsKey + actor
 	if err := r.cache.SetNX(ctx, key, "0", 900*time.Second).Err(); err != nil {
-		return err
+		return 0, err
 	}
-	_, err := instanceBackupsIncr.Run(ctx, r.cache, []string{key}, 1).Result()
+	value, err := instanceBackupsIncr.Run(ctx, r.cache, []string{key}, 1).Int64()
 	if errors.Is(err, redis.Nil) {
-		return errors.New("backup attempts key vanished before incr")
+		return 0, errors.New("backup attempts key vanished before incr")
 	}
-	return err
+	return value, err
 }
 
 // ClearAttempts is cache.delete(attempts_key).

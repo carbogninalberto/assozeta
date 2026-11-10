@@ -17,7 +17,8 @@ import (
 // composeInstanceBackupActions builds the owner's backup actions (keep,
 // delete, schedule, restore, upload, remote copy) on the administration
 // handler: the update runner (production mode, ASSOZETA_UPDATER_DIRECTORY),
-// Django's cache for the password attempts and the Django password hashers.
+// Django's cache for the password attempts, the Django password hashers, the
+// upload limit and the remote endpoint setting.
 func composeInstanceBackupActions(cfg config.Config, db *sqlx.DB, cache *redis.Client, admin *handler.InstanceAdminHandler) (*handler.InstanceBackupActionsHandler, error) {
 	store, err := repository.NewInstanceBackups(db, cache)
 	if err != nil {
@@ -25,6 +26,7 @@ func composeInstanceBackupActions(cfg config.Config, db *sqlx.DB, cache *redis.C
 	}
 	runner := updaterrunner.Client{Production: cfg.InstanceAdmin.DeploymentMode == "production", Directory: cfg.InstanceAdmin.UpdaterDirectory}
 	actions := service.NewInstanceBackupActions(store, runner, passwordcrypto.NewPasswordVerifier(passwordcrypto.DefaultPasswordLimits()),
-		time.Now, uuid.NewString) // str(uuid4())
+		time.Now, uuid.NewString, // str(uuid4())
+		service.BackupActionsLimits{UploadMaxBytes: cfg.InstanceAdmin.BackupUploadMaxBytes, AllowHTTP: cfg.InstanceAdmin.BackupRemoteAllowHTTP})
 	return handler.NewInstanceBackupActionsHandler(admin, actions), nil
 }

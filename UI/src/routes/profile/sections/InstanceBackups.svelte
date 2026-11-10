@@ -13,6 +13,7 @@
     import DataTransfer from './DataTransfer.svelte';
     import {formatSize, formatDate, formatRelative} from './instanceFormat.js';
     import {RESTORE_WORD, uploadProblem, uploadArchive, sessionToken} from './backupUpload.js';
+    import {deleteBody, keepBody} from './backupPassword.js';
 
     // request(path, options) is the owner page helper rooted at /instance.
     export let request;
@@ -28,7 +29,7 @@
 
     const origins = {manual: 'Manuale', scheduled: 'Pianificato', 'pre-upgrade': 'Prima dell’aggiornamento', 'pre-restore': 'Prima del ripristino', uploaded: 'Caricato'};
 
-    let dialog = null; // {kind: 'download'|'delete'|'create'|'restore'|'upload'|'fetch', archive}
+    let dialog = null; // {kind: 'download'|'delete'|'unkeep'|'create'|'restore'|'upload'|'fetch', archive}
     let password = '';
     let recoveryKey = '';
     let confirmWord = '';
@@ -70,7 +71,7 @@
         const locked = archive.pending_upgrade ? 'Serve all’aggiornamento in sospeso.' : '';
         return [
             {label: 'Scarica', disabled: !!active, hint: active ? busyReason : '', onSelect: () => openDialog('download', archive)},
-            actions.keep && {label: archive.keep ? 'Non conservare più' : 'Conserva', hint: archive.keep ? 'Torna nella rotazione automatica.' : 'Mai eliminato in automatico.', disabled: !!active || pending[archive.name], onSelect: () => toggleKeep(archive)},
+            actions.keep && {label: archive.keep ? 'Non conservare più' : 'Conserva', hint: archive.keep ? 'Torna nella rotazione automatica.' : 'Mai eliminato in automatico.', disabled: !!active || pending[archive.name], onSelect: () => archive.keep ? openDialog('unkeep', archive) : keep(archive)},
             actions.restore && {label: 'Ripristina', disabled: !!active || !!locked || !!blockedReason, hint: locked || (active ? busyReason : blockedReason), onSelect: () => openDialog('restore', archive)},
             actions.delete && {label: 'Elimina', danger: true, disabled: !!active || !!locked, hint: locked || (active ? busyReason : ''), onSelect: () => openDialog('delete', archive)},
         ];
@@ -183,17 +184,32 @@
     }
 
     async function confirmDelete() {
-        if (working) return;
+        if (!password || working) return;
         working = true;
         dialogError = '';
         try {
-            await request(`/admin/backups/${encodeURIComponent(dialog.archive.name)}`, {method: 'DELETE', body: JSON.stringify({confirm: dialog.archive.last_upgrade || dialog.archive.keep})});
+            await request(`/admin/backups/${encodeURIComponent(dialog.archive.name)}`, {method: 'DELETE', body: JSON.stringify(deleteBody(dialog.archive, password))});
             working = false;
             closeDialog();
             toast.success('Backup eliminato.');
             onReload();
         } catch (e) { dialogError = e.message; }
-        finally { working = false; }
+        finally { password = ''; working = false; }
+    }
+
+    // Back into the rotation: needs the password, so it goes through a dialog.
+    async function confirmUnkeep() {
+        if (!password || working) return;
+        working = true;
+        dialogError = '';
+        try {
+            await request(`/admin/backups/${encodeURIComponent(dialog.archive.name)}`, {method: 'PATCH', body: JSON.stringify(keepBody(false, password))});
+            working = false;
+            closeDialog();
+            toast.success('Il backup torna nella rotazione.');
+            onReload();
+        } catch (e) { dialogError = e.message; }
+        finally { password = ''; working = false; }
     }
 
     async function confirmCreate() {
@@ -209,11 +225,11 @@
         finally { working = false; }
     }
 
-    async function toggleKeep(archive) {
+    async function keep(archive) {
         pending = {...pending, [archive.name]: true};
         try {
-            await request(`/admin/backups/${encodeURIComponent(archive.name)}`, {method: 'PATCH', body: JSON.stringify({keep: !archive.keep})});
-            toast.success(archive.keep ? 'Il backup torna nella rotazione.' : 'Backup conservato.');
+            await request(`/admin/backups/${encodeURIComponent(archive.name)}`, {method: 'PATCH', body: JSON.stringify(keepBody(true))});
+            toast.success('Backup conservato.');
             onReload();
         } catch (e) { toast.error(e.message); }
         finally { pending = {...pending, [archive.name]: false}; }
@@ -338,12 +354,33 @@
 <InstanceDialog open={dialog?.kind === 'delete'} title="Eliminare il backup?" locked={working} on:close={closeDialog}>
     {#if dialog?.archive}
         <p>Il backup del <strong>{formatDate(dialog.archive.created_at)}</strong> ({formatSize(dialog.archive.size)}) viene eliminato dal server. Non si può annullare.</p>
-        {#if dialog.archive.last_upgrade}<p class="note" role="note">È il backup dell’ultimo aggiornamento riuscito: senza, non puoi tornare alla versione precedente.</p>{/if}
-        {#if dialogError}<p class="text-danger mb-0" role="alert">{dialogError}</p>{/if}
+        <form id="backup-delete-form" on:submit|preventDefault={confirmDelete}>
+            {#if dialog.archive.last_upgrade}<p class="note" role="note">È il backup dell’ultimo aggiornamento riuscito: senza, non puoi tornare alla versione precedente.</p>{/if}
+            <label class="si-field" for="backup-delete-password">Conferma la tua password
+                <input id="backup-delete-password" class="form-control" type="password" autocomplete="current-password" bind:value={password} disabled={working} />
+            </label>
+            {#if dialogError}<p class="text-danger mt-2 mb-0" role="alert">{dialogError}</p>{/if}
+        </form>
     {/if}
     <svelte:fragment slot="footer">
         <button type="button" class="btn btn-light" data-autofocus disabled={working} on:click={closeDialog}>Annulla</button>
-        <button type="button" class="btn btn-danger si-btn" disabled={working} on:click={confirmDelete}><Trash size={18} weight="duotone" />{working ? 'Eliminazione…' : 'Elimina'}</button>
+        <button type="submit" form="backup-delete-form" class="btn btn-danger si-btn" disabled={!password || working}><Trash size={18} weight="duotone" />{working ? 'Eliminazione…' : 'Elimina'}</button>
+    </svelte:fragment>
+</InstanceDialog>
+
+<InstanceDialog open={dialog?.kind === 'unkeep'} title="Rimettere il backup nella rotazione?" locked={working} on:close={closeDialog}>
+    {#if dialog?.archive}
+        <form id="backup-unkeep-form" on:submit|preventDefault={confirmUnkeep}>
+            <p>Il backup del <strong>{formatDate(dialog.archive.created_at)}</strong> potrà essere eliminato in automatico come gli altri.</p>
+            <label class="si-field" for="backup-unkeep-password">Conferma la tua password
+                <input id="backup-unkeep-password" class="form-control" type="password" autocomplete="current-password" bind:value={password} disabled={working} />
+            </label>
+            {#if dialogError}<p class="text-danger mt-2 mb-0" role="alert">{dialogError}</p>{/if}
+        </form>
+    {/if}
+    <svelte:fragment slot="footer">
+        <button type="button" class="btn btn-light" disabled={working} on:click={closeDialog}>Annulla</button>
+        <button type="submit" form="backup-unkeep-form" class="btn btn-primary si-btn" disabled={!password || working}>{working ? 'Verifica…' : 'Non conservare più'}</button>
     </svelte:fragment>
 </InstanceDialog>
 

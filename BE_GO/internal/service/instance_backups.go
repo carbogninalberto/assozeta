@@ -346,42 +346,11 @@ func (s *InstanceBackups) Token(ctx context.Context, actor string, body any, aud
 	if invalid != nil {
 		return &InstanceBackupsReply{Status: 400, Body: invalid}, nil
 	}
-	attempts, err := s.store.Attempts(ctx, actor)
-	if err != nil {
-		if errors.Is(err, repository.ErrInstanceBackupsCacheShape) {
-			return nil, ErrInstanceBackupsNotPorted
-		}
-		return nil, err
-	}
-	if attempts >= instanceBackupsAttempts {
-		return instanceBackupsError(429, "Troppi tentativi. Riprova tra qualche minuto."), nil
-	}
-	encoded, err := s.store.Password(ctx, actor)
-	if err != nil {
-		return nil, err
-	}
-	decision, err := s.hashes.CheckDjangoPassword(ctx, passwordcrypto.LoginPasswordValue{Text: input.Password, String: true}, encoded)
-	if err != nil {
-		return nil, err
-	}
-	if decision.Match && decision.Upgrade {
-		// check_password's setter: set_password and save(update_fields=['password']).
-		upgraded, err := s.hashes.Encode(ctx, input.Password)
+	if status, message, err := instanceBackupsPasswordRefusal(ctx, s.store, s.hashes, actor, input.Password); err != nil || status != 0 {
 		if err != nil {
 			return nil, err
 		}
-		if err := s.store.SetPassword(ctx, actor, upgraded); err != nil {
-			return nil, err
-		}
-	}
-	if !decision.Match {
-		if err := s.store.FailAttempt(ctx, actor); err != nil {
-			return nil, err
-		}
-		return instanceBackupsError(400, "Password non corretta."), nil
-	}
-	if err := s.store.ClearAttempts(ctx, actor); err != nil {
-		return nil, err
+		return instanceBackupsError(status, message), nil
 	}
 	target, err := s.store.LogTarget(ctx)
 	if err != nil {
@@ -542,4 +511,63 @@ func instanceBackupsASCII(text string) bool {
 		}
 	}
 	return true
+}
+
+// instanceBackupsAttemptStore is the attempts cache and the actor's stored hash
+// (repository.InstanceBackups).
+type instanceBackupsAttemptStore interface {
+	Attempts(ctx context.Context, actor string) (int64, error)
+	CountAttempt(ctx context.Context, actor string) (int64, error)
+	ClearAttempts(ctx context.Context, actor string) error
+	Password(ctx context.Context, id string) (string, error)
+	SetPassword(ctx context.Context, id, encoded string) error
+}
+
+// instanceBackupsPasswordRefusal is backups.password_refusal on the shared
+// attempts key: 429 at the limit, then the try is counted (atomically, before
+// the check) and a count over the limit is 429 too; a wrong password is 400
+// (the count stays), a match clears the key (status 0). check_password
+// upgrades an outdated hash of a matching password.
+func instanceBackupsPasswordRefusal(ctx context.Context, store instanceBackupsAttemptStore, hashes InstanceBackupsHasher,
+	actor, password string) (int, string, error) {
+	const tooMany = "Troppi tentativi. Riprova tra qualche minuto."
+	attempts, err := store.Attempts(ctx, actor)
+	if err != nil {
+		if errors.Is(err, repository.ErrInstanceBackupsCacheShape) {
+			return 0, "", ErrInstanceBackupsNotPorted
+		}
+		return 0, "", err
+	}
+	if attempts >= instanceBackupsAttempts {
+		return 429, tooMany, nil
+	}
+	counted, err := store.CountAttempt(ctx, actor)
+	if err != nil {
+		return 0, "", err
+	}
+	if counted > instanceBackupsAttempts {
+		return 429, tooMany, nil
+	}
+	encoded, err := store.Password(ctx, actor)
+	if err != nil {
+		return 0, "", err
+	}
+	decision, err := hashes.CheckDjangoPassword(ctx, passwordcrypto.LoginPasswordValue{Text: password, String: true}, encoded)
+	if err != nil {
+		return 0, "", err
+	}
+	if decision.Match && decision.Upgrade {
+		// check_password's setter: set_password and save(update_fields=['password']).
+		upgraded, err := hashes.Encode(ctx, password)
+		if err != nil {
+			return 0, "", err
+		}
+		if err := store.SetPassword(ctx, actor, upgraded); err != nil {
+			return 0, "", err
+		}
+	}
+	if !decision.Match {
+		return 400, "Password non corretta.", nil
+	}
+	return 0, "", store.ClearAttempts(ctx, actor)
 }

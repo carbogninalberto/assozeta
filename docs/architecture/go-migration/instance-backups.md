@@ -94,10 +94,12 @@ Unicode decimal digit (Go `\p{Nd}`). Then, per actor (`authenticated_user`):
 
 - `cache.get('instance:backup-download-attempts:<actor>', 0) >= 5` is 429
   `Troppi tentativi. Riprova tra qualche minuto.` before the password is checked;
-- `actor.check_password`: a wrong password does `cache.add(key, 0, 900)` then `cache.incr(key)` (the
-  first failure starts the 15-minute window, later ones keep its TTL) and answers 400
-  `Password non corretta.`. A correct password with an outdated hash (iterations, salt entropy,
-  algorithm) is rehashed and saved (`update_fields=['password']`); unusable hashes never match;
+- the try is counted first: `cache.add(key, 0, 900)` then `cache.incr(key)` (the first try starts the
+  15-minute window, later ones keep its TTL); a counted value above 5 is 429 without a check (see
+  [instance-backups-actions](instance-backups-actions.md), shared with the other confirmations);
+- `actor.check_password`: a wrong password answers 400 `Password non corretta.` (the count stays). A
+  correct password with an outdated hash (iterations, salt entropy, algorithm) is rehashed and saved
+  (`update_fields=['password']`); unusable hashes never match;
 - success deletes the attempts key, writes an auditlog `ACCESS` entry on
   `InstanceConfiguration.get_config()` (`object_pk`/`object_id` its id, `object_repr`
   `Instance: <name> (<domain>)`, `changes {'backup_download': ['', name]}`, `additional_data
@@ -158,6 +160,9 @@ result checked: unchanged, or upgraded and still matching), signs download token
 tampered, other salt, untimed, other claims) and checks the audit entry and its index row. Database
 sizes are accepted within `pg_database_size` measured before and after the request, and the cached value
 must equal the reported one.
+
+Re-run after the shared password check counts each try before checking it (`sec-backups`):
+161/161 on native Django, native Go, Caddy `/api/v1` and `/api/v2` (`sec-versioned-r1`).
 
 Re-verification after the Django main merge (`BE/instance/backups.py` gained the overview's `schedule`,
 `actions` and `remote` keys and its POST; the other new backup routes are a separate family):

@@ -6,8 +6,12 @@ remote copy views) and BE/instance/updater_client.py (call_runner with a
 JSON payload, send_runner_stream) with BE/instance/upload_stream.py (the
 ASGI wrapper hands the upload body to the view unread), in Django's order:
 identity, IsInstanceOwner, method dispatch, the archive name, the request
-data or serializer, the password attempts and check (restore), the runner
-call, then the UPDATE audit entry when the runner accepted.
+data or serializer, the password attempts and check (restore, delete,
+un-keep, the remote settings and key), the runner call, then the UPDATE
+audit entry when the runner accepted. Uploads above the configured
+'upload_max_bytes' are refused before the runner; the remote endpoint is
+checked before the runner (https://, no loopback, link-local or instance
+addresses).
 
 The run is in production mode with ASSOZETA_UPDATER_DIRECTORY on a runner
 stub owned by the adapter. Per case:
@@ -25,7 +29,8 @@ stub owned by the adapter. Per case:
   expects check_password's upgrade;
 - 'audit' is the expected UPDATE entry on the instance configuration;
 - 'send' shapes an upload body ('b64' bytes with their Content-Length, or
-  'chunked' without one); 'no_store' expects Cache-Control: no-store.
+  'chunked' without one; 'early' writes the body while the answer is read);
+  'no_store' expects Cache-Control: no-store.
 Every credential, host and name is a placeholder. Run with ``python3 -I``.
 """
 import base64
@@ -52,6 +57,10 @@ WRONG = 'Password non corretta.'
 TOO_MANY = 'Troppi tentativi. Riprova tra qualche minuto.'
 CONFIRM_WORD = 'Scrivi RIPRISTINA per confermare.'
 CHOOSE_FILE = 'Seleziona un file da caricare.'
+TOO_LARGE = 'Il file supera la dimensione massima consentita per il caricamento.'
+INVALID_ENDPOINT = 'Inserisci un indirizzo valido, ad esempio https://s3.example.com.'
+HTTPS_ENDPOINT = 'Usa un indirizzo https://.'
+BLOCKED_ENDPOINT = 'Questo indirizzo non può essere usato per la copia remota.'
 RUNNER_TOKEN = 'runner-token-placeholder'
 ARCHIVE = 'assozeta-20261101T020000Z.tar.gz'
 SECOND = 'assozeta-20261102T020000Z-1.tar.gz'
@@ -139,6 +148,13 @@ def logged(key, value, actor='owner', association='own_association', **extra):
             'association': association}
 
 
+def attempts_preset(actor, value, ttl=None):
+    """The password attempts of 'cache'/'cache_after' (shared by every password confirmation)."""
+    if ttl is None:
+        return {'attempts': {actor: value}}
+    return {'attempts': {actor: {'value': value, 'ttl': ttl}}}
+
+
 def item(name=ARCHIVE):
     return f'{BASE}/{name}'
 
@@ -211,9 +227,19 @@ add('keep-form-body', 'owner', item(), 400, error(INVALID), method='PATCH', raw_
 add('keep-true', 'owner', item(), 200, KEPT, method='PATCH', body={'keep': True, 'ignored': 1},
     run=runner(200, KEPT, expect=[call('PATCH', f'/backups/{ARCHIVE}', {'keep': True})]),
     audit=logged('backup_keep', ARCHIVE, backup=ARCHIVE))
-add('keep-false-admin', 'admin', item(SECOND), 200, {'ok': True}, method='PATCH', body={'keep': False},
+add('keep-false-admin', 'admin', item(SECOND), 200, {'ok': True}, method='PATCH', body={'keep': False, 'password': PASSWORD},
+    cache=attempts_preset(ADMIN, 2), cache_after={},
     run=runner(201, {'ok': True}, expect=[call('PATCH', f'/backups/{SECOND}', {'keep': False})]),
     audit=logged('backup_unkeep', SECOND, actor='admin', association='admin_association', backup=SECOND))
+add('unkeep-without-password', 'owner', item(), 400, {'password': [REQUIRED]}, method='PATCH', body={'keep': False})
+add('unkeep-password-rules', 'owner', item(), 400, {'password': ['Ensure this field has no more than 256 characters.']},
+    method='PATCH', body={'keep': False, 'password': 'p' * 257})
+add('unkeep-wrong-password', 'owner', item(), 400, error(WRONG), method='PATCH', body={'keep': False, 'password': PASSWORD + 'x'},
+    cache_after=attempts_preset(OWNER, 1, 'fresh'))
+add('unkeep-too-many', 'owner', item(), 429, error(TOO_MANY), method='PATCH', body={'keep': False, 'password': PASSWORD},
+    cache=attempts_preset(OWNER, 5), cache_after=attempts_preset(OWNER, 5, 'kept'))
+add('unkeep-runner-409', 'owner', item(), 409, error('Backup in corso.'), method='PATCH', body={'keep': False, 'password': PASSWORD},
+    run=runner(409, {'error': 'Backup in corso.'}, expect=[call('PATCH', f'/backups/{ARCHIVE}', {'keep': False})]))
 add('keep-runner-list', 'owner', item(), 200, [1, 'x'], method='PATCH', body={'keep': True},
     run=runner(200, [1, 'x'], expect=[call('PATCH', f'/backups/{ARCHIVE}', {'keep': True})]),
     audit=logged('backup_keep', ARCHIVE, backup=ARCHIVE))
@@ -236,25 +262,42 @@ add('keep-no-token', 'owner', item(), 503, error(UNREACHABLE), method='PATCH', b
 
 DELETED = {'deleted': ARCHIVE}
 add('delete-not-an-archive', 'owner', item('backup.tar.gz'), 404, error(NOT_FOUND), method='DELETE')
-add('delete-no-body', 'owner', item(), 200, DELETED, method='DELETE',
+add('delete-no-body', 'owner', item(), 400, {'password': [REQUIRED]}, method='DELETE')
+add('delete-without-confirm', 'owner', item(), 200, DELETED, method='DELETE', body={'password': PASSWORD},
     run=runner(200, DELETED, expect=[call('DELETE', f'/backups/{ARCHIVE}', {'confirm': False})]),
     audit=logged('backup_delete', ARCHIVE, backup=ARCHIVE))
-add('delete-confirmed', 'owner', item(SECOND), 200, DELETED, method='DELETE', body={'confirm': True},
+add('delete-confirmed', 'owner', item(SECOND), 200, DELETED, method='DELETE', body={'confirm': True, 'password': PASSWORD},
+    cache=attempts_preset(OWNER, 4), cache_after={},
     run=runner(200, DELETED, expect=[call('DELETE', f'/backups/{SECOND}', {'confirm': True})]),
     audit=logged('backup_delete', SECOND, backup=SECOND))
-add('delete-list-body', 'owner', item(), 409, error('Conferma richiesta.'), method='DELETE', body=[True],
-    run=runner(409, {'error': 'Conferma richiesta.'}, expect=[call('DELETE', f'/backups/{ARCHIVE}', {'confirm': False})]))
-add('delete-confirm-text', 'owner', item(), 400, error(INVALID), method='DELETE', body={'confirm': 'yes'})
-add('delete-confirm-null', 'owner', item(), 400, error(INVALID), method='DELETE', body={'confirm': None})
-add('delete-form-without-confirm', 'owner', item(), 200, DELETED, method='DELETE', raw_body='other=1',
-    content_type='application/x-www-form-urlencoded',
+add('delete-confirmed-admin-upgrades-hash', 'admin', item(), 200, DELETED, method='DELETE',
+    body={'confirm': False, 'password': PASSWORD}, password=LEGACY_HASH, rehash=True,
     run=runner(200, DELETED, expect=[call('DELETE', f'/backups/{ARCHIVE}', {'confirm': False})]),
-    audit=logged('backup_delete', ARCHIVE, backup=ARCHIVE))
+    audit=logged('backup_delete', ARCHIVE, actor='admin', association='admin_association', backup=ARCHIVE))
+add('delete-list-body', 'owner', item(), 400, {'non_field_errors': ['Invalid data. Expected a dictionary, but got list.']},
+    method='DELETE', body=[True])
+add('delete-null-body', 'owner', item(), 400, {'non_field_errors': ['No data provided']}, method='DELETE', raw_body='null',
+    content_type='application/json')
+add('delete-confirm-text', 'owner', item(), 400, error(INVALID), method='DELETE', body={'confirm': 'yes', 'password': PASSWORD})
+add('delete-confirm-null', 'owner', item(), 400, error(INVALID), method='DELETE', body={'confirm': None})
+add('delete-password-types', 'owner', item(), 400, {'password': [BLANK]}, method='DELETE', body={'confirm': True, 'password': ''})
+add('delete-password-null', 'owner', item(), 400, {'password': [NULL]}, method='DELETE', body={'confirm': True, 'password': None})
+add('delete-wrong-password', 'owner', item(), 400, error(WRONG), method='DELETE', body={'confirm': True, 'password': ' ' + PASSWORD},
+    cache_after=attempts_preset(OWNER, 1, 'fresh'))
+add('delete-wrong-password-counts', 'admin', item(), 400, error(WRONG), method='DELETE', body={'confirm': True, 'password': 123},
+    cache=attempts_preset(ADMIN, 4), cache_after=attempts_preset(ADMIN, 5, 'kept'))
+add('delete-too-many', 'owner', item(), 429, error(TOO_MANY), method='DELETE', body={'confirm': True, 'password': PASSWORD},
+    cache=attempts_preset(OWNER, 7), cache_after=attempts_preset(OWNER, 7, 'kept'))
+add('delete-unusable-password', 'owner', item(), 400, error(WRONG), method='DELETE', body={'confirm': True, 'password': PASSWORD},
+    password='!unusable-placeholder', cache_after=attempts_preset(OWNER, 1, 'fresh'))
+add('delete-form-without-confirm', 'owner', item(), 400, {'password': [REQUIRED]}, method='DELETE', raw_body='other=1',
+    content_type='application/x-www-form-urlencoded')
 add('delete-form-confirm', 'owner', item(), 400, error(INVALID), method='DELETE', raw_body='confirm=true',
     content_type='application/x-www-form-urlencoded')
-add('delete-runner-502', 'owner', item(), 503, error('Runner non pronto.'), method='DELETE', body={'confirm': True},
+add('delete-runner-502', 'owner', item(), 503, error('Runner non pronto.'), method='DELETE', body={'confirm': True, 'password': PASSWORD},
+    cache=attempts_preset(OWNER, 1), cache_after={},
     run=runner(502, {'error': 'Runner non pronto.'}, expect=[call('DELETE', f'/backups/{ARCHIVE}', {'confirm': True})]))
-add('delete-runner-null', 'owner', item(), 200, '<none>', method='DELETE', body={'confirm': True},
+add('delete-runner-null', 'owner', item(), 200, '<none>', method='DELETE', body={'confirm': True, 'password': PASSWORD},
     run=runner(200, 'null', expect=[call('DELETE', f'/backups/{ARCHIVE}', {'confirm': True})]),
     audit=logged('backup_delete', ARCHIVE, backup=ARCHIVE))
 
@@ -347,10 +390,7 @@ def restore_call(name=ARCHIVE, actor=OWNER):
     return call('POST', f'/backups/{name}/restore', {'request_id': '$uuid4', 'actor_id': actor, 'confirm': 'RIPRISTINA'})
 
 
-def attempts(actor, value, ttl=None):
-    if ttl is None:
-        return {'attempts': {actor: value}}
-    return {'attempts': {actor: {'value': value, 'ttl': ttl}}}
+attempts = attempts_preset
 
 
 add('restore-not-an-archive', 'owner', restore_path('notes.txt'), 404, error(NOT_FOUND), method='POST', body={})
@@ -406,6 +446,8 @@ def archive_bytes(spec):
 
 SMALL_SPEC, LARGE_SPEC = {'seed': 1, 'size': 4096}, {'seed': 2, 'size': 2 * 1024 * 1024 + 17}
 SMALL, LARGE = archive_bytes(SMALL_SPEC), archive_bytes(LARGE_SPEC)
+# ASSOZETA_BACKUP_UPLOAD_MAX_BYTES of the run: the large archive is exactly at the limit.
+UPLOAD_MAX = len(LARGE)
 SPECS = {SMALL: SMALL_SPEC, LARGE: LARGE_SPEC}
 
 
@@ -440,6 +482,10 @@ add('upload-large-admin', 'admin', UPLOAD + '?ignored=1', 201, UPLOADED, method=
     run=runner(200, UPLOADED, expect=[upload_call(LARGE)]),
     audit=logged('backup_upload', 'assozeta-20261109T100000Z.tar.gz', actor='admin', association='admin_association',
                  backup='assozeta-20261109T100000Z.tar.gz', size=len(LARGE)))
+add('upload-over-the-limit', 'owner', UPLOAD, 413, {'error': TOO_LARGE, 'max_bytes': UPLOAD_MAX}, method='POST',
+    send={'seed': 3, 'size': UPLOAD_MAX + 1, 'early': True})
+add('upload-over-the-limit-admin', 'admin', UPLOAD + '?size=1', 413, {'error': TOO_LARGE, 'max_bytes': UPLOAD_MAX}, method='POST',
+    send={'seed': 4, 'size': UPLOAD_MAX + 65536, 'early': True}, headers={'Content-Type': 'application/octet-stream'})
 add('upload-one-byte', 'owner', UPLOAD, 201, {'archive': None, 'extra': [1.5]}, method='POST', send=sent(b'x'),
     run=runner(201, {'archive': None, 'extra': [1.5]}, expect=[upload_call(b'x')]),
     audit=logged('backup_upload', '', backup='', size=1))
@@ -518,25 +564,42 @@ add('remote-put-rules', 'owner', REMOTE, 400,
     {'endpoint': ['Ensure this field has no more than 255 characters.'], 'region': [STRING], 'bucket': [NULL],
      'prefix': ['Ensure this field has no more than 200 characters.'], 'access_key': [STRING],
      'secret_key': ['Ensure this field has no more than 256 characters.'], 'path_style': [BOOLEAN],
-     'retention': ['Ensure this value is less than or equal to 30.'], 'enabled': [NULL]},
-    method='PUT', body={'endpoint': 'e' * 256, 'region': False, 'bucket': None, 'prefix': 'p' * 201, 'access_key': {'a': 1},
+     'retention': ['Ensure this value is less than or equal to 30.'], 'enabled': [NULL], 'password': [STRING]},
+    method='PUT', body={'password': ['x'], 'endpoint': 'e' * 256, 'region': False, 'bucket': None, 'prefix': 'p' * 201, 'access_key': {'a': 1},
                         'secret_key': 's' * 257, 'path_style': 'sometimes', 'retention': 31, 'enabled': None})
 add('remote-put-bucket-length', 'owner', REMOTE, 400,
     {'bucket': ['Ensure this field has no more than 63 characters.'], 'retention': ['Ensure this value is greater than or equal to 1.'],
-     'region': ['Null characters are not allowed.']},
+     'region': ['Null characters are not allowed.'], 'password': [REQUIRED]},
     method='PUT', body={'bucket': ' ' + 'b' * 64 + ' ', 'retention': 0, 'region': 'eu\x00'})
-settings_ok('remote-put-full', SETTINGS_FULL, SETTINGS_VALUE)
-settings_ok('remote-put-empty', {}, {})
-settings_ok('remote-put-blank-secret', {'secret_key': '   ', 'enabled': 0, 'endpoint': 'https://è.example.test', 'retention': 3.0},
+settings_ok('remote-put-full', {**SETTINGS_FULL, 'password': PASSWORD}, SETTINGS_VALUE)
+settings_ok('remote-put-empty', {'password': PASSWORD}, {})
+settings_ok('remote-put-blank-secret', {'secret_key': '   ', 'enabled': 0, 'endpoint': 'https://è.example.test', 'retention': 3.0,
+                                        'password': PASSWORD},
             {'endpoint': 'https://è.example.test', 'secret_key': '', 'retention': 3, 'enabled': False}, actor='admin',
             association='admin_association')
-settings_ok('remote-put-numbers-as-text', {'region': 12, 'prefix': 1.5, 'access_key': '  ', 'path_style': 'N'},
+settings_ok('remote-put-numbers-as-text', {'region': 12, 'prefix': 1.5, 'access_key': '  ', 'path_style': 'N', 'password': PASSWORD},
             {'region': '12', 'prefix': '1.5', 'access_key': '', 'path_style': False})
-add('remote-put-runner-422-body', 'owner', REMOTE, 422, error('Bucket non raggiungibile.'), method='PUT', body={'bucket': 'x'},
+settings_ok('remote-put-lan-endpoint', {'endpoint': ' https://192.168.1.20:9000/minio ', 'path_style': True, 'password': PASSWORD},
+            {'endpoint': 'https://192.168.1.20:9000/minio', 'path_style': True})
+settings_ok('remote-put-blank-endpoint', {'endpoint': '', 'enabled': True, 'password': PASSWORD}, {'endpoint': '', 'enabled': True})
+add('remote-put-without-password', 'owner', REMOTE, 400, {'password': [REQUIRED]}, method='PUT', body={'enabled': False})
+add('remote-put-password-italian', 'owner', REMOTE, 400, {'retention': ['Assicurati che il valore sia minore o uguale a 30.'],
+                                                          'password': ['Questo campo non può essere omesso.']},
+    method='PUT', body={'retention': 31, 'password': ''}, headers={'Accept-Language': 'it'})
+add('remote-put-wrong-password', 'owner', REMOTE, 400, error(WRONG), method='PUT',
+    body={'secret_key': 'altro-segreto', 'password': PASSWORD.lower()}, cache=attempts(OWNER, 2), cache_after=attempts(OWNER, 3, 'kept'))
+add('remote-put-too-many', 'admin', REMOTE, 429, error(TOO_MANY), method='PUT', body={'enabled': False, 'password': PASSWORD},
+    cache=attempts(ADMIN, 5), cache_after=attempts(ADMIN, 5, 'kept'))
+add('remote-put-endpoint-before-password', 'owner', REMOTE, 400, {'endpoint': [BLOCKED_ENDPOINT]}, method='PUT',
+    body={'endpoint': 'https://169.254.169.254/latest', 'password': 'wrong'})
+add('remote-put-http-endpoint', 'owner', REMOTE, 400, {'endpoint': [HTTPS_ENDPOINT], 'password': [REQUIRED]}, method='PUT',
+    body={'endpoint': 'http://minio.lan:9000'})
+add('remote-put-runner-422-body', 'owner', REMOTE, 422, error('Bucket non raggiungibile.'), method='PUT',
+    body={'bucket': 'x', 'password': PASSWORD}, cache=attempts(OWNER, 3), cache_after={},
     run=runner(422, {'error': 'Bucket non raggiungibile.'}, expect=[call('PUT', '/backups/remote', {'bucket': 'x'})]))
-add('remote-put-unknown-endpoint', 'owner', REMOTE, 409, error(NEWER), method='PUT', body={'enabled': False},
+add('remote-put-unknown-endpoint', 'owner', REMOTE, 409, error(NEWER), method='PUT', body={'enabled': False, 'password': PASSWORD},
     run=runner(404, {'error': 'Unknown endpoint.'}, expect=[call('PUT', '/backups/remote', {'enabled': False})]))
-add('remote-put-no-socket', 'owner', REMOTE, 503, error(UNREACHABLE), method='PUT', body={'enabled': False},
+add('remote-put-no-socket', 'owner', REMOTE, 503, error(UNREACHABLE), method='PUT', body={'enabled': False, 'password': PASSWORD},
     run=runner(state='no-socket'))
 
 TESTED = {'ok': True, 'message': 'Connessione riuscita.'}
@@ -551,41 +614,88 @@ add('remote-test-without-enabled', 'owner', REMOTE_TEST, 200, TESTED, method='PO
     run=runner(200, TESTED, expect=[call('POST', '/backups/remote/test', {
         'endpoint': 'https://s3.example.test', 'secret_key': 'segreto-placeholder', 'retention': 2})]), no_store=True)
 add('remote-test-invalid', 'owner', REMOTE_TEST, 400, {'enabled': [BOOLEAN]}, method='POST', body={'enabled': 'x'})
+for index, (endpoint, message) in enumerate((
+        ('http://s3.example.test', HTTPS_ENDPOINT), ('http://192.168.1.20:9000', HTTPS_ENDPOINT),
+        ('https://169.254.169.254', BLOCKED_ENDPOINT), ('https://169.254.169.254./latest/meta-data', BLOCKED_ENDPOINT),
+        ('http://169.254.170.2/v2/credentials', BLOCKED_ENDPOINT), ('https://[fd00:ec2::254]', BLOCKED_ENDPOINT),
+        ('https://[::ffff:169.254.169.254]:443', BLOCKED_ENDPOINT), ('https://[64:ff9b::a9fe:a9fe]', BLOCKED_ENDPOINT),
+        ('https://127.0.0.1:9000', BLOCKED_ENDPOINT), ('https://LOCALHOST', BLOCKED_ENDPOINT), ('https://api.localhost.', BLOCKED_ENDPOINT),
+        ('https://metadata.google.internal/computeMetadata', BLOCKED_ENDPOINT), ('https://[::1]', BLOCKED_ENDPOINT),
+        ('https://0.0.0.0', BLOCKED_ENDPOINT), ('https://100.100.100.200', BLOCKED_ENDPOINT), ('https://[fe80::1]', BLOCKED_ENDPOINT),
+        ('https://255.255.255.255', BLOCKED_ENDPOINT),
+        ('https://2852039166', INVALID_ENDPOINT), ('https://0xa9fea9fe', INVALID_ENDPOINT), ('https://169.254.169.254.1', INVALID_ENDPOINT),
+        ('https://0251.0376.0251.0376', INVALID_ENDPOINT), ('https://user:secret@s3.example.test', INVALID_ENDPOINT),
+        ('https://s3.example.test:0', INVALID_ENDPOINT), ('https://s3.example.test:65536', INVALID_ENDPOINT),
+        ('https://s3.example.test/?x=1', INVALID_ENDPOINT), ('HTTPS://s3.example.test', INVALID_ENDPOINT),
+        ('ftp://s3.example.test', INVALID_ENDPOINT), ('https://[fe80::1%25en0]', INVALID_ENDPOINT), ('https://::1', INVALID_ENDPOINT),
+        ('https://[1::2::3]', INVALID_ENDPOINT), ('https://.', INVALID_ENDPOINT), ('https://s3 .example.test', INVALID_ENDPOINT),
+        ('https://s3\x0b.example.test', INVALID_ENDPOINT))):
+    add(f'remote-test-endpoint-{index}', 'owner', REMOTE_TEST, 400, {'endpoint': [message]}, method='POST',
+        body={'endpoint': endpoint, 'bucket': 'b'})
+add('remote-test-endpoint-italian', 'owner', REMOTE_TEST, 400,
+    {'endpoint': [BLOCKED_ENDPOINT], 'retention': ['Assicurati che il valore sia maggiore o uguale a 1.']}, method='POST',
+    body={'endpoint': 'https://[::]', 'retention': 0}, headers={'Accept-Language': 'it'})
+for index, endpoint in enumerate(('https://10.0.0.5', 'https://172.16.0.1:9000/', 'https://s3.eu-south-1.amazonaws.com',
+                                  'https://[2001:db8::5]:9000/base', 'https://[::ffff:192.168.1.20]', 'https://minio.lan.',
+                                  'https://8.8.8.8', 'https://xn--s3-fka.example.test', 'https://s3.example.test:65535/a/b')):
+    add(f'remote-test-endpoint-allowed-{index}', 'owner', REMOTE_TEST, 200, TESTED, method='POST',
+        body={'endpoint': endpoint}, run=runner(200, TESTED, expect=[call('POST', '/backups/remote/test', {'endpoint': endpoint})]),
+        no_store=True)
 add('remote-test-refused', 'owner', REMOTE_TEST, 400, error('Accesso negato dal bucket.'), method='POST', body={'bucket': 'b'},
     run=runner(400, {'error': 'Accesso negato dal bucket.'}, expect=[call('POST', '/backups/remote/test', {'bucket': 'b'})]))
 
 KEY = {'key_id': 'a1b2c3d4', 'recovery_key': 'AGE-SECRET-KEY-PLACEHOLDER', 'public_key': 'age1placeholder'}
-add('remote-key-generated', 'owner', REMOTE_KEY, 201, KEY, method='POST', body={'ignored': True},
+add('remote-key-generated', 'owner', REMOTE_KEY, 201, KEY, method='POST', body={'ignored': True, 'password': PASSWORD},
+    cache=attempts(OWNER, 4), cache_after={},
     run=runner(200, KEY, expect=[call('POST', '/backups/remote/key', {})]),
     audit=logged('backup_remote_key_generated', 'a1b2c3d4'), no_store=True)
-add('remote-key-without-id', 'admin', REMOTE_KEY, 201, {'recovery_key': 'x'}, method='POST',
+add('remote-key-without-id', 'admin', REMOTE_KEY, 201, {'recovery_key': 'x'}, method='POST', body={'password': PASSWORD},
     run=runner(201, {'recovery_key': 'x'}, expect=[call('POST', '/backups/remote/key', {})]),
     audit=logged('backup_remote_key_generated', '', actor='admin', association='admin_association'), no_store=True)
-add('remote-key-number-id', 'owner', REMOTE_KEY, 201, {'key_id': 12}, method='POST',
+add('remote-key-number-id', 'owner', REMOTE_KEY, 201, {'key_id': 12}, method='POST', body={'password': PASSWORD},
     run=runner(201, {'key_id': 12}, expect=[call('POST', '/backups/remote/key', {})]),
     audit=logged('backup_remote_key_generated', '12'), no_store=True)
-add('remote-key-reply-list', 'owner', REMOTE_KEY, 500, SERVER, method='POST',
+add('remote-key-reply-list', 'owner', REMOTE_KEY, 500, SERVER, method='POST', body={'password': PASSWORD},
     run=runner(201, ['x'], expect=[call('POST', '/backups/remote/key', {})]))
-add('remote-key-refused', 'owner', REMOTE_KEY, 409, error('Una chiave esiste già.'), method='POST',
+add('remote-key-refused', 'owner', REMOTE_KEY, 409, error('Una chiave esiste già.'), method='POST', body={'password': PASSWORD},
     run=runner(409, {'error': 'Una chiave esiste già.'}, expect=[call('POST', '/backups/remote/key', {})]))
+add('remote-key-no-body', 'owner', REMOTE_KEY, 400, {'password': [REQUIRED]}, method='POST')
+add('remote-key-list-body', 'owner', REMOTE_KEY, 400, {'non_field_errors': ['Invalid data. Expected a dictionary, but got list.']},
+    method='POST', body=[PASSWORD])
+add('remote-key-wrong-password', 'owner', REMOTE_KEY, 400, error(WRONG), method='POST', body={'password': PASSWORD[:-1]},
+    cache_after=attempts(OWNER, 1, 'fresh'))
+add('remote-key-fifth-wrong-password', 'owner', REMOTE_KEY, 400, error(WRONG), method='POST', body={'password': 'x'},
+    cache=attempts(OWNER, 4), cache_after=attempts(OWNER, 5, 'kept'))
+add('remote-key-too-many', 'owner', REMOTE_KEY, 429, error(TOO_MANY), method='POST', body={'password': PASSWORD},
+    cache=attempts(OWNER, 5), cache_after=attempts(OWNER, 5, 'kept'))
+add('remote-key-upgrades-hash', 'owner', REMOTE_KEY, 201, KEY, method='POST', body={'password': PASSWORD}, password=LEGACY_HASH,
+    rehash=True, run=runner(201, KEY, expect=[call('POST', '/backups/remote/key', {})]),
+    audit=logged('backup_remote_key_generated', 'a1b2c3d4'), no_store=True)
 
-add('key-confirm-empty', 'owner', KEY_CONFIRM, 400, {'key_id': [REQUIRED], 'tail': [REQUIRED]}, method='POST', body={})
+add('key-confirm-empty', 'owner', KEY_CONFIRM, 400, {'key_id': [REQUIRED], 'tail': [REQUIRED], 'password': [REQUIRED]},
+    method='POST', body={})
 add('key-confirm-rules', 'owner', KEY_CONFIRM, 400,
     {'key_id': [PATTERN], 'tail': ['Ensure this field has at least 6 characters.']}, method='POST',
-    body={'key_id': 'A1B2C3D4', 'tail': ' abc '})
+    body={'key_id': 'A1B2C3D4', 'tail': ' abc ', 'password': PASSWORD})
 add('key-confirm-rules-other', 'owner', KEY_CONFIRM, 400,
-    {'key_id': [PATTERN], 'tail': ['Ensure this field has no more than 6 characters.']}, method='POST',
-    body={'key_id': 12345678.5, 'tail': 1234567})
+    {'key_id': [PATTERN], 'tail': ['Ensure this field has no more than 6 characters.'], 'password': [STRING]}, method='POST',
+    body={'key_id': 12345678.5, 'tail': 1234567, 'password': False})
 add('key-confirm-italian', 'owner', KEY_CONFIRM, 400,
     {'key_id': ['Questo valore non corrisponde alla sequenza richiesta.'],
-     'tail': ['Assicurati che questo campo abbia almeno 6 caratteri.']}, method='POST',
+     'tail': ['Assicurati che questo campo abbia almeno 6 caratteri.'], 'password': ['Campo obbligatorio.']}, method='POST',
     body={'key_id': 'zzzzzzzz', 'tail': 'abc'}, headers={'Accept-Language': 'it'})
+add('key-confirm-without-password', 'owner', KEY_CONFIRM, 400, {'password': [REQUIRED]}, method='POST',
+    body={'key_id': 'a1b2c3d4', 'tail': 'qwerty'})
+add('key-confirm-wrong-password', 'admin', KEY_CONFIRM, 400, error(WRONG), method='POST',
+    body={'key_id': 'a1b2c3d4', 'tail': 'qwerty', 'password': 'nope'}, cache=attempts(ADMIN, 1), cache_after=attempts(ADMIN, 2, 'kept'))
+add('key-confirm-too-many', 'owner', KEY_CONFIRM, 429, error(TOO_MANY), method='POST',
+    body={'key_id': 'a1b2c3d4', 'tail': 'qwerty', 'password': PASSWORD}, cache=attempts(OWNER, 6), cache_after=attempts(OWNER, 6, 'kept'))
 add('key-confirmed', 'owner', KEY_CONFIRM, 200, {'confirmed': True}, method='POST',
-    body={'key_id': ' a1b2c3d4 ', 'tail': 123456, 'extra': 1},
+    body={'key_id': ' a1b2c3d4 ', 'tail': 123456, 'extra': 1, 'password': PASSWORD}, cache=attempts(OWNER, 1), cache_after={},
     run=runner(200, {'confirmed': True}, expect=[call('POST', '/backups/remote/key/confirm', {'key_id': 'a1b2c3d4', 'tail': '123456'})]),
     audit=logged('backup_remote_key_confirmed', 'a1b2c3d4'), no_store=True)
 add('key-confirm-wrong-tail', 'owner', KEY_CONFIRM, 400, error('Le ultime cifre non corrispondono.'), method='POST',
-    body={'key_id': 'a1b2c3d4', 'tail': 'qwerty'},
+    body={'key_id': 'a1b2c3d4', 'tail': 'qwerty', 'password': PASSWORD},
     run=runner(400, {'error': 'Le ultime cifre non corrispondono.'},
                expect=[call('POST', '/backups/remote/key/confirm', {'key_id': 'a1b2c3d4', 'tail': 'qwerty'})]))
 
@@ -619,6 +729,7 @@ add('fetch-no-socket', 'owner', FETCH, 503, error(UNREACHABLE), method='POST',
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'instance/admin/backups actions', 'ids': IDS, 'instance': INSTANCE,
-                              'runner_token': RUNNER_TOKEN, 'hashes': HASHES, 'password': PASSWORD, 'cases': cases},
+                              'runner_token': RUNNER_TOKEN, 'hashes': HASHES, 'password': PASSWORD,
+                              'upload_max_bytes': UPLOAD_MAX, 'cases': cases},
                              ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

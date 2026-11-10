@@ -257,7 +257,7 @@ func (h *InstanceBackupActionsHandler) RemoteTest(c echo.Context) error {
 	return h.notAllowed(c)
 }
 
-// RemoteKey is RemoteBackupKeyView (POST); the request body is not parsed.
+// RemoteKey is RemoteBackupKeyView (POST): the body carries the owner's password.
 func (h *InstanceBackupActionsHandler) RemoteKey(c echo.Context) error {
 	actor, err := h.backupActionsBegin(c, "POST, OPTIONS", "instance_backup_remote_key")
 	if actor == nil {
@@ -267,8 +267,8 @@ func (h *InstanceBackupActionsHandler) RemoteKey(c echo.Context) error {
 	case http.MethodOptions:
 		return supplierOptions(c, "Remote Backup Key", "Generate a key pair: the recovery key is in this response only.")
 	case http.MethodPost:
-		return h.backupActionsWrite(c, actor, false, func(request service.BackupActionsRequest, _ any, _ bool) (*service.BackupActionsReply, error) {
-			return h.actions.GenerateRemoteKey(c.Request().Context(), request)
+		return h.serializerWrite(c, actor, func(request service.BackupActionsRequest, body any) (*service.BackupActionsReply, error) {
+			return h.actions.GenerateRemoteKey(c.Request().Context(), request, body)
 		})
 	}
 	return h.notAllowed(c)

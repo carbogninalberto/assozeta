@@ -66,6 +66,7 @@
   "admin": "pbkdf2_sha256$1000000$backupactionsadmin0000001$HGvk3AYbWsGWWFIwm5iLfbrAb8Tme9w+c5y9kIX9bhA="
  },
  "password": "Fixture-backup-placeholder-2",
+ "upload_max_bytes": 2097169,
  "cases": [
   {
    "name": "instance-backups-actions-anonymous-0",
@@ -1377,7 +1378,11 @@
      }
     ]
    },
-   "cache": {},
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000710001": 2
+    }
+   },
    "cache_after": {},
    "password": null,
    "rehash": false,
@@ -1398,7 +1403,179 @@
    "send": null,
    "no_store": false,
    "body": {
+    "keep": false,
+    "password": "Fixture-backup-placeholder-2"
+   }
+  },
+  {
+   "name": "instance-backups-actions-unkeep-without-password",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "password": [
+     "This field is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
     "keep": false
+   }
+  },
+  {
+   "name": "instance-backups-actions-unkeep-password-rules",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "password": [
+     "Ensure this field has no more than 256 characters."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "keep": false,
+    "password": "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp"
+   }
+  },
+  {
+   "name": "instance-backups-actions-unkeep-wrong-password",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Password non corretta."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": {
+      "value": 1,
+      "ttl": "fresh"
+     }
+    }
+   },
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "keep": false,
+    "password": "Fixture-backup-placeholder-2x"
+   }
+  },
+  {
+   "name": "instance-backups-actions-unkeep-too-many",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 429,
+   "response": {
+    "error": "Troppi tentativi. Riprova tra qualche minuto."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": 5
+    }
+   },
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": {
+      "value": 5,
+      "ttl": "kept"
+     }
+    }
+   },
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "keep": false,
+    "password": "Fixture-backup-placeholder-2"
+   }
+  },
+  {
+   "name": "instance-backups-actions-unkeep-runner-409",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Backup in corso."
+   },
+   "runner": {
+    "state": "up",
+    "status": 409,
+    "body": "{\"error\": \"Backup in corso.\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "PATCH",
+      "path": "/backups/assozeta-20261101T020000Z.tar.gz",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "keep": false
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "keep": false,
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -1812,6 +1989,30 @@
    "method": "DELETE",
    "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
    "headers": {},
+   "status": 400,
+   "response": {
+    "password": [
+     "This field is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false
+  },
+  {
+   "name": "instance-backups-actions-delete-without-confirm",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
    "status": 200,
    "response": {
     "deleted": "assozeta-20261101T020000Z.tar.gz"
@@ -1859,7 +2060,10 @@
     "association": "own_association"
    },
    "send": null,
-   "no_store": false
+   "no_store": false,
+   "body": {
+    "password": "Fixture-backup-placeholder-2"
+   }
   },
   {
    "name": "instance-backups-actions-delete-confirmed",
@@ -1895,7 +2099,11 @@
      }
     ]
    },
-   "cache": {},
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": 4
+    }
+   },
    "cache_after": {},
    "password": null,
    "rehash": false,
@@ -1916,107 +2124,13 @@
    "send": null,
    "no_store": false,
    "body": {
-    "confirm": true
+    "confirm": true,
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
-   "name": "instance-backups-actions-delete-list-body",
-   "actor": "owner",
-   "method": "DELETE",
-   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
-   "headers": {},
-   "status": 409,
-   "response": {
-    "error": "Conferma richiesta."
-   },
-   "runner": {
-    "state": "up",
-    "status": 409,
-    "body": "{\"error\": \"Conferma richiesta.\"}",
-    "early": false,
-    "expect": [
-     {
-      "method": "DELETE",
-      "path": "/backups/assozeta-20261101T020000Z.tar.gz",
-      "headers": {
-       "host": "localhost",
-       "accept-encoding": "identity",
-       "authorization": "Bearer runner-token-placeholder",
-       "content-type": "application/json",
-       "content-length": "$length"
-      },
-      "body": {
-       "json": {
-        "confirm": false
-       }
-      }
-     }
-    ]
-   },
-   "cache": {},
-   "cache_after": {},
-   "password": null,
-   "rehash": false,
-   "audit": null,
-   "send": null,
-   "no_store": false,
-   "body": [
-    true
-   ]
-  },
-  {
-   "name": "instance-backups-actions-delete-confirm-text",
-   "actor": "owner",
-   "method": "DELETE",
-   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "error": "Richiesta non valida."
-   },
-   "runner": {
-    "state": "up",
-    "expect": []
-   },
-   "cache": {},
-   "cache_after": {},
-   "password": null,
-   "rehash": false,
-   "audit": null,
-   "send": null,
-   "no_store": false,
-   "body": {
-    "confirm": "yes"
-   }
-  },
-  {
-   "name": "instance-backups-actions-delete-confirm-null",
-   "actor": "owner",
-   "method": "DELETE",
-   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "error": "Richiesta non valida."
-   },
-   "runner": {
-    "state": "up",
-    "expect": []
-   },
-   "cache": {},
-   "cache_after": {},
-   "password": null,
-   "rehash": false,
-   "audit": null,
-   "send": null,
-   "no_store": false,
-   "body": {
-    "confirm": null
-   }
-  },
-  {
-   "name": "instance-backups-actions-delete-form-without-confirm",
-   "actor": "owner",
+   "name": "instance-backups-actions-delete-confirmed-admin-upgrades-hash",
+   "actor": "admin",
    "method": "DELETE",
    "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
    "headers": {},
@@ -2050,8 +2164,8 @@
    },
    "cache": {},
    "cache_after": {},
-   "password": null,
-   "rehash": false,
+   "password": "pbkdf2_sha256$1000$backupactionslegacy000001$Ij8YG6oolj7MD+4ambBbEgHK0Lj3pUMGFDBmuZcw18A=",
+   "rehash": true,
    "audit": {
     "changes": {
      "backup_delete": [
@@ -2060,12 +2174,340 @@
      ]
     },
     "additional_data": {
-     "actor_id": "a1000000-0000-4000-8000-000000700001",
+     "actor_id": "a1000000-0000-4000-8000-000000710001",
      "backup": "assozeta-20261101T020000Z.tar.gz"
     },
-    "actor": "owner",
-    "association": "own_association"
+    "actor": "admin",
+    "association": "admin_association"
    },
+   "send": null,
+   "no_store": false,
+   "body": {
+    "confirm": false,
+    "password": "Fixture-backup-placeholder-2"
+   }
+  },
+  {
+   "name": "instance-backups-actions-delete-list-body",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got list."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": [
+    true
+   ]
+  },
+  {
+   "name": "instance-backups-actions-delete-null-body",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "No data provided"
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instance-backups-actions-delete-confirm-text",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Richiesta non valida."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "confirm": "yes",
+    "password": "Fixture-backup-placeholder-2"
+   }
+  },
+  {
+   "name": "instance-backups-actions-delete-confirm-null",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Richiesta non valida."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "confirm": null
+   }
+  },
+  {
+   "name": "instance-backups-actions-delete-password-types",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "password": [
+     "This field may not be blank."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "confirm": true,
+    "password": ""
+   }
+  },
+  {
+   "name": "instance-backups-actions-delete-password-null",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "password": [
+     "This field may not be null."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "confirm": true,
+    "password": null
+   }
+  },
+  {
+   "name": "instance-backups-actions-delete-wrong-password",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Password non corretta."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": {
+      "value": 1,
+      "ttl": "fresh"
+     }
+    }
+   },
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "confirm": true,
+    "password": " Fixture-backup-placeholder-2"
+   }
+  },
+  {
+   "name": "instance-backups-actions-delete-wrong-password-counts",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Password non corretta."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000710001": 4
+    }
+   },
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000710001": {
+      "value": 5,
+      "ttl": "kept"
+     }
+    }
+   },
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "confirm": true,
+    "password": 123
+   }
+  },
+  {
+   "name": "instance-backups-actions-delete-too-many",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 429,
+   "response": {
+    "error": "Troppi tentativi. Riprova tra qualche minuto."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": 7
+    }
+   },
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": {
+      "value": 7,
+      "ttl": "kept"
+     }
+    }
+   },
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "confirm": true,
+    "password": "Fixture-backup-placeholder-2"
+   }
+  },
+  {
+   "name": "instance-backups-actions-delete-unusable-password",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Password non corretta."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": {
+      "value": 1,
+      "ttl": "fresh"
+     }
+    }
+   },
+   "password": "!unusable-placeholder",
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "confirm": true,
+    "password": "Fixture-backup-placeholder-2"
+   }
+  },
+  {
+   "name": "instance-backups-actions-delete-form-without-confirm",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "password": [
+     "This field is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
    "send": null,
    "no_store": false,
    "raw_body": "other=1",
@@ -2129,7 +2571,11 @@
      }
     ]
    },
-   "cache": {},
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": 1
+    }
+   },
    "cache_after": {},
    "password": null,
    "rehash": false,
@@ -2137,7 +2583,8 @@
    "send": null,
    "no_store": false,
    "body": {
-    "confirm": true
+    "confirm": true,
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -2193,7 +2640,8 @@
    "send": null,
    "no_store": false,
    "body": {
-    "confirm": true
+    "confirm": true,
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -4095,6 +4543,62 @@
    "no_store": false
   },
   {
+   "name": "instance-backups-actions-upload-over-the-limit",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/upload",
+   "headers": {},
+   "status": 413,
+   "response": {
+    "error": "Il file supera la dimensione massima consentita per il caricamento.",
+    "max_bytes": 2097169
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": {
+    "seed": 3,
+    "size": 2097170,
+    "early": true
+   },
+   "no_store": false
+  },
+  {
+   "name": "instance-backups-actions-upload-over-the-limit-admin",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/instance/admin/backups/upload?size=1",
+   "headers": {
+    "Content-Type": "application/octet-stream"
+   },
+   "status": 413,
+   "response": {
+    "error": "Il file supera la dimensione massima consentita per il caricamento.",
+    "max_bytes": 2097169
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": {
+    "seed": 4,
+    "size": 2162705,
+    "early": true
+   },
+   "no_store": false
+  },
+  {
    "name": "instance-backups-actions-upload-one-byte",
    "actor": "owner",
    "method": "POST",
@@ -5057,6 +5561,9 @@
     ],
     "enabled": [
      "This field may not be null."
+    ],
+    "password": [
+     "Not a valid string."
     ]
    },
    "runner": {
@@ -5071,6 +5578,9 @@
    "send": null,
    "no_store": false,
    "body": {
+    "password": [
+     "x"
+    ],
     "endpoint": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
     "region": false,
     "bucket": null,
@@ -5100,6 +5610,9 @@
     ],
     "region": [
      "Null characters are not allowed."
+    ],
+    "password": [
+     "This field is required."
     ]
    },
    "runner": {
@@ -5190,7 +5703,8 @@
     "prefix": "",
     "bucket": "copie",
     "region": "eu-south-1",
-    "endpoint": "https://s3.example.test"
+    "endpoint": "https://s3.example.test",
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -5245,7 +5759,9 @@
    },
    "send": null,
    "no_store": true,
-   "body": {}
+   "body": {
+    "password": "Fixture-backup-placeholder-2"
+   }
   },
   {
    "name": "instance-backups-actions-remote-put-blank-secret",
@@ -5308,7 +5824,8 @@
     "secret_key": "   ",
     "enabled": 0,
     "endpoint": "https://è.example.test",
-    "retention": 3.0
+    "retention": 3.0,
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -5372,7 +5889,322 @@
     "region": 12,
     "prefix": 1.5,
     "access_key": "  ",
-    "path_style": "N"
+    "path_style": "N",
+    "password": "Fixture-backup-placeholder-2"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-put-lan-endpoint",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/remote",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "configured": true,
+    "enabled": true
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"configured\": true, \"enabled\": true}",
+    "early": false,
+    "expect": [
+     {
+      "method": "PUT",
+      "path": "/backups/remote",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "endpoint": "https://192.168.1.20:9000/minio",
+        "path_style": true
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": {
+    "changes": {
+     "backup_remote_settings": [
+      "",
+      "{\"endpoint\": \"https://192.168.1.20:9000/minio\", \"path_style\": true}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
+   "send": null,
+   "no_store": true,
+   "body": {
+    "endpoint": " https://192.168.1.20:9000/minio ",
+    "path_style": true,
+    "password": "Fixture-backup-placeholder-2"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-put-blank-endpoint",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/remote",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "configured": true,
+    "enabled": true
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"configured\": true, \"enabled\": true}",
+    "early": false,
+    "expect": [
+     {
+      "method": "PUT",
+      "path": "/backups/remote",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "endpoint": "",
+        "enabled": true
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": {
+    "changes": {
+     "backup_remote_settings": [
+      "",
+      "{\"enabled\": true, \"endpoint\": \"\"}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
+   "send": null,
+   "no_store": true,
+   "body": {
+    "endpoint": "",
+    "enabled": true,
+    "password": "Fixture-backup-placeholder-2"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-put-without-password",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/remote",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "password": [
+     "This field is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "enabled": false
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-put-password-italian",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/remote",
+   "headers": {
+    "Accept-Language": "it"
+   },
+   "status": 400,
+   "response": {
+    "retention": [
+     "Assicurati che il valore sia minore o uguale a 30."
+    ],
+    "password": [
+     "Questo campo non può essere omesso."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "retention": 31,
+    "password": ""
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-put-wrong-password",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/remote",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Password non corretta."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": 2
+    }
+   },
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": {
+      "value": 3,
+      "ttl": "kept"
+     }
+    }
+   },
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "secret_key": "altro-segreto",
+    "password": "fixture-backup-placeholder-2"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-put-too-many",
+   "actor": "admin",
+   "method": "PUT",
+   "path": "/instance/admin/backups/remote",
+   "headers": {},
+   "status": 429,
+   "response": {
+    "error": "Troppi tentativi. Riprova tra qualche minuto."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000710001": 5
+    }
+   },
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000710001": {
+      "value": 5,
+      "ttl": "kept"
+     }
+    }
+   },
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "enabled": false,
+    "password": "Fixture-backup-placeholder-2"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-put-endpoint-before-password",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/remote",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Questo indirizzo non può essere usato per la copia remota."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://169.254.169.254/latest",
+    "password": "wrong"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-put-http-endpoint",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/remote",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Usa un indirizzo https://."
+    ],
+    "password": [
+     "This field is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "http://minio.lan:9000"
    }
   },
   {
@@ -5409,7 +6241,11 @@
      }
     ]
    },
-   "cache": {},
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": 3
+    }
+   },
    "cache_after": {},
    "password": null,
    "rehash": false,
@@ -5417,7 +6253,8 @@
    "send": null,
    "no_store": false,
    "body": {
-    "bucket": "x"
+    "bucket": "x",
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -5462,7 +6299,8 @@
    "send": null,
    "no_store": false,
    "body": {
-    "enabled": false
+    "enabled": false,
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -5490,7 +6328,8 @@
    "send": null,
    "no_store": false,
    "body": {
-    "enabled": false
+    "enabled": false,
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -5682,6 +6521,1377 @@
    }
   },
   {
+   "name": "instance-backups-actions-remote-test-endpoint-0",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Usa un indirizzo https://."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "http://s3.example.test",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-1",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Usa un indirizzo https://."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "http://192.168.1.20:9000",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-2",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Questo indirizzo non può essere usato per la copia remota."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://169.254.169.254",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-3",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Questo indirizzo non può essere usato per la copia remota."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://169.254.169.254./latest/meta-data",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-4",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Questo indirizzo non può essere usato per la copia remota."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "http://169.254.170.2/v2/credentials",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-5",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Questo indirizzo non può essere usato per la copia remota."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://[fd00:ec2::254]",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-6",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Questo indirizzo non può essere usato per la copia remota."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://[::ffff:169.254.169.254]:443",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-7",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Questo indirizzo non può essere usato per la copia remota."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://[64:ff9b::a9fe:a9fe]",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-8",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Questo indirizzo non può essere usato per la copia remota."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://127.0.0.1:9000",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-9",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Questo indirizzo non può essere usato per la copia remota."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://LOCALHOST",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-10",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Questo indirizzo non può essere usato per la copia remota."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://api.localhost.",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-11",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Questo indirizzo non può essere usato per la copia remota."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://metadata.google.internal/computeMetadata",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-12",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Questo indirizzo non può essere usato per la copia remota."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://[::1]",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-13",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Questo indirizzo non può essere usato per la copia remota."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://0.0.0.0",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-14",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Questo indirizzo non può essere usato per la copia remota."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://100.100.100.200",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-15",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Questo indirizzo non può essere usato per la copia remota."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://[fe80::1]",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-16",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Questo indirizzo non può essere usato per la copia remota."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://255.255.255.255",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-17",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Inserisci un indirizzo valido, ad esempio https://s3.example.com."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://2852039166",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-18",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Inserisci un indirizzo valido, ad esempio https://s3.example.com."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://0xa9fea9fe",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-19",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Inserisci un indirizzo valido, ad esempio https://s3.example.com."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://169.254.169.254.1",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-20",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Inserisci un indirizzo valido, ad esempio https://s3.example.com."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://0251.0376.0251.0376",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-21",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Inserisci un indirizzo valido, ad esempio https://s3.example.com."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://user:secret@s3.example.test",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-22",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Inserisci un indirizzo valido, ad esempio https://s3.example.com."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://s3.example.test:0",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-23",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Inserisci un indirizzo valido, ad esempio https://s3.example.com."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://s3.example.test:65536",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-24",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Inserisci un indirizzo valido, ad esempio https://s3.example.com."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://s3.example.test/?x=1",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-25",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Inserisci un indirizzo valido, ad esempio https://s3.example.com."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "HTTPS://s3.example.test",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-26",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Inserisci un indirizzo valido, ad esempio https://s3.example.com."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "ftp://s3.example.test",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-27",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Inserisci un indirizzo valido, ad esempio https://s3.example.com."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://[fe80::1%25en0]",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-28",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Inserisci un indirizzo valido, ad esempio https://s3.example.com."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://::1",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-29",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Inserisci un indirizzo valido, ad esempio https://s3.example.com."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://[1::2::3]",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-30",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Inserisci un indirizzo valido, ad esempio https://s3.example.com."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://.",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-31",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Inserisci un indirizzo valido, ad esempio https://s3.example.com."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://s3 .example.test",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-32",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Inserisci un indirizzo valido, ad esempio https://s3.example.com."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://s3\u000b.example.test",
+    "bucket": "b"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-italian",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {
+    "Accept-Language": "it"
+   },
+   "status": 400,
+   "response": {
+    "endpoint": [
+     "Questo indirizzo non può essere usato per la copia remota."
+    ],
+    "retention": [
+     "Assicurati che il valore sia maggiore o uguale a 1."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://[::]",
+    "retention": 0
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-allowed-0",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "ok": true,
+    "message": "Connessione riuscita."
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"ok\": true, \"message\": \"Connessione riuscita.\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups/remote/test",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "endpoint": "https://10.0.0.5"
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "endpoint": "https://10.0.0.5"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-allowed-1",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "ok": true,
+    "message": "Connessione riuscita."
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"ok\": true, \"message\": \"Connessione riuscita.\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups/remote/test",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "endpoint": "https://172.16.0.1:9000/"
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "endpoint": "https://172.16.0.1:9000/"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-allowed-2",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "ok": true,
+    "message": "Connessione riuscita."
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"ok\": true, \"message\": \"Connessione riuscita.\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups/remote/test",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "endpoint": "https://s3.eu-south-1.amazonaws.com"
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "endpoint": "https://s3.eu-south-1.amazonaws.com"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-allowed-3",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "ok": true,
+    "message": "Connessione riuscita."
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"ok\": true, \"message\": \"Connessione riuscita.\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups/remote/test",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "endpoint": "https://[2001:db8::5]:9000/base"
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "endpoint": "https://[2001:db8::5]:9000/base"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-allowed-4",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "ok": true,
+    "message": "Connessione riuscita."
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"ok\": true, \"message\": \"Connessione riuscita.\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups/remote/test",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "endpoint": "https://[::ffff:192.168.1.20]"
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "endpoint": "https://[::ffff:192.168.1.20]"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-allowed-5",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "ok": true,
+    "message": "Connessione riuscita."
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"ok\": true, \"message\": \"Connessione riuscita.\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups/remote/test",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "endpoint": "https://minio.lan."
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "endpoint": "https://minio.lan."
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-allowed-6",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "ok": true,
+    "message": "Connessione riuscita."
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"ok\": true, \"message\": \"Connessione riuscita.\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups/remote/test",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "endpoint": "https://8.8.8.8"
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "endpoint": "https://8.8.8.8"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-allowed-7",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "ok": true,
+    "message": "Connessione riuscita."
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"ok\": true, \"message\": \"Connessione riuscita.\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups/remote/test",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "endpoint": "https://xn--s3-fka.example.test"
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "endpoint": "https://xn--s3-fka.example.test"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-endpoint-allowed-8",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "ok": true,
+    "message": "Connessione riuscita."
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"ok\": true, \"message\": \"Connessione riuscita.\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups/remote/test",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "endpoint": "https://s3.example.test:65535/a/b"
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "endpoint": "https://s3.example.test:65535/a/b"
+   }
+  },
+  {
    "name": "instance-backups-actions-remote-test-refused",
    "actor": "owner",
    "method": "POST",
@@ -5760,7 +7970,11 @@
      }
     ]
    },
-   "cache": {},
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": 4
+    }
+   },
    "cache_after": {},
    "password": null,
    "rehash": false,
@@ -5780,7 +7994,8 @@
    "send": null,
    "no_store": true,
    "body": {
-    "ignored": true
+    "ignored": true,
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -5833,7 +8048,10 @@
     "association": "admin_association"
    },
    "send": null,
-   "no_store": true
+   "no_store": true,
+   "body": {
+    "password": "Fixture-backup-placeholder-2"
+   }
   },
   {
    "name": "instance-backups-actions-remote-key-number-id",
@@ -5885,7 +8103,10 @@
     "association": "own_association"
    },
    "send": null,
-   "no_store": true
+   "no_store": true,
+   "body": {
+    "password": "Fixture-backup-placeholder-2"
+   }
   },
   {
    "name": "instance-backups-actions-remote-key-reply-list",
@@ -5923,7 +8144,10 @@
    "rehash": false,
    "audit": null,
    "send": null,
-   "no_store": false
+   "no_store": false,
+   "body": {
+    "password": "Fixture-backup-placeholder-2"
+   }
   },
   {
    "name": "instance-backups-actions-remote-key-refused",
@@ -5963,7 +8187,222 @@
    "rehash": false,
    "audit": null,
    "send": null,
+   "no_store": false,
+   "body": {
+    "password": "Fixture-backup-placeholder-2"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-key-no-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/key",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "password": [
+     "This field is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
    "no_store": false
+  },
+  {
+   "name": "instance-backups-actions-remote-key-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/key",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got list."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": [
+    "Fixture-backup-placeholder-2"
+   ]
+  },
+  {
+   "name": "instance-backups-actions-remote-key-wrong-password",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/key",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Password non corretta."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": {
+      "value": 1,
+      "ttl": "fresh"
+     }
+    }
+   },
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "password": "Fixture-backup-placeholder-"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-key-fifth-wrong-password",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/key",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Password non corretta."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": 4
+    }
+   },
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": {
+      "value": 5,
+      "ttl": "kept"
+     }
+    }
+   },
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "password": "x"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-key-too-many",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/key",
+   "headers": {},
+   "status": 429,
+   "response": {
+    "error": "Troppi tentativi. Riprova tra qualche minuto."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": 5
+    }
+   },
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": {
+      "value": 5,
+      "ttl": "kept"
+     }
+    }
+   },
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "password": "Fixture-backup-placeholder-2"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-key-upgrades-hash",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/key",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "key_id": "a1b2c3d4",
+    "recovery_key": "AGE-SECRET-KEY-PLACEHOLDER",
+    "public_key": "age1placeholder"
+   },
+   "runner": {
+    "state": "up",
+    "status": 201,
+    "body": "{\"key_id\": \"a1b2c3d4\", \"recovery_key\": \"AGE-SECRET-KEY-PLACEHOLDER\", \"public_key\": \"age1placeholder\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups/remote/key",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {}
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": "pbkdf2_sha256$1000$backupactionslegacy000001$Ij8YG6oolj7MD+4ambBbEgHK0Lj3pUMGFDBmuZcw18A=",
+   "rehash": true,
+   "audit": {
+    "changes": {
+     "backup_remote_key_generated": [
+      "",
+      "a1b2c3d4"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
+   "send": null,
+   "no_store": true,
+   "body": {
+    "password": "Fixture-backup-placeholder-2"
+   }
   },
   {
    "name": "instance-backups-actions-key-confirm-empty",
@@ -5977,6 +8416,9 @@
      "This field is required."
     ],
     "tail": [
+     "This field is required."
+    ],
+    "password": [
      "This field is required."
     ]
    },
@@ -6021,7 +8463,8 @@
    "no_store": false,
    "body": {
     "key_id": "A1B2C3D4",
-    "tail": " abc "
+    "tail": " abc ",
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -6037,6 +8480,9 @@
     ],
     "tail": [
      "Ensure this field has no more than 6 characters."
+    ],
+    "password": [
+     "Not a valid string."
     ]
    },
    "runner": {
@@ -6052,7 +8498,8 @@
    "no_store": false,
    "body": {
     "key_id": 12345678.5,
-    "tail": 1234567
+    "tail": 1234567,
+    "password": false
    }
   },
   {
@@ -6070,6 +8517,9 @@
     ],
     "tail": [
      "Assicurati che questo campo abbia almeno 6 caratteri."
+    ],
+    "password": [
+     "Campo obbligatorio."
     ]
    },
    "runner": {
@@ -6086,6 +8536,110 @@
    "body": {
     "key_id": "zzzzzzzz",
     "tail": "abc"
+   }
+  },
+  {
+   "name": "instance-backups-actions-key-confirm-without-password",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/key/confirm",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "password": [
+     "This field is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "key_id": "a1b2c3d4",
+    "tail": "qwerty"
+   }
+  },
+  {
+   "name": "instance-backups-actions-key-confirm-wrong-password",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/key/confirm",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Password non corretta."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000710001": 1
+    }
+   },
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000710001": {
+      "value": 2,
+      "ttl": "kept"
+     }
+    }
+   },
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "key_id": "a1b2c3d4",
+    "tail": "qwerty",
+    "password": "nope"
+   }
+  },
+  {
+   "name": "instance-backups-actions-key-confirm-too-many",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/key/confirm",
+   "headers": {},
+   "status": 429,
+   "response": {
+    "error": "Troppi tentativi. Riprova tra qualche minuto."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": 6
+    }
+   },
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": {
+      "value": 6,
+      "ttl": "kept"
+     }
+    }
+   },
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "key_id": "a1b2c3d4",
+    "tail": "qwerty",
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -6123,7 +8677,11 @@
      }
     ]
    },
-   "cache": {},
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": 1
+    }
+   },
    "cache_after": {},
    "password": null,
    "rehash": false,
@@ -6145,7 +8703,8 @@
    "body": {
     "key_id": " a1b2c3d4 ",
     "tail": 123456,
-    "extra": 1
+    "extra": 1,
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -6192,7 +8751,8 @@
    "no_store": false,
    "body": {
     "key_id": "a1b2c3d4",
-    "tail": "qwerty"
+    "tail": "qwerty",
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {

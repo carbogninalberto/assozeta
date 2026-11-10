@@ -103,6 +103,10 @@ def naive_after_one(now):
     return status, {}
 
 
+# Runner messages of the scenarios: never part of an e-mail.
+RUNNER_DETAILS = ('Motivo', 'Spazio su disco esaurito', 'Credenziali rifiutate', 'Backup automatico non eseguito')
+
+
 def body(value):
     return 200, json.dumps(value).encode()
 
@@ -391,6 +395,11 @@ class Harness(base.Harness):
             text = ''.join(mails)
             assert 'Backup non riuscito' in text or 'Copia remota non riuscita' in text, text
             assert (f'https://{DOMAIN}/#/profile?page=self-instance&tab=backups' in text) == (scenario.instance != 'no-domain'), text
+            # The notice names the time and, for the remote copy, the archive; the runner's message stays out of it.
+            for detail in RUNNER_DETAILS:
+                assert detail not in text, text
+            if 'Copia remota non riuscita' in text:
+                assert 'La copia remota del backup assozeta-20261109T100000Z.tar.gz non' in text, text
 
 
 def main():
