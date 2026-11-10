@@ -71,10 +71,10 @@ SECRET_KEY, WEBHOOK_SECRET, PUBLIC_KEY = 'sk_test_placeholder', 'whsec_placehold
 
 def payment(amount='10.00', paid=False, *, association=OWN, subject=0, associate=True, user=True, intent=None, invoice=False,
             supplier_invoice=False, group=None, deleted=False, category=CATEGORY, description='Quota', created='2026-10-01T08:00:00Z',
-            paid_on=None, meta_categories=None, kind='default'):
+            paid_on=None, meta_categories=None, kind='default', meta=None):
     return {'id': next(ids), 'association': association, 'subject': subject, 'amount': amount, 'paid': paid, 'associate': associate,
             'user': user, 'intent': intent, 'invoice': invoice, 'supplier_invoice': supplier_invoice, 'group': group, 'deleted': deleted,
-            'category': category, 'description': description, 'created': created, 'payment_date': paid_on, 'meta_categories': meta_categories,
+            'category': category, 'description': description, 'created': created, 'payment_date': paid_on, 'meta_categories': meta_categories, 'meta': meta,
             'type': kind}
 
 
@@ -137,6 +137,14 @@ PAYMENTS = {
     'pf_wh_typed': payment(amount='19.00', association=PLAIN['association'], intent='pi_stub_pf_typed', kind='stripe'),
     'pf_wh_cash': payment(amount='21.00', association=PLAIN['association'], intent='pi_stub_pf_cash', kind='cash'),
     'pf_wh_defaults': payment(amount='22.00', association=PLAIN['association'], intent='pi_stub_pf_defaults', category=None, description=None),
+    # Rare inputs: another spelling of the group header, fees that round on a tie, meta names that are not text.
+    'pf_wh_group_spelling': payment(amount='18.50', association=PLAIN['association'], intent='pi_stub_pf_spelling', group='own_group'),
+    'pf_wh_tie': payment(amount='10.00', association=PLAIN['association'], subject=1, intent='pi_stub_pf_tie',
+                         meta_categories=[{'amount': '0.125'}]),
+    'pf_wh_name_float': payment(amount='26.00', association=PLAIN['association'], subject=1, intent='pi_stub_pf_name_float',
+                                meta={'subscription_data': {'name': 1.5}}),
+    'pf_wh_name_list': payment(amount='27.00', association=PLAIN['association'], subject=1, intent='pi_stub_pf_name_list',
+                               meta={'subscription_data': {'name': ['Agonisti', {'anno': None, 'ok': True}, 2]}}),
 }
 COURSE = {'id': next(ids), 'title': 'Corso Stripe'}
 CARNET = {'id': next(ids), 'title': 'Carnet Stripe'}
@@ -593,7 +601,14 @@ def stripe_fees(row):
     return membership_pair, (pyfloat(activity), drf(activity))
 
 
-def paid_flow(label, actor, *, description, notified, token, course=None, installment=None, broadcast=False, group=None, rolled_back=False):
+def column(value):
+    """A float fee as the numeric(9, 2) column keeps it: nine significant digits, then rounded half away from zero."""
+    from decimal import Context, Decimal, ROUND_HALF_UP
+    return str(Context(prec=9).create_decimal_from_float(float(value)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
+
+
+def paid_flow(label, actor, *, description, notified, token, course=None, installment=None, broadcast=False, group=None, rolled_back=False,
+              group_sent=None):
     """(effect, celery) of mark_payment_as_paid for an unpaid payment without an invoice."""
     row = STATE[label]
     association = row['association']
@@ -605,13 +620,18 @@ def paid_flow(label, actor, *, description, notified, token, course=None, instal
     if group:
         STRIPE_NUMBERS['year'] = max(STRIPE_NUMBERS['year'], number)
     (membership_audit, membership), (activity_audit, activity) = stripe_fees(row)
+    if row['subject'] == 1:
+        # Float fees are rounded by the column (the membership fee is a float only with categories and a positive amount).
+        activity = column(activity_audit)
+        if membership_audit != row['amount']:
+            membership = column(membership_audit)
     meta = row['meta_categories']
     create = {'invoice_id': ['None', '$invoice'], 'document_pdf': ['None', 'None'], 'sport_association': ['None', association],
               'creation_date': ['None', '$now'], 'membership_fee': ['None', membership_audit], 'activity_fee': ['None', activity_audit],
               'meta_payment_categories': ['None', json.dumps(meta, sort_keys=True)], 'description': ['None', description],
               'number': ['None', str(number)], 'archived': ['None', 'False'], 'cancelled': ['None', 'False'], 'selected_tutor': ['None', 'None'],
-              'meta': ['None', 'null'], 'imported_from_associami': ['None', 'False'], 'group': ['None', IDS[group] if group else 'None'],
-              'deleted': ['None', 'False']}
+              'meta': ['None', 'null'], 'imported_from_associami': ['None', 'False'],
+              'group': ['None', group_sent or (IDS[group] if group else 'None')], 'deleted': ['None', 'False']}
     # Payment.save()'s defaults (filled by the update_fields save, written by the full save): the default
     # category, and get_course_carnet_name()'s description (the category name) for a payment without one.
     defaults = {}
@@ -699,6 +719,28 @@ add('multiple-pay-succeeded-creates-invoice', 'anonymous', MULTI, 200,
 add('webhook-charge-group-invoice', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_group'), content_type=JSON, signature=VALID,
     headers=GROUP, effect=paid_flow('pf_wh_group', 'anonymous', description=other_text(CATEGORY_NAME), notified='Quota', token='$bypass',
                                     group='own_group'))
+# The header is read as a uuid in any spelling the uuid module accepts; the new invoice's audit entry keeps the text as sent.
+add('webhook-charge-group-upper-case', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_spelling'), content_type=JSON,
+    signature=VALID, headers={'X-Group-Id': IDS['own_group'].upper()},
+    effect=paid_flow('pf_wh_group_spelling', 'anonymous', description=other_text(CATEGORY_NAME), notified='Quota', token='$bypass',
+                     group='own_group', group_sent=IDS['own_group'].upper()))
+
+
+def subscribed(name):
+    return (f"Ricevuta di pagamento per l'iscrizione {escape(name)}di <b>{escape(ASSOCIATE['first'] + ' ' + ASSOCIATE['last'])}</b> "
+            f"all'associazione <b>{escape(PLAIN_DENOMINATION)}</b>.")
+
+
+# 9.875 and 0.125 are exact floats: the column rounds them away from zero.
+add('webhook-charge-fee-tie', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_tie'), content_type=JSON, signature=VALID,
+    effect=paid_flow('pf_wh_tie', 'anonymous', description=SUBSCRIBED, notified="l'iscrizione all'associazione sportiva", token='$bypass'))
+# meta.subscription_data.name is formatted with str(): floats and lists as Python writes them.
+add('webhook-charge-meta-name-float', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_name_float'), content_type=JSON,
+    signature=VALID, effect=paid_flow('pf_wh_name_float', 'anonymous', description=subscribed('(1.5) '),
+                                      notified="l'iscrizione all'associazione sportiva", token='$bypass'))
+add('webhook-charge-meta-name-list', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_name_list'), content_type=JSON,
+    signature=VALID, effect=paid_flow('pf_wh_name_list', 'anonymous', description=subscribed("(['Agonisti', {'ok': True, 'anno': None}, 2]) "),
+                                      notified="l'iscrizione all'associazione sportiva", token='$bypass'))
 # The update_fields save fills Payment.save()'s defaults in memory first: the invoice description reads the
 # default category and the full save records it with the invoice.
 add('webhook-charge-defaults-before-description', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_defaults'), content_type=JSON,
