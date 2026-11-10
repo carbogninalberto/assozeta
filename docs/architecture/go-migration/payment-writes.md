@@ -77,12 +77,29 @@ payment dates are a 500 with nothing written. Response `201`.
 ## Not ported (refused with a 500 before any write)
 
 - Add for a user with `auto_paid_payment` (invoice numbering and creation, `print_document_invoice`).
-- `attachments_data` whose first item has `document` and `filename` (base64 decode, Document and storage save).
+- `attachments_data` items outside the ported subset: a non-string `document` or `filename` (Django stores `str()` of the
+  filename, then `os.path.join` raises), a filename over 255 characters, with NUL or not valid UTF-8, a storage name
+  `Storage.save` rejects (path traversal, empty base name), and an existing key without `AWS_S3_FILE_OVERWRITE`
+  (`get_available_name` picks a random name).
 - `user` in the add or update body (nested user write), `payment_id` on add, and on update a `payment_id` other than the
   row's own key (a primary key change). The edit form's own key (any spelling `uuid.UUID` accepts) is accepted: the
   UniqueValidator excludes the instance and the save keeps the row.
 - Update form bodies and add multipart bodies carrying files (mutable QueryDict).
 - Dates with non-ASCII decimal digits (accepted by `strptime`) and non-canonical X-Group-Id spellings on add.
+
+## Attachments (`attachments_data`)
+
+`PaymentEntrySerializer._handle_documents` runs after the payment's save on add (after `Payment.objects.create`, before the
+view's own save) and on update (after the full save). For each item with `document` and `filename`: `b64decode(document)`
+(CPython's non-strict rules; an error is the 500 page with the payment and earlier documents kept),
+`Document.objects.create(filename=...)` with its audited create indexed to the actor's own live association
+(`actor.sport_association`; none: no index row; the second `save()` changes nothing), `default_storage.save` of the bytes
+under `<str(creation_date.timestamp())>/<document_id>/<filename>` (S3Storage: `clean_name`, `AWS_LOCATION`, the guessed
+ContentType and encoding, `AWS_S3_OBJECT_PARAMETERS`, `AWS_DEFAULT_ACL`) and `payment.attachments.add(document)` (no audit
+entry: Payment is registered without M2M fields). An item without the keys raises `{'exception': 'document key not
+present'}` (400) after the earlier items are stored. The response renders the new attachments (`DocumentSerializer`). Go
+writes each object inside the request transaction before the commit (a storage error is the 500 page with nothing kept,
+where Django would keep the payment and the Document row).
 
 ## Update of an invoiced payment
 
@@ -111,3 +128,11 @@ Original port:
   `payment-writes-update-empty-body-clears-parties` (CAUGHT).
 - `payment-state` and `payment-archive` stay green (the shared payment save, rendering and lookup code is reused
   unchanged; route block added to `main.go`).
+
+API v2 attachments (`v2pay-*`): 4 cases (128 in all): add with a PDF, update with a PNG, update whose second item lacks its
+keys (400 after the first document) and invalid base64 (500 after the save). The adapter owns a private MinIO as Django's
+default storage and checks each case's Documents, payment links, objects (key, bytes, ContentType) and audit entries. RED
+`v2pay-red-r2`: Django 128/128, Go 500 on `add-attachment`. GREEN `v2pay-versioned-r2`: 128/128 on the four transports.
+Mutation `v2pay-mutation-r4` (indexing the Document create through the scope user instead of the actor) CAUGHT on
+`update-attachment-then-missing-keys`.
+After merging `codex/go-backend-parity` (`d91ea696`): GREEN `v2pay-final-r1` 128/128 on the four transports; documents-writes 124/124 re-run (`v2pay-rerun-r1`, shared `composeDocumentStorage`).

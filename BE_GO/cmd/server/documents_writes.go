@@ -28,11 +28,17 @@ func (o documentUploadObjects) Put(ctx context.Context, key string, body []byte,
 
 func composeDocumentUploads(cfg config.Config, db *sqlx.DB, sessions *repository.DjangoImpersonationCache, actors *service.ActorAuthentication,
 	identities *service.IdentityResolver, audit handler.LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *handler.DocumentUploadsHandler {
+	uploads := composeDocumentStorage(cfg, db, sessions)
+	return handler.NewDocumentUploadsHandler(uploads, service.NewArchiveWrites(repository.NewDocumentArchive(db), time.Now), actors, identities,
+		audit, operations)
+}
+
+// composeDocumentStorage is the default_storage the document upload views and
+// payment attachments_data write through.
+func composeDocumentStorage(cfg config.Config, db *sqlx.DB, sessions *repository.DjangoImpersonationCache) *service.DocumentUploads {
 	objects := documentUploadObjects{S3: composeDocumentObjects(cfg), cacheControl: cfg.Storage.CacheControl}
 	if cfg.Storage.DefaultACL != nil {
 		objects.acl = *cfg.Storage.DefaultACL
 	}
-	uploads := service.NewDocumentUploads(repository.NewDocumentUploads(db), objects, sessions, cfg.Storage.FileOverwrite, time.Now, uuid.NewString)
-	return handler.NewDocumentUploadsHandler(uploads, service.NewArchiveWrites(repository.NewDocumentArchive(db), time.Now), actors, identities,
-		audit, operations)
+	return service.NewDocumentUploads(repository.NewDocumentUploads(db), objects, sessions, cfg.Storage.FileOverwrite, time.Now, uuid.NewString)
 }

@@ -13,14 +13,26 @@ payments only the authored columns, every other payment is unchanged, and
 the new auditlog entries match the authored ones in order with their index
 rows. A '$now' column must be recent and, when rendered, equal to the stored
 value. Payments the run creates are removed before the fixture cleanup.
+
+A stored signature adds its Signature row (checked against the authored user
+and data) and its create entry ('$signature' is the new row's id). The Celery
+broker is the run's Redis (with_celery_broker): each case's published
+messages must be exactly its authored 'celery' tasks (none by default), with
+'$render' messages rendered by Django's render_to_string. A CURRENT_HOST print
+stub (invoice-sync-print's service_context) runs for the whole run: each
+case's outbound requests must be exactly its authored 'prints'.
 """
 from contextlib import contextmanager
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 import ipaddress
+import time
+import types
 
-from TESTS.contracts import test_payment_misc_http as contract
+from TESTS.contracts import test_payment_misc_http as base_contract
 from TESTS.adapters.django import family_harness as harness
+from TESTS.adapters.django import invoice_sync_print_http as printer
+from TESTS.adapters.django.email_render_routes_http import resolve
 from TESTS.adapters.django.camps_periods_http import plain
 from TESTS.adapters.django.carnet_subscription_topup_http import auditlog_moment
 from TESTS.adapters.django.course_subscriptions_http import default_category
@@ -36,9 +48,30 @@ SOURCES = ('TESTS/fixtures/payment_misc_http.json', 'TESTS/contracts/test_paymen
            'BE/application/models/invoices_models.py', 'BE/application/models/subscriptions_models.py',
            'BE/application/models/user_models.py', 'BE/application/models/balance_sheet_models.py', 'BE/application/signals.py',
            'BE/application/mixin.py', 'BE/application/impersonation.py', 'BE/application/impersonation_scope.py',
-           'BE/application/audit_resolvers.py', 'BE/application/permissions_registry.py', 'BE/docmanager/models.py') + harness.SOURCES
+           'BE/application/audit_resolvers.py', 'BE/application/permissions_registry.py', 'BE/docmanager/models.py', 'TESTS/adapters/django/invoice_sync_print_http.py',
+           'TESTS/adapters/django/email_render_routes_http.py', 'BE/application/printing_tasks.py', 'BE/instance/restore/task_base.py',
+           'BE/templates/email/payment/fee_assigned.html', 'BE/templates/email/_base.html', 'BE/core/tasks.py',
+           'BE/core/celery.py', 'BE/application/impersonation.py') + harness.SOURCES
 PAYMENT = 'application.Payment'
-MANAGED = (PAYMENT, harness.AUDIT, harness.INDEX)
+SIGNATURE = 'application.Signature'
+MANAGED = (PAYMENT, SIGNATURE, harness.AUDIT, harness.INDEX)
+
+
+def _assert_case(case, base_url, *, token, sessions):
+    """The authored request, with the print stub scripted for it and its outbound requests checked after."""
+    stub = printer.STUB
+    with stub['lock']:
+        stub['log'] = []
+        stub['script'] = [item['reply'] for item in case['prints']]
+    stub['token'] = token
+    status = base_contract.assert_case(case, base_url, token=token, sessions=sessions)
+    printer.check_prints(case, None)
+    return status
+
+
+contract = types.SimpleNamespace(load_source=base_contract.load_source, require=base_contract.require, assert_case=_assert_case,
+                                 NOW=base_contract.NOW)
+service_context = printer.service_context
 TIMES = ('creation_date', 'payment_date')
 
 
@@ -119,7 +152,16 @@ def payments():
     return Payment
 
 
-base_fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(payments,))
+def signatures():
+    from application.models import Signature
+    return Signature
+
+
+base_fixture_context = harness.with_celery_broker(harness.fixture_context_for(contract, seed_rows, purge=(payments, signatures)))
+
+
+def prepare(source):
+    return {'started': time.time()}
 
 
 @contextmanager
@@ -157,13 +199,34 @@ def check_row(stored, authored, fixture, where):
     contract.require(set(stored) - {'payment_id'} == set(authored), 'state.created-columns' + where)
 
 
+def mail_bindings(before, ids):
+    from django.conf import settings
+    users = keyed(before['application.User'], 'user_id')
+    values = {'$whitelabel': settings.WHITELABEL_NAME, '$from_email': settings.DEFAULT_FROM_EMAIL}
+    for actor in ('owner', 'athlete'):
+        values[f'$email:{actor}'] = users[ids[actor]]['email']
+    return values
+
+
 def assert_effect(case, before, after, source, context):
     harness.require_unmanaged_unchanged(contract, before, after, MANAGED)
     effect = case['effect']
+    fixture, ids = context['fixture'], {**source['ids'], 'plans_owner': source['plans_owner']['id']}
+    since, until = context['prepared']['started'], time.time()
+    celery = resolve(effect.get('celery', []), mail_bindings(before, ids)) if effect else []
+    harness.celery_published(contract, fixture, celery, since=since, until=until)
     if effect is None:
         contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
         return
-    fixture, ids = context['fixture'], {**source['ids'], 'plans_owner': source['plans_owner']['id']}
+    old_signatures, new_signatures = keyed(before[SIGNATURE], 'signature_id'), keyed(after[SIGNATURE], 'signature_id')
+    fresh_signatures = sorted(set(new_signatures) - set(old_signatures))
+    authored_signatures = effect.get('signatures', [])
+    contract.require(set(old_signatures) <= set(new_signatures) and len(fresh_signatures) == len(authored_signatures), 'state.signature-count')
+    contract.require(all(new_signatures[k] == v for k, v in old_signatures.items()), 'state.signatures-kept')
+    for key, spec in zip(fresh_signatures, authored_signatures):
+        stored = plain(new_signatures[key])
+        contract.require(str(stored['user_id']) == spec['user'] and stored['signature'] == spec['signature'], 'state.signature:' + key)
+    signature = fresh_signatures[0] if fresh_signatures else None
     old, new = rows_of(before), rows_of(after)
     fresh = sorted(set(new) - set(old))
     authored = effect['created']
@@ -171,7 +234,7 @@ def assert_effect(case, before, after, source, context):
     for key, spec in zip(fresh, authored):
         check_row(new[key], spec, fixture, ':' + key)
     labels = {row['id']: label for label, row in source['payments'].items()}
-    bindings = {'$default_category': fixture['default_category']}
+    bindings = {'$default_category': fixture['default_category'], '$signature': signature}
     for key, row in old.items():
         changes = effect['changed'].get(labels.get(key), {})
         expected = dict(row)
@@ -196,7 +259,11 @@ def assert_effect(case, before, after, source, context):
         additional = {'impersonation_session': fixture['sessions'][label], 'actor_id': actor, 'target_user_id': case['headers']['User-Id'],
                       'association_id': None if label.startswith('admin_') else ids['own_association']}
     for event, spec in zip(events, effect['audit']):
-        key = fresh[0] if spec['key'] == '$id' else source['payments'][spec['key']]['id']
+        model = spec.get('model', 'payment')
+        if model == 'signature':
+            key = signature
+        else:
+            key = fresh[0] if spec['key'] == '$id' else source['payments'][spec['key']]['id']
         stored = new.get(key, {})
 
         def value(item, column):
@@ -207,8 +274,8 @@ def assert_effect(case, before, after, source, context):
             return bindings.get(item, item)
         changes = {column: [value(item, column) for item in pair] for column, pair in spec['changes'].items()}
         where = f":{spec['key']}:{spec['action']}"
-        contract.require(event['content_type_id'] == types['payment'] and event['action'] == spec['action'] and event['object_pk'] == key
-                         and event['object_repr'] == f'Payment object ({key})', 'audit.identity' + where)
+        contract.require(event['content_type_id'] == types[model] and event['action'] == spec['action'] and event['object_pk'] == key
+                         and event['object_repr'] == f'{model.capitalize()} object ({key})', 'audit.identity' + where)
         contract.require(event['changes'] == changes, 'audit.changes' + where)
         contract.require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor' + where)
         contract.require(event['cid'] == case['name'] and event['additional_data'] == additional and event['changes_text'] == '',
@@ -223,4 +290,4 @@ def assert_effect(case, before, after, source, context):
                              and index['resolution_path'] == spec['index'][1], 'index.fields' + where)
 
 
-run_workload = harness.run_workload_for(contract, assert_effect)
+run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare)

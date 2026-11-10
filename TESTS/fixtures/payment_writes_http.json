@@ -719,6 +719,93 @@
    "deleted": false,
    "group_id": null,
    "course": null
+  },
+  "up_attach_one": {
+   "id": "a1000000-0000-4000-8000-000000988035",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000988001",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "up_attach_partial": {
+   "id": "a1000000-0000-4000-8000-000000988036",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000988001",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "up_attach_bad64": {
+   "id": "a1000000-0000-4000-8000-000000988037",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000988001",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
   }
  },
  "invoice": {
@@ -729,6 +816,7 @@
   "activity_fee": "10.00",
   "description": "Ricevuta fixture"
  },
+ "location": "payment-writes-media",
  "cases": [
   {
    "name": "payment-writes-add-anonymous",
@@ -1467,7 +1555,8 @@
        "changes_json.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -1691,7 +1780,8 @@
        "changes_json.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -1940,7 +2030,8 @@
        "changes_json.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -2181,7 +2272,8 @@
        "changes_json.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -2404,7 +2496,8 @@
        "changes_json.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -2646,7 +2739,8 @@
        "changes_json.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -2887,7 +2981,8 @@
        "changes_json.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -3142,7 +3237,8 @@
        "changes_json.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -3387,7 +3483,8 @@
        "changes_json.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -3632,7 +3729,8 @@
        "changes_json.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -3854,7 +3952,8 @@
        "changes_json.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -4072,7 +4171,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -4316,7 +4416,8 @@
        "changes_json.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -4535,7 +4636,8 @@
        "changes_json.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -4757,7 +4859,8 @@
        "changes_json.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -4916,7 +5019,8 @@
        "actor.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -5078,7 +5182,8 @@
        "actor.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -5240,7 +5345,8 @@
        "actor.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -5401,7 +5507,8 @@
        "actor.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -5561,7 +5668,8 @@
        "actor.sport_association"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -6088,7 +6196,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {}
@@ -6225,7 +6334,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -6345,7 +6455,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -6443,7 +6554,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -6546,7 +6658,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -6665,7 +6778,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -6775,7 +6889,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -6885,7 +7000,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -6973,7 +7089,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -7061,7 +7178,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -7145,7 +7263,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -7232,7 +7351,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -7272,7 +7392,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -7344,7 +7465,8 @@
     "changed": {
      "up_collab": {}
     },
-    "audit": []
+    "audit": [],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -7428,7 +7550,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -7518,7 +7641,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [],
    "body": {
@@ -7623,7 +7747,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [
     {
@@ -7734,7 +7859,8 @@
        "direct"
       ]
      }
-    ]
+    ],
+    "documents": []
    },
    "prints": [
     {
@@ -7748,6 +7874,545 @@
    "body": {
     "amount": "19",
     "payment_id": "a1000000-0000-4000-8000-000000988034"
+   }
+  },
+  {
+   "name": "payment-writes-add-attachment",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "payment_id": "$bind:payment",
+    "user": {
+     "first_name": "Message",
+     "last_name": "Fixture",
+     "email": "message-reads-700001@example.test",
+     "phone": null,
+     "username": "message-reads-700001",
+     "role": 1
+    },
+    "associate": null,
+    "subscription_id": null,
+    "instructor_id": null,
+    "instructor": null,
+    "supplier": null,
+    "supplier_id": null,
+    "custom_account_type": null,
+    "custom_account_name": null,
+    "invoice": null,
+    "attachments": [
+     {
+      "document_id": "$bind:doc0",
+      "creation_date": "$now",
+      "filepath": null,
+      "filename": "ricevuta è.pdf",
+      "file_size_bytes": null,
+      "token": "$bind:doc0_token"
+     }
+    ],
+    "payment_category_name": "$default_category_name",
+    "type": "default",
+    "subject": 0,
+    "amount": "12.00",
+    "creation_date": "2026-03-20T00:00:00Z",
+    "payment_date": null,
+    "paid": false,
+    "expense": false,
+    "description": "Con allegato",
+    "meta_payment_categories": null,
+    "payment_intent_id": null,
+    "archived": false,
+    "invoice_fiscal_code": null,
+    "meta": null,
+    "notes": null,
+    "deleted": false,
+    "course": null,
+    "payment_category": "$default_category",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "custom_accounts": null,
+    "signature": null,
+    "group": null
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [
+     {
+      "type": "default",
+      "subject": 0,
+      "amount": "12.00",
+      "creation_date": "2026-03-20T00:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Con allegato",
+      "payment_category_id": "$default_category",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "associate_id": null,
+      "supplier_id": null,
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": null,
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    ],
+    "changed": {},
+    "audit": [
+     {
+      "key": "$id",
+      "action": 0,
+      "changes": {
+       "payment_id": [
+        "None",
+        "$id"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "subject": [
+        "None",
+        "0"
+       ],
+       "amount": [
+        "None",
+        "12.00"
+       ],
+       "creation_date": [
+        "None",
+        "2026-03-20 00:00:00"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "description": [
+        "None",
+        "Con allegato"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "associate": [
+        "None",
+        "None"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "None"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "custom_accounts": [
+        "None",
+        "None"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "course": [
+        "None",
+        "null"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "key": "$doc0",
+      "model": "document",
+      "action": 0,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "changes": {
+       "document_id": [
+        "None",
+        "$doc0"
+       ],
+       "creation_date": [
+        "None",
+        "$doc0_created"
+       ],
+       "filename": [
+        "None",
+        "ricevuta è.pdf"
+       ],
+       "token": [
+        "None",
+        "$doc0_token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      }
+     },
+     {
+      "key": "$id",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ]
+     }
+    ],
+    "documents": [
+     {
+      "filename": "ricevuta è.pdf",
+      "body_b64": "JVBERi0xLjQKJSByaWNldnV0YSBmaXh0dXJlIOgKJSVFT0YK",
+      "payment": "$id"
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "creation_date": "2026-03-20",
+    "payment_date": null,
+    "amount": "12",
+    "description": "Con allegato",
+    "complex_item": null,
+    "attachments_data": [
+     {
+      "document": "JVBERi0xLjQKJSByaWNldnV0YSBmaXh0dXJlIOgKJSVFT0YK",
+      "filename": "ricevuta è.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-writes-update-attachment",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988035/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000988035",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [
+       {
+        "document_id": "$bind:doc0",
+        "creation_date": "$now",
+        "filepath": null,
+        "filename": "foto.png",
+        "file_size_bytes": null,
+        "token": "$bind:doc0_token"
+       }
+      ],
+      "payment_category_name": "Quote fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "21.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000988001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {
+     "up_attach_one": {
+      "amount": "21.00"
+     }
+    },
+    "audit": [
+     {
+      "key": "up_attach_one",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "10.00",
+        "21.00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "key": "$doc0",
+      "model": "document",
+      "action": 0,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "changes": {
+       "document_id": [
+        "None",
+        "$doc0"
+       ],
+       "creation_date": [
+        "None",
+        "$doc0_created"
+       ],
+       "filename": [
+        "None",
+        "foto.png"
+       ],
+       "token": [
+        "None",
+        "$doc0_token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      }
+     }
+    ],
+    "documents": [
+     {
+      "filename": "foto.png",
+      "body_b64": "iVBORw0KGgpmaXh0dXJl",
+      "payment": "up_attach_one"
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "amount": "21",
+    "attachments_data": [
+     {
+      "document": "iVBORw0KGgpmaXh0dXJl",
+      "filename": "foto.png",
+      "extra": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-writes-update-attachment-then-missing-keys",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988036/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "document key not present"
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "created": [],
+    "changed": {
+     "up_attach_partial": {
+      "amount": "22.00"
+     }
+    },
+    "audit": [
+     {
+      "key": "up_attach_partial",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "10.00",
+        "22.00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "key": "$doc0",
+      "model": "document",
+      "action": 0,
+      "index": null,
+      "changes": {
+       "document_id": [
+        "None",
+        "$doc0"
+       ],
+       "creation_date": [
+        "None",
+        "$doc0_created"
+       ],
+       "filename": [
+        "None",
+        "primo.pdf"
+       ],
+       "token": [
+        "None",
+        "$doc0_token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      }
+     }
+    ],
+    "documents": [
+     {
+      "filename": "primo.pdf",
+      "body_b64": "JVBERi0xLjQKJSByaWNldnV0YSBmaXh0dXJlIOgKJSVFT0YK",
+      "payment": "up_attach_partial"
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "amount": "22",
+    "attachments_data": [
+     {
+      "document": "JVBERi0xLjQKJSByaWNldnV0YSBmaXh0dXJlIOgKJSVFT0YK",
+      "filename": "primo.pdf"
+     },
+     {
+      "document": "JVBERi0xLjQKJSByaWNldnV0YSBmaXh0dXJlIOgKJSVFT0YK"
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-writes-update-attachment-invalid-base64",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988037/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {
+     "up_attach_bad64": {
+      "amount": "23.00"
+     }
+    },
+    "audit": [
+     {
+      "key": "up_attach_bad64",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "10.00",
+        "23.00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "documents": []
+   },
+   "prints": [],
+   "body": {
+    "amount": "23",
+    "attachments_data": [
+     {
+      "document": "abc",
+      "filename": "x.pdf"
+     }
+    ]
    }
   },
   {

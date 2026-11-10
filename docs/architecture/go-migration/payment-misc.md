@@ -46,6 +46,13 @@ so far and answers 200:
   same user/associate/plan/amount sees the earlier creation and is skipped. Response `{'msg': 'Partial quotes applied.'}`.
   The owner's own subscription without associate is created; another user's subscription without associate is created
   and then stops the loop (the e-mail template access raises before sending).
+- A quote for a user other than the owner (a member's own account) renders `email/payment/fee_assigned.html` in the
+  request's language (`recipient_name` from the associate, the plan's stored `name` and `subscription_fee`,
+  `WHITELABEL_NAME`, the denomination) and calls `send_email_html` in-process. Without a `CommunicationConfiguration` of
+  the association it publishes `core.tasks.send_mail_async` (subject `<denomination> | Nuova quota associativa '<name>'
+  assegnata`, the message, `DEFAULT_FROM_EMAIL`, `[user.email]`, `html_message`, `fail_silently=False`, the association
+  UUID, `reply_to=[owner email]`). Go publishes after the commit, in quote order; a failed publish is swallowed like
+  `send_email_html`'s own try/except.
 
 ## Sign
 
@@ -59,6 +66,14 @@ DRF boolean (default False, null rejected); `data` required, nullable, blank all
 rejected); with a signature flag and empty data `{'data': ['La firma è obbligatoria.']}`. Without the flag:
 `{'status': 'success'}`, nothing written.
 
+With a signature to store: `Signature.objects.create(signature=<trimmed data>, user=...)` (the scope user; for a
+collaborator the selected person, `acting_user`), audited create indexed to the actor's own live association
+(`actor.sport_association`, none: no index row); `payment.signature` set and `Payment.save()` (default category,
+description rules) with the audited update (`signature` plus the save defaults) indexed directly; then
+`print_document_compensation.apply`: one `GET CURRENT_HOST/document/compensation/<payment_id>` with requests' default
+headers and the request's `Authorization` (errors swallowed; a maintenance deferral is the 500 page). Go commits the
+Signature and the payment save together before the print.
+
 ## Approve with an invoice
 
 PaymentSerializer now renders `invoice` (InvoiceSerializer: all fields, `document_token` of `document_pdf`, attached
@@ -68,9 +83,9 @@ their invoice is rendered whatever `generate_invoice` says.
 
 ## Not ported (refused with a 500 before any write)
 
-- Apply quotes for users other than the association owner with an associate (`render_to_string` + `send_email_html`):
-  the whole request is rolled back.
-- Sign with a signature to store (Signature row, payment save, synchronous `print_document_compensation` PDF).
+- Apply quotes that e-mail a member when the association has a `CommunicationConfiguration`: Django sends through the
+  configured SMTP on a `Timer` thread after a random 1-30 s delay; the whole request is rolled back. Template values the
+  renderer does not take (plan name/fee that are lists or dicts) are refused the same way.
 - Approve of unpaid income payments with a party is now ported by payment-state's paid flow
   ([payment-state](payment-state.md)). A paid invoiced payment with a truthy `generate_invoice` is now ported (the
   `print_document_invoice` dispatch, see [invoice-generate](invoice-generate.md)); a `send_receipt_email` other than
@@ -101,3 +116,14 @@ their invoice is rendered whatever `generate_invoice` says.
   `payment-misc-simulation-march` (CAUGHT).
 - `payment-state` (130), `payment-writes` (120), `payment-archive` (27) and `course-subscriptions` (107) re-run green
   natively (shared payment rendering, save defaults and transactions).
+
+## API v2 evidence (member e-mail on apply, sign with a signature)
+
+Fixture `payment_misc_http.json` 90 cases (adds the June plan for a member's own account, the simulation and apply of
+it with the published `send_mail_async`, and two stored signatures: the owner's, and a collaborator's on a payment
+without a category). The adapter checks the Signature rows, the Celery messages (`with_celery_broker`) and the
+CURRENT_HOST print requests (invoice-sync-print's stub). RED `v2pay-red-r1`: Django 90/90, Go 500 on
+`apply-june-member-account-mail`. GREEN `v2pay-versioned-r1`: 90/90 on native Django, native Go, Caddy `/api/v1` and
+`/api/v2`. Mutation `v2pay-mutation-r1` (Signature user always the scope user) CAUGHT on
+`sign-collaborator-stores-signature-default-category`.
+After merging `codex/go-backend-parity` (`d91ea696`): GREEN `v2pay-final-r1` 90/90 on the four transports.
