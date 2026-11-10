@@ -324,14 +324,15 @@ func (r *DocumentViews) Template(ctx context.Context, id string) (*domain.ViewTe
 
 func (r *DocumentViews) Appointment(ctx context.Context, id string) (*domain.ViewAppointment, error) {
 	var row struct {
-		Region      string     `db:"region"`
-		Date        *time.Time `db:"date"`
-		Sport       *string    `db:"sport"`
-		Meta        *string    `db:"meta"`
-		Association string     `db:"association"`
-		AssociateID *string    `db:"associate_id"`
+		Subscription string     `db:"subscription"`
+		Region       string     `db:"region"`
+		Date         *time.Time `db:"date"`
+		Sport        *string    `db:"sport"`
+		Meta         *string    `db:"meta"`
+		Association  string     `db:"association"`
+		AssociateID  *string    `db:"associate_id"`
 	}
-	err := r.db.GetContext(ctx, &row, `SELECT m.region, m.date, m.sport, m.meta::text AS meta, s.sport_association_id::text AS association,
+	err := r.db.GetContext(ctx, &row, `SELECT m.subscription_id::text AS subscription, m.region, m.date, m.sport, m.meta::text AS meta, s.sport_association_id::text AS association,
  s.associate_id::text AS associate_id FROM application_medicalappointments m
  JOIN application_subscription s ON s.subscription_id=m.subscription_id
  JOIN application_sportassociation sa ON sa.sport_association_id=s.sport_association_id

@@ -26,7 +26,7 @@ func NewDocumentViewsHandler(views *service.DocumentViews, actors *service.Actor
 const (
 	viewAuthenticated = iota // IsAuthenticated
 	viewOrBypass             // IsAuthenticated | HasBypassAuthorizationHeader
-	viewAllowAny             // the AllowAny default
+	viewAllowAny             // the AllowAny default (the subscription preview)
 )
 
 func (h *DocumentViewsHandler) Subscription(c echo.Context) error {
@@ -46,7 +46,7 @@ func (h *DocumentViewsHandler) Template(c echo.Context) error {
 }
 
 func (h *DocumentViewsHandler) MedicalAppointment(c echo.Context) error {
-	return h.serve(c, service.ViewMedical, "document_medical_appointment_view", "Document Medical Appointment View", viewAllowAny)
+	return h.serve(c, service.ViewMedical, "document_medical_appointment_view", "Document Medical Appointment View", viewOrBypass)
 }
 
 func (h *DocumentViewsHandler) serve(c echo.Context, view, operation, name string, permission int) error {

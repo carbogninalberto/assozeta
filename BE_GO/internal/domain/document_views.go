@@ -105,12 +105,13 @@ type ViewTemplate struct {
 
 // ViewAppointment is a MedicalAppointments row with its subscription.
 type ViewAppointment struct {
-	Region      string
-	Date        *time.Time
-	Sport       *string
-	Meta        *string
-	Association string
-	AssociateID *string
+	Subscription string
+	Region       string
+	Date         *time.Time
+	Sport        *string
+	Meta         *string
+	Association  string
+	AssociateID  *string
 }
 
 var (

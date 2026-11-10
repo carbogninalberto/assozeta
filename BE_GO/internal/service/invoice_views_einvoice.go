@@ -12,7 +12,7 @@ import (
 // einvoice is document_einvoice_view: CustomerInvoice.objects.get(pk=uid)
 // (no scope, no group) and generate_invoice_html; every exception is the
 // 500 page.
-func (s *InvoiceViews) einvoice(ctx context.Context, request DocumentViewRequest) (*DocumentViewReply, error) {
+func (s *InvoiceViews) einvoice(ctx context.Context, identity domain.ResolvedIdentity, request DocumentViewRequest) (*DocumentViewReply, error) {
 	id, ok := parseModelUUID(request.UID)
 	if !ok {
 		return nil, ErrDocumentViewServer
@@ -20,6 +20,10 @@ func (s *InvoiceViews) einvoice(ctx context.Context, request DocumentViewRequest
 	row, err := s.store.CustomerInvoice(ctx, id)
 	if err != nil {
 		return nil, lookupError(err)
+	}
+	// Served to the association's staff.
+	if err := memberDocumentStaffAccess(ctx, s.store, identity); err != nil {
+		return nil, err
 	}
 	html, err := fatturapa.HTML(InvoiceViewsFattura(row))
 	if err != nil {
