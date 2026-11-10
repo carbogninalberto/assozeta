@@ -5779,9 +5779,14 @@
         "BE_GO/internal/pdfexport/datatable.go",
         "BE_GO/internal/pdfexport/cell.go",
         "BE_GO/internal/pdfexport/fonts_gen.go",
-        "BE_GO/internal/pdfexport/golden_test.go"
+        "BE_GO/internal/pdfexport/golden_test.go",
+        "BE_GO/internal/pdfexport/htmlparser.go",
+        "BE_GO/internal/pdfexport/paraparser.go",
+        "BE_GO/internal/pdfexport/entities_gen.go"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "BE_GO/internal/pdfexport paragraph markup: reportlab's ParaParser and html.parser (CPython 3.13) ported; golden corpus from reportlab itself (TESTS/fixtures/generate_pdf_golden.py: 106 documents; TESTS/fixtures/generate_pdf_paragraphs.py: 2755 parsed texts and the entity table), go test ./internal/pdfexport"
+      ],
       "contract": {
         "methods": [
           "GET",
@@ -5814,25 +5819,25 @@
         "docs/architecture/go-migration/balance-sheet.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 89/89; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/balance-sheet-http-v2pdf-red-r1/results.json",
-          "receipt_sha256": "481d226c648c1787d5c0c597cf55296c3245d6ad8546036e3e0cafb03f5eacb9"
+          "result": "RED: Django 97/97; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/balance-sheet-http-v2rep3-native-r2/results.json",
+          "receipt_sha256": "5e738252f180d027439246f9c74033e4ce15e1a79c3ca0b5c8e41e6400e08c4c"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 89/89 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/balance-sheet-http-v2pdf-versioned-r2/results.json",
-          "receipt_sha256": "8a7849ec0cc60ac5dccb3b22d933edc2a6bd88a2e4f5c1c0f346775338baf0b4"
+          "result": "GREEN: 97/97 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/balance-sheet-http-v2rep3-versioned-r1/results.json",
+          "receipt_sha256": "5156b626aab3e62ae732b60032fdc1eb7a58bba3b2154853226375a3f719b6e4"
         },
         {
-          "revision": "balances dated the first day of the next balance year instead of the day before",
-          "result": "Mutation control: fails Go on balance-sheet-pdf-draft (title and closing line differ)",
-          "artifact": "quality-reports/go-migration/balance-sheet-http-v2pdf-mutation-r1/results.json",
-          "receipt_sha256": "52452547aec613da35eaedc0a6931d4660bc601eaf923fbcc3be0c0e60834df8"
+          "revision": "a fragment that is bold and oblique is drawn in the bold font (paraparser.go)",
+          "result": "Mutation control: CAUGHT: fails Go on balance-sheet-pdf-logo-address-markup (response.file: pdf 9 objects, expected 10)",
+          "artifact": "quality-reports/go-migration/balance-sheet-http-v2rep3-mutation-r2/results.json",
+          "receipt_sha256": "b3cc8dc1b0e80f7b5946b29d53882f0df0a75907da00c2e415820d130f66fdaf"
         }
       ],
       "notes": [
-        "Implementing: POST format excel and pdf on a non-approved sheet (regenerate, save, export_balance_sheet; an export error is a 500 after the save). pdf is generate_pdf_from_data with the association header, A3 portrait. The PDF is a reportlab table document reproduced by BE_GO/internal/pdfexport and compared in decoded form (pdf-exports.md): the same objects and content streams byte for byte, dates within the request window. An embedded JPEG logo is compared by bytes, dictionary and placement; its object name (a digest of decoded pixels in reportlab) is numbered by appearance. Refused before any write: paragraph text with &, < or a soft hyphen, a jpeg data-URL logo that is not a plain 8-bit JPEG, non-finite amounts, non-text descriptions, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/balance-sheet.md."
+        "Implementing: POST format pdf with paragraph markup and a logo (v2-reports-3). The denomination and the address go through reportlab's markup parser: '&', '<', entities, <b>/<i>/<br/> and soft hyphens are drawn as reportlab draws them (several-fragment layout), markup the parser raises on is the export's 500 after the save; the logo is read with Python's base64 rules (line breaks and other characters skipped, refused base64 or no data is the '[LOGO]' paragraph) and a four-component JPEG is embedded as CMYK. The response's profile is the association the run holds, resolved by its owner like Django's reverse accessor. 97 cases: a second association with a JPEG logo, an address and a denomination with markup, a third one whose address has an unclosed tag. RED: documented refusal, see v2-refusals.md row ('Still refused in the balance-sheet PDF'); the receipt v2rep3-native-r2 is the earlier Go code failing on the profile of the third association (Django 97/97). GREEN v2rep3-versioned-r1 after merging codex/go-backend-parity. Still refused before any write: paragraph tags that draw lines, links, images, rises, other sizes or colours, a <para> with attributes, and logo data Python's base64 accepts that Go's JPEG decoder does not read. Re-run green natively: printing-generate 113/113 and subscription-reads 350/350 (v2rep3-rerun-r1), course-list 159/159 and course-subscriptions 145/145 (v2rep3-rerun-r2)."
       ]
     },
     {
@@ -23525,14 +23530,20 @@
         "BE_GO/internal/service/report_iso_datetime.go",
         "BE_GO/internal/dto/mcp_models.go",
         "BE_GO/internal/dto/mcp_models.json",
-        "BE_GO/internal/dto/mcp_query.go"
+        "BE_GO/internal/dto/mcp_query.go",
+        "BE_GO/internal/pdfexport/htmlparser.go",
+        "BE_GO/internal/pdfexport/paraparser.go",
+        "BE_GO/internal/pdfexport/entities_gen.go",
+        "BE_GO/internal/pdfexport/header.go",
+        "BE_GO/internal/xlsxexport/value.go"
       ],
       "dependencies": [
         "Existing identity, collaborator registry and association scope",
         "application_sportassociationmoduletemplates; auditlog LogEntry/AuditLogIndex resolvers",
         "application_savedreport; application_tags, application_paymentcategory, application_carnet; instance_instanceconfiguration (AI integration settings)",
         "application_course, application_attendanceregistry, application_attendanceday, application_coursesubscription, application_subscription, application_associate (attendance matrix)",
-        "BE_GO/internal/pdfexport (golden: go test ./internal/pdfexport, TESTS/fixtures/generate_pdf_golden.py, TESTS/contracts/pdf.py) and BE_GO/internal/xlsxexport (golden: go test ./internal/xlsxexport, TESTS/fixtures/generate_xlsx_golden.py, TESTS/contracts/xlsx.py)"
+        "BE_GO/internal/pdfexport (golden: go test ./internal/pdfexport, TESTS/fixtures/generate_pdf_golden.py, TESTS/contracts/pdf.py) and BE_GO/internal/xlsxexport (golden: go test ./internal/xlsxexport, TESTS/fixtures/generate_xlsx_golden.py, TESTS/contracts/xlsx.py)",
+        "BE_GO/internal/pdfexport paragraph markup: reportlab's ParaParser and html.parser (CPython 3.13) ported; golden corpus from reportlab itself (TESTS/fixtures/generate_pdf_golden.py: 106 documents; TESTS/fixtures/generate_pdf_paragraphs.py: 2755 parsed texts and the entity table), go test ./internal/pdfexport"
       ],
       "contract": {
         "methods": [
@@ -23565,25 +23576,25 @@
         "docs/architecture/go-migration/templates-reports.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 174/174; Go 200 on the first case.",
-          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep2-red-r1/results.json",
-          "receipt_sha256": "e36a33ac9cbec7d1fcc8e479e4f7817f10afd79344f08ccda59984c50eb2b4c8"
+          "result": "RED: Django 182/182; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep3-red-r1/results.json",
+          "receipt_sha256": "27d37abd5e6ace558349117ed2b5a8322a100ffb365e5025ca16a4a91ac8c1a7"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 174/174 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep2-versioned-r2/results.json",
-          "receipt_sha256": "19a2b781085c8a3bbd287db83e1e2cbaf46017f0eee1a367c6f0d4a247527470"
+          "result": "GREEN: 182/182 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep3-b-versioned-r2/results.json",
+          "receipt_sha256": "0b31116d01c73fd2086bc271e5822a57612628e1940f4e6a0c6074319372b832"
         },
         {
-          "revision": "the default manager's X-Group-Id filter is dropped from the query tools",
-          "result": "Mutation control: CAUGHT: fails Go on templates-reports-run-query-courses-group-header (response.body:data:count: the courses of every group)",
-          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep2-mutation-r2/results.json",
-          "receipt_sha256": "cfa5cf87ac4edebe6a107fd8199ac18684448f2f049bb843e53fda6a9d01ac51"
+          "revision": "fragments of different fonts count as the same fragment and are merged into one text run (paragraph.go sameFrag)",
+          "result": "Mutation control: CAUGHT: fails Go on templates-reports-run-export-pdf-markup (response.file-pdf: 8 objects, expected 9)",
+          "artifact": "quality-reports/go-migration/templates-reports-http-v2rep3-mutation-r1/results.json",
+          "receipt_sha256": "5681e9dd2aad33fe1ea0c47fd0df04e5a1dec06ad3399cdb93a3fe2d07615038"
         }
       ],
       "notes": [
-        "Implementing: Implementing: group and unusual arguments of saved-reports/<pk>/run. The query tools and the queries of the file tools follow X-Group-Id on the group-aware models (Associate, Course, Invoice, Payment, Subscription) like Django's default managers; the file tools accept format, title, label and text arguments of other types, list or dict cells in the CSV, ISO date-time text in every spelling datetime.fromisoformat reads, sheets without columns, numbered sheet names equal to an earlier one and courses without a title. RED v2rep2-red-r1: Django 174/174, the earlier Go code fails on run-query-courses-group-header; the other new cases are documented refusals (v2-refusals.md, templates-reports rows). Not ported: workbook labels that are equal numbers or beyond 64 bits, the paragraph inputs pdfexport refuses, XLSX and PDF results on the MCP server. Related runs: mcp-server-tools-v2rep2-r2 135/135 (3 refused); native reruns of the families sharing xlsxexport and the query engine (v2rep2-related-r1, two repeated as v2rep2-related-r2)."
+        "Implementing: paragraph markup in the saved-report PDFs (v2-reports-3). Labels, cells and the texts before and after the table go through reportlab's markup parser: '&', '<', entities, <b>/<i>/<br/> and soft hyphens are drawn as reportlab draws them, a text cut between two pages inside a long word is joined and cut again on the next page (both layouts), and markup the parser raises on ('A<B' opens a tag) fails the export like any other exception. 178 cases (4 more: run-export-pdf-markup, run-export-pdf-markup-over-pages, run-export-pdf-markup-unclosed-error, run-export-pdf-label-markup-error). RED v2rep3-red-r1: Django 178/178, Go with the earlier refusal answers 500 on run-export-pdf-markup (documented refusal, see v2-refusals.md row). GREEN v2rep3-versioned-r1 after merging codex/go-backend-parity. Still refused: the paragraph tags that draw lines, links, images, rises, other sizes or colours;  Block B (v2rep3-b): XLSX labels that are equal numbers or beyond 64 bits are ported (RED: documented refusal; native v2rep3-b-native-r1, GREEN v2rep3-b-versioned-r2 182/182 on 4 transports; golden workbooks 202). The XLSX and PDF results on the MCP transport and the assistant channel are ported in the same shared code: mcp-server-tools harness v2rep3-b-mcp-r3-mcp-server-tools 147 cases (146 identical, 1 refused: title that is not a string), 4/4 sessions identical; RED: the 3 documented refusals of v2rep2-r2; mutation v2rep3-b-mcp-mut1-mcp-server-tools (attendance row_count one too high) CAUGHT on get_attendance_matrix export. Related: course-subscriptions 145/145 native (v2rep3-b-rerun-r1). Still refused: paragraph tags that draw lines, links, images, rises, other sizes or colours; exporter exceptions whose text is not reproduced on the MCP transport."
       ]
     },
     {
