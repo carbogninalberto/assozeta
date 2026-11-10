@@ -137,6 +137,12 @@ jobs:
           PYIMAGE
           echo "GO_MIGRATION_PYTHON=$(python -c 'import sys; print(sys.executable)')" >> "$GITHUB_ENV"
           echo "GO_MIGRATION_GO_BIN=$(dirname "$(command -v go)")" >> "$GITHUB_ENV"
+      - name: Fetch Go modules and warm the build cache
+        # The harnesses build with the module proxy disabled.
+        working-directory: BE_GO
+        run: |
+          go mod download all
+          go build ./...
       - name: Run shard ${{ matrix.shard }}/${{ needs.plan.outputs.shards }}
         env:
           SWEEP_LABEL: ${{ needs.plan.outputs.label }}
