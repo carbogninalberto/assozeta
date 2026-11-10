@@ -19,7 +19,7 @@ const reviewed = {
   "BE/application/utils/balance_sheet_utils.py": "16edc940ec32f5a0ec086edd1a8b1852af19994a4f8499441297b2b7e79cd317",
   "BE/application/utils/api_utils.py": "5db286fc73e92356b476514f4d6561a3300b36668ee99831ca1b197835a5cabf",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
-  "BE/application/impersonation.py": "6c011159998ceff71dc6bbccfad9faed5451c819d7f31f93b7c0bc62371c9610",
+  "BE/application/impersonation.py": "760fd6e63c6baebee14744cbdfe571ac4aa4e0fb1a5e0ac9b6147dfcf299cced",
   "BE/application/models/payment_models.py": "9dbcab8698adbde447a9c4f6eb52143409cf197fde3ce90d0aa8da56a1f8ebda",
   "UI/src/routes/accounting/payment/category/Categories.svelte": "e358b8768d55f757cada0af4dabd2443e2168248057f5442f428a6bed58ad768",
   "UI/src/routes/accounting/payment/category/modals/EditModal.svelte": "270b2663c133c813a352959e9b4177ae4f6361ce879537242a7d9af06bed51a8",

@@ -317,3 +317,10 @@ field. Go `managementEligible`, `managementSearchWords` and `IdentityRelations.E
 Owners, the self-hosted instance owner included, select the association's members and subscribers whose memberships
 are all within the actor's associations (`impersonationLinksOwned`, shared by the list, the session start and the
 identity session recheck). Evidence in `impersonation-users.md`; the 264 cases here pass unchanged on four transports.
+
+## Re-verification: instance owner sees every athlete, as the admin does
+
+The instance owner selects every athlete plus its own collaborators (`impersonationInstanceOwner`); the owner of
+another association keeps the rule above. The workload grows to 280 cases and 68 audits: the instance owner's list,
+session start, read and end on an unlinked athlete and on a member of another association, and its refused targets.
+Evidence in `impersonation-users.md` (`ownerimp-identity-green`, four transports).

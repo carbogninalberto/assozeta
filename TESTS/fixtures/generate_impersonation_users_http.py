@@ -3,14 +3,17 @@
 impersonation_users lists eligible_users(actor) (application/impersonation.py):
 - an administrator (no association) sees every active non-superuser athlete,
   live association owner and collaborator of a live active owner;
-- an association owner (whether or not it owns the self-hosted instance) sees
-  the athletes linked to the association by a live Associate row with that
-  user or by a non-deleted Subscription of the association
-  (Subscription._base_manager), and the owner's own collaborators, the owner
-  excluded. Impersonation is limited to athletes whose memberships are all
-  within the actor's associations: an athlete with a live Associate row or a
-  non-deleted Subscription of an association the owner does not own is not
-  listed.
+- the instance owner (is_instance_owner: the first InstanceConfiguration is
+  self_hosted and its primary association belongs to the owner) sees every
+  active athlete, as the administrator does, plus the owner's own
+  collaborators, the owner excluded;
+- the owner of another association sees the athletes linked to the association
+  by a live Associate row with that user or by a non-deleted Subscription of
+  the association (Subscription._base_manager), and the owner's own
+  collaborators, the owner excluded. That owner selects athletes whose
+  memberships are all within the actor's associations: an athlete with a live
+  Associate row or a non-deleted Subscription of an association the owner does
+  not own is not listed.
 The search (query[generalSearch], else q; stripped, first 150 characters) is
 split on whitespace into at most 10 words; every word must match (icontains)
 one of username, email, first_name, last_name, the user's association
@@ -20,7 +23,7 @@ row is describe(user, actor association).
 
 The fixture seeds a self-hosted InstanceConfiguration whose primary
 association is the owner's, so 'owner' is the instance owner and
-'foreign_owner' is not; both follow the same rule. Every seeded user's username starts with
+'foreign_owner' is not. Every seeded user's username starts with
 'imp-users-' so the cases search within them. Run with ``python3 -I``.
 """
 import json
@@ -107,16 +110,23 @@ add('options', 'owner', ASSOCIATION, 200, {'name': 'Impersonation Users', 'descr
 add('wrong-method', 'owner', ASSOCIATION, 405, {'detail': 'Method "POST" not allowed.'}, method='POST')
 
 # --- eligibility -------------------------------------------------------------------
-# The self-hosted instance owner: the association's athletes whose links are all within its associations.
-add('instance-owner-association-athletes', 'owner', path(ASSOCIATION, q='imp-users'), 200,
-    listing(['conti', 'gialli'], OWN_DESCRIBED))
-add('instance-owner-unlinked-athlete', 'owner', path(ASSOCIATION, q='anna neri'), 200, listing([], OWN_DESCRIBED))
-add('instance-owner-athlete-of-another-association', 'owner', path(ASSOCIATION, q='mario'), 200, listing([], OWN_DESCRIBED))
-add('instance-owner-member-elsewhere', 'owner', path(ASSOCIATION, q='marco ferri'), 200, listing([], OWN_DESCRIBED))
-add('instance-owner-subscriber-elsewhere', 'owner', path(ASSOCIATION, q='giulia russo'), 200, listing([], OWN_DESCRIBED))
+# The instance owner: every active athlete, as the administrator sees them (linked or not, with links to the
+# other association or not), without the other owner's collaborators.
+add('instance-owner-every-athlete', 'owner', path(ASSOCIATION, q='imp-users'), 200,
+    listing(['neri', 'conti', 'russo', 'verdi', 'ferri', 'bianchi', 'rossi', 'gialli'], OWN_DESCRIBED))
+add('instance-owner-athlete-role', 'owner', path(ASSOCIATION, q='imp-users', role='athlete'), 200,
+    listing(['neri', 'conti', 'russo', 'verdi', 'ferri', 'bianchi', 'rossi', 'gialli'], OWN_DESCRIBED))
+add('instance-owner-unlinked-athlete', 'owner', path(ASSOCIATION, q='anna neri'), 200, listing(['neri'], OWN_DESCRIBED))
+add('instance-owner-athlete-of-another-association', 'owner', path(ASSOCIATION, q='mario'), 200,
+    listing(['bianchi', 'rossi'], OWN_DESCRIBED))
+add('instance-owner-member-elsewhere', 'owner', path(ASSOCIATION, q='marco ferri'), 200, listing(['ferri'], OWN_DESCRIBED))
+add('instance-owner-subscriber-elsewhere', 'owner', path(ASSOCIATION, q='giulia russo'), 200, listing(['russo'], OWN_DESCRIBED))
 add('instance-owner-deleted-links-elsewhere', 'owner', path(ASSOCIATION, q='elena'), 200, listing(['conti'], OWN_DESCRIBED))
+add('instance-owner-inactive-athlete', 'owner', path(ASSOCIATION, q='sara'), 200, listing([], OWN_DESCRIBED))
+add('instance-owner-deleted-athlete', 'owner', path(ASSOCIATION, q='dario'), 200, listing([], OWN_DESCRIBED))
 add('instance-owner-collaborator-role', 'owner', path(ASSOCIATION, q='imp-users', role='collaborator'), 200, listing([], OWN_DESCRIBED))
-# Another association owner: live members, athletes with a non-deleted subscription, own collaborators.
+# The owner of another association: live members and athletes with a non-deleted subscription whose links are all
+# within its associations, plus own collaborators.
 add('owner-members-and-subscribers', 'foreign_owner', path(ASSOCIATION, q='imp-users'), 200,
     listing(['bianchi', 'rossi', 'staff'], FOREIGN_DESCRIBED))
 add('owner-athlete-role', 'foreign_owner', path(ASSOCIATION, q='imp-users', role='athlete'), 200,

@@ -47,15 +47,19 @@ def eligible_users(actor):
     users = User.objects.filter(is_active=True, is_superuser=False).select_related(
         'connected_user__sportassociation', 'sportassociation')
     if association:
+        from instance.permissions import is_instance_owner
         own_collaborators = Q(role=User.COLLABORATOR, connected_user_id=actor.pk)
+        if is_instance_owner(actor):
+            # An installation serves one association: its owner sees every athlete, as the admin does.
+            return users.exclude(pk=actor.pk).filter(Q(role=User.ATHLETE) | own_collaborators)
         members = Associate.objects.all_objects().filter(
             sport_association=association, deleted=False, user__isnull=False).values('user_id')
         # Associations often register members themselves: the Associate row then
         # belongs to the owner and only the subscription points at the athlete.
         subscribers = Subscription._base_manager.filter(
             sport_association=association, deleted=False, user__isnull=False).values('user_id')
-        # Impersonation is limited to athletes whose memberships are all within the
-        # actor's associations.
+        # The owner of another association on the same installation selects athletes
+        # whose memberships are all within the actor's associations.
         owned = SportAssociation._base_manager.filter(user=actor).values('pk')
         members_elsewhere = Associate.objects.all_objects().filter(
             deleted=False, user__isnull=False, sport_association__isnull=False).exclude(

@@ -322,7 +322,7 @@
    "effect": null
   },
   {
-   "name": "impersonation-users-instance-owner-association-athletes",
+   "name": "impersonation-users-instance-owner-every-athlete",
    "actor": "owner",
    "method": "GET",
    "path": "/association/impersonation/users?q=imp-users",
@@ -331,11 +331,89 @@
    "response": {
     "users": [
      {
+      "user_id": "a1000000-0000-4000-8000-000001680004",
+      "username": "imp-users-anna-neri",
+      "email": "imp-users-anna-neri@example.test",
+      "first_name": "Anna",
+      "last_name": "Neri",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
       "user_id": "a1000000-0000-4000-8000-000001680011",
       "username": "imp-users-elena-conti",
       "email": "imp-users-elena-conti@example.test",
       "first_name": "Elena",
       "last_name": "Conti",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680010",
+      "username": "imp-users-giulia-russo",
+      "email": "imp-users-giulia-russo@example.test",
+      "first_name": "Giulia",
+      "last_name": "Russo",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680003",
+      "username": "imp-users-luca-verdi",
+      "email": "imp-users-luca-verdi@example.test",
+      "first_name": "Luca",
+      "last_name": "Verdi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680009",
+      "username": "imp-users-marco-ferri",
+      "email": "imp-users-marco-ferri@example.test",
+      "first_name": "Marco",
+      "last_name": "Ferri",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680002",
+      "username": "imp-users-mario-bianchi",
+      "email": "imp-users-mario-bianchi@example.test",
+      "first_name": "Mario",
+      "last_name": "Bianchi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680001",
+      "username": "imp-users-mario-rossi",
+      "email": "imp-users-mario-rossi@example.test",
+      "first_name": "Mario",
+      "last_name": "Rossi",
       "last_login": null,
       "role": "athlete",
       "association": {
@@ -361,7 +439,131 @@
     "meta": {
      "page": 1,
      "perpage": 25,
-     "total": 2,
+     "total": 8,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-instance-owner-athlete-role",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=imp-users&role=athlete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680004",
+      "username": "imp-users-anna-neri",
+      "email": "imp-users-anna-neri@example.test",
+      "first_name": "Anna",
+      "last_name": "Neri",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680011",
+      "username": "imp-users-elena-conti",
+      "email": "imp-users-elena-conti@example.test",
+      "first_name": "Elena",
+      "last_name": "Conti",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680010",
+      "username": "imp-users-giulia-russo",
+      "email": "imp-users-giulia-russo@example.test",
+      "first_name": "Giulia",
+      "last_name": "Russo",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680003",
+      "username": "imp-users-luca-verdi",
+      "email": "imp-users-luca-verdi@example.test",
+      "first_name": "Luca",
+      "last_name": "Verdi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680009",
+      "username": "imp-users-marco-ferri",
+      "email": "imp-users-marco-ferri@example.test",
+      "first_name": "Marco",
+      "last_name": "Ferri",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680002",
+      "username": "imp-users-mario-bianchi",
+      "email": "imp-users-mario-bianchi@example.test",
+      "first_name": "Mario",
+      "last_name": "Bianchi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680001",
+      "username": "imp-users-mario-rossi",
+      "email": "imp-users-mario-rossi@example.test",
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680005",
+      "username": "imp-users-paolo-gialli",
+      "email": "imp-users-paolo-gialli@example.test",
+      "first_name": "Paolo",
+      "last_name": "Gialli",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 8,
      "pages": 1
     }
    },
@@ -375,12 +577,26 @@
    "headers": {},
    "status": 200,
    "response": {
-    "users": [],
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680004",
+      "username": "imp-users-anna-neri",
+      "email": "imp-users-anna-neri@example.test",
+      "first_name": "Anna",
+      "last_name": "Neri",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     }
+    ],
     "next_page": null,
     "meta": {
      "page": 1,
      "perpage": 25,
-     "total": 0,
+     "total": 1,
      "pages": 1
     }
    },
@@ -394,12 +610,39 @@
    "headers": {},
    "status": 200,
    "response": {
-    "users": [],
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680002",
+      "username": "imp-users-mario-bianchi",
+      "email": "imp-users-mario-bianchi@example.test",
+      "first_name": "Mario",
+      "last_name": "Bianchi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680001",
+      "username": "imp-users-mario-rossi",
+      "email": "imp-users-mario-rossi@example.test",
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     }
+    ],
     "next_page": null,
     "meta": {
      "page": 1,
      "perpage": 25,
-     "total": 0,
+     "total": 2,
      "pages": 1
     }
    },
@@ -413,12 +656,26 @@
    "headers": {},
    "status": 200,
    "response": {
-    "users": [],
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680009",
+      "username": "imp-users-marco-ferri",
+      "email": "imp-users-marco-ferri@example.test",
+      "first_name": "Marco",
+      "last_name": "Ferri",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     }
+    ],
     "next_page": null,
     "meta": {
      "page": 1,
      "perpage": 25,
-     "total": 0,
+     "total": 1,
      "pages": 1
     }
    },
@@ -432,12 +689,26 @@
    "headers": {},
    "status": 200,
    "response": {
-    "users": [],
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680010",
+      "username": "imp-users-giulia-russo",
+      "email": "imp-users-giulia-russo@example.test",
+      "first_name": "Giulia",
+      "last_name": "Russo",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     }
+    ],
     "next_page": null,
     "meta": {
      "page": 1,
      "perpage": 25,
-     "total": 0,
+     "total": 1,
      "pages": 1
     }
    },
@@ -471,6 +742,44 @@
      "page": 1,
      "perpage": 25,
      "total": 1,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-instance-owner-inactive-athlete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=sara",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 0,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-instance-owner-deleted-athlete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=dario",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 0,
      "pages": 1
     }
    },
