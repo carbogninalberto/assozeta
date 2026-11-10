@@ -251,7 +251,7 @@ func run() (runErr error) {
 	})
 	instanceHandler := handler.NewInstanceBootstrapHandler(instanceService, service.NewActorAuthentication(accounts, tokens), identities)
 	instanceAdminHandler, instanceAdminService := composeInstanceAdmin(cfg, db, instanceService, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
-	instanceOutboundHandler, err := composeInstanceOutbound(db, cache, instanceAdminHandler, instanceAdminService)
+	instanceOutboundHandler, err := composeInstanceOutbound(cfg, db, cache, broker, instanceAdminHandler, instanceAdminService)
 	if err != nil {
 		return err
 	}
@@ -824,7 +824,7 @@ func run() (runErr error) {
 	e.Any("/instance/admin/data-restore/backups", dataRestoreHandler.Backups, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/data-restore/:id/download", dataRestoreHandler.Download, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/data-restore/:id/:action", dataRestoreHandler.Action, middleware.DjangoSessionAudit(sessionAuthentication))
-	e.Any("/instance/admin/diagnostics", instanceAdminHandler.Diagnostics, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/diagnostics", instanceOutboundHandler.Diagnostics, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/updates", instanceAdminHandler.Updates, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/restarts", instanceAdminHandler.Restarts, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/bakney-pairing", bakneySSOHandler.Admin, middleware.DjangoSessionAudit(sessionAuthentication))

@@ -4,7 +4,7 @@ The shared family checks (status, error page, Allow, Content-Language, no
 cookie, Bearer challenge, exact JSON) plus the headers these views set:
 Cache-Control on every email/integration response and on diagnostics reads,
 Retry-After on a leased diagnostics run. '$isonow' accepts a request-time
-datetime.isoformat() in UTC (diagnostics integration checks).
+datetime.isoformat() in UTC (diagnostics integration checks and run results).
 """
 import json
 import re
@@ -52,7 +52,8 @@ def assert_case(case, base_url, *, token, sessions):
     if 'raw_body' in case:
         body = case['raw_body'].encode()
         headers['Content-Type'] = case['content_type']
-    status, raw, received = Client(base_url, token).request(case['method'], case['path'], body, headers, raw=True, include_headers=True)
+    # A diagnostics run waits for its probes (10 s deadline each).
+    status, raw, received = Client(base_url, token, timeout=60).request(case['method'], case['path'], body, headers, raw=True, include_headers=True)
 
     def check(condition, code):
         if not condition:

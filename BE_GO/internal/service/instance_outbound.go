@@ -31,6 +31,9 @@ type InstanceOutbound struct {
 	now    func() time.Time
 	// localName is DNS_NAME.get_fqdn() (computed once, like Django's cache).
 	localName func() string
+	// diagnostics enables DiagnosticsView.post (WithDiagnostics).
+	diagnostics        InstanceDiagnosticsProbes
+	diagnosticSettings InstanceDiagnosticsSettings
 }
 
 // InstanceLeaseStore is claim_operation's select_for_update(nowait=True).
@@ -263,7 +266,7 @@ func (s *InstanceOutbound) emailProbePlan(row *domain.InstanceAdminRow, revision
 			return nil, err
 		}
 		host, port, username, password = env.EmailHost, env.EmailPort, env.EmailUsername, env.EmailPassword
-		security, plan.from, plan.sender, plan.revision = value["security"].(string), env.FromAddress, env.FromName, row.EmailRevision
+		security, plan.from, plan.sender, plan.revision = value["security"].(string), s.admin.environmentFrom(), env.FromName, row.EmailRevision
 	}
 	answer := func(status, message, level string) (*emailPlan, error) {
 		plan.answer = &instanceprobe.Result{Status: status, Level: level, Message: message}

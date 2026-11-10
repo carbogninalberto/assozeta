@@ -26,7 +26,7 @@ import (
 
 // InstanceAdmin ports the owner-only installation administration views of
 // BE/instance: InstanceAdminView, EmailSettingsView, IntegrationSettingsView,
-// DiagnosticsView (GET; POST only while a lease is active), and
+// DiagnosticsView (GET; POST in instance_diagnostics.go), and
 // InstanceUpdatesView/InstanceRestartsView (the update runner in production,
 // instance_updates.go). Paths that run outbound probes, and stored shapes
 // the port does not interpret, return domain.ErrInstanceAdminRefused before
@@ -48,7 +48,6 @@ type InstanceAdminStore interface {
 	UpdateBranding(context.Context, map[string]string, time.Time) error
 	UIAPIVersion(context.Context) (string, error)
 	AppendUIAPIVersionChange(context.Context, domain.InstanceUIAPIVersionChange) error
-	DiagnosticsLease(context.Context) ([]byte, bool)
 }
 
 // InstanceAdminBootstrap is InstanceConfigSerializer and is_instance_administrator
@@ -64,13 +63,13 @@ type InstanceAdminEnvironment struct {
 	EmailHost, EmailUsername, EmailPassword            string
 	EmailPort                                          int64
 	EmailPortInvalid, EmailUseTLS, EmailUseSSL         bool
-	FromName, FromAddress                              string
-	FromInvalid                                        bool
-	AIAPIKey, AIModel, AICheapModel, AIBaseURL         string
-	AIIntegers                                         [6]int64
-	AIIntegersInvalid                                  bool
-	StripePublicKey, StripeKey, StripeWebhookSecret    string
-	GoogleClientID, AppleClientID                      string
+	// FromName and FromAddress are parseaddr(DEFAULT_FROM_EMAIL).
+	FromName, FromAddress                           string
+	AIAPIKey, AIModel, AICheapModel, AIBaseURL      string
+	AIIntegers                                      [6]int64
+	AIIntegersInvalid                               bool
+	StripePublicKey, StripeKey, StripeWebhookSecret string
+	GoogleClientID, AppleClientID                   string
 	// SECRET_KEY then SECRET_KEY_FALLBACKS.
 	SecretKeys []string
 }
@@ -469,7 +468,7 @@ func emailSettings(row *domain.InstanceAdminRow) (map[string]any, bool, error) {
 
 // environmentEmail is effective_email's environment branch.
 func (s *InstanceAdmin) environmentEmail(revision int64) (map[string]any, error) {
-	if s.env.EmailPortInvalid || s.env.FromInvalid {
+	if s.env.EmailPortInvalid {
 		return nil, refused("environment email settings")
 	}
 	security := "none"
@@ -482,8 +481,17 @@ func (s *InstanceAdmin) environmentEmail(revision int64) (map[string]any, error)
 		security = "ssl"
 	}
 	return map[string]any{"source": "environment", "host": s.env.EmailHost, "port": s.env.EmailPort, "username": s.env.EmailUsername,
-		"password": s.env.EmailPassword, "security": security, "from_email": s.env.FromAddress, "sender_name": s.env.FromName,
+		"password": s.env.EmailPassword, "security": security, "from_email": s.environmentFrom(), "sender_name": s.env.FromName,
 		"revision": revision}, nil
+}
+
+// environmentFrom is effective_email's from_email: the parsed address
+// unless it is empty or 'None' (an unset EMAIL_HOST_USER).
+func (s *InstanceAdmin) environmentFrom() string {
+	if s.env.FromAddress == "None" {
+		return ""
+	}
+	return s.env.FromAddress
 }
 
 // publicEmail is email_configuration.public_email(config).
@@ -1187,45 +1195,4 @@ func (s *InstanceAdmin) integrationChecks(row *domain.InstanceAdminRow) ([]any, 
 			"message": message, "checked_at": pythonISOFormat(s.now()), "core": false})
 	}
 	return checks, nil
-}
-
-// RunDiagnostics is DiagnosticsView.post up to claim_operation: an active (or
-// unclaimable) lease is the 429; claiming it would run the outbound probes,
-// which is not ported.
-func (s *InstanceAdmin) RunDiagnostics(ctx context.Context) error {
-	busy := &InstanceAdminResponse{Status: 429, RetryAfter: "45",
-		Body: map[string]any{"error": "Diagnostica già in corso o appena terminata. Attendi fino a 45 secondi e riprova."}}
-	raw, ok := s.store.DiagnosticsLease(ctx)
-	if !ok {
-		return busy
-	}
-	value, err := instanceAdminDecode(raw)
-	if err != nil {
-		return err
-	}
-	results, err := instanceAdminObject(value)
-	if err != nil {
-		return err
-	}
-	leases := map[string]any{}
-	if stored, present := results["operation_leases"]; present {
-		object, ok := stored.(map[string]any)
-		if !ok {
-			return refused("stored leases are not an object")
-		}
-		leases = object
-	}
-	lease, present := leases["diagnostics"]
-	if !present {
-		lease = json.Number("0")
-	}
-	until, ok := instanceAdminNumber(lease)
-	if !ok {
-		return refused("stored lease is not a number")
-	}
-	now := new(big.Rat).SetFloat64(float64(s.now().UnixNano()) / 1e9)
-	if until.Cmp(now) > 0 {
-		return busy
-	}
-	return refused("diagnostic probes")
 }

@@ -113,23 +113,6 @@ func (r *InstanceAdmin) UpdateBranding(ctx context.Context, fields map[string]st
 	return err
 }
 
-// DiagnosticsLease is claim_operation's select_for_update(nowait=True)
-// read: the stored diagnostic results, or ok=false when Django's
-// DatabaseError path (lock not available, any database error) or a missing
-// row makes the claim fail. Nothing is written.
-func (r *InstanceAdmin) DiagnosticsLease(ctx context.Context) (results []byte, ok bool) {
-	tx, err := r.db.BeginTxx(ctx, nil)
-	if err != nil {
-		return nil, false
-	}
-	defer tx.Rollback()
-	var raw []byte
-	if err = tx.GetContext(ctx, &raw, `SELECT diagnostic_results FROM instance_instanceconfiguration ORDER BY id LIMIT 1 FOR UPDATE NOWAIT`); err != nil {
-		return nil, false
-	}
-	return raw, true
-}
-
 // UIAPIVersion is InstanceConfiguration.get_config().ui_api_version.
 func (r *InstanceAdmin) UIAPIVersion(ctx context.Context) (string, error) {
 	var version string
