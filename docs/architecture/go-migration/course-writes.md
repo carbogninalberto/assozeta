@@ -108,9 +108,9 @@ carry the session context.
 - course/update: `fee`/`one_fee` other than plain decimals with up to seven whole digits and two places (a null `one_fee`),
   booleans other than `true`/`false`, 0/1 and `'t'`/`'True'`/`'1'`/`'f'`/`'False'`/`'0'`, non-integer or out-of-range billing
   integers (null `billed_from_day_of_month`), dates other than ISO `YYYY-MM-DD[THH:MM[:SS[.fff|.ffffff]]][Z|±HH:MM]` strings or
-  null, and events carrying `course_subscription_installment_id`.
-- Event dates with non-ASCII digits; overview routes with a body that is not an object; course-overview update for an athlete
-  whose subscription has no association, and a non-canonical `X-Group-Id`.
+  null, and events whose `course_subscription_installment_id` is valid (`dict(validated_data)` keeps the UUID object: the
+  save fails after auditlog has written its entry).
+- course-overview update for an athlete whose subscription has no association, and a non-canonical `X-Group-Id`.
 
 ## Evidence
 
@@ -147,3 +147,26 @@ deleted (paid and soft-deleted ones stay).
 - GREEN (`gaps-versioned-1`): 108/108 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`gaps-mutation-1`): dropping the empty-title guard from the title rewrite fails `update-title-from-blank` (CAUGHT);
   a second control (`gaps-mutation-2`) deleting paid membership payments too fails `delete-membership-cascade` (CAUGHT).
+
+## Event keys, date digits and overview bodies (restcourses)
+
+- `CourseEventsSerializer` has the installment's primary key as an optional field. An event carrying
+  `course_subscription_installment_id` is validated like any other: null is `This field may not be null.`, a value that is
+  not a UUID (text, float) `Must be a valid UUID.`, and the id of a live installment the request's `X-Group-Id` shows
+  `course subscription installment with this course subscription installment id already exists.`; an integer or a boolean
+  is the UUID with that integer value. An accepted key is not used: the installment gets a new id. This applies to
+  course/add (the 400 is raised as is), to course/update (400) and to the stored course events the overview update walks
+  (an event that fails is skipped), course-enrolment included.
+- Event dates are read by `strptime('%d/%m/%Y')`: the day's second digit and the year accept decimal digits of any script,
+  the month and a first digit do not.
+- Overview update and delete with a body that is not an object: the views test their keys in it. A list or text holding
+  none of the keys (`multi_payments`, `one_fee_payment`; `installments`) reads as an empty object; one holding a key, a
+  number or a boolean is a 500 before any write.
+
+Go: `dto.ValidateCourseEvent(value, taken)` with `CourseEventTaken` (`InstallmentIDTaken` in the course writes
+transaction), `courseWritesDMYAny` in `ParseDMYDate`, `courseWritesBody`.
+
+Evidence: 137 cases. RED: documented refusals (v2-refusals.md, course-writes rows); `sweep-restcourses-red-r1` is the previous Go tree against the new cases. GREEN `sweep-restcourses-green-r1` on native
+Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `restcourses-mutation-r1` (the installment id lookup's result
+ignored) CAUGHT. Re-run green in the same sweep: course-enrolment, course-subscriptions, course-overview,
+subscription-renew, subscription-writes, personas-writes and the router families that share the event and date readers.

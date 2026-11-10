@@ -139,8 +139,9 @@ Membership payments render PaymentSerializer's nested `instructor` and `invoice`
 
 ## Not ported (refused before any write)
 
-- In the list exports a carnet `lessons_left` that is a float or a container: 500.
-- Update: `events` given as an object or a string (Python iterates keys or characters), unmatched installments sharing one
+- In the list exports a carnet `lessons_left` that is a list or an object: 500 (the list route itself fails on such a
+  row in Django).
+- Update: unmatched installments sharing one
   payment, a non-canonical `X-Group-Id` spelling with new events, a changed primary key (Model.save() would insert a copy)
   and HTML-form input for the JSON fields `multiple_quote` and `events`: 500.
 - A soft delete whose row's own payment is also the unpaid payment of one of its installments (Django's save would fail
@@ -194,3 +195,19 @@ PDF export of the list (13 more cases, 145 in all):
   decoded form.
 - Mutation (`v2pdf-mutation-r1`): a document titled with the list title instead of the last carnet title fails
   `course-subscriptions-list-pdf-subscription-carnet-title` (CAUGHT).
+
+## Events as an object or text, float carnet lessons (restcourses)
+
+- Update with `events` sent as an object or as text: the loops walk its keys or its characters, each a string. With
+  installments on the row the id comparison raises (500, nothing written). Without, each key or character is validated as
+  an event (`400 {'non_field_errors': ['Invalid data. Expected a dictionary, but got str.']}`) unless it contains the text
+  `course_subscription_installment_id`, which leaves it out (200, nothing changed). An empty object or text removes every
+  installment, like an empty list.
+- A carnet with a float `lessons_left` (`2.5`): the list shows `lessons_left` 2.5, `lessons_used` 7.5 and `2.5/10`; both
+  exports write `2.5/10` in the Carnet column.
+
+Go: `planEvents` uses `dto.PythonIterate`; `courseSubscriptionExportLessons` writes numbers with `dto.PythonStr`.
+
+Evidence: 150 cases. RED: documented refusals (v2-refusals.md, course-subscriptions rows); `sweep-restcourses-red-r1` is the previous Go tree against the new cases. GREEN `sweep-restcourses-green-r1` on
+native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `restcourses-mutation-r1` (an object or text read as an
+empty selection) CAUGHT.
