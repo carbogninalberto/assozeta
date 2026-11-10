@@ -25156,7 +25156,7 @@
         ],
         "request": "No body.",
         "response": "200 {'data': {'msg': 'subscription archival completed.'}}.",
-        "errors": "401 anonymous; 403 registry / scoped session / IsAssociationUser generic detail (athletes) / {'exception': 'User not allowed.'}; 404 {'exception': 'Subscription not found'}; 405; 500 {'exception': ['“<uid>” is not a valid UUID.']} for a malformed uid, the HTML page for owners without an association and refused paths.",
+        "errors": "401 anonymous; 403 registry / scoped session / IsAssociationUser generic detail (athletes) / {'exception': 'User not allowed.'}; 404 {'exception': 'Subscription not found'}; 405; 500 {'exception': ['“<uid>” is not a valid UUID.']} for a malformed uid, the HTML page for owners without an association and the paths where Django raises.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.members.archive.update; IsAssociationUser.",
         "resource_scope": "Scoped group-aware subscription of request.user's association; live (scoped) course subscriptions; live group-aware installments; live group-aware payments of the association and associate created within the subscription dates.",
@@ -25174,25 +25174,25 @@
         "docs/architecture/go-migration/subscription-lifecycle.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 63/63; Go 500 on the first case.",
+          "result": "RED: Django 71/71; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/subscription-lifecycle-http-v2sub-red-r5/results.json",
           "receipt_sha256": "cb2a7845dcf3795b5e50c9798dc1f550c74510f925d01549790bcb52aecc2eda"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 63/63 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-v2sub-merged-r1/results.json",
-          "receipt_sha256": "378476481f05eda89ec8e9c810a6465398f1ca712532b2793200f5a037b7b3ea"
+          "result": "GREEN: 71/71 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-sweep-restsubs-2/results.json",
+          "receipt_sha256": "617f736a7c5747b18a33ef3330d630d8f29b7738bd5f3db665848f0e29a583ec"
         },
         {
-          "revision": "committing change rendering the stored invoice instead of the in-memory one on the deleted payment",
-          "result": "Mutation control: fails Go on subscription-lifecycle-delete-invoiced-subscription-payment (audit.changes).",
-          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-v2sub-mutation-r2/results.json",
-          "receipt_sha256": "57e6512cd9e74ff1bce395ac641b8b3471c8fcdb241be59279a9ec012ed57036"
+          "revision": "payment already deleted by an earlier step no longer raises the 500 (returns nil)",
+          "result": "Mutation control: fails Go on subscription-lifecycle-delete-payment-on-two-course-subscriptions-server-error (response.status 200 instead of 500)",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-rsmut2/results.json",
+          "receipt_sha256": "6f04ff527ba3afb62ee75d764226c0bf05d42fd61bbfe4c299ab838747774a25"
         }
       ],
       "notes": [
-        "Implementing: Delete runs the generic Collector from the subscription (all referencing rows) and deletes the signature object after commit when unreferenced; archive/delete handle invoiced unpaid payments (invoice Collector; archive ValueError 500 after the invoice delete; delete audits the in-memory invoice id); archiving a soft-deleted payment is audited against None."
+        "Implementing: archive and delete follow Django step by step for payments without an association, payments whose save fails, one payment on two links and subscriptions with empty dates (work done before a 500 is kept). RED: documented refusal (v2-refusals.md, v2-rest-subs). Still refused: unreadable or group-hidden unpaid payments."
       ]
     },
     {
@@ -25526,7 +25526,7 @@
         ],
         "request": "No body.",
         "response": "200 {'data': {'msg': 'subscription delete.'}}.",
-        "errors": "401 anonymous; 403 registry / scoped session / {'exception': 'User not allowed.'}; 404 {'msg': 'Subscription not found.'}; 405; 500 {'exception': ['“<uid>” is not a valid UUID.']} for a malformed uid, the HTML page for athletes, owners without an association and refused paths.",
+        "errors": "401 anonymous; 403 registry / scoped session / {'exception': 'User not allowed.'}; 404 {'msg': 'Subscription not found.'}; 405; 500 {'exception': ['“<uid>” is not a valid UUID.']} for a malformed uid, the HTML page for athletes, owners without an association and the paths where Django raises.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.members.delete.",
         "resource_scope": "Scoped group-aware subscription of request.user's association; its live course subscriptions (not scoped); live group-aware installments and period payments.",
@@ -25544,25 +25544,25 @@
         "docs/architecture/go-migration/subscription-lifecycle.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 63/63; Go 500 on the first case.",
+          "result": "RED: Django 71/71; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/subscription-lifecycle-http-v2sub-red-r5/results.json",
           "receipt_sha256": "cb2a7845dcf3795b5e50c9798dc1f550c74510f925d01549790bcb52aecc2eda"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 63/63 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-v2sub-merged-r1/results.json",
-          "receipt_sha256": "378476481f05eda89ec8e9c810a6465398f1ca712532b2793200f5a037b7b3ea"
+          "result": "GREEN: 71/71 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-sweep-restsubs-2/results.json",
+          "receipt_sha256": "617f736a7c5747b18a33ef3330d630d8f29b7738bd5f3db665848f0e29a583ec"
         },
         {
-          "revision": "committing change rendering the stored invoice instead of the in-memory one on the deleted payment",
-          "result": "Mutation control: fails Go on subscription-lifecycle-delete-invoiced-subscription-payment (audit.changes).",
-          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-v2sub-mutation-r2/results.json",
-          "receipt_sha256": "57e6512cd9e74ff1bce395ac641b8b3471c8fcdb241be59279a9ec012ed57036"
+          "revision": "payment already deleted by an earlier step no longer raises the 500 (returns nil)",
+          "result": "Mutation control: fails Go on subscription-lifecycle-delete-payment-on-two-course-subscriptions-server-error (response.status 200 instead of 500)",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-rsmut2/results.json",
+          "receipt_sha256": "6f04ff527ba3afb62ee75d764226c0bf05d42fd61bbfe4c299ab838747774a25"
         }
       ],
       "notes": [
-        "Implementing: Delete runs the generic Collector from the subscription (all referencing rows) and deletes the signature object after commit when unreferenced; archive/delete handle invoiced unpaid payments (invoice Collector; archive ValueError 500 after the invoice delete; delete audits the in-memory invoice id); archiving a soft-deleted payment is audited against None."
+        "Implementing: archive and delete follow Django step by step for payments without an association, payments whose save fails, one payment on two links and subscriptions with empty dates (work done before a 500 is kept). RED: documented refusal (v2-refusals.md, v2-rest-subs). Still refused: unreadable or group-hidden unpaid payments."
       ]
     },
     {
@@ -25869,7 +25869,8 @@
         "application_sportassociation",
         "bakney_user",
         "pilplaceholder.RenderWith (the PNG of generate_image_with_text under Pillow 13.0.0, both zlib builds; TESTS/adapters/go/pil_placeholder_golden.py)",
-        "documents-writes (the document storage)"
+        "documents-writes (the document storage)",
+        "Synchronous print (BE_GO/internal/service/medical_appointment_add.go InvoiceSyncPrint)"
       ],
       "contract": {
         "methods": [
@@ -25901,25 +25902,25 @@
         "docs/architecture/go-migration/subscription-medical.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 133/133; Go fails storage.placeholder-bytes:3781 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-medical-http-v2subs3-mutation-r2/results.json",
-          "receipt_sha256": "5196b79a2c30ec8ab3095ac2c523809173c48188978832bcd05243f2a168e3c8"
+          "result": "RED: Django 135/135; Go fails print.headers:0 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-rsmut/results.json",
+          "receipt_sha256": "4c061d013f94f088a7981fafcf84d802429f1a099051cea2fc884d94b09571c7"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 133/133 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
-          "artifact": "quality-reports/go-migration/subscription-medical-http-v2subs3-versioned-r1/results.json",
-          "receipt_sha256": "9749cd17ff5a41fd3e3a3eb7bae3d40ca3a4d3af7251bd4ebd0f21f17ffae2b8"
+          "result": "GREEN: 135/135 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-rsmed/results.json",
+          "receipt_sha256": "2639e94832516770769936a538996f25b37b456d0a280b8a7bc563254cf77d95"
         },
         {
-          "revision": "committing change drawing the member's names swapped in the placeholder text",
-          "result": "Mutation control: fails Go on subscription-medical-expire-without-certificate-placeholder (storage.placeholder-bytes).",
-          "artifact": "quality-reports/go-migration/subscription-medical-http-v2subs3-mutation-r2/results.json",
-          "receipt_sha256": "5196b79a2c30ec8ab3095ac2c523809173c48188978832bcd05243f2a168e3c8"
+          "revision": "the print of an appointment without a document sent without the request Authorization",
+          "result": "Mutation control: fails Go on subscription-medical-list-prints-appointments-without-document (print.headers:0)",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-rsmut/results.json",
+          "receipt_sha256": "4c061d013f94f088a7981fafcf84d802429f1a099051cea2fc884d94b09571c7"
         }
       ],
       "notes": [
-        "Implementing: medical appointments list (group-aware scoped subscription, -date order, REGIONS labels) and delete (subscription join, actor-indexed audit), certificate edit (notes str(), boolean flag, Python `in` on non-dict bodies) and set-certificate-expiration (dates, null removal with Subscription.save() date fill, collector SET_NULL and unreferenced document delete, draft certificates), with copies of certificates other associations reference and non-atomic failures, on four transports; list rows that would print their document and a subscription without a certificate (placeholder image upload) are refused (500) before any write; add, upload and send-email-reminder stay on Django. v2subs3: set-certificate-expiration for a subscription without a certificate is ported: the account's new certificate, the placeholder PNG (internal/pilplaceholder), its Document, the stored object, subscription.save() with the certificate and the certificate's save with document and date; not atomic, as in Django (no member, or no %d/%m/%Y date: the new certificate stays, 500). The family now runs with a private MinIO. RED: documented refusal, see v2-refusals.md (set-certificate-expiration, member without a certificate). Still refused: a member without a first or last name, a file name that is not storable. No RED receipt (block mode). RED: documented refusal (block mode); the mutation receipt is the failing control."
+        "Implementing: the appointment list prints each appointment stored without a document (GET to the renderer host with the request Authorization, errors swallowed) and serializes the row without a document. RED: documented refusal (v2-refusals.md, v2-rest-subs). The mutation receipt is the failing control. Placeholder PNG check fails on CI Linux runners (zlib), not on the local run."
       ]
     },
     {
@@ -26035,7 +26036,8 @@
         "application_sportassociation",
         "bakney_user",
         "pilplaceholder.RenderWith (the PNG of generate_image_with_text under Pillow 13.0.0, both zlib builds; TESTS/adapters/go/pil_placeholder_golden.py)",
-        "documents-writes (the document storage)"
+        "documents-writes (the document storage)",
+        "Synchronous print (BE_GO/internal/service/medical_appointment_add.go InvoiceSyncPrint)"
       ],
       "contract": {
         "methods": [
@@ -26049,11 +26051,11 @@
         ],
         "request": "No body; optional X-Group-Id.",
         "response": "200 {'data': {'<idx>': MedicalAppointmentsSerializer}} ordered by -date.",
-        "errors": "400 malformed uid; 401; 403 registry or athlete; 404 {'data': 'no subscription found.'}; 500 no association, unknown region, or a row without a document (not ported: printing).",
+        "errors": "400 malformed uid; 401; 403 registry or athlete; 404 {'data': 'no subscription found.'}; 500 no association, unknown region, or a row without a document.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.members.read.",
         "resource_scope": "A subscription of request.user.sport_association (group-aware, deleted included; impersonation-scoped).",
-        "side_effects": "None (rows without a document are refused before printing).",
+        "side_effects": "GET to the renderer host for each row without a document (Authorization of the request, errors swallowed); no database write.",
         "transaction": "Read only.",
         "execution_owner": "django"
       },
@@ -26067,25 +26069,25 @@
         "docs/architecture/go-migration/subscription-medical.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 133/133; Go fails storage.placeholder-bytes:3781 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-medical-http-v2subs3-mutation-r2/results.json",
-          "receipt_sha256": "5196b79a2c30ec8ab3095ac2c523809173c48188978832bcd05243f2a168e3c8"
+          "result": "RED: Django 135/135; Go fails print.headers:0 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-rsmut/results.json",
+          "receipt_sha256": "4c061d013f94f088a7981fafcf84d802429f1a099051cea2fc884d94b09571c7"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 133/133 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
-          "artifact": "quality-reports/go-migration/subscription-medical-http-v2subs3-versioned-r1/results.json",
-          "receipt_sha256": "9749cd17ff5a41fd3e3a3eb7bae3d40ca3a4d3af7251bd4ebd0f21f17ffae2b8"
+          "result": "GREEN: 135/135 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-rsmed/results.json",
+          "receipt_sha256": "2639e94832516770769936a538996f25b37b456d0a280b8a7bc563254cf77d95"
         },
         {
-          "revision": "committing change drawing the member's names swapped in the placeholder text",
-          "result": "Mutation control: fails Go on subscription-medical-expire-without-certificate-placeholder (storage.placeholder-bytes).",
-          "artifact": "quality-reports/go-migration/subscription-medical-http-v2subs3-mutation-r2/results.json",
-          "receipt_sha256": "5196b79a2c30ec8ab3095ac2c523809173c48188978832bcd05243f2a168e3c8"
+          "revision": "the print of an appointment without a document sent without the request Authorization",
+          "result": "Mutation control: fails Go on subscription-medical-list-prints-appointments-without-document (print.headers:0)",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-rsmut/results.json",
+          "receipt_sha256": "4c061d013f94f088a7981fafcf84d802429f1a099051cea2fc884d94b09571c7"
         }
       ],
       "notes": [
-        "Implementing: medical appointments list (group-aware scoped subscription, -date order, REGIONS labels) and delete (subscription join, actor-indexed audit), certificate edit (notes str(), boolean flag, Python `in` on non-dict bodies) and set-certificate-expiration (dates, null removal with Subscription.save() date fill, collector SET_NULL and unreferenced document delete, draft certificates), with copies of certificates other associations reference and non-atomic failures, on four transports; list rows that would print their document and a subscription without a certificate (placeholder image upload) are refused (500) before any write; add, upload and send-email-reminder stay on Django. v2subs3: set-certificate-expiration for a subscription without a certificate is ported: the account's new certificate, the placeholder PNG (internal/pilplaceholder), its Document, the stored object, subscription.save() with the certificate and the certificate's save with document and date; not atomic, as in Django (no member, or no %d/%m/%Y date: the new certificate stays, 500). The family now runs with a private MinIO. RED: documented refusal, see v2-refusals.md (set-certificate-expiration, member without a certificate). Still refused: a member without a first or last name, a file name that is not storable. No RED receipt (block mode). RED: documented refusal (block mode); the mutation receipt is the failing control."
+        "Implementing: the appointment list prints each appointment stored without a document (GET to the renderer host with the request Authorization, errors swallowed) and serializes the row without a document. RED: documented refusal (v2-refusals.md, v2-rest-subs). The mutation receipt is the failing control. Placeholder PNG check fails on CI Linux runners (zlib), not on the local run."
       ]
     },
     {
@@ -26129,7 +26131,8 @@
         "application_sportassociation",
         "bakney_user",
         "pilplaceholder.RenderWith (the PNG of generate_image_with_text under Pillow 13.0.0, both zlib builds; TESTS/adapters/go/pil_placeholder_golden.py)",
-        "documents-writes (the document storage)"
+        "documents-writes (the document storage)",
+        "Synchronous print (BE_GO/internal/service/medical_appointment_add.go InvoiceSyncPrint)"
       ],
       "contract": {
         "methods": [
@@ -26161,25 +26164,25 @@
         "docs/architecture/go-migration/subscription-medical.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 133/133; Go fails storage.placeholder-bytes:3781 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-medical-http-v2subs3-mutation-r2/results.json",
-          "receipt_sha256": "5196b79a2c30ec8ab3095ac2c523809173c48188978832bcd05243f2a168e3c8"
+          "result": "RED: Django 135/135; Go fails print.headers:0 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-rsmut/results.json",
+          "receipt_sha256": "4c061d013f94f088a7981fafcf84d802429f1a099051cea2fc884d94b09571c7"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 133/133 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
-          "artifact": "quality-reports/go-migration/subscription-medical-http-v2subs3-versioned-r1/results.json",
-          "receipt_sha256": "9749cd17ff5a41fd3e3a3eb7bae3d40ca3a4d3af7251bd4ebd0f21f17ffae2b8"
+          "result": "GREEN: 135/135 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-rsmed/results.json",
+          "receipt_sha256": "2639e94832516770769936a538996f25b37b456d0a280b8a7bc563254cf77d95"
         },
         {
-          "revision": "committing change drawing the member's names swapped in the placeholder text",
-          "result": "Mutation control: fails Go on subscription-medical-expire-without-certificate-placeholder (storage.placeholder-bytes).",
-          "artifact": "quality-reports/go-migration/subscription-medical-http-v2subs3-mutation-r2/results.json",
-          "receipt_sha256": "5196b79a2c30ec8ab3095ac2c523809173c48188978832bcd05243f2a168e3c8"
+          "revision": "the print of an appointment without a document sent without the request Authorization",
+          "result": "Mutation control: fails Go on subscription-medical-list-prints-appointments-without-document (print.headers:0)",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-rsmut/results.json",
+          "receipt_sha256": "4c061d013f94f088a7981fafcf84d802429f1a099051cea2fc884d94b09571c7"
         }
       ],
       "notes": [
-        "Implementing: medical appointments list (group-aware scoped subscription, -date order, REGIONS labels) and delete (subscription join, actor-indexed audit), certificate edit (notes str(), boolean flag, Python `in` on non-dict bodies) and set-certificate-expiration (dates, null removal with Subscription.save() date fill, collector SET_NULL and unreferenced document delete, draft certificates), with copies of certificates other associations reference and non-atomic failures, on four transports; list rows that would print their document and a subscription without a certificate (placeholder image upload) are refused (500) before any write; add, upload and send-email-reminder stay on Django. v2subs3: set-certificate-expiration for a subscription without a certificate is ported: the account's new certificate, the placeholder PNG (internal/pilplaceholder), its Document, the stored object, subscription.save() with the certificate and the certificate's save with document and date; not atomic, as in Django (no member, or no %d/%m/%Y date: the new certificate stays, 500). The family now runs with a private MinIO. RED: documented refusal, see v2-refusals.md (set-certificate-expiration, member without a certificate). Still refused: a member without a first or last name, a file name that is not storable. No RED receipt (block mode). RED: documented refusal (block mode); the mutation receipt is the failing control."
+        "Implementing: the appointment list prints each appointment stored without a document (GET to the renderer host with the request Authorization, errors swallowed) and serializes the row without a document. RED: documented refusal (v2-refusals.md, v2-rest-subs). The mutation receipt is the failing control. Placeholder PNG check fails on CI Linux runners (zlib), not on the local run."
       ]
     },
     {
@@ -26312,7 +26315,8 @@
         "application_sportassociation",
         "bakney_user",
         "pilplaceholder.RenderWith (the PNG of generate_image_with_text under Pillow 13.0.0, both zlib builds; TESTS/adapters/go/pil_placeholder_golden.py)",
-        "documents-writes (the document storage)"
+        "documents-writes (the document storage)",
+        "Synchronous print (BE_GO/internal/service/medical_appointment_add.go InvoiceSyncPrint)"
       ],
       "contract": {
         "methods": [
@@ -26344,25 +26348,25 @@
         "docs/architecture/go-migration/subscription-medical.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 133/133; Go fails storage.placeholder-bytes:3781 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-medical-http-v2subs3-mutation-r2/results.json",
-          "receipt_sha256": "5196b79a2c30ec8ab3095ac2c523809173c48188978832bcd05243f2a168e3c8"
+          "result": "RED: Django 135/135; Go fails print.headers:0 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-rsmut/results.json",
+          "receipt_sha256": "4c061d013f94f088a7981fafcf84d802429f1a099051cea2fc884d94b09571c7"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 133/133 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
-          "artifact": "quality-reports/go-migration/subscription-medical-http-v2subs3-versioned-r1/results.json",
-          "receipt_sha256": "9749cd17ff5a41fd3e3a3eb7bae3d40ca3a4d3af7251bd4ebd0f21f17ffae2b8"
+          "result": "GREEN: 135/135 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-rsmed/results.json",
+          "receipt_sha256": "2639e94832516770769936a538996f25b37b456d0a280b8a7bc563254cf77d95"
         },
         {
-          "revision": "committing change drawing the member's names swapped in the placeholder text",
-          "result": "Mutation control: fails Go on subscription-medical-expire-without-certificate-placeholder (storage.placeholder-bytes).",
-          "artifact": "quality-reports/go-migration/subscription-medical-http-v2subs3-mutation-r2/results.json",
-          "receipt_sha256": "5196b79a2c30ec8ab3095ac2c523809173c48188978832bcd05243f2a168e3c8"
+          "revision": "the print of an appointment without a document sent without the request Authorization",
+          "result": "Mutation control: fails Go on subscription-medical-list-prints-appointments-without-document (print.headers:0)",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-rsmut/results.json",
+          "receipt_sha256": "4c061d013f94f088a7981fafcf84d802429f1a099051cea2fc884d94b09571c7"
         }
       ],
       "notes": [
-        "Implementing: medical appointments list (group-aware scoped subscription, -date order, REGIONS labels) and delete (subscription join, actor-indexed audit), certificate edit (notes str(), boolean flag, Python `in` on non-dict bodies) and set-certificate-expiration (dates, null removal with Subscription.save() date fill, collector SET_NULL and unreferenced document delete, draft certificates), with copies of certificates other associations reference and non-atomic failures, on four transports; list rows that would print their document and a subscription without a certificate (placeholder image upload) are refused (500) before any write; add, upload and send-email-reminder stay on Django. v2subs3: set-certificate-expiration for a subscription without a certificate is ported: the account's new certificate, the placeholder PNG (internal/pilplaceholder), its Document, the stored object, subscription.save() with the certificate and the certificate's save with document and date; not atomic, as in Django (no member, or no %d/%m/%Y date: the new certificate stays, 500). The family now runs with a private MinIO. RED: documented refusal, see v2-refusals.md (set-certificate-expiration, member without a certificate). Still refused: a member without a first or last name, a file name that is not storable. No RED receipt (block mode). RED: documented refusal (block mode); the mutation receipt is the failing control."
+        "Implementing: the appointment list prints each appointment stored without a document (GET to the renderer host with the request Authorization, errors swallowed) and serializes the row without a document. RED: documented refusal (v2-refusals.md, v2-rest-subs). The mutation receipt is the failing control. Placeholder PNG check fails on CI Linux runners (zlib), not on the local run."
       ]
     },
     {
@@ -26643,25 +26647,25 @@
         "docs/architecture/go-migration/subscription-lifecycle.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 63/63; Go 500 on the first case.",
+          "result": "RED: Django 71/71; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/subscription-lifecycle-http-v2sub-red-r5/results.json",
           "receipt_sha256": "cb2a7845dcf3795b5e50c9798dc1f550c74510f925d01549790bcb52aecc2eda"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 63/63 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-v2sub-merged-r1/results.json",
-          "receipt_sha256": "378476481f05eda89ec8e9c810a6465398f1ca712532b2793200f5a037b7b3ea"
+          "result": "GREEN: 71/71 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-sweep-restsubs-2/results.json",
+          "receipt_sha256": "617f736a7c5747b18a33ef3330d630d8f29b7738bd5f3db665848f0e29a583ec"
         },
         {
-          "revision": "committing change rendering the stored invoice instead of the in-memory one on the deleted payment",
-          "result": "Mutation control: fails Go on subscription-lifecycle-delete-invoiced-subscription-payment (audit.changes).",
-          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-v2sub-mutation-r2/results.json",
-          "receipt_sha256": "57e6512cd9e74ff1bce395ac641b8b3471c8fcdb241be59279a9ec012ed57036"
+          "revision": "payment already deleted by an earlier step no longer raises the 500 (returns nil)",
+          "result": "Mutation control: fails Go on subscription-lifecycle-delete-payment-on-two-course-subscriptions-server-error (response.status 200 instead of 500)",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-rsmut2/results.json",
+          "receipt_sha256": "6f04ff527ba3afb62ee75d764226c0bf05d42fd61bbfe4c299ab838747774a25"
         }
       ],
       "notes": [
-        "Implementing: Delete runs the generic Collector from the subscription (all referencing rows) and deletes the signature object after commit when unreferenced; archive/delete handle invoiced unpaid payments (invoice Collector; archive ValueError 500 after the invoice delete; delete audits the in-memory invoice id); archiving a soft-deleted payment is audited against None."
+        "Implementing: archive and delete follow Django step by step for payments without an association, payments whose save fails, one payment on two links and subscriptions with empty dates (work done before a 500 is kept). RED: documented refusal (v2-refusals.md, v2-rest-subs). Still refused: unreadable or group-hidden unpaid payments."
       ]
     },
     {
@@ -26691,7 +26695,9 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/djangoauth/text.go"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index"
+      ],
       "contract": {
         "methods": [
           "POST",
@@ -26704,7 +26710,7 @@
         ],
         "request": "POST JSON or form {recipient: <user uuid>} or {email: <address>}.",
         "response": "201 {subscription, expires_at, requester, recipient, token, status: 2}.",
-        "errors": "400 [badly formed hexadecimal UUID string]; 404 {msg: Subscription not found.}; 403 {msg: You are not the owner of the subscription.}; 400 pending transfer {msg}; 409 {msg: You cannot transfer the subscription to yourself.}; 400 empty (recipient not found); 400 {msg: Email is required.}; 403 User is not a sport association (athlete e-mail branch, after the account); 403 registry / admin session / scoped session; 405; 500 non-dict body, unconvertible recipient, non-string e-mail, a subscription with empty dates on save (not ported).",
+        "errors": "400 [badly formed hexadecimal UUID string]; 404 {msg: Subscription not found.}; 403 {msg: You are not the owner of the subscription.}; 400 pending transfer {msg}; 409 {msg: You cannot transfer the subscription to yourself.}; 400 empty (recipient not found); 400 {msg: Email is required.}; 403 User is not a sport association (athlete e-mail branch, after the account); 403 registry / admin session / scoped session; 405; 500 non-dict body, unconvertible recipient, non-string e-mail .",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated; registry association.members.update; collaborators act as the owner; the subscription's user must be request.user.",
         "resource_scope": "Subscription by id through the group-aware manager (X-Group-Id) and the impersonation association; recipient any non-deleted user other than the requester.",
@@ -26722,25 +26728,25 @@
         "docs/architecture/go-migration/subscription-transfer.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 32/32; Go 500 on the first case.",
+          "result": "RED: Django 33/33; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/subscription-transfer-http-v2sub-red-r1/results.json",
           "receipt_sha256": "9670c33bccca513787a3f68fee41d4616428774717b52b6305595c08006c279c"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 32/32 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-transfer-http-v2sub-merged-r1/results.json",
-          "receipt_sha256": "7e820138f3c1a904e7eecffd1e4649ebc69ea297638655e1076b98c0804a4af1"
+          "result": "GREEN: 33/33 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-transfer-http-sweep-restsubs-2/results.json",
+          "receipt_sha256": "e2b26b35c00d128a465f15ab6da36bea879541d7f4b24f539c1e8f3acb715fec"
         },
         {
-          "revision": "committing change without the NFKC normalisation of the username",
-          "result": "Mutation control: fails Go on subscription-transfer-email-new-account-expanding-names (state.user-fields).",
-          "artifact": "quality-reports/go-migration/subscription-transfer-http-v2sub-mutation-r1/results.json",
-          "receipt_sha256": "129275498d312ab6a8a02c271f53f8369f840b8868b9460e2642407b720305b9"
+          "revision": "the end date audit value taken from the start date",
+          "result": "Mutation control: fails Go on subscription-transfer-undated-subscription-dates-filled (audit.changes end_date)",
+          "artifact": "quality-reports/go-migration/subscription-transfer-http-rsmut/results.json",
+          "receipt_sha256": "b69b4488e1633b45cae5aa2c653992be795da5e529ce72adc15675babbd2c450"
         }
       ],
       "notes": [
-        "Implementing: E-mail branch accounts for non-ASCII names and domains (str.upper() with full case mapping, NFKC username, str.lower() domain); only empty subscription dates on save stay refused."
+        "Implementing: a subscription with empty dates is saved with the dates filled from the owner season settings, audited next to the new user. RED: documented refusal (v2-refusals.md, v2-rest-subs). Nothing is refused for lack of a port."
       ]
     },
     {
