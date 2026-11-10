@@ -207,6 +207,54 @@
    "filepath": "exports/archive.zip",
    "size": 77,
    "created": "2026-01-03T09:00:00+00:00"
+  },
+  "foreign_legacy": {
+   "id": "a1000000-0000-4000-8000-000000976025",
+   "filename": "export_foreign_legacy.zip",
+   "filepath": "exports/foreign/export_legacy.zip",
+   "size": null,
+   "created": "2025-12-20T09:00:00+00:00",
+   "token": "a1000000-0000-4000-8000-000000976720"
+  },
+  "olda": {
+   "id": "a1000000-0000-4000-8000-000000976026",
+   "filename": "export_old_a.zip",
+   "filepath": "exports/own/export_old_a.zip",
+   "size": 10,
+   "created": "2025-06-01T07:00:00+00:00",
+   "token": "a1000000-0000-4000-8000-000000976701"
+  },
+  "oldb": {
+   "id": "a1000000-0000-4000-8000-000000976027",
+   "filename": "export_old_b.zip",
+   "filepath": null,
+   "size": null,
+   "created": "2025-06-02T07:00:00+00:00",
+   "token": "a1000000-0000-4000-8000-000000976702"
+  },
+  "oldc": {
+   "id": "a1000000-0000-4000-8000-000000976028",
+   "filename": "export_old_c.zip",
+   "filepath": "exports/own/export_old_c.zip",
+   "size": 30,
+   "created": "2025-06-03T07:00:00+00:00",
+   "token": "a1000000-0000-4000-8000-000000976703"
+  },
+  "oldd": {
+   "id": "a1000000-0000-4000-8000-000000976029",
+   "filename": "export_old_d.zip",
+   "filepath": "exports/own/export_old_d.zip",
+   "size": 40,
+   "created": "2025-06-04T07:00:00+00:00",
+   "token": "a1000000-0000-4000-8000-000000976704"
+  },
+  "olde": {
+   "id": "a1000000-0000-4000-8000-000000976030",
+   "filename": "export_old_e.zip",
+   "filepath": "exports/own/export_old_e.zip",
+   "size": 50,
+   "created": "2025-06-05T07:00:00+00:00",
+   "token": "a1000000-0000-4000-8000-000000976705"
   }
  },
  "archives": {
@@ -353,24 +401,60 @@
    "association": "foreign_association",
    "document": "foreign1",
    "date": "2026-01-03"
-  }
- },
- "active_keys": {
-  "foreign_association": {
-   "task_id": "a1000000-0000-4000-8000-000000976900",
-   "sport_association_id": "a1000000-0000-4000-8000-000000701002",
-   "user_id": "a1000000-0000-4000-8000-000000700007",
-   "status": "PENDING",
-   "ready": false,
-   "estimate": "0%",
-   "progress": {
-    "percent": 0,
-    "phase": "queued"
-   },
-   "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  "foreign_legacy": {
+   "id": "a1000000-0000-4000-8000-000000976525",
+   "association": "foreign_association",
+   "document": "foreign_legacy",
+   "date": "2026-01-02"
+  },
+  "olda": {
+   "id": "a1000000-0000-4000-8000-000000976526",
+   "association": "own_association",
+   "document": "olda",
+   "date": "2025-06-01"
+  },
+  "oldb": {
+   "id": "a1000000-0000-4000-8000-000000976527",
+   "association": "own_association",
+   "document": "oldb",
+   "date": "2025-06-02"
+  },
+  "oldc": {
+   "id": "a1000000-0000-4000-8000-000000976528",
+   "association": "own_association",
+   "document": "oldc",
+   "date": "2025-06-03"
+  },
+  "oldd": {
+   "id": "a1000000-0000-4000-8000-000000976529",
+   "association": "own_association",
+   "document": "oldd",
+   "date": "2025-06-04"
+  },
+  "olde": {
+   "id": "a1000000-0000-4000-8000-000000976530",
+   "association": "own_association",
+   "document": "olde",
+   "date": "2025-06-05"
   }
  },
  "tasks": {
+  "export_running": {
+   "task_id": "a1000000-0000-4000-8000-000000976810",
+   "status": "PROGRESS",
+   "result": "{\"percent\": 40}"
+  },
+  "export_done": {
+   "task_id": "a1000000-0000-4000-8000-000000976811",
+   "status": "SUCCESS",
+   "result": "{\"success\": true}"
+  },
+  "export_revoked": {
+   "task_id": "a1000000-0000-4000-8000-000000976812",
+   "status": "REVOKED",
+   "result": "{\"exc_type\": \"TaskRevokedError\", \"exc_message\": [\"revoked\"], \"exc_module\": \"celery.exceptions\"}"
+  },
   "started": {
    "task_id": "a1000000-0000-4000-8000-000000976800",
    "status": "STARTED",
@@ -402,6 +486,7 @@
    "result": "{not json"
   }
  },
+ "setup_token": "contract-setup-token",
  "instance": {
   "id": 976090,
   "domain": "association-transfer.example.test",
@@ -421,7 +506,14 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-active-admin-without-session",
@@ -433,7 +525,14 @@
    "response": {
     "active": false
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-active-restricted-unmapped",
@@ -445,7 +544,14 @@
    "response": {
     "detail": "Access denied: No permission mapping for endpoint 'association/export/active'. Contact administrator to grant access."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-active-restricted-post-permission-first",
@@ -458,6 +564,13 @@
     "detail": "Access denied: No permission mapping for endpoint 'association/export/active'. Contact administrator to grant access."
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {}
   },
   {
@@ -470,7 +583,14 @@
    "response": {
     "error": "Solo il proprietario può visualizzare gli export"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-active-athlete",
@@ -482,7 +602,14 @@
    "response": {
     "error": "Solo il proprietario può visualizzare gli export"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-active-owner-scoped-athlete",
@@ -497,7 +624,14 @@
    "response": {
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-active-owner-without-association",
@@ -509,7 +643,14 @@
    "response": {
     "error": "Associazione non trovata"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-active-owner-idle",
@@ -521,7 +662,14 @@
    "response": {
     "active": false
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-active-owner-query-ignored",
@@ -533,7 +681,14 @@
    "response": {
     "active": false
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-active-admin-impersonating-owner",
@@ -548,7 +703,14 @@
    "response": {
     "active": false
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-active-deleted-association-owner",
@@ -560,7 +722,14 @@
    "response": {
     "error": "Associazione non trovata"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-active-post-not-allowed",
@@ -573,6 +742,13 @@
     "detail": "Method \"POST\" not allowed."
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {}
   },
   {
@@ -585,7 +761,14 @@
    "response": {
     "detail": "Method \"DELETE\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-active-options",
@@ -606,7 +789,14 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-list-anonymous",
@@ -618,7 +808,14 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-list-admin-without-session",
@@ -813,6 +1010,13 @@
     "count": 20
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   {
@@ -825,7 +1029,14 @@
    "response": {
     "detail": "Access denied: No permission mapping for endpoint 'association/export/list'. Contact administrator to grant access."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-list-full-collaborator",
@@ -837,7 +1048,14 @@
    "response": {
     "error": "Solo il proprietario può visualizzare gli export"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-list-athlete",
@@ -849,7 +1067,14 @@
    "response": {
     "error": "Solo il proprietario può visualizzare gli export"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-list-owner-scoped-athlete",
@@ -864,7 +1089,14 @@
    "response": {
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-list-owner-without-association",
@@ -876,7 +1108,14 @@
    "response": {
     "error": "Associazione non trovata"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-list-owner-latest-twenty",
@@ -1071,6 +1310,13 @@
     "count": 20
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   {
@@ -1269,6 +1515,13 @@
     "count": 20
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   {
@@ -1288,11 +1541,27 @@
       "download_token": "$download-token",
       "date": "2026-01-03",
       "created_at": "2026-01-03T09:00:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976525",
+      "document_id": "a1000000-0000-4000-8000-000000976025",
+      "filename": "export_foreign_legacy.zip",
+      "file_size_bytes": null,
+      "download_token": "$download-token",
+      "date": "2026-01-02",
+      "created_at": "2025-12-20T09:00:00+00:00"
      }
     ],
-    "count": 1
+    "count": 2
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "association": "a1000000-0000-4000-8000-000000701002"
   },
   {
@@ -1315,11 +1584,27 @@
       "download_token": "$download-token",
       "date": "2026-01-03",
       "created_at": "2026-01-03T09:00:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976525",
+      "document_id": "a1000000-0000-4000-8000-000000976025",
+      "filename": "export_foreign_legacy.zip",
+      "file_size_bytes": null,
+      "download_token": "$download-token",
+      "date": "2026-01-02",
+      "created_at": "2025-12-20T09:00:00+00:00"
      }
     ],
-    "count": 1
+    "count": 2
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "association": "a1000000-0000-4000-8000-000000701002"
   },
   {
@@ -1332,7 +1617,14 @@
    "response": {
     "error": "Associazione non trovata"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-list-group-header-ignored",
@@ -1529,6 +1821,13 @@
     "count": 20
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   {
@@ -1542,6 +1841,13 @@
     "detail": "Method \"POST\" not allowed."
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {}
   },
   {
@@ -1563,7 +1869,14 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-status-anonymous",
@@ -1575,7 +1888,14 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-status-admin-without-session",
@@ -1587,7 +1907,14 @@
    "response": {
     "error": "task_id richiesto"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-status-restricted-unmapped",
@@ -1599,7 +1926,14 @@
    "response": {
     "detail": "Access denied: No permission mapping for endpoint 'association/export/status'. Contact administrator to grant access."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-status-full-collaborator",
@@ -1611,7 +1945,14 @@
    "response": {
     "error": "Solo il proprietario può visualizzare gli export"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-status-athlete",
@@ -1623,7 +1964,14 @@
    "response": {
     "error": "Solo il proprietario può visualizzare gli export"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-status-owner-scoped-athlete",
@@ -1638,7 +1986,14 @@
    "response": {
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-status-owner-missing-task",
@@ -1650,7 +2005,14 @@
    "response": {
     "error": "task_id richiesto"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-status-owner-empty-task",
@@ -1662,7 +2024,14 @@
    "response": {
     "error": "task_id richiesto"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-status-without-association-task-first",
@@ -1674,7 +2043,14 @@
    "response": {
     "error": "task_id richiesto"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-status-without-association",
@@ -1686,7 +2062,14 @@
    "response": {
     "error": "Associazione non trovata"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-status-owner-unknown-task",
@@ -1698,7 +2081,14 @@
    "response": {
     "error": "Export non trovato"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-status-owner-import-task-not-registered",
@@ -1710,7 +2100,14 @@
    "response": {
     "error": "Export non trovato"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-status-owner-foreign-active-task",
@@ -1722,7 +2119,28 @@
    "response": {
     "error": "Export non trovato"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701002": {
+      "task_id": "a1000000-0000-4000-8000-000000976900",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+      "user_id": "a1000000-0000-4000-8000-000000700007",
+      "status": "PENDING",
+      "ready": false,
+      "estimate": "0%",
+      "progress": {
+       "percent": 0,
+       "phase": "queued"
+      },
+      "updated_at": "2026-01-01T00:00:00+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-status-owner-free-text-task",
@@ -1734,7 +2152,14 @@
    "response": {
     "error": "Export non trovato"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-status-repeated-task-last-wins",
@@ -1746,7 +2171,14 @@
    "response": {
     "error": "task_id richiesto"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-status-post-not-allowed",
@@ -1759,6 +2191,13 @@
     "detail": "Method \"POST\" not allowed."
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {}
   },
   {
@@ -1780,7 +2219,14 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-delete-anonymous",
@@ -1793,6 +2239,13 @@
     "detail": "Authentication credentials were not provided."
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": "a1000000-0000-4000-8000-000000976999"
    }
@@ -1808,6 +2261,13 @@
     "error": "Export non trovato"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": "a1000000-0000-4000-8000-000000976999"
    }
@@ -1823,6 +2283,13 @@
     "detail": "Access denied: No permission mapping for endpoint 'association/export/delete'. Contact administrator to grant access."
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": "a1000000-0000-4000-8000-000000976999"
    }
@@ -1838,6 +2305,13 @@
     "error": "Solo il proprietario può eliminare gli export"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": "a1000000-0000-4000-8000-000000976021"
    }
@@ -1851,6 +2325,13 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": [
     1
    ]
@@ -1864,6 +2345,13 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": 5
   },
   {
@@ -1877,6 +2365,13 @@
     "error": "Solo il proprietario può eliminare gli export"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {}
   },
   {
@@ -1893,6 +2388,13 @@
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": "a1000000-0000-4000-8000-000000976999"
    }
@@ -1907,7 +2409,14 @@
    "response": {
     "error": "document_id richiesto"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-delete-owner-empty-id",
@@ -1920,6 +2429,13 @@
     "error": "document_id richiesto"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": ""
    }
@@ -1935,6 +2451,13 @@
     "error": "document_id richiesto"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": 0
    }
@@ -1950,6 +2473,13 @@
     "error": "document_id richiesto"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": false
    }
@@ -1965,6 +2495,13 @@
     "error": "document_id richiesto"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": null
    }
@@ -1980,6 +2517,13 @@
     "error": "document_id richiesto"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": []
    }
@@ -1995,6 +2539,13 @@
     "error": "document_id richiesto"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {}
   },
   {
@@ -2008,6 +2559,13 @@
     "error": "Associazione non trovata"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": "x"
    }
@@ -2023,6 +2581,13 @@
     "error": "Export non trovato"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": "a1000000-0000-4000-8000-000000976999"
    }
@@ -2038,6 +2603,13 @@
     "error": "Export non trovato"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": "a1000000-0000-4000-8000-000000976024"
    }
@@ -2053,6 +2625,13 @@
     "error": "Export non trovato"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": "a1000000-0000-4000-8000-000000976022"
    }
@@ -2068,6 +2647,13 @@
     "error": "Export non trovato"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": "a1000000-0000-4000-8000-000000976023"
    }
@@ -2083,6 +2669,13 @@
     "error": "Export non trovato"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": 5
    }
@@ -2098,6 +2691,13 @@
     "error": "Export non trovato"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": true
    }
@@ -2113,6 +2713,13 @@
     "error": "Export non trovato"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": "A1000000-0000-4000-8000-000000976024"
    }
@@ -2128,6 +2735,13 @@
     "error": "Export non trovato"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": "a1000000000040008000000000976024"
    }
@@ -2143,6 +2757,13 @@
     "error": "Export non trovato"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "raw_body": "document_id=a1000000-0000-4000-8000-000000976999",
    "content_type": "application/x-www-form-urlencoded"
   },
@@ -2157,6 +2778,13 @@
     "error": "Associazione non trovata"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": "a1000000-0000-4000-8000-000000976021"
    }
@@ -2170,6 +2798,13 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": "not-a-uuid"
    }
@@ -2183,6 +2818,13 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": {
      "a": 1
@@ -2198,6 +2840,13 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": 1.5
    }
@@ -2211,6 +2860,13 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "document_id": -1
    }
@@ -2225,7 +2881,14 @@
    "response": {
     "detail": "Method \"GET\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-delete-options",
@@ -2246,7 +2909,14 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-start-anonymous",
@@ -2259,6 +2929,13 @@
     "detail": "Authentication credentials were not provided."
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {}
   },
   {
@@ -2272,6 +2949,13 @@
     "error": "Elimina un export prima di crearne uno nuovo"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {}
   },
   {
@@ -2285,6 +2969,13 @@
     "detail": "Access denied: No permission mapping for endpoint 'association/export/start'. Contact administrator to grant access."
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {}
   },
   {
@@ -2298,6 +2989,13 @@
     "error": "Solo il proprietario può esportare i dati"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {}
   },
   {
@@ -2310,7 +3008,14 @@
    "response": {
     "error": "Solo il proprietario può esportare i dati"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-start-owner-scoped-athlete",
@@ -2326,6 +3031,13 @@
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {}
   },
   {
@@ -2339,6 +3051,13 @@
     "error": "Associazione non trovata"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {}
   },
   {
@@ -2352,6 +3071,13 @@
     "error": "Elimina un export prima di crearne uno nuovo"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "include_media": false
    }
@@ -2370,6 +3096,13 @@
     "error": "Elimina un export prima di crearne uno nuovo"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {}
   },
   {
@@ -2383,6 +3116,27 @@
     "error": "Un export è già in corso"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701002": {
+      "task_id": "a1000000-0000-4000-8000-000000976900",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+      "user_id": "a1000000-0000-4000-8000-000000700007",
+      "status": "PENDING",
+      "ready": false,
+      "estimate": "0%",
+      "progress": {
+       "percent": 0,
+       "phase": "queued"
+      },
+      "updated_at": "2026-01-01T00:00:00+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {}
   },
   {
@@ -2395,7 +3149,14 @@
    "response": {
     "detail": "Method \"GET\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-start-options",
@@ -2416,7 +3177,14 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-anonymous",
@@ -2428,7 +3196,14 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-anonymous-setup-token",
@@ -2442,7 +3217,14 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-admin-without-session",
@@ -2454,7 +3236,14 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-restricted-unmapped",
@@ -2466,7 +3255,14 @@
    "response": {
     "detail": "Access denied: No permission mapping for endpoint 'association/import/status'. Contact administrator to grant access."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-athlete",
@@ -2478,7 +3274,14 @@
    "response": {
     "detail": "Setup token missing or invalid."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-foreign-owner",
@@ -2490,7 +3293,14 @@
    "response": {
     "detail": "Setup token missing or invalid."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-admin-impersonating-foreign",
@@ -2505,7 +3315,14 @@
    "response": {
     "detail": "Setup token missing or invalid."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-owner-without-association",
@@ -2517,7 +3334,14 @@
    "response": {
     "detail": "Setup token missing or invalid."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-owner-scoped-athlete",
@@ -2532,7 +3356,14 @@
    "response": {
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-owner-missing-task",
@@ -2544,7 +3375,14 @@
    "response": {
     "error": "task_id richiesto"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-owner-empty-task",
@@ -2556,7 +3394,14 @@
    "response": {
     "error": "task_id richiesto"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-owner-unknown",
@@ -2570,7 +3415,14 @@
     "status": "PENDING",
     "ready": false
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-owner-free-text",
@@ -2584,7 +3436,14 @@
     "status": "PENDING",
     "ready": false
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-owner-started",
@@ -2598,7 +3457,14 @@
     "status": "STARTED",
     "ready": false
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-owner-custom-state",
@@ -2612,7 +3478,14 @@
     "status": "PROGRESS",
     "ready": false
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-owner-success",
@@ -2645,7 +3518,14 @@
      ]
     }
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-owner-success-null",
@@ -2660,7 +3540,14 @@
     "ready": true,
     "result": null
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-owner-success-text",
@@ -2675,7 +3562,14 @@
     "ready": true,
     "result": "Import completato"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-owner-success-undecodable",
@@ -2685,7 +3579,14 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-full-collaborator",
@@ -2699,7 +3600,14 @@
     "status": "STARTED",
     "ready": false
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-admin-impersonating-owner",
@@ -2716,7 +3624,14 @@
     "status": "PENDING",
     "ready": false
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-post-not-allowed",
@@ -2728,7 +3643,14 @@
    "response": {
     "detail": "Method \"POST\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-status-options",
@@ -2748,7 +3670,14 @@
      "application/x-www-form-urlencoded"
     ]
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-validate-anonymous",
@@ -2760,7 +3689,14 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-validate-admin-without-session",
@@ -2772,7 +3708,14 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-validate-restricted-unmapped",
@@ -2784,7 +3727,14 @@
    "response": {
     "detail": "Access denied: No permission mapping for endpoint 'association/import/validate'. Contact administrator to grant access."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-validate-athlete",
@@ -2796,7 +3746,14 @@
    "response": {
     "detail": "Setup token missing or invalid."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-validate-foreign-owner",
@@ -2809,6 +3766,13 @@
     "detail": "Setup token missing or invalid."
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {}
   },
   {
@@ -2824,7 +3788,14 @@
    "response": {
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-validate-owner-json-body",
@@ -2837,6 +3808,13 @@
     "detail": "Unsupported media type \"application/json\" in request."
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "file": "x"
    }
@@ -2851,7 +3829,14 @@
    "response": {
     "error": "File ZIP richiesto"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-validate-owner-form-field",
@@ -2864,6 +3849,13 @@
     "error": "File ZIP richiesto"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "raw_body": "file=archive.zip&owner_password=x",
    "content_type": "application/x-www-form-urlencoded"
   },
@@ -2878,6 +3870,13 @@
     "error": "File ZIP richiesto"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "raw_body": "--association-transfer-boundary\r\nContent-Disposition: form-data; name=\"file\"\r\n\r\nnot a file\r\n--association-transfer-boundary\r\nContent-Disposition: form-data; name=\"owner_password\"\r\n\r\nsecret\r\n--association-transfer-boundary--\r\n",
    "content_type": "multipart/form-data; boundary=association-transfer-boundary"
   },
@@ -2892,6 +3891,13 @@
     "error": "File ZIP richiesto"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "raw_body": "--association-transfer-boundary\r\nContent-Disposition: form-data; name=\"archive\"; filename=\"export.zip\"\r\nContent-Type: application/zip\r\n\r\nPK\r\n--association-transfer-boundary--\r\n",
    "content_type": "multipart/form-data; boundary=association-transfer-boundary"
   },
@@ -2906,6 +3912,13 @@
     "error": "File ZIP richiesto"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "raw_body": "--association-transfer-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"\"\r\nContent-Type: application/zip\r\n\r\nPK\r\n--association-transfer-boundary--\r\n",
    "content_type": "multipart/form-data; boundary=association-transfer-boundary"
   },
@@ -2919,7 +3932,14 @@
    "response": {
     "error": "File ZIP richiesto"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-validate-admin-impersonating-owner",
@@ -2934,7 +3954,14 @@
    "response": {
     "error": "File ZIP richiesto"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-validate-get-not-allowed",
@@ -2946,7 +3973,14 @@
    "response": {
     "detail": "Method \"GET\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-validate-options",
@@ -2966,7 +4000,14 @@
      "application/x-www-form-urlencoded"
     ]
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-start-anonymous",
@@ -2978,7 +4019,14 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-start-admin-without-session",
@@ -2990,7 +4038,14 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-start-restricted-unmapped",
@@ -3002,7 +4057,14 @@
    "response": {
     "detail": "Access denied: No permission mapping for endpoint 'association/import/start'. Contact administrator to grant access."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-start-athlete",
@@ -3014,7 +4076,14 @@
    "response": {
     "detail": "Setup token missing or invalid."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-start-foreign-owner",
@@ -3027,6 +4096,13 @@
     "detail": "Setup token missing or invalid."
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {}
   },
   {
@@ -3042,7 +4118,14 @@
    "response": {
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-start-owner-json-body",
@@ -3055,6 +4138,13 @@
     "detail": "Unsupported media type \"application/json\" in request."
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "body": {
     "file": "x"
    }
@@ -3069,7 +4159,14 @@
    "response": {
     "error": "File ZIP richiesto"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-start-owner-form-field",
@@ -3082,6 +4179,13 @@
     "error": "File ZIP richiesto"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "raw_body": "file=archive.zip&owner_password=x",
    "content_type": "application/x-www-form-urlencoded"
   },
@@ -3096,6 +4200,13 @@
     "error": "File ZIP richiesto"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "raw_body": "--association-transfer-boundary\r\nContent-Disposition: form-data; name=\"file\"\r\n\r\nnot a file\r\n--association-transfer-boundary\r\nContent-Disposition: form-data; name=\"owner_password\"\r\n\r\nsecret\r\n--association-transfer-boundary--\r\n",
    "content_type": "multipart/form-data; boundary=association-transfer-boundary"
   },
@@ -3110,6 +4221,13 @@
     "error": "File ZIP richiesto"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "raw_body": "--association-transfer-boundary\r\nContent-Disposition: form-data; name=\"archive\"; filename=\"export.zip\"\r\nContent-Type: application/zip\r\n\r\nPK\r\n--association-transfer-boundary--\r\n",
    "content_type": "multipart/form-data; boundary=association-transfer-boundary"
   },
@@ -3124,6 +4242,13 @@
     "error": "File ZIP richiesto"
    },
    "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
    "raw_body": "--association-transfer-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"\"\r\nContent-Type: application/zip\r\n\r\nPK\r\n--association-transfer-boundary--\r\n",
    "content_type": "multipart/form-data; boundary=association-transfer-boundary"
   },
@@ -3137,7 +4262,14 @@
    "response": {
     "error": "File ZIP richiesto"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-start-admin-impersonating-owner",
@@ -3152,7 +4284,14 @@
    "response": {
     "error": "File ZIP richiesto"
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-start-get-not-allowed",
@@ -3164,7 +4303,14 @@
    "response": {
     "detail": "Method \"GET\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   },
   {
    "name": "association-transfer-import-start-options",
@@ -3184,7 +4330,3061 @@
      "application/x-www-form-urlencoded"
     ]
    },
-   "effect": null
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-running",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": true,
+    "task_id": "a1000000-0000-4000-8000-000000976920",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "user_id": "a1000000-0000-4000-8000-000000700001",
+    "status": "PROGRESS",
+    "ready": false,
+    "estimate": "40%",
+    "progress": {
+     "percent": 40,
+     "phase": "files",
+     "label": "Copia file",
+     "completed": 4,
+     "total": 10,
+     "files_failed": 0
+    },
+    "updated_at": "2026-02-01T10:00:00.123456+00:00"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976920",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-running-row",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": true,
+    "task_id": "a1000000-0000-4000-8000-000000976810",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "user_id": "a1000000-0000-4000-8000-000000700001",
+    "status": "PROGRESS",
+    "ready": false,
+    "estimate": "40%",
+    "progress": {
+     "percent": 40,
+     "phase": "files",
+     "label": "Copia file",
+     "completed": 4,
+     "total": 10,
+     "files_failed": 0
+    },
+    "updated_at": "2026-02-01T10:00:00.123456+00:00"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976810",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-admin-impersonating-owner-running",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "active": true,
+    "task_id": "a1000000-0000-4000-8000-000000976920",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "user_id": "a1000000-0000-4000-8000-000000700001",
+    "status": "PROGRESS",
+    "ready": false,
+    "estimate": "40%",
+    "progress": {
+     "percent": 40,
+     "phase": "files",
+     "label": "Copia file",
+     "completed": 4,
+     "total": 10,
+     "files_failed": 0
+    },
+    "updated_at": "2026-02-01T10:00:00.123456+00:00"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976920",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-admin-without-session-running",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": true,
+    "task_id": "a1000000-0000-4000-8000-000000976920",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "user_id": "a1000000-0000-4000-8000-000000700001",
+    "status": "PROGRESS",
+    "ready": false,
+    "estimate": "40%",
+    "progress": {
+     "percent": 40,
+     "phase": "files",
+     "label": "Copia file",
+     "completed": 4,
+     "total": 10,
+     "files_failed": 0
+    },
+    "updated_at": "2026-02-01T10:00:00.123456+00:00"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976920",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-running-extra-keys",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": true,
+    "task_id": "a1000000-0000-4000-8000-000000976922",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "user_id": "a1000000-0000-4000-8000-000000700001",
+    "status": "PROGRESS",
+    "ready": false,
+    "estimate": "40%",
+    "progress": {
+     "percent": 40,
+     "phase": "files",
+     "label": "Copia file",
+     "completed": 4,
+     "total": 10,
+     "files_failed": 0
+    },
+    "updated_at": "2026-02-01T10:00:00.123456+00:00",
+    "nested": {
+     "a": [
+      1,
+      2.5,
+      null,
+      true
+     ]
+    },
+    "label": "è"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976922",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00",
+      "nested": {
+       "a": [
+        1,
+        2.5,
+        null,
+        true
+       ]
+      },
+      "label": "è"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-snapshot-other-user",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976923",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700002",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-snapshot-other-association",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976924",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-snapshot-integer-user",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976920",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": 5,
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-snapshot-without-task",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-finished-with-terminal",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false,
+    "terminal": {
+     "task_id": "a1000000-0000-4000-8000-000000976811",
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "user_id": "a1000000-0000-4000-8000-000000700001",
+     "status": "SUCCESS",
+     "ready": true,
+     "estimate": "40%",
+     "progress": {
+      "percent": 40,
+      "phase": "files",
+      "label": "Copia file",
+      "completed": 4,
+      "total": 10,
+      "files_failed": 0
+     },
+     "updated_at": "2026-02-01T10:00:00.123456+00:00",
+     "result": {
+      "document_id": "a1000000-0000-4000-8000-000000976930",
+      "filename": "export_x.zip"
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976811",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     },
+     "association-export-last:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976811",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "SUCCESS",
+      "ready": true,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00",
+      "result": {
+       "document_id": "a1000000-0000-4000-8000-000000976930",
+       "filename": "export_x.zip"
+      }
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": {
+    "association-export-last:a1000000-0000-4000-8000-000000701001": "unchanged"
+   },
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-finished-without-terminal",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976811",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": {},
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-finished-other-terminal",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976811",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     },
+     "association-export-last:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976921",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "FAILURE",
+      "ready": true,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00",
+      "error": "Export non riuscito"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": {
+    "association-export-last:a1000000-0000-4000-8000-000000701001": "unchanged"
+   },
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-terminal-success",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false,
+    "terminal": {
+     "task_id": "a1000000-0000-4000-8000-000000976811",
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "user_id": "a1000000-0000-4000-8000-000000700001",
+     "status": "SUCCESS",
+     "ready": true,
+     "estimate": "40%",
+     "progress": {
+      "percent": 40,
+      "phase": "files",
+      "label": "Copia file",
+      "completed": 4,
+      "total": 10,
+      "files_failed": 0
+     },
+     "updated_at": "2026-02-01T10:00:00.123456+00:00",
+     "result": {
+      "document_id": "a1000000-0000-4000-8000-000000976930",
+      "filename": "export_x.zip"
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-last:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976811",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "SUCCESS",
+      "ready": true,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00",
+      "result": {
+       "document_id": "a1000000-0000-4000-8000-000000976930",
+       "filename": "export_x.zip"
+      }
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-terminal-failure",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false,
+    "terminal": {
+     "task_id": "a1000000-0000-4000-8000-000000976921",
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "user_id": "a1000000-0000-4000-8000-000000700001",
+     "status": "FAILURE",
+     "ready": true,
+     "estimate": "40%",
+     "progress": {
+      "percent": 40,
+      "phase": "files",
+      "label": "Copia file",
+      "completed": 4,
+      "total": 10,
+      "files_failed": 0
+     },
+     "updated_at": "2026-02-01T10:00:00.123456+00:00",
+     "error": "Export non riuscito"
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-last:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976921",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "FAILURE",
+      "ready": true,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00",
+      "error": "Export non riuscito"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-terminal-not-final",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-last:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976925",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-terminal-other-user",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-last:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976926",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700002",
+      "status": "SUCCESS",
+      "ready": true,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-active-not-a-dict",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false,
+    "terminal": {
+     "task_id": "a1000000-0000-4000-8000-000000976811",
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "user_id": "a1000000-0000-4000-8000-000000700001",
+     "status": "SUCCESS",
+     "ready": true,
+     "estimate": "40%",
+     "progress": {
+      "percent": 40,
+      "phase": "files",
+      "label": "Copia file",
+      "completed": 4,
+      "total": 10,
+      "files_failed": 0
+     },
+     "updated_at": "2026-02-01T10:00:00.123456+00:00",
+     "result": {
+      "document_id": "a1000000-0000-4000-8000-000000976930",
+      "filename": "export_x.zip"
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": "not a snapshot",
+     "association-export-last:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976811",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "SUCCESS",
+      "ready": true,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00",
+      "result": {
+       "document_id": "a1000000-0000-4000-8000-000000976930",
+       "filename": "export_x.zip"
+      }
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-foreign-snapshot-ignored",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701002": {
+      "task_id": "a1000000-0000-4000-8000-000000976900",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+      "user_id": "a1000000-0000-4000-8000-000000700007",
+      "status": "PENDING",
+      "ready": false,
+      "estimate": "0%",
+      "progress": {
+       "percent": 0,
+       "phase": "queued"
+      },
+      "updated_at": "2026-01-01T00:00:00+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-delete-owner-existing-export",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Export eliminato"
+   },
+   "effect": {
+    "archives": [
+     "a1000000-0000-4000-8000-000000976526"
+    ],
+    "documents": [
+     "a1000000-0000-4000-8000-000000976026"
+    ],
+    "archive_changes": {
+     "a1000000-0000-4000-8000-000000976526": {
+      "sport_association_documents_archive_id": [
+       "a1000000-0000-4000-8000-000000976526",
+       "None"
+      ],
+      "sport_association": [
+       "a1000000-0000-4000-8000-000000701001",
+       "None"
+      ],
+      "document": [
+       "a1000000-0000-4000-8000-000000976026",
+       "None"
+      ],
+      "date": [
+       "2025-06-01",
+       "None"
+      ],
+      "folder": [
+       "None",
+       "None"
+      ]
+     }
+    },
+    "document_changes": {
+     "a1000000-0000-4000-8000-000000976026": {
+      "document_id": [
+       "a1000000-0000-4000-8000-000000976026",
+       "None"
+      ],
+      "creation_date": [
+       "2025-06-01 07:00:00",
+       "None"
+      ],
+      "filepath": [
+       "exports/own/export_old_a.zip",
+       "None"
+      ],
+      "filename": [
+       "export_old_a.zip",
+       "None"
+      ],
+      "file_size_bytes": [
+       "10",
+       "None"
+      ],
+      "token": [
+       "a1000000-0000-4000-8000-000000976701",
+       "None"
+      ],
+      "customer_invoice_pdf": [
+       "application.CustomerInvoice.None",
+       "None"
+      ]
+     }
+    },
+    "actor_association": "own_association",
+    "additional_data": null,
+    "celery": []
+   },
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {
+     "exports/own/export_old_a.zip": {
+      "body": "PK export archive",
+      "content_type": "application/zip"
+     },
+     "exports/own/keep.zip": {
+      "body": "PK export archive",
+      "content_type": "application/zip"
+     }
+    }
+   },
+   "cache_after": null,
+   "objects_after": {
+    "exports/own/keep.zip": {
+     "body": "PK export archive",
+     "content_type": "application/zip"
+    }
+   },
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000976026"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-export-without-file",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Export eliminato"
+   },
+   "effect": {
+    "archives": [
+     "a1000000-0000-4000-8000-000000976527"
+    ],
+    "documents": [
+     "a1000000-0000-4000-8000-000000976027"
+    ],
+    "archive_changes": {
+     "a1000000-0000-4000-8000-000000976527": {
+      "sport_association_documents_archive_id": [
+       "a1000000-0000-4000-8000-000000976527",
+       "None"
+      ],
+      "sport_association": [
+       "a1000000-0000-4000-8000-000000701001",
+       "None"
+      ],
+      "document": [
+       "a1000000-0000-4000-8000-000000976027",
+       "None"
+      ],
+      "date": [
+       "2025-06-02",
+       "None"
+      ],
+      "folder": [
+       "None",
+       "None"
+      ]
+     }
+    },
+    "document_changes": {
+     "a1000000-0000-4000-8000-000000976027": {
+      "document_id": [
+       "a1000000-0000-4000-8000-000000976027",
+       "None"
+      ],
+      "creation_date": [
+       "2025-06-02 07:00:00",
+       "None"
+      ],
+      "filename": [
+       "export_old_b.zip",
+       "None"
+      ],
+      "token": [
+       "a1000000-0000-4000-8000-000000976702",
+       "None"
+      ],
+      "customer_invoice_pdf": [
+       "application.CustomerInvoice.None",
+       "None"
+      ]
+     }
+    },
+    "actor_association": "own_association",
+    "additional_data": null,
+    "celery": []
+   },
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000976027"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-export-object-missing",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Export eliminato"
+   },
+   "effect": {
+    "archives": [
+     "a1000000-0000-4000-8000-000000976528"
+    ],
+    "documents": [
+     "a1000000-0000-4000-8000-000000976028"
+    ],
+    "archive_changes": {
+     "a1000000-0000-4000-8000-000000976528": {
+      "sport_association_documents_archive_id": [
+       "a1000000-0000-4000-8000-000000976528",
+       "None"
+      ],
+      "sport_association": [
+       "a1000000-0000-4000-8000-000000701001",
+       "None"
+      ],
+      "document": [
+       "a1000000-0000-4000-8000-000000976028",
+       "None"
+      ],
+      "date": [
+       "2025-06-03",
+       "None"
+      ],
+      "folder": [
+       "None",
+       "None"
+      ]
+     }
+    },
+    "document_changes": {
+     "a1000000-0000-4000-8000-000000976028": {
+      "document_id": [
+       "a1000000-0000-4000-8000-000000976028",
+       "None"
+      ],
+      "creation_date": [
+       "2025-06-03 07:00:00",
+       "None"
+      ],
+      "filepath": [
+       "exports/own/export_old_c.zip",
+       "None"
+      ],
+      "filename": [
+       "export_old_c.zip",
+       "None"
+      ],
+      "file_size_bytes": [
+       "30",
+       "None"
+      ],
+      "token": [
+       "a1000000-0000-4000-8000-000000976703",
+       "None"
+      ],
+      "customer_invoice_pdf": [
+       "application.CustomerInvoice.None",
+       "None"
+      ]
+     }
+    },
+    "actor_association": "own_association",
+    "additional_data": null,
+    "celery": []
+   },
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": "A1000000-0000-4000-8000-000000976028"
+   }
+  },
+  {
+   "name": "association-transfer-delete-admin-impersonating-owner-export",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Export eliminato"
+   },
+   "effect": {
+    "archives": [
+     "a1000000-0000-4000-8000-000000976529"
+    ],
+    "documents": [
+     "a1000000-0000-4000-8000-000000976029"
+    ],
+    "archive_changes": {
+     "a1000000-0000-4000-8000-000000976529": {
+      "sport_association_documents_archive_id": [
+       "a1000000-0000-4000-8000-000000976529",
+       "None"
+      ],
+      "sport_association": [
+       "a1000000-0000-4000-8000-000000701001",
+       "None"
+      ],
+      "document": [
+       "a1000000-0000-4000-8000-000000976029",
+       "None"
+      ],
+      "date": [
+       "2025-06-04",
+       "None"
+      ],
+      "folder": [
+       "None",
+       "None"
+      ]
+     }
+    },
+    "document_changes": {
+     "a1000000-0000-4000-8000-000000976029": {
+      "document_id": [
+       "a1000000-0000-4000-8000-000000976029",
+       "None"
+      ],
+      "creation_date": [
+       "2025-06-04 07:00:00",
+       "None"
+      ],
+      "filepath": [
+       "exports/own/export_old_d.zip",
+       "None"
+      ],
+      "filename": [
+       "export_old_d.zip",
+       "None"
+      ],
+      "file_size_bytes": [
+       "40",
+       "None"
+      ],
+      "token": [
+       "a1000000-0000-4000-8000-000000976704",
+       "None"
+      ],
+      "customer_invoice_pdf": [
+       "application.CustomerInvoice.None",
+       "None"
+      ]
+     }
+    },
+    "actor_association": "admin_association",
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000710001",
+     "association_id": null,
+     "target_user_id": "a1000000-0000-4000-8000-000000700001",
+     "impersonation_session": "$session:admin_owner"
+    },
+    "celery": []
+   },
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {
+     "exports/own/export_old_d.zip": {
+      "body": "PK export archive",
+      "content_type": "application/zip"
+     }
+    }
+   },
+   "cache_after": null,
+   "objects_after": {},
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000976029"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-form-existing-export",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Export eliminato"
+   },
+   "effect": {
+    "archives": [
+     "a1000000-0000-4000-8000-000000976530"
+    ],
+    "documents": [
+     "a1000000-0000-4000-8000-000000976030"
+    ],
+    "archive_changes": {
+     "a1000000-0000-4000-8000-000000976530": {
+      "sport_association_documents_archive_id": [
+       "a1000000-0000-4000-8000-000000976530",
+       "None"
+      ],
+      "sport_association": [
+       "a1000000-0000-4000-8000-000000701001",
+       "None"
+      ],
+      "document": [
+       "a1000000-0000-4000-8000-000000976030",
+       "None"
+      ],
+      "date": [
+       "2025-06-05",
+       "None"
+      ],
+      "folder": [
+       "None",
+       "None"
+      ]
+     }
+    },
+    "document_changes": {
+     "a1000000-0000-4000-8000-000000976030": {
+      "document_id": [
+       "a1000000-0000-4000-8000-000000976030",
+       "None"
+      ],
+      "creation_date": [
+       "2025-06-05 07:00:00",
+       "None"
+      ],
+      "filepath": [
+       "exports/own/export_old_e.zip",
+       "None"
+      ],
+      "filename": [
+       "export_old_e.zip",
+       "None"
+      ],
+      "file_size_bytes": [
+       "50",
+       "None"
+      ],
+      "token": [
+       "a1000000-0000-4000-8000-000000976705",
+       "None"
+      ],
+      "customer_invoice_pdf": [
+       "application.CustomerInvoice.None",
+       "None"
+      ]
+     }
+    },
+    "actor_association": "own_association",
+    "additional_data": null,
+    "celery": []
+   },
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {
+     "exports/own/export_old_e.zip": {
+      "body": "PK export archive",
+      "content_type": "application/zip"
+     }
+    }
+   },
+   "cache_after": null,
+   "objects_after": {},
+   "raw_body": "document_id=a1000000000040008000000000976030",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "association-transfer-delete-owner-already-deleted",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000976026"
+   }
+  },
+  {
+   "name": "association-transfer-start-foreign-owner-dispatch",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/association/export/start",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "task_id": "$task",
+    "status": "started",
+    "estimate": "0%",
+    "progress": {
+     "percent": 0,
+     "phase": "queued",
+     "label": "Export in attesa",
+     "completed": null,
+     "total": null
+    },
+    "updated_at": "$isonow",
+    "message": "Export avviato. Riceverai una email quando sarà completato."
+   },
+   "effect": {
+    "celery": [
+     {
+      "task": "export_association_data",
+      "args": [],
+      "kwargs": [
+       [
+        "sport_association_id",
+        "a1000000-0000-4000-8000-000000701002"
+       ],
+       [
+        "user_id",
+        "a1000000-0000-4000-8000-000000700007"
+       ]
+      ],
+      "id": "$task"
+     }
+    ]
+   },
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": {
+    "association-export-active:a1000000-0000-4000-8000-000000701002": {
+     "value": {
+      "task_id": "$task",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+      "user_id": "a1000000-0000-4000-8000-000000700007",
+      "status": "PENDING",
+      "ready": false,
+      "estimate": "0%",
+      "progress": {
+       "percent": 0,
+       "phase": "queued",
+       "label": "Export in attesa",
+       "completed": null,
+       "total": null
+      },
+      "updated_at": "$updated"
+     },
+     "ttl": 7200
+    },
+    "association-export-task:$task": {
+     "value": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+      "user_id": "a1000000-0000-4000-8000-000000700007"
+     },
+     "ttl": 86400
+    }
+   },
+   "objects_after": null,
+   "body": {}
+  },
+  {
+   "name": "association-transfer-start-admin-impersonating-foreign-dispatch",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/association/export/start",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_foreign",
+    "User-Id": "a1000000-0000-4000-8000-000000700007"
+   },
+   "status": 202,
+   "response": {
+    "task_id": "$task",
+    "status": "started",
+    "estimate": "0%",
+    "progress": {
+     "percent": 0,
+     "phase": "queued",
+     "label": "Export in attesa",
+     "completed": null,
+     "total": null
+    },
+    "updated_at": "$isonow",
+    "message": "Export avviato. Riceverai una email quando sarà completato."
+   },
+   "effect": {
+    "celery": [
+     {
+      "task": "export_association_data",
+      "args": [],
+      "kwargs": [
+       [
+        "sport_association_id",
+        "a1000000-0000-4000-8000-000000701002"
+       ],
+       [
+        "user_id",
+        "a1000000-0000-4000-8000-000000700007"
+       ]
+      ],
+      "id": "$task"
+     }
+    ]
+   },
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": {
+    "association-export-active:a1000000-0000-4000-8000-000000701002": {
+     "value": {
+      "task_id": "$task",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+      "user_id": "a1000000-0000-4000-8000-000000700007",
+      "status": "PENDING",
+      "ready": false,
+      "estimate": "0%",
+      "progress": {
+       "percent": 0,
+       "phase": "queued",
+       "label": "Export in attesa",
+       "completed": null,
+       "total": null
+      },
+      "updated_at": "$updated"
+     },
+     "ttl": 7200
+    },
+    "association-export-task:$task": {
+     "value": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+      "user_id": "a1000000-0000-4000-8000-000000700007"
+     },
+     "ttl": 86400
+    }
+   },
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-start-foreign-owner-terminal-kept",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/association/export/start",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "task_id": "$task",
+    "status": "started",
+    "estimate": "0%",
+    "progress": {
+     "percent": 0,
+     "phase": "queued",
+     "label": "Export in attesa",
+     "completed": null,
+     "total": null
+    },
+    "updated_at": "$isonow",
+    "message": "Export avviato. Riceverai una email quando sarà completato."
+   },
+   "effect": {
+    "celery": [
+     {
+      "task": "export_association_data",
+      "args": [],
+      "kwargs": [
+       [
+        "sport_association_id",
+        "a1000000-0000-4000-8000-000000701002"
+       ],
+       [
+        "user_id",
+        "a1000000-0000-4000-8000-000000700007"
+       ]
+      ],
+      "id": "$task"
+     }
+    ]
+   },
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-last:a1000000-0000-4000-8000-000000701002": {
+      "task_id": "a1000000-0000-4000-8000-000000976900",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+      "user_id": "a1000000-0000-4000-8000-000000700007",
+      "status": "SUCCESS",
+      "ready": false,
+      "estimate": "0%",
+      "progress": {
+       "percent": 0,
+       "phase": "queued"
+      },
+      "updated_at": "2026-01-01T00:00:00+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": {
+    "association-export-active:a1000000-0000-4000-8000-000000701002": {
+     "value": {
+      "task_id": "$task",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+      "user_id": "a1000000-0000-4000-8000-000000700007",
+      "status": "PENDING",
+      "ready": false,
+      "estimate": "0%",
+      "progress": {
+       "percent": 0,
+       "phase": "queued",
+       "label": "Export in attesa",
+       "completed": null,
+       "total": null
+      },
+      "updated_at": "$updated"
+     },
+     "ttl": 7200
+    },
+    "association-export-task:$task": {
+     "value": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+      "user_id": "a1000000-0000-4000-8000-000000700007"
+     },
+     "ttl": 86400
+    },
+    "association-export-last:a1000000-0000-4000-8000-000000701002": "unchanged"
+   },
+   "objects_after": null,
+   "body": {
+    "include_media": false
+   }
+  },
+  {
+   "name": "association-transfer-start-foreign-owner-running-other-task-key",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/association/export/start",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "task_id": "$task",
+    "status": "started",
+    "estimate": "0%",
+    "progress": {
+     "percent": 0,
+     "phase": "queued",
+     "label": "Export in attesa",
+     "completed": null,
+     "total": null
+    },
+    "updated_at": "$isonow",
+    "message": "Export avviato. Riceverai una email quando sarà completato."
+   },
+   "effect": {
+    "celery": [
+     {
+      "task": "export_association_data",
+      "args": [],
+      "kwargs": [
+       [
+        "sport_association_id",
+        "a1000000-0000-4000-8000-000000701002"
+       ],
+       [
+        "user_id",
+        "a1000000-0000-4000-8000-000000700007"
+       ]
+      ],
+      "id": "$task"
+     }
+    ]
+   },
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976900": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+      "user_id": "a1000000-0000-4000-8000-000000700007"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": {
+    "association-export-active:a1000000-0000-4000-8000-000000701002": {
+     "value": {
+      "task_id": "$task",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+      "user_id": "a1000000-0000-4000-8000-000000700007",
+      "status": "PENDING",
+      "ready": false,
+      "estimate": "0%",
+      "progress": {
+       "percent": 0,
+       "phase": "queued",
+       "label": "Export in attesa",
+       "completed": null,
+       "total": null
+      },
+      "updated_at": "$updated"
+     },
+     "ttl": 7200
+    },
+    "association-export-task:$task": {
+     "value": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+      "user_id": "a1000000-0000-4000-8000-000000700007"
+     },
+     "ttl": 86400
+    },
+    "association-export-task:a1000000-0000-4000-8000-000000976900": "unchanged"
+   },
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-setup-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976999",
+   "headers": {
+    "X-Setup-Token": "contract-setup-token"
+   },
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976999",
+    "status": "PENDING",
+    "ready": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": false,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-setup-token-success-row",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976803",
+   "headers": {
+    "X-Setup-Token": "contract-setup-token"
+   },
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976803",
+    "status": "SUCCESS",
+    "ready": true,
+    "result": "Import completato"
+   },
+   "effect": null,
+   "setup": {
+    "instance": false,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-setup-token-wrong",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/association/import/status?task_id=x",
+   "headers": {
+    "X-Setup-Token": "wrong"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "setup": {
+    "instance": false,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-setup-token-empty",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/association/import/status?task_id=x",
+   "headers": {
+    "X-Setup-Token": ""
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "setup": {
+    "instance": false,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-setup-token-prefix",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/association/import/status?task_id=x",
+   "headers": {
+    "X-Setup-Token": "contract-setup-toke"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "setup": {
+    "instance": false,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-setup-token-owner-wrong",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=x",
+   "headers": {
+    "X-Setup-Token": "wrong"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null,
+   "setup": {
+    "instance": false,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-setup-token-owner-missing",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=x",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null,
+   "setup": {
+    "instance": false,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-setup-token-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976999",
+   "headers": {
+    "X-Setup-Token": "contract-setup-token"
+   },
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976999",
+    "status": "PENDING",
+    "ready": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": false,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-setup-token-missing-task",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/association/import/status",
+   "headers": {
+    "X-Setup-Token": "contract-setup-token"
+   },
+   "status": 400,
+   "response": {
+    "error": "task_id richiesto"
+   },
+   "effect": null,
+   "setup": {
+    "instance": false,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-setup-token-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/association/import/status",
+   "headers": {
+    "X-Setup-Token": "contract-setup-token"
+   },
+   "status": 200,
+   "response": {
+    "name": "Association Import",
+    "description": "API endpoints for association data import.\n\nAllows importing association data from a ZIP export file\ninto a fresh Bakney instance.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "multipart/form-data",
+     "application/x-www-form-urlencoded"
+    ]
+   },
+   "effect": null,
+   "setup": {
+    "instance": false,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-setup-token-post-not-allowed",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/association/import/status",
+   "headers": {
+    "X-Setup-Token": "contract-setup-token"
+   },
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "setup": {
+    "instance": false,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-configured-token-ignored",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/association/import/status?task_id=x",
+   "headers": {
+    "X-Setup-Token": "contract-setup-token"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-validate-setup-token-without-file",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {
+    "X-Setup-Token": "contract-setup-token"
+   },
+   "status": 400,
+   "response": {
+    "error": "File ZIP richiesto"
+   },
+   "effect": null,
+   "setup": {
+    "instance": false,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-start-setup-token-json",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {
+    "X-Setup-Token": "contract-setup-token"
+   },
+   "status": 415,
+   "response": {
+    "detail": "Unsupported media type \"application/json\" in request."
+   },
+   "effect": null,
+   "setup": {
+    "instance": false,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "file": "x"
+   }
+  },
+  {
+   "name": "association-transfer-import-validate-valid-archive",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": true,
+    "errors": [],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 940,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": "a1000000-0000-4000-8000-000000976951",
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": false
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTQyUdBbCWvMTcVJCezNyC/KKS1BTd/PK81CKQbGpuYmYOSAos4gBToJdakZhbkJOqV5JaXAJSV5BYXFyeXwS2uSApOyXNKL44I9HI1EzFDGyfimOSc4prmnuGZ5Z3jm+ef0FgUXBJaJmKo6Ors2N5oJtTerKnc2C+j4ujgb9LhWOQa4ZvqFtQZIS7U3aie0V5ikeGha1SrY4CqV40wunF3NTcJDQ/QoSI86SiUm0sAFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAAAAAAAAAAACAAc4BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAzwIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-setup-token-valid-archive",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {
+    "X-Setup-Token": "contract-setup-token"
+   },
+   "status": 200,
+   "response": {
+    "is_valid": true,
+    "errors": [],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 940,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": "a1000000-0000-4000-8000-000000976951",
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": false
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": false,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTQyUdBbCWvMTcVJCezNyC/KKS1BTd/PK81CKQbGpuYmYOSAos4gBToJdakZhbkJOqV5JaXAJSV5BYXFyeXwS2uSApOyXNKL44I9HI1EzFDGyfimOSc4prmnuGZ5Z3jm+ef0FgUXBJaJmKo6Ors2N5oJtTerKnc2C+j4ujgb9LhWOQa4ZvqFtQZIS7U3aie0V5ikeGha1SrY4CqV40wunF3NTcJDQ/QoSI86SiUm0sAFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAAAAAAAAAAACAAc4BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAzwIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-full-collaborator-valid-archive",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": true,
+    "errors": [],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 940,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": "a1000000-0000-4000-8000-000000976951",
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": false
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTQyUdBbCWvMTcVJCezNyC/KKS1BTd/PK81CKQbGpuYmYOSAos4gBToJdakZhbkJOqV5JaXAJSV5BYXFyeXwS2uSApOyXNKL44I9HI1EzFDGyfimOSc4prmnuGZ5Z3jm+ef0FgUXBJaJmKo6Ors2N5oJtTerKnc2C+j4ujgb9LhWOQa4ZvqFtQZIS7U3aie0V5ikeGha1SrY4CqV40wunF3NTcJDQ/QoSI86SiUm0sAFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAAAAAAAAAAACAAc4BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAzwIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-unusable-owner-password",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": true,
+    "errors": [],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 863,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": "a1000000-0000-4000-8000-000000976951",
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": true
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXD61B9qEAAAAIgEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTQyUdBbCWvMTcVJCezNyC/KKS1BTd/PK81CKQbGpuYmYOSAos4gBToJdakZhbkJOqV5JaXAJSV5BYXFyeXwS2WbE0r7Q4MSknValWR4FUNxnhdFNuam4SmqMgQkS6Sqk2FgBQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cPrUH2oQAAAAiAQAAEgAAAAAAAAAAAAAAgAHOAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAIICAAAAAA0KLS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-owner-password-without-salt",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": true,
+    "errors": [],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 878,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": "a1000000-0000-4000-8000-000000976951",
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": true
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXEGUraSTAAAAWwEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTQyUdBbCWvMTcVJCezNyC/KKS1BTd/PK81CKQbGpuYmYOSAos4gBToJdakZhbkJOqV5JaXAJSV5BYXFyeXwS2uSApOyXNKL44I9HI1EzFDGyfiooj8cBWqVZHgVTPGOH0TG5qbhKabyBCxHlHUak2FgBQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cQZStpJMAAABbAQAAEgAAAAAAAAAAAAAAgAHOAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAJECAAAAAA0KLS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-existing-association-and-users",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": false,
+    "errors": [
+     "Association UUID conflict: a1000000-0000-4000-8000-000000701001 already exists",
+     "User UUID collision: a1000000-0000-4000-8000-000000700004 already exists and is not linked to the archive owner"
+    ],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 862,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": false
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9c9LGFhnIAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA3MDoLShko6CUmlxahGRWgygWlJS8/JzM/PAtoH0BQOtTi05vEAhMxfkmMSSRJCqksSK+OT8lFSQCgNDI2MTUzNzC0sDpdpYAFBLAwQUAAAACAAAUC9cIbE1s4QAAABTAQAAEgAAAGRhdGEvMDJfdXNlcnMuanNvbouuViotTi2Kz0xRslJQSjQ0AANdMGECIixgXAMDcxBhqKSjANaSl5ibCtKTmVuQX1SSmqKbX56XWgSSTc1NzMwBSYFFHGAK9FIrEnMLclL1SlKLS0DqChKLi8vzi8A2KyrV6iiQ6hYTdLckkmOKEYmaLM3NLC0tEZpgluflKwC118YCAFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXPSxhYZyAAAAtgAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1whsTWzhAAAAFMBAAASAAAAAAAAAAAAAACAAc0BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAgQIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-owner-owns-another-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": false,
+    "errors": [
+     "Owner user already owns another SportAssociation: a1000000-0000-4000-8000-000000701002"
+    ],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 833,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": "a1000000-0000-4000-8000-000000700007",
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": false
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cF6ZHwHUAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQiorSYgwmQlpTUvPzczDywbSB9wUCrU0sOL1DIzAU5JrEkEaSqJLEiPjk/JRWkwsDQyNjE1MzcwtJAqTYWAFBLAwQUAAAACAAAUC9c8RaESmQAAACMAAAAEgAAAGRhdGEvMDJfdXNlcnMuanNvbouuViotTi2Kz0xRslJQSjQ0AANdMGECIixgXAMDczChpKMA1pKXmJsK0pOZW5BfVJKaoptfnpdaBJJNzU3MzAFJgUUcYAr0UisScwtyUvVKUotLQOoKEouLy/OLwDYrKtXGAgBQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1wXpkfAdQAAALYAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9c8RaESmQAAACMAAAAEgAAAAAAAAAAAAAAgAHQAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAGQCAAAAAA0KLS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-not-a-zip",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": false,
+    "errors": [
+     "$tmp-path:Not a valid ZIP file: :backup.zip"
+    ],
+    "warnings": [],
+    "info": {}
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImJhY2t1cC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpUaGlzIGlzIG5vdCBhIFpJUCBhcmNoaXZlLg0KLS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-missing-manifest",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": false,
+    "errors": [
+     "Missing manifest.json in export file"
+    ],
+    "warnings": [],
+    "info": {
+     "file_size_bytes": 162,
+     "file_size_mb": 0.0
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXCm7TA0EAAAAAgAAAB4AAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb26LjgUAUEsBAhQDFAAAAAgAAFAvXCm7TA0EAAAAAgAAAB4AAAAAAAAAAAAAAIABAAAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLBQYAAAAAAQABAEwAAABAAAAAAAANCi0tYXNzb2NpYXRpb24tdHJhbnNmZXItYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-unsupported-format",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": false,
+    "errors": [
+     "Missing required manifest field: version",
+     "Missing required manifest field: export_date",
+     "Missing required manifest field: association",
+     "Unsupported export format: other"
+    ],
+    "warnings": [],
+    "info": {
+     "file_size_bytes": 163,
+     "file_size_mb": 0.0,
+     "export_format": "other",
+     "export_date": null,
+     "association": {}
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXM8VLa4nAAAAJwAAAA0AAABtYW5pZmVzdC5qc29uq1ZKrSjILyqJT8svyk0sUbJSUMovyUgtUtJRUMrLL0kFCVQo1QIAUEsBAhQDFAAAAAgAAFAvXM8VLa4nAAAAJwAAAA0AAAAAAAAAAAAAAIABAAAAAG1hbmlmZXN0Lmpzb25QSwUGAAAAAAEAAQA7AAAAUgAAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-missing-association-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": false,
+    "errors": [
+     "Missing required data file: 01_sport_association.json"
+    ],
+    "warnings": [
+     "Missing data file: data/01_sport_association.json",
+     "Missing data file: data/02_users.json",
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 368,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 3,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "extra": 1
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsFBgAAAAABAAEAOwAAAB8BAAAAAA0KLS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-two-associations",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": false,
+    "errors": [
+     "Export must contain exactly one SportAssociation record in data/01_sport_association.json"
+    ],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 893,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "extra": 1
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cZ0U4ZkQAAADqAAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYKtXqKAyApbEAUEsDBBQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAZGF0YS8wMl91c2Vycy5qc29ui65WKi1OLYrPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLU0MlHQWwlrzE3FSQnszcgvyiktQU3fzyvNQikGxqbmJmDkgKLOIAU6CXWpGYW5CTqleSWlwCUleQWFxcnl8EtrkgKTslzSi+OCPRyNRMxQxsn4pjknOKa5p7hmeWd45vnn9BYFFwSWiZiqOjq7NjeaCbU3qyp3Ngvo+Lo4G/S4VjkGuGb6hbUGSEu1N2ontFeYpHhoWtUq2OAqleNMLpxdzU3CQ0P0KEiPOkolJtLABQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xnRThmRAAAAOoAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAAAAAAAAAAAAgAGfAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAKACAAAAAA0KLS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-association-without-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": false,
+    "errors": [
+     "SportAssociation record is missing user_id for owner selection"
+    ],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 887,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "extra": 1
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cXagdxj4AAABRAAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQiqBal2lgAUEsDBBQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAZGF0YS8wMl91c2Vycy5qc29ui65WKi1OLYrPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLU0MlHQWwlrzE3FSQnszcgvyiktQU3fzyvNQikGxqbmJmDkgKLOIAU6CXWpGYW5CTqleSWlwCUleQWFxcnl8EtrkgKTslzSi+OCPRyNRMxQxsn4pjknOKa5p7hmeWd45vnn9BYFFwSWiZiqOjq7NjeaCbU3qyp3Ngvo+Lo4G/S4VjkGuGb6hbUGSEu1N2ontFeYpHhoWtUq2OAqleNMLpxdzU3CQ0P0KEiPOkolJtLABQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xdqB3GPgAAAFEAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAAAAAAAAAAAAgAGZAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAJoCAAAAAA0KLS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-owner-not-in-users",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": false,
+    "errors": [
+     "Expected exactly one User with user_id a1000000-0000-4000-8000-000000976951 matching SportAssociation.user_id"
+    ],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 770,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "extra": 1
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXJ1RFK8nAAAANQAAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTI6XaWABQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cnVEUrycAAAA1AAAAEgAAAAAAAAAAAAAAgAHOAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAACUCAAAAAA0KLS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-missing-users-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": false,
+    "errors": [
+     "Missing required data file: 02_users.json"
+    ],
+    "warnings": [
+     "Missing data file: data/02_users.json",
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 619,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 2,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "extra": 1
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwUGAAAAAAIAAgCHAAAAzgEAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-admin-impersonating-owner-archive",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "is_valid": true,
+    "errors": [],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 940,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": "a1000000-0000-4000-8000-000000976951",
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": false
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9IkVYUE9SVC5aSVAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTQyUdBbCWvMTcVJCezNyC/KKS1BTd/PK81CKQbGpuYmYOSAos4gBToJdakZhbkJOqV5JaXAJSV5BYXFyeXwS2uSApOyXNKL44I9HI1EzFDGyfimOSc4prmnuGZ5Z3jm+ef0FgUXBJaJmKo6Ors2N5oJtTerKnc2C+j4ujgb9LhWOQa4ZvqFtQZIS7U3aie0V5ikeGha1SrY4CqV40wunF3NTcJDQ/QoSI86SiUm0sAFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAAAAAAAAAAACAAc4BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAzwIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-start-owner-archive",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "task_id": "$task",
+    "status": "started",
+    "message": "Import avviato. Controlla lo stato con task_id."
+   },
+   "effect": {
+    "celery": [
+     {
+      "task": "import_association_data",
+      "args": [],
+      "kwargs": [
+       [
+        "zip_file_path",
+        "$upload"
+       ],
+       [
+        "owner_password",
+        ""
+       ]
+      ],
+      "id": "$task"
+     }
+    ]
+   },
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": {
+    "$upload": {
+     "body_b64": "UEsDBBQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAbWFuaWZlc3QuanNvbmVPwUrEMBD9lZKrtk6Ku7p7E8Gjl9WTSBjbWYhuEknSRSn9F//FHzOTdrFLQxiY9+a9edOLI/mgnRXbQsgKKhCXhaCvT+ej2jtvMDLzhh+WvlXI8MQe5Wy0xUg8WEO9LkGWcvUkYQv8L3LlWQzBNRrjuK4Xo90MVbplE5SQX5nLNZfbUwuwuVlvVtmvJeuMtidDsUs+FH9/Cm3YGSOOCaPHRMshNca1dAjTCcTbXnph0eTwOwbvZiGTYK8PmUsH4hVItchcvYdxsnGdjdOef8/nQH7uA7XqEhQWsvpMdu86H2gRQIJqMrPUw5n+0T2wbngd/gBQSwMEFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb26LrlYqLsgvKolPLC7OT85MLMnMz4vPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLUwMlHQWl0uLUIuK1GIK0pKTm5edm5oFtA+kLBlqdWnJ4gUJmLsgxiSWJIFUliRXxyfkpqSAVBoZGxiamZuYWlgZKtbEAUEsDBBQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAZGF0YS8wMl91c2Vycy5qc29ui65WKi1OLYrPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLU0MlHQWwlrzE3FSQnszcgvyiktQU3fzyvNQikGxqbmJmDkgKLOIAU6CXWpGYW5CTqleSWlwCUleQWFxcnl8EtrkgKTslzSi+OCPRyNRMxQxsn4pjknOKa5p7hmeWd45vnn9BYFFwSWiZiqOjq7NjeaCbU3qyp3Ngvo+Lo4G/S4VjkGuGb6hbUGSEu1N2ontFeYpHhoWtUq2OAqleNMLpxdzU3CQ0P0KEiPOkolJtLABQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAAAAAAAAAAAAgAHOAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAM8CAAAAAA==",
+     "content_type": "application/zip"
+    }
+   },
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTQyUdBbCWvMTcVJCezNyC/KKS1BTd/PK81CKQbGpuYmYOSAos4gBToJdakZhbkJOqV5JaXAJSV5BYXFyeXwS2uSApOyXNKL44I9HI1EzFDGyfimOSc4prmnuGZ5Z3jm+ef0FgUXBJaJmKo6Ors2N5oJtTerKnc2C+j4ujgb9LhWOQa4ZvqFtQZIS7U3aie0V5ikeGha1SrY4CqV40wunF3NTcJDQ/QoSI86SiUm0sAFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAAAAAAAAAAACAAc4BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAzwIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-start-owner-archive-password",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "task_id": "$task",
+    "status": "started",
+    "message": "Import avviato. Controlla lo stato con task_id."
+   },
+   "effect": {
+    "celery": [
+     {
+      "task": "import_association_data",
+      "args": [],
+      "kwargs": [
+       [
+        "zip_file_path",
+        "$upload"
+       ],
+       [
+        "owner_password",
+        "recovery secret"
+       ]
+      ],
+      "id": "$task"
+     }
+    ]
+   },
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": {
+    "$upload": {
+     "body_b64": "UEsDBBQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAbWFuaWZlc3QuanNvbmVPwUrEMBD9lZKrtk6Ku7p7E8Gjl9WTSBjbWYhuEknSRSn9F//FHzOTdrFLQxiY9+a9edOLI/mgnRXbQsgKKhCXhaCvT+ej2jtvMDLzhh+WvlXI8MQe5Wy0xUg8WEO9LkGWcvUkYQv8L3LlWQzBNRrjuK4Xo90MVbplE5SQX5nLNZfbUwuwuVlvVtmvJeuMtidDsUs+FH9/Cm3YGSOOCaPHRMshNca1dAjTCcTbXnph0eTwOwbvZiGTYK8PmUsH4hVItchcvYdxsnGdjdOef8/nQH7uA7XqEhQWsvpMdu86H2gRQIJqMrPUw5n+0T2wbngd/gBQSwMEFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb26LrlYqLsgvKolPLC7OT85MLMnMz4vPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLUwMlHQWl0uLUIuK1GIK0pKTm5edm5oFtA+kLBlqdWnJ4gUJmLsgxiSWJIFUliRXxyfkpqSAVBoZGxiamZuYWlgZKtbEAUEsDBBQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAZGF0YS8wMl91c2Vycy5qc29ui65WKi1OLYrPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLU0MlHQWwlrzE3FSQnszcgvyiktQU3fzyvNQikGxqbmJmDkgKLOIAU6CXWpGYW5CTqleSWlwCUleQWFxcnl8EtrkgKTslzSi+OCPRyNRMxQxsn4pjknOKa5p7hmeWd45vnn9BYFFwSWiZiqOjq7NjeaCbU3qyp3Ngvo+Lo4G/S4VjkGuGb6hbUGSEu1N2ontFeYpHhoWtUq2OAqleNMLpxdzU3CQ0P0KEiPOkolJtLABQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAAAAAAAAAAAAgAHOAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAM8CAAAAAA==",
+     "content_type": "application/zip"
+    }
+   },
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTQyUdBbCWvMTcVJCezNyC/KKS1BTd/PK81CKQbGpuYmYOSAos4gBToJdakZhbkJOqV5JaXAJSV5BYXFyeXwS2uSApOyXNKL44I9HI1EzFDGyfimOSc4prmnuGZ5Z3jm+ef0FgUXBJaJmKo6Ors2N5oJtTerKnc2C+j4ujgb9LhWOQa4ZvqFtQZIS7U3aie0V5ikeGha1SrY4CqV40wunF3NTcJDQ/QoSI86SiUm0sAFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAAAAAAAAAAACAAc4BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAzwIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5DQpDb250ZW50LURpc3Bvc2l0aW9uOiBmb3JtLWRhdGE7IG5hbWU9Im93bmVyX3Bhc3N3b3JkIg0KDQpmaXJzdA0KLS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJvd25lcl9wYXNzd29yZCINCg0KcmVjb3Zlcnkgc2VjcmV0DQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-start-setup-token-archive",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {
+    "X-Setup-Token": "contract-setup-token"
+   },
+   "status": 202,
+   "response": {
+    "task_id": "$task",
+    "status": "started",
+    "message": "Import avviato. Controlla lo stato con task_id."
+   },
+   "effect": {
+    "celery": [
+     {
+      "task": "import_association_data",
+      "args": [],
+      "kwargs": [
+       [
+        "zip_file_path",
+        "$upload"
+       ],
+       [
+        "owner_password",
+        "è segreta"
+       ]
+      ],
+      "id": "$task"
+     }
+    ]
+   },
+   "setup": {
+    "instance": false,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": {
+    "$upload": {
+     "body_b64": "UEsDBBQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAbWFuaWZlc3QuanNvbmVPwUrEMBD9lZKrtk6Ku7p7E8Gjl9WTSBjbWYhuEknSRSn9F//FHzOTdrFLQxiY9+a9edOLI/mgnRXbQsgKKhCXhaCvT+ej2jtvMDLzhh+WvlXI8MQe5Wy0xUg8WEO9LkGWcvUkYQv8L3LlWQzBNRrjuK4Xo90MVbplE5SQX5nLNZfbUwuwuVlvVtmvJeuMtidDsUs+FH9/Cm3YGSOOCaPHRMshNca1dAjTCcTbXnph0eTwOwbvZiGTYK8PmUsH4hVItchcvYdxsnGdjdOef8/nQH7uA7XqEhQWsvpMdu86H2gRQIJqMrPUw5n+0T2wbngd/gBQSwMEFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb26LrlYqLsgvKolPLC7OT85MLMnMz4vPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLUwMlHQWl0uLUIuK1GIK0pKTm5edm5oFtA+kLBlqdWnJ4gUJmLsgxiSWJIFUliRXxyfkpqSAVBoZGxiamZuYWlgZKtbEAUEsDBBQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAZGF0YS8wMl91c2Vycy5qc29ui65WKi1OLYrPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLU0MlHQWwlrzE3FSQnszcgvyiktQU3fzyvNQikGxqbmJmDkgKLOIAU6CXWpGYW5CTqleSWlwCUleQWFxcnl8EtrkgKTslzSi+OCPRyNRMxQxsn4pjknOKa5p7hmeWd45vnn9BYFFwSWiZiqOjq7NjeaCbU3qyp3Ngvo+Lo4G/S4VjkGuGb6hbUGSEu1N2ontFeYpHhoWtUq2OAqleNMLpxdzU3CQ0P0KEiPOkolJtLABQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAAAAAAAAAAAAgAHOAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAM8CAAAAAA==",
+     "content_type": "application/zip"
+    }
+   },
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTQyUdBbCWvMTcVJCezNyC/KKS1BTd/PK81CKQbGpuYmYOSAos4gBToJdakZhbkJOqV5JaXAJSV5BYXFyeXwS2uSApOyXNKL44I9HI1EzFDGyfimOSc4prmnuGZ5Z3jm+ef0FgUXBJaJmKo6Ors2N5oJtTerKnc2C+j4ujgb9LhWOQa4ZvqFtQZIS7U3aie0V5ikeGha1SrY4CqV40wunF3NTcJDQ/QoSI86SiUm0sAFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAAAAAAAAAAACAAc4BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAzwIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5DQpDb250ZW50LURpc3Bvc2l0aW9uOiBmb3JtLWRhdGE7IG5hbWU9Im93bmVyX3Bhc3N3b3JkIg0KDQrDqCBzZWdyZXRhDQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-start-windows-zip-type",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "task_id": "$task",
+    "status": "started",
+    "message": "Import avviato. Controlla lo stato con task_id."
+   },
+   "effect": {
+    "celery": [
+     {
+      "task": "import_association_data",
+      "args": [],
+      "kwargs": [
+       [
+        "zip_file_path",
+        "$upload"
+       ],
+       [
+        "owner_password",
+        ""
+       ]
+      ],
+      "id": "$task"
+     }
+    ]
+   },
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": {
+    "$upload": {
+     "body_b64": "VGhpcyBpcyBub3QgYSBaSVAgYXJjaGl2ZS4=",
+     "content_type": "application/x-zip-compressed"
+    }
+   },
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3gtemlwLWNvbXByZXNzZWQNCg0KVGhpcyBpcyBub3QgYSBaSVAgYXJjaGl2ZS4NCi0tYXNzb2NpYXRpb24tdHJhbnNmZXItYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-start-archive-without-type",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "task_id": "$task",
+    "status": "started",
+    "message": "Import avviato. Controlla lo stato con task_id."
+   },
+   "effect": {
+    "celery": [
+     {
+      "task": "import_association_data",
+      "args": [],
+      "kwargs": [
+       [
+        "zip_file_path",
+        "$upload"
+       ],
+       [
+        "owner_password",
+        ""
+       ]
+      ],
+      "id": "$task"
+     }
+    ]
+   },
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": {
+    "$upload": {
+     "body_b64": "UEsDBBQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAbWFuaWZlc3QuanNvbmVPwUrEMBD9lZKrtk6Ku7p7E8Gjl9WTSBjbWYhuEknSRSn9F//FHzOTdrFLQxiY9+a9edOLI/mgnRXbQsgKKhCXhaCvT+ej2jtvMDLzhh+WvlXI8MQe5Wy0xUg8WEO9LkGWcvUkYQv8L3LlWQzBNRrjuK4Xo90MVbplE5SQX5nLNZfbUwuwuVlvVtmvJeuMtidDsUs+FH9/Cm3YGSOOCaPHRMshNca1dAjTCcTbXnph0eTwOwbvZiGTYK8PmUsH4hVItchcvYdxsnGdjdOef8/nQH7uA7XqEhQWsvpMdu86H2gRQIJqMrPUw5n+0T2wbngd/gBQSwMEFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb26LrlYqLsgvKolPLC7OT85MLMnMz4vPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLUwMlHQWl0uLUIuK1GIK0pKTm5edm5oFtA+kLBlqdWnJ4gUJmLsgxiSWJIFUliRXxyfkpqSAVBoZGxiamZuYWlgZKtbEAUEsDBBQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAZGF0YS8wMl91c2Vycy5qc29ui65WKi1OLYrPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLU0MlHQWwlrzE3FSQnszcgvyiktQU3fzyvNQikGxqbmJmDkgKLOIAU6CXWpGYW5CTqleSWlwCUleQWFxcnl8EtrkgKTslzSi+OCPRyNRMxQxsn4pjknOKa5p7hmeWd45vnn9BYFFwSWiZiqOjq7NjeaCbU3qyp3Ngvo+Lo4G/S4VjkGuGb6hbUGSEu1N2ontFeYpHhoWtUq2OAqleNMLpxdzU3CQ0P0KEiPOkolJtLABQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAAAAAAAAAAAAgAHOAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAM8CAAAAAA==",
+     "content_type": "application/zip"
+    }
+   },
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydCINCg0KUEsDBBQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAbWFuaWZlc3QuanNvbmVPwUrEMBD9lZKrtk6Ku7p7E8Gjl9WTSBjbWYhuEknSRSn9F//FHzOTdrFLQxiY9+a9edOLI/mgnRXbQsgKKhCXhaCvT+ej2jtvMDLzhh+WvlXI8MQe5Wy0xUg8WEO9LkGWcvUkYQv8L3LlWQzBNRrjuK4Xo90MVbplE5SQX5nLNZfbUwuwuVlvVtmvJeuMtidDsUs+FH9/Cm3YGSOOCaPHRMshNca1dAjTCcTbXnph0eTwOwbvZiGTYK8PmUsH4hVItchcvYdxsnGdjdOef8/nQH7uA7XqEhQWsvpMdu86H2gRQIJqMrPUw5n+0T2wbngd/gBQSwMEFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb26LrlYqLsgvKolPLC7OT85MLMnMz4vPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLUwMlHQWl0uLUIuK1GIK0pKTm5edm5oFtA+kLBlqdWnJ4gUJmLsgxiSWJIFUliRXxyfkpqSAVBoZGxiamZuYWlgZKtbEAUEsDBBQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAZGF0YS8wMl91c2Vycy5qc29ui65WKi1OLYrPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLU0MlHQWwlrzE3FSQnszcgvyiktQU3fzyvNQikGxqbmJmDkgKLOIAU6CXWpGYW5CTqleSWlwCUleQWFxcnl8EtrkgKTslzSi+OCPRyNRMxQxsn4pjknOKa5p7hmeWd45vnn9BYFFwSWiZiqOjq7NjeaCbU3qyp3Ngvo+Lo4G/S4VjkGuGb6hbUGSEu1N2ontFeYpHhoWtUq2OAqleNMLpxdzU3CQ0P0KEiPOkolJtLABQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAAAAAAAAAAAAgAHOAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAM8CAAAAAA0KLS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-start-admin-impersonating-owner-archive",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 202,
+   "response": {
+    "task_id": "$task",
+    "status": "started",
+    "message": "Import avviato. Controlla lo stato con task_id."
+   },
+   "effect": {
+    "celery": [
+     {
+      "task": "import_association_data",
+      "args": [],
+      "kwargs": [
+       [
+        "zip_file_path",
+        "$upload"
+       ],
+       [
+        "owner_password",
+        ""
+       ]
+      ],
+      "id": "$task"
+     }
+    ]
+   },
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": {
+    "$upload": {
+     "body_b64": "UEsDBBQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAbWFuaWZlc3QuanNvbmVPwUrEMBD9lZKrtk6Ku7p7E8Gjl9WTSBjbWYhuEknSRSn9F//FHzOTdrFLQxiY9+a9edOLI/mgnRXbQsgKKhCXhaCvT+ej2jtvMDLzhh+WvlXI8MQe5Wy0xUg8WEO9LkGWcvUkYQv8L3LlWQzBNRrjuK4Xo90MVbplE5SQX5nLNZfbUwuwuVlvVtmvJeuMtidDsUs+FH9/Cm3YGSOOCaPHRMshNca1dAjTCcTbXnph0eTwOwbvZiGTYK8PmUsH4hVItchcvYdxsnGdjdOef8/nQH7uA7XqEhQWsvpMdu86H2gRQIJqMrPUw5n+0T2wbngd/gBQSwMEFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb26LrlYqLsgvKolPLC7OT85MLMnMz4vPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLUwMlHQWl0uLUIuK1GIK0pKTm5edm5oFtA+kLBlqdWnJ4gUJmLsgxiSWJIFUliRXxyfkpqSAVBoZGxiamZuYWlgZKtbEAUEsDBBQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAZGF0YS8wMl91c2Vycy5qc29ui65WKi1OLYrPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLU0MlHQWwlrzE3FSQnszcgvyiktQU3fzyvNQikGxqbmJmDkgKLOIAU6CXWpGYW5CTqleSWlwCUleQWFxcnl8EtrkgKTslzSi+OCPRyNRMxQxsn4pjknOKa5p7hmeWd45vnn9BYFFwSWiZiqOjq7NjeaCbU3qyp3Ngvo+Lo4G/S4VjkGuGb6hbUGSEu1N2ontFeYpHhoWtUq2OAqleNMLpxdzU3CQ0P0KEiPOkolJtLABQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAAAAAAAAAAAAgAHOAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAM8CAAAAAA==",
+     "content_type": "application/zip"
+    }
+   },
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTQyUdBbCWvMTcVJCezNyC/KKS1BTd/PK81CKQbGpuYmYOSAos4gBToJdakZhbkJOqV5JaXAJSV5BYXFyeXwS2uSApOyXNKL44I9HI1EzFDGyfimOSc4prmnuGZ5Z3jm+ef0FgUXBJaJmKo6Ors2N5oJtTerKnc2C+j4ujgb9LhWOQa4ZvqFtQZIS7U3aie0V5ikeGha1SrY4CqV40wunF3NTcJDQ/QoSI86SiUm0sAFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAAAAAAAAAAACAAc4BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAzwIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-list-foreign-legacy-size",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/export/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "exports": [
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976524",
+      "document_id": "a1000000-0000-4000-8000-000000976024",
+      "filename": "export_foreign.zip",
+      "file_size_bytes": 77,
+      "download_token": "$download-token",
+      "date": "2026-01-03",
+      "created_at": "2026-01-03T09:00:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976525",
+      "document_id": "a1000000-0000-4000-8000-000000976025",
+      "filename": "export_foreign_legacy.zip",
+      "file_size_bytes": 24,
+      "download_token": "$download-token",
+      "date": "2026-01-02",
+      "created_at": "2025-12-20T09:00:00+00:00"
+     }
+    ],
+    "count": 2
+   },
+   "effect": {
+    "documents_updated": {
+     "a1000000-0000-4000-8000-000000976025": {
+      "file_size_bytes": 24
+     }
+    },
+    "actor_association": "foreign_association",
+    "additional_data": null,
+    "celery": []
+   },
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {
+     "exports/foreign/export_legacy.zip": {
+      "body": "PK legacy export archive",
+      "content_type": "application/zip"
+     }
+    }
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "association": "a1000000-0000-4000-8000-000000701002"
+  },
+  {
+   "name": "association-transfer-list-foreign-legacy-size-saved",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/export/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "exports": [
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976524",
+      "document_id": "a1000000-0000-4000-8000-000000976024",
+      "filename": "export_foreign.zip",
+      "file_size_bytes": 77,
+      "download_token": "$download-token",
+      "date": "2026-01-03",
+      "created_at": "2026-01-03T09:00:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976525",
+      "document_id": "a1000000-0000-4000-8000-000000976025",
+      "filename": "export_foreign_legacy.zip",
+      "file_size_bytes": 24,
+      "download_token": "$download-token",
+      "date": "2026-01-02",
+      "created_at": "2025-12-20T09:00:00+00:00"
+     }
+    ],
+    "count": 2
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "association": "a1000000-0000-4000-8000-000000701002"
   }
  ]
 }

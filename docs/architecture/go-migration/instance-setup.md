@@ -56,6 +56,15 @@ is the [instance-logo](instance-logo.md) storage with its own instance and two a
 - Import setup: a task without a ready result (no stored row, or a state other than SUCCESS,
   FAILURE or REVOKED) answers 500 `{"success": false, "error": "Import task is still in progress. Please wait for completion."}`
   and nothing is stored (Django rolls the configuration back).
+- Import setup with a ready SUCCESS row: the stored result decides the association. A dict whose
+  `success` key is present and falsy answers 500 `Import failed: <error or 'Unknown error'>`. Its
+  `sport_association_id` (or, when falsy, `association_id`) is looked up in
+  `SportAssociation.original_objects` (deleted rows included): unknown is 500
+  `Association <id> not found after import.`. Without an id, or with a result that is not a dict,
+  the last association by primary key is linked. The configuration is created with provenance
+  `import`, `onboarding_completed_at` set and the primary association, then saved; no audit
+  entry is written (the model is not registered). Response as for the fresh setup, with the linked
+  association's id.
 - The singleton check failing inside the transaction answers 500 with its message.
 
 ## reconfigure
@@ -88,8 +97,10 @@ is the [instance-logo](instance-logo.md) storage with its own instance and two a
 
 Go answers the server error page before any write:
 
-- `configure` with `type: import` whose task has a ready result: linking the imported association
-  (`_link_imported_instance`) reads the Celery result and its association.
+- `configure` with `type: import` whose task row is `FAILURE` or `REVOKED` (Celery rebuilds the
+  exception and Django answers its text), whose row Celery would decode differently (non-`utf-8`
+  encoding, metadata with `status` or children, `__type__` values) or not at all, whose association id
+  is not a string UUID, or whose error value is not a string, integer, boolean or null.
 - Values the model columns reject inside Django's transaction: an owner email or support email over
   254 characters.
 - A `domain` or owner email domain with non-ASCII characters (Python's Unicode lowercasing), and
@@ -119,3 +130,9 @@ model default, and the five audit entries against auditlog's create diff of the 
   fails `instance-setup-reconfigure-setup-owner` on `state.display_settings`.
 - Re-run with the shared changes (`setup-rerun-r1`): instance-admin 141/141 and
   association-transfer 146/146 on native Django and Go; `go test ./internal/... ./pkg/storage/instancelogo/`.
+
+v2 admin change (import setup): 99 cases; 13 import cases before the fresh setup, each linked
+configuration checked field by field and removed by the runner. RED (`v2-admin-red`): Django 99/99,
+Go 500 on `instance-setup-configure-import-linked`. GREEN (`v2-admin-green`): 99/99 on the four
+transports. Mutation (`v2-admin-mutation-association-key`): ignoring the `association_id` key fails
+`instance-setup-configure-import-association-id-key` on `import.primary-association`.

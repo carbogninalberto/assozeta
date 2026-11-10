@@ -23,6 +23,14 @@ type InstanceSetupConfiguration struct {
 }
 
 // InstanceSetupFresh is what InstanceSetupView creates for a fresh setup.
+// InstanceSetupImported is the configuration an import setup creates and
+// the imported association it links.
+type InstanceSetupImported struct {
+	Domain, Name, Abbreviation, PrimaryColor, SupportEmail, LogoPath string
+	GoogleClientID, AppleClientID                                    string
+	AssociationID                                                    string
+}
+
 type InstanceSetupFresh struct {
 	Domain, Name, Abbreviation, PrimaryColor, SupportEmail, LogoPath  string
 	GoogleClientID, AppleClientID                                     string

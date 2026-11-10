@@ -24,6 +24,7 @@ from uuid import UUID, uuid4
 
 from backups import ARCHIVE, ORIGINS, inventory
 from common import atomic_write, read_env
+from endpoint_guard import BLOCKED_MESSAGE, blocked_in, endpoint_problem, pin_client
 
 CONFIG_FILE = '.updater/remote-backup.json'
 STATE_FILE = '.updater/remote-backup-state.json'
@@ -251,13 +252,22 @@ def settings_from(config, override=None):
 
 
 def make_client(config, quick=False):
+    """An S3 client for the saved (or proposed) settings.
+
+    The endpoint is checked again here, so settings saved earlier follow the
+    current address rules, and every connection goes to a checked address.
+    """
+    problem = endpoint_problem(config.get('endpoint') or '')
+    if problem:
+        raise RemoteError(problem, 400)
     import boto3
     from botocore.config import Config
     options = Config(connect_timeout=3 if quick else 10, read_timeout=5 if quick else 60,
                      retries={'max_attempts': 1 if quick else 3},
                      s3={'addressing_style': 'path' if config.get('path_style') else 'virtual'})
-    return boto3.client('s3', endpoint_url=config.get('endpoint') or None, region_name=config.get('region') or None,
-                        aws_access_key_id=config['access_key'], aws_secret_access_key=config['secret_key'], config=options)
+    return pin_client(boto3.client('s3', endpoint_url=config.get('endpoint') or None, region_name=config.get('region') or None,
+                                   aws_access_key_id=config['access_key'], aws_secret_access_key=config['secret_key'],
+                                   config=options))
 
 
 def object_key(config, name):
@@ -269,6 +279,8 @@ def plain_error(exc):
     """One Italian line for an S3 failure, without credentials or URLs."""
     if isinstance(exc, RemoteError):
         return str(exc)
+    if blocked_in(exc):
+        return BLOCKED_MESSAGE
     code = (getattr(exc, 'response', None) or {}).get('Error', {}).get('Code', '')
     if code in ('InvalidAccessKeyId', 'SignatureDoesNotMatch', 'AuthorizationHeaderMalformed', 'InvalidToken'):
         return 'Chiavi di accesso non valide.'
@@ -544,8 +556,8 @@ class Uploader:
         waiting = [item for item in local if item['meta'].get('remote') != 'uploaded' and not item['paused']]
         if not waiting:
             return {'uploaded': [], 'deleted': []}
-        client = self.client_factory(config)
         try:
+            client = self.client_factory(config)
             remote = _list(client, config)
         except Exception as exc:
             self._failed(waiting[0]['name'], plain_error(exc))

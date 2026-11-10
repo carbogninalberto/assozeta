@@ -423,7 +423,7 @@ try {
                     remoteConfig.configured = !!(remoteConfig.bucket && remoteConfig.access_key && remoteConfig.secret_configured);
                     value = remoteConfig;
                 } else if (endpoint === '/admin/backups/remote/test') {
-                    assert.equal(request.postDataJSON().password, undefined);
+                    assert.equal(request.postDataJSON().password, 'fixture-secret');
                     remoteCalls.push(`test:${request.postDataJSON().bucket}`);
                     value = {ok: true, message: 'Connessione riuscita: scrittura, lettura ed eliminazione funzionano.'};
                 } else if (endpoint === '/admin/backups/remote/key') {
@@ -463,12 +463,13 @@ try {
             await remoteDrawer.getByLabel('Bucket').fill('club-backups');
             await remoteDrawer.getByLabel('Access key').fill('AKIAFIXTURE');
             await remoteDrawer.getByLabel('Secret key').fill('fixture-s3-secret');
+            await expect(remoteDrawer.getByRole('button', {name: 'Prova connessione'})).toBeDisabled();
+            await expect(remoteDrawer.getByRole('button', {name: 'Salva', exact: true})).toBeDisabled();
+            await remoteDrawer.getByLabel('Conferma la tua password').fill('fixture-secret');
             await remoteDrawer.getByRole('button', {name: 'Prova connessione'}).click();
             await expect(remoteDrawer.getByText(/^Connessione riuscita/)).toBeVisible();
             await noOverflow('remote-drawer');
             await shot('remote-drawer');
-            await expect(remoteDrawer.getByRole('button', {name: 'Salva', exact: true})).toBeDisabled();
-            await remoteDrawer.getByLabel('Conferma la tua password').fill('fixture-secret');
             await remoteDrawer.getByRole('button', {name: 'Salva', exact: true}).click();
             const wizard = page.getByRole('dialog', {name: 'Chiave di ripristino'});
             await expect(wizard.getByRole('note')).toContainText('Senza questa chiave');

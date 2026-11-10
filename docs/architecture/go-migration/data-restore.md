@@ -6,7 +6,7 @@ The owner-only data-restore views of `BE/instance/restore/views.py` are implemen
 
 | Route | Django view | Methods in Go |
 | --- | --- | --- |
-| `instance/admin/data-restore` | `DataRestoreView` | GET; POST up to the archive validation |
+| `instance/admin/data-restore` | `DataRestoreView` | GET; POST (upload) |
 | `instance/admin/data-restore/backups` | `DataRestoreBackupsView` | GET |
 | `instance/admin/data-restore/<uuid>/<action>` | `DataRestoreActionView` | GET, POST |
 | `instance/admin/data-restore/<uuid>/download` | `DataRestoreDownloadView` | GET |
@@ -77,9 +77,16 @@ completed `file` part (JSON or empty body, `file` as a form field, an empty or o
 oversized upload) the answer is 400 `Carica un file ZIP entro il limite indicato.`. A JSON body is
 still parsed (DRF's JSON parse errors).
 
-A completed `file` within the limit goes to `Archive(...).validate()`, which reads the ZIP against
-`AssociationExportService.EXPORT_ORDER` / `AssociationImportService.IMPORT_ORDER` and every model
-field's `to_python`. Go refuses that request with the 500 page before any write (see below).
+A completed `file` within the limit is written to a temporary file and checked by
+`Archive(...).validate()` (the worker's port, `validateRestoreArchive`, against the export/import plan
+and every model field's `to_python`). A `RestoreError` answers 400 with its message (damaged ZIP,
+format, export errors, incomplete export, association count, manifest mismatch, attachment paths,
+graph checks, limits). Then the owner's receipts in `review` are cancelled (`state`/`stage`
+`cancelled`) and cleaned (upload object, `upload/` and `media/` prefixes, `media` reset), the receipt is
+created (owner, the primary association, the file's SHA-256, `RUNNING_VERSION`, `preview` =
+`Archive.summary()`), the upload is saved as `restores/<id>/upload/archive.zip` (content type guessed
+from the name) and `upload_path` is saved. The answer is 201 with the public receipt. A storage failure
+marks the receipt failed (`Caricamento non riuscito. Riprova.`), cleans it and answers 503.
 
 ## GET admin/data-restore/backups
 
@@ -146,9 +153,10 @@ self-hosted instance) and the receipt's association the primary one, else 403
 
 ## Not ported (refused with the 500 page before any write)
 
-- Uploads with a `file` part within the limit: archive validation (`archive.py`) depends on the
-  export/import model registry and Django field parsing, so no receipt or storage object is created
-  by Go. The upload's success path (receipt creation, storage save, review cancellation) stays with Django.
+- Uploads whose archive the validation port hands off (`errConsumerImportUnsupported`): legacy
+  Bakney invoices, tutors that would be reassigned, cleared or ignored, members the ZIP reader port
+  does not open, values outside its decoded subset. Their summary counts in Go are therefore always
+  zero for legacy invoices and tutor reassignments.
 - Request bodies other than JSON, multipart or empty on these POSTs (DRF answers 415 or reads form
   data), multipart parts with `Content-Transfer-Encoding` or a non-UTF-8 RFC 2231 name.
 - Cached progress values outside the decoded pickle subset (Django may read them or treat a
@@ -183,3 +191,12 @@ checking the authored task id and `timelimit`).
   `./internal/dto -run Indent` (CPython `json.dumps(indent=2)`).
 - Re-run green after the shared changes: `instance-admin` (141), `subscription-approve` (27, Celery
   producer and harness), `docmanager-reads` (110) and `documents-writes` (119) (`documentobjects.List`).
+
+v2 admin change (upload): 150 cases; the runner builds each archive from Django's
+`AssociationExportService.EXPORT_ORDER` (every section listed with its file and count) and checks
+the created receipt field by field (`$new`, SHA-256 of the posted archive), the cancelled reviews and
+the exact objects, then removes the created receipt. `DATA_RESTORE_MAX_UPLOAD_BYTES` in the run is
+64 KiB. RED (`v2-admin-red`): Django 150/150, Go 500 on `data-restore-upload-archive-not-a-zip`. GREEN
+(`v2-admin-green`): 150/150 on the four transports. Mutation (`v2-admin-mutation-record-count`): not
+counting `Document` rows in the summary fails `data-restore-upload-archive-with-media` on
+`preview.records`.

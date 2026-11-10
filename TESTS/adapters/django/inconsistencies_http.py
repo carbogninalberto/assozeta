@@ -39,11 +39,21 @@ def seed_fixture(apps, private_work, raw):
     with disable_auditlog(), transaction.atomic():
         fixture = scopes.seed_fixture(apps, Path(private_work), raw)
         rows = source['associates']
+        from application.models import User
+        from rest_framework_simplejwt.tokens import AccessToken
+        fixture['tokens'] = dict(fixture['tokens'])
+        for label, row in source['extra_users'].items():
+            User._base_manager.bulk_create([User(user_id=row['id'], username=row['username'], email=row['email'],
+                                                 role=User.ATHLETE, password='!synthetic')])
+            fixture['created'].append((User, row['id']))
+            token = AccessToken()
+            token['user_id'] = row['id']
+            fixture['tokens'][label] = str(token)
         for label, row in rows.items():
             values = {k: row[k] for k in ('first_name', 'last_name', 'email', 'sex', 'tax_code', 'address', 'address_cap',
                                           'address_city', 'born_city', 'is_minor', 'phone', 'family_role', 'deleted')}
             Associate._base_manager.bulk_create([Associate(
-                associate_id=row['id'], user_id=ids['athlete'], sport_association_id=row['association'],
+                associate_id=row['id'], user_id=ids[row['user']], sport_association_id=row['association'],
                 born_date=date.fromisoformat(row['born_date']) if row['born_date'] else None,
                 group_id=ids[row['group']] if row['group'] else None, **values)])
             fixture['created'].append((Associate, row['id']))

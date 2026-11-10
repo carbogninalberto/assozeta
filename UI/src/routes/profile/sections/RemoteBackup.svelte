@@ -31,6 +31,9 @@
     let password = '';
     let togglePrompt = null; // {enabled, target} while the switch waits for the password
     let toggleError = '';
+    // "Prova connessione" from the menu tests the saved settings: it asks for the password first.
+    let testPrompt = false;
+    let testPassword = '';
 
     let wizard = false;
     let step = 1;
@@ -84,14 +87,33 @@
         finally { saving = false; password = ''; draft.secret_key = ''; }
     }
 
-    async function test(body = remoteTestBody(draft)) {
-        if (testing) return;
+    async function test(body = remoteTestBody(draft, password)) {
+        if (testing || !body.password) return;
         testing = true;
         testResult = null;
         try { testResult = await request('/admin/backups/remote/test', {method: 'POST', body: JSON.stringify(body)}); }
         catch (e) { testResult = {ok: false, message: e.message}; }
         finally { testing = false; }
         if (!drawer) testResult.ok ? toast.success(testResult.message) : toast.error(testResult.message);
+    }
+
+    function openTestPrompt() {
+        testPrompt = true;
+        testPassword = '';
+    }
+
+    function closeTestPrompt() {
+        if (testing) return;
+        testPrompt = false;
+        testPassword = '';
+    }
+
+    async function testSaved() {
+        if (testing || !testPassword) return;
+        const typed = testPassword;
+        testPrompt = false;
+        testPassword = '';
+        await test(remoteTestBody(null, typed));
     }
 
     // The switch asks for the password first; cancelling puts it back.
@@ -201,7 +223,7 @@
             <button type="button" class="btn btn-light btn-sm si-btn" disabled={disabled || !config && !loadError} on:click={openDrawer}><PencilSimple size={16} weight="duotone" />{config?.configured ? 'Modifica' : 'Configura'}</button>
             {#if config?.configured}
                 <InstanceMenu label="Altre azioni copia remota" items={[
-                    {label: testing ? 'Prova in corso…' : 'Prova connessione', disabled: testing, onSelect: () => test({})},
+                    {label: testing ? 'Prova in corso…' : 'Prova connessione', disabled: testing, onSelect: openTestPrompt},
                     {label: hasKey ? 'Genera nuova chiave' : 'Genera chiave', hint: hasKey ? 'Le copie già fatte restano con la chiave attuale.' : '', disabled, onSelect: () => openWizard()},
                 ]} />
             {/if}
@@ -249,7 +271,7 @@
         {#if formError}<p class="text-danger mb-0" role="alert">{formError}</p>{/if}
     </form>
     <svelte:fragment slot="footer">
-        <button type="button" class="btn btn-light mr-auto si-btn" disabled={testing || saving || !draft.bucket || !draft.access_key} on:click={() => test()}><Plugs size={18} weight="duotone" />{testing ? 'Prova in corso…' : 'Prova connessione'}</button>
+        <button type="button" class="btn btn-light mr-auto si-btn" disabled={testing || saving || !draft.bucket || !draft.access_key || !password} title={password ? '' : 'Conferma la tua password per provare la connessione.'} on:click={() => test()}><Plugs size={18} weight="duotone" />{testing ? 'Prova in corso…' : 'Prova connessione'}</button>
         <button type="button" class="btn btn-light" disabled={saving} on:click={closeDrawer}>Annulla</button>
         <button type="submit" form="remote-backup-form" class="btn btn-primary si-btn" disabled={saving || !password}><FloppyDisk size={18} weight="duotone" />{saving ? 'Salvataggio…' : 'Salva'}</button>
     </svelte:fragment>
@@ -303,6 +325,19 @@
         {:else}
             <button type="button" class="btn btn-primary" data-autofocus on:click={closeWizard}>Fine</button>
         {/if}
+    </svelte:fragment>
+</InstanceDialog>
+
+<InstanceDialog open={testPrompt} title="Prova connessione" locked={testing} on:close={closeTestPrompt}>
+    <form id="remote-test-form" on:submit|preventDefault={testSaved}>
+        <p class="si-muted si-small">Prova le impostazioni salvate: scrittura, lettura ed eliminazione di un file di prova.</p>
+        <label class="si-field" for="remote-test-password">Conferma la tua password
+            <input id="remote-test-password" class="form-control" type="password" autocomplete="current-password" bind:value={testPassword} disabled={testing} />
+        </label>
+    </form>
+    <svelte:fragment slot="footer">
+        <button type="button" class="btn btn-light" disabled={testing} on:click={closeTestPrompt}>Annulla</button>
+        <button type="submit" form="remote-test-form" class="btn btn-primary" disabled={!testPassword || testing}>{testing ? 'Prova in corso…' : 'Prova'}</button>
     </svelte:fragment>
 </InstanceDialog>
 

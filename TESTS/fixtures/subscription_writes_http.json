@@ -37,7 +37,15 @@
   "workflow": "a1000000-0000-4000-8000-000000720008",
   "missing": "a1000000-0000-4000-8000-000000720009",
   "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
-  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011",
+  "multi_athlete": "a1000000-0000-4000-8000-000000676998"
+ },
+ "extra_users": {
+  "multi_athlete": {
+   "id": "a1000000-0000-4000-8000-000000676998",
+   "username": "subscription-writes-multi-athlete",
+   "email": "subscription-writes-multi-athlete@example.test"
+  }
  },
  "family": "a1000000-0000-4000-8000-000000676001",
  "associates": {
@@ -308,7 +316,7 @@
   "athletic": {
    "id": "a1000000-0000-4000-8000-000000676024",
    "association": "a1000000-0000-4000-8000-000000701002",
-   "user": "athlete",
+   "user": "multi_athlete",
    "first": "Atletico",
    "last": "Fixture",
    "born": "2015-03-10",
@@ -364,6 +372,18 @@
    "group": null,
    "deleted": false,
    "tax_code": "GRPTGT66H06H501B"
+  },
+  "multi_home": {
+   "id": "a1000000-0000-4000-8000-000000676029",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "multi_athlete",
+   "first": "Casa",
+   "last": "Fixture",
+   "born": "1990-01-01",
+   "is_minor": false,
+   "group": null,
+   "deleted": false,
+   "tax_code": null
   }
  },
  "created": {
@@ -2520,7 +2540,7 @@
   },
   {
    "name": "subscription-writes-athlete-own-associate",
-   "actor": "athlete",
+   "actor": "multi_athlete",
    "method": "POST",
    "path": "/subscription/a1000000-0000-4000-8000-000000676024/edit",
    "headers": {},
@@ -2531,7 +2551,7 @@
     }
    },
    "effect": {
-    "actor": "athlete",
+    "actor": "multi_athlete",
     "audit": [
      {
       "model": "associate",

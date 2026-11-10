@@ -37,7 +37,8 @@
   "workflow": "a1000000-0000-4000-8000-000000720008",
   "missing": "a1000000-0000-4000-8000-000000720009",
   "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
-  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011",
+  "multi_athlete": "a1000000-0000-4000-8000-000000979901"
  },
  "carnets": {
   "c1": {
@@ -120,7 +121,7 @@
   "abroad": {
    "id": "a1000000-0000-4000-8000-000000880006",
    "association": "a1000000-0000-4000-8000-000000701002",
-   "user": "athlete",
+   "user": "multi_athlete",
    "first_name": "Atleta",
    "last_name": "Estero",
    "born_date": "1991-01-01",
@@ -142,6 +143,24 @@
    "first_name": "Altro",
    "last_name": "Socio",
    "born_date": null,
+   "email": null,
+   "sex": "A",
+   "tax_code": null,
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "is_minor": false,
+   "phone": null,
+   "family_role": null
+  },
+  "multi_home": {
+   "id": "a1000000-0000-4000-8000-000000979902",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "multi_athlete",
+   "first_name": "Atleta",
+   "last_name": "Casa",
+   "born_date": "1991-01-01",
    "email": null,
    "sex": "A",
    "tax_code": null,
@@ -176,7 +195,7 @@
   "abroad_past": {
    "id": "a1000000-0000-4000-8000-000000880010",
    "association": "a1000000-0000-4000-8000-000000701002",
-   "user": "athlete",
+   "user": "multi_athlete",
    "associate": "abroad",
    "start": "2000-01-01",
    "end": "2001-01-01",
@@ -272,7 +291,7 @@
   "abroad": {
    "id": "a1000000-0000-4000-8000-000000880018",
    "carnet": "cf",
-   "user": "athlete",
+   "user": "multi_athlete",
    "subscription": "abroad_past",
    "courses": [],
    "payment": null,
@@ -303,6 +322,13 @@
    "disabled": false,
    "meta": null,
    "created": "2026-10-05T09:30:00Z"
+  }
+ },
+ "extra_users": {
+  "multi_athlete": {
+   "id": "a1000000-0000-4000-8000-000000979901",
+   "username": "carnet-multi-athlete",
+   "email": "carnet-multi-athlete@example.test"
   }
  },
  "accounts": {

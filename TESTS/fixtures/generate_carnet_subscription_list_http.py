@@ -19,6 +19,22 @@ from pathlib import Path
 OUTPUT = Path(__file__).with_name('carnet_subscription_list_http.json')
 SOURCE = copy.deepcopy(json.loads(Path(__file__).with_name('carnet_list_http.json').read_text()))
 IDS = SOURCE['ids']
+
+
+def carnet_multi_club(source):
+    """An athlete linked to both associations holds the foreign rows (the shared athlete only has own links)."""
+    source['ids']['multi_athlete'] = 'a1000000-0000-4000-8000-000000979901'
+    source['extra_users'] = {'multi_athlete': {'id': source['ids']['multi_athlete'], 'username': 'carnet-multi-athlete',
+                                               'email': 'carnet-multi-athlete@example.test'}}
+    home = dict(source['associates']['abroad'], id='a1000000-0000-4000-8000-000000979902',
+                association=source['ids']['own_association'], user='multi_athlete', first_name='Atleta', last_name='Casa')
+    source['associates']['multi_home'] = home
+    source['associates']['abroad']['user'] = 'multi_athlete'
+    source['subscriptions']['abroad_past']['user'] = 'multi_athlete'
+    source['carnet_subscriptions']['abroad']['user'] = 'multi_athlete'
+
+
+carnet_multi_club(SOURCE)
 OWN = IDS['own_association']
 ids = iter(f'a1000000-0000-4000-8000-{990001 + n:012d}' for n in range(10))
 SOURCE['subscriptions']['renewal'] = {'id': next(ids), 'association': OWN, 'user': 'athlete', 'associate': 'mine', 'start': '2100-01-01',
@@ -83,7 +99,7 @@ add('owner-unknown-not-found', 'owner', UNKNOWN, 404, NOT_FOUND)
 add('athlete-own', 'athlete', 'current', 200, {'data': [row('held'), row('renewed')]})
 # Membership compares the canonical text: another spelling of the id is refused.
 add('athlete-uppercase-not-allowed', 'athlete', None, 403, NOT_ALLOWED, query='subscription_id=' + SUBSCRIPTIONS['current']['id'].upper())
-add('athlete-foreign-association', 'athlete', 'abroad_past', 200, {'data': [row('abroad')]})
+add('athlete-foreign-association', 'multi_athlete', 'abroad_past', 200, {'data': [row('abroad')]})
 add('athlete-other-holder-not-allowed', 'athlete', 'family_next', 403, NOT_ALLOWED)
 add('athlete-without-subscription-id', 'athlete', None, 403, NOT_ALLOWED)
 add('admin-impersonating-athlete', 'admin', 'current', 200, {'data': [row('held'), row('renewed')]},

@@ -81,11 +81,12 @@ class RemoteBackupTests(TestCase):
         self.assertNoSecret(SECRET)
 
     @patch('instance.remote_backups.call_runner', return_value={'ok': True, 'message': 'Connessione riuscita.'})
-    def test_connection_test_waits_longer_and_is_not_audited(self, runner):
-        response = self.client.post('/instance/admin/backups/remote/test', {'bucket': 'other-bucket'}, format='json')
+    def test_connection_test_waits_longer_and_is_audited_without_the_secret(self, runner):
+        response = self.client.post('/instance/admin/backups/remote/test', {'bucket': 'other-bucket', 'password': 'OwnerSecret'},
+                                    format='json')
         self.assertEqual(response.data['ok'], True)
         runner.assert_called_once_with('POST', '/backups/remote/test', {'bucket': 'other-bucket'}, timeout=30)
-        self.assertEqual(LogEntry.objects.filter(changes__icontains='backup_remote').count(), 0)
+        self.assertEqual(LogEntry.objects.filter(changes__icontains='backup_remote_test').count(), 1)
 
     @patch('instance.remote_backups.call_runner')
     def test_key_generation_and_confirmation_audit_only_the_key_id(self, runner):

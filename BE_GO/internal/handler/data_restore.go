@@ -119,7 +119,7 @@ func (h *DataRestoreHandler) Root(c echo.Context) error {
 		return h.respond(c, reply, err)
 	case request.Method == http.MethodPost:
 		return h.write(c, func() error {
-			reply, err := h.restore.Upload(c.Request().Context(), func(limit int64) (bool, error) { return h.uploadedFile(c, limit) })
+			reply, err := h.restore.Upload(c.Request().Context(), user, func(limit int64) ([]byte, error) { return h.uploadedFile(c, limit) })
 			return h.respond(c, reply, err)
 		})
 	}
@@ -255,44 +255,44 @@ func (h *DataRestoreHandler) data(c echo.Context) (any, error) {
 // uploadedFile is request.FILES.get('file') with LimitedRestoreUploadHandler
 // first: file parts count towards one received total, and the part that
 // passes the limit and everything after it are dropped (StopUpload).
-func (h *DataRestoreHandler) uploadedFile(c echo.Context, limit int64) (bool, error) {
+func (h *DataRestoreHandler) uploadedFile(c echo.Context, limit int64) ([]byte, error) {
 	raw, err := h.rawBody(c)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	if len(raw) == 0 {
-		return false, nil
+		return nil, nil
 	}
 	media, params, _ := mime.ParseMediaType(c.Request().Header.Get("Content-Type"))
 	switch media {
 	case "application/json":
 		_, err := readMessageMutationsBody(c)
-		return false, err
+		return nil, err
 	case "multipart/form-data":
 	default:
-		return false, domain.ErrDataRestoreNotPorted
+		return nil, domain.ErrDataRestoreNotPorted
 	}
 	boundary := params["boundary"]
 	if boundary == "" {
-		return false, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid boundary in multipart: None"}
+		return nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid boundary in multipart: None"}
 	}
 	reader := multipart.NewReader(bytes.NewReader(raw), boundary)
 	var received int64
-	found := false
+	var found []byte
 	for {
 		part, err := reader.NextRawPart()
 		if err == io.EOF {
 			return found, nil
 		}
 		if err != nil {
-			return false, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid multipart data"}
+			return nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid multipart data"}
 		}
 		content, err := io.ReadAll(part)
 		if err != nil {
-			return false, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid multipart data"}
+			return nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid multipart data"}
 		}
 		if part.Header.Get("Content-Transfer-Encoding") != "" {
-			return false, domain.ErrDataRestoreNotPorted
+			return nil, domain.ErrDataRestoreNotPorted
 		}
 		disposition := part.Header.Get("Content-Disposition")
 		if disposition == "" {
@@ -300,7 +300,7 @@ func (h *DataRestoreHandler) uploadedFile(c echo.Context, limit int64) (bool, er
 		}
 		parameters, ok := djangoHeaderParameters(disposition)
 		if !ok {
-			return false, domain.ErrDataRestoreNotPorted
+			return nil, domain.ErrDataRestoreNotPorted
 		}
 		name, named := parameters["name"]
 		filename := parameters["filename"]
@@ -309,7 +309,7 @@ func (h *DataRestoreHandler) uploadedFile(c echo.Context, limit int64) (bool, er
 		}
 		sanitized, ok := djangoUploadName(filename)
 		if !ok {
-			return false, domain.ErrDataRestoreNotPorted
+			return nil, domain.ErrDataRestoreNotPorted
 		}
 		if sanitized == "" {
 			continue
@@ -319,7 +319,10 @@ func (h *DataRestoreHandler) uploadedFile(c echo.Context, limit int64) (bool, er
 			return found, nil
 		}
 		if strings.TrimFunc(name, unicode.IsSpace) == "file" {
-			found = true
+			found = content
+			if found == nil {
+				found = []byte{}
+			}
 		}
 	}
 }

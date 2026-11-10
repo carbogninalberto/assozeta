@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"strings"
 	"time"
@@ -30,7 +31,10 @@ type InstanceSetup struct {
 
 type InstanceSetupStore interface {
 	First(context.Context) (*domain.InstanceSetupConfiguration, error)
-	ImportTaskReady(context.Context, string) (bool, error)
+	ImportTask(context.Context, string) (*domain.AssociationTaskResult, error)
+	ImportedAssociation(context.Context, string) (bool, error)
+	LatestAssociation(context.Context) (*string, error)
+	CreateImported(context.Context, domain.InstanceSetupImported, func() time.Time) error
 	CreateFresh(context.Context, domain.InstanceSetupFresh, domain.LoginAuditContext, func() time.Time) error
 	Reconfigure(context.Context, int64, map[string]any, *string, time.Time) error
 	SetLogo(context.Context, int64, string, time.Time) error
@@ -123,17 +127,25 @@ func (s *InstanceSetup) Configure(ctx context.Context, body any, audit domain.Lo
 		return nil, domain.ErrInstanceSetupRefused
 	}
 	if !input.Fresh {
-		// _link_imported_instance: AsyncResult(import_task_id). A task without a
-		// ready result raises inside the transaction, which rolls back the
-		// configuration; linking a finished import is not ported.
-		ready, err := s.store.ImportTaskReady(ctx, input.ImportTask)
+		association, failure, err := s.importedAssociation(ctx, input.ImportTask)
 		if err != nil {
 			return nil, err
 		}
-		if ready {
-			return nil, domain.ErrInstanceSetupRefused
+		if failure != "" {
+			// Raised inside the setup transaction: the configuration is rolled back.
+			return setupFailure(500, failure), nil
 		}
-		return setupFailure(500, "Import task is still in progress. Please wait for completion."), nil
+		imported := domain.InstanceSetupImported{Domain: input.Domain, Name: input.Name, Abbreviation: input.Abbreviation,
+			PrimaryColor: input.PrimaryColor, SupportEmail: input.SupportEmail, LogoPath: input.Logo,
+			GoogleClientID: input.GoogleClientID, AppleClientID: input.AppleClientID, AssociationID: association}
+		if err = s.store.CreateImported(ctx, imported, s.now); err != nil {
+			if errors.Is(err, domain.ErrInstanceSetupExists) {
+				return setupFailure(500, domain.ErrInstanceSetupExists.Error()), nil
+			}
+			return nil, err
+		}
+		return &InstanceSetupReply{Status: 200, Body: map[string]any{"success": true, "message": "Istanza configurata con successo",
+			"association_id": association, "redirect": "/login"}}, nil
 	}
 	email, ok := normalizeSetupEmail(input.OwnerEmail)
 	// The model columns (EmailField max_length=254) reject longer values
@@ -313,4 +325,115 @@ func (s *InstanceSetup) InstanceOwner(ctx context.Context, actor domain.Account)
 		return false, err
 	}
 	return access.IsAdministrator, nil
+}
+
+// importedAssociation is _link_imported_instance: the association an import
+// task's stored result names, or the last association by primary key. A
+// failure is the ValueError text Django answers. Rows whose decoding rebuilds
+// exceptions or merges metadata, and values Django would render with
+// Python-specific text, are refused.
+func (s *InstanceSetup) importedAssociation(ctx context.Context, task string) (string, string, error) {
+	row, err := s.store.ImportTask(ctx, task)
+	if err != nil {
+		return "", "", err
+	}
+	if row == nil || (row.Status != "SUCCESS" && row.Status != "FAILURE" && row.Status != "REVOKED") {
+		return "", "Import task is still in progress. Please wait for completion.", nil
+	}
+	if row.Status != "SUCCESS" || row.Encoding != "utf-8" {
+		return "", "", domain.ErrInstanceSetupRefused
+	}
+	if row.Meta != nil && *row.Meta != "" {
+		meta, err := celeryJSON(*row.Meta)
+		if err != nil {
+			return "", "", domain.ErrInstanceSetupRefused
+		}
+		object, ok := meta.(map[string]any)
+		if !ok {
+			return "", "", domain.ErrInstanceSetupRefused
+		}
+		children, _ := object["children"].([]any)
+		if _, status := object["status"]; status || len(children) > 0 || (object["children"] != nil && children == nil) {
+			return "", "", domain.ErrInstanceSetupRefused
+		}
+	}
+	var result any
+	if row.Result != nil && *row.Result != "" {
+		if result, err = celeryJSON(*row.Result); err != nil {
+			return "", "", domain.ErrInstanceSetupRefused
+		}
+	}
+	if object, ok := result.(map[string]any); ok {
+		success, present := object["success"]
+		if present && !setupTruthy(success) {
+			reason, present := object["error"]
+			if !present {
+				reason = "Unknown error"
+			}
+			text, ok := importSetupText(reason)
+			if !ok {
+				return "", "", domain.ErrInstanceSetupRefused
+			}
+			return "", "Import failed: " + text, nil
+		}
+		id := object["sport_association_id"]
+		if !setupTruthy(id) {
+			id = object["association_id"]
+		}
+		if setupTruthy(id) {
+			text, ok := id.(string)
+			if !ok {
+				return "", "", domain.ErrInstanceSetupRefused
+			}
+			canonical, err := dto.AssociationExportDocument(text)
+			if err != nil {
+				return "", "", domain.ErrInstanceSetupRefused // ValidationError text in Django's answer
+			}
+			found, err := s.store.ImportedAssociation(ctx, canonical)
+			if err != nil {
+				return "", "", err
+			}
+			if !found {
+				return "", "Association " + text + " not found after import.", nil
+			}
+			return canonical, "", nil
+		}
+	}
+	latest, err := s.store.LatestAssociation(ctx)
+	if err != nil {
+		return "", "", err
+	}
+	if latest == nil {
+		return "", "No association found after import.", nil
+	}
+	return *latest, "", nil
+}
+
+// importSetupText is str(value) for the JSON values whose text is the same in Go.
+func importSetupText(value any) (string, bool) {
+	switch v := value.(type) {
+	case nil:
+		return "None", true
+	case string:
+		return v, true
+	case bool:
+		if v {
+			return "True", true
+		}
+		return "False", true
+	case json.Number:
+		if strings.ContainsAny(string(v), ".eE") {
+			return "", false
+		}
+		return string(v), true
+	}
+	return "", false
+}
+
+// setupTruthy is bool(value) for celeryJSON values (objects are maps).
+func setupTruthy(value any) bool {
+	if object, ok := value.(map[string]any); ok {
+		return len(object) > 0
+	}
+	return importTruthy(value)
 }
