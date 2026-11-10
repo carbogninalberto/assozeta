@@ -357,3 +357,8 @@ The family wizard with `type: grouped_subscriptions` (127 cases).
 - GREEN natively (`famwiz-native-r2`): 127/127 on native Django and native Go.
 - Mutation (`famwiz-mutation-r3`): the merged `cap` read from the stored `cap` key instead of `zip` fails
   `subscription-create-family-wizard-grouped` (CAUGHT).
+
+After merging `codex/go-backend-parity`: GREEN (`famwiz-versioned-r2`) 127/127 on native Django, native Go, Caddy `/api/v1` and
+`/api/v2`, covering the family wizard's answer, the renewing preregistration and the grouped wizard.
+Re-run green natively (`famwiz-rerun-r1`): `subscription-renew` 75/75, `subscription-memberships` 88/88, `subscription-sign`
+47/47, `subscription-approve` 27/27, `associates-draft` 128/128.

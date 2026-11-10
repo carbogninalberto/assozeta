@@ -177,3 +177,7 @@ Excel export of the list (132 cases):
 - Mutation (`famwiz-mutation-r1`): a filename that keeps the list title instead of the last carnet title fails
   `course-subscriptions-list-excel-subscription-carnet-title` (CAUGHT).
 - The router family's fixture was regenerated (the shared seed has one more carnet subscription).
+- GREEN (`famwiz-versioned-r1`, after merging `codex/go-backend-parity`): 132/132 on native Django, native Go, Caddy `/api/v1`
+  and `/api/v2`.
+- Re-run green natively (`famwiz-rerun-r1`): `router-course-subscriptions` 45/45, `course-enrolment` 113/113,
+  `course-attendance` 99/99.
