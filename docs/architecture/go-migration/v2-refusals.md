@@ -71,6 +71,7 @@ Receipts are `quality-reports/go-migration/<family>-http-v2sub-*`; each family d
 | subscription-lifecycle | `POST subscription/<uid>/delete` | signed subscription; rows of other models referencing it; unpaid invoiced payment | same run |
 | subscription-reads | `GET`/`POST subscription/list` (athlete) | every athlete request | 261 cases; RED `v2sub-red-r2` Django 261/261, Go 500; GREEN `v2sub-versioned-r1` 4 transports; mutation `v2sub-mutation-r1` (ascending order) CAUGHT |
 | subscription-reads | `GET subscription/<uid>/info` | subscription without `document_pdf` (now publishes `print_document_subscription`) | same run |
+| camps-subscriptions | `GET camps-and-retreats/<uid>/subscriptions/list` | period payment with an invoice (or an instructor, B) | 111 cases; RED `v2misc-red-r3` Django 111/111, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r1` (nested instructor dropped) CAUGHT |
 | subscription-renew | `POST subscription/renew` | payment clean-up meets an unpaid invoiced payment | 55 cases; RED `v2sub-red-r1` Django 55/55, Go 500; GREEN `v2sub-versioned-r1` 4 transports; mutation `v2sub-mutation-r1` (invoiced payments excluded) CAUGHT |
 | subscription-transfer | `POST subscription/<uid>/transfer` (e-mail branch) | tutor/associate names starting with non-ASCII letters; non-ASCII e-mail domain | 31 cases; RED `v2sub-red-r1` Django 31/31, Go 500; GREEN `v2sub-versioned-r1` 4 transports 31/31; mutation `v2sub-mutation-r1` (no NFKC) CAUGHT |
 
@@ -176,7 +177,6 @@ legacy Bakney invoices or tutors that would be reassigned (refused by the valida
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | GET communications/settings/smtp/verify | a real SMTP host | `communication/settings/sections/EmailSMTP.svelte:155` | `service/communications_smtp.go:224` | medium |
-| GET camps-and-retreats/<uid>/subscriptions/list | camp payment with an invoice | `CampsAndRetreatsOverview.svelte:308` | `service/camps_subscriptions.go:143` | medium |
 | PATCH camps-and-retreats/periods/services/<uid>/update | walks a soft-deleted/other-group unpaid payment | `EditServiceModal.svelte:29-35` | `service/camps_periods.go:755` | medium |
 | personas add/update | `picture_path` data URL (photo) | `preview-blocks/image-upload.svelte:35-38` | `service/personas_writes.go:270-288` | medium |
 | oauth2/signup | Google/Apple configured | `routes/login/Login.svelte:425-447` | `service/oauth_accounts.go:448` | medium-expensive |
@@ -247,7 +247,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 | POST .../subscriptions/add, PATCH .../subscriptions/update | form/multipart body with file parts; update form carrying `periods` | dto/camps_subscriptions.go:42; service/camps_subscriptions.go:758,763 (`ErrCampsFormNotPorted`) | B | All UI calls send JSON: `overview/modals/AddSubscriptionModal.svelte:31-32`, `EditSubscriptionModal.svelte:31-32`, `src/routes/forms/CampsAndRetreatsForm.svelte:38-39`. Cost: cheap-medium. |
 | POST add, PATCH update (payment creation) | `X-Group-Id` not an existing group | service/camps_subscriptions.go:438,445 (`ErrCampsPaymentNotPorted`) | B | UI sends `X-Group-ID` from the stored selection (`src/utils/ApiMiddleware.js:141`); only a group deleted while still selected. Cost: cheap. |
 | POST add, PATCH update | generated amount over `numeric(9,2)`/negative, or notes > 5120 chars | service/camps_subscriptions.go:450 | B | Needs fees >= 10M or a very large number of periods/services. Cost: cheap (reproduce the DB error). |
-| GET camps-and-retreats/<uid>/subscriptions/list | a subscription period's payment has an `instructor` or an `invoice` | service/camps_subscriptions.go:143 (`ErrCampsPaymentNotPorted`) | A | List called by `overview/CampsAndRetreatsOverview.svelte:308`. Generating a receipt for the camp payment from the payment UI (`src/routes/accounting/payment/partials/payment-overview.svelte:212`, `modals/AddEditModal.svelte:276` -> `payment/<uid>/generate-invoice`, which sets `payment.invoice`, `views/payment_views.py:2035`) makes the list fail. Instructor link: B (camp payments are created without one). |
+| GET camps-and-retreats/<uid>/subscriptions/list | a subscription period's payment has an `instructor` or an `invoice` | — | ported | Ported in v2-misc (nested invoice and instructor rendered). |
 
 ### camps-core.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |

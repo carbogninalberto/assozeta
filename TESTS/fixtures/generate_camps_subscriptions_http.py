@@ -148,6 +148,13 @@ PAYMENTS = {
     'abroad': {'id': next(ids), 'association': FOREIGN, 'user': FOREIGN_OWNER, 'associate': 'hans', 'amount': '4.00', 'paid': False,
                'deleted': False, 'description': None, 'category': 'foreign', 'notes': None, 'created': '2026-06-15T09:30:00Z', 'meta': None},
 }
+# A receipt generated for the paid camp payment (payment/<uid>/generate-invoice) and an instructor link (B, legacy):
+# PaymentSerializer renders both nested in the list.
+PAYMENTS['paid'].update(invoice=True, instructor=True)
+INSTRUCTOR = {'id': next(ids), 'first_name': 'Anna è', 'last_name': 'Bianchi', 'email': 'anna@example.test',
+              'tax_code': 'BNCNNA80A41H501X', 'default_hourly_billing': '12.50'}
+INVOICE = {'id': next(ids), 'created': '2026-06-14T10:00:00Z', 'membership_fee': '0.00', 'activity_fee': '25.00',
+           'description': 'Ricevuta campo è', 'number': 3, 'meta': {'numero': 3}}
 SUBPERIODS = {
     'm_july': {'id': next(ids), 'cs': 'mario', 'period': 'july', 'payment': 'unpaid', 'services': ['kayak', 'umbrella']},
     'm_big': {'id': next(ids), 'cs': 'mario', 'period': 'big', 'payment': 'unpaid', 'services': ['tent']},
@@ -325,13 +332,32 @@ def payment_subscription(row):
     return min(candidates, key=lambda r: r['created'])['id'] if candidates else None
 
 
+def instructor_item():
+    row = INSTRUCTOR
+    return {'instructor_id': row['id'], 'user': OWNER, 'first_name': row['first_name'], 'last_name': row['last_name'], 'email': row['email'],
+            'born_date': None, 'born_city': None, 'born_province': None, 'tax_code': row['tax_code'], 'address_city': None, 'address': None,
+            'address_province': None, 'civic_number': None, 'study_title': None, 'role': 'Istruttore', 'phone': None, 'phone_2': None,
+            'phone_3': None, 'phone_4': None, 'draft': False, 'associated_user_id': None, 'is_volunteer': False, 'stipulated_contract_in': None,
+            'default_hourly_billing': row['default_hourly_billing'], 'default_percentage_billing': '0.00', 'documents': []}
+
+
+def invoice_item():
+    row = INVOICE
+    return {'invoice_id': row['id'], 'document_token': None, 'creation_date': row['created'], 'membership_fee': row['membership_fee'],
+            'activity_fee': row['activity_fee'], 'meta_payment_categories': None, 'description': row['description'], 'number': row['number'],
+            'archived': False, 'cancelled': False, 'meta': row['meta'], 'imported_from_associami': False, 'deleted': False, 'document_pdf': None,
+            'sport_association': OWN, 'selected_tutor': None, 'group': None, 'attached_documents': []}
+
+
 def payment_info(label):
     row = PAYMENTS[label]
     category = row['category']
     return {'payment_id': row['id'], 'user': OWNER_USER if row['user'] == OWNER else None,
             'associate': associate_full(row['associate']), 'subscription_id': payment_subscription(row),
-            'instructor_id': None, 'instructor': None, 'supplier': None, 'supplier_id': None, 'custom_account_type': None,
-            'custom_account_name': None, 'invoice': None, 'attachments': [],
+            'instructor_id': INSTRUCTOR['id'] if row.get('instructor') else None,
+            'instructor': instructor_item() if row.get('instructor') else None, 'supplier': None, 'supplier_id': None,
+            'custom_account_type': None, 'custom_account_name': None, 'invoice': invoice_item() if row.get('invoice') else None,
+            'attachments': [],
             'payment_category_name': CATEGORIES[category]['name'] if category else None,
             'type': 'default', 'subject': 0, 'amount': row['amount'], 'creation_date': drf(row['created']),
             'payment_date': None, 'paid': row['paid'], 'expense': False, 'description': row['description'],
@@ -760,5 +786,6 @@ OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Camps and retreats 
                               'ids': IDS, 'family': FAMILY, 'account': ACCOUNT, 'categories': CATEGORIES, 'associates': ASSOCIATES,
                               'registrations': REGISTRATIONS, 'camps': CAMPS, 'periods': PERIODS, 'services': SERVICES,
                               'period_links': PERIOD_LINKS, 'camp_subscriptions': CAMP_SUBSCRIPTIONS, 'payments': PAYMENTS,
+                              'instructor': INSTRUCTOR, 'invoice': INVOICE,
                               'subscription_periods': SUBPERIODS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

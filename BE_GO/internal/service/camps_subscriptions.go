@@ -138,10 +138,6 @@ func (s *CampsSubscriptions) List(ctx context.Context, identity domain.ResolvedI
 				if err != nil {
 					return nil, err
 				}
-				if payment.InstructorID != nil || payment.InvoiceID != nil {
-					// The instructor and invoice serializers are not ported.
-					return nil, ErrCampsPaymentNotPorted
-				}
 				entry.Payment = &payment
 			}
 			info, err := r.tx.Period(ctx, period.PeriodID, false)
