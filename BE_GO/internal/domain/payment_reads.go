@@ -194,3 +194,16 @@ type PaymentReadsStore interface {
 	SubscriptionOf(ctx context.Context, id string, group, scope *string) (*PaymentReadsSubscription, error)
 	Link(ctx context.Context, payment string, group, scope *string) (PaymentReadsLink, error)
 }
+
+// PaymentStripeCharges is payment_stats' stripe_charges once computed or cached.
+type PaymentStripeCharges struct {
+	Total, StripeFee float64
+}
+
+// PaymentStatsStripeCache is payment_stats' Django cache of the Stripe fees of a range.
+type PaymentStatsStripeCache interface {
+	// StripeCharges is cache.get(key): the cached charges and whether the key exists.
+	StripeCharges(ctx context.Context, key string) (PaymentStripeCharges, bool, error)
+	// StoreStripeCharges is cache.set(key, charges, 300).
+	StoreStripeCharges(ctx context.Context, key string, charges PaymentStripeCharges) error
+}

@@ -250,6 +250,20 @@ func (s *Session) CreatePaymentIntent(ctx context.Context, params []Param) (Obje
 	return s.request(ctx, http.MethodPost, "/v1/payment_intents", body)
 }
 
+// List is <Resource>.list(api_key=..., **params) and ListObject.next_page:
+// GET <path>?<params> (the query keeps urlencode's %5B/%5D; only form bodies
+// get the bracket replacement).
+func (s *Session) List(ctx context.Context, path string, params []Param) (Object, error) {
+	query, err := Encode(params)
+	if err != nil {
+		return nil, err
+	}
+	if query != "" {
+		path += "?" + strings.NewReplacer("[", "%5B", "]", "%5D").Replace(query)
+	}
+	return s.request(ctx, http.MethodGet, path, "")
+}
+
 // Create is <Resource>.create(api_key=..., **params): POST <path> with the
 // encoded parameters (stripe.Coupon.create: /v1/coupons,
 // stripe.PromotionCode.create: /v1/promotion_codes).
