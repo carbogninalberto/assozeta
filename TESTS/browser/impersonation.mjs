@@ -86,7 +86,9 @@ async function picker(page, actor) {
     await expect(modal).toBeVisible();
     const response = await initialResponse; assert.equal(response.status(),200);
     const initial = await response.json();
-    const names = actor === 'owner' ? ['athlete','staff'] : ['owner','athlete','staff','foreign','foreign-athlete'];
+    // The fixture is a self-hosted install whose primary association is the owner's, so the
+    // owner lists athletes as the administrator does, plus its own collaborators.
+    const names = actor === 'owner' ? ['athlete','staff','foreign-athlete'] : ['owner','athlete','staff','foreign','foreign-athlete'];
     const ids = names.map(name=>input.people[name].id).sort();
     assert.deepEqual(initial.users.map(user=>user.user_id).sort(),ids);
     assert.equal(initial.meta.total,ids.length); assert.equal(initial.next_page,null);
@@ -101,11 +103,15 @@ async function choose(page,actor,target,filterCheck=false) {
     const modal = await picker(page,actor);
     if (filterCheck && actor === 'owner') {
         const search = modal.getByRole('textbox',{name:'Cerca nella tabella',exact:true});
-        const denied = page.waitForResponse(response => response.url().includes('/impersonation/users') && new URL(response.url()).searchParams.get('query[generalSearch]') === input.people['foreign-athlete'].username);
-        await search.fill(input.people['foreign-athlete'].username);
-        const data = await (await denied).json(); assert.deepEqual(data.users,[]);
-        await expect(modal.locator('[data-row]')).toHaveCount(0);
-        checks.push({actor,action:'foreign-athlete-excluded',target:input.people['foreign-athlete'].id});
+        // The other association's owner username is a prefix of its athlete's, so this
+        // search matches both users; only the athlete is eligible for this owner.
+        const searched = page.waitForResponse(response => response.url().includes('/impersonation/users') && new URL(response.url()).searchParams.get('query[generalSearch]') === input.people.foreign.username);
+        await search.fill(input.people.foreign.username);
+        const data = await (await searched).json();
+        assert.deepEqual(data.users.map(user=>user.user_id),[input.people['foreign-athlete'].id]);
+        await expect(modal.locator('[data-row]')).toHaveCount(1);
+        await expect(modal.getByRole('button',{name:'Impersona '+input.people['foreign-athlete'].username,exact:true})).toBeVisible();
+        checks.push({actor,action:'foreign-owner-excluded',target:input.people.foreign.id});
     }
     await modal.locator('#impersonation-modal-role').selectOption(target.role);
     await modal.getByRole('textbox',{name:'Cerca nella tabella',exact:true}).fill(target.username);

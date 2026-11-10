@@ -8,6 +8,7 @@ serialization optimizations cannot change what the UI receives.
 import datetime
 import re
 from decimal import Decimal
+from zoneinfo import ZoneInfo
 
 from django.db import connection
 from django.test import TestCase
@@ -170,7 +171,8 @@ class SubscriptionListPayloadTests(SubscriptionListScenarioMixin, TestCase):
         medical_document = create_test_document()
         medical = create_test_medical_certificate(
             user=self.user, document=medical_document,
-            expiration_date=TODAY + datetime.timedelta(days=40),
+            # The label counts days from today's date in Rome, which runs ahead of UTC late in the evening.
+            expiration_date=timezone.localtime(timezone.now(), ZoneInfo('Europe/Rome')).date() + datetime.timedelta(days=40),
         )
         payment = create_test_payment(associate=associate, sport_association=self.sport_association,
                                       amount=Decimal('30.50'), paid=True)

@@ -335,7 +335,7 @@ class SourceAndOrderingControls(unittest.TestCase):
             "SECRET_KEY", "JWT_SECRET_KEY", "JWT_PUBLIC_KEY", "AWS_ACCESS_KEY_ID",
             "AWS_SECRET_ACCESS_KEY", "AWS_STORAGE_BUCKET_NAME", "AWS_S3_REGION_NAME",
             "AWS_S3_ENDPOINT_URL", "AWS_LOCATION", "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY",
-            "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET", "SENJA_WEBHOOK_SECRET",
+            "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET", "SENJA_WEBHOOK_SECRET", "INSTANCE_SETUP_TOKEN",
         )
         with tempfile.TemporaryDirectory() as directory, mock.patch.object(
             runtime, "read_tracked_environment", return_value={
@@ -350,6 +350,7 @@ class SourceAndOrderingControls(unittest.TestCase):
             settings = SimpleNamespace(
                 **{key: environment[key] for key in key_names},
                 DATABASES={"default": database}, DATA_RESTORE_LOCK_PATH=str(work / "lock"),
+                SESSION_COOKIE_SECURE=environment["SESSION_COOKIE_SECURE"] == "True",
             )
             listener = mock.MagicMock()
             listener.__enter__.return_value.getsockname.return_value = ("127.0.0.1", 18000)
@@ -373,6 +374,8 @@ class SourceAndOrderingControls(unittest.TestCase):
             self.assertEqual(launched["REDIS_PASSWORD"], environment["REDIS_PASSWORD"])
             self.assertEqual(launched["JWT_SECRET_KEY"], environment["JWT_SECRET_KEY"])
             self.assertEqual(launched["JWT_PUBLIC_KEY"], environment["JWT_PUBLIC_KEY"])
+            self.assertEqual(launched["INSTANCE_SETUP_TOKEN"], environment["INSTANCE_SETUP_TOKEN"])
+            self.assertEqual(launched["SESSION_COOKIE_SECURE"], "False")
             configured = runtime.cache_override(16379)["default"]
             self.assertTrue(configured["LOCATION"].endswith(":16379/1"))
             self.assertEqual(configured["OPTIONS"]["PASSWORD"], environment["REDIS_PASSWORD"])
