@@ -91,14 +91,32 @@ athletes and owners without an association), today in Europe/Rome compared with 
 
 ## Not ported (refused with the 500 page; the transaction is rolled back)
 
-- Integer (or boolean) ids where Django accepts `uuid.UUID(int=...)` lookups: attendee and absence ids, event ids,
-  instructor ids, the check-in day id.
+- Integer (or boolean) ids where Django accepts `uuid.UUID(int=...)` lookups: attendee and absence ids, instructor ids,
+  the check-in day id (event ids are ported, see "Events of older calendars").
 - `lessons_left` that is a float or a boolean when a carnet is consumed or given back; lesson dates that Python's
   `fromisoformat` accepts outside `YYYY-MM-DD[(T| )HH:MM[:SS[.fff|.ffffff]][±HH:MM]]` (or years below 1000); event
   starts with non-ASCII digits.
-- `get_extended_prop_for_attendance_day`: linking a day to an event whose `event_id` is not a valid UUID string
-  (Django logs the entry and swallows the failing save), `extendedProps` that is truthy but not a dict, an
-  `instructor` that is truthy and neither a dict nor a list, and list items that are not dicts.
+
+## Events of older calendars (v2-rest-c)
+
+`get_extended_prop_for_attendance_day` and `map_unlinked_attendance` with events whose `event_id` is not a UUID string
+and whose `extendedProps` are of other JSON types:
+
+- Linking an unlinked day assigns the event's `event_id` and saves the day. The UUID field takes an integer or a boolean
+  as `UUID(int=...)`: the day is stored with that UUID and the audit diff shows `str()` of the value (`7`, `True`). A day
+  linked this way no longer matches its event on the next listing (`str(uuid) != event_id`).
+- A value the field rejects (other text, a float, a list, an object, an integer outside 128 bits) fails the save while the
+  UPDATE is prepared. The view ignores the failure; auditlog's entry of the diff, written before the save, stays: the
+  day keeps its values and every listing logs the same entry again. `null` is saved as no link.
+- The view sets a missing `expected_absences` to `[]` before the save, which both the row (when saved) and the entry show.
+- `map_unlinked_attendance` looks days up by the event id first: an integer id links, any other non-UUID value is the
+  500 page.
+- `extendedProps`: `'instructor' in props` is a key test on an object, a membership test on a list and a substring test on
+  text. Without a match the value is returned as stored (text, list, object). A match on text or a list, and a number
+  or `true`, raise (the 500 page; days linked before it stay linked).
+- `instructor`: an object with `instructor_id` gets its label; a list gets the label on each object item with an
+  `instructor_id` (text and list items are tested for the name the same way; a number or `null` item raises); text without
+  the name, a falsy value or an object without the key is returned as stored.
 
 ## Evidence (TDD)
 
@@ -108,6 +126,10 @@ competitive certificate), subscriptions, courses, course subscriptions (one dele
 registries with events, days (some dated today in Europe/Rome at seeding) and carnet holdings with course links, and
 checks every case against the complete model state with exact day, holding, auditlog and index effects.
 
+- v2-rest-c (events of older calendars): 111 cases. RED: the documented refusal (`v2-refusals.md`, course-attendance,
+  `legacy: yes` row). GREEN (`v2restc-green-r2`): 111/111 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+  Mutation (`v2restc-mutation-r1`): storing the day even when the field rejects the event id fails
+  `course-attendance-attendees-old-event-ids` (state.days, CAUGHT).
 - RED (`native-r1`): Django 96/96; Go 404 on the first case.
 - GREEN (`versioned-r1`): 96/96 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`mutation-r1`): rolling back instead of committing on a 412 answer fails
