@@ -43,6 +43,8 @@ type InstanceAdminStore interface {
 	Read(context.Context) (*domain.InstanceAdminRow, error)
 	Locked(context.Context, func(*domain.InstanceAdminRow) (*domain.InstanceAdminUpdate, error)) error
 	UpdateBranding(context.Context, map[string]string, time.Time) error
+	UIAPIVersion(context.Context) (string, error)
+	AppendUIAPIVersionChange(context.Context, domain.InstanceUIAPIVersionChange) error
 	DiagnosticsLease(context.Context) ([]byte, bool)
 }
 
@@ -137,21 +139,33 @@ func (s *InstanceAdmin) Admin(ctx context.Context) (map[string]any, error) {
 		"mode": s.env.DeploymentMode}, nil
 }
 
-// Branding is InstanceAdminView.put.
-func (s *InstanceAdmin) Branding(ctx context.Context, body any) (map[string]any, error) {
-	only, err := dto.InstanceAdminKeysEqual(body, "oem")
+// Branding is InstanceAdminView.put: the branding ('oem') and the web UI API
+// version ('uiApiVersion'). A version change writes one UPDATE log entry on
+// the configuration ({'ui_api_version': [previous, new]}) after the save.
+func (s *InstanceAdmin) Branding(ctx context.Context, body any, actor string, audit domain.LoginAuditContext) (map[string]any, error) {
+	within, err := dto.InstanceAdminKeysWithin(body, "oem", "uiApiVersion")
 	if err != nil {
 		return nil, err
 	}
-	if !only {
+	if !within {
 		return nil, &dto.InstanceAdminInvalid{Body: []string{"Only instance branding can be edited here."}}
 	}
-	fields, err := dto.InstanceAdminBranding(body)
+	previous, err := s.store.UIAPIVersion(ctx)
+	if err != nil {
+		return nil, err
+	}
+	fields, err := dto.InstanceAdminEdit(body)
 	if err != nil {
 		return nil, err
 	}
 	if err = s.store.UpdateBranding(ctx, fields, s.now()); err != nil {
 		return nil, err
+	}
+	if version, edited := fields["ui_api_version"]; edited && version != previous {
+		if err = s.store.AppendUIAPIVersionChange(ctx, domain.InstanceUIAPIVersionChange{
+			ActorID: actor, Previous: previous, Version: version, Audit: audit, At: s.now()}); err != nil {
+			return nil, err
+		}
 	}
 	config, err := s.config(ctx)
 	if err != nil {

@@ -147,7 +147,7 @@ func (s *InstanceBootstrap) Config(ctx context.Context) (*dto.InstanceConfig, er
 		OEM:    dto.InstanceOEM{Name: config.Name, Abbreviation: config.Abbreviation, Logo: logo, SupportEmail: config.SupportEmail, PrimaryColor: config.PrimaryColor, DisplaySettings: display, ManualURL: "/#/manuale"},
 		OAuth:  dto.InstanceOAuth{GoogleClientID: googleID, AppleClientID: appleID, GoogleEnabled: googleEnabled},
 		Stripe: dto.InstanceStripe{PublicKey: publicKey}, Meta: dto.InstanceMeta{Title: title, Description: description, Manifest: "/api/instance/manifest.json"},
-		Features: dto.InstanceFeatures{AIEnabled: ai["enabled"], ManualEnabled: manual, IsReseller: config.IsReseller, SelfHosted: config.SelfHosted, SupportMultipleAssociations: config.SupportMultipleAssociations, ShowCourseAthletes: config.ShowCourseAthletes, ShowMinorExemption: config.ShowMinorExemption, ShowTutorial: config.ShowTutorial, FamilyRegistration: s.options.FamilyRegistration, FederationRegistration: s.options.FederationRegistration, MultipleRegistration: s.options.MultipleRegistration},
+		Features: dto.InstanceFeatures{AIEnabled: ai["enabled"], ManualEnabled: manual, IsReseller: config.IsReseller, SelfHosted: config.SelfHosted, SupportMultipleAssociations: config.SupportMultipleAssociations, ShowCourseAthletes: config.ShowCourseAthletes, ShowMinorExemption: config.ShowMinorExemption, ShowTutorial: config.ShowTutorial, FamilyRegistration: s.options.FamilyRegistration, FederationRegistration: s.options.FederationRegistration, MultipleRegistration: s.options.MultipleRegistration, UIAPIVersion: config.UIAPIVersion},
 		Setup:    dto.InstanceSetup{Provenance: config.SetupProvenance, OnboardingComplete: config.OnboardingCompletedAt != nil},
 	}, nil
 }

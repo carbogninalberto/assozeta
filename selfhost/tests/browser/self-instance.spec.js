@@ -90,7 +90,10 @@ for (const viewport of viewports) {
                         await card.getByLabel('Chiave segreta Stripe', {exact: true}).fill('sk_test_disposable');
                         await card.getByLabel('Firma webhook Stripe', {exact: true}).fill('whsec_disposable');
                     } else await card.getByLabel(`Client ID ${provider}`, {exact: true}).fill(provider === 'Google' ? 'disposable.apps.googleusercontent.com' : 'com.example.disposable');
-                    await card.getByRole('button', {name: `Salva ${provider}`, exact: true}).click();
+                    // Keep the button clear of the bottom-center toasts on mobile.
+                    const save = card.getByRole('button', {name: `Salva ${provider}`, exact: true});
+                    await save.evaluate(element => element.scrollIntoView({block: 'center'}));
+                    await save.click();
                     await expect(card.getByRole('button', {name: `Salva ${provider}`, exact: true})).toBeDisabled();
                 }
                 await page.reload();

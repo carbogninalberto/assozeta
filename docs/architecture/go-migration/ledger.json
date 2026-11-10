@@ -2598,9 +2598,9 @@
       "kind": "model_hook",
       "django": {
         "file": "BE/instance/models.py",
-        "line": 97,
+        "line": 104,
         "symbol": "InstanceConfiguration.save",
-        "sha256": "035d845caebfb35c831f89a038fab7d8f789ed313628246b7f357f7757a9a297"
+        "sha256": "460da3b534772cf2d6eda78d430df4827d97fdb8fad0ca2fa79d3a12f7836211"
       },
       "source_present": true,
       "declaration": {
@@ -2653,7 +2653,8 @@
         }
       ],
       "notes": [
-        "Implementing via instance-setup: the fresh setup's create (singleton check, defaults stored) and reconfigure saves (an empty display_settings stored as the defaults)."
+        "Implementing via instance-setup: the fresh setup's create (singleton check, defaults stored) and reconfigure saves (an empty display_settings stored as the defaults).",
+        "Re-reviewed after ui_api_version was added to InstanceConfiguration: save() is unchanged; Go inserts the new column's default. instance-setup 86/86 and instance-bootstrap 129/129 pass on the merged tree (ui-v2-beta)."
       ]
     },
     {
@@ -35188,14 +35189,20 @@
         "BE_GO/internal/service/instance_admin.go",
         "BE_GO/internal/handler/instance_admin.go",
         "BE_GO/internal/service/instance_bootstrap.go",
-        "BE_GO/internal/repository/instance_bootstrap.go"
+        "BE_GO/internal/repository/instance_bootstrap.go",
+        "BE_GO/internal/dto/instance_admin_ui_api_test.go",
+        "BE_GO/internal/handler/instance_admin_ui_api_test.go",
+        "BE_GO/internal/repository/instance_backup_actions.go"
       ],
       "dependencies": [
         "Existing identity resolution (administration paths never impersonate) and the instance bootstrap service (InstanceConfigSerializer, is_instance_administrator)",
         "instance_instanceconfiguration",
         "application_sportassociation",
         "bakney_user",
-        "core.settings: SECRET_KEY, APP_URL/APP_HOST, ASSOZETA_VERSION, ASSOZETA_DEPLOYMENT_MODE, EMAIL_*, WHITELABEL_NAME, AI_*, MCP_AGENT_*, STRIPE_*, SOCIAL_AUTH_GOOGLE_OAUTH2_KEY, SOCIAL_AUTH_APPLE_ID_CLIENT"
+        "core.settings: SECRET_KEY, APP_URL/APP_HOST, ASSOZETA_VERSION, ASSOZETA_DEPLOYMENT_MODE, EMAIL_*, WHITELABEL_NAME, AI_*, MCP_AGENT_*, STRIPE_*, SOCIAL_AUTH_GOOGLE_OAUTH2_KEY, SOCIAL_AUTH_APPLE_ID_CLIENT",
+        "BE/instance/migrations/0009_ui_api_version.py",
+        "auditlog_logentry",
+        "application_auditlogindex"
       ],
       "contract": {
         "methods": [
@@ -35209,21 +35216,24 @@
           "/api/v2/instance/admin",
           "/api/instance/admin"
         ],
-        "request": "PUT: JSON body whose only key is 'oem' ({name, abbreviation, primaryColor, supportEmail}, partial).",
-        "response": "GET 200 {'config': InstanceConfigSerializer, 'running_version', 'configured_version', 'mode'}; PUT 200 {'config': ...}.",
-        "errors": "401; 403 'Only the instance owner or an administrator can administer this installation.', 'Esci dall’impersonificazione per accedere all’amministrazione.'; 405; 400 ['Only instance branding can be edited here.'] and nested oem field errors; 500 number/null/unhashable body.",
+        "request": "PUT: JSON body whose keys are a non-empty subset of {'oem', 'uiApiVersion'}: 'oem' ({name, abbreviation, primaryColor, supportEmail}, partial) and 'uiApiVersion' (ChoiceField v1/v2, source ui_api_version).",
+        "response": "GET 200 {'config': InstanceConfigSerializer (features.uiApiVersion included), 'running_version', 'configured_version', 'mode'}; PUT 200 {'config': ...}.",
+        "errors": "401; 403 'Only the instance owner or an administrator can administer this installation.', 'Esci dall’impersonificazione per accedere all’amministrazione.'; 405; 400 ['Only instance branding can be edited here.'] nested oem field errors and uiApiVersion '\"<str(value)>\" is not a valid choice.' / 'This field may not be null.' (reported together); 500 number/null/unhashable body.",
         "authentication": "DRF authentication (JWT/session); administration path, no impersonation.",
         "permissions": "IsInstanceOwner: active, non-deleted superuser or primary-association owner of a self-hosted configuration (the authenticated actor).",
         "resource_scope": "The singleton InstanceConfiguration.",
-        "side_effects": "PUT saves the edited OEM columns and updated_at (no audit).",
-        "transaction": "Single save(update_fields=...).",
+        "side_effects": "PUT saves the edited OEM columns, ui_api_version and updated_at; a changed ui_api_version writes one auditlog UPDATE entry on the configuration {'ui_api_version': [previous, new]} with additional_data {'actor_id'} and its AuditLogIndex row (actor.sport_association).",
+        "transaction": "Single save(update_fields=...), then the auditlog entry (not atomic with the save).",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/fixtures/instance_admin_http.json",
         "TESTS/fixtures/generate_instance_admin_http.py",
         "TESTS/contracts/test_instance_admin_http.py",
-        "TESTS/adapters/django/instance_admin_http.py"
+        "TESTS/adapters/django/instance_admin_http.py",
+        "BE/instance/tests/test_administration.py",
+        "TESTS/adapters/django/ui_api_version_browser.py",
+        "TESTS/browser/ui-api-version.mjs"
       ],
       "evidence": [
         "docs/architecture/go-migration/instance-admin.md",
@@ -35258,10 +35268,40 @@
           "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2; Django source of these views unchanged by the merge.",
           "artifact": "quality-reports/go-migration/instance-reverify-admin-green/results.json",
           "receipt_sha256": "e79bdb5f5cd7bc1469914650310510f393b5c96cd32a3ca39deeac4f354bc5d3"
+        },
+        "docs/architecture/go-migration/ui-api-version.md",
+        {
+          "command": "tools/go-migration/family.py run instance-admin",
+          "revision": "go/ui-v2-beta (uncommitted working tree, base 1df97bd9), Django change and fixtures, before Go code",
+          "result": "RED: Django 164/164; Go fails instance-admin-owner-admin (response.body:config:features:keys).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-red-r2/results.json",
+          "receipt_sha256": "c34df7f704aae1447bbfd6136271ab7bf80a0aad238b8a715ee10aa81ea59f0f"
+        },
+        {
+          "command": "tools/go-migration/family.py run instance-admin --versioned",
+          "revision": "go/ui-v2-beta (uncommitted working tree, base 1df97bd9)",
+          "result": "GREEN: 164/164 on native Django, native Go, Caddy /api/v1 and /api/v2, with exact InstanceConfiguration, auditlog and AuditLogIndex effects.",
+          "artifact": "quality-reports/go-migration/instance-admin-http-versioned-g1/results.json",
+          "receipt_sha256": "efe920ccae5ac749bdf52aa3b44d36b20a5621bb3b6dd41dc4341422f56bf58a"
+        },
+        {
+          "command": "tools/go-migration/family.py mutation instance-admin --file BE_GO/internal/service/instance_admin.go --old 'edited && version != previous' --new 'edited && version == previous'",
+          "revision": "go/ui-v2-beta (uncommitted working tree, base 1df97bd9)",
+          "result": "Mutation control CAUGHT: Go fails instance-admin-ui-version-enable (audit.count).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-mutation-g1/results.json",
+          "receipt_sha256": "281f20adf5a05f6face962236f748672c4bd15a6fcde8194ef6c013c3e751c4b"
+        },
+        {
+          "command": "python TESTS/adapters/django/ui_api_version_browser.py --ui-dir <built UI>",
+          "revision": "go/ui-v2-beta (uncommitted working tree, base 1df97bd9)",
+          "result": "Browser: built UI behind the shipped Caddyfile; v1 calls only /api, the owner toggle enables v2, the same and a new browser call only /api/v2 (Django observer: no API request except first-visit bootstrap reads), ?api=v1 and a failing readiness probe stay on /api, switching off returns to /api; audit entries [v1,v2] and [v2,v1]. Known v2 gap: statistic/dashboard?widget=todaylessons refused by Go.",
+          "artifact": "quality-reports/go-migration/ui-v2-browser/results.json",
+          "receipt_sha256": "012777adcde6011ea61c3bdc9c4e063133b6802b8a0dbc59c6cf4573a715b393"
         }
       ],
       "notes": [
-        "Implementing: IsInstanceOwner on the authenticated actor before method dispatch, branding-only PUT, email and integration settings with revision checks, Fernet-encrypted secrets retained or cleared, diagnostics snapshot and leased POST, development-mode updates and restarts, Cache-Control no-store on email/integration responses, on four transports; diagnostics runs once a lease can be claimed, updates/restarts in production mode, form or multipart bodies, non-ASCII AI base URLs and unsupported stored JSON shapes are refused before any write; admin/releases, admin/logo and the email/integration test routes stay on Django."
+        "Implementing: IsInstanceOwner on the authenticated actor before method dispatch, branding-only PUT, email and integration settings with revision checks, Fernet-encrypted secrets retained or cleared, diagnostics snapshot and leased POST, development-mode updates and restarts, Cache-Control no-store on email/integration responses, on four transports; diagnostics runs once a lease can be claimed, updates/restarts in production mode, form or multipart bodies, non-ASCII AI base URLs and unsupported stored JSON shapes are refused before any write; admin/releases, admin/logo and the email/integration test routes stay on Django.",
+        "uiApiVersion (web UI API version, beta) is editable here next to 'oem'; a change is audited. See docs/architecture/go-migration/ui-api-version.md."
       ]
     },
     {
@@ -37915,7 +37955,9 @@
         "BE/instance/integrations.py",
         "BE/application/manuale/availability.py",
         "BE/core/authentication.py",
-        "BE/core/middleware.py"
+        "BE/core/middleware.py",
+        "BE/instance/serializers.py",
+        "BE/instance/migrations/0009_ui_api_version.py"
       ],
       "contract": {
         "methods": [
@@ -37929,7 +37971,7 @@
           "/api/v2/instance/config"
         ],
         "request": "Read-only instance bootstrap; real authentication, method and negotiation precedence retained.",
-        "response": "200 public OEM/OAuth/Stripe/meta/features/setup projection with live overrides; absent configuration 404.",
+        "response": "200 public OEM/OAuth/Stripe/meta/features/setup projection with live overrides (features.uiApiVersion: 'v1' or 'v2'); absent configuration 404.",
         "errors": "Declared 401/403/404/405/406, malformed configuration 500, restore admission and locale/CORS errors match actual Django cases.",
         "authentication": "Public authentication bypass; supplied Bearer/scope headers ignored.",
         "permissions": "Public",
@@ -37945,7 +37987,8 @@
         "BE_GO/internal/repository/instance_bootstrap_integration_test.go",
         "TESTS/adapters/django/manual_availability.py",
         "TESTS/adapters/django/manual_bundle.py",
-        "TESTS/adapters/go/manual_image.py"
+        "TESTS/adapters/go/manual_image.py",
+        "TESTS/adapters/django/ui_api_version_browser.py"
       ],
       "evidence": [
         "86 source-authored cases pass against actual Django ASGI and Go, with real JWT/PostgreSQL/Redis, unchanged managed data and declared cache cleanup. Missing route, malformed-CORS locale and private pair-array projection RED retained before fixes. Four actual PostgreSQL groups prove secret projection and one-row/one-query plans at100/1000/10000 rows; shared buffer hits4/6/6. See docs/architecture/go-migration/instance-bootstrap.md.",
@@ -37977,10 +38020,33 @@
           "result": "passed: 128 Go bootstrap cases.",
           "artifact": "quality-reports/go-migration/instance-reverify-bootstrap-go/results.json",
           "receipt_sha256": "6605c5e2cf5638997e778e0bf858569208aefaafe141057a9ec424f151e0a923"
+        },
+        "docs/architecture/go-migration/ui-api-version.md",
+        {
+          "command": "python -m TESTS.adapters.django.instance_bootstrap --backend django",
+          "revision": "go/ui-v2-beta (uncommitted working tree, base 1df97bd9)",
+          "result": "passed: 129 Django bootstrap cases (new configured-config-ui-api-v2).",
+          "artifact": "quality-reports/go-migration/ui-v2-bootstrap-django/results.json",
+          "receipt_sha256": "f30bdd9975f79ad86b85461507d1b0d8f04c86cb36f7a6835da7c1b713aed25b"
+        },
+        {
+          "command": "python -m TESTS.adapters.django.instance_bootstrap --backend go",
+          "revision": "go/ui-v2-beta (uncommitted working tree, base 1df97bd9), before the Go change",
+          "result": "RED: Go fails configured-config (features keys: uiApiVersion).",
+          "artifact": "quality-reports/go-migration/ui-v2-bootstrap-go-red/results.json",
+          "receipt_sha256": "a6af0dcd222eaee390217f40f56f17453224da70fdd52e3ba9d4714ea9dc409c"
+        },
+        {
+          "command": "python -m TESTS.adapters.django.instance_bootstrap --backend go",
+          "revision": "go/ui-v2-beta (uncommitted working tree, base 1df97bd9)",
+          "result": "passed: 129 Go bootstrap cases plus the repository integration groups. Mutation (features.uiApiVersion fixed to v1) failed configured-config-ui-api-v2 and was restored.",
+          "artifact": "quality-reports/go-migration/ui-v2-bootstrap-go-green/results.json",
+          "receipt_sha256": "474223a5b32b2d48c53ab372a5b60fc8e57468cc69d7e7f292fe5b253168ab05"
         }
       ],
       "notes": [
-        "Current-model syncdb fixture only; historical migrations, installed activation and complete manual reader/search/assets remain open. Canonical logo/manifest remain Django-owned /api paths. JSON projection cost scales with settings size."
+        "Current-model syncdb fixture only; historical migrations, installed activation and complete manual reader/search/assets remain open. Canonical logo/manifest remain Django-owned /api paths. JSON projection cost scales with settings size.",
+        "features.uiApiVersion exposes InstanceConfiguration.ui_api_version (v1 default). See docs/architecture/go-migration/ui-api-version.md."
       ]
     },
     {

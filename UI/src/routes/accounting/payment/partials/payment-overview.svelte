@@ -1,4 +1,5 @@
 <script>
+    import {rewriteApiUrl} from 'utils/apiVersion.js';
     import swal from 'sweetalert2';
     import AddEditModal from 'routes/accounting/payment/modals/AddEditModal.svelte';
     import SimpleButton from 'components/buttons/simple-button.svelte';
@@ -698,7 +699,7 @@
                             <li class="mb-2 border-bottom border-light pb-2">
                                 <div class="d-flex align-items-center">
                                     <a
-                                        href={`${replaceUID(__bakney.env.API.DOCUMENT.DOWNLOAD, attachment.document_id)}?token=${attachment.token}`}
+                                        href={rewriteApiUrl(`${replaceUID(__bakney.env.API.DOCUMENT.DOWNLOAD, attachment.document_id)}?token=${attachment.token}`)}
                                         target="_blank"
                                         class="text-primary font-weight-bolder d-flex align-items-center">
                                         <File size={18} weight="bold" class="mr-2" />

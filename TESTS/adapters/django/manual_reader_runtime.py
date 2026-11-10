@@ -73,6 +73,10 @@ class GoManualRuntime:
         for name, source in [('server', 'manual-server'), ('image-codec', 'image-codec')]:
             os.link(self.work / source, image / name)
         (image / 'release-manual').symlink_to(manual['MANUAL_BUNDLE_PATH'], target_is_directory=True)
+        # The carried-origin marker lives next to the bundle, as in the image.
+        carried = Path(manual['MANUAL_BUNDLE_PATH']).parent / 'MANUAL_CARRIED_FROM'
+        if carried.is_file():
+            (image / 'MANUAL_CARRIED_FROM').write_bytes(carried.read_bytes())
         (image / 'CODE_REVISION').write_text(manual['MANUAL_APPLICATION_REVISION'])
         (image / 'VERSION').write_text(manual['RUNNING_VERSION'])
         (image / 'MANUAL_REQUIRED').write_text('true' if manual['MANUAL_BUNDLE_REQUIRED'] else 'false')

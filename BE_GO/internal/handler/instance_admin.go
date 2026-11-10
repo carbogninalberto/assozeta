@@ -49,8 +49,12 @@ func (h *InstanceAdminHandler) begin(c echo.Context, allow, operation string, no
 	if !allowed {
 		return false, c.JSON(403, map[string]string{"detail": instanceAdminDenied})
 	}
+	c.Set(instanceAdminActorKey, identity.Actor.ID)
 	return true, nil
 }
+
+// instanceAdminActorKey holds the authenticated actor's id (actor_of(request)).
+const instanceAdminActorKey = "instance_admin_actor"
 
 // body reads request.data for a write; form and multipart bodies are refused.
 func (h *InstanceAdminHandler) body(c echo.Context, run func(any) error) error {
@@ -114,10 +118,18 @@ func (h *InstanceAdminHandler) Admin(c echo.Context) error {
 		body, err := h.admin.Admin(request.Context())
 		return h.answer(c, body, err)
 	case request.Method == http.MethodPut:
-		return h.body(c, func(data any) error {
-			body, err := h.admin.Branding(c.Request().Context(), data)
-			return h.answer(c, body, err)
-		})
+		write, release, err := admitRESTWrite(c, h.operations, h.audit)
+		if write == nil {
+			return err
+		}
+		defer release()
+		if write.Form {
+			return h.fail(c, domain.ErrInstanceAdminRefused)
+		}
+		c.SetRequest(c.Request().WithContext(write.Context))
+		actor, _ := c.Get(instanceAdminActorKey).(string)
+		body, err := h.admin.Branding(c.Request().Context(), write.Body, actor, write.Audit)
+		return h.answer(c, body, err)
 	}
 	return h.notAllowed(c)
 }

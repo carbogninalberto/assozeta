@@ -88,15 +88,35 @@ class ManualPolicyTests(unittest.TestCase):
                 result = self.decision_for([path])
                 self.assertEqual(result['mode'], 'full')
                 self.assertEqual(result['fresh_workflows'], self.ids)
-                self.assertTrue(result['historical_rehearsal'])
+
+    def test_historical_rehearsal_only_for_packaging_upgrade_and_schema_inputs(self):
+        for path in ('selfhost/bin/assozeta', 'BE/application/management/commands/seed_manuale.py',
+                     'selfhost/tests/browser/manuale/frame.mjs', '.github/workflows/manuale-verify.yml',
+                     '.github/actions/prepare-storage/action.yml'):
+            with self.subTest(path=path):
+                self.assertTrue(self.decision_for([path])['historical_rehearsal'])
+        # Full capture still runs for these, but nothing about upgrading an old release changed.
+        for path in ('BE/application/manuale/bundle.py', 'BE/application/unknown.py',
+                     'docs/manuale/requirements-offline.txt'):
+            with self.subTest(path=path):
+                result = self.decision_for([path])
+                self.assertEqual(result['mode'], 'full')
+                self.assertFalse(result['historical_rehearsal'])
+        self.assertTrue(policy.needs_historical_rehearsal(['BE/application/migrations/0200_x.py']))
+        self.assertFalse(policy.needs_historical_rehearsal(['BE/application/views/admin_views.py']))
+        self.assertFalse(policy.needs_historical_rehearsal(['docs/scripts/tests/test_manuale_policy.py']))
 
     def test_scheduled_force_and_missing_baseline_are_full_but_rejected_candidate_does_not_poison_selection(self):
-        self.assertEqual(policy.verification_decision(self.state, force_full=True)['mode'], 'full')
+        forced = policy.verification_decision(self.state, force_full=True)
+        self.assertEqual(forced['mode'], 'full')
+        # The weekly schedule rehearses through manuale-verify.yml, not through the policy.
+        self.assertFalse(forced['historical_rehearsal'])
         state = copy.deepcopy(self.state)
         state['cache']['decisions'].insert(0, {'result': 'checked', 'changed_inputs': ['BE/application/manuale/index.py']})
         self.assertEqual(policy.verification_decision(state)['mode'], 'reuse')
         state['cache']['decisions'] = []
         self.assertEqual(policy.verification_decision(state)['mode'], 'full')
+        self.assertTrue(policy.verification_decision(state)['historical_rehearsal'])
 
     def test_release_number_and_git_sha_do_not_invalidate_content(self):
         before = policy.verification_decision(self.state)

@@ -197,7 +197,102 @@
             "showTutorial": true,
             "familyRegistration": true,
             "federationRegistration": false,
-            "multipleRegistration": false
+            "multipleRegistration": false,
+            "uiApiVersion": "v1"
+          },
+          "setup": {
+            "provenance": "legacy",
+            "onboardingComplete": false
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "configured-config-ui-api-v2": {
+      "request": {
+        "path": "/instance/config",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "ui_api_version": "v2"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "oem": {
+            "name": "Fixture à ASD",
+            "abbreviation": "Fà",
+            "logo": "/oem/assozeta/brand/logo.svg",
+            "supportEmail": "support@example.test",
+            "primaryColor": "#351DC2",
+            "displaySettings": {
+              "general": {
+                "searchBar": true,
+                "cookieConsent": true,
+                "showDemoButton": false
+              },
+              "login": {
+                "showSportAssociationCreation": false,
+                "allowOauthLogin": true,
+                "showFooterInfo": true,
+                "allowOnlyAthletes": false,
+                "showTestimonials": false,
+                "termsAndConditionsUrl": ""
+              },
+              "navbar": {
+                "showAffiliateLink": false,
+                "showReview": false,
+                "showNotifications": true
+              },
+              "sidebar": {
+                "showPlanUpgrades": false,
+                "showPrivacyPolicy": true,
+                "showTermsOfService": true,
+                "showPreferences": true
+              }
+            },
+            "manualUrl": "/#/manuale"
+          },
+          "oauth": {
+            "googleClientId": null,
+            "appleClientId": null,
+            "googleEnabled": false
+          },
+          "stripe": {
+            "publicKey": null,
+            "pricingTable": null,
+            "clientPortal": null
+          },
+          "meta": {
+            "title": "Fixture à ASD",
+            "description": "Gestionale per associazioni sportive",
+            "manifest": "/api/instance/manifest.json"
+          },
+          "features": {
+            "aiEnabled": false,
+            "manualEnabled": false,
+            "isReseller": false,
+            "selfHosted": true,
+            "supportMultipleAssociations": false,
+            "showCourseAthletes": true,
+            "showMinorExemption": true,
+            "showTutorial": true,
+            "familyRegistration": true,
+            "federationRegistration": false,
+            "multipleRegistration": false,
+            "uiApiVersion": "v2"
           },
           "setup": {
             "provenance": "legacy",
@@ -325,7 +420,8 @@
             "showTutorial": true,
             "familyRegistration": true,
             "federationRegistration": false,
-            "multipleRegistration": false
+            "multipleRegistration": false,
+            "uiApiVersion": "v1"
           },
           "setup": {
             "provenance": "legacy",
@@ -1280,7 +1376,8 @@
             "showTutorial": true,
             "familyRegistration": true,
             "federationRegistration": false,
-            "multipleRegistration": false
+            "multipleRegistration": false,
+            "uiApiVersion": "v1"
           },
           "setup": {
             "provenance": "legacy",
@@ -1707,7 +1804,8 @@
             "showTutorial": true,
             "familyRegistration": true,
             "federationRegistration": false,
-            "multipleRegistration": false
+            "multipleRegistration": false,
+            "uiApiVersion": "v1"
           },
           "setup": {
             "provenance": "legacy",
@@ -1800,7 +1898,8 @@
             "showTutorial": true,
             "familyRegistration": true,
             "federationRegistration": false,
-            "multipleRegistration": false
+            "multipleRegistration": false,
+            "uiApiVersion": "v1"
           },
           "setup": {
             "provenance": "legacy",
@@ -1907,7 +2006,8 @@
             "showTutorial": true,
             "familyRegistration": true,
             "federationRegistration": false,
-            "multipleRegistration": false
+            "multipleRegistration": false,
+            "uiApiVersion": "v1"
           },
           "setup": {
             "provenance": "legacy",
@@ -2008,7 +2108,8 @@
             "showTutorial": true,
             "familyRegistration": false,
             "federationRegistration": true,
-            "multipleRegistration": true
+            "multipleRegistration": true,
+            "uiApiVersion": "v1"
           },
           "setup": {
             "provenance": "legacy",
@@ -2106,7 +2207,8 @@
             "showTutorial": true,
             "familyRegistration": true,
             "federationRegistration": false,
-            "multipleRegistration": false
+            "multipleRegistration": false,
+            "uiApiVersion": "v1"
           },
           "setup": {
             "provenance": "legacy",
@@ -2206,7 +2308,8 @@
             "showTutorial": true,
             "familyRegistration": true,
             "federationRegistration": false,
-            "multipleRegistration": false
+            "multipleRegistration": false,
+            "uiApiVersion": "v1"
           },
           "setup": {
             "provenance": "legacy",
@@ -2331,7 +2434,8 @@
             "showTutorial": true,
             "familyRegistration": true,
             "federationRegistration": false,
-            "multipleRegistration": false
+            "multipleRegistration": false,
+            "uiApiVersion": "v1"
           },
           "setup": {
             "provenance": "legacy",
@@ -2451,7 +2555,8 @@
             "showTutorial": true,
             "familyRegistration": true,
             "federationRegistration": false,
-            "multipleRegistration": false
+            "multipleRegistration": false,
+            "uiApiVersion": "v1"
           },
           "setup": {
             "provenance": "legacy",
@@ -2554,7 +2659,8 @@
             "showTutorial": true,
             "familyRegistration": true,
             "federationRegistration": false,
-            "multipleRegistration": false
+            "multipleRegistration": false,
+            "uiApiVersion": "v1"
           },
           "setup": {
             "provenance": "legacy",
@@ -2645,7 +2751,8 @@
             "showTutorial": true,
             "familyRegistration": true,
             "federationRegistration": false,
-            "multipleRegistration": false
+            "multipleRegistration": false,
+            "uiApiVersion": "v1"
           },
           "setup": {
             "provenance": "legacy",

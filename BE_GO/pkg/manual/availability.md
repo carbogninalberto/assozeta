@@ -18,7 +18,7 @@ Run the required offline Django/Go differential with the repository's production
 python TESTS/adapters/django/manual_availability.py
 ```
 
-It checks 47 explicit cases without skips, retains actual Django observations and Go race results, and removes its private artifact directory. The fixture uses synthetic sealed files, no customer corpus and no provider. Unit race tests also cover inode replacement with unchanged size/mtime, concurrent readers, deletion, cancellation, symlink ownership and Unicode seals. Configuration tests cover marker precedence, explicit paths, environment truthiness and redaction.
+It checks 53 explicit cases without skips, retains actual Django observations and Go race results, and removes its private artifact directory. The fixture uses synthetic sealed files, no customer corpus and no provider. Unit race tests also cover inode replacement with unchanged size/mtime, concurrent readers, deletion, cancellation, symlink ownership and Unicode seals. Configuration tests cover marker precedence, explicit paths, environment truthiness and redaction.
 
 ## Explicit bundle gate
 
@@ -28,9 +28,9 @@ It checks 47 explicit cases without skips, retains actual Django observations an
 check-manual --root /app/release-manual --revision REVISION --release VERSION --required true
 ```
 
-An explicitly empty root denotes the working directory, matching pathlib. Optional missing or placeholder packages pass; optional present-invalid packages fail. Required mode cannot be satisfied by a configured publisher or another index. Every declared screenshot is checked, including screenshots in private chunks. Checks reproduce Django's PNG suffix, owned path, content hash and minimal PNG/IHDR header rules; neither gate is a full image decoder. Errors omit artifact paths, metadata and credentials.
+An explicitly empty root denotes the working directory, matching pathlib. Optional missing or placeholder packages pass; optional present-invalid packages fail. A `MANUAL_CARRIED_FROM` file next to the bundle directory (`/app/MANUAL_CARRIED_FROM`) declares the `<release> <revision>` the carried package was verified for; the package is checked against that origin and then accepted for the running release (`docs/architecture/go-migration/manual-carried.md`). Required mode cannot be satisfied by a configured publisher or another index. Every declared screenshot is checked, including screenshots in private chunks. Checks reproduce Django's PNG suffix, owned path, content hash and minimal PNG/IHDR header rules; neither gate is a full image decoder. Errors omit artifact paths, metadata and credentials.
 
-`python TESTS/adapters/django/manual_bundle.py` compares 19 explicit cases against the actual Django bundle CLI and the newly built Go command. It uses synthetic packages and private temporary paths, asserts exact case coverage and command redaction, and removes the command and package fixtures before marking success. The Dockerfile now builds and invokes this command as the nonroot runtime user; the publish workflow downloads the same verified artifact into both backend contexts. Actual image execution is a separate acceptance check.
+`python TESTS/adapters/django/manual_bundle.py` compares 45 explicit cases against the actual Django bundle CLI and the newly built Go command. It uses synthetic packages and private temporary paths, asserts exact case coverage and command redaction, and removes the command and package fixtures before marking success. The Dockerfile now builds and invokes this command as the nonroot runtime user; the publish workflow downloads the same verified artifact into both backend contexts. Actual image execution is a separate acceptance check.
 
 ## Packaged checker proof
 
@@ -41,6 +41,6 @@ python TESTS/adapters/go/manual_image.py --image IMAGE \
   --expected-version VERSION --expected-revision REVISION --expected-required false
 ```
 
-It resolves the immutable image ID, checks its configured UID10001/default server/HTTP health contract, reads image-owned binary and metadata hashes, verifies bundle ownership and modes, and runs the actual packaged checker. The same 19 independently authored fixtures are first measured against Django and then mounted as data only. Checker containers have a read-only root and mount, no network, no capabilities and no inherited HTTP health check. Private containers and fixtures must be removed before success is recorded.
+It resolves the immutable image ID, checks its configured UID10001/default server/HTTP health contract, reads image-owned binary and metadata hashes, verifies bundle ownership and modes, and runs the actual packaged checker. The same 45 independently authored fixtures are first measured against Django and then mounted as data only. Checker containers have a read-only root and mount, no network, no capabilities and no inherited HTTP health check. Private containers and fixtures must be removed before success is recorded.
 
 Local source hashes and image binary/artifact hashes are retained independently. An optional `--build-receipt` records the hash of root's independently retained build evidence; this adapter does not manufacture a source-to-image attestation. A synthetic fixture pass or optional placeholder image is not proof of a genuine required release package. The release pipeline still needs an actual newly verified artifact and its image validation.

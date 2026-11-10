@@ -86,7 +86,17 @@ def compose_command(root, env_file, updater=False):
     external = Path(root) / '.updater' / 'env-mount.json'
     if updater and external.exists():
         command += ['-f', str(external)]
+    if not updater and go_tasks_enabled(env_file):
+        # Same opt-in Go task consumer profile as bin/assozeta.
+        command += ['--profile', GO_TASKS_PROFILE]
     return command
+
+
+GO_TASKS_PROFILE = 'go-tasks'
+
+
+def go_tasks_enabled(env_file):
+    return read_env(env_file).get('ASSOZETA_GO_TASKS') == '1'
 
 
 def compose_environment(root, env_file):

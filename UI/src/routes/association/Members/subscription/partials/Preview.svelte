@@ -1,4 +1,5 @@
 <script>
+    import {rewriteApiUrl} from 'utils/apiVersion.js';
 	import { X } from 'lucide-svelte';
     import Portal from 'svelte-portal';
     export let userData;
@@ -59,7 +60,7 @@
                         scrolling="yes"
                         style="min-height:75vh;background: var(--bg-surface-secondary) !important; border: 1px solid var(--border-color) !important; border-radius: 1rem;"
                         title="Anteprima modulo d'iscrizione"
-                        src="{__bakney.env.API.DOCUMENT.SUBSCRIPTION_PREVIEW}?sport_association_id={userData?.sport_association?.sport_association_id}"
+                        src={rewriteApiUrl(`${__bakney.env.API.DOCUMENT.SUBSCRIPTION_PREVIEW}?sport_association_id=${userData?.sport_association?.sport_association_id}`)}
                         frameborder="0"
                         width="100%"
                         height="100%" />

@@ -681,6 +681,10 @@ def prepare(args, runner, policy):
         state.pop('reuse_evidence', None)
         state.pop('evidence_store', None)
         (Path(state['run']) / 'evidence-reuse.json').unlink(missing_ok=True)
+    if impact and plan['mode'] == 'full' and not plan['historical_rehearsal']:
+        # A forced run skips the baseline comparison, so read the PR's changed files here.
+        plan['historical_rehearsal'] = policy.needs_historical_rehearsal(
+            entry['path'] for entry in impact.get('files', []))
     if impact:
         plan['impact'] = {'mode': impact.get('mode'), 'fallback': bool(impact.get('fallback')),
                           'selected_workflows': sorted(workflows), 'reasons': impact.get('reasons', [])[:20]}

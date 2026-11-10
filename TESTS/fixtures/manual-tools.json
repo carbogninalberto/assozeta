@@ -1366,6 +1366,180 @@
         ],
         "message": "Il manuale verificato non è disponibile per questa versione o deve essere aggiornato."
       }
+    },
+    "carried-search": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host",
+          "guide#public00",
+          "guide#public01"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "setup": {
+        "carried": "valid"
+      },
+      "search_population": 3,
+      "max_selects": 1
+    },
+    "carried-section": {
+      "tool": "get_manual_section",
+      "arguments": {
+        "section_id": "guide#public00"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#public00"
+        ],
+        "keys": [
+          "section",
+          "status"
+        ]
+      },
+      "setup": {
+        "carried": "valid"
+      }
+    },
+    "carried-evidence-owner": {
+      "tool": "get_manual_evidence",
+      "arguments": {
+        "section_id": "guide#private"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#private"
+        ],
+        "keys": [
+          "capture_provenance",
+          "evidence",
+          "provenance",
+          "scenario_ids",
+          "section",
+          "status"
+        ],
+        "scenario_ids": [
+          "fixture"
+        ],
+        "capture_provenance": [
+          {
+            "scenario": "fixture",
+            "status": "passed"
+          }
+        ],
+        "evidence": [
+          {
+            "path": "BE/manual_fixture.py",
+            "sha256": "9504a11eefd7b6418952a84e23b8f6b975a3f23d84565039ce3a08ee1b71d605",
+            "excerpt": "SOURCE_EVIDENCE"
+          }
+        ],
+        "provenance": {
+          "application_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "release": "manual-tool-fixture",
+          "publication_status": "release-bundled",
+          "code_state": "committed",
+          "manual_revision": "cccccccccccccccccccccccccccccccccccccccc",
+          "manual_state": "generated-from-committed",
+          "verification": {
+            "corpus_identity": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        }
+      },
+      "actor": "owner",
+      "setup": {
+        "carried": "valid"
+      }
+    },
+    "carried-gaps-owner": {
+      "tool": "get_manual_gaps",
+      "arguments": {},
+      "expected": {
+        "status": "diagnostic",
+        "ids": [],
+        "coverage_status": "section_gaps_only",
+        "snapshot_status": "stale",
+        "version_status": "incompatible",
+        "stale_sources": [],
+        "application_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "version": "manual-tool-fixture",
+        "summary": {
+          "verified_sections": 4,
+          "pending_sections": 1
+        }
+      },
+      "actor": "owner",
+      "setup": {
+        "carried": "valid"
+      }
+    },
+    "carried-other-origin-search": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ],
+        "message": "Il manuale verificato non è disponibile per questa versione o deve essere aggiornato."
+      },
+      "actor": "owner",
+      "setup": {
+        "carried": "other-origin"
+      }
+    },
+    "carried-malformed-origin-section": {
+      "tool": "get_manual_section",
+      "arguments": {
+        "section_id": "guide#public00"
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ],
+        "message": "Il manuale verificato non è disponibile per questa versione o deve essere aggiornato."
+      },
+      "setup": {
+        "carried": "malformed"
+      }
+    },
+    "carried-malformed-origin-gaps": {
+      "tool": "get_manual_gaps",
+      "arguments": {},
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ],
+        "message": "Il manuale verificato non è disponibile per questa versione o deve essere aggiornato."
+      },
+      "actor": "owner",
+      "setup": {
+        "carried": "malformed"
+      }
     }
   }
 }

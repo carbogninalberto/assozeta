@@ -196,7 +196,7 @@ try {
         await expect(drawer.getByText('1 tutore ha un codice fiscale già in uso', {exact:false})).toBeVisible();
         op.preview.missing_relations = 58;
         await page.clock.runFor(4000);
-        await expect(drawer.locator('.notes .si-icon.warn').first()).toHaveCSS('color', 'rgb(194, 124, 0)');
+        await expect(drawer.locator('.notes .si-icon.warn').first()).toHaveCSS('color', 'rgb(189, 110, 0)');
         await page.screenshot({path:path.join(output,`${viewport.width}-summary.png`)});
         await drawer.getByRole('button',{name:'Continua',exact:true}).click();
         await expect(drawer.getByRole('heading',{name:'Sostituire i dati attuali?',exact:true})).toBeVisible();

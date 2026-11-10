@@ -4512,6 +4512,64 @@
                         "description": "No response body"
                     }
                 }
+            },
+            "post": {
+                "operationId": "instance_admin_backups_create",
+                "description": "Start a manual backup; the runner stops the app while it copies the data.",
+                "tags": [
+                    "instance"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/instance/admin/backups/{name}": {
+            "patch": {
+                "operationId": "instance_admin_backups_partial_update",
+                "description": "Keep (exclude from rotation) or delete one archive.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "name",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "instance"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No response body"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "instance_admin_backups_destroy",
+                "description": "Keep (exclude from rotation) or delete one archive.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "name",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "instance"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No response body"
+                    }
+                }
             }
         },
         "/instance/admin/backups/{name}/download": {
@@ -4541,9 +4599,138 @@
                 }
             }
         },
+        "/instance/admin/backups/{name}/restore": {
+            "post": {
+                "operationId": "instance_admin_backups_restore_create",
+                "description": "Restore one server archive; the runner backs up the current data first.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "name",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "instance"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
         "/instance/admin/backups/download-token": {
             "post": {
                 "operationId": "instance_admin_backups_download_token_create",
+                "tags": [
+                    "instance"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/instance/admin/backups/remote": {
+            "get": {
+                "operationId": "instance_admin_backups_remote_retrieve",
+                "tags": [
+                    "instance"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No response body"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "instance_admin_backups_remote_update",
+                "tags": [
+                    "instance"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/instance/admin/backups/remote/fetch": {
+            "post": {
+                "operationId": "instance_admin_backups_remote_fetch_create",
+                "description": "Bring a remote-only copy back to the server; the key is held in memory only.",
+                "tags": [
+                    "instance"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/instance/admin/backups/remote/key": {
+            "post": {
+                "operationId": "instance_admin_backups_remote_key_create",
+                "description": "Generate a key pair: the recovery key is in this response only.",
+                "tags": [
+                    "instance"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/instance/admin/backups/remote/key/confirm": {
+            "post": {
+                "operationId": "instance_admin_backups_remote_key_confirm_create",
+                "tags": [
+                    "instance"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/instance/admin/backups/remote/test": {
+            "post": {
+                "operationId": "instance_admin_backups_remote_test_create",
+                "tags": [
+                    "instance"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/instance/admin/backups/schedule": {
+            "put": {
+                "operationId": "instance_admin_backups_schedule_update",
+                "tags": [
+                    "instance"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/instance/admin/backups/upload": {
+            "post": {
+                "operationId": "instance_admin_backups_upload_create",
+                "description": "Add an archive from the owner's computer, streamed to the runner as it arrives.\n\nThe body is the raw .tar.gz (not a form): core.asgi hands it over unread,\nso a large file never sits in memory or in a temporary file of the API.",
                 "tags": [
                     "instance"
                 ],

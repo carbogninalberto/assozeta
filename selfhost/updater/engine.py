@@ -175,6 +175,9 @@ class Engine:
             services.append(('api-go', 'BACKEND_GO'))
         elif values.get('ASSOZETA_BACKEND_GO_REF') and not allow_configured_images:
             raise RuntimeError('Verified Go image has no configured service')
+        # Present only when ASSOZETA_GO_TASKS enables its Compose profile.
+        if 'worker-go' in configured:
+            services.append(('worker-go', 'BACKEND_GO'))
         for service, image in services:
             container = subprocess.check_output(command + ['ps', '-q', service], env=environment, text=True).strip()
             if not container:

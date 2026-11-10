@@ -181,7 +181,8 @@ services:
       start_period: 30s
       retries: 12
 
-  # Both APIs are delivered together. Django still owns worker and Beat execution.
+  # Both APIs are delivered together. Django owns worker and Beat execution;
+  # the opt-in worker-go runs only the task names routed to the Go queue.
   api-go: &backend-go
     image: ${ASSOZETA_BACKEND_GO_REF:-${ASSOZETA_BACKEND_GO_IMAGE:-ghcr.io/carbogninalberto/assozeta-backend-go}:${ASSOZETA_VERSION:-latest}}
     env_file:
@@ -245,9 +246,41 @@ services:
     healthcheck:
       disable: true
 
+  # Opt-in Go Celery consumer (ASSOZETA_GO_TASKS=1 enables the profile). It
+  # consumes only the assozeta-go queue that GO_TASK_QUEUE_TASKS routes to and
+  # hands every task it does not run back to the celery queue.
+  worker-go:
+    <<: *backend-go
+    profiles: [go-tasks]
+    entrypoint: ["/app/celery-consumer"]
+    # Drain running tasks within the stop grace period; acks_late tasks that
+    # are still running at the deadline are redelivered.
+    command: ["--concurrency=${GO_CELERY_CONCURRENCY:-${CELERY_CONCURRENCY:-2}}", "--drain-timeout=50s"]
+    environment:
+      DATA_RESTORE_LOCK_PATH: /run/assozeta-operations/lifecycle.lock
+      ASSOZETA_DEPLOYMENT_MODE: production
+      TMPDIR: /var/cache/assozeta-go-tasks
+    volumes:
+      - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
+      # Anonymous disk-backed staging for export/import/restore archives.
+      - /var/cache/assozeta-go-tasks
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    stop_grace_period: 60s
+    # No HTTP endpoint: the container exits with the consumer and restarts;
+    # the lifecycle checks that it remains running, like the Django worker.
+    healthcheck:
+      disable: true
+
   worker:
     <<: *backend
-    command: ["celery", "-A", "core", "worker", "--loglevel=info", "--max-tasks-per-child=50", "--concurrency=${CELERY_CONCURRENCY:-2}", "--prefetch-multiplier=2"]
+    # Explicit default queue: the assozeta-go queue belongs to worker-go.
+    command: ["celery", "-A", "core", "worker", "-Q", "celery", "--loglevel=info", "--max-tasks-per-child=50", "--concurrency=${CELERY_CONCURRENCY:-2}", "--prefetch-multiplier=2"]
     depends_on:
       postgres:
         condition: service_healthy

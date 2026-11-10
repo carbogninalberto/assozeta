@@ -64,6 +64,14 @@ jobs:
             BE/requirements.txt
             TESTS/adapters/django/requirements-credentials.txt
             TESTS/contracts/requirements-qr.txt
+      - name: Install disposable integration dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
       - name: Verify environment, credentials and provider protocols
         run: |
           python TESTS/adapters/django/production_runtime.py
@@ -74,14 +82,6 @@ jobs:
           python TESTS/adapters/django/api_schema.py --check
           python TESTS/adapters/django/apple_tokens.py
           python TESTS/adapters/django/google_tokens.py
-      - name: Install disposable integration dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libjpeg-dev zlib1g-dev libwebp-dev
-          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
-          sudo locale-gen
-          python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
-          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
       - name: Verify Django impersonation cache interoperability
         run: python TESTS/adapters/django/impersonation_cache.py
       - name: Verify login admission and shared rate counters

@@ -6,6 +6,8 @@ from tempfile import TemporaryDirectory
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
+# The drain fence; other psql calls (for example the backup size estimate) are not drains.
+DRAIN = 'pg_advisory_xact_lock('
 DEFINITIONS = (ROOT / 'selfhost/bin/assozeta').read_text().split('\ncommand=${1:-help}\n')[0]
 
 
@@ -28,7 +30,7 @@ prod_compose() {
     esac
     printf '%s\n' "$*" >> "$TEST_CALLS"
     case "$*" in
-        *'postgres psql '*) [ "$TEST_FAILURE" = false ] || return 19 ;;
+        *'postgres psql '*pg_advisory_xact_lock*) [ "$TEST_FAILURE" = false ] || return 19 ;;
         *pg_dump*) printf 'private snapshot\n' ;;
     esac
     return 0
@@ -47,7 +49,7 @@ prod_operations_lock_held=$TEST_LEASE
     def test_backup_drains_after_stop_before_snapshot(self):
         result, calls, archives = self.run_cli('backup_prod "$SELFHOST_DIR/backups"')
         self.assertEqual(result.returncode, 0, result.stderr)
-        fence = next(i for i, call in enumerate(calls) if 'postgres psql ' in call)
+        fence = next(i for i, call in enumerate(calls) if 'postgres psql ' in call and DRAIN in call)
         snapshot = next(i for i, call in enumerate(calls) if 'pg_dump' in call)
         stop = next(i for i, call in enumerate(calls) if call.startswith('stop '))
         self.assertLess(stop, fence)
@@ -57,13 +59,14 @@ prod_operations_lock_held=$TEST_LEASE
     def test_failed_drain_never_creates_snapshot_or_archive(self):
         result, calls, archives = self.run_cli('backup_prod "$SELFHOST_DIR/backups"', failure=True)
         self.assertNotEqual(result.returncode, 0)
+        self.assertTrue(any(DRAIN in call for call in calls))
         self.assertFalse(any('pg_dump' in call for call in calls))
         self.assertEqual(archives, 0)
 
     def test_migrations_start_only_after_bounded_transaction_drain(self):
         result, calls, _ = self.run_cli('migrate_prod_schemas')
         self.assertEqual(result.returncode, 0, result.stderr)
-        fence = next(i for i, call in enumerate(calls) if 'postgres psql ' in call)
+        fence = next(i for i, call in enumerate(calls) if 'postgres psql ' in call and DRAIN in call)
         django = calls.index('--profile tools run --rm --no-deps migrate')
         self.assertLess(fence, django)
         statement = calls[fence]
@@ -74,12 +77,13 @@ prod_operations_lock_held=$TEST_LEASE
     def test_failed_drain_prevents_both_migrations(self):
         result, calls, _ = self.run_cli('migrate_prod_schemas', failure=True)
         self.assertNotEqual(result.returncode, 0)
+        self.assertTrue(any(DRAIN in call for call in calls))
         self.assertFalse(any('run --rm --no-deps migrate' in call for call in calls))
 
     def test_historical_django_only_backup_needs_no_go_protocol(self):
         result, calls, archives = self.run_cli('backup_prod "$SELFHOST_DIR/backups"', golang=False)
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertFalse(any('postgres psql ' in call for call in calls))
+        self.assertFalse(any(DRAIN in call for call in calls))
         self.assertTrue(any('pg_dump' in call for call in calls))
         self.assertEqual(archives, 1)
 

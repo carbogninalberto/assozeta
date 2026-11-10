@@ -1,4 +1,5 @@
 <script>
+    import {Copy, Key} from 'phosphor-svelte';
     import {onMount, onDestroy} from 'svelte';
     import InstanceMenu from './InstanceMenu.svelte';
     import InstanceDialog from './InstanceDialog.svelte';
@@ -103,14 +104,14 @@
                     <input class="form-control" readonly value={secret} autocomplete="off" spellcheck="false" on:focus={event => event.target.select()} />
                 </label>
                 <div class="si-actions">
-                    <button type="button" class="btn btn-primary btn-sm" on:click={copyCode}>{copied ? 'Copiato' : 'Copia codice'}</button>
+                    <button type="button" class="btn btn-primary btn-sm si-btn" on:click={copyCode}><Copy size={16} weight="duotone" />{copied ? 'Copiato' : 'Copia codice'}</button>
                     <button type="button" class="btn btn-light btn-sm" on:click={() => secret = ''}>Nascondi</button>
                 </div>
                 <p class="si-hint mb-0">Visibile solo ora.</p>
             </div>
         {/if}
         {#if info.state === 'disconnected'}
-            <div class="si-actions mt-4"><button type="button" class="btn btn-primary" disabled={disabled || busy} on:click={() => perform('generate')}>Genera codice</button></div>
+            <div class="si-actions mt-4"><button type="button" class="btn btn-primary si-btn" disabled={disabled || busy} on:click={() => perform('generate')}><Key size={18} weight="duotone" />Genera codice</button></div>
         {/if}
     {/if}
 </section>
@@ -125,7 +126,7 @@
 
 <style>
     .details { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: .75rem 1.5rem; margin: 0 0 1rem; }
-    dt { font-size: .8125rem; font-weight: 500; color: var(--text-secondary); }
+    dt { font-size: .925rem; font-weight: 500; color: var(--text-secondary); }
     dd { margin: .15rem 0 0; font-weight: 600; overflow-wrap: anywhere; }
     .code { display: grid; gap: .5rem; margin-top: 1rem; padding: 1rem; border-radius: .625rem; background: var(--light-primary); }
     .code-field { display: grid; gap: .4rem; margin: 0; font-weight: 500; }

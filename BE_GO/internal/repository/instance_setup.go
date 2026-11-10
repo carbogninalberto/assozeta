@@ -88,9 +88,9 @@ func (r *InstanceSetup) CreateFresh(ctx context.Context, fresh domain.InstanceSe
   email_settings,email_password_encrypted,email_revision,diagnostic_results,integration_settings,display_settings,is_reseller,
   self_hosted,support_multiple_associations,show_course_athletes,show_minor_exemption,show_tutorial,google_client_id,apple_client_id,
   stripe_public_key,stripe_secret_key,stripe_webhook_secret,stripe_pricing_table,stripe_client_portal,meta_title,meta_description,
-  primary_association_id)
+  primary_association_id,ui_api_version)
  VALUES ($1,$2,$2,'fresh',NULL,$3,$4,$5,$6,$7,'{}'::jsonb,'',0,'{}'::jsonb,'{}'::jsonb,$8::jsonb,FALSE,TRUE,FALSE,TRUE,TRUE,TRUE,$9,$10,
-  '','','','','','','',NULL) RETURNING id`,
+  '','','','','','','',NULL,'v1') RETURNING id`,
 		fresh.Domain, created, fresh.Name, fresh.Abbreviation, fresh.PrimaryColor, fresh.SupportEmail, fresh.LogoPath, instanceSetupDisplay,
 		fresh.GoogleClientID, fresh.AppleClientID); err != nil {
 		return err

@@ -268,3 +268,98 @@ class ReleaseCatalogTests(TestCase):
         raw = upstream_release()
         raw['assets'].pop()
         self.assertFalse(normalize_release(raw)['artifacts_ready'])
+
+
+@override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}})
+class UiApiVersionTests(TestCase):
+    """The instance-wide web UI API version (v1 Django, v2 Go beta)."""
+
+    def setUp(self):
+        cache.clear()
+        self.client = APIClient()
+        self.owner = User.objects.create_user(username='api-owner', role=User.ASSOCIATION)
+        self.association = SportAssociation.objects.create(user=self.owner, denomination='Owner ASD')
+        self.config = InstanceConfiguration.objects.create(
+            domain='api.example.test', name='Owner ASD', primary_association=self.association,
+        )
+
+    def entries(self):
+        from auditlog.models import LogEntry
+        return list(LogEntry.objects.filter(changes__icontains='ui_api_version').order_by('id'))
+
+    def put(self, body, language='en'):
+        return self.client.put('/instance/admin', body, format='json', HTTP_ACCEPT_LANGUAGE=language)
+
+    def test_default_is_v1_in_public_and_admin_config(self):
+        self.assertEqual(self.config.ui_api_version, 'v1')
+        self.assertEqual(self.client.get('/instance/config').data['features']['uiApiVersion'], 'v1')
+        self.client.force_authenticate(user=self.owner)
+        self.assertEqual(self.client.get('/instance/admin').data['config']['features']['uiApiVersion'], 'v1')
+
+    def test_owner_switches_version_and_change_is_audited(self):
+        self.client.force_authenticate(user=self.owner)
+        response = self.put({'uiApiVersion': 'v2'})
+        self.assertEqual(response.status_code, 200, response.data)
+        self.assertEqual(response.data['config']['features']['uiApiVersion'], 'v2')
+        self.config.refresh_from_db()
+        self.assertEqual(self.config.ui_api_version, 'v2')
+        self.client.force_authenticate(user=None)
+        self.assertEqual(self.client.get('/instance/config').data['features']['uiApiVersion'], 'v2')
+        [entry] = self.entries()
+        self.assertEqual(entry.changes_dict if hasattr(entry, 'changes_dict') else entry.changes, {'ui_api_version': ['v1', 'v2']})
+        self.assertEqual(entry.actor_id, self.owner.pk)
+        self.assertEqual(entry.additional_data, {'actor_id': str(self.owner.pk)})
+        self.assertEqual(entry.object_pk, str(self.config.pk))
+
+    def test_unchanged_value_saves_without_audit_entry(self):
+        self.client.force_authenticate(user=self.owner)
+        self.assertEqual(self.put({'uiApiVersion': 'v1'}).status_code, 200)
+        self.assertEqual(self.entries(), [])
+
+    def test_branding_and_version_in_one_request(self):
+        self.client.force_authenticate(user=self.owner)
+        response = self.put({'oem': {'name': 'Renamed'}, 'uiApiVersion': 'v2'})
+        self.assertEqual(response.status_code, 200, response.data)
+        self.config.refresh_from_db()
+        self.assertEqual((self.config.name, self.config.ui_api_version), ('Renamed', 'v2'))
+
+    def test_validation_errors_follow_drf_shapes(self):
+        self.client.force_authenticate(user=self.owner)
+        cases = [
+            ({'uiApiVersion': 'v3'}, {'uiApiVersion': ['"v3" is not a valid choice.']}),
+            ({'uiApiVersion': ''}, {'uiApiVersion': ['"" is not a valid choice.']}),
+            ({'uiApiVersion': None}, {'uiApiVersion': ['This field may not be null.']}),
+            ({'uiApiVersion': True}, {'uiApiVersion': ['"True" is not a valid choice.']}),
+            ({'oem': {'primaryColor': 'red'}, 'uiApiVersion': 'v9'},
+             {'oem': {'primaryColor': ['This value does not match the required pattern.']},
+              'uiApiVersion': ['"v9" is not a valid choice.']}),
+            ({'uiApiVersion': 'v2', 'meta_title': 'x'}, ['Only instance branding can be edited here.']),
+            ({}, ['Only instance branding can be edited here.']),
+        ]
+        for body, expected in cases:
+            with self.subTest(body=body):
+                response = self.put(body)
+                self.assertEqual(response.status_code, 400)
+                self.assertEqual(response.json(), expected)
+        self.assertEqual(self.put({'uiApiVersion': 'v3'}, 'it').json(), {'uiApiVersion': ['"v3" non è una scelta valida.']})
+        self.config.refresh_from_db()
+        self.assertEqual(self.config.ui_api_version, 'v1')
+        self.assertEqual(self.entries(), [])
+
+    def test_only_the_owner_can_change_the_version(self):
+        collaborator = User.objects.create_user(username='api-collaborator', role=User.COLLABORATOR, connected_user=self.owner)
+        other = User.objects.create_user(username='api-other', role=User.ASSOCIATION)
+        self.assertIn(self.put({'uiApiVersion': 'v2'}).status_code, (401, 403))
+        for user in (collaborator, other):
+            with self.subTest(user=user.username):
+                self.client.force_authenticate(user=user)
+                self.assertEqual(self.put({'uiApiVersion': 'v2'}).status_code, 403)
+        self.config.refresh_from_db()
+        self.assertEqual(self.config.ui_api_version, 'v1')
+        self.assertEqual(self.entries(), [])
+
+    def test_reconfigure_endpoint_does_not_accept_the_version(self):
+        self.client.force_authenticate(user=self.owner)
+        self.client.put('/instance/reconfigure', {'uiApiVersion': 'v2', 'ui_api_version': 'v2'}, format='json')
+        self.config.refresh_from_db()
+        self.assertEqual(self.config.ui_api_version, 'v1')

@@ -259,6 +259,73 @@ The reusable release-quality workflow now runs these operational checks in a
 separate disposable job, including a legacy-schema migration test and local SMTP
 receiver. Publication already depends on that workflow. CI results must be
 verified on the actual release commit before rollout.
+# Use the Go API in the web interface (beta)
+
+The installation serves two APIs side by side: `/api` (and `/api/v1`) is the
+Django API, `/api/v2` is the Go API (`api-go`). Both use the same database, cache
+and tokens, so sessions, impersonation, uploads and downloads work on either.
+By default the web interface calls `/api`.
+
+1. Try it in one browser first: open the app with `?api=v2` (for example
+   `https://example.org/?api=v2`). The choice is stored in that browser only;
+   `?api=v1` forces Django and `?api=auto` returns to the instance setting.
+2. Enable it for everyone: **Self Instance → Impostazioni → API (beta)**, switch
+   on "Usa la nuova API (v2) — beta". The owner (or an administrator) can change
+   it; the change is saved through `PUT /api/instance/admin`
+   (`{"uiApiVersion": "v2"}`) and recorded in the audit log. The page checks
+   `/api/v2/readyz` first and does not enable v2 when it does not answer.
+3. Each browser uses v2 only after `/api/v2/readyz` answers within a few seconds
+   (checked once per browser session). If the probe fails, or the first
+   configuration requests on v2 fail with a network error or a 5xx, that session
+   continues on `/api` without an error message. WebSockets (`/ws/`) and the
+   canonical logo and manifest URLs stay on Django.
+
+Rollback: switch the setting off (or set `ui_api_version` back to `v1`). `/api`
+is always served by Django, so a browser that cannot load the page can still be
+moved with `?api=v1`. A custom `HOST` baked into a frontend build keeps that
+host and ignores the setting.
+
+# Run background tasks on Go
+
+The Go Celery consumer (`worker-go`, from the `assozeta-backend-go` image) is an
+opt-in service. By default it does not run and Django's `worker` executes every
+task. It consumes only the `assozeta-go` queue; the task names listed in
+`GO_TASK_QUEUE_TASKS` are routed there by every producer (Django and Go read the
+same instance `.env`). A message it cannot run is handed back to Django's
+`celery` queue unchanged. The task names it implements are listed in
+`docs/architecture/go-migration/celery-consumer.md`.
+
+1. Enable the consumer: set `ASSOZETA_GO_TASKS=1` in the instance `.env` and run
+   `./bin/assozeta restart`. `worker-go` starts next to the Django worker and,
+   with `GO_TASK_QUEUE_TASKS` still empty, receives nothing. Its concurrency is
+   `GO_CELERY_CONCURRENCY` (default `CELERY_CONCURRENCY`).
+2. Route tasks progressively, one or a few names at a time, for example
+   `GO_TASK_QUEUE_TASKS=core.tasks.send_mail_async`, then `./bin/assozeta restart`
+   so every producer reads the new list. Check `./bin/assozeta logs worker-go`
+   and the task results before adding more names (comma-separated).
+3. Roll back: empty `GO_TASK_QUEUE_TASKS` and run `./bin/assozeta restart`. New
+   messages go to Django again. Keep `ASSOZETA_GO_TASKS=1` until the
+   `assozeta-go` queue is empty, then set it to `0` and restart; the lifecycle
+   stops `worker-go`. From the installation directory:
+
+   ```sh
+   docker compose exec redis sh -c 'redis-cli --no-auth-warning -a "$REDIS_PASSWORD" llen assozeta-go'
+   ```
+
+   Messages with a future eta are held by the consumer and return to the queue
+   when it stops. If the length is not `0` after the final restart, set
+   `ASSOZETA_GO_TASKS=1` again, restart, and wait for them to run.
+
+The lifecycle treats `worker-go` like the Django worker: start, restart, backup,
+restore, update and recovery stop it (letting running tasks finish within its
+60-second stop period) before touching data, and start it again afterwards.
+Recovery to a release without it removes its containers. Start and restart
+refuse a configuration where `GO_TASK_QUEUE_TASKS` lists task names but
+`ASSOZETA_GO_TASKS` is not `1`, since those tasks would wait on a queue that no
+service consumes. `ASSOZETA_GO_TASKS=1` is also refused on a release without
+`worker-go`. Set `ASSOZETA_GO_TASKS` only in the instance `.env`; the lifecycle
+passes the Compose profile (`go-tasks`) itself, so do not use `COMPOSE_PROFILES`.
+
 # Restarting from Self Instance
 
 The instance owner can choose **Ricarica applicazione** in Self Instance. The

@@ -36,7 +36,7 @@ on:
 permissions:
   contents: read
 
-# Releases publish without rebuilding the manual: the backend image carries the
+# Releases publish without rebuilding the manual: both backend images carry the
 # verified manual of the previous release unchanged (MANUAL_CARRIED_FROM). The
 # manual is rebuilt, verified and bundled only on an explicit manual dispatch
 # with include_manual.
@@ -191,10 +191,12 @@ jobs:
       - name: Carry the manual of the previous release
         # Releases without include_manual reuse the verified manual of the
         # current :latest release image unchanged (it may itself be carried).
+        # Both backend images take the same package from the Django image.
         id: carried
-        if: matrix.name == 'backend' && needs.manual-release.result != 'success' && env.RELEASE_TAG != ''
+        if: (matrix.name == 'backend' || matrix.name == 'backend-go') && needs.manual-release.result != 'success' && env.RELEASE_TAG != ''
         env:
           SOURCE_IMAGE: ghcr.io/${{ github.repository_owner }}/assozeta-backend:latest
+          DESTINATION: ${{ matrix.context }}/release-manual
         run: |
           set -euo pipefail
           if ! docker pull --quiet "$SOURCE_IMAGE"; then
@@ -212,8 +214,8 @@ jobs:
             exit 0
           fi
           origin=$(python3 -c 'import json,sys; b=json.load(open(sys.argv[1])); print(b["release"], b["application_revision"])' "$work/release-manual/bundle.json")
-          find BE/release-manual -mindepth 1 ! -name .gitkeep -exec rm -rf {} +
-          cp -a "$work/release-manual/." BE/release-manual/
+          find "$DESTINATION" -mindepth 1 ! -name .gitkeep -exec rm -rf {} +
+          cp -a "$work/release-manual/." "$DESTINATION/"
           echo "Carrying the manual verified for $origin"
           echo "origin=$origin" >> "$GITHUB_OUTPUT"
 

@@ -330,8 +330,28 @@ compose_with_env() {
     )
 }
 
+prod_go_tasks_enabled() {
+    [ -f "$PROD_ENV" ] && [ "$(env_value ASSOZETA_GO_TASKS "$PROD_ENV")" = 1 ]
+}
+
 prod_compose() {
-    compose_with_env "$PROD_ENV" "$PROD_COMPOSE" "$@"
+    # ASSOZETA_GO_TASKS=1 activates the opt-in Go task consumer (worker-go).
+    # An explicit flag, because --profile tools would replace COMPOSE_PROFILES.
+    if prod_go_tasks_enabled; then
+        compose_with_env "$PROD_ENV" "$PROD_COMPOSE" --profile go-tasks "$@"
+    else
+        compose_with_env "$PROD_ENV" "$PROD_COMPOSE" "$@"
+    fi
+}
+
+prod_compose_go_tasks() {
+    # The go-tasks profile whatever ASSOZETA_GO_TASKS says: discovery, and
+    # stopping a consumer whose profile was turned off since it started.
+    if prod_go_tasks_enabled; then
+        prod_compose "$@"
+    else
+        prod_compose --profile go-tasks "$@"
+    fi
 }
 
 dev_compose() {
@@ -715,6 +735,8 @@ AI_BASE_URL=https://api.deepseek.com
 MANUAL_CORPUS_BASE_URL=
 WEB_CONCURRENCY=2
 CELERY_CONCURRENCY=2
+ASSOZETA_GO_TASKS=0
+GO_TASK_QUEUE_TASKS=
 TZ=Europe/Rome
 DEV_UI_PORT=5001
 DEV_API_PORT=8000
@@ -810,6 +832,7 @@ validate_prod() {
     preflight
     ensure_configuration_values "$PROD_ENV"
     validate_file "$PROD_ENV" "$PROD_COMPOSE"
+    require_go_task_consumer || exit 1
     log "production configuration is valid"
 }
 
@@ -887,6 +910,41 @@ prod_optional_go_migrator() {
     fi
 }
 
+prod_optional_go_consumer() {
+    # The opt-in Go task consumer, when this distribution defines it (enabled
+    # or not): historical distributions have no worker-go service.
+    configured_go_tasks=$(prod_compose_go_tasks config --services) || return $?
+    if printf '%s\n' "$configured_go_tasks" | awk '$0 == "worker-go" { found = 1 } END { exit !found }'; then
+        printf 'worker-go\n'
+    fi
+}
+
+prod_active_go_consumer() {
+    prod_go_tasks_enabled || return 0
+    prod_optional_go_consumer
+}
+
+require_go_task_consumer() {
+    # Task names routed to the assozeta-go queue need a running consumer;
+    # without one they would wait on that queue indefinitely.
+    go_tasks_flag=$(env_value ASSOZETA_GO_TASKS "$PROD_ENV")
+    case "$go_tasks_flag" in
+        ''|0|1) ;;
+        *) printf '[assozeta] error: ASSOZETA_GO_TASKS must be 0 or 1\n' >&2; return 1 ;;
+    esac
+    go_task_names=$(env_value GO_TASK_QUEUE_TASKS "$PROD_ENV" | tr -d ' \t,"'"'")
+    if [ "$go_tasks_flag" != 1 ]; then
+        [ -z "$go_task_names" ] && return 0
+        printf '[assozeta] error: GO_TASK_QUEUE_TASKS routes tasks to the Go queue, but ASSOZETA_GO_TASKS=1 is not set; set ASSOZETA_GO_TASKS=1 or empty GO_TASK_QUEUE_TASKS\n' >&2
+        return 1
+    fi
+    go_consumer_service=$(prod_optional_go_consumer) || return $?
+    if [ -z "$go_consumer_service" ]; then
+        printf '[assozeta] error: ASSOZETA_GO_TASKS=1, but this release has no worker-go service\n' >&2
+        return 1
+    fi
+}
+
 require_prod_migration_lease() {
     go_migration_service=$(prod_optional_go_migrator) || return $?
     if [ -n "$go_migration_service" ] && [ "$prod_operations_lock_held" != true ]; then
@@ -944,9 +1002,10 @@ require_public_readiness() {
 
 require_background_services_running() {
     relay_service=$(prod_optional_realtime_relay) || return 1
-    running=$(prod_compose ps --status running --services worker beat $relay_service 2>/dev/null) || return 1
+    go_consumer_service=$(prod_active_go_consumer) || return 1
+    running=$(prod_compose ps --status running --services worker beat $relay_service $go_consumer_service 2>/dev/null) || return 1
 
-    for service in worker beat $relay_service; do
+    for service in worker beat $relay_service $go_consumer_service; do
         if printf '%s\n' "$running" | awk -v service="$service" '$0 == service { found=1 } END { exit !found }'; then
             continue
         fi
@@ -967,15 +1026,23 @@ stop_prod_data_services() {
     # Keep Caddy serving the maintenance page while the data services stop.
     go_api_service=$(prod_optional_go_api) || return $?
     relay_service=$(prod_optional_realtime_relay) || return $?
+    go_consumer_service=$(prod_optional_go_consumer) || return $?
     set -- api worker beat
     [ -z "$relay_service" ] || set -- "$@" "$relay_service"
     [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
-    prod_compose stop "$@"
+    if [ -n "$go_consumer_service" ]; then
+        # The Go consumer drains its running tasks within stop_grace_period.
+        prod_compose_go_tasks stop "$go_consumer_service" "$@"
+    else
+        prod_compose stop "$@"
+    fi
 }
 
 start_prod_app_services() {
     force_recreate=${1:-false}
     report_health_stage=${2:-false}
+    # Refuse before starting anything: routed tasks need the Go consumer.
+    require_go_task_consumer || return $?
     go_api_service=$(prod_optional_go_api) || return $?
 
     # Populate the persistent manual before serving requests. A temporarily
@@ -989,11 +1056,12 @@ start_prod_app_services() {
     set -- api web
     [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
     relay_service=$(prod_optional_realtime_relay) || return $?
+    go_consumer_service=$(prod_active_go_consumer) || return $?
     if [ "$force_recreate" = true ]; then
-        prod_compose up -d --force-recreate worker beat $relay_service || return $?
+        prod_compose up -d --force-recreate worker beat $relay_service $go_consumer_service || return $?
         prod_compose up -d --wait --force-recreate "$@" || return $?
     else
-        prod_compose up -d worker beat $relay_service || return $?
+        prod_compose up -d worker beat $relay_service $go_consumer_service || return $?
         prod_compose up -d --wait "$@" || return $?
     fi
 
@@ -1124,8 +1192,10 @@ status_prod() {
 prod_app_services_running() {
     go_api_service=$(prod_optional_go_api) || return 2
     relay_service=$(prod_optional_realtime_relay) || return 2
+    go_consumer_service=$(prod_active_go_consumer) || return 2
     set -- web api worker beat
     [ -z "$relay_service" ] || set -- "$@" "$relay_service"
+    [ -z "$go_consumer_service" ] || set -- "$@" "$go_consumer_service"
     [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
     running=$(prod_compose ps --status running --services "$@" 2>/dev/null) || return 2
     [ -n "$running" ]

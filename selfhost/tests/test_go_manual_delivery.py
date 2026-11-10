@@ -37,9 +37,12 @@ def instructions(path):
     return result
 
 
-def github_condition(expression, name, event):
+def github_condition(expression, name, event, manual='skipped', origin='', release_tag=''):
     expression = expression.removeprefix('${{').removesuffix('}}').strip()
     expression = expression.replace('matrix.name', repr(name)).replace('github.event_name', repr(event))
+    expression = expression.replace('needs.manual-release.result', repr(manual))
+    expression = expression.replace('steps.carried.outputs.origin', repr(origin))
+    expression = expression.replace('env.RELEASE_TAG', repr(release_tag))
     expression = expression.replace('&&', ' and ').replace('||', ' or ')
     parsed = ast.parse(expression.strip(), mode='eval')
     allowed = (ast.Expression, ast.BoolOp, ast.And, ast.Or, ast.Compare, ast.Eq, ast.NotEq, ast.Constant)
@@ -64,19 +67,40 @@ class GoManualDeliveryTests(unittest.TestCase):
         matrix = self.workflow.split('        include:', 1)[1].split('    steps:', 1)[0]
         contexts = dict(re.findall(r'- name: ([^\n]+).*?\n            context: ([^\n]+)', matrix, re.S))
         self.assertEqual(set(contexts), {'backend', 'backend-go', 'web', 'renderer', 'updater'})
+        carry_start = self.workflow.index('      - name: Carry the manual of the previous release')
+        carry = self.workflow[carry_start:self.workflow.index('\n      - name:', carry_start + 1)]
+        carry_condition = re.search(r'^        if: (.+)$', carry, re.M).group(1)
+        # Both backend images carry the same package: the Django :latest release
+        # image's manual, copied into the building image's own context.
+        self.assertIn('SOURCE_IMAGE: ghcr.io/${{ github.repository_owner }}/assozeta-backend:latest', carry)
+        self.assertIn('DESTINATION: ${{ matrix.context }}/release-manual', carry)
+        self.assertNotIn('BE/release-manual', carry)
+        required = re.search(r'^            REQUIRE_MANUAL=(.+)$', self.workflow, re.M).group(1)
+        self.assertIn('            MANUAL_CARRIED_FROM=${{ steps.carried.outputs.origin }}\n', self.workflow)
         for name in contexts:
             for event in ('push', 'release', 'workflow_dispatch'):
-                with self.subTest(name=name, event=event):
-                    expected = name in ('backend', 'backend-go') and event != 'push'
-                    self.assertEqual(github_condition(condition, name, event), expected)
-                    if expected:
-                        context = contexts[name]
-                        self.assertEqual(context, './BE' if name == 'backend' else './BE_GO')
-                        path = destination.replace('${{ matrix.context }}', context)
-                        self.assertEqual((ROOT/path).resolve(), (ROOT/context/'release-manual').resolve())
+                for manual in ('success', 'skipped'):
+                    for release_tag in ('', 'v1.0.99'):
+                        with self.subTest(name=name, event=event, manual=manual, release_tag=release_tag):
+                            # The verified artifact reaches exactly the two backend contexts.
+                            expected = name in ('backend', 'backend-go') and manual == 'success'
+                            self.assertEqual(github_condition(condition, name, event, manual), expected)
+                            # A release without a rebuilt manual carries the previous release
+                            # manual into both backend images (Go accepts a carried origin).
+                            carried = github_condition(carry_condition, name, event, manual, release_tag=release_tag)
+                            self.assertEqual(carried, name in ('backend', 'backend-go') and manual != 'success' and release_tag != '')
+                            # Both images require the manual under the same rule: a fresh
+                            # verified artifact, or a carried package with its origin.
+                            for origin in ('', 'v1.0.98 ' + 'e'*40):
+                                self.assertEqual(github_condition(required, name, event, manual, origin=origin),
+                                                 manual == 'success' or origin != '')
+                            if expected:
+                                context = contexts[name]
+                                self.assertEqual(context, './BE' if name == 'backend' else './BE_GO')
+                                path = destination.replace('${{ matrix.context }}', context)
+                                self.assertEqual((ROOT/path).resolve(), (ROOT/context/'release-manual').resolve())
         self.assertLess(start, self.workflow.index('      - name: Build and publish'))
         self.assertIn("needs.manual-release.result == 'success'", self.workflow)
-        self.assertIn("REQUIRE_MANUAL=${{ github.event_name != 'push' }}", self.workflow)
 
     def test_runtime_preserves_all_binaries_codec_licenses_and_server_health(self):
         for name in ('server', 'worker', 'scheduler', 'migrate', 'check-manual'):
@@ -94,16 +118,26 @@ class GoManualDeliveryTests(unittest.TestCase):
         runs = [arg for op, arg in self.docker if op == 'RUN' and ('> /app/MANUAL_REQUIRED' in arg or 'chmod' in arg and '/app/release-manual' in arg)]
         self.assertTrue(any('> /app/MANUAL_REQUIRED' in command for command in runs), 'missing image required marker')
         self.assertTrue(any('chmod' in command for command in runs), 'missing package readability/immutability normalization')
+        self.assertTrue(any('/app/MANUAL_CARRIED_FROM' in command for command in runs), 'missing carried manual origin marker')
         self.assertIn(('ARG', 'REQUIRE_MANUAL=false'), self.docker)
+        self.assertIn(('ARG', 'MANUAL_CARRIED_FROM=""'), self.docker)
         self.assertIn(('COPY', '--chown=0:0 release-manual/ /app/release-manual/'), self.docker)
-        for required in ('true', 'false'):
-            with self.subTest(required=required), tempfile.TemporaryDirectory(prefix='manual-delivery-') as directory:
+        for required, origin in (('true', ''), ('false', ''), ('true', 'v1.0.98 ' + 'e'*40)):
+            with self.subTest(required=required, origin=origin), tempfile.TemporaryDirectory(prefix='manual-delivery-') as directory:
                 app = Path(directory)/'app';package = app/'release-manual';package.mkdir(parents=True)
                 package.chmod(0o700);image=package/'index.json';image.write_bytes(b'fixture');image.chmod(0o600)
+                # A stale marker in the build context never survives into the image.
+                (app/'MANUAL_CARRIED_FROM').write_text('stale-origin\n')
                 for command in runs:
                     command = command.replace('/app', shlex.quote(str(app)))
-                    subprocess.run(['sh', '-ec', command], check=True, env={**os.environ, 'VERSION':'release-fixture', 'CODE_REVISION':'revision-fixture', 'REQUIRE_MANUAL':required}, capture_output=True, text=True)
+                    subprocess.run(['sh', '-ec', command], check=True, env={**os.environ, 'VERSION':'release-fixture', 'CODE_REVISION':'revision-fixture', 'REQUIRE_MANUAL':required, 'MANUAL_CARRIED_FROM':origin}, capture_output=True, text=True)
                 self.assertEqual((app/'MANUAL_REQUIRED').read_text(), required+'\n')
+                # The origin sits next to the bundle, where the checker and reader look.
+                marker = package.parent/'MANUAL_CARRIED_FROM'
+                if origin:
+                    self.assertEqual(marker.read_text(), origin+'\n')
+                else:
+                    self.assertFalse(marker.exists())
                 self.assertEqual((app/'VERSION').read_text(), 'release-fixture\n')
                 self.assertEqual((app/'CODE_REVISION').read_text(), 'revision-fixture\n')
                 for path in (package, image):

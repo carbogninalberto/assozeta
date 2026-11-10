@@ -66,7 +66,11 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("needs.manual-release.result != 'success'", carried['if'])
         self.assertIn("env.RELEASE_TAG != ''", carried['if'])
         self.assertIn('assozeta-backend:latest', carried['env']['SOURCE_IMAGE'])
-        self.assertIn('BE/release-manual', carried['run'])
+        # Both backend images carry the same package into their own context.
+        for backend in ('backend', 'backend-go'):
+            self.assertIn("matrix.name == '" + backend + "'", carried['if'])
+        self.assertEqual(carried['env']['DESTINATION'], '${{ matrix.context }}/release-manual')
+        self.assertIn('"$DESTINATION"', carried['run'])
         build = next(step for step in steps if step.get('uses', '').startswith('docker/build-push-action@'))
         args = build['with']['build-args']
         self.assertIn("REQUIRE_MANUAL=${{ needs.manual-release.result == 'success' || steps.carried.outputs.origin != '' }}", args)

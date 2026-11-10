@@ -59,7 +59,8 @@ jobs:
         if: github.event_name != 'pull_request'
         run: python3 -m unittest discover -s selfhost/tests -p test_operational_diagnostics.py
       - name: Run backend regression suite
-        run: ./selfhost/bin/assozeta dev-compose run --rm --no-deps api python -m pytest -q
+        # xdist gives each worker its own test database; one worker per runner vCPU.
+        run: ./selfhost/bin/assozeta dev-compose run --rm --no-deps api python -m pytest -q -n auto
       - name: Run independent HTTP smoke contracts
         run: ./TESTS/run smoke --output quality-reports/contracts/ci
       - name: Retain independent contract results

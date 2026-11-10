@@ -212,7 +212,10 @@ Each version passes 17 independently required checkpoints and 12 ACCESS events:
 real owner/admin password login, target selection, reload, replacement with a
 restricted collaborator, visible menu permissions, stop and real Redis expiry
 followed by frontend recovery. Seven picker checks assert exact eligible IDs and
-visible rows; an owner search excludes a foreign athlete. Both actor credentials
+visible rows; an owner search excludes the other association's owner. (Before
+main's self-hosted owner eligibility change it excluded a foreign athlete; the
+fixture's owner is the instance owner, so it now lists that athlete as the
+administrator does.) Both actor credentials
 remain unchanged. The parent independently repeats the complete run, including
 an explicitly nondefault Chromium cache, with three harness controls passing.
 

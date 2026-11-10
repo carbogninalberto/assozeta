@@ -323,9 +323,12 @@ class HistoricalMessageReplacementRestoreTests(TransactionTestCase):
         self._recovery_bytes(second, historical=True)
         self.assertNotEqual(first.backup_path, second.backup_path)
         self.assertNotEqual(first.media, second.media)
-        for key in first.media.values():
-            with default_storage.open(key, 'rb') as stored:
-                self.assertEqual(stored.read(), b'Synthetic historical attachment.\n')
+        # A completed restore prunes the earlier restore's attachment copies that no record reads any more.
+        superseded = dict(first.media)
+        first.refresh_from_db()
+        self.assertEqual(first.media, {})
+        for key in superseded.values():
+            self.assertFalse(default_storage.exists(key))
         before_db, before_files = self._database_state(), self._files()
         receipt = type(second).objects.values().get(pk=second.pk)
         execute(second.pk)
@@ -345,9 +348,12 @@ class HistoricalMessageReplacementRestoreTests(TransactionTestCase):
         self.assertEqual(Message.objects.count(), 0)
         self.assertEqual(MessageTransaction.objects.count(), 0)
         self.assertFalse(Document.objects.filter(pk=self.contract['ids']['document']).exists())
-        for key in initial.media.values():
-            with default_storage.open(key, 'rb') as stored:
-                self.assertEqual(stored.read(), b'Synthetic historical attachment.\n')
+        # No record reads the first restore's attachment copy any more, so the completed restore prunes it.
+        superseded = dict(initial.media)
+        initial.refresh_from_db()
+        self.assertEqual(initial.media, {})
+        for key in superseded.values():
+            self.assertFalse(default_storage.exists(key))
         self._assert_audit_delta(before, deleted_ids=[row['message_id'] for row in self.expected['messages']],
                                  historical=False)
         recovery_bytes = self._recovery_bytes(cleared, historical=True)

@@ -1,4 +1,5 @@
 """Authenticated, owner-only instance administration, separate from public bootstrap."""
+from auditlog.models import LogEntry
 from django.conf import settings
 from django.core.cache import cache
 from rest_framework import serializers, status
@@ -8,7 +9,7 @@ from rest_framework.views import APIView
 
 from .models import InstanceConfiguration
 from .permissions import IsInstanceOwner, is_instance_owner, is_instance_administrator
-from .serializers import InstanceConfigSerializer, InstanceReconfigureSerializer
+from .serializers import InstanceAdminSerializer, InstanceConfigSerializer
 from .views import InstanceLogoUploadView
 from .release_catalog import ReleaseError, fetch_releases, fetch_release, release_summary, version_tuple
 from .updater_client import call_runner, deployment_mode, UpdaterUnavailable, UpdaterRejected
@@ -47,13 +48,23 @@ class InstanceAdminView(APIView):
             'mode': deployment_mode(),
         })
 
+    EDITABLE = {'oem', 'uiApiVersion'}
+
     def put(self, request):
-        if set(request.data) != {'oem'}:
+        keys = set(request.data)
+        if not keys or not keys <= self.EDITABLE:
             raise serializers.ValidationError('Only instance branding can be edited here.')
         config = InstanceConfiguration.get_config()
-        serializer = InstanceReconfigureSerializer(config, data=request.data, partial=True)
+        previous = config.ui_api_version
+        serializer = InstanceAdminSerializer(config, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        if config.ui_api_version != previous:
+            actor = getattr(request, 'authenticated_user', getattr(request, 'original_user', request.user))
+            LogEntry.objects.log_create(
+                config, action=LogEntry.Action.UPDATE, actor=actor,
+                changes={'ui_api_version': [previous, config.ui_api_version]},
+                additional_data={'actor_id': str(actor.pk)}, force_log=True)
         return Response({'config': InstanceConfigSerializer(config).data})
 
 
