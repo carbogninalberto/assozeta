@@ -82,6 +82,16 @@ pinned by `TESTS/adapters/go/channels_group_send_golden.py` -> `BE_GO/internal/c
 (real `GoMirroredRedisChannelLayer`, captured redis-py writes) and `go test ./internal/channels`. The encoding is pinned to these
 library versions: upgrading channels_redis or msgpack requires regenerating the golden.
 
+## The owner wizard's medical certificate
+
+The wizard sends `{medical_id, filename, certificate_expring_date}` with the date defaulting to today (`YYYY-MM-DD`; an emptied
+field is moment's `Invalid date`). The date is parsed with `strptime('%d/%m/%Y')` when it has a `/`, else `'%Y-%m-%d'`; every
+failure (non-strings included) is swallowed. With an existing `medical_id` the parsed datetime is assigned to the DateField and
+`medical.save()` writes it with the owner as user when it had none: auditlog compares `str(date)` with `str(datetime)`
+(`['None', '2027-03-31 00:00:00']`), one entry with both changes, indexed through the actor's association. Without `medical_id`
+the placeholder branch raises (no effect) for today's date and unparseable values. The same parse is shared by renewals and the
+draft approval (`subscription-renew`).
+
 ## Not ported
 
 Refused with the 500 page before anything is committed:
@@ -91,8 +101,8 @@ Refused with the 500 page before anything is committed:
 - `preregistration: true` (next-season and renewal registrations);
 - `new_user_account.new_member` true (the account creation and its welcome e-mail);
 - `there_is_signature` with data (the `Signature` row and the storage upload);
-- a `medical_certificate` with a non-None `certificate_expring_date` (the expiration update, or the placeholder certificate image; a
-  None date raises inside their `try` blocks and changes nothing, which is ported);
+- a `medical_certificate` without `medical_id` whose `certificate_expring_date` parses to a date other than today (the placeholder
+  certificate image drawn with PIL and stored), and expiration dates with non-ASCII digits (accepted by `strptime`);
 - a truthy `custom_data.type_of_associate` (its JSON `icontains` filter);
 - an unknown non-canonical `associate_id` spelling or one whose save would hit the unique tax-code index (the `associate_id` branch
   itself is ported, see [subscription-renew](subscription-renew.md)), a born date that is not a string or not in the ported dateutil
