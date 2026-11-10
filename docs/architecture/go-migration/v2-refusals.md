@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 11 ported below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -43,7 +43,7 @@ Cross-cutting facts used for the classes:
 | data-restore | `POST instance/admin/data-restore` | every upload | fixture `data_restore_http.json` 150 cases; RED Django 150/150, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (summary record count) CAUGHT |
 | instance-updates | `GET/POST admin/updates`, `POST admin/restarts` | production mode | fixture `instance_updates_http.json` 40 cases; RED Django 40/40, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (version check) CAUGHT |
 
-Details in `statistic-reads.md`, `association-transfer.md`, `instance-setup.md`, `data-restore.md` and `instance-updates.md`.
+Details in `statistic-reads.md`, `payment-writes.md`, `association-transfer.md`, `instance-setup.md`, `data-restore.md` and `instance-updates.md`.
 
 ## Remaining A items, per family
 
