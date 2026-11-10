@@ -94,7 +94,15 @@ COURSES = {
     'gruppo': {'id': next(ids), 'association': OWN, 'type': 1, 'title': 'Gruppo', 'deleted': False, 'group': 'own_group'},
     'estero': {'id': next(ids), 'association': FOREIGN, 'type': 1, 'title': 'Estero', 'deleted': False, 'group': None},
     'estero_abb': {'id': next(ids), 'association': FOREIGN, 'type': 3, 'title': 'Estero abbonamento', 'deleted': False, 'group': None},
+    'corsa': {'id': next(ids), 'association': OWN, 'type': 1, 'title': 'Corsa', 'deleted': False, 'group': None},
 }
+
+
+# PaymentSerializer's nested instructor and invoice of a membership payment.
+INSTRUCTOR = {'id': next(ids), 'first_name': 'Anna è', 'last_name': 'Bianchi', 'email': 'anna@example.test', 'tax_code': 'BNCNNA80A41H501X',
+              'default_hourly_billing': '12.50'}
+INVOICE = {'id': next(ids), 'created': '2026-02-02T09:00:00Z', 'membership_fee': '25.00', 'activity_fee': '0.00', 'description': 'Fattura è',
+           'number': 7, 'meta': {'numero': 7}}
 
 
 def period(start, end, fee='25.00', title='Palestra'):
@@ -137,6 +145,12 @@ PAYMENTS = {
     'bd_mp': payment(amount='25.00', paid=True, meta=period('2026-01-01', '2026-02-01')),
     'abroad_pay': payment(association=FOREIGN),
     'bd4_pa': payment(amount='20.00'),
+    # installment edits (events)
+    'ev_pk': payment(amount='20.00'),
+    'ev_pd': payment(amount='25.00'),
+    'ev_pp': payment(amount='30.00', paid=True, category=None, description='Rata pagata'),
+    'mp_inv': {**payment(amount='25.00', paid=True, meta=period('2026-01-01', '2026-02-01', title='Sala pesi'), associate='gino', user=OWNER,
+                         description='Abbonamento: Sala pesi dal 01/01/2026 al 01/02/2026'), 'invoice': True, 'instructor': True},
 }
 
 
@@ -179,6 +193,10 @@ CS = {
     'cs_bd3': subscription_row('yoga', None),
     'cs_abroad': subscription_row('estero', 'sub_abroad'),
     'cs_bd4': subscription_row('gruppo', None),
+    'cs_ev': subscription_row('corsa', 'sub_luisa', multi_payments=True),
+    'cs_ev2': subscription_row('corsa', 'sub_gino', multi_payments=True),
+    'cs_invoiced': subscription_row('sala', 'sub_gino', billed_from='2026-01-01T00:00:00Z', billed_until='2026-02-01T00:00:00Z',
+                                    membership_fee='25.00', membership_payments=['mp_inv']),
 }
 
 
@@ -207,6 +225,11 @@ INSTALLMENTS = {
     'bd4b': installment('cs_bd4', 1, '20.00'),
     'bd4del': installment('cs_bd4', 2, '20.00', deleted=True),
     'bd4g': installment('cs_bd4', 3, '20.00', group='own_group'),
+    'ev_keep': installment('cs_ev', 0, '20.00', 'ev_pk'),
+    'ev_drop': installment('cs_ev', 1, '25.00', 'ev_pd'),
+    'ev_paid': installment('cs_ev', 2, '30.00', 'ev_pp', when='2026-11-01T00:00:00Z'),
+    'ev_none': installment('cs_ev', 3, '10.00'),
+    'ev2_only': installment('cs_ev2', 0, '10.00'),
 }
 CARNETS = {'dieci': {'id': next(ids), 'title': 'Dieci ingressi', 'lessons': 10},
            'zero': {'id': next(ids), 'title': 'Libero', 'lessons': 0}}
@@ -288,6 +311,23 @@ def payment_subscription(row, group):
     return None
 
 
+def instructor_item():
+    row = INSTRUCTOR
+    return {'instructor_id': row['id'], 'user': OWNER, 'first_name': row['first_name'], 'last_name': row['last_name'], 'email': row['email'],
+            'born_date': None, 'born_city': None, 'born_province': None, 'tax_code': row['tax_code'], 'address_city': None, 'address': None,
+            'address_province': None, 'civic_number': None, 'study_title': None, 'role': 'Istruttore', 'phone': None, 'phone_2': None,
+            'phone_3': None, 'phone_4': None, 'draft': False, 'associated_user_id': None, 'is_volunteer': False, 'stipulated_contract_in': None,
+            'default_hourly_billing': row['default_hourly_billing'], 'default_percentage_billing': '0.00', 'documents': []}
+
+
+def invoice_item():
+    row = INVOICE
+    return {'invoice_id': row['id'], 'document_token': None, 'creation_date': row['created'], 'membership_fee': row['membership_fee'],
+            'activity_fee': row['activity_fee'], 'meta_payment_categories': None, 'description': row['description'], 'number': row['number'],
+            'archived': False, 'cancelled': False, 'meta': row['meta'], 'imported_from_associami': False, 'deleted': False, 'document_pdf': None,
+            'sport_association': OWN, 'selected_tutor': None, 'group': None, 'attached_documents': []}
+
+
 def payment_item(label, group=None):
     row = STATE['payments'][label]
     attachments = [{'document_id': DOCUMENT['id'], 'creation_date': DOCUMENT['created'], 'filepath': DOCUMENT['filepath'],
@@ -295,8 +335,9 @@ def payment_item(label, group=None):
     category = row['category']
     return {'payment_id': row['id'], 'user': OWNER_USER if row['user'] == OWNER else None,
             'associate': associate(row['associate']) if row['associate'] else None, 'subscription_id': payment_subscription(row, group),
-            'instructor_id': None, 'instructor': None, 'supplier': None, 'supplier_id': None, 'custom_account_type': None,
-            'custom_account_name': None, 'invoice': None, 'attachments': attachments,
+            'instructor_id': INSTRUCTOR['id'] if row.get('instructor') else None, 'instructor': instructor_item() if row.get('instructor') else None,
+            'supplier': None, 'supplier_id': None, 'custom_account_type': None,
+            'custom_account_name': None, 'invoice': invoice_item() if row.get('invoice') else None, 'attachments': attachments,
             'payment_category_name': None if category is None else ('$default_category_name' if category == '$default_category' else 'Corsi fixture'),
             'type': 'default', 'subject': row['subject'], 'amount': row['amount'], 'creation_date': row['created'],
             'payment_date': row['payment_date'], 'paid': row['paid'], 'expense': False, 'description': row['description'],
@@ -494,6 +535,7 @@ def nothing(actor):
 
 
 LIST = '/course-subscriptions/list'
+PAYMENT_TABLE, INSTALLMENT_TABLE = 'application.Payment', 'application.CourseSubscriptionInstallment'
 BULK = '/course-subscriptions/bulk-delete'
 one = lambda label, verb: f'/course-subscriptions/{CS[label]["id"] if label in CS else label}/{verb}'
 C = lambda label: COURSES[label]['id']
@@ -613,6 +655,8 @@ add('list-include-deleted', 'owner', f'{LIST}?include_deleted=TRUE&subscription_
     listing('cs_yoga', 'cs_oldcourse', 'cs_deleted', 'cs_del', 'cs_bd1'))
 add('list-include-deleted-other-value', 'owner', f'{LIST}?include_deleted=yes&subscription_id={S("sub_mario")}', 200,
     listing('cs_yoga', 'cs_oldcourse', 'cs_del', 'cs_bd1'))
+# A membership payment with an invoice (generated from the payment page) and an instructor renders both nested.
+add('list-membership-invoice-and-instructor', 'owner', f'{LIST}?course_id={C("sala")}', 200, listing('cs_invoiced'))
 add('list-foreign-course-filter-empty', 'owner', f'{LIST}?course_id={C("estero")}', 200, {'data': []})
 add('list-group-filters-installments-and-payments', 'owner', f'{LIST}?subscription_id={S("sub_luisa")}&course_id={C("palestra")}', 200,
     listing('cs_member', 'cs_dup', 'cs_mismatch', 'cs_recover', 'cs_badmeta', 'cs_bd2', group='own_group'), headers=GROUP)
@@ -804,6 +848,70 @@ effect = updated('owner', 'cs_recover', {}, {}, payments=[
 add('update-membership-recover-initial-period', 'owner', one('cs_recover', 'update'), 200, item('cs_recover'), method='PATCH',
     body={'billed_from': '2026-04-01T00:00:00Z', 'billed_until': '2026-05-01T00:00:00Z'}, effect=effect)
 
+# Installment edits: the form sends the selected events; installments without a matching event id go (a paid
+# payment is relabelled first, an unpaid one is deleted by the installment's pre_delete); events without
+# course_subscription_installment_id become a payment of the course's association and an installment.
+def new_payment(sym, amount, *, created, description, meta, user=OWNER, associate='luisa'):
+    return {'$sym': sym, 'payment_id': sym, 'type': 'default', 'subject': 2, 'amount': amount, 'creation_date': created, 'payment_date': None,
+            'paid': False, 'expense': False, 'description': description, 'payment_category_id': '$default_category',
+            'meta_payment_categories': None, 'invoice_id': None, 'user_id': user, 'associate_id': ASSOCIATES[associate]['id'], 'supplier_id': None,
+            'instructor_id': None, 'sport_association_id': OWN, 'payment_intent_id': None, 'archived': False, 'invoice_fiscal_code': None,
+            'meta': meta, 'notes': None, 'custom_accounts_id': '$bank_own', 'signature_id': None, 'deleted': False, 'group_id': None, 'course': None}
+
+
+def new_installment(sym, cs, number, amount, payment_sym, created):
+    return {'$sym': sym, 'course_subscription_installment_id': sym, 'course_subscription_id': CS[cs]['id'], 'id': number, 'amount': amount,
+            'paid': False, 'payment_date': created, 'payment_id': payment_sym, 'archived': False, 'group_id': None, 'deleted': False}
+
+
+def dropped(label, actor):
+    """installment.delete(): its pre_delete deletes an unpaid payment (the installment nested in between)."""
+    return unpaid_installment(label, actor) + [deleted('coursesubscriptioninstallment', label, actor_index(actor))]
+
+
+actor = 'owner'
+ev_meta = lambda description, when, cs='cs_ev': {'description': description, 'course_id': C('corsa'), 'course_title': 'Corsa',
+                                                 'course_subscription_id': CS[cs]['id'], 'payment_date': when}
+paid_meta = ev_meta('Rata n.3 del 01/11/26 (Corsa)', '2026-11-01 00:00:00+00:00')
+new_text = 'Rata n.5 del 10/12/26 (Corsa)'
+created = {PAYMENT_TABLE: [new_payment('@evp', '35.00', created='2026-12-10T00:00:00Z', description=new_text, meta=ev_meta(new_text, '2026-12-10'))],
+           INSTALLMENT_TABLE: [new_installment('@evi', 'cs_ev', 4, '35.00', '@evp', '2026-12-10T00:00:00Z')]}
+audit = dropped('ev_drop', actor) + [
+    changed_entry('payment', 'ev_pp', [OWN, 'direct'], {'description': ['Rata pagata', 'Rata n.3 del 01/11/26 (Corsa)'],
+                                                        'meta': ['null', json.dumps(paid_meta, sort_keys=True)],
+                                                        'payment_category': ['None', '$default_category']}),
+    deleted('coursesubscriptioninstallment', 'ev_paid', actor_index(actor)),
+    deleted('coursesubscriptioninstallment', 'ev_none', actor_index(actor)),
+    {'model': 'payment', 'label': '@evp', 'action': 0, 'changes': '$created', 'overrides': {}, 'index': [OWN, 'direct'], 'repr': None},
+    {'model': 'coursesubscriptioninstallment', 'label': '@evi', 'action': 0, 'changes': '$created', 'overrides': {},
+     'index': [OWN, 'course_subscription.course.sport_association'], 'repr': None}]
+STATE['payments']['ev_pp'].update({'description': 'Rata pagata', 'meta': paid_meta, 'category': '$default_category'})
+for key in ('ev_drop', 'ev_paid', 'ev_none'):
+    del STATE['installments'][key]
+STATE['payments']['@evp'] = {'paid': False}
+STATE['installments']['@evi'] = {'id': '@evi', 'cs': 'cs_ev', 'number': 4, 'amount': '35.00', 'payment': '@evp', 'group': None, 'deleted': False,
+                                 'payment_date': '2026-12-10T00:00:00Z', 'paid': False}
+effect = {'kind': 'update', 'actor': actor, 'cs_changed': {}, 'cs_deleted': [], 'installments_deleted': ['ev_drop', 'ev_paid', 'ev_none'],
+          'payments_deleted': ['ev_pd'], 'payments_changed': {'ev_pp': {'description': 'Rata n.3 del 01/11/26 (Corsa)', 'meta': paid_meta,
+                                                                         'category': '$default_category'}},
+          'created': created, 'audit': audit}
+add('update-events', actor, one('cs_ev', 'update'), 200, item('cs_ev'), method='PATCH', body={
+    'course': C('corsa'), 'subscription_id': S('sub_luisa'), 'multiple_quote': None, 'events': [
+        {'course_subscription_installment_id': INSTALLMENTS['ev_keep']['id'], 'id': 0, 'amount': '20.00', 'payment_date': '2026-10-01'},
+        {'id': 4, 'amount': '35.00', 'payment_date': '10/12/2026'}]}, effect=effect)
+# Atomic: an invalid new event (400) or an event without an id compared with an installment (KeyError, 500) leaves nothing behind.
+add('update-events-invalid-new-event', 'owner', one('cs_ev2', 'update'), 400,
+    {'payment_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.'], 'amount': ['A valid number is required.']},
+    method='PATCH', body={'events': [{'id': 0, 'amount': '10.00', 'payment_date': '01/10/2026'}, {'id': 1, 'amount': 'dieci', 'payment_date': '2026-10-01'}]})
+add('update-events-without-id-server-error', 'owner', one('cs_ev2', 'update'), 500, SERVER, method='PATCH', body={'events': [{'amount': '1'}]})
+add('update-events-number-server-error', 'owner', one('cs_ev2', 'update'), 500, SERVER, method='PATCH', body={'events': 3})
+# An empty selection removes every installment of the row.
+audit = dropped('ev2_only', 'full_collaborator')
+del STATE['installments']['ev2_only']
+add('update-events-empty', 'full_collaborator', one('cs_ev2', 'update'), 200, item('cs_ev2'), method='PATCH', body={'events': []},
+    effect={'kind': 'update', 'actor': 'full_collaborator', 'cs_changed': {}, 'cs_deleted': [], 'installments_deleted': ['ev2_only'],
+            'payments_deleted': [], 'payments_changed': {}, 'audit': audit})
+
 # --- delete ----------------------------------------------------------------
 add('delete-anonymous', 'anonymous', one('cs_del', 'delete'), 401, ANONYMOUS, method='DELETE')
 add('delete-restricted-missing-permission', 'restricted_collaborator', one('cs_del', 'delete'), 403, missing('delete'), method='DELETE')
@@ -905,6 +1013,7 @@ OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Course subscription
                                                             'installment, payment and audit effects',
                               'ids': IDS, 'category': CATEGORY, 'document': DOCUMENT, 'associates': ASSOCIATES, 'medicals': MEDICALS,
                               'subscriptions': SUBSCRIPTIONS, 'courses': COURSES, 'payments': PAYMENTS, 'course_subscriptions': CS,
-                              'installments': INSTALLMENTS, 'carnets': CARNETS, 'holdings': HOLDINGS, 'cases': cases},
+                              'installments': INSTALLMENTS, 'carnets': CARNETS, 'holdings': HOLDINGS, 'instructor': INSTRUCTOR,
+                              'invoice': INVOICE, 'cases': cases},
                              ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

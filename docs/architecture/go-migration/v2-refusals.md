@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 16 ported below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 18 ported below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -44,9 +44,11 @@ Cross-cutting facts used for the classes:
 | instance-updates | `GET/POST admin/updates`, `POST admin/restarts` | production mode | fixture `instance_updates_http.json` 40 cases; RED Django 40/40, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (version check) CAUGHT |
 | course-enrolment | `POST course-subscriptions/add`, overview add, installment make-payment | association-scoped impersonation session | fixture `course_enrolment_http.json` 102 cases; RED Django 102/102, Go 500 (`v2c-red2`); GREEN 4 transports 102/102 (`v2c-green`); mutation (cents rounded half down) CAUGHT |
 | course-enrolment | quote payments (add, overview add) | quote amount not `\d{1,7}([.,]\d{1,2})?` (`1.000`, ` 50 `, `2,675`, ...) | same run |
+| course-subscriptions | `PATCH course-subscriptions/<pk>/update` | body has `events` (the edit form always sends it) | fixture `course_subscriptions_http.json` 114 cases; RED Django 114/114, Go 500 (`v2c-red`); GREEN 4 transports 114/114 (`v2c-green`); mutation (instalment label numbered from 0) CAUGHT |
+| course-subscriptions | `GET course-subscriptions/list` (and update responses) | membership payment with an invoice or an instructor (the latter B, legacy: yes) | same run |
 | course-writes | course add/update/delete, overview update/delete | association-scoped impersonation session | fixture `course_writes_http.json` 119 cases; RED Django 119/119, Go 500 (`v2c-red`); GREEN 4 transports 119/119 (`v2c-green`); mutation (session filter inverted) CAUGHT |
 
-Details in `course-enrolment.md`, `course-writes.md`, `statistic-reads.md`, `payment-writes.md`, `association-transfer.md`, `instance-setup.md`, `data-restore.md` and `instance-updates.md`.
+Details in `course-subscriptions.md`, `course-enrolment.md`, `course-writes.md`, `statistic-reads.md`, `payment-writes.md`, `association-transfer.md`, `instance-setup.md`, `data-restore.md` and `instance-updates.md`.
 
 ## Remaining A items, per family
 
@@ -99,8 +101,6 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | POST course-subscriptions/list | export pdf/excel | `course-subscriptions-list.svelte:575-588` | `service/course_subscriptions.go:177` | medium |
-| PATCH course-subscriptions/<pk>/update | body has `events` (always) | `AddEditCourseSubscriptionModal.svelte:61-67` | `service/course_subscription_update.go:408-411` | medium-expensive (cheap partial: unchanged events) |
-| GET course-subscriptions/list | membership payment with an invoice | `membership-list.svelte:385` | `service/course_subscriptions.go:114-116` | medium |
 | POST course/list | print pdf/excel | `course/CourseList.svelte:806-812` | `handler/course_list.go:69` | expensive |
 | course/locations add/update | with `documents_data` | `course/modals/AddModal.svelte:30-50` | `service/course_location_writes.go:111,120` | medium-expensive |
 | GET calendar/events?get_lesson=true | event matches an attendance day | `routes/calendar/Calendar.svelte:539` | `service/course_calendar.go:1618` | medium (the todaylessons port reuses the same helper) |
@@ -370,11 +370,11 @@ Coordination/status doc; no refusals. Nothing to classify.
 |---|---|---|---|---|
 | POST course-subscriptions/add | "not routed in Go" | — | n/a | Superseded: now routed (`BE_GO/cmd/server/main.go:588`, `courseEnrolmentHandler.Add`, another family). |
 | POST course-subscriptions/list (export pdf/excel) | any POST (export) | `BE_GO/internal/service/course_subscriptions.go:177`, `ErrCourseSubscriptionExportUnsupported` | **A** | `routes/association/course/overview/partials/course-subscriptions-list.svelte:575-588` → `components/modals/CurrentViewPrintingModal.svelte:41` POST `{format:'pdf'|'excel'}`. |
-| PATCH course-subscriptions/<pk>/update | `events` key present and non-null | `service/course_subscription_update.go:408-411`, `ErrCourseSubscriptionNotPorted` | **A** | `routes/association/course/overview/modals/AddEditCourseSubscriptionModal.svelte:61-67,119-121` always sends `events: [...]` (even `[]`, which Go treats as non-nil). Every non-membership subscription edit is refused. |
+| PATCH course-subscriptions/<pk>/update | `events` key present and non-null | `service/course_subscription_update.go:408-411`, `ErrCourseSubscriptionNotPorted` | ported | Ported (`course-subscriptions.md`, `v2c-green`). |
 | PATCH …/update | changed primary key | same site | B | UI never sends `course_subscription_id` in the body. legacy: no; cheap. |
 | PATCH …/update | HTML-form input for `multiple_quote`/`events` | `service/course_subscription_update.go:371` | B | UI sends JSON. legacy: no; cheap. |
-| GET/POST course-subscriptions/list | a rendered membership payment with `invoice_id` | `service/course_subscriptions.go:114-116` | **A** | Membership payments get an invoice from the UI's "generate invoice" (`routes/accounting/payment/partials/payment-overview.svelte:212`, `payment/modals/AddEditModal.svelte:276` → Django `payment_views.py:2035-2036` sets `payment.invoice`). List called at `partials/membership-list.svelte:385`. |
-| same | a rendered membership payment with `instructor_id` | same site | B | No UI path links an instructor to a membership payment. legacy: yes (admin edits); medium. |
+| GET/POST course-subscriptions/list | a rendered membership payment with `invoice_id` | `service/course_subscriptions.go:114-116` | ported | Ported for GET and update renders (`v2c-green`); the POST export stays refused. |
+| same | a rendered membership payment with `instructor_id` | same site | ported | Ported with the invoice case (`v2c-green`). |
 | DELETE course-subscriptions/<pk>/delete | row payment is also an unpaid installment's payment | `service/course_subscriptions.go:262` | B | No current writer shares one payment (`BE/application/views/course_views.py:118-148,985-1038` create separate payments). legacy: possible but unproven; medium. |
 
 ### document-views.md
