@@ -5759,14 +5759,10 @@
         "target": "balance_sheet",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
-        "BE_GO/internal/domain/balance_sheet.go",
-        "BE_GO/internal/repository/balance_sheet.go",
         "BE_GO/internal/service/balance_sheet.go",
-        "BE_GO/internal/service/balance_sheet_python.go",
-        "BE_GO/internal/handler/balance_sheet.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/balance_sheet_export.go"
       ],
       "dependencies": [],
       "contract": {
@@ -5781,9 +5777,9 @@
           "/api/v2/balance-sheet",
           "/api/balance-sheet"
         ],
-        "request": "GET/POST?currentDate=YYYY-MM-DD; POST {format} regenerates, POST {balance_sheet: {draft, year, ...}} replaces the newest sheet; DELETE?currentDate resets the year's sheet.",
-        "response": "{data: {available_years, balance_sheet: {data, creation_date, year, draft}, sport_association}}; POST replace {data: {balance_sheet, sport_association}}; DELETE {msg}.",
-        "errors": "401; 403 registry/context/IsAssociationUser; 403 {msg: Info not available.}; 400 {msg: Invalid data.}; 404 {msg: No balance sheet found.}; 405; 500 invalid currentDate, non-dict data or body, missing draft/year, rejected year (after its audit entry); 500 excel/pdf export (not ported).",
+        "request": "GET/POST?currentDate=YYYY-MM-DD; POST {format} regenerates (format excel also exports), POST {balance_sheet: {draft, year, ...}} replaces the newest sheet; DELETE?currentDate resets the year's sheet.",
+        "response": "{data: {available_years, balance_sheet: {data, creation_date, year, draft}, sport_association}}; POST format excel on a non-approved sheet {file: base64 workbook (get_excel_base64), filename: '[<today>] Bilancio <year> - <denomination>.xlsx'}; POST replace {data: {balance_sheet, sport_association}}; DELETE {msg}.",
+        "errors": "401; 403 registry/context/IsAssociationUser; 403 {msg: Info not available.}; 400 {msg: Invalid data.}; 404 {msg: No balance sheet found.}; 405; 500 invalid currentDate, non-dict data or body, missing draft/year, rejected year (after its audit entry), export error (after the save); 500 pdf export (not ported).",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated, IsAssociationUser; registry GET bookeeping.management.balancesheet.read, POST/DELETE bookeeping.management.balancesheet.update.",
         "resource_scope": "request.user.sportassociation (reverse one-to-one); sheets of that association; payments through the group-aware manager.",
@@ -5798,21 +5794,28 @@
         "TESTS/adapters/django/balance_sheet_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/balance-sheet.md",
         {
-          "command": "python tools/go-migration/family.py run balance-sheet --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/balance-sheet-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "8902b7699ac5d4252be9e96363646d9ff247b2b88ec2a3c68480332075934604",
-          "scope": "HTTP family balance-sheet: 66/66 cases on native Django and native Go, 66/66 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 77/77; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/balance-sheet-http-v2xlsx-red-r2/results.json",
+          "receipt_sha256": "80c3a6d4432e99e1681d3ce08b7fd586ab9c6a78e6262e82eee8e20a766d835d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 77/77 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/balance-sheet-http-v2xlsx-green-final/results.json",
+          "receipt_sha256": "f889cf35003d3bab9fe7a3be2f70fe733f1daa75c9f28ce92d07c8b8b7832ffd"
+        },
+        {
+          "revision": "management statement expenses without the minus sign",
+          "result": "Mutation control: fails Go on balance-sheet-excel-draft (xl/worksheets/sheet1.xml differs)",
+          "artifact": "quality-reports/go-migration/balance-sheet-http-v2xlsx-mutation-final/results.json",
+          "receipt_sha256": "fd6f18d0e3739f041cae63f5f728f6e7a7d7a7f277c6c07dea7af64304efa779"
         }
       ],
       "notes": [
-        "Implementing: balance sheet GET/POST/DELETE and account delete with audited effects; excel/pdf export on a non-approved sheet and deleting an account referenced by payments are refused with a 500 before any write. See docs/architecture/go-migration/balance-sheet.md.",
-        "Implementing evidence: docs/architecture/go-migration/balance-sheet.md",
-        "Implementing evidence: RED: Django 66/66; Go 404 on the first case. (quality-reports/go-migration/balance-sheet-http-native-r3/results.json)",
-        "Implementing evidence: GREEN: 66/66 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/balance-sheet-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on balance-sheet-draft-regenerated (generalIncome institutional). (quality-reports/go-migration/balance-sheet-http-mutation-r1/results.json)"
+        "Implementing: Implementing: POST format excel on a non-approved sheet (regenerate, save, export_balance_sheet workbook with part-by-part XLSX parity; an export error is a 500 after the save); refused before any write: format pdf, non-finite amounts, non-text descriptions, workbook inputs xlsxexport does not reproduce, deleting an account referenced by payments. See docs/architecture/go-migration/balance-sheet.md."
       ]
     },
     {
@@ -11424,16 +11427,14 @@
         "target": "course_list",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/course_list.go",
         "BE_GO/internal/repository/course_list.go",
-        "BE_GO/internal/repository/course_overview.go",
         "BE_GO/internal/service/course_list.go",
-        "BE_GO/internal/service/course_overview.go",
-        "BE_GO/internal/service/balance_sheet_range.go",
         "BE_GO/internal/handler/course_list.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/golden_test.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request check and permission registry",
@@ -11459,9 +11460,9 @@
           "/api/v2/course/list",
           "/api/course/list"
         ],
-        "request": "Athletes: sport_association_id. Others: subscription_id, query[generalSearch], query[tags], query[tags_and], query[status_flag], sort[field], sort[sort], all, optimized, pagination[page], pagination[perpage]; X-Group-Id; POST body format.",
-        "response": "Athletes: 200 {'data': [CourseSerializer]}. all=1: 200 {'data': [CourseSerializer]} or values(course_id, title). Otherwise 200 {'data': {index: CourseSerializer + current_year + athletes}, 'meta': {total, page, pages, perpage, rowIds}}.",
-        "errors": "400 malformed athlete sport_association_id or POST body parse error; 401; 403 missing sport_association_id / registry / scoped session; 404 Invalid page.; 405; 500 no association, malformed or missing subscription_id, malformed tag or status, unknown ordering, POST export (not ported for pdf/excel).",
+        "request": "Athletes: sport_association_id. Others: subscription_id, query[generalSearch], query[tags], query[tags_and], query[status_flag], sort[field], sort[sort], all, optimized, pagination[page], pagination[perpage]; X-Group-Id; POST body format (excel).",
+        "response": "Athletes: 200 {'data': [CourseSerializer]}. all=1: 200 {'data': [CourseSerializer]} or values(course_id, title). POST format excel: 200 {'file': base64 workbook (get_excel_base64), 'filename': '[<today>] Corsi filtrati - <denomination>.xlsx'}. Otherwise 200 {'data': {index: CourseSerializer + current_year + athletes}, 'meta': {total, page, pages, perpage, rowIds}}.",
+        "errors": "400 malformed athlete sport_association_id or POST body parse error; 401; 403 missing sport_association_id / registry / scoped session; 404 Invalid page.; 405; 500 no association, malformed or missing subscription_id, malformed tag or status, unknown ordering, missing or unknown POST format, POST format pdf (not ported).",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.courses.read (every method).",
         "resource_scope": "Athletes: the requested association's live, group-aware ACTIVE courses. Others: request.user's association's live, group-aware courses; course subscriptions scoped during association-scoped sessions.",
@@ -11476,21 +11477,28 @@
         "TESTS/adapters/django/course_list_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/course-list.md",
         {
-          "command": "python tools/go-migration/family.py run course-list --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/course-list-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "01504abe74c2060362a23976f1c42a9d08086a629b9b53929090f5399afe26f7",
-          "scope": "HTTP family course-list: 113/113 cases on native Django and native Go, 113/113 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 142/142; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-list-http-v2xlsx-red-r1/results.json",
+          "receipt_sha256": "0f0c1a85908e002caa0171874cc48880fa55fdf56dd4f91a4c85b14349fb27ed"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 142/142 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/course-list-http-v2xlsx-green-final/results.json",
+          "receipt_sha256": "376b82f80e6aa6e4577ad44af3b366d5f854d7a2422af8fef65a67298a8c5457"
+        },
+        {
+          "revision": "Iscritti counts deleted course subscriptions",
+          "result": "Mutation control: fails Go on course-list-excel-owner (xl/worksheets/sheet1.xml differs)",
+          "artifact": "quality-reports/go-migration/course-list-http-v2xlsx-mutation-final/results.json",
+          "receipt_sha256": "0f68a346a325d00a35d81efd46d3954c0f313a9fa6e5365e4261802c08468a51"
         }
       ],
       "notes": [
-        "Implementing: Implementing: athlete and owner branches, subscription/search/tags/status/sort filters, all/optimized, KTDatatablePagination, current_year and athletes on four transports. Not ported (500 before any work): POST pdf/excel export file generation; orderings Django resolves lazily (transforms, M2M/reverse relations, relation paths), refused after the page checks.",
-        "Implementing evidence: docs/architecture/go-migration/course-list.md",
-        "Implementing evidence: RED: Django 113/113; Go 404 on the first case. (quality-reports/go-migration/course-list-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 113/113 on native Django, native Go, Caddy /api/v1 and /api/v2; state unchanged. (quality-reports/go-migration/course-list-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on tags-or-duplicates (meta.total). (quality-reports/go-migration/course-list-http-mutation-r1/results.json)"
+        "Implementing: Implementing: POST format excel (current_view_course, get_excel_base64 workbook with part-by-part XLSX parity, duplicate tag column names included); refused: POST format pdf, lazy orderings, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/course-list.md."
       ]
     },
     {
@@ -15295,15 +15303,10 @@
       },
       "status": "implementing",
       "go": [
-        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/invoice_parties.go",
         "BE_GO/internal/domain/invoice_sync_print.go",
-        "BE_GO/internal/dto/invoice_parties.go",
-        "BE_GO/internal/dto/invoice_party_items.go",
-        "BE_GO/internal/handler/invoice_parties.go",
         "BE_GO/internal/repository/invoice_parties.go",
         "BE_GO/internal/repository/invoice_sync_print.go",
-        "BE_GO/internal/repository/invoice_views.go",
         "BE_GO/internal/service/invoice_parties.go",
         "BE_GO/internal/service/invoice_sync_print_customer.go"
       ],
@@ -15323,8 +15326,8 @@
           "/api/invoice-customers/list"
         ],
         "request": "No body.",
-        "response": "200 {\"data\": [CustomerInvoiceSerializer...]} by -creation_date.",
-        "errors": "401; 403 registry, impersonation or athlete ('User is not a sport association'); 500 missing association; 500 (not ported) while any invoice lacks a PDF.",
+        "response": "200 {\"data\": [CustomerInvoiceSerializer...]} by -creation_date, after regenerating the association's listed invoices without a PDF.",
+        "errors": "401; 403 registry, impersonation or athlete ('User is not a sport association') before anything is regenerated; 500 missing association; 500 (not ported) FatturaPA inputs outside internal/fatturapa.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry bookeeping.documents.clientinvoices.read; administrators need impersonation.",
         "resource_scope": "request.user.sport_association.",
@@ -15342,25 +15345,25 @@
         "docs/architecture/go-migration/invoice-parties.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 138/138; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-red-r1/results.json",
-          "receipt_sha256": "7db3dbd74d1dce130f88c7d05cb3da69dbc336f65ba7686d756d257ff487dc5b"
+          "result": "RED: Django 138/138; Go fails print.request-count on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-secinv-red-r1/results.json",
+          "receipt_sha256": "8d3934d5af26e40b007d55677643933e3a1207128e07044006cb06c14efe8dd0"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 138/138 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-versioned-r1/results.json",
-          "receipt_sha256": "ccfdcf214b4cfe06a556535dd4ec591abb0f5d7958fc24ac331e840cf3e5998a"
+          "result": "GREEN: 138/138 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-secinv-green-final/results.json",
+          "receipt_sha256": "bc25521efebf0c73f24f59c4b8746026e1267d1680ca20fbdc5f28a809fe44b3"
         },
         {
-          "revision": "committing change saving the regenerated XML without its auditlog entry",
-          "result": "Mutation control: fails Go on invoice-parties-customer-list-athlete-not-association (audit.count).",
-          "artifact": "quality-reports/go-migration/invoice-parties-http-v2doc-mutation-r1/results.json",
-          "receipt_sha256": "4db457c0130f7a14f0e74cddada1e675880dacd6fb8406faa48122ac54e6ef5e"
+          "revision": "pending customer invoices read without the association filter",
+          "result": "Mutation control: fails Go (CAUGHT)",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-secinv-mutation-final/results.json",
+          "receipt_sha256": "b22aa58a63e70d29c3ef0fdd1d475980cc5a4b73a666c3f879c562d9b2a74667"
         }
       ],
       "notes": [
-        "Implementing: customer/supplier invoice list, add and update with exact effects; the customer list's loop over invoices without a PDF (generate_invoice_xml of the stored row, audited save, eager print_document_customer_invoice) runs before the association lookup. Nested payment/supplier writes, payment_id stores, invoice pk changes and FatturaPA inputs outside internal/fatturapa are refused with a 500 before any write. A valid invoice-customers/add is in invoice-sync-print."
+        "Implementing: Implementing: the customer invoice list resolves the caller's association first and regenerates (generate_invoice_xml, audited save, eager print_document_customer_invoice) only that association's invoices without a PDF, newest first then by id. See docs/architecture/go-migration/invoice-parties.md."
       ]
     },
     {
@@ -27214,15 +27217,10 @@
       "status": "implementing",
       "go": [
         "BE_GO/internal/domain/subscription_reads.go",
-        "BE_GO/internal/dto/subscription_reads.go",
         "BE_GO/internal/repository/subscription_reads.go",
         "BE_GO/internal/service/subscription_reads.go",
-        "BE_GO/internal/handler/subscription_reads.go",
-        "BE_GO/cmd/server/main.go",
-        "BE_GO/internal/domain/subscription_reads_athlete.go",
-        "BE_GO/internal/dto/subscription_reads_athlete.go",
-        "BE_GO/internal/repository/subscription_reads_athlete.go",
-        "BE_GO/internal/service/subscription_reads_athlete.go"
+        "BE_GO/internal/service/subscription_reads_export.go",
+        "BE_GO/internal/handler/subscription_reads.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -27241,9 +27239,9 @@
           "/api/v2/subscription/list",
           "/api/subscription/list"
         ],
-        "request": "Query: field; m, filter; query[tags], query[tags_and], query[from_age], query[to_age], query[hide_associate_and_members], query[hide_members], query[status_flag], query[current_year], query[period_start], query[period_end], query[generalSearch], query[prefix], query[type_of_associate], query[certificate_missing_flag], query[certificate_expired_flag], query[subscription_not_paid_flag], type, query[sort_lastname_asc_flag], query[sort_lastname_desc_flag], sort[field], sort[sort], pagination[page], pagination[perpage]; POST body format; optional X-Group-Id.",
-        "response": "200 field mode {\"data\": [values]}; GET {\"data\": {index: SubscriptionFastOptimizedSerializer}, \"meta\": {total, page, pages, perpage, rowIds}} by -creation_date; with m {\"data\": {index: SubscriptionFastBasicSerializer}, \"meta\": {}}. Athletes: {data: {\"0\": SubscriptionSerializerAthleteOptimizedList...}, meta: {}} of their own and same-tax-code subscriptions by -creation_date.",
-        "errors": "401; 403 administrator without impersonation or registry permission; 405 other methods; 500 owner without live association, unknown field or ordering, malformed tag id, invalid int() values, POST export; 404 Invalid page.",
+        "request": "Query: field; m, filter; query[tags], query[tags_and], query[from_age], query[to_age], query[hide_associate_and_members], query[hide_members], query[status_flag], query[current_year], query[period_start], query[period_end], query[generalSearch], query[prefix], query[type_of_associate], query[certificate_missing_flag], query[certificate_expired_flag], query[subscription_not_paid_flag], type, query[sort_lastname_asc_flag], query[sort_lastname_desc_flag], sort[field], sort[sort], pagination[page], pagination[perpage]; POST body format (excel); optional X-Group-Id.",
+        "response": "200 field mode {\"data\": [values]}; GET {\"data\": {index: SubscriptionFastOptimizedSerializer}, \"meta\": {total, page, pages, perpage, rowIds}} by -creation_date; with m {\"data\": {index: SubscriptionFastBasicSerializer}, \"meta\": {}}; POST format excel {\"file\": base64 workbook (get_excel_base64), \"filename\": \"[<today>] <Iscrizioni filtrate|Tesserati|Libro Soci> - <denomination>.xlsx\"}. Athletes: {data: {\"0\": SubscriptionSerializerAthleteOptimizedList...}, meta: {}} of their own and same-tax-code subscriptions by -creation_date.",
+        "errors": "400 POST body parse error; 401; 403 administrator without impersonation or registry permission; 405 other methods; 500 owner without live association, unknown field or ordering, malformed tag id, invalid int() values, missing or unknown POST format, export row without associate, POST format pdf (not ported); 404 Invalid page.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.members.read (GET and POST); athlete view for association-scoped sessions.",
         "resource_scope": "Group-aware subscriptions of the scoped live association (unarchived), soft-deleted rows included; the field mode by the user's association.",
@@ -27261,25 +27259,25 @@
         "docs/architecture/go-migration/subscription-reads.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 261/261; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-red-r1/results.json",
-          "receipt_sha256": "ea7b9792b3cea7e2a10bcaff24abf3e12870f2bed980aa3dfe0fdf67bb83ecfd"
+          "result": "RED: Django 294/294; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2xlsx-red-r1/results.json",
+          "receipt_sha256": "d12ac4d7f46198f43d0dd7fc5ee7357de9150e1cd1da0bab47c560f0b7e39fd3"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 261/261 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-versioned-r1/results.json",
-          "receipt_sha256": "0fbabbf4023881d8b5de7327855a466b27f1f1bd50140beecaed1ef558324170"
+          "result": "GREEN: 294/294 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2xlsx-green-final/results.json",
+          "receipt_sha256": "a03875e4bb8e846d9c7ec8ce39114ac6097f03ecfee3028a00d058b127a96136"
         },
         {
-          "revision": "committing change rendering the membership payment's nested invoice as null",
-          "result": "Mutation control: fails Go on subscription-reads-info-hyphenless-uuid (membership_payments[0].invoice).",
-          "artifact": "quality-reports/go-migration/subscription-reads-http-v2doc-mutation-r1/results.json",
-          "receipt_sha256": "08451bc4746c053fda8d7f250b02241f478b05398484356d75fbb136973a4af8"
+          "revision": "'precedente' decided by an end date after today",
+          "result": "Mutation control: fails Go on subscription-reads-list-excel-owner (xl/worksheets/sheet1.xml differs)",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-v2xlsx-mutation-final/results.json",
+          "receipt_sha256": "586fc93778e99f3effb0726988aeebb39115d34fe15e5b18aa9202efd39aa296"
         }
       ],
       "notes": [
-        "Implementing: subscription/list for athletes (get_optimized_subscriptions), the info print dispatch (print_document_subscription.delay) and membership payments with a nested invoice or instructor in info are ported; association-scoped athlete sessions and the POST export stay refused."
+        "Implementing: Implementing: POST format excel (current_view_subscriptions, get_excel_base64 workbook with part-by-part XLSX parity, title of the type filter in the filename); refused: POST format pdf, association-scoped athlete sessions, orderings compiled with the rows, workbook inputs xlsxexport does not reproduce. See docs/architecture/go-migration/subscription-reads.md."
       ]
     },
     {
