@@ -13,9 +13,14 @@ import (
 // InvoiceViews reads the rows of document_invoice_view and
 // document_einvoice_view. Related rows are read as Django's foreign-key
 // descriptors read them (the base manager), managers as the view names them.
-type InvoiceViews struct{ db *sqlx.DB }
+type InvoiceViews struct {
+	MemberDocuments
+	db *sqlx.DB
+}
 
-func NewInvoiceViews(db *sqlx.DB) *InvoiceViews { return &InvoiceViews{db: db} }
+func NewInvoiceViews(db *sqlx.DB) *InvoiceViews {
+	return &InvoiceViews{MemberDocuments: NewMemberDocuments(db), db: db}
+}
 
 var _ domain.InvoiceViewStore = (*InvoiceViews)(nil)
 

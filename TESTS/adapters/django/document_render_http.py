@@ -40,7 +40,8 @@ from TESTS.adapters.django.workflow_writes_http import keyed, scalar
 
 SOURCES = ('TESTS/fixtures/document_render_http.json', 'TESTS/contracts/test_document_render_http.py',
            'TESTS/adapters/django/document_render_http.py', 'TESTS/adapters/go/payment_category_server.py',
-           'BE/docmanager/views/printing_views.py', 'BE/docmanager/views/utils.py', 'BE/docmanager/models.py',
+           'BE/docmanager/views/printing_views.py', 'BE/docmanager/access.py', 'BE/instance/permissions.py',
+           'BE/docmanager/views/utils.py', 'BE/docmanager/models.py',
            'BE/docmanager/tasks.py', 'BE/application/utils/printing.py', 'BE/core/tasks.py',
            'BE/application/models/subscriptions_models.py', 'BE/application/models/invoices_models.py',
            'BE/application/models/payment_models.py', 'BE/application/models/user_models.py', 'BE/application/mixin.py',

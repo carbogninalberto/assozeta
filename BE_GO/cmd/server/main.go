@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"sync"
 	"syscall"
 	"time"
@@ -251,7 +252,7 @@ func run() (runErr error) {
 	statisticReadsHandler := handler.NewStatisticReadsHandler(service.NewStatisticReads(repository.NewStatisticReads(db), time.Now, time.Local).
 		WithTodayLessons(service.NewCourseAttendance(repository.NewCourseAttendance(db), time.Now)),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
-	communicationSMTPHandler := handler.NewCommunicationSMTPHandler(service.NewCommunicationSMTP(repository.NewCommunicationSMTP(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	communicationSMTPHandler := handler.NewCommunicationSMTPHandler(service.NewCommunicationSMTP(repository.NewCommunicationSMTP(db), time.Now).WithWhitelabelName(cfg.WhitelabelName), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	emailLogsHandler := handler.NewEmailLogsHandler(service.NewEmailLogs(repository.NewEmailLogs(db), time.Now, time.Local), service.NewActorAuthentication(accounts, tokens), identities)
 	staffBoardHandler := handler.NewStaffBoardHandler(service.NewStaffBoard(repository.NewStaffBoard(db), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
@@ -304,9 +305,10 @@ func run() (runErr error) {
 	// document/invoice/<uid>/view/ and document/einvoice/<uid>/view/ (the FatturaPA page of internal/fatturapa).
 	invoiceViewsHandler := handler.NewInvoiceViewsHandler(service.NewInvoiceViews(repository.NewInvoiceViews(db), documentViews),
 		service.NewActorAuthentication(accounts, tokens), identities)
-	documentRenderHandler := handler.NewDocumentRenderHandler(service.NewDocumentRender(repository.NewDocumentRender(db),
+	documentRenders := service.NewDocumentRender(repository.NewDocumentRender(db),
 		pdfrender.New(os.Getenv("PUPPETEER_HOST"), os.Getenv("PUPPETEER_PORT"), os.Getenv("CURRENT_HOST_PUPPETEER")), tasks,
-		documentRenderSettings(cfg), time.Now, uuid.NewString),
+		documentRenderSettings(cfg), time.Now, uuid.NewString)
+	documentRenderHandler := handler.NewDocumentRenderHandler(documentRenders,
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 
 	apiSchemaHandler := handler.NewAPISchemaHandler(service.NewActorAuthentication(accounts, tokens), identities, cfg.CSRFCookieSecure)
@@ -515,10 +517,12 @@ func run() (runErr error) {
 	e.Any("/google/calendar/config", googleCalendarHandler.Config, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/google/calendar/list", googleCalendarHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/google/calendar/:course_id/export", googleCalendarHandler.Export, middleware.DjangoSessionAudit(sessionAuthentication))
-	// The eager print tasks of payment update (print_document_invoice) and payment list
+	// The eager print tasks of payment update and delete (print_document_invoice) and payment list
 	// (print_document_compensation), with invoice-sync-print's CoordinatedTask gate.
 	paymentInvoicePrinter := service.NewInvoiceSyncPrint(service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
 		repository.NewRestoreStates(db), cfg.RestoreLockPath != ""), os.Getenv("CURRENT_HOST"))
+	// payment delete prints an invoiced payment's invoice eagerly.
+	paymentStates.WithInvoicePrint(paymentInvoicePrinter)
 	// payment_stats' Stripe fees: the stripe/* SDK client and Django's cache (DB 1).
 	paymentStatsStripeCache, err := repository.NewPaymentStatsStripeCache(cache)
 	if err != nil {
@@ -526,8 +530,13 @@ func run() (runErr error) {
 	}
 	paymentReadsHandler := handler.NewPaymentReadsHandler(service.NewPaymentReads(repository.NewPaymentReads(db), time.Now,
 		cfg.StripePublicKey != "" && cfg.StripeSecretConfigured).WithCompensationPrint(paymentInvoicePrinter).
-		WithStripeFees(service.NewPaymentStatsStripe(stripeRoutes, paymentStatsStripeCache)),
-		service.NewActorAuthentication(accounts, tokens), identities)
+		WithStripeFees(service.NewPaymentStatsStripe(stripeRoutes, paymentStatsStripeCache)).
+		// The athlete list: its own querysets, the online payment flags and document_invoice in-process.
+		WithAthleteList(repository.NewPaymentReadsAthlete(db),
+			service.NewStripeAvailability(repository.NewSocialConfiguration(db), service.StripeEnvironment{PublicKey: cfg.StripePublicKey != "", Secret: cfg.StripeSecretConfigured, Webhook: cfg.StripeEnabled}, cfg.SessionSecret),
+			documentRenders),
+		service.NewActorAuthentication(accounts, tokens), identities).
+		WithAthleteReceipts(middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/payment/list", paymentReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/stats", paymentReadsHandler.Stats, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/payments", paymentReadsHandler.SubscriptionPayments, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -555,9 +564,11 @@ func run() (runErr error) {
 	e.Any("/subscription/list/archived", subscriptionReadsHandler.Archived, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/info", subscriptionReadsHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/calendar", subscriptionReadsHandler.Calendar, middleware.DjangoSessionAudit(sessionAuthentication))
+	publicLinks, closePublicLinks := composeBakneyPublicLinks(cfg, db)
+	defer closePublicLinks()
 	subscriptionMiscHandler := handler.NewSubscriptionMiscHandler(service.NewSubscriptionMisc(repository.NewSubscriptionMisc(db),
 		service.NewSubscriptionReads(repository.NewSubscriptionReads(db), repository.NewCourseSubscriptions(db), time.Now), time.Now,
-		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+		uuid.NewString).WithPublicLinks(publicLinks), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/calculate-tax-code", subscriptionMiscHandler.TaxCode, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/import/status", subscriptionMiscHandler.ImportStatus, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/get-associations-for-federation", subscriptionMiscHandler.Federation, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -575,11 +586,13 @@ func run() (runErr error) {
 	e.Any("/payment/add", paymentWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/bulk-add", paymentWritesHandler.BulkAdd, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/:uid/update", paymentWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
-	// payment_sign's print_document_compensation.apply and the apply's send_email_html (render + send_mail_async).
+	// payment_sign's print_document_compensation.apply and the apply's send_email_html (render + send_mail_async,
+	// or a CommunicationConfiguration's delayed SMTP send in this process).
 	paymentMiscHandler := handler.NewPaymentMiscHandler(service.NewPaymentMisc(repository.NewPaymentMisc(repository.NewPaymentStates(db)), time.Now,
 		uuid.NewString, cfg.WhitelabelName).WithCompensationPrint(paymentInvoicePrinter).WithMail(service.NewEmailRenderRoutes(
 		repository.NewEmailRenderRoutes(db), tasks, service.EmailRenderSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName,
-			DefaultFromEmail: cfg.DefaultFromEmail, DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel}, time.Now)),
+			DefaultFromEmail: cfg.DefaultFromEmail, DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel}, time.Now)).
+		WithConfiguredMail(paymentMiscConfiguredMail(cfg, db, tasks)),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
 		paymentCategoryOperations)
 	e.Any("/payment/simulation/partial-quotes", paymentMiscHandler.Simulation, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -604,7 +617,7 @@ func run() (runErr error) {
 	e.Any("/calendar/events/update", courseCalendarHandler.EventsUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
 	miscRoutesHandler := handler.NewMiscRoutesHandler(service.NewCalendarExport(repository.NewCourseCalendars(db), time.Now),
 		service.NewCommunicationsPost(repository.NewMiscRoutes(db), time.Now, uuid.NewString),
-		service.NewSubscriptionCard(repository.NewMiscRoutes(db), time.Now, uuid.NewString),
+		service.NewSubscriptionCard(repository.NewMiscRoutes(db), time.Now, uuid.NewString).WithPublicLinks(publicLinks),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/calendar/events/export", miscRoutesHandler.CalendarExport, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/send/post", miscRoutesHandler.Post, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -676,7 +689,8 @@ func run() (runErr error) {
 	e.Any("/personas/all-with-subscriptions", personasHandler.AllWithSubscriptions, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/personas/:pk/info", personasHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	personasWritesHandler := handler.NewPersonasWritesHandler(personasService,
-		service.NewPersonaWrites(repository.NewPersonaWrites(db), personasService, time.Now, uuid.NewString),
+		service.NewPersonaWrites(repository.NewPersonaWrites(db), personasService, time.Now, uuid.NewString).
+			WithPictures(composePersonaPictures(cfg), cfg.Storage.FileOverwrite),
 		service.NewPersonaSubscriptions(repository.NewPersonaSubscriptions(db), personasService),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	personasHandler.WithWrites(personasWritesHandler)
@@ -1053,4 +1067,19 @@ func drainHTTPServer(server gracefulHTTPServer, operations admittedOperations) e
 		return fmt.Errorf("%s: %w", httpDrainDeadlineMessage, errors.Join(shutdownErr, cleanupErr))
 	}
 	return errors.New(httpDrainDeadlineMessage)
+}
+
+// paymentMiscConfiguredMail is send_email_html's CommunicationConfiguration
+// path inside the web process (Django's Timer thread). The delay is
+// random.randint(1, 30) seconds; SEND_EMAIL_HTML_DELAY_SECONDS (fixture runs
+// only, unset in production) pins it.
+func paymentMiscConfiguredMail(cfg config.Config, db *sqlx.DB, tasks celery.Publisher) *service.SendMailAsync {
+	mail := service.NewSendMailAsync(repository.NewSendMailAsyncStore(db), service.SystemEmail{}, time.Now).WithEmailTasks(tasks,
+		service.ConsumerEmailSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName,
+			DefaultFromEmail: cfg.DefaultFromEmail, DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel,
+			SecretKeys: []string{cfg.SessionSecret}}, slog.Default())
+	if seconds, err := strconv.Atoi(os.Getenv("SEND_EMAIL_HTML_DELAY_SECONDS")); err == nil && seconds >= 0 {
+		mail.WithDelay(func() time.Duration { return time.Duration(seconds) * time.Second })
+	}
+	return mail
 }

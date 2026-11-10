@@ -26,6 +26,9 @@ type SubscriptionCreateResult struct {
 	PaymentID *string
 	// Amount is the JSON number: repr() of the payment's float amount, or 0.
 	Amount string
+	// Family marks the family wizard's answer; Payments are its serialized payments.
+	Family   bool
+	Payments []map[string]any
 }
 
 // SubscriptionCreateRequest is subscription_add's input after admission.
@@ -40,6 +43,13 @@ type SubscriptionCreateRequest struct {
 	Language string
 	// StorageKeys collects the objects stored during the request (cleanup_storage_keys on failure).
 	StorageKeys *[]string
+	// Anonymous marks a request without credentials (request.subscription_requester is None).
+	Anonymous bool
+	// AthleteRequest is is_athlete_request: an account other than an association naming one.
+	AthleteRequest bool
+	// RequesterID is create_subscription's requester when it is not request.user (a member
+	// account's renewal runs as the association's owner).
+	RequesterID string
 }
 
 // SubscriptionCreates ports subscription_add and create_subscription
@@ -88,26 +98,37 @@ func objectHas(object domain.RequestObject, name string) bool {
 	return present
 }
 
-// Add follows subscription_add for authenticated owners and collaborators.
+// Add follows subscription_add: owners and collaborators, the public form
+// (anonymous) and a logged-in athlete naming an association.
 func (s *SubscriptionCreates) Add(ctx context.Context, identity domain.ResolvedIdentity, request SubscriptionCreateRequest) (*SubscriptionCreateResult, error) {
-	user := identity.ScopeUser
-	// Anonymous requests (attributed to the association named in the body)
-	// and form bodies are not ported.
-	if user == nil || request.Form || strings.TrimSpace(request.Group) != "" {
+	// Form bodies are not ported.
+	if request.Form || strings.TrimSpace(request.Group) != "" {
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
-	request.Audit = paymentCategoryAuditContext(identity, request.Audit)
 	// _prepare_subscription_request logs data.get('is_family_wizard'): only a dict passes.
 	data, ok := request.Body.(domain.RequestObject)
 	if !ok {
 		return nil, domain.ErrSubscriptionCreateServer
 	}
-	quick := request.Mode != nil && *request.Mode == "only_associate"
-	if user.Role != domain.RoleAssociation && objectHas(data, "sport_association") {
-		// Athlete requests (the association named in the body) are not ported.
-		return nil, domain.ErrSubscriptionCreateNotPorted
+	if identity.ScopeUser == nil {
+		// An anonymous request is attributed to the user data['sport_association'] names.
+		account, err := s.namedUser(ctx, data)
+		if err != nil {
+			return nil, err
+		}
+		identity.ScopeUser = account
+		request.Anonymous = true
+		request.Audit.ActorID, request.Audit.ActorEmail, request.Audit.AdditionalData = nil, nil, nil
+	} else {
+		request.Audit = paymentCategoryAuditContext(identity, request.Audit)
 	}
+	user := identity.ScopeUser
+	quick := request.Mode != nil && *request.Mode == "only_associate"
+	request.AthleteRequest = user.Role != domain.RoleAssociation && objectHas(data, "sport_association")
 	if quick {
+		if user.Role != domain.RoleAssociation && objectHas(data, "sport_association") && objectHas(data, "associate") {
+			return nil, s.quickMember(ctx, identity, data)
+		}
 		if user.Role == domain.RoleAssociation {
 			tx, err := s.store.BeginSubscriptionCreate(ctx)
 			if err != nil {
@@ -135,7 +156,7 @@ func (s *SubscriptionCreates) Add(ctx context.Context, identity domain.ResolvedI
 		}
 	}
 	if family, _ := data.Lookup("is_family_wizard"); family == true {
-		return nil, domain.ErrSubscriptionCreateNotPorted
+		return s.family(ctx, identity, data, request)
 	}
 	return s.create(ctx, identity, data, request)
 }
@@ -172,9 +193,16 @@ func subscriptionCreateToday(now time.Time) string {
 // refuse rejects the inputs whose create_subscription paths are not ported,
 // before anything is read or written. today is the naive current date.
 func subscriptionCreateRefuse(data domain.RequestObject, today string) error {
+	// Renewals and draft approvals do not port preregistration.
 	if value, _ := data.Lookup("preregistration"); value == true {
 		return domain.ErrSubscriptionCreateNotPorted
 	}
+	return subscriptionCreateRefuseInputs(data, today)
+}
+
+// subscriptionCreateRefuseInputs is refuse for subscription/add, which ports
+// the next-season preregistration.
+func subscriptionCreateRefuseInputs(data domain.RequestObject, today string) error {
 	if medical, ok := data.Lookup("medical_certificate"); ok {
 		if object, isObject := medical.(domain.RequestObject); isObject {
 			// Without a medical_id the view draws a placeholder certificate image
@@ -305,11 +333,13 @@ type subscriptionCreated struct {
 	welcome, athleteMail *celery.Task
 	// notifyUser receives the notification (create_subscription's user); empty: request.user.
 	notifyUser string
+	// paymentCreated marks a payment created by this registration (not a reused one).
+	paymentCreated bool
 }
 
 func (s *SubscriptionCreates) create(ctx context.Context, identity domain.ResolvedIdentity, data domain.RequestObject,
 	request SubscriptionCreateRequest) (*SubscriptionCreateResult, error) {
-	if err := subscriptionCreateRefuse(data, subscriptionCreateToday(s.now())); err != nil {
+	if err := subscriptionCreateRefuseInputs(data, subscriptionCreateToday(s.now())); err != nil {
 		return nil, err
 	}
 	tx, err := s.store.BeginSubscriptionCreate(ctx)
@@ -337,6 +367,15 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	user := identity.ScopeUser
 	now := s.now().UTC()
 	today := subscriptionCreateDay(now)
+	// data['preregistration'] is True: the next season. With a subscription_id
+	// it renews that subscription (fill_data_preregisration), which is not ported.
+	preregistration := false
+	if flag, _ := data.Lookup("preregistration"); flag == true {
+		if source, _ := data.Lookup("subscription_id"); source != nil {
+			return nil, domain.ErrSubscriptionCreateNotPorted
+		}
+		preregistration = true
+	}
 	associateValue, present := data.Lookup("associate_data")
 	if !present {
 		return nil, pythonKeyError("associate_data")
@@ -404,34 +443,73 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			medicalNull = true
 		}
 	}
-	if user.Role == domain.RoleAthlete {
-		return nil, &domain.PermissionDenied{Detail: "User is not a sport association"}
-	}
-	settings, count, err := tx.Settings(ctx, user.ID)
-	if err != nil {
-		return nil, err
-	}
-	if count != 1 {
-		return nil, subscriptionAssociationGet(count)
-	}
-	association := settings.AssociationID
-	if named, present := data.Lookup("sport_association"); present {
-		// User.objects.get(username=...) and its SportAssociation; a miss keeps request.user's.
-		if err := s.namedAssociation(ctx, tx, named, association); err != nil {
+	var settings *domain.SubscriptionCreateSettings
+	var count int
+	var err error
+	// member is create_subscription's user: request.user, until a new member account replaces it.
+	var member domain.SubscriptionCreateMember
+	if request.AthleteRequest {
+		// The association of User.objects.get(username=data['sport_association']);
+		// accounts other than athletes are not ported.
+		if user.Role != domain.RoleAthlete {
+			return nil, domain.ErrSubscriptionCreateNotPorted
+		}
+		named, _ := data.Lookup("sport_association")
+		owner, err := subscriptionNamedMember(ctx, tx, named)
+		if err != nil {
 			return nil, err
 		}
+		if settings, count, err = tx.Settings(ctx, owner.ID); err != nil {
+			return nil, err
+		}
+		if count != 1 {
+			return nil, server // SportAssociation.objects.get(user=...)
+		}
+		own, err := tx.Member(ctx, user.ID)
+		if err != nil {
+			return nil, err
+		}
+		if own == nil {
+			return nil, server
+		}
+		member = *own
+	} else {
+		if user.Role == domain.RoleAthlete {
+			return nil, &domain.PermissionDenied{Detail: "User is not a sport association"}
+		}
+		if settings, count, err = tx.Settings(ctx, user.ID); err != nil {
+			return nil, err
+		}
+		if count != 1 {
+			return nil, subscriptionAssociationGet(count)
+		}
+		if named, present := data.Lookup("sport_association"); present {
+			// User.objects.get(username=...) and its SportAssociation; a miss keeps request.user's.
+			if err := s.namedAssociation(ctx, tx, named, settings.AssociationID); err != nil {
+				return nil, err
+			}
+		}
+		member = domain.SubscriptionCreateMember{ID: user.ID, Role: user.Role, StartDay: settings.StartDay, StartMonth: settings.StartMonth,
+			CustomEnd: settings.CustomEnd, EndDay: settings.EndDay, EndMonth: settings.EndMonth}
 	}
+	association := settings.AssociationID
 	associate = objectSet(associate, "sport_association", association)
-	associate = objectSet(associate, "user", user.ID)
+	associate = objectSet(associate, "user", settings.OwnerID)
 	data = objectSet(data, "associate_data", associate)
 	if tutor != nil {
 		tutor = objectSet(tutor, "sport_association", association)
-		tutor = objectSet(tutor, "user", user.ID)
+		tutor = objectSet(tutor, "user", settings.OwnerID)
 		data = objectSet(data, "associate_tutor_data", tutor)
 	}
 	rule := domain.CalendarRule{StartDay: settings.StartDay, StartMonth: settings.StartMonth, CustomEnd: settings.CustomEnd,
 		EndDay: settings.EndDay, EndMonth: settings.EndMonth}
-	season, err := SeasonRange(ctx, now, rule)
+	// date_from/date_to: the association's season start with the custom end of create_subscription's user.
+	seasonRule := domain.CalendarRule{StartDay: settings.StartDay, StartMonth: settings.StartMonth, CustomEnd: member.CustomEnd,
+		EndDay: member.EndDay, EndMonth: member.EndMonth}
+	season, err := SeasonRange(ctx, now, seasonRule)
+	if err == nil && preregistration {
+		season, err = SeasonRange(ctx, season.End.AddDate(0, 0, 1), seasonRule)
+	}
 	if err != nil {
 		return nil, subscriptionCreateCalendar(err)
 	}
@@ -471,8 +549,6 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	audit := subscriptionAudit{tx: tx, context: request.Audit, now: s.now}
 	ownAssociation := &association
 	// A new member account (or the user with its e-mail) replaces user from here on.
-	member := domain.SubscriptionCreateMember{ID: user.ID, Role: user.Role, StartDay: settings.StartDay, StartMonth: settings.StartMonth,
-		CustomEnd: settings.CustomEnd, EndDay: settings.EndDay, EndMonth: settings.EndMonth}
 	newMember, err := s.newMember(ctx, tx, data, settings, request)
 	if err != nil {
 		return nil, err
@@ -534,6 +610,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	if invalid != nil {
 		return nil, &domain.SubscriptionCreateInvalid{Fields: invalid}
 	}
+	paymentCreated := false
 	if signature.Signed {
 		// Signature.objects.create(signature=signature.data, user=user).
 		if err = tx.InsertSignature(ctx, uuid.NewString(), memberID, *signature.Data, request.Audit,
@@ -556,7 +633,16 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			return nil, djangoInvalidUUID(text)
 		}
 		id := parsed.String()
-		found, owner, err := tx.Certificate(ctx, id)
+		// The association account's and the requester's certificates, those of the
+		// association's subscriptions and uploads without an account; any other id is
+		// treated like an unknown one.
+		accounts := []string{settings.OwnerID}
+		if requester := request.RequesterID; requester != "" {
+			accounts = append(accounts, requester)
+		} else if !request.Anonymous {
+			accounts = append(accounts, identity.ScopeUser.ID)
+		}
+		found, owner, err := tx.LinkableCertificate(ctx, id, association, accounts)
 		if err != nil {
 			return nil, err
 		}
@@ -666,6 +752,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			}
 			paymentID = &id
 			amountJSON = dto.PythonFloatText(fees.amount)
+			paymentCreated = true
 		}
 	}
 	latest, err := tx.LatestNumber(ctx, association)
@@ -739,19 +826,36 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	}
 	meta := string(dto.PythonJSONDumps(domain.RequestObject{{Name: "plan_id", Value: planID}, {Name: "plan_name", Value: planName},
 		{Name: "membership_plan_id", Value: membershipPlanID}, {Name: "membership_plan_name", Value: membershipPlanName}}))
+	// current_date_from/to of create_subscription's user (a new member's own settings).
+	memberRule := domain.CalendarRule{StartDay: member.StartDay, StartMonth: member.StartMonth, CustomEnd: member.CustomEnd,
+		EndDay: member.EndDay, EndMonth: member.EndMonth}
+	memberSeason, err := SeasonRange(ctx, now, memberRule)
+	if err == nil && preregistration {
+		memberSeason, err = SeasonRange(ctx, memberSeason.End.AddDate(0, 0, 1), memberRule)
+	}
+	if err != nil {
+		return nil, subscriptionCreateCalendar(err)
+	}
 	// Subscription.objects.create: subscription_exists on the saved associate
-	// for yesterday..tomorrow, then Subscription.save()'s dates.
-	duplicate, err := tx.Existing(ctx, association, saved.FirstName, saved.LastName, saved.TaxCode,
-		subscriptionCreateDay(calendarTime(today).AddDate(0, 0, -1)), subscriptionCreateDay(calendarTime(today).AddDate(0, 0, 1)))
+	// for yesterday..tomorrow (a preregistration: its own dates), then Subscription.save()'s dates.
+	from, to := subscriptionCreateDay(calendarTime(today).AddDate(0, 0, -1)), subscriptionCreateDay(calendarTime(today).AddDate(0, 0, 1))
+	createdAt := s.now().UTC()
+	given := domain.SubscriptionDates{}
+	if preregistration {
+		// creation_date is date_from; start_date and end_date the user's next season.
+		from, to = subscriptionCreateDay(memberSeason.Start), subscriptionCreateDay(memberSeason.End)
+		createdAt = season.Start
+		given = domain.SubscriptionDates{Start: &from, End: &to}
+	}
+	duplicate, err := tx.Existing(ctx, association, saved.FirstName, saved.LastName, saved.TaxCode, from, to)
 	if err != nil {
 		return nil, err
 	}
 	if duplicate != nil {
 		return nil, domain.ErrSubscriptionCreateDuplicate
 	}
-	createdAt := s.now().UTC()
 	dates, err := ResolveSubscriptionDates(ctx, createdAt, domain.SubscriptionDateRule{Season: rule, Duration: settings.SubscriptionDuration},
-		domain.SubscriptionDates{})
+		given)
 	if err != nil {
 		return nil, subscriptionCreateCalendar(err)
 	}
@@ -767,7 +871,15 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	if err = tx.InsertSubscription(ctx, row); err != nil {
 		return nil, err
 	}
-	if err = audit.created(ctx, "subscription", "Subscription", "application_subscription", "subscription_id", subscriptionID, nil,
+	var subscriptionChanges map[string][2]string
+	if preregistration {
+		// The create entry renders the aware datetimes assigned to the date fields.
+		aware := func(day time.Time) [2]string {
+			return [2]string{"None", fmt.Sprintf("%04d-%02d-%02d 00:00:00+00:00", day.Year(), int(day.Month()), day.Day())}
+		}
+		subscriptionChanges = map[string][2]string{"start_date": aware(memberSeason.Start), "end_date": aware(memberSeason.End)}
+	}
+	if err = audit.created(ctx, "subscription", "Subscription", "application_subscription", "subscription_id", subscriptionID, subscriptionChanges,
 		ownAssociation, "direct"); err != nil {
 		return nil, err
 	}
@@ -778,15 +890,6 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		}
 		if err = tx.SaveSubscriptionSignature(ctx, subscriptionID, association, url, key, request.Audit, s.now().UTC()); err != nil {
 			return nil, err
-		}
-	}
-	// current_date_from/to of create_subscription's user (a new member's own settings).
-	memberSeason := season
-	if memberID != user.ID {
-		memberRule := domain.CalendarRule{StartDay: member.StartDay, StartMonth: member.StartMonth, CustomEnd: member.CustomEnd,
-			EndDay: member.EndDay, EndMonth: member.EndMonth}
-		if memberSeason, err = SeasonRange(ctx, now, memberRule); err != nil {
-			return nil, subscriptionCreateCalendar(err)
 		}
 	}
 	if subscriptionType == 2 || subscriptionType == 3 {
@@ -854,7 +957,8 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	name := strings.TrimSpace(subscriptionCreateValue(saved.FirstName) + " " + subscriptionCreateValue(saved.LastName))
 	created := &subscriptionCreated{id: subscriptionID, association: association, associateName: name,
 		result: SubscriptionCreateResult{PaymentID: paymentID, Amount: amountJSON}, first: saved.FirstName, last: saved.LastName,
-		tax: saved.TaxCode, start: dates.Start, end: dates.End, userID: memberID, welcome: welcome, notifyUser: memberID}
+		tax: saved.TaxCode, start: dates.Start, end: dates.End, userID: memberID, welcome: welcome, notifyUser: memberID,
+		paymentCreated: paymentCreated}
 	if member.Role == domain.RoleAthlete {
 		created.athleteMail = s.athleteMail(settings, saved.FirstName, saved.LastName)
 	}

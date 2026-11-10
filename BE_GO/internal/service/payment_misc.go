@@ -12,9 +12,11 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/celeryworker"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/emailrender"
+	"github.com/google/uuid"
 )
 
 // PaymentMisc ports payment_simulation_partial_quotes (calculate_simulation),
@@ -29,6 +31,16 @@ type PaymentMisc struct {
 	mails *EmailRenderRoutes
 	// printer runs payment_sign's print_document_compensation.apply.
 	printer *InvoiceSyncPrint
+	// configured runs send_email_html's CommunicationConfiguration send in this
+	// process (the Timer thread); nil refuses an apply that needs it.
+	configured *SendMailAsync
+}
+
+// WithConfiguredMail sets the in-process send_email_html of associations with
+// a CommunicationConfiguration.
+func (s *PaymentMisc) WithConfiguredMail(mail *SendMailAsync) *PaymentMisc {
+	s.configured = mail
+	return s
 }
 
 // WithMail sets the e-mail renderer and Celery producer of the apply.
@@ -479,6 +491,8 @@ func (s *PaymentMisc) message(association *domain.PaymentSimulationAssociation, 
 // paymentMiscMail is one send_email_html call of the apply, published after the commit.
 type paymentMiscMail struct {
 	subject, message, recipient string
+	// start runs the configured send_email after the Timer delay; nil publishes send_mail_async.
+	start func()
 }
 
 // Apply follows payment_simulation_partial_quotes_apply. Every quote is a
@@ -487,8 +501,9 @@ type paymentMiscMail struct {
 // than the association owner renders email/payment/fee_assigned.html and calls
 // send_email_html: without a CommunicationConfiguration it publishes
 // send_mail_async (after the commit, in order; its own try/except swallows
-// failures). With a configuration Django sends on a Timer thread after a
-// random delay: not ported, refused before anything is committed.
+// failures). With a configuration of the association send_email_html loads
+// it and sends on a Timer thread after random.randint(1, 30) seconds: Go
+// plans each send before the commit and starts its timer after it.
 func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentity, request PaymentMiscRequest) error {
 	run, err := s.prepare(ctx, identity, request)
 	if run == nil {
@@ -500,6 +515,7 @@ func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentit
 	}
 	tx := run.tx
 	mails := []paymentMiscMail{}
+	configured := false
 	err = run.quotes(ctx, func(plan paymentQuotePlan, subscription domain.PaymentSimulationSubscription, stored, audit string,
 		float *float64) error {
 		other := subscription.UserID != run.association.OwnerID
@@ -507,14 +523,14 @@ func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentit
 			if s.mails == nil {
 				return domain.ErrPaymentMiscNotPorted
 			}
-			configured, err := tx.CommunicationConfigured(ctx, run.association.ID)
+			found, err := tx.CommunicationConfigured(ctx, run.association.ID)
 			if err != nil {
 				return err
 			}
-			if configured {
-				// configuration.send_email on a Timer thread: not ported.
+			if found && s.configured == nil {
 				return domain.ErrPaymentMiscNotPorted
 			}
+			configured = found
 		}
 		account, err := tx.DefaultBankAccount(ctx, run.association.ID)
 		if err != nil {
@@ -564,6 +580,20 @@ func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentit
 		if err != nil {
 			return err
 		}
+		if configured {
+			association, err := uuid.Parse(run.association.ID)
+			if err != nil {
+				return err
+			}
+			mail.start, err = s.configured.PlanEmailHTMLInProcess(ctx, association, mail.message, mail.subject, []any{mail.recipient},
+				[]any{optionalValue(run.association.OwnerEmail)})
+			if errors.Is(err, celeryworker.ErrHandoff) {
+				return domain.ErrPaymentMiscNotPorted
+			}
+			if err != nil {
+				return err
+			}
+		}
 		mails = append(mails, mail)
 		return nil
 	})
@@ -574,6 +604,10 @@ func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentit
 		return err
 	}
 	for _, mail := range mails {
+		if mail.start != nil {
+			mail.start()
+			continue
+		}
 		// send_email_html's try/except swallows a failed publish.
 		_ = s.mails.sendMail(ctx, mail.subject, mail.message, s.mails.settings.DefaultFromEmail, []any{mail.recipient}, run.association.ID,
 			[]any{optionalValue(run.association.OwnerEmail)})

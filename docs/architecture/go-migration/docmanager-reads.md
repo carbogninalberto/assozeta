@@ -106,3 +106,29 @@ and on Caddy `/api/v1` and `/api/v2` (`versioned-r1`). Mutation: dropping the in
 re-run on `association-transfer` (146/146) and `documents-list` (18/18). Go unit tests compare `pkg/pymime`,
 `documentkey.S3Key`, signing and `Content-Disposition` with values produced by Python, Django 5.2.18 and django-storages
 1.14.5.
+
+Member documents (`secdoc-*`): documents are served to the association's staff and to the member they belong to.
+`docmanager.access` (Django, with `docmanager.test_document_access`) and `memberDocumentAccess` with
+`repository.MemberDocuments` (Go) decide it the same way: accounts other than athletes, superusers and the instance owner
+(`is_instance_owner`) reach every record; an athlete account reaches the records of its user, of the associates of its
+subscriptions, of associates whose account it is and of associates sharing a non-empty tax code with those (base managers:
+no group or soft-delete filter). Anything else answers `403 {"detail": "Risorsa non disponibile per questo utente e
+associazione."}`. Association-scoped sessions keep their own boundary, and requests admitted without an account (a document
+token, the renderer header) are decided by the view's permission classes as before.
+
+In `retrieve_document` the rule applies to a document reached by account (neither `?download_token` nor a matching
+`?token`), after the export check and before the scoped-session check: the document must be the PDF, the medical certificate
+document or an attached file of one of the member's subscriptions, the document of a certificate of the member's user, or the
+PDF of an invoice of one of the member's payments. `document/<uid>/delete` is unchanged (accounts without an association get
+the 404 of a missing document).
+
+The fixture now has 155 cases (45 new) with associates, attached files, payments, two more athlete accounts and a self-hosted
+`InstanceConfiguration` whose primary association belongs to one of them: the member's own, associate, tax code, linked
+associate, certificate, attached file and receipt documents by document id and by subscription, certificate and invoice id;
+other members' documents (403, also through the cookie and `?token` JWT and for a missing object); blank tax codes; document
+tokens used by an athlete; the primary association's account; collaborators, owners and administrators unchanged.
+RED `secdoc-red-r1`: Django 155/155, Go 200 on `docmanager-reads-retrieve-orphan-export-athlete` with the check switched off.
+GREEN `secdoc-versioned-final` (after merging the base; `secdoc-versioned-r1` before): 155/155 on the four transports.
+Mutations, all CAUGHT: `secdoc-mutation-r1` (retrieve without the member check), `secdoc-mutation-r2` (the instance owner
+never matched: `docmanager-reads-retrieve-primary-association-account`) and `secdoc-mutation-r3` (blank tax codes joined:
+`docmanager-reads-retrieve-athlete-blank-tax-code-document`).

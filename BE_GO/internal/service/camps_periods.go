@@ -750,9 +750,12 @@ func (r *campsRequest) campsWalk(ctx context.Context, row domain.CampsService, g
 		if current, ok := state[payment.ID]; ok {
 			payment = *current
 		}
-		// auditlog and the index resolver read the payment through its
-		// soft-delete, group-aware manager.
-		if payment.Deleted || (group != nil && (payment.GroupID == nil || *payment.GroupID != *group)) {
+		// auditlog reads the stored payment through its soft-delete,
+		// group-aware manager: a payment that manager does not return is
+		// saved all the same and each save is audited as an update of every
+		// field against None, indexed through the entry's own association.
+		hidden := payment.Deleted || (group != nil && (payment.GroupID == nil || *payment.GroupID != *group))
+		if hidden && payment.AssociationNull {
 			return nil, ErrCampsPaymentNotPorted
 		}
 		var metas any
@@ -801,7 +804,15 @@ func (r *campsRequest) campsWalk(ctx context.Context, row domain.CampsService, g
 				payment.Metas = &text
 			}
 			save := campsPaymentSave{row: payment}
-			if len(changes) > 0 {
+			if hidden {
+				// The instance holds the float amount after the final step; every other field renders as stored.
+				full := map[string][2]string{}
+				if step.Final {
+					full["amount"] = [2]string{"None", dto.CampsFloat(step.Amount)}
+				}
+				save.event = &domain.CampsAudit{Model: "Payment", Key: payment.ID, Action: 1, Changes: full, AssociationID: association,
+					Path: "changes_json.sport_association", Full: true}
+			} else if len(changes) > 0 {
 				event := domain.CampsAudit{Model: "Payment", Key: payment.ID, Action: 1, Changes: changes, AssociationID: association, Path: "direct"}
 				save.event = &event
 			}

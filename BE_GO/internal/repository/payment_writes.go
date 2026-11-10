@@ -27,6 +27,10 @@ func (r *PaymentWrites) BeginPaymentWrites(ctx context.Context) (domain.PaymentW
 	return &paymentWritesTransaction{paymentStateTransaction: tx.(*paymentStateTransaction)}, nil
 }
 
+func (t *paymentWritesTransaction) InvoiceGenerate() domain.InvoiceGenerateTransaction {
+	return &invoiceGenerateTransaction{paymentStateTransaction: t.paymentStateTransaction}
+}
+
 func (t *paymentWritesTransaction) optional(ctx context.Context, query string, args ...any) (*string, error) {
 	var value *string
 	err := t.tx.GetContext(ctx, &value, query, args...)

@@ -134,4 +134,6 @@ type PaymentWritesTransaction interface {
 	// AssociationAccount is CustomAccounts.objects.filter(pk=id, sport_association=association).first().
 	AssociationAccount(ctx context.Context, id, association string) (*string, error)
 	InsertBulkPayments(ctx context.Context, rows []PaymentBulkRow) error
+	// InvoiceGenerate is the invoice generation reads and writes on this transaction (payment_add's paid branch).
+	InvoiceGenerate() InvoiceGenerateTransaction
 }

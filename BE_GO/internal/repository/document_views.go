@@ -13,9 +13,14 @@ import (
 // DocumentViews reads the rows the HTML views of printing_views.py render.
 // Related rows are read as Django's foreign-key descriptors read them (the
 // base manager: no group, soft-delete or scope filter).
-type DocumentViews struct{ db *sqlx.DB }
+type DocumentViews struct {
+	MemberDocuments
+	db *sqlx.DB
+}
 
-func NewDocumentViews(db *sqlx.DB) *DocumentViews { return &DocumentViews{db: db} }
+func NewDocumentViews(db *sqlx.DB) *DocumentViews {
+	return &DocumentViews{MemberDocuments: NewMemberDocuments(db), db: db}
+}
 
 var _ domain.DocumentViewStore = (*DocumentViews)(nil)
 

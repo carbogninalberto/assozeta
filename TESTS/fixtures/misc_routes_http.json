@@ -2304,6 +2304,856 @@
    "effect": null
   },
   {
+   "name": "misc-routes-card-paired-server-vouches",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "member": {
+     "subscription_number": "17",
+     "subscription_type": "Ordinaria",
+     "subscription_end_date": "2026-12-31",
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "avatar": null
+     },
+     "sport_association": {
+      "denomination": "Message reads own",
+      "user": {
+       "avatar_image": null
+      },
+      "membership_card_configuration": {
+       "emit_only_on_approval": false,
+       "customized_template": {}
+      }
+     }
+    }
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "card",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+       }
+      },
+      "body": {
+       "kind": "card",
+       "token": "a1000000-0000-4000-8000-0000e1880010",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-pending-pairing-vouches-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "member": {
+     "subscription_number": "17",
+     "subscription_type": "Ordinaria",
+     "subscription_end_date": "2026-12-31",
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "avatar": null
+     },
+     "sport_association": {
+      "denomination": "Message reads own",
+      "user": {
+       "avatar_image": null
+      },
+      "membership_card_configuration": {
+       "emit_only_on_approval": false,
+       "customized_template": {}
+      }
+     }
+    }
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "pending",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "card",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+       }
+      },
+      "body": {
+       "kind": "card",
+       "token": "a1000000-0000-4000-8000-0000e1880010",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-paired-server-rejects",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 401,
+       "json": {
+        "error": "unknown"
+       }
+      },
+      "body": {
+       "kind": "card",
+       "token": "a1000000-0000-4000-8000-0000e1880010",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-paired-server-refuses-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 410,
+       "json": {
+        "error": "gone"
+       }
+      },
+      "body": {
+       "kind": "card",
+       "token": "a1000000-0000-4000-8000-0000e1880010",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-paired-server-unavailable",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 503,
+       "raw": "unavailable"
+      },
+      "body": {
+       "kind": "card",
+       "token": "a1000000-0000-4000-8000-0000e1880010",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-paired-server-not-json",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "raw": "<html>"
+      },
+      "body": {
+       "kind": "card",
+       "token": "a1000000-0000-4000-8000-0000e1880010",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-paired-server-other-protocol",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v2",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "card",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+       }
+      },
+      "body": {
+       "kind": "card",
+       "token": "a1000000-0000-4000-8000-0000e1880010",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-paired-server-other-resource",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "card",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "resource_id": "a1000000-0000-4000-8000-0000e1000058"
+       }
+      },
+      "body": {
+       "kind": "card",
+       "token": "a1000000-0000-4000-8000-0000e1880010",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-paired-server-other-kind",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "cumulative",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+       }
+      },
+      "body": {
+       "kind": "card",
+       "token": "a1000000-0000-4000-8000-0000e1880010",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-paired-server-other-origin",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost:8080",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "card",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+       }
+      },
+      "body": {
+       "kind": "card",
+       "token": "a1000000-0000-4000-8000-0000e1880010",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-paired-server-generation-not-canonical",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "card",
+        "generation": "A1000000-0000-4000-8000-0000E1880004",
+        "expires_at": "$iso+600",
+        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+       }
+      },
+      "body": {
+       "kind": "card",
+       "token": "a1000000-0000-4000-8000-0000e1880010",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-paired-server-expired-grant",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "card",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso-60",
+        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+       }
+      },
+      "body": {
+       "kind": "card",
+       "token": "a1000000-0000-4000-8000-0000e1880010",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-paired-server-naive-expiry",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "card",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$naive+600",
+        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+       }
+      },
+      "body": {
+       "kind": "card",
+       "token": "a1000000-0000-4000-8000-0000e1880010",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-paired-server-expiry-not-a-date",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "card",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "domani",
+        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+       }
+      },
+      "body": {
+       "kind": "card",
+       "token": "a1000000-0000-4000-8000-0000e1880010",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-paired-server-expiry-number",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "card",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": 4102444800,
+        "resource_id": "a1000000-0000-4000-8000-0000e1000057"
+       }
+      },
+      "body": {
+       "kind": "card",
+       "token": "a1000000-0000-4000-8000-0000e1880010",
+       "resource_id": "a1000000-0000-4000-8000-0000e1000057",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-paired-other-association-not-asked",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000062/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": []
+   }
+  },
+  {
+   "name": "misc-routes-card-paired-upper-case-token-not-asked",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=A1000000-0000-4000-8000-0000E1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": []
+   }
+  },
+  {
+   "name": "misc-routes-card-pairing-disconnected-not-asked",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "disconnected",
+    "authority": []
+   }
+  },
+  {
+   "name": "misc-routes-card-pairing-other-origin-not-asked",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "origin": "http://localhost:8080",
+    "authority": []
+   }
+  },
+  {
+   "name": "misc-routes-card-pairing-other-association-not-asked",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "association": "a1000000-0000-4000-8000-000000701002",
+    "authority": []
+   }
+  },
+  {
+   "name": "misc-routes-card-pairing-not-self-hosted-not-asked",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1880010",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "self_hosted": false,
+    "authority": []
+   }
+  },
+  {
+   "name": "misc-routes-card-paired-local-token-not-asked",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "member": {
+     "subscription_number": "17",
+     "subscription_type": "Ordinaria",
+     "subscription_end_date": "2026-12-31",
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "avatar": null
+     },
+     "sport_association": {
+      "denomination": "Message reads own",
+      "user": {
+       "avatar_image": null
+      },
+      "membership_card_configuration": {
+       "emit_only_on_approval": false,
+       "customized_template": {}
+      }
+     }
+    }
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": []
+   }
+  },
+  {
    "name": "misc-routes-card-wrong-method",
    "actor": "owner",
    "method": "DELETE",

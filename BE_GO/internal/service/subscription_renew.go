@@ -59,13 +59,16 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 		return nil, err
 	}
 	defer tx.Rollback()
-	if user.Role != domain.RoleAssociation {
+	// Only an association account chooses the account of the renewed subscription.
+	byAssociation := user.Role == domain.RoleAssociation
+	if !byAssociation {
 		// request.user becomes the owner of data['sport_association']['sport_association_id'];
-		// the audit actor stays the requester.
+		// the audit actor and create_subscription's requester stay the member account.
 		owner, err := s.renewRequesterOwner(ctx, tx, identity, request.Body)
 		if err != nil {
 			return nil, err
 		}
+		request.RequesterID = user.ID
 		identity.ScopeUser = owner
 		user = owner
 	}
@@ -98,8 +101,10 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 	if err = s.cleanPayments(ctx, tx, identity, created, request); err != nil {
 		return nil, renewError(err)
 	}
-	if err = s.subscriptionUser(ctx, tx, data, created, request); err != nil {
-		return nil, renewError(err)
+	if byAssociation {
+		if err = s.subscriptionUser(ctx, tx, data, created, request); err != nil {
+			return nil, renewError(err)
+		}
 	}
 	if err = s.tags(ctx, tx, data, created); err != nil {
 		return nil, renewError(err)
@@ -161,11 +166,50 @@ func (s *SubscriptionRenewals) renewRequesterOwner(ctx context.Context, tx domai
 	if owner == nil {
 		return nil, domain.ErrSubscriptionCreateServer
 	}
+	// A member account renews its own subscriptions and those of its family, in the
+	// association they belong to.
+	allowed, err := renewMemberAllowed(ctx, tx, identity.ScopeUser.ID, id.String(), data)
+	if err != nil {
+		return nil, err
+	}
+	if !allowed {
+		return nil, &domain.PermissionDenied{Detail: "User not allowed."}
+	}
 	if owner.Role != domain.RoleAssociation {
 		// An association whose user is not an owner account is not ported.
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
 	return owner, nil
+}
+
+// renewMemberAllowed is _member_renewal_association's check on
+// data.get('associate_data'): a non-empty string associate_id through uuid.UUID,
+// else (associate_id None) a non-empty string tax_code; anything else is refused.
+func renewMemberAllowed(ctx context.Context, tx domain.SubscriptionRenewTransaction, requester, association string,
+	data domain.RequestObject) (bool, error) {
+	value, _ := data.Lookup("associate_data")
+	associate, _ := value.(domain.RequestObject)
+	identifier, _ := associate.Lookup("associate_id")
+	switch v := identifier.(type) {
+	case string:
+		if v == "" {
+			return false, nil
+		}
+		parsed, err := paymentInfoParseUUID(v)
+		if err != nil {
+			return false, nil
+		}
+		key := parsed.String()
+		return tx.MemberRenewable(ctx, requester, association, &key, nil)
+	case nil:
+		taxCode, _ := associate.Lookup("tax_code")
+		text, isText := taxCode.(string)
+		if !isText || text == "" {
+			return false, nil
+		}
+		return tx.MemberRenewable(ctx, requester, association, nil, &text)
+	}
+	return false, nil
 }
 
 // cleanPayments deletes the association's unpaid subscription payments of the
@@ -232,7 +276,7 @@ func (s *SubscriptionRenewals) subscriptionUser(ctx context.Context, tx domain.S
 		&association, "direct")
 }
 
-// tags is fresh_sub.tags.set(Tags.objects.filter(tag_id__in=...)).
+// tags is fresh_sub.tags.set(Tags.objects.filter(tag_id__in=..., sport_association=...)).
 func (s *SubscriptionRenewals) tags(ctx context.Context, tx domain.SubscriptionRenewTransaction, data domain.RequestObject,
 	created *subscriptionCreated) error {
 	value, present := data.Lookup("tags")

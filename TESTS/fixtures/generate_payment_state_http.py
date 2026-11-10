@@ -24,15 +24,20 @@ paid flow section below).
 cancel: no UUID check (a malformed id is a 500), same lookup; an unpaid
 payment is 400 {'error': 'Payment not paid.'}; a paid one is serialized
 before the save (the response still says paid), then saved unpaid.
-Invoiced payments (PDF task) are not authored.
+A paid invoiced payment is serialized after the save (the in-memory invoice
+already cancelled, its stored meta unchanged); its invoice is saved cancelled
+with meta = the PaymentSerializer values (str() of the nested user and
+associate dicts) and print_document_invoice(invoice, authorization) is
+published (apply_async).
 
 delete: is_valid_uuid, then the payment of the association (missing,
 foreign, deleted, other group: 404 {'msg': 'Payment not found.'});
 payment.delete() runs Payment's pre_delete signal (the payment's live
 group-aware installments are deleted; each one's pre_delete deletes its
 still unpaid payment first), clears SET_NULL references and through rows and
-audits P / installments / P. Invoiced payments (synchronous PDF) are not
-authored.
+audits P / installments / P. An invoiced payment first gets its invoice
+saved cancelled with the same meta, then print_document_invoice runs eagerly
+(.apply: one GET to CURRENT_HOST's /document/invoice/<id>), then the delete.
 
 bulk archive / bulk delete: ``'payment_ids' in data.keys()`` (missing or a
 non-dict body: 500), ``payment_id__in`` (None not iterable, a string iterated
@@ -44,6 +49,7 @@ Run with ``python3 -I``.
 import copy
 import json
 from pathlib import Path
+import uuid
 
 OUTPUT = Path(__file__).with_name('payment_state_http.json')
 IDS = json.loads(Path(__file__).with_name('message_mutations.json').read_text())['ids']
@@ -68,8 +74,8 @@ CARNET = {'id': next(ids), 'title': 'Carnet pagamenti'}
 
 def payment(subject=2, amount='10.00', paid=False, *, association=OWN, expense=False, associate=False, user=False, supplier=False,
             instructor=False, group=None, deleted=False, archived=False, category=CATEGORY, created='2026-10-01T08:00:00Z', paid_on=None,
-            description='Quota', meta=None, attachment=False, meta_categories=None, linked=False):
-    return {'id': next(ids), 'association': association, 'subject': subject, 'amount': amount, 'paid': paid, 'expense': expense,
+            description='Quota', meta=None, attachment=False, meta_categories=None, linked=False, invoice=None):
+    return {'invoice': invoice, 'id': next(ids), 'association': association, 'subject': subject, 'amount': amount, 'paid': paid, 'expense': expense,
             'associate': associate, 'user': user, 'supplier': supplier, 'instructor': instructor, 'group': group, 'deleted': deleted,
             'archived': archived, 'category': category, 'created': created, 'payment_date': paid_on, 'description': description,
             'meta': meta, 'attachment': attachment, 'meta_categories': meta_categories, 'linked': linked}
@@ -100,6 +106,10 @@ PAYMENTS = {
     'ca_admin': payment(paid=True, paid_on='2026-03-06T09:00:00Z'),
     'ca_transfer': payment(subject=3, paid=True, description=None),
     'ca_removed': payment(paid=True, deleted=True),
+    'ca_invoiced': payment(subject=0, amount='25.00', paid=True, associate=True, user=True, paid_on='2026-03-10T09:00:00Z', invoice='v2pay3_cancel'),
+    'ca_invoiced_plain': payment(amount='14.00', paid=True, paid_on='2026-03-11T09:30:00.250000Z', description='Quota libera',
+                                 invoice='v2pay3_cancel_plain'),
+    'ca_invoiced_unpaid': payment(subject=0, associate=True, invoice='v2pay3_cancel_unpaid'),
     # delete
     'de_plain': payment(attachment=True),
     'de_installments': payment(amount='60.00'),
@@ -108,6 +118,8 @@ PAYMENTS = {
     'de_collab': payment(),
     'de_admin': payment(),
     'de_removed': payment(deleted=True),
+    'de_invoiced': payment(subject=0, amount='27.00', paid=True, associate=True, user=True, paid_on='2026-02-12T00:00:00Z', invoice='v2pay3_delete'),
+    'de_invoiced_collab': payment(amount='13.00', invoice='v2pay3_delete_collab'),
     # bulk archive
     'ba_a': payment(), 'ba_b': payment(paid=True), 'ba_stored': payment(archived=True), 'ba_group': payment(group='own_group'),
     'ba_plain': payment(), 'ba_collab': payment(), 'ba_removed': payment(deleted=True),
@@ -168,13 +180,25 @@ FLAG = {'id': next(ids), 'association': next(ids), 'username': 'payment-state-fl
 FLAG_ASSOCIATE = {'id': next(ids), 'first': 'Giulia', 'last': 'Verdi'}
 PAYMENTS['pf_flag'] = payment(subject=0, amount='26.00', associate='flag', association=FLAG['association'], category=None,
                               description='Quota flag')
+
+
+def invoice_row(label, number):
+    row = PAYMENTS[label]
+    return {'id': next(ids), 'payment': label, 'number': number, 'created': '2026-02-01T10:00:00Z', 'membership_fee': '0.00',
+            'activity_fee': row['amount'], 'description': f'Ricevuta {number}'}
+
+
+# Archived: the paid flow's invoice numbering skips them.
+INVOICES = {key: invoice_row(label, number) for number, (key, label) in enumerate(
+    ((row['invoice'], label) for label, row in PAYMENTS.items() if row['invoice']), start=901)}
 STATE = copy.deepcopy(PAYMENTS)
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='POST', body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, path, status, response, *, method='POST', body=None, raw_body=None, content_type=None, headers=None, effect=None,
+        prints=()):
     case = {'name': f'payment-state-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'effect': effect}
+            'status': status, 'response': response, 'effect': effect, 'prints': list(prints)}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -229,13 +253,50 @@ def payment_item(label, invoice=None):
             'subscription_id': subscription, 'instructor_id': INSTRUCTOR['id'] if row['instructor'] else None,
             'instructor': instructor() if row['instructor'] else None, 'supplier': supplier() if row['supplier'] else None,
             'supplier_id': SUPPLIER['id'] if row['supplier'] else None, 'custom_account_type': None, 'custom_account_name': None,
-            'invoice': invoice, 'attachments': attachments, 'payment_category_name': names[category], 'type': 'default',
+            'invoice': invoice if invoice is not None else invoice_item(row['invoice']), 'attachments': attachments, 'payment_category_name': names[category], 'type': 'default',
             'subject': row['subject'], 'amount': row['amount'], 'creation_date': row['created'], 'payment_date': row['payment_date'],
             'paid': row['paid'], 'expense': row['expense'], 'description': row['description'],
             'meta_payment_categories': row['meta_categories'],
             'payment_intent_id': None, 'archived': row['archived'], 'invoice_fiscal_code': None, 'meta': row['meta'], 'notes': None,
             'deleted': row['deleted'], 'course': None, 'payment_category': category, 'sport_association': row['association'],
             'custom_accounts': None, 'signature': None, 'group': IDS[row['group']] if row['group'] else None}
+
+
+def invoice_item(key):
+    """InvoiceSerializer of a seeded invoice in its current authored state (None without one)."""
+    if key is None or key == '$invoice':
+        return None
+    row = INVOICES[key]
+    return {'invoice_id': row['id'], 'document_token': None, 'creation_date': row['created'], 'membership_fee': row['membership_fee'],
+            'activity_fee': row['activity_fee'], 'meta_payment_categories': None, 'description': row['description'], 'number': row['number'],
+            'archived': True, 'cancelled': row.get('cancelled', False), 'meta': row.get('meta'), 'imported_from_associami': False,
+            'deleted': False, 'document_pdf': None, 'sport_association': OWN, 'selected_tutor': None, 'group': None, 'attached_documents': []}
+
+
+def invoice_meta(label):
+    """The view's payment_obj: PaymentSerializer values, the nested user and associate as str() of their dicts
+    (AssociateSerializer's sport_association and family relations are uuid.UUID objects)."""
+    item = payment_item(label)
+    person = item['associate']
+    if person is not None:
+        person = {**person, 'sport_association': uuid.UUID(person['sport_association']),
+                  'family': uuid.UUID(person['family']) if person['family'] else None}
+    return {'payment_id': item['payment_id'], 'user': str(item['user']), 'associate': str(person), 'subscription': None,
+            'subject': item['subject'], 'amount': item['amount'], 'creation_date': item['creation_date'], 'payment_date': item['payment_date']}
+
+
+def cancel_invoice(label):
+    """invoice.cancelled = True, invoice.meta = payment_obj, invoice.save(): (stored changes, audit entry)."""
+    key = STATE[label]['invoice']
+    row = INVOICES[key]
+    meta = invoice_meta(label)
+    row['cancelled'], row['meta'] = True, meta
+    return ({key: {'cancelled': True, 'meta': meta}},
+            updated('invoice', key, {'cancelled': ['False', 'True'], 'meta': ['null', json.dumps(meta, sort_keys=True)]}))
+
+
+def print_request(key):
+    return {'path': f"/document/invoice/{INVOICES[key]['id']}?send_receipt_email=False", 'reply': {'status': 200, 'body': 'printed'}}
 
 
 # --- effects ---------------------------------------------------------------
@@ -251,7 +312,7 @@ def actor_index(actor):
 
 def effect(actor, *, changed=None, deleted=(), installments=(), invoices=None, audit=()):
     return {'actor': actor, 'payments_changed': changed or {}, 'payments_deleted': list(deleted), 'installments_deleted': list(installments),
-            'supplier_invoices_changed': invoices or {}, 'audit': list(audit)}
+            'supplier_invoices_changed': invoices or {}, 'invoices_changed': {}, 'audit': list(audit)}
 
 
 def updated(model, label, changes, index=DIRECT):
@@ -611,6 +672,24 @@ cancel('cancel-expense-supplier', 'owner', 'ca_supplier')
 cancel('cancel-full-collaborator', 'full_collaborator', 'ca_collab')
 cancel('cancel-admin-impersonating-owner', 'admin', 'ca_admin', headers=ADMIN_OWNER)
 cancel('cancel-after-approve', 'owner', 'ap_dated')
+add('cancel-invoiced-unpaid', 'owner', CANCEL('ca_invoiced_unpaid'), 400, {'error': 'Payment not paid.'}, effect=nothing())
+
+
+def cancel_invoiced(name, actor, label, *, headers=None):
+    """The response is the payment serialized after the save, its invoice cancelled in memory with the stored meta."""
+    key = STATE[label]['invoice']
+    changes = save(label, {'paid': False})
+    item = payment_item(label, {**invoice_item(key), 'cancelled': True})
+    invoices, entry = cancel_invoice(label)
+    result = effect(actor, changed={label: {'paid': False}}, audit=[updated('payment', label, changes), entry])
+    result.update(invoices_changed=invoices, celery=[{'task': 'print_document_invoice', 'args': [INVOICES[key]['id'], '$authorization'],
+                                                      'kwargs': [], 'args_list': True}])
+    add(name, actor, CANCEL(label), 200, {'data': {'msg': 'payment cancelled.', 'payment': item}}, headers=headers, effect=result)
+
+
+cancel_invoiced('cancel-invoiced-publishes-print', 'owner', 'ca_invoiced')
+cancel_invoiced('cancel-invoiced-without-party-full-collaborator', 'full_collaborator', 'ca_invoiced_plain')
+add('cancel-invoiced-again-unpaid', 'owner', CANCEL('ca_invoiced'), 400, {'error': 'Payment not paid.'}, effect=nothing())
 
 # --- delete ------------------------------------------------------------------
 
@@ -634,6 +713,18 @@ add('delete-full-collaborator', 'full_collaborator', DELETE('de_collab'), 200, D
 add('delete-admin-impersonating-owner', 'admin', DELETE('de_admin'), 200, DELETED, method='DELETE', headers=ADMIN_OWNER,
     effect=delete_payment('admin', 'de_admin'))
 add('delete-again-not-found', 'owner', DELETE('de_plain'), 404, NOT_FOUND, method='DELETE')
+
+
+def delete_invoiced(name, actor, label, headers=None):
+    key = STATE[label]['invoice']
+    invoices, entry = cancel_invoice(label)
+    result = delete_payment(actor, label)
+    result.update(invoices_changed=invoices, audit=[entry, *result['audit']])
+    add(name, actor, DELETE(label), 200, DELETED, method='DELETE', headers=headers, effect=result, prints=[print_request(key)])
+
+
+delete_invoiced('delete-invoiced-prints-before-delete', 'owner', 'de_invoiced')
+delete_invoiced('delete-invoiced-full-collaborator', 'full_collaborator', 'de_invoiced_collab')
 add('approve-hard-deleted-server-error', 'owner', APPROVE('de_paid'), 500, SERVER)
 
 
@@ -689,7 +780,9 @@ OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Payment approve, ca
                                                             'payment, installment, supplier invoice, reference and audit effects',
                               'ids': IDS, 'category': CATEGORY, 'category_name': CATEGORY_NAME, 'document': DOCUMENT, 'associate': ASSOCIATE,
                               'subscription': SUBSCRIPTION, 'instructor': INSTRUCTOR, 'supplier': SUPPLIER, 'course': COURSE, 'carnet': CARNET,
-                              'payments': PAYMENTS, 'supplier_invoices': SUPPLIER_INVOICES, 'course_subscriptions': COURSE_SUBSCRIPTIONS,
+                              'payments': PAYMENTS,
+                              'invoices': {k: {f: v for f, v in row.items() if f not in ('cancelled', 'meta')} for k, row in INVOICES.items()},
+                              'supplier_invoices': SUPPLIER_INVOICES, 'course_subscriptions': COURSE_SUBSCRIPTIONS,
                               'installments': {k: {key: v for key, v in row.items() if key != 'gone'} for k, row in INSTALLMENTS.items()},
                               'holdings': HOLDINGS, 'flag_owner': FLAG, 'flag_associate': FLAG_ASSOCIATE, 'cases': cases},
                              ensure_ascii=False, indent=1) + '\n')

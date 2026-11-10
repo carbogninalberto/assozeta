@@ -107,8 +107,9 @@ type PendingCustomerInvoice struct {
 
 // CustomerInvoicePendingStore backs invoice_customers_list's first loop.
 type CustomerInvoicePendingStore interface {
-	// PendingCustomerInvoices is CustomerInvoice.objects.filter(pdf__isnull=True), in the database's order.
-	PendingCustomerInvoices(ctx context.Context) ([]PendingCustomerInvoice, error)
+	// PendingCustomerInvoices is CustomerInvoice.objects.filter(sport_association=association, pdf__isnull=True)
+	// .order_by('-creation_date', 'customer_invoice_id').
+	PendingCustomerInvoices(ctx context.Context, association string) ([]PendingCustomerInvoice, error)
 	// SaveCustomerInvoiceXML is invoice.save() after the XML changed: the
 	// update entry of xml (when it differs) and the column.
 	SaveCustomerInvoiceXML(ctx context.Context, id, association, xml string, audit LoginAuditContext, at time.Time) error

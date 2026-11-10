@@ -12,6 +12,7 @@ from TESTS.contracts import test_course_list_http as contract
 from TESTS.adapters.django import family_harness as harness
 
 SOURCES = ('TESTS/fixtures/course_list_http.json', 'TESTS/contracts/test_course_list_http.py',
+           'TESTS/contracts/xlsx.py', 'BE/application/utils/excel_utils.py',
            'TESTS/adapters/django/course_list_http.py', 'BE/application/views/course_views.py',
            'BE/application/serializers/courses_serializers.py', 'BE/application/models/courses_models.py',
            'BE/application/models/subscriptions_models.py', 'BE/application/models/user_models.py',

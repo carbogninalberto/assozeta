@@ -65,3 +65,26 @@ func composeBakneySSO(cfg config.Config, db *sqlx.DB, cache *redis.Client, token
 	return handler.NewBakneySSOHandler(sso, actors, identities, bakneyAdministrators{bootstrap}, throttle, middleware.SessionAuditContext, time.Now),
 		authority.CloseIdleConnections, nil
 }
+
+// bakneyPublicLinkStore adapts the repository's transaction to the service interface.
+type bakneyPublicLinkStore struct{ repository *repository.BakneySSO }
+
+func (s bakneyPublicLinkStore) BeginPublicLink(ctx context.Context) (service.BakneyPublicLinkTransaction, error) {
+	tx, err := s.repository.BeginPublicLink(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
+}
+
+// composeBakneyPublicLinks is instance.sso.public_links for the card and
+// token-link routes: the pairing protocol with its own client to the paired
+// server (none of the login collaborators is used).
+func composeBakneyPublicLinks(cfg config.Config, db *sqlx.DB) (*service.BakneyPublicLinks, func()) {
+	settings := service.BakneySSOSettings{Debug: cfg.Debug, DeploymentMode: cfg.InstanceAdmin.DeploymentMode, AppURL: cfg.InstanceAdmin.AppURL,
+		APIBase: cfg.InstanceAdmin.BakneySSOAPIBase, UIOrigin: cfg.InstanceAdmin.BakneySSOUIOrigin, SecretKeys: []string{cfg.SessionSecret}}
+	authority := service.NewBakneyAuthorityClient()
+	store := repository.NewBakneySSO(db)
+	sso := service.NewBakneySSO(bakneySSOStore{store}, settings, authority, nil, nil, nil, nil, time.Now)
+	return service.NewBakneyPublicLinks(sso, bakneyPublicLinkStore{store}), authority.CloseIdleConnections
+}

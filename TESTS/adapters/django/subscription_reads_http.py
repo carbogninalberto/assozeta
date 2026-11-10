@@ -16,6 +16,7 @@ from TESTS.contracts import test_subscription_reads_http as contract
 from TESTS.adapters.django import family_harness as harness
 
 SOURCES = ('TESTS/fixtures/subscription_reads_http.json', 'TESTS/contracts/test_subscription_reads_http.py',
+           'TESTS/contracts/xlsx.py', 'BE/application/utils/excel_utils.py',
            'TESTS/adapters/django/subscription_reads_http.py', 'BE/application/views/subscriptions_views.py',
            'BE/application/views/attendee_views.py', 'BE/application/serializers/subscriptions_serializers.py',
            'BE/application/serializers/courses_serializers.py', 'BE/application/serializers/personas_serializers.py',

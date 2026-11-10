@@ -23,6 +23,13 @@ its authored 'documents' (filename, payment link, the stored object under
 django-storages' safe_join(AWS_LOCATION, clean_name(<timestamp>/<id>/<filename>))
 with the exact bytes and guessed ContentType); response '$bind:doc<n>' values are
 those rows. Verified objects are removed, so the bucket ends at its sentinel.
+
+A case's 'owner_settings' (auto_paid_payment, the invoice date and numbering
+settings) are set on the owner only around its request and restored after it
+(queryset update, no audit). The effect's 'invoice' is the one invoice the case
+creates (payment_paid_flow.check_invoice; none otherwise): the response's
+'$bind:invoice', the payment's '$invoice' column, the '$invoice' print path and
+the invoice audit entries are that row.
 """
 from contextlib import ExitStack, contextmanager
 import base64
@@ -41,6 +48,7 @@ from TESTS.adapters.django.camps_periods_http import plain
 from TESTS.adapters.django.carnet_subscription_topup_http import auditlog_moment
 from TESTS.adapters.django.workflow_writes_http import keyed
 from TESTS.adapters.django import default_payment_category
+from TESTS.adapters.django import payment_paid_flow as paid
 
 SOURCES = ('TESTS/fixtures/payment_writes_http.json', 'TESTS/contracts/test_payment_writes_http.py',
            'TESTS/adapters/django/payment_writes_http.py', 'TESTS/adapters/django/camps_periods_http.py',
@@ -53,7 +61,9 @@ SOURCES = ('TESTS/fixtures/payment_writes_http.json', 'TESTS/contracts/test_paym
            'BE/application/impersonation_scope.py', 'BE/application/audit_resolvers.py', 'BE/application/tenant_scope.py',
            'BE/application/permissions_registry.py', 'BE/application/utils/api_utils.py', 'BE/docmanager/models.py',
            'TESTS/adapters/django/invoice_sync_print_http.py', 'BE/application/printing_tasks.py', 'BE/instance/restore/task_base.py',
-           'BE/application/serializers/invoice_serializers.py', 'BE/docmanager/models.py', 'TESTS/adapters/django/instance_logo.py') + harness.SOURCES + default_payment_category.SOURCES
+           'BE/application/serializers/invoice_serializers.py', 'BE/docmanager/models.py', 'TESTS/adapters/django/instance_logo.py',
+           'BE/application/services/invoice_service.py', 'BE/application/utils/payments_utils.py',
+           'TESTS/adapters/django/payment_paid_flow.py') + harness.SOURCES + default_payment_category.SOURCES
 PAYMENT = 'application.Payment'
 DOCUMENT = 'docmanager.Document'
 BUCKET = 'payment-writes-fixture'
@@ -110,16 +120,36 @@ def _assert_case(case, base_url, *, token, sessions):
         stub['log'] = []
         stub['script'] = [item['reply'] for item in case['prints']]
     stub['token'] = token
-    status = base_contract.assert_case(case, base_url, token=token, sessions=sessions)
-    printer.check_prints(case, None)
+    with owner_settings(case.get('owner_settings')):
+        status = base_contract.assert_case(case, base_url, token=token, sessions=sessions)
+    invoice = base_contract.BINDINGS.get('invoice')
+    for item in case['prints']:
+        base_contract.require('$invoice' not in item['path'] or invoice is not None, 'print.invoice-bound')
+    printer.check_prints({**case, 'prints': [{**item, 'path': item['path'].replace('$invoice', str(invoice))} for item in case['prints']]}, None)
     return status
+
+
+@contextmanager
+def owner_settings(settings):
+    """The owner's settings of one case, only around its request."""
+    if not settings:
+        yield
+        return
+    from application.models import User
+    owner = User._base_manager.filter(pk=base_contract.load_source()['ids']['owner'])
+    saved = owner.values(*settings).get()
+    base_contract.require(owner.update(**settings) == 1, 'fixture.owner-settings')
+    try:
+        yield
+    finally:
+        base_contract.require(owner.update(**saved) == 1, 'fixture.owner-settings-restored')
 
 
 contract = types.SimpleNamespace(load_source=base_contract.load_source, require=base_contract.require, assert_case=_assert_case,
                                  BINDINGS=base_contract.BINDINGS,
                                  NOW=base_contract.NOW)
 THROUGH = 'application.Payment_attachments'
-MANAGED = (PAYMENT, DOCUMENT, THROUGH, harness.AUDIT, harness.INDEX)
+MANAGED = (PAYMENT, DOCUMENT, THROUGH, paid.INVOICE, harness.AUDIT, harness.INDEX)
 TIMES = ('creation_date', 'payment_date')
 
 
@@ -195,7 +225,12 @@ def documents():
     return Document
 
 
-base_fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(payments, documents))
+def invoices():
+    from application.models import Invoice
+    return Invoice
+
+
+base_fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(payments, documents, invoices))
 
 
 def prepare(source):
@@ -222,9 +257,10 @@ def recent(text):
     return stamp is not None and abs(datetime.now(timezone.utc) - stamp) < timedelta(minutes=10)
 
 
-def check_row(stored, authored, fixture, where):
+def check_row(stored, authored, fixture, where, invoice=None):
     """A created row against its authored columns ('$now' recent and, when rendered, the response's value)."""
-    bindings = {'$default_category': fixture['default_category'], '$default_category_name': fixture['default_category_name']}
+    bindings = {'$default_category': fixture['default_category'], '$default_category_name': fixture['default_category_name'],
+                '$invoice': invoice}
     for column, value in authored.items():
         actual = stored.get(column)
         if value == '$now':
@@ -292,6 +328,13 @@ def assert_effect(case, before, after, source, context):
     all_events, _ = harness.audit_delta(contract, before, after)
     all_types = {ct['model']: ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'application'}
     refs = check_documents(case, before, after, source, fresh, all_events, all_types)
+    bound = {}
+    response_invoice = contract.BINDINGS.get('invoice')
+    invoice_now = paid.check_invoice(contract, before, after, effect.get('invoice'), [response_invoice] if response_invoice else [], bound)
+    invoice = bound.get('$invoice')
+    contract.require(response_invoice == invoice, 'response.binding:invoice')
+    if invoice is not None:
+        refs['$invoice'] = invoice
     authored = effect['created']
     contract.require(len(fresh) == len(authored) and set(old) <= set(new), 'state.created-count')
     created = {}
@@ -303,8 +346,10 @@ def assert_effect(case, before, after, source, context):
             contract.require(spec['associate_id'] in by_associate, 'state.created-associate')
             created[by_associate[spec['associate_id']]] = spec
     for key, spec in created.items():
-        check_row(new[key], spec, fixture, ':' + key)
+        check_row(new[key], spec, fixture, ':' + key, invoice)
     for name, value in contract.BINDINGS.items():
+        if name == 'invoice':
+            continue
         if name.startswith('doc'):
             contract.require(refs.get(name) == value, 'response.binding:' + name)
         else:
@@ -329,9 +374,10 @@ def assert_effect(case, before, after, source, context):
         additional = {'impersonation_session': fixture['sessions'][label], 'actor_id': actor, 'target_user_id': case['headers']['User-Id'],
                       'association_id': None if label.startswith('admin_') else ids['own_association']}
     doc_type = next(ct['id'] for ct in before['contenttypes.ContentType'] if (ct['app_label'], ct['model']) == ('docmanager', 'document'))
+    invoice_moments = []
     for event, spec in zip(events, effect['audit']):
         model = spec.get('model', 'payment')
-        if model == 'document':
+        if model in ('document', 'invoice'):
             key = refs[spec['key']]
         else:
             key = fresh[0] if spec['key'] == '$id' else source['payments'][spec['key']]['id']
@@ -340,6 +386,12 @@ def assert_effect(case, before, after, source, context):
         def value(item, column):
             if item == '$id':
                 return key
+            if item == '$now' and model == 'invoice':
+                # The invoice's first creation date (it may be saved again with the payment date).
+                text = event['changes'].get(column, [None, None])[0 if event['action'] else 1]
+                contract.require(isinstance(text, str) and recent(text.replace(' ', 'T') + '+00:00'), 'audit.invoice-now')
+                invoice_moments.append(text)
+                return text
             if item == '$now':
                 return auditlog_moment(moment(stored[column]))
             if item in refs:
@@ -347,7 +399,7 @@ def assert_effect(case, before, after, source, context):
             return bindings.get(item, item)
         changes = {column: [value(item, column) for item in pair] for column, pair in spec['changes'].items()}
         where = f":{spec['key']}:{spec['action']}"
-        content_type = doc_type if model == 'document' else types['payment']
+        content_type = doc_type if model == 'document' else types[model]
         contract.require(event['content_type_id'] == content_type and event['action'] == spec['action'] and event['object_pk'] == key
                          and event['object_repr'] == f'{model.capitalize()} object ({key})', 'audit.identity' + where)
         contract.require(event['changes'] == changes, 'audit.changes' + where)
@@ -362,6 +414,9 @@ def assert_effect(case, before, after, source, context):
         else:
             contract.require(index is not None and index['sport_association_id'] == spec['index'][0]
                              and index['resolution_path'] == spec['index'][1], 'index.fields' + where)
+    contract.require(len(set(invoice_moments)) <= 1, 'audit.invoice-now-consistent')
+    if invoice_moments and invoice_now is not None:
+        contract.require(invoice_moments[0] == invoice_now, 'audit.invoice-now-stored')
 
 
 run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare)

@@ -24,6 +24,7 @@ type StoredDocument struct {
 // document means no matching row. group is the X-Group-Id GroupAwareManager
 // filter (nil when absent or not a UUID).
 type DocmanagerReadsStore interface {
+	MemberDocumentStore
 	Document(ctx context.Context, id string) (*StoredDocument, error)
 	DocumentWithToken(ctx context.Context, id, token string) (*StoredDocument, error)
 	SubscriptionDocument(ctx context.Context, subscription string, group *string) (*StoredDocument, error)

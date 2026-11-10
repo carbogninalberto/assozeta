@@ -16,8 +16,8 @@ payment_list:
   group-aware payments of it with ``archived=query[archived]`` (BooleanField
   to_python: 't', 'True', '1', 'f', 'False', '0'; anything else a 500) as
   ``values(...)`` ordered by ``-creation_date``; Decimals render as floats.
-- athletes take their own branch (not ported in Go; only its error paths are
-  authored).
+- athletes take their own branch (authored at the end of the sequence, with its
+  own rows in two further associations).
 - everyone else: the association as above, the same archived filter, then one
   ``filter(Q)`` of ``associate_id`` (UUID, else 500), ``query[payment_range]``
   ('Y/m/d al Y/m/d' or 'd/m/Y al d/m/Y'; a value that does not split in two,
@@ -574,13 +574,18 @@ def prints_for(path, response):
             for h in PRINTED if PAYMENTS[h['payment']]['id'] in listed_ids]
 
 
-def add(name, actor, path, status, response, *, method='GET', headers=None, unordered=False, challenge=None, stripe=None):
+def add(name, actor, path, status, response, *, method='GET', headers=None, unordered=False, challenge=None, stripe=None,
+        renders=(), generated=()):
     """unordered: the rows (and rowIds) are compared as multisets (an ordering Django leaves to the database).
     prints: the CURRENT_HOST requests the case makes (compensation prints of listed rows).
     stripe: (setup, requests): the instance's Stripe integration and Django cache entry around the request,
-    and the Stripe API requests it makes with the stub's replies (none for every other case)."""
+    and the Stripe API requests it makes with the stub's replies (none for every other case).
+    renders: the PDF renderer requests the case makes, with the stub's replies (the athlete list's receipts).
+    generated: the receipts those requests produce, in order: the invoice, the new Document's filename, whether
+    the invoice is linked to it (with the storage task) and the receipt e-mail."""
     case = {'name': f'payment-reads-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'unordered': unordered, 'prints': prints_for(path, response)}
+            'status': status, 'response': response, 'unordered': unordered, 'prints': prints_for(path, response),
+            'renders': list(renders), 'generated': list(generated)}
     if challenge is not None:
         case['challenge'] = challenge
     case['stripe_setup'], case['stripe'] = stripe if stripe else (None, [])
@@ -627,7 +632,8 @@ add('list-admin-impersonating-owner', 'admin', LIST, 200, OWNER_LIST, headers=AD
 add('list-foreign-owner', 'foreign_owner', LIST, 200, list_page(['abroad']))
 # request.user.sportassociation is the base manager's row: the soft-deleted association lists (no payments).
 add('list-deleted-association-owner', 'deleted_association_owner', LIST, 200, list_page([]))
-add('list-athlete-unknown-course-subscription', 'athlete', LIST + '?course_subscription_id=' + uid('c5c5c5c5'), 500, SERVER)
+add('list-athlete-unknown-course-subscription', 'athlete', LIST + '?course_subscription_id=' + uid('c5c5c5c5'), 403,
+    {'detail': 'Risorsa non disponibile per questo utente e associazione.'})
 add('list-athlete-malformed-course-subscription', 'athlete', LIST + '?course_subscription_id=nope', 400, BAD_UUID)
 add('list-malformed-course-subscription', 'owner', LIST + '?course_subscription_id=nope', 400, BAD_UUID)
 add('list-malformed-course-subscription-before-compressed', 'owner', LIST + '?mode=compressed&course_subscription_id=x', 400, BAD_UUID)
@@ -1074,6 +1080,454 @@ add('subscription-page-beyond', 'owner', SUB + '?pagination[perpage]=3&paginatio
 add('subscription-search-duplicates-paginated', 'owner', SS + 'corso&pagination[perpage]=1&pagination[page]=2', 200,
     sub_page(sub_search('corso'), ordered=sub_search('corso'), number=2, size=1))
 
+# --- payment/list: athletes ----------------------------------------------------------------------------
+# An athlete (no mode=compressed) takes its own branch:
+# - with a ``course_subscription_id`` key: the live course subscription with that id (an empty value: 500)
+#   whose subscription has the athlete as user or an associate of the athlete's subscriptions (the people of
+#   the list below; an association-scoped session keeps scoped_queryset's members instead); any other id is
+#   the 403 of a resource that is not available; when it has ``multi_payments`` the payments of its live installments (amount > 0, or the
+#   association owner's ``show_zero_payments``; an installment without payment: 500), otherwise its own
+#   payment under the same amount rule; then the payments of the carnet holdings linked to it; finally the
+#   live payments with those ids, in database order;
+# - without it: the live income payments (``amount >= 0``, created at most 60 days ahead) of the athlete's
+#   user or of the associates of the athlete's subscriptions, by ``paid, -creation_date``, minus the
+#   exclusions: for every live course subscription of those subscriptions, when the course has
+#   ``multi_payments`` each unpaid live installment due more than 31 days ahead, or with a zero payment
+#   unless the owner shows zero payments (an installment due earlier without payment: 500); otherwise a zero
+#   course subscription payment unless the owner shows zero payments.
+# Before the exclusions every listed paid payment whose invoice has no PDF goes through document_invoice
+# in-process (the list's own query string: ``send_receipt_email``); its result is ignored and the row still
+# renders the invoice as loaded before. Rows are PaymentCompressedSerializer (``meta`` from the installment,
+# subscription, carnet holding, course subscription or camp period of the payment) plus ``payment_method``,
+# ``online_pay_available`` (the owner's ``online_payments`` and configured Stripe credentials),
+# ``sport_association_denomination``, ``one_solution_available`` (an unpaid installment of a one-fee course
+# whose event 0 has the installment's date) and, for paid invoiced rows, ``document_pdf``. The response is
+# ``{'data': {index: row}, 'meta': {}}``.
+NORTH, SOUTH = uid('a550c1a7'), uid('a550c1a7')
+ATH_OWNERS = {
+    'north_owner': {'id': uid('0b0e0000'), 'username': 'payment-reads-north', 'email': 'payment-reads-north@example.test',
+                    'show_zero_payments': False, 'online_payments': True, 'association': NORTH,
+                    'denomination': 'Polisportiva Nord', 'tax_code': '77410000001'},
+    'south_owner': {'id': uid('0b0e0000'), 'username': 'payment-reads-south', 'email': 'payment-reads-south@example.test',
+                    'show_zero_payments': True, 'online_payments': False, 'association': SOUTH,
+                    'denomination': 'ASD Sud', 'tax_code': '77410000002'},
+}
+ASSOCIATION_OWNER = {row['association']: row for row in ATH_OWNERS.values()}
+EXTRA_USERS = {label: {'id': uid('a7b1e7e0'), 'username': f'payment-reads-{label}', 'email': f'payment-reads-{label}@example.test'}
+               for label in ('runner', 'scoped', 'faulty', 'partner')}
+U = {label: row['id'] for label, row in EXTRA_USERS.items()}
+ATH_GROUP = {'id': uid('6a0bbbbb'), 'name': 'Agonisti', 'association': NORTH}
+ATH_SESSION = {'label': 'north_scoped', 'actor': 'north_owner', 'target': 'scoped', 'association': NORTH}
+
+
+def ath_person(association, first, last, **values):
+    return {'id': uid('a550c1a7'), 'association': association, 'first_name': first, 'last_name': last, 'email': None, 'tax_code': None,
+            'deleted': False, **values}
+
+
+ATH_ASSOCIATES = {
+    'r_self': ath_person(NORTH, 'Rita', 'Corsa', email='rita.corsa@example.test', tax_code='CRSRTI85A41H501A'),
+    'r_kid': ath_person(NORTH, 'Leo', 'Corsa'),
+    'r_south': ath_person(SOUTH, 'Rita', 'Corsa'),
+    'r_old': ath_person(NORTH, 'Vecchio', 'Socio', deleted=True),
+    'stranger': ath_person(NORTH, 'Altro', 'Socio'),
+    # The scoped athlete's subscriptions: one associate with a tax code, one without.
+    'sc_child': ath_person(NORTH, 'Sara', 'Pista', tax_code='PSTSRA10A41H501B'),
+    'sc_other': ath_person(NORTH, 'Ospite', 'Pista'),
+}
+
+
+def ath_subscription(association, user, associate, **values):
+    return {'id': uid('5ab5c0de'), 'association': association, 'user': user, 'associate': associate, 'payment': None, 'deleted': False,
+            'start': None, 'end': None, **values}
+
+
+ATH_SUBSCRIPTIONS = {
+    'n_self': ath_subscription(NORTH, 'runner', 'r_self', payment='p_member', start='2024-01-01', end='2024-12-31'),
+    'n_kid': ath_subscription(NORTH, 'runner', 'r_kid'),
+    's_self': ath_subscription(SOUTH, 'runner', 'r_south'),
+    'n_old': ath_subscription(NORTH, 'runner', 'r_old', deleted=True),
+    'sc_one': ath_subscription(NORTH, 'scoped', 'sc_child', start='2024-09-01'),
+    'sc_two': ath_subscription(NORTH, 'scoped', 'sc_other'),
+    'f_sub': ath_subscription(NORTH, 'faulty', None),
+    # Another user's subscription of an associate the runner also subscribed.
+    'n_kid_partner': ath_subscription(NORTH, 'partner', 'r_kid'),
+}
+ATH_COURSES = {
+    'c_single': {'id': uid('c0a5ec0a'), 'association': NORTH, 'title': 'Atletica', 'multi': False, 'one_fee': False, 'events': []},
+    'c_multi': {'id': uid('c0a5ec0a'), 'association': NORTH, 'title': 'Mezzofondo', 'multi': True, 'one_fee': True,
+                'events': [{'id': 1, 'amount': '30.00', 'payment_date': '15/01/2099'},
+                           {'id': '0', 'amount': '30.00', 'payment_date': '15/09/2024'}]},
+    'c_south': {'id': uid('c0a5ec0a'), 'association': SOUTH, 'title': 'Yoga', 'multi': False, 'one_fee': False, 'events': []},
+}
+
+
+def ath_cs(course, subscription, payment=None, **values):
+    return {'id': uid('c5c5c5c5'), 'course': course, 'subscription': subscription, 'payment': payment, 'deleted': False,
+            'multi': False, **values}
+
+
+ATH_COURSE_SUBSCRIPTIONS = {
+    'cs_single': ath_cs('c_single', 'n_self', 'p_course'),
+    'cs_zero': ath_cs('c_single', 'n_kid', 'p_zero'),
+    'cs_multi': ath_cs('c_multi', 'n_self', multi=True),
+    'cs_south': ath_cs('c_south', 's_self', 'p_szero'),
+    'cs_deleted': ath_cs('c_single', 'n_kid', 'p_csdel', deleted=True),
+    # Its only installment is paid and has no payment.
+    'cs_broken': ath_cs('c_multi', 'n_kid', multi=True),
+    'sc_cs': ath_cs('c_single', 'sc_one', 'sp_child'),
+    'f_cs': ath_cs('c_multi', 'f_sub', multi=True),
+    'cs_member': ath_cs('c_single', 'n_kid_partner', 'p_member_course'),
+}
+
+
+def ath_installment(cs, number, amount, date, payment, **values):
+    return {'id': uid('11a5cccc'), 'cs': cs, 'number': number, 'amount': amount, 'date': date, 'payment': payment, 'paid': False,
+            'deleted': False, **values}
+
+
+ATH_INSTALLMENTS = {
+    'i0': ath_installment('cs_multi', 0, '30.00', '2024-09-15T00:00:00Z', 'p_i0'),
+    'i1': ath_installment('cs_multi', 1, '30.00', '2099-01-15T00:00:00Z', 'p_i1'),
+    'i2': ath_installment('cs_multi', 2, '0.00', '2024-11-15T00:00:00Z', 'p_i2'),
+    'i3': ath_installment('cs_multi', 3, '30.00', '2024-10-15T08:30:00.123456Z', 'p_i3', paid=True),
+    'i_del': ath_installment('cs_multi', 4, '30.00', '2099-02-15T00:00:00Z', 'p_idel', deleted=True),
+    'i_nopay': ath_installment('cs_broken', 0, '10.00', '2024-09-15T00:00:00Z', None, paid=True),
+    'f_i': ath_installment('f_cs', 0, '10.00', '2024-09-15T00:00:00Z', None),
+}
+ATH_CARNET = {'id': uid('ca0e7bbb'), 'title': 'Carnet dieci lezioni', 'association': NORTH}
+ATH_HOLDINGS = {'h1': {'id': uid('ab0ca7ef'), 'subscription': 'n_self', 'payment': 'p_carnet', 'course_subscriptions': ['cs_single']}}
+ATH_CAMP = {'id': uid('ca0b0000'), 'title': 'Camp estivo', 'association': NORTH,
+            'period': {'id': uid('ca0b1111'), 'title': 'Settimana uno', 'start': '2024-07-01T00:00:00Z', 'end': '2024-07-07T00:00:00Z'},
+            'subscription': {'id': uid('ca0b2222'), 'subscription': 'n_kid'},
+            'link': {'id': uid('ca0b3333'), 'payment': 'p_camp'}}
+ATH_DOCUMENTS = {'south_pdf': {'id': uid('d0c0eeee'), 'token': uid('70ce0eee'), 'filename': 'ricevuta-sud.pdf'}}
+ATH_INVOICES = {label: {'id': uid('1a0c0bbb'), 'association': association, 'document': document, 'deleted': deleted}
+                for label, association, document, deleted in (
+                    ('inv_member', NORTH, None, False), ('inv_i3', NORTH, None, False), ('inv_south', SOUTH, 'south_pdf', False),
+                    ('inv_unpaid', NORTH, None, False), ('inv_nodate', NORTH, None, False), ('inv_shared', NORTH, None, False),
+                    ('inv_deleted', NORTH, None, True), ('sc_inv', NORTH, None, False))}
+
+
+def ath_payment(created, association=NORTH, **values):
+    return {'id': uid('ba1dbeef'), 'created': created, 'association': association, 'subject': 0, 'type': 'default', 'amount': '0.00',
+            'paid': False, 'expense': False, 'description': None, 'notes': None, 'user': None, 'associate': None, 'invoice': None,
+            'paid_on': None, 'deleted': False, 'archived': False, 'group': None, 'course': None, **values}
+
+
+ATH_PAYMENTS = {
+    'p_member': ath_payment('2024-02-01T09:00:00Z', user='runner', associate='r_self', subject=1, type='cash', amount='50.00', paid=True,
+                            paid_on='2024-02-10T10:00:00.250000Z', invoice='inv_member', description='Quota associativa'),
+    'p_course': ath_payment('2024-03-01T09:00:00Z', associate='r_self', subject=2, amount='80.00', description='Corso atletica',
+                            notes='saldo entro marzo', course={'title': 'Atletica JSON'}),
+    'p_zero': ath_payment('2024-03-02T09:00:00Z', associate='r_kid', subject=2),
+    'p_i0': ath_payment('2024-03-03T09:00:00Z', associate='r_self', subject=2, amount='30.00'),
+    'p_i1': ath_payment('2024-03-04T09:00:00Z', associate='r_self', subject=2, amount='30.00'),
+    'p_i2': ath_payment('2024-03-05T09:00:00Z', associate='r_self', subject=2),
+    'p_i3': ath_payment('2024-03-06T09:00:00Z', associate='r_self', subject=2, type='online', amount='30.00', paid=True,
+                        paid_on='2024-10-15T08:30:00Z', invoice='inv_i3'),
+    'p_idel': ath_payment('2024-03-07T09:00:00Z', associate='r_self', subject=2, amount='30.00'),
+    'p_carnet': ath_payment('2024-03-08T09:00:00Z', associate='r_self', subject=2, amount='25.00'),
+    'p_camp': ath_payment('2024-03-09T09:00:00Z', associate='r_kid', amount='45.00'),
+    'p_szero': ath_payment('2024-03-10T09:00:00Z', SOUTH, associate='r_south', subject=2),
+    'p_csdel': ath_payment('2024-03-11T09:00:00Z', associate='r_kid', subject=2),
+    'p_south_paid': ath_payment('2024-03-12T09:00:00Z', SOUTH, user='runner', amount='12.50', paid=True, paid_on='2024-03-12T10:00:00Z',
+                                invoice='inv_south'),
+    'p_expense': ath_payment('2024-03-13T09:00:00Z', user='runner', amount='5.00', expense=True),
+    'p_future': ath_payment('2099-01-01T09:00:00Z', user='runner', amount='7.00'),
+    'p_deleted': ath_payment('2024-03-15T09:00:00Z', user='runner', amount='7.50', deleted=True),
+    'p_old': ath_payment('2024-03-16T09:00:00Z', associate='r_old', amount='3.00'),
+    'p_stranger': ath_payment('2024-03-17T09:00:00Z', associate='stranger', amount='4.00'),
+    'p_unpaid_invoiced': ath_payment('2024-03-18T09:00:00Z', user='runner', amount='6.00', invoice='inv_unpaid'),
+    'p_nodate': ath_payment('2024-03-19T09:00:00Z', user='runner', amount='8.00', paid=True, invoice='inv_nodate'),
+    'p_shared_a': ath_payment('2024-03-20T09:00:00Z', user='runner', amount='9.00', paid=True, paid_on='2024-03-20T10:00:00Z',
+                              invoice='inv_shared'),
+    'p_shared_b': ath_payment('2024-03-21T09:00:00Z', user='runner', amount='9.50', paid=True, paid_on='2024-03-21T10:00:00Z',
+                              invoice='inv_shared'),
+    'p_delinv': ath_payment('2024-03-22T09:00:00Z', user='runner', amount='10.00', paid=True, paid_on='2024-03-22T10:00:00Z',
+                            invoice='inv_deleted'),
+    'p_grouped': ath_payment('2024-03-23T09:00:00Z', user='runner', amount='11.00', group=ATH_GROUP['id']),
+    'p_archived': ath_payment('2024-03-24T09:00:00Z', user='runner', amount='2.00', archived=True),
+    'p_member_course': ath_payment('2024-03-25T09:00:00Z', associate='r_kid', subject=2, amount='35.00'),
+    'sp_user': ath_payment('2024-04-01T09:00:00Z', user='scoped', amount='20.00', paid=True, paid_on='2024-04-02T09:00:00Z',
+                           invoice='sc_inv'),
+    'sp_child': ath_payment('2024-04-02T09:00:00Z', associate='sc_child', subject=2, amount='15.00'),
+    'sp_other': ath_payment('2024-04-03T09:00:00Z', associate='sc_other', amount='9.00'),
+}
+AP = {label: row['id'] for label, row in ATH_PAYMENTS.items()}
+TODAY = datetime.now(timezone.utc)
+# The authored dates are far from the 31 and 60 day limits: the expectations do not depend on the run date.
+assert all(abs((moment(row['date']) - TODAY).days) > 400 for row in ATH_INSTALLMENTS.values())
+assert all(abs((moment(row['created']) - TODAY).days) > 400 for row in ATH_PAYMENTS.values())
+
+
+class AthleteServerError(Exception):
+    pass
+
+
+def ath_live(label, group):
+    row = ATH_PAYMENTS[label]
+    return not row['deleted'] and (group is None or row['group'] == group)
+
+
+def ath_candidates(user, group=None, member=None):
+    """The athlete's payment queryset before the exclusions (member: scoped_queryset's athlete boundary)."""
+    # Subscriptions carry no group here: a group header leaves none.
+    subscriptions = [s for s in ATH_SUBSCRIPTIONS.values() if s['user'] == user and group is None]
+    associates = {s['associate'] for s in subscriptions if s['associate']}
+    labels = [k for k, row in ATH_PAYMENTS.items()
+              if ath_live(k, group) and (row['user'] == user or row['associate'] in associates) and Decimal(row['amount']) >= 0
+              and not row['expense'] and moment(row['created']) <= TODAY and (member is None or member(row))]
+    return sorted(sorted(labels, key=lambda k: moment(ATH_PAYMENTS[k]['created']), reverse=True), key=lambda k: ATH_PAYMENTS[k]['paid'])
+
+
+def ath_excluded(user, group=None):
+    excluded = set()
+    for name, subscription in ATH_SUBSCRIPTIONS.items():
+        if subscription['user'] != user or group is not None:
+            continue
+        show_zero = ASSOCIATION_OWNER[subscription['association']]['show_zero_payments']
+        for cs_name, cs in ATH_COURSE_SUBSCRIPTIONS.items():
+            if cs['subscription'] != name or cs['deleted']:
+                continue
+            if ATH_COURSES[cs['course']]['multi']:
+                for installment in ATH_INSTALLMENTS.values():
+                    if installment['cs'] != cs_name or installment['deleted'] or installment['paid']:
+                        continue
+                    if (moment(installment['date']).date() - TODAY.date()).days > 31:
+                        excluded.add(installment['payment'])
+                    elif installment['payment'] is None:
+                        raise AthleteServerError
+                    elif Decimal(ATH_PAYMENTS[installment['payment']]['amount']) == 0 and not show_zero:
+                        excluded.add(installment['payment'])
+            elif cs['payment'] and Decimal(ATH_PAYMENTS[cs['payment']]['amount']) == 0 and not show_zero:
+                excluded.add(cs['payment'])
+    return excluded
+
+
+def ath_course_subscription_available(user, name, group=None):
+    """Outside a scoped session: a live course subscription of the athlete's user or of an associate of their subscriptions."""
+    cs = ATH_COURSE_SUBSCRIPTIONS[name]
+    subscription = ATH_SUBSCRIPTIONS[cs['subscription']]
+    # Subscriptions carry no group here: a group header leaves no associates.
+    associates = {s['associate'] for s in ATH_SUBSCRIPTIONS.values() if s['user'] == user and group is None and s['associate']}
+    return not cs['deleted'] and (subscription['user'] == user or subscription['associate'] in associates)
+
+
+def ath_by_course_subscription(name, group=None):
+    """The course subscription branch: the payment labels (database order is not defined)."""
+    cs = ATH_COURSE_SUBSCRIPTIONS[name]
+    if cs['deleted']:
+        raise AthleteServerError
+    show_zero = ASSOCIATION_OWNER[ATH_COURSES[cs['course']]['association']]['show_zero_payments']
+    labels = []
+    if cs['multi']:
+        for installment in ATH_INSTALLMENTS.values():
+            if installment['cs'] == name and not installment['deleted'] and (Decimal(installment['amount']) > 0 or show_zero):
+                if installment['payment'] is None:
+                    raise AthleteServerError
+                labels.append(installment['payment'])
+    elif cs['payment'] and (Decimal(ATH_PAYMENTS[cs['payment']]['amount']) > 0 or show_zero):
+        labels.append(cs['payment'])
+    for holding in ATH_HOLDINGS.values():
+        if name in holding['course_subscriptions'] and holding['payment'] and (
+                Decimal(ATH_PAYMENTS[holding['payment']]['amount']) > 0 or show_zero):
+            labels.append(holding['payment'])
+    return [k for k in labels if ath_live(k, group)]
+
+
+def ath_meta(label):
+    row = ATH_PAYMENTS[label]
+    meta = {'type': '', 'is_installment': False, 'installment': {'id': None, 'payment_date': None}, 'conjunction': '',
+            'description': row['description'], 'notes': row['notes'], 'name': None,
+            'subscription': {'subscription_id': None, 'start_date': None, 'end_date': None}}
+
+    def subscription(name):
+        found = ATH_SUBSCRIPTIONS[name]
+        return {'subscription_id': found['id'], 'start_date': found['start'], 'end_date': found['end']}
+
+    installments = [i for i in ATH_INSTALLMENTS.values() if i['payment'] == label and not i['deleted']]
+    if installments:
+        installment = installments[0]
+        cs = ATH_COURSE_SUBSCRIPTIONS[installment['cs']]
+        return {**meta, 'type': 'rata', 'conjunction': ' del corso ', 'is_installment': True,
+                'installment': {'id': installment['number'], 'payment_date': drf_time(installment['date'])},
+                'name': ATH_COURSES[cs['course']]['title'], 'subscription': subscription(cs['subscription'])}
+    for name, found in ATH_SUBSCRIPTIONS.items():
+        if found['payment'] == label:
+            return {**meta, 'type': 'Iscrizione', 'conjunction': " all'associazione ",
+                    'name': ASSOCIATION_OWNER[found['association']]['denomination'], 'subscription': subscription(name)}
+    for holding in ATH_HOLDINGS.values():
+        if holding['payment'] == label:
+            return {**meta, 'type': 'Assegnazione carnet', 'conjunction': ' con nome ', 'name': ATH_CARNET['title'],
+                    'subscription': subscription(holding['subscription'])}
+    for cs in ATH_COURSE_SUBSCRIPTIONS.values():
+        if cs['payment'] == label and not cs['deleted']:
+            return {**meta, 'type': 'Iscrizione ', 'conjunction': ' al corso ', 'name': ATH_COURSES[cs['course']]['title'],
+                    'subscription': subscription(cs['subscription'])}
+    if ATH_CAMP['link']['payment'] == label:
+        return {**meta, 'type': 'Iscrizione ', 'conjunction': ' al campo ', 'name': ATH_CAMP['period']['title'],
+                'subscription': subscription(ATH_CAMP['subscription']['subscription'])}
+    return meta
+
+
+# The invoice PDFs as the sequence leaves them: a seeded Document id, None, or '$document:<invoice>' once generated.
+PDFS = {label: ATH_DOCUMENTS[row['document']]['id'] if row['document'] else None for label, row in ATH_INVOICES.items()}
+
+
+def ath_row(label, stripe):
+    row = ATH_PAYMENTS[label]
+    owner = ASSOCIATION_OWNER[row['association']]
+    online = stripe and owner['online_payments']
+    one_solution = False
+    installments = [i for i in ATH_INSTALLMENTS.values() if i['payment'] == label and not i['deleted']]
+    if online and installments:
+        installment = installments[-1]
+        course = ATH_COURSES[ATH_COURSE_SUBSCRIPTIONS[installment['cs']]['course']]
+        if course['one_fee'] and not row['paid']:
+            due = moment(installment['date']).strftime('%d/%m/%Y')
+            one_solution = any(int(event['id']) == 0 and event['payment_date'] == due for event in course['events'])
+    associate = ATH_ASSOCIATES[row['associate']] if row['associate'] else None
+    item = {'payment_id': row['id'], 'type': row['type'], 'subject': row['subject'], 'amount': row['amount'],
+            'associate': associate and {'associate_id': associate['id'], 'first_name': associate['first_name'],
+                                        'last_name': associate['last_name']},
+            'description': row['description'], 'paid': row['paid'], 'creation_date': drf_time(row['created']),
+            'payment_date': drf_time(row['paid_on']), 'payment_category': None, 'sport_association': row['association'],
+            'notes': row['notes'], 'course': row['course'], 'meta': ath_meta(label), 'payment_method': row['type'],
+            'online_pay_available': online, 'sport_association_denomination': owner['denomination'],
+            'one_solution_available': one_solution}
+    if row['paid'] and row['invoice']:
+        item['document_pdf'] = PDFS[row['invoice']]
+    return item
+
+
+def ath_body(labels, stripe=False):
+    return {'data': {str(index): ath_row(label, stripe) for index, label in enumerate(labels)}, 'meta': {}}
+
+
+def ath_receipts(labels, *, mail=False, group=None):
+    """The listed payments that reach the renderer, in order: paid, with a live invoice without PDF that exactly
+    one live payment references, and a payment date."""
+    found = []
+    for label in labels:
+        row = ATH_PAYMENTS[label]
+        if not (row['paid'] and row['invoice'] and PDFS[row['invoice']] is None):
+            continue
+        sharing = [k for k, other in ATH_PAYMENTS.items() if other['invoice'] == row['invoice'] and ath_live(k, group)]
+        if ATH_INVOICES[row['invoice']]['deleted'] or len(sharing) != 1 or row['paid_on'] is None:
+            continue
+        day = moment(row['paid_on']).astimezone(timezone.utc)
+        owner = ASSOCIATION_OWNER[row['association']]
+        associate = ATH_ASSOCIATES[row['associate']] if row['associate'] else None
+        message = None
+        if mail and associate and associate['email']:
+            short = day.strftime('%d/%m/%y')
+            message = {'subject': f'Ricevuta di pagamento {short}', 'recipient': associate['email'], 'message': (
+                f"Gentile {associate['first_name']} {associate['last_name']},\n"
+                f"abbiamo il piacere di inviarle la ricevuta di pagamento di {row['amount'].replace('.', ',')} € del {short}.\n\n"
+                "Ecco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\n"
+                f"Cordiali saluti,\n{owner['denomination']}")}
+        found.append({'invoice': row['invoice'], 'document': f"[{owner['denomination']}] Ricevuta {day.strftime('%Y-%m-%d')}.pdf",
+                      'mail': message})
+    return found
+
+
+def ath_add(name, actor, path, labels, *, stripe=False, headers=None, unordered=False, receipts=(), failing=False, audit=None,
+            stripe_enabled=True):
+    """One athlete list: the rows as the sequence stands, then the receipts the request generates."""
+    body = ath_body(labels, stripe and stripe_enabled)
+    reply = ({'status': 500, 'content_type': 'text/plain; charset=utf-8', 'body': 'renderer exploded'} if failing
+             else {'status': 200, 'content_type': 'application/pdf', 'body': '$pdf'})
+    renders = [{'url': f"document/invoice/{ATH_INVOICES[item['invoice']]['id']}/view", 'authorization': '$bearer', 'reply': reply}
+               for item in receipts]
+    generated = [{**item, 'linked': not failing, 'mail': None if failing else item['mail']} for item in receipts]
+    add(name, actor, path, 200, body, headers=headers, unordered=unordered, renders=renders, generated=generated,
+        stripe=(stripe_setup(0, 0, enabled=stripe_enabled), []) if stripe else None)
+    cases[-1]['audit'] = audit or {'actor': actor, 'association': None, 'session_association': None}
+    if not failing:
+        for item in receipts:
+            PDFS[item['invoice']] = '$document:' + item['invoice']
+
+
+ACS = {label: LIST + '?course_subscription_id=' + row['id'] for label, row in ATH_COURSE_SUBSCRIPTIONS.items()}
+ADMIN_ATHLETE = {'X-Impersonation-Id': '$session:admin_athlete', 'User-Id': IDS['athlete']}
+NORTH_SCOPED = {'X-Impersonation-Id': '$session:north_scoped', 'User-Id': U['scoped']}
+EMPTY_LIST = {'data': {}, 'meta': {}}
+add('athlete-list-empty', 'athlete', LIST, 200, EMPTY_LIST)
+add('athlete-list-admin-impersonating-athlete', 'admin', LIST, 200, EMPTY_LIST, headers=ADMIN_ATHLETE)
+add('athlete-list-installment-without-payment', 'faulty', LIST, 500, SERVER)
+add('athlete-course-subscription-empty-value', 'runner', LIST + '?course_subscription_id=', 500, SERVER)
+NOT_AVAILABLE_RESOURCE = {'detail': 'Risorsa non disponibile per questo utente e associazione.'}
+assert not ath_course_subscription_available('runner', 'cs_deleted')
+add('athlete-course-subscription-deleted', 'runner', ACS['cs_deleted'], 403, NOT_AVAILABLE_RESOURCE)
+add('athlete-course-subscription-installment-without-payment', 'runner', ACS['cs_broken'], 500, SERVER)
+ath_add('athlete-course-subscription-zero-hidden', 'runner', ACS['cs_zero'], ath_by_course_subscription('cs_zero'))
+ath_add('athlete-course-subscription-zero-shown', 'runner', ACS['cs_south'], ath_by_course_subscription('cs_south'))
+assert ath_by_course_subscription('cs_zero') == [] and ath_by_course_subscription('cs_south') == ['p_szero']
+GROUP_LIST = ath_candidates('runner', ATH_GROUP['id'])
+assert GROUP_LIST == ['p_grouped']
+ath_add('athlete-list-group', 'runner', LIST, GROUP_LIST, headers={'X-Group-Id': ATH_GROUP['id']})
+
+RUNNER_QUERY = ath_candidates('runner')
+RUNNER = [k for k in RUNNER_QUERY if k not in ath_excluded('runner')]
+assert set(RUNNER_QUERY) - set(RUNNER) == {'p_zero', 'p_i1', 'p_i2'}
+assert not {'p_expense', 'p_future', 'p_deleted', 'p_stranger', 'sp_user'} & set(RUNNER_QUERY)
+assert {'p_old', 'p_archived', 'p_csdel', 'p_idel', 'p_szero', 'p_camp'} <= set(RUNNER)
+RECEIPTS = ath_receipts(RUNNER_QUERY, mail=True)
+assert [item['invoice'] for item in RECEIPTS] == ['inv_i3', 'inv_member'] and all(item['mail'] for item in RECEIPTS)
+# The renderer fails: each Document stays, the invoices are not linked and the list still answers.
+ath_add('athlete-list-renderer-failure', 'runner', LIST, RUNNER, receipts=ath_receipts(RUNNER_QUERY), failing=True)
+# The list's own send_receipt_email reaches document_invoice; the rows still show the invoices as loaded.
+ath_add('athlete-list-receipts-generated', 'runner', LIST + '?send_receipt_email=true', RUNNER, stripe=True, receipts=RECEIPTS)
+assert ath_row('p_i0', True)['one_solution_available'] and not ath_row('p_idel', True)['one_solution_available']
+ath_add('athlete-list', 'runner', LIST, RUNNER)
+assert ath_row('p_i3', False)['document_pdf'] == '$document:inv_i3' and ath_row('p_nodate', False)['document_pdf'] is None
+ath_add('athlete-list-stripe-disabled', 'runner', LIST, RUNNER, stripe=True, stripe_enabled=False)
+ath_add('athlete-list-ignores-owner-filters', 'runner', LIST + '?query[paid]=true&sort[field]=nope&pagination[page]=9&query[archived]=x',
+        RUNNER)
+SINGLE, INSTALLED = ath_by_course_subscription('cs_single'), ath_by_course_subscription('cs_multi')
+assert sorted(SINGLE) == ['p_carnet', 'p_course'] and sorted(INSTALLED) == ['p_i0', 'p_i1', 'p_i3']
+ath_add('athlete-course-subscription-single', 'runner', ACS['cs_single'], SINGLE, unordered=True)
+ath_add('athlete-course-subscription-installments', 'runner', ACS['cs_multi'], INSTALLED, stripe=True, unordered=True)
+# The course subscription of another user's subscription of an associate the athlete subscribed too.
+assert ath_course_subscription_available('runner', 'cs_member') and ath_by_course_subscription('cs_member') == ['p_member_course']
+ath_add('athlete-course-subscription-of-associate', 'runner', ACS['cs_member'], ['p_member_course'])
+# A group header: the athlete's subscriptions (none in the group) give no associates; the payments are the group's.
+assert not ath_course_subscription_available('runner', 'cs_member', ATH_GROUP['id'])
+add('athlete-course-subscription-of-associate-group', 'runner', ACS['cs_member'], 403, NOT_AVAILABLE_RESOURCE,
+    headers={'X-Group-Id': ATH_GROUP['id']})
+assert ath_course_subscription_available('runner', 'cs_single', ATH_GROUP['id'])
+assert ath_by_course_subscription('cs_single', ATH_GROUP['id']) == []
+ath_add('athlete-course-subscription-group', 'runner', ACS['cs_single'], [], headers={'X-Group-Id': ATH_GROUP['id']})
+# Only the athlete's own course subscriptions and those of their associates.
+assert not ath_course_subscription_available('runner', 'sc_cs') and not ath_course_subscription_available('scoped', 'cs_single')
+add('athlete-course-subscription-of-another-athlete', 'runner', ACS['sc_cs'], 403, NOT_AVAILABLE_RESOURCE)
+add('athlete-course-subscription-of-another-athlete-installments', 'scoped', ACS['cs_multi'], 403, NOT_AVAILABLE_RESOURCE)
+add('athlete-course-subscription-admin-impersonating-athlete', 'admin', ACS['cs_single'], 403, NOT_AVAILABLE_RESOURCE,
+    headers=ADMIN_ATHLETE)
+assert ath_course_subscription_available('scoped', 'sc_cs')
+ath_add('athlete-course-subscription-own', 'scoped', ACS['sc_cs'], ath_by_course_subscription('sc_cs'))
+
+# An association-scoped session (the owner viewing as the athlete): scoped_queryset keeps the association's rows
+# of the athlete's user and of the members it resolves (the associate with the athlete's user, or with the tax
+# code of an associate of the athlete's subscriptions).
+SCOPED_MEMBERS = {'sc_child'}
+SCOPED_QUERY = ath_candidates('scoped', member=lambda row: row['association'] == NORTH and (
+    row['user'] == 'scoped' or row['associate'] in SCOPED_MEMBERS))
+assert SCOPED_QUERY == ['sp_child', 'sp_user'] and ath_excluded('scoped') == set()
+SCOPED_AUDIT = {'actor': 'north_owner', 'association': NORTH, 'session_association': NORTH}
+ath_add('athlete-scoped-list', 'north_owner', LIST, SCOPED_QUERY, headers=NORTH_SCOPED, receipts=ath_receipts(SCOPED_QUERY),
+        audit=SCOPED_AUDIT)
+assert cases[-1]['generated'] and cases[-1]['generated'][0]['invoice'] == 'sc_inv'
+ath_add('athlete-scoped-course-subscription', 'north_owner', ACS['sc_cs'], ath_by_course_subscription('sc_cs'), headers=NORTH_SCOPED,
+        audit=SCOPED_AUDIT)
+add('athlete-scoped-course-subscription-not-available', 'north_owner', ACS['cs_single'], 403, NOT_AVAILABLE_RESOURCE, headers=NORTH_SCOPED)
+add('athlete-scoped-compressed', 'north_owner', LIST + '?mode=compressed', 500, SERVER, headers=NORTH_SCOPED)
+UNSCOPED = ath_candidates('scoped')
+assert UNSCOPED == ['sp_other', 'sp_child', 'sp_user']
+ath_add('athlete-list-of-scoped-user', 'scoped', LIST, UNSCOPED)
+assert cases[-1]['response']['data']['2']['document_pdf'] == '$document:sc_inv'
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'Payment list, payment stats and subscription payments authored sequence', 'ids': IDS, 'stripe': STRIPE,
@@ -1081,5 +1535,10 @@ OUTPUT.write_text(json.dumps({
     'tutors': {A[k]: [[A[t], primary] for t, primary in v] for k, v in TUTORS.items()}, 'instructor': INSTRUCTOR, 'supplier': SUPPLIER,
     'courses': COURSES, 'carnet': CARNET, 'invoice': INVOICE, 'subscriptions': SUBSCRIPTIONS, 'payments': PAYMENTS,
     'course_subscriptions': COURSE_SUBSCRIPTIONS, 'installments': INSTALLMENTS, 'holdings': HOLDINGS, 'hours': HOURS,
+    'extra_users': EXTRA_USERS,
+    'athlete': {'owners': ATH_OWNERS, 'group': ATH_GROUP, 'session': ATH_SESSION, 'associates': ATH_ASSOCIATES,
+                'subscriptions': ATH_SUBSCRIPTIONS, 'courses': ATH_COURSES, 'course_subscriptions': ATH_COURSE_SUBSCRIPTIONS,
+                'installments': ATH_INSTALLMENTS, 'carnet': ATH_CARNET, 'holdings': ATH_HOLDINGS, 'camp': ATH_CAMP,
+                'documents': ATH_DOCUMENTS, 'invoices': ATH_INVOICES, 'payments': ATH_PAYMENTS},
     'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

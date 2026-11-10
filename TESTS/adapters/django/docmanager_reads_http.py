@@ -7,7 +7,9 @@ endpoint before either server starts, so the Go server receives the same
 AWS_* settings. Objects are only read, so they are shared by all transports.
 
 seed_rows inserts (audit disabled) the authored Document rows with their
-archive rows, subscriptions, medical certificates and invoices. Every case is
+archive rows, associates, subscriptions, medical certificates, attached files,
+invoices and payments, plus a self-hosted InstanceConfiguration whose primary
+association belongs to an athlete account. Every case is
 a read or a refusal: the complete model state and the cache must be
 unchanged. Download tokens are issued per workload with django.core.signing
 (fresh, expired, tampered, compressed and crafted payloads).
@@ -27,7 +29,7 @@ from TESTS.adapters.django import family_harness as harness
 SOURCES = ('TESTS/fixtures/docmanager_reads_http.json', 'TESTS/contracts/test_docmanager_reads_http.py',
            'TESTS/adapters/django/docmanager_reads_http.py', 'TESTS/adapters/django/instance_logo.py',
            'TESTS/adapters/django/s3_objects.py', 'BE/docmanager/views/document_view.py',
-           'BE/docmanager/download_tokens.py', 'BE/docmanager/models.py', 'BE/application/document_scope.py',
+           'BE/docmanager/access.py', 'BE/instance/permissions.py', 'BE/docmanager/download_tokens.py', 'BE/docmanager/models.py', 'BE/application/document_scope.py',
            'BE/application/utils/printing.py', 'BE/application/impersonation_scope.py', 'BE/application/mixin.py',
            'BE/application/models/subscriptions_models.py', 'BE/application/models/invoices_models.py',
            'BE/application/models/user_models.py', 'BE/application/permissions_registry.py',
@@ -62,11 +64,14 @@ def service_context(report, log):
 
 
 def seed_rows(source, created):
-    from application.models import Invoice, Subscription
-    from application.models.subscriptions_models import MedicalCertificate
+    from application.models import Associate, Invoice, Payment, SportAssociation, Subscription
+    from application.models.subscriptions_models import MedicalCertificate, SubscriptionFile
     from application.models.user_models import SportAssociationDocumentsArchive
     from docmanager.models import Document
-    ids, documents = source['ids'], source['documents']
+    from instance.models import InstanceConfiguration
+    ids, documents = dict(source['ids']), source['documents']
+    ids.update({label: row['id'] for label, row in source['extra_users'].items()})
+    associates, medicals, subscriptions, invoices = (source[key] for key in ('associates', 'medicals', 'subscriptions', 'invoices'))
 
     def insert(model, row):
         contract.require(not model._base_manager.filter(pk=row.pk).exists(), 'fixture.collision')
@@ -83,16 +88,34 @@ def seed_rows(source, created):
         insert(SportAssociationDocumentsArchive, SportAssociationDocumentsArchive(
             sport_association_documents_archive_id=row['id'], sport_association_id=ids[row['association']],
             document_id=document(row['document']), date=date.fromisoformat(row['date'])))
-    for row in source['subscriptions'].values():
+    primary = source['primary']
+    insert(SportAssociation, SportAssociation(sport_association_id=primary['association'], user_id=ids[primary['user']],
+                                              denomination=primary['denomination']))
+    contract.require(not InstanceConfiguration._base_manager.exists(), 'fixture.instance-exists')
+    insert(InstanceConfiguration, InstanceConfiguration(primary_association_id=primary['association'], **source['instance']))
+    for row in associates.values():
+        insert(Associate, Associate(associate_id=row['id'], sport_association_id=ids[row['association']],
+                                    user_id=ids[row['user']] if row['user'] else None, tax_code=row['tax_code']))
+    for row in medicals.values():
+        insert(MedicalCertificate, MedicalCertificate(medical_id=row['id'], document_id=document(row['document']),
+                                                      user_id=ids[row['user']] if row.get('user') else None))
+    for row in subscriptions.values():
         insert(Subscription, Subscription(subscription_id=row['id'], sport_association_id=ids[row['association']],
                                           user_id=ids[row['user']], document_pdf_id=document(row['document']),
-                                          group_id=ids[row['group']] if row['group'] else None))
-    for row in source['medicals'].values():
-        insert(MedicalCertificate, MedicalCertificate(medical_id=row['id'], document_id=document(row['document'])))
-    for row in source['invoices'].values():
+                                          group_id=ids[row['group']] if row['group'] else None,
+                                          associate_id=associates[row['associate']]['id'] if row.get('associate') else None,
+                                          medical_id=medicals[row['medical']]['id'] if row.get('medical') else None))
+    for row in source['files'].values():
+        insert(SubscriptionFile, SubscriptionFile(subscription_file_id=row['id'], subscription_id=subscriptions[row['subscription']]['id'],
+                                                  document_id=document(row['document'])))
+    for row in invoices.values():
         insert(Invoice, Invoice(invoice_id=row['id'], sport_association_id=ids[row['association']],
                                 document_pdf_id=document(row['document']), membership_fee=Decimal('0.00'),
                                 activity_fee=Decimal('10.00'), deleted=row['deleted']))
+    for row in source['payments'].values():
+        insert(Payment, Payment(payment_id=row['id'], sport_association_id=ids[row['association']], invoice_id=invoices[row['invoice']]['id'],
+                                user_id=ids[row['user']], amount=Decimal('10.00'),
+                                associate_id=associates[row['associate']]['id'] if row['associate'] else None))
 
 
 def download_tokens(source):

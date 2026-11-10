@@ -51,6 +51,8 @@ type CommunicationSMTPTransaction interface {
 	Association(ctx context.Context, owner string, lock bool) (string, error)
 	// FirstConfiguration is filter(sport_association=...).first(): the lowest key.
 	FirstConfiguration(ctx context.Context, association string, lock bool) (CommunicationConfigurationRecord, error)
+	// OwnerEmail is the email of the association's user row.
+	OwnerEmail(ctx context.Context, association string) (string, error)
 	InsertConfiguration(context.Context, CommunicationConfigurationRecord) error
 	UpdateConfiguration(context.Context, CommunicationConfigurationRecord) error
 	AppendConfigurationAudit(context.Context, CommunicationConfigurationAudit) error

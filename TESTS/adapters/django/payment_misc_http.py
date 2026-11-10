@@ -21,8 +21,24 @@ messages must be exactly its authored 'celery' tasks (none by default), with
 '$render' messages rendered by Django's render_to_string. A CURRENT_HOST print
 stub (invoice-sync-print's service_context) runs for the whole run: each
 case's outbound requests must be exactly its authored 'prints'.
+
+service_context also runs a fake SMTP server (plain, AUTH; email-tasks' FakeSMTP)
+and pins send_email_html's Timer delay: application.tasks' random.randint
+answers 1 for the run and the Go server gets SEND_EMAIL_HTML_DELAY_SECONDS=1.
+A case with 'smtp' gets, only around its request, a CommunicationConfiguration
+of the second association pointing at that server (audit disabled); the runner
+waits (40 s at most) for the authored deliveries and the stored daily balance,
+checks each delivered message (envelope, headers, the html part decoded against
+Django's render_to_string), then removes the configuration. The balance save's
+audit entry (no actor, no cid) is checked with the case's effect.
 """
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
+import base64
+import email
+import email.header
+import json
+import os
+from unittest import mock
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 import ipaddress
@@ -51,10 +67,15 @@ SOURCES = ('TESTS/fixtures/payment_misc_http.json', 'TESTS/contracts/test_paymen
            'BE/application/audit_resolvers.py', 'BE/application/permissions_registry.py', 'BE/docmanager/models.py', 'TESTS/adapters/django/invoice_sync_print_http.py',
            'TESTS/adapters/django/email_render_routes_http.py', 'BE/application/printing_tasks.py', 'BE/instance/restore/task_base.py',
            'BE/templates/email/payment/fee_assigned.html', 'BE/templates/email/_base.html', 'BE/core/tasks.py',
-           'BE/core/celery.py', 'BE/application/impersonation.py') + harness.SOURCES
+           'BE/core/celery.py', 'BE/application/impersonation.py', 'BE/communications/models.py',
+           'TESTS/adapters/go/email_tasks_worker_process.py') + harness.SOURCES
 PAYMENT = 'application.Payment'
 SIGNATURE = 'application.Signature'
 MANAGED = (PAYMENT, SIGNATURE, harness.AUDIT, harness.INDEX)
+
+
+SMTP = {}
+SMTP_WAIT = 40
 
 
 def _assert_case(case, base_url, *, token, sessions):
@@ -64,14 +85,118 @@ def _assert_case(case, base_url, *, token, sessions):
         stub['log'] = []
         stub['script'] = [item['reply'] for item in case['prints']]
     stub['token'] = token
-    status = base_contract.assert_case(case, base_url, token=token, sessions=sessions)
+    spec = case.get('smtp')
+    if spec is None:
+        status = base_contract.assert_case(case, base_url, token=token, sessions=sessions)
+    else:
+        with smtp_configuration():
+            status = base_contract.assert_case(case, base_url, token=token, sessions=sessions)
+            check_deliveries(spec)
     printer.check_prints(case, None)
     return status
 
 
+@contextmanager
+def smtp_configuration():
+    """The second association's CommunicationConfiguration, only around the request (audit disabled)."""
+    from auditlog.context import disable_auditlog
+    from communications.models import CommunicationConfiguration
+    from TESTS.adapters.go.email_tasks_worker_process import SMTP_PASSWORD
+    source = base_contract.load_source()
+    config = source['smtp_config']
+    SMTP['server'].take()
+    with disable_auditlog():
+        CommunicationConfiguration._base_manager.bulk_create([CommunicationConfiguration(
+            communication_configuration_id=config['id'], sport_association_id=source['plans_owner']['association'],
+            email_smtp_host='127.0.0.1', email_smtp_port=SMTP['server'].port, email_smtp_user=config['user'],
+            email_smtp_password=SMTP_PASSWORD, email_sender_name=config['sender'], email_encryption='NONE',
+            daily_email_limit=config['limit'], daily_email_balance=config['balance'])])
+    try:
+        yield
+    finally:
+        with disable_auditlog():
+            CommunicationConfiguration._base_manager.filter(pk=config['id']).delete()
+        base_contract.require(not CommunicationConfiguration._base_manager.exists(), 'fixture.smtp-configuration-removed')
+
+
+def delivered(transcripts):
+    return [t for t in transcripts if any(unit.endswith('\r\n.\r\n') for unit in t)]
+
+
+def check_deliveries(spec):
+    """Wait for the Timer sends and the balance save, then check every delivered message."""
+    from django.conf import settings
+    from communications.models import CommunicationConfiguration
+    require = base_contract.require
+    source = base_contract.load_source()
+    config = source['smtp_config']
+    expected = spec['deliveries']
+    require(len(expected) > 0, 'smtp.authored')
+    seen, deadline = [], time.monotonic() + SMTP_WAIT
+    while time.monotonic() < deadline:
+        seen += SMTP['server'].take()
+        balance = CommunicationConfiguration._base_manager.filter(pk=config['id']).values_list('daily_email_balance', flat=True).first()
+        if len(delivered(seen)) >= len(expected) and balance == spec['balance']:
+            break
+        time.sleep(0.2)
+    time.sleep(0.5)
+    seen += SMTP['server'].take()
+    messages = delivered(seen)
+    require(len(messages) == len(expected), f'smtp.delivery-count:{len(messages)}')
+    require(balance == spec['balance'], f'smtp.balance:{balance}')
+    values = {'$whitelabel': settings.WHITELABEL_NAME}
+    for transcript, authored in zip(messages, resolve(expected, values)):
+        units = [unit for unit in transcript if not unit.startswith('<')]
+        verbs = [unit.split(' ', 1)[0].strip().upper() for unit in units]
+        require(verbs[0] in ('EHLO', 'HELO') and 'AUTH' in verbs and verbs[-1] == 'QUIT', 'smtp.session')
+        mail_from = next(u for u in units if u.upper().startswith('MAIL FROM:'))
+        rcpts = [u for u in units if u.upper().startswith('RCPT TO:')]
+        require(mail_from.upper().startswith(f"MAIL FROM:<{config['user']}>".upper()), 'smtp.mail-from')
+        require([r.strip()[8:] for r in rcpts] == [f"<{authored['to']}>"], 'smtp.rcpt')
+        data = next(u for u in units if u.endswith('\r\n.\r\n'))
+        # FakeSMTP records the MIME boundary as '<boundary>', which the parser would read as an angle-quoted value.
+        message = email.message_from_string(data[:-5].replace('\r\n..', '\r\n.').replace('<boundary>', 'fixture-boundary'))
+        require(message.get_content_type() == 'multipart/alternative' and message['MIME-Version'] == '1.0', 'smtp.container')
+        require([(k, str(email.header.make_header(email.header.decode_header(v)))) for k, v in message.items()
+                 if k not in ('Content-Type', 'MIME-Version')]
+                == [('From', authored['from']), ('To', authored['to']), ('Subject', authored['subject']), ('Reply-To', authored['reply_to'])],
+                'smtp.headers')
+        parts = message.get_payload()
+        require(len(parts) == 1 and parts[0].get_content_type() == 'text/html' and parts[0].get_content_charset() == 'utf-8'
+                and parts[0]['Content-Transfer-Encoding'] == 'base64', 'smtp.part')
+        require(parts[0].get_payload(decode=True).decode('utf-8') == authored['html'], 'smtp.html')
+
+
 contract = types.SimpleNamespace(load_source=base_contract.load_source, require=base_contract.require, assert_case=_assert_case,
                                  NOW=base_contract.NOW)
-service_context = printer.service_context
+
+
+@contextmanager
+def service_context(report, log):
+    """The print stub, the fake SMTP server and the pinned send_email_html delay."""
+    from TESTS.adapters.go.email_tasks_worker_process import FakeSMTP
+    import application.tasks as tasks
+    saved_env = os.environ.get('GO_FIXTURE_ENVIRONMENT')
+    with ExitStack() as stack:
+        server = FakeSMTP(None, False)
+        report['service_cleanup']['payment_misc_smtp'] = 'running'
+        stack.callback(server.close)
+        SMTP['server'] = server
+        stack.callback(SMTP.clear)
+        stack.enter_context(printer.service_context(report, log))
+        environment = json.loads(os.environ.get('GO_FIXTURE_ENVIRONMENT') or '{}')
+        os.environ['GO_FIXTURE_ENVIRONMENT'] = json.dumps({**environment, 'SEND_EMAIL_HTML_DELAY_SECONDS': '1'})
+        stack.enter_context(mock.patch.object(tasks, 'random', types.SimpleNamespace(randint=lambda low, high: 1)))
+        try:
+            yield
+        finally:
+            restored = os.environ.get('GO_FIXTURE_ENVIRONMENT')
+            if restored is not None:
+                os.environ['GO_FIXTURE_ENVIRONMENT'] = json.dumps({k: v for k, v in json.loads(restored).items()
+                                                                   if k != 'SEND_EMAIL_HTML_DELAY_SECONDS'})
+            report['service_cleanup']['payment_misc_smtp'] = 'stopped'
+    if saved_env is None:
+        os.environ.pop('GO_FIXTURE_ENVIRONMENT', None)
 TIMES = ('creation_date', 'payment_date')
 
 
@@ -102,6 +227,9 @@ def seed_rows(source, created):
                       first_name=second['first'], last_name=second['last']))
     insert(SportAssociation, SportAssociation(sport_association_id=second['association'], user_id=second['id'],
                                               denomination=second['denomination'], tax_code='79900000001'))
+    member = source['plans_member']
+    insert(User, User(user_id=member['id'], username=member['username'], email=member['email'], password='!synthetic', role=User.ATHLETE,
+                      first_name=member['first'], last_name=member['last']))
     for association, plans in source['plans'].items():
         SportAssociation._base_manager.filter(pk=association).update(subscription_fee_plans=plans)
     insert(PaymentCategory, PaymentCategory(payment_category_id=source['category']['id'], name=source['category']['name'],
@@ -119,7 +247,8 @@ def seed_rows(source, created):
                                                       email=vendor['email'], sport_association_id=own))
     for row in source['associates'].values():
         insert(Associate, Associate(associate_id=row['id'], sport_association_id=row['association'],
-                                    user_id=owner if row['association'] == own else ids['foreign_owner'], first_name=row['first'],
+                                    user_id={own: owner, second['association']: second['id']}.get(row['association'], ids['foreign_owner']),
+                                    first_name=row['first'],
                                     last_name=row['last'], sex='M', born_date=date(1990, 5, 10), is_minor=False,
                                     group_id=ids[row['group']] if row['group'] else None))
     for row in source['invoices'].values():
@@ -248,6 +377,7 @@ def assert_effect(case, before, after, source, context):
         contract.require(new[key] == expected, 'state.payment:' + labels.get(key, key))
     events, indexes = harness.audit_delta(contract, before, after)
     events.sort(key=lambda row: int(row['id']))
+    events = check_configuration_audit(effect, events, indexes, before, source)
     contract.require(len(events) == len(effect['audit']) and len(indexes) == sum(1 for e in effect['audit'] if e['index']), 'audit.count')
     types = {ct['model']: ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'application'}
     users = keyed(before['application.User'], 'user_id')
@@ -288,6 +418,26 @@ def assert_effect(case, before, after, source, context):
         else:
             contract.require(index is not None and index['sport_association_id'] == spec['index'][0]
                              and index['resolution_path'] == spec['index'][1], 'index.fields' + where)
+
+
+def check_configuration_audit(effect, events, indexes, before, source):
+    """The Timer's balance save entry (authored 'smtp_config_audit'); returns the other entries."""
+    kinds = {ct['id']: (ct['app_label'], ct['model']) for ct in before['contenttypes.ContentType']}
+    config = [e for e in events if kinds.get(e['content_type_id']) == ('communications', 'communicationconfiguration')]
+    rest = [e for e in events if e not in config]
+    spec = effect.get('smtp_config_audit')
+    contract.require(len(config) == (1 if spec else 0), 'audit.configuration-count')
+    if spec:
+        event, key = config[0], source['smtp_config']['id']
+        contract.require(event['action'] == 1 and event['object_pk'] == key
+                         and event['object_repr'] == f'CommunicationConfiguration object ({key})', 'audit.configuration-identity')
+        contract.require(event['changes'] == spec['changes'], 'audit.configuration-changes')
+        contract.require(event['actor_id'] is None and event['cid'] is None and event['remote_addr'] is None
+                         and event['additional_data'] is None, 'audit.configuration-context')
+        index = indexes.pop(str(event['id']), None)
+        contract.require(index is not None and index['sport_association_id'] == spec['index'][0]
+                         and index['resolution_path'] == spec['index'][1], 'audit.configuration-index')
+    return rest
 
 
 run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare)

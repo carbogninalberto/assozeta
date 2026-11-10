@@ -268,7 +268,7 @@ func (r *StatisticReads) AthleteSubscriptions(ctx context.Context, scope domain.
 	rows := []domain.StatisticAthleteSubscription{}
 	err := r.db.SelectContext(ctx, &rows, `WITH codes AS (SELECT a.tax_code FROM application_subscription s
  JOIN application_associate a ON a.associate_id=s.associate_id WHERE s.user_id=$1 AND s.sport_association_id=$2
- AND ($3::uuid IS NULL OR s.group_id=$3::uuid) AND a.tax_code IS NOT NULL AND `+statisticVisibleFor("s.subscription_id")+`)
+ AND ($3::uuid IS NULL OR s.group_id=$3::uuid) AND `+familyTaxCodeFilled("a")+` AND `+statisticVisibleFor("s.subscription_id")+`)
  SELECT DISTINCT s.subscription_id, s.start_date, s.end_date, s.archived, s.associate_id IS NOT NULL AS has_associate,
  a.associate_id, a.first_name, a.last_name FROM application_subscription s LEFT JOIN application_associate a ON a.associate_id=s.associate_id
  WHERE s.sport_association_id=$2 AND ($3::uuid IS NULL OR s.group_id=$3::uuid)

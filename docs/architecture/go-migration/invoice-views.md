@@ -110,3 +110,20 @@ which the contract passes unsaved to `generate_invoice_html`. Every case must le
 - Mutation (`mutation-r1`): dropping the payment soft-delete filter fails Go on `invoice-views-invoice-deleted-second-payment`
   (the 500 page instead of the receipt).
 - Families re-run for shared code: `document-views` (`mentions.Filter` now shares its tree with `FilterBlank`).
+
+Member documents (`secdoc-*`): documents are served to the association's staff and to the member they belong to.
+`docmanager.access` (Django, with `docmanager.test_document_access`) and `memberDocumentAccess` with
+`repository.MemberDocuments` (Go) decide it the same way: accounts other than athletes, superusers and the instance owner
+(`is_instance_owner`) reach every record; an athlete account reaches the records of its user, of the associates of its
+subscriptions, of associates whose account it is and of associates sharing a non-empty tax code with those (base managers:
+no group or soft-delete filter). Anything else answers `403 {"detail": "Risorsa non disponibile per questo utente e
+associazione."}`. Association-scoped sessions keep their own boundary, and requests admitted without an account (a document
+token, the renderer header) are decided by the view's permission classes as before.
+
+`document/invoice/<uid>/view/` applies it to the invoice right after the lookup and before the payment lookup: the invoice
+must belong to one of the member's payments. The fixture has 86 cases (10 new): the receipt of the athlete's own payment
+renders, also with the renderer header; receipts of other associates, suppliers, instructors and invoices without a payment
+get the 403; a deleted or unknown invoice is still the 500 page. RED `secdoc-red-r3`: Django 86/86, Go 200 on
+`invoice-views-invoice-athlete-direct` with the check switched off. GREEN `secdoc-versioned-final` (after merging the base;
+`secdoc-versioned-r3` before): 86/86 on the four transports. Mutation `secdoc-mutation-r1` (every invoice counted as the
+member's) CAUGHT. `document/einvoice/<uid>/view/` is unchanged.

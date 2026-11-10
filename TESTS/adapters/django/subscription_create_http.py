@@ -145,7 +145,8 @@ def resolve_date(text):
     values = {'$today': today(), '$season_start': start, '$season_end': end,
               '$today_next_year': today().replace(year=today().year + 1) if (today().month, today().day) != (2, 29)
               else date(today().year + 1, 2, 28),
-              '$season_start_next_year_eve': start.replace(year=start.year + 1) - timedelta(days=1)}
+              '$season_start_next_year_eve': start.replace(year=start.year + 1) - timedelta(days=1),
+              '$next_season_start': start.replace(year=start.year + 1), '$next_season_end': end.replace(year=end.year + 1)}
     return values[text]
 
 
@@ -267,9 +268,14 @@ def user_model():
     return User
 
 
+def family_model():
+    from application.models.user_models import Family
+    return Family
+
+
 # Tutor relations (integer keys) go with their associates.
 _identity_context = harness.with_celery_broker(harness.fixture_context_for(contract, seed_rows, purge=tuple(
-    (lambda label=label: models()[label]) for label in LABELS.values() if label != LABELS['relation']) + (user_model,)))
+    (lambda label=label: models()[label]) for label in LABELS.values() if label != LABELS['relation']) + (user_model, family_model)))
 
 
 
@@ -416,9 +422,9 @@ def resolve(value, binding):
     return value
 
 
-def membership_type_default():
+def membership_type_default(offset=0):
     start, end = season()
-    return f'Tesseramento {start.year}/{end.year}'
+    return f'Tesseramento {start.year + offset}/{end.year + offset}'
 
 
 def check_rows(case, effect, before, after, ids, since, until, binding):
@@ -436,13 +442,17 @@ def check_rows(case, effect, before, after, ids, since, until, binding):
     if member in ids:
         member = ids[member]
     binding['$member'] = member
+    # A preregistration is created on the next season's first day.
+    binding['$next_season_created'] = datetime.combine(resolve_date('$next_season_start'), day_time()).isoformat() + 'Z'
+    for name in ('start', 'end'):
+        binding[f'$next_season_{name}_text'] = resolve_date(f'$next_season_{name}').isoformat() + ' 00:00:00+00:00'
 
     def expect_new(label, columns, row):
         expected = {**defaults[label], **resolve(columns, binding)}
         key = KEYS[label]
         contract.require(uuid4_text(row[key]) or label == LABELS['relation'], 'state.key:' + label)
         expected[key] = row[key]
-        if 'creation_date' in expected:
+        if 'creation_date' in expected and 'creation_date' not in columns:
             contract.require(in_window(row['creation_date'], since, until), 'state.created:' + label)
             expected['creation_date'] = row['creation_date']
         contract.require(row == expected, 'state.row:' + label + json.dumps(
@@ -524,6 +534,8 @@ def check_rows(case, effect, before, after, ids, since, until, binding):
                    'associate_id': bound['$associate'], 'payment_id': binding['$payment'], **effect['membership']}
         if columns.get('membership_type') == '$default_membership_type':
             columns['membership_type'] = membership_type_default()
+        if columns.get('membership_type') == '$next_membership_type':
+            columns['membership_type'] = membership_type_default(1)
         expect_new(LABELS['membership'], columns, row)
     # Notification broadcast rows.
     broadcasts, subscriptions = new[LABELS['broadcast']], new[LABELS['user_broadcast']]
@@ -615,7 +627,8 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
     contract.require(len(added) == len(authored), f'audit.count:{len(added)}')
     types = {(ct['app_label'], ct['model']): ct['id'] for ct in before['contenttypes.ContentType']}
     users = keyed(before['application.User'], 'user_id')
-    actor = ids[effect['actor']]
+    # The public form has no actor.
+    actor = None if effect['actor'] == 'anonymous' else ids[effect['actor']]
     session = case['headers'].get('X-Impersonation-Id', '')
     additional = None
     if session.startswith('$session:'):
@@ -659,7 +672,7 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
         contract.require(event['changes'] == expected, 'audit.changes' + where + json.dumps(
             {k: [expected.get(k), event['changes'].get(k)] for k in set(expected) | set(event['changes'])
              if expected.get(k) != event['changes'].get(k)}))
-        contract.require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor' + where + json.dumps([event['actor_id'], event['actor_email'], actor]))
+        contract.require(event['actor_id'] == actor and event['actor_email'] == (users[actor]['email'] if actor else None), 'audit.actor' + where + json.dumps([event['actor_id'], event['actor_email'], actor]))
         contract.require(event['cid'] == case['name'] and event['additional_data'] == additional and event['changes_text'] == '',
                          'audit.context' + where)
         contract.require(context['remote'].setdefault('addr', event['remote_addr']) == event['remote_addr'], 'audit.remote' + where)
@@ -725,7 +738,54 @@ def check_notification(effect, fixture, ids, since, until, prepared, binding=Non
                      'notification.mirror')
 
 
+def assert_family_effect(case, before, after, source, context):
+    """A family wizard case: one Family and several subscriptions, checked with the renewal runner's row, audit
+    and notification checks (rows by label, bound in order); the response's payments are PaymentSerializer of the
+    stored rows (None: the answer is not the success body)."""
+    from TESTS.adapters.django import subscription_renew_http as renew
+    fixture, ids = context['fixture'], source['ids']
+    prepared = context['prepared']
+    since, until = prepared['started'], time.time()
+    effect = case['effect']
+    renew.STATE.update(source={'tags': {}, 'drafts': {}, 'statuses': {}, **source}, category=STATE['category'])
+    harness.require_unmanaged_unchanged(contract, before, after, tuple(dict.fromkeys((*MANAGED, *renew.MANAGED))))
+    contract.require(all(before[k] == after[k] for k in (USER, LABELS['signature'], LABELS['relation'])), 'state.family-other-rows')
+    contract.require(listing() == STATE['objects'], 'storage.no-effect')
+    token = fixture['tokens'].get(case['actor'])
+    binding = {'$authorization': f'Bearer {token}' if token else None, '$category': STATE['category'], '$owner': ids['owner']}
+    try:
+        renew.check_rows(effect, before, after, ids, since, until, binding)
+        check_family_response(effect, binding)
+        celery = [{**task, 'args': renew.resolve(task['args'], binding),
+                   'kwargs': [[k, {'uuid': renew.resolve(v['uuid'], binding)} if isinstance(v, dict) else renew.resolve(v, binding)]
+                              for k, v in task['kwargs']]} for task in effect['celery']]
+        harness.celery_published(contract, fixture, celery, since=since, until=until)
+        renew.check_audit(case, effect, before, after, fixture, ids, {**context, 'deletes': {}}, binding)
+    finally:
+        renew.check_notifications(effect, fixture, ids, since, until, prepared)
+
+
+def check_family_response(effect, binding):
+    from rest_framework.renderers import JSONRenderer
+    from application.models import Payment
+    from application.serializers.payment_serializers import PaymentSerializer
+    if effect['payments'] is None:
+        return
+    body = contract.LAST.get('body')
+    contract.require(isinstance(body, dict) and set(body) == {'status', 'subs', 'payments'} and isinstance(body['payments'], list),
+                     'response.family-shape')
+    contract.require(len(body['payments']) == len(effect['payments']), f"response.family-payments:{len(body['payments'])}")
+    for position, (item, ref) in enumerate(zip(body['payments'], effect['payments'])):
+        key = binding[ref] if ref.startswith('$') else STATE['source']['payments'][ref]['id']
+        expected = json.loads(JSONRenderer().render(PaymentSerializer(Payment._base_manager.get(pk=key)).data))
+        contract.require(isinstance(item, dict) and item == expected, f'response.family-payment:{position}' + json.dumps(
+            {k: [expected.get(k), item.get(k)] for k in set(expected) | set(item if isinstance(item, dict) else {})
+             if not isinstance(item, dict) or expected.get(k) != item.get(k)}, default=str)[:1500])
+
+
 def assert_effect(case, before, after, source, context):
+    if case['effect'] is not None and 'new' in case['effect']:
+        return assert_family_effect(case, before, after, source, context)
     harness.require_unmanaged_unchanged(contract, before, after, MANAGED)
     fixture, ids = context['fixture'], source['ids']
     prepared = context['prepared']

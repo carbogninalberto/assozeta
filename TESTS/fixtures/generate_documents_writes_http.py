@@ -67,6 +67,8 @@ def subscription(association, *, user='owner', medical=None, group=None, start='
             'created': created}
 
 
+# Another member of the association (an athlete account without records).
+EXTRA_USERS = {'member': {'id': 'a1000000-0000-4000-8000-000000352997', 'username': 'documents-writes-member', 'email': 'documents-writes-member@example.test'}}
 SUBSCRIPTIONS = {
     'main': subscription(OWN),
     'withcert': subscription(OWN, medical='old'),
@@ -346,6 +348,17 @@ add('upload-athlete-own-subscription', 'athlete', UPLOAD('athlete'), 200, FILE_U
     body={'document': B64('certificato'), 'filename': 'certificato.jpg'},
     effect=effect('athlete', documents=[stored('certificato.jpg', 'certificato', 'image/jpeg')],
                   files=[{'document': 0, 'subscription': 'athlete'}], audit=[doc_create(0), file_create(0, 'athlete')]))
+# Files are attached by the association's staff and by the member the subscription belongs to.
+add('upload-athlete-other-subscription', 'athlete', UPLOAD('files'), 403, SCOPED_RESOURCE,
+    body={'document': B64('certificato'), 'filename': 'certificato.jpg'})
+add('upload-athlete-other-subscription-form', 'athlete', UPLOAD('main'), 403, SCOPED_RESOURCE,
+    raw_body=f'document={B64("riga")}&filename=modulo.txt', content_type=FORM)
+add('upload-athlete-other-subscription-missing-filename', 'athlete', UPLOAD('files'), 403, SCOPED_RESOURCE, body={'document': B64('x')})
+add('upload-athlete-other-association-subscription', 'athlete', UPLOAD('abroad'), 403, SCOPED_RESOURCE,
+    body={'document': B64('estero'), 'filename': 'estero.csv'})
+add('upload-athlete-unknown-server-error', 'athlete', UPLOAD(UNKNOWN), 500, SERVER, body={'document': B64('x'), 'filename': 'a.pdf'})
+add('upload-member-athlete-subscription', 'member', UPLOAD('athlete'), 403, SCOPED_RESOURCE,
+    body={'document': B64('certificato'), 'filename': 'certificato.jpg'})
 add('upload-owner-full-session', 'owner', UPLOAD('main'), 200, FILE_UPLOADED, headers=OWNER_FULL,
     body={'document': B64('sessione'), 'filename': 'sessione.pdf'},
     effect=effect('owner', documents=[stored('sessione.pdf', 'sessione', 'application/pdf')],
@@ -481,5 +494,5 @@ assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Document uploads: archive add/update, subscription files and medical certificates',
                               'ids': IDS, 'location': LOCATION, 'folders': FOLDERS, 'documents': DOCUMENTS, 'archives': ARCHIVES,
                               'certificates': CERTIFICATES, 'subscriptions': SUBSCRIPTIONS, 'drafts': DRAFTS, 'unknown': UNKNOWN,
-                              'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+                              'extra_users': EXTRA_USERS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

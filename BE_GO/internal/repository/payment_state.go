@@ -109,6 +109,47 @@ func (t *paymentStateTransaction) AppendSupplierInvoiceAudit(ctx context.Context
 		AssociationID: &association, ResolutionPath: &path, At: at})
 }
 
+func (t *paymentStateTransaction) PaymentStateInvoice(ctx context.Context, id string) (*domain.PaymentStateInvoice, error) {
+	var row domain.PaymentStateInvoice
+	err := t.tx.GetContext(ctx, &row, `SELECT invoice_id, sport_association_id, cancelled, meta::text AS meta FROM application_invoice
+ WHERE invoice_id=$1 FOR UPDATE`, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &row, nil
+}
+
+// CancelPaymentStateInvoice saves cancelled and meta; auditlog compares the
+// stored row (str() of booleans, json.dumps(sort_keys=True) of the JSONField,
+// 'null' for NULL) and indexes the entry directly to the invoice's association.
+func (t *paymentStateTransaction) CancelPaymentStateInvoice(ctx context.Context, invoice domain.PaymentStateInvoice, meta string,
+	metaAudit string, audit domain.LoginAuditContext, at time.Time) error {
+	if _, err := t.tx.ExecContext(ctx, `UPDATE application_invoice SET cancelled=true, meta=$2::jsonb WHERE invoice_id=$1`,
+		invoice.ID, meta); err != nil {
+		return err
+	}
+	changes := map[string][2]string{}
+	if !invoice.Cancelled {
+		changes["cancelled"] = [2]string{"False", "True"}
+	}
+	old, err := googleJSONAudit(invoice.Meta)
+	if err != nil {
+		return err
+	}
+	if old != metaAudit {
+		changes["meta"] = [2]string{old, metaAudit}
+	}
+	if len(changes) == 0 {
+		return nil
+	}
+	path := "direct"
+	return appendModelAudit(ctx, t.tx, modelAuditEntry{Model: "invoice", Key: invoice.ID, Representation: "Invoice object (" + invoice.ID + ")",
+		Action: 1, Changes: changes, Context: audit, AssociationID: invoice.AssociationID, ResolutionPath: &path, At: at})
+}
+
 func (t *paymentStateTransaction) DeletePayment(ctx context.Context, id string, audit domain.CourseSubscriptionAudit) error {
 	snapshot, err := t.courses.snapshot(ctx, "application_payment", "payment_id", id)
 	if err != nil {

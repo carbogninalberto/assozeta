@@ -72,7 +72,10 @@ func personaWriteMessages(request *http.Request, invalid *dto.PersonaInvalid) ma
 func personaWriteError(c echo.Context, err error) error {
 	request := c.Request()
 	var invalid *dto.PersonaInvalid
+	var picture *service.PersonaPictureInvalid
 	switch {
+	case errors.As(err, &picture):
+		return c.JSON(400, map[string]string{"picture_path": picture.Text})
 	case errors.As(err, &invalid):
 		return c.JSON(400, personaWriteMessages(request, invalid))
 	case errors.Is(err, service.ErrPersonaNotSportAssociation):

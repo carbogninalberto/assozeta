@@ -39,6 +39,7 @@
   "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
   "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
  },
+ "smtp_password": "placeholder-smtp",
  "configurations": {
   "foreign_second": {
    "id": "a1000000-0000-4000-8000-000000961002",
@@ -1489,6 +1490,621 @@
     "daily_email_balance": 0
    },
    "effect": null
+  },
+  {
+   "name": "communications-smtp-verify-starttls-sends-test-email",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": true,
+    "msg": "Ok"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:starttls",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "Associazione è",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "starttls",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "STARTTLS\r\n",
+       "<tls>",
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1haWxlckBleGFtcGxlLnRlc3QAcGxhY2Vob2xkZXItc210cA==\r\n",
+       "mail from:<mailer@example.test> size=158\r\n",
+       "rcpt to:<$owner>\r\n",
+       "data\r\n",
+       "Subject: Email di test da Assozeta, SMTP configurato correttamente.\n\nSe hai ricevuto questa email, significa che hai configurato il server SMTP correttamente.\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:starttls",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "TLS",
+    "email_sender_name": "Associazione è"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-ssl-default-sender-name",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": true,
+    "msg": "Ok"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:ssl",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": null,
+     "email_encryption": "SSL",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "ssl",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1haWxlckBleGFtcGxlLnRlc3QAcGxhY2Vob2xkZXItc210cA==\r\n",
+       "mail from:<mailer@example.test> size=158\r\n",
+       "rcpt to:<$owner>\r\n",
+       "data\r\n",
+       "Subject: Email di test da Assozeta, SMTP configurato correttamente.\n\nSe hai ricevuto questa email, significa che hai configurato il server SMTP correttamente.\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:ssl",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "SSL",
+    "email_sender_name": null
+   }
+  },
+  {
+   "name": "communications-smtp-verify-plain-blank-sender-name",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "verified": true,
+    "msg": "Ok"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "plain",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1haWxlckBleGFtcGxlLnRlc3QAcGxhY2Vob2xkZXItc210cA==\r\n",
+       "mail from:<mailer@example.test> size=158\r\n",
+       "rcpt to:<$owner>\r\n",
+       "data\r\n",
+       "Subject: Email di test da Assozeta, SMTP configurato correttamente.\n\nSe hai ricevuto questa email, significa che hai configurato il server SMTP correttamente.\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:plain",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE",
+    "email_sender_name": ""
+   }
+  },
+  {
+   "name": "communications-smtp-verify-wrong-password",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "(535, b'denied')"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:starttls",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-wrong",
+     "email_sender_name": "",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "starttls",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "STARTTLS\r\n",
+       "<tls>",
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1haWxlckBleGFtcGxlLnRlc3QAcGxhY2Vob2xkZXItd3Jvbmc=\r\n",
+       "AUTH LOGIN bWFpbGVyQGV4YW1wbGUudGVzdA==\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:starttls",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-wrong",
+    "email_encryption": "TLS"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-server-without-auth",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "SMTP AUTH extension not supported by server."
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:noauth",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "noauth",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:noauth",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-server-without-starttls",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "STARTTLS extension not supported by server."
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "plain",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:plain",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "TLS"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-connection-refused",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "$refused"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:closed",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": null
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:closed",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-recipient-refused",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "{'$owner': (550, b'refused')}"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:norcpt",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "norcpt",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1haWxlckBleGFtcGxlLnRlc3QAcGxhY2Vob2xkZXItc210cA==\r\n",
+       "mail from:<mailer@example.test> size=158\r\n",
+       "rcpt to:<$owner>\r\n",
+       "rset\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:norcpt",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-sender-refused",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "(550, b'sender refused', 'A.S.D. Sport & Co <mailer@example.test>')"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:nomail",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "A.S.D. Sport & Co",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "nomail",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1haWxlckBleGFtcGxlLnRlc3QAcGxhY2Vob2xkZXItc210cA==\r\n",
+       "mail from:<mailer@example.test> size=158\r\n",
+       "rset\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:nomail",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE",
+    "email_sender_name": "A.S.D. Sport & Co"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-server-never-greets",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "Connection unexpectedly closed: timed out"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:silent",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "A.S.D. Sport & Co",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "silent",
+     "connections": [
+      [
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:silent",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-ssl-on-starttls-port",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032)"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:starttls",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "A.S.D. Sport & Co",
+     "email_encryption": "SSL",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "starttls",
+     "opaque": 1
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:starttls",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "SSL"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-ssl-on-plain-port",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032)"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "A.S.D. Sport & Co",
+     "email_encryption": "SSL",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "plain",
+     "opaque": 1
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:plain",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "SSL"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-unknown-host",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "$unresolved"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "smtp.mistyped.invalid",
+     "email_smtp_port": 587,
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "A.S.D. Sport & Co",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": null
+   },
+   "setup": {
+    "email_smtp_host": "smtp.mistyped.invalid",
+    "email_smtp_port": 587,
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "TLS"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-unknown-host-ssl",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "$unresolved"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "mail.mistyped.invalid",
+     "email_smtp_port": 465,
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "A.S.D. Sport & Co",
+     "email_encryption": "SSL",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": null
+   },
+   "setup": {
+    "email_smtp_host": "mail.mistyped.invalid",
+    "email_smtp_port": 465,
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "SSL"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-unknown-host-no-encryption",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "$unresolved"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "smtp_x.mistyped.invalid",
+     "email_smtp_port": 25,
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "A.S.D. Sport & Co",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": null
+   },
+   "setup": {
+    "email_smtp_host": "smtp_x.mistyped.invalid",
+    "email_smtp_port": 25,
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE"
+   }
   }
  ]
 }

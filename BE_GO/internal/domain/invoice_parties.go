@@ -213,8 +213,8 @@ type NewSupplierInvoice struct {
 }
 
 type InvoicePartyStore interface {
-	// CustomerInvoicesWithoutPDF is CustomerInvoice.objects.filter(pdf__isnull=True).exists().
-	CustomerInvoicesWithoutPDF(ctx context.Context) (bool, error)
+	// CustomerInvoicesWithoutPDF is CustomerInvoice.objects.filter(sport_association=association, pdf__isnull=True).exists().
+	CustomerInvoicesWithoutPDF(ctx context.Context, association string) (bool, error)
 	// OwnerAssociation is SportAssociation.objects.get(user=owner).
 	OwnerAssociation(ctx context.Context, owner string) (string, error)
 	// ScopedAssociation is scoped_queryset(SportAssociation.objects).filter(user=...).first().

@@ -412,6 +412,62 @@ add('validate-braced-token', 'anonymous', validate('{' + TOKENS['olimpia'] + '}'
 add('validate-repeated-token', 'anonymous', f'{VALIDATE}?token=bad&token={TOKENS["abroad"]}', 200, matched(('v_kodokan',), None))
 add('validate-null-gym-name', 'anonymous', validate(TOKENS['unnamed']), 500, SERVER)
 add('validate-number-school-name', 'anonymous', validate(TOKENS['numbers']), 500, SERVER)
+
+# ---------------------------------------------------------------------------
+# Unknown tokens while a pairing is active (instance.sso.public_links.source_token)
+# ---------------------------------------------------------------------------
+# A canonical token no local row holds is asked of the paired server: POST <authority>/pairing/v1/public-token with the
+# kind, the token, the resource, the remote pairing id and the pairing secret. The answer must carry the protocol
+# version, the pairing's binding, the kind, a canonical generation and an aware expires_at in the future.
+PAIR = {'instance_id': 'a1000000-0000-4000-8000-0000e1880001', 'pairing_id': 'a1000000-0000-4000-8000-0000e1880002',
+        'remote_pairing_id': 'a1000000-0000-4000-8000-0000e1880003', 'generation': 'a1000000-0000-4000-8000-0000e1880004'}
+PAIR_ORIGIN = 'http://localhost'
+
+
+def grant(kind, **values):
+    return {'protocol': 'bakney-pairing-v1', 'instance_id': PAIR['instance_id'], 'pairing_id': PAIR['remote_pairing_id'],
+            'association_id': OWN, 'origin': PAIR_ORIGIN, 'callback_uri': PAIR_ORIGIN + '/bakney/v1/callback', 'kind': kind,
+            'generation': PAIR['generation'], 'expires_at': '$iso+600', **values}
+
+
+def paired(request=None, reply=None, *, state='paired', **row):
+    """The case's pairing; request/reply: the one exchange with the paired server (none expected otherwise)."""
+    authority = [] if request is None else [{'path': '/pairing/v1/public-token', 'reply': reply,
+                                             'body': {**request, 'pairing_id': PAIR['remote_pairing_id'], 'secret': '$secret'}}]
+    return {**PAIR, 'state': state, **row, 'authority': authority}
+
+
+def ok(body):
+    return {'status': 200, 'json': body}
+
+
+PAIR_TOKEN = 'a1000000-0000-4000-8000-0000e1880020'
+GYM_OLIMPIA = LINKS['olimpia']['gym_name']
+ASK = {'kind': 'cumulative', 'token': PAIR_TOKEN}
+
+
+def paired_link(name, response, pairing, *, token=PAIR_TOKEN, actor='anonymous', headers=None, **options):
+    add(name, actor, validate(token), 200, response, headers=headers, **options)
+    cases[-1]['pairing'] = pairing
+
+
+paired_link('validate-paired-server-vouches', OLIMPIA, paired(ASK, ok(grant('cumulative', gym_name=GYM_OLIMPIA))), unordered='subscription_id')
+paired_link('validate-pending-pairing-vouches-group', matched(('v_grouped',), default_from(SCHOOL)),
+            paired(ASK, ok(grant('cumulative', gym_name=GYM_OLIMPIA)), state='pending'), headers={'X-Group-Id': OWN_GROUP})
+paired_link('validate-paired-server-rejects', EXPIRED, paired(ASK, {'status': 401, 'json': {'error': 'unknown'}}))
+paired_link('validate-paired-server-unavailable', EXPIRED, paired(ASK, {'status': 500, 'raw': 'error'}))
+paired_link('validate-paired-server-card-kind', EXPIRED, paired(ASK, ok(grant('card', gym_name=GYM_OLIMPIA))))
+paired_link('validate-paired-server-without-gym-name', EXPIRED, paired(ASK, ok(grant('cumulative'))))
+paired_link('validate-paired-server-gym-name-number', EXPIRED, paired(ASK, ok(grant('cumulative', gym_name=7))))
+paired_link('validate-paired-server-gym-name-too-long', EXPIRED, paired(ASK, ok(grant('cumulative', gym_name='O' * 256))))
+paired_link('validate-paired-server-expired-grant', EXPIRED, paired(ASK, ok(grant('cumulative', gym_name=GYM_OLIMPIA, expires_at='$iso-60'))))
+paired_link('validate-paired-server-other-association', EXPIRED,
+            paired(ASK, ok({**grant('cumulative', gym_name=GYM_OLIMPIA), 'association_id': FOREIGN})))
+paired_link('validate-paired-upper-case-token-not-asked', EXPIRED, paired(), token=PAIR_TOKEN.upper())
+paired_link('validate-pairing-disconnected-not-asked', EXPIRED, paired(state='disconnected'))
+paired_link('validate-pairing-not-self-hosted-not-asked', EXPIRED, paired(self_hosted=False))
+paired_link('validate-paired-local-token-not-asked', matched(('v_kodokan',), None), paired(), token=TOKENS['abroad'])
+
 add('validate-without-token', 'anonymous', VALIDATE, 400, ['one of the hex, bytes, bytes_le, fields, or int arguments must be given'])
 add('validate-malformed-token', 'anonymous', validate('abc'), 400, BAD_UUID)
 add('validate-admin-without-session', 'admin', validate(TOKENS['olimpia']), 403, ADMIN)

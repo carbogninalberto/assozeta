@@ -106,3 +106,20 @@ block, rendered by the subscription view and the preview.
 - Mutation (`v2doc-mutation-r1`): preserving whitespace only for direct children of `<pre>` fails
   `document-views-subscription-fallback-template` (`html.body`, CAUGHT).
 - Re-run for shared code: `invoice-views` (`v2doc-rerun-r1`, 76/76; it also uses `mentions`).
+
+Member documents (`secdoc-*`): documents are served to the association's staff and to the member they belong to.
+`docmanager.access` (Django, with `docmanager.test_document_access`) and `memberDocumentAccess` with
+`repository.MemberDocuments` (Go) decide it the same way: accounts other than athletes, superusers and the instance owner
+(`is_instance_owner`) reach every record; an athlete account reaches the records of its user, of the associates of its
+subscriptions, of associates whose account it is and of associates sharing a non-empty tax code with those (base managers:
+no group or soft-delete filter). Anything else answers `403 {"detail": "Risorsa non disponibile per questo utente e
+associazione."}`. Association-scoped sessions keep their own boundary, and requests admitted without an account (a document
+token, the renderer header) are decided by the view's permission classes as before.
+
+`document/subscription/<uid>/view/` applies it to the subscription right after the lookup (a missing row is still the 500
+page). The fixture has 123 cases (9 new): the athlete's own subscription and a later one of their associate render; another
+member's subscription, one without an associate and another athlete account get the 403; collaborators and owners are
+unchanged. RED `secdoc-red-r1`: Django 123/123, Go 200 on `document-views-subscription-athlete-direct` with the check switched
+off. GREEN `secdoc-versioned-final` (after merging the base; `secdoc-versioned-r1` before): 123/123 on the four transports.
+Mutation `secdoc-mutation-r1` (every subscription counted as the member's) CAUGHT. The other views of this family are
+unchanged.

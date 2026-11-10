@@ -17,13 +17,17 @@ subscription_list (GET, POST):
   empty or null; ``values_list('associate__<field>').distinct()`` (unordered);
   an unknown field is a FieldError (500).
 - athletes: get_optimized_subscriptions (SubscriptionSerializerAthleteOptimizedList) of their own subscriptions and those
-  whose associate has one of their tax codes, by ``-creation_date``, ``meta`` {} (association-scoped athlete sessions are
+  whose associate has one of their filled-in tax codes (family_tax_codes), by ``-creation_date``, ``meta`` {} (association-scoped athlete sessions are
   not authored).
 - the scoped live association (500 without one); ``m`` absent: the
   unarchived subscriptions by ``-creation_date`` with the tag, age, hide,
   status, current-year, search, type-of-associate, certificate, payment and
-  type filters and the sorting; POST then prints (``current_view_subscriptions``:
-  a missing or unknown ``format`` is a 500); GET paginates (KTDatatable) with
+  type filters and the sorting; POST then reads request.data (a parse error is
+  DRF's 400) and prints the whole queryset (``current_view_subscriptions``: a
+  missing or unknown ``format`` is a 500; ``excel`` is get_excel_base64 of
+  Tesserato, Email, Stato, Anno fiscale, Certificato, Data creazione, Utente,
+  Tag with ``{'file', 'filename': '[<today>] <title> - <denomination>.xlsx'}``;
+  a row without associate is a 500; the pdf file is not ported); GET paginates (KTDatatable) with
   SubscriptionFastOptimizedSerializer. ``m`` present: the basic filters, then
   ``filter`` (absent: accepted only; ``all``: any; else the status), as
   SubscriptionFastBasicSerializer rows keyed by index, ``meta`` {}.
@@ -300,6 +304,21 @@ MEMBERSHIP_INVOICE = {'id': uid('1a5ef00d'), 'created': '2026-02-02T09:00:00Z', 
 PAYMENTS['membership'] = payment('2025-09-08T09:00:00Z', amount='25.00', paid=True, paid_on='2025-09-08T10:00:00Z', subject=2,
                                  description='Abbonamento: Corso nuoto', invoice=True, instructor=True)
 MEMBERSHIPS = {'giulia': ['membership']}
+# Members stored with a blank tax code (fixed ids: the generated sequence above stays as it was). A blank tax code
+# is not a family link: the athlete's list and info keep to the athlete's own subscription.
+BLANK = IDS['blank_athlete'] = 'a1000000-0000-4000-8000-0000005ab597'
+EXTRA_USERS['blank_athlete'] = {'id': BLANK, 'username': 'subscription-reads-blank-athlete',
+                                'email': 'subscription-reads-blank-athlete@example.test'}
+USERS[BLANK] = {'first_name': '', 'last_name': '', 'email': EXTRA_USERS['blank_athlete']['email'], 'phone': None,
+                'username': EXTRA_USERS['blank_athlete']['username'], 'role': 2}
+ASSOCIATES['e_self'] = {**ASSOCIATE_DEFAULTS, 'first_name': 'Elsa', 'last_name': 'Vuota', 'sex': 'F', 'tax_code': '', 'born_date': '1988-08-08',
+                        'user': BLANK, 'association': FOREIGN, 'id': 'decafbad-ffff-4fff-8fff-ffffffffffaa', 'created': '2023-08-15T08:00:00Z'}
+ASSOCIATES['e_other'] = {**ASSOCIATE_DEFAULTS, 'first_name': 'Enea', 'last_name': 'Zeri', 'sex': 'M', 'tax_code': '', 'born_date': '1977-07-07',
+                         'id': 'decafbad-ffff-4fff-8fff-ffffffffffab', 'created': '2023-08-16T08:00:00Z'}
+SUBSCRIPTIONS['e_own'] = {**SUB_DEFAULTS, 'association': FOREIGN, 'user': BLANK, 'associate': 'e_self',
+                          'id': '5ab5c0de-ffff-4fff-8fff-ffffffffffaa', 'created': '2025-09-19T08:00:00Z'}
+SUBSCRIPTIONS['e_other'] = {**SUB_DEFAULTS, 'associate': 'e_other', 'id': '5ab5c0de-ffff-4fff-8fff-ffffffffffab',
+                            'created': '2025-09-20T08:00:00Z'}
 S = {label: row['id'] for label, row in SUBSCRIPTIONS.items()}
 A = {label: row['id'] for label, row in ASSOCIATES.items()}
 
@@ -828,7 +847,8 @@ def calendar(sublabel):
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='GET', body=None, headers=None, unordered=False, challenge=None):
+def add(name, actor, path, status, response, *, method='GET', body=None, headers=None, unordered=False, challenge=None,
+        raw_body=None, content_type=None):
     """unordered: the data rows are compared as a multiset (an ordering Django leaves to the database)."""
     case = {'name': f'subscription-reads-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'unordered': unordered}
@@ -836,6 +856,8 @@ def add(name, actor, path, status, response, *, method='GET', body=None, headers
         case['body'] = body
     if challenge is not None:
         case['challenge'] = challenge
+    if raw_body is not None:
+        case['raw_body'], case['content_type'] = raw_body, content_type
     cases.append(case)
 
 
@@ -1038,6 +1060,81 @@ add('list-post-without-format', 'owner', LIST, 500, SERVER, method='POST', body=
 add('list-post-unknown-format', 'owner', LIST, 500, SERVER, method='POST', body={'format': 'csv'})
 add('list-post-filter-error-first', 'owner', LIST + '?query[from_age]=x', 500, SERVER, method='POST', body={'format': 'pdf'})
 
+# --- subscription/list: POST excel (current_view_subscriptions over the whole queryset) ---
+# The prefetch of the tags has no ORDER BY: tags are seeded in id order and each
+# subscription lists them in that order (subscription-reads.md, "Excel export").
+assert [TAGS[k]['id'] for k in TAGS] == sorted(TAGS[k]['id'] for k in TAGS)
+for _row in SUBSCRIPTIONS.values():
+    assert _row['tags'] == sorted(_row['tags'], key=lambda k: TAGS[k]['id'])
+STATUS_LANG = {1: 'non firmato', 2: 'in attesa', 3: 'rifiutato', 4: 'accettato', 5: 'archiviato'}  # get_status_lang
+DENOMINATION = {OWN: 'Message reads own', FOREIGN: 'Message reads foreign'}
+EXCEL = {'format': 'excel'}
+
+
+def export(labels, title='Iscrizioni filtrate', association=OWN, ordered=None):
+    """{'file': get_excel_base64(*rows, columns=columns), 'filename': ...}; the view's rows put the creation date under
+    'Certificato' and the certificate under 'Data creazione'."""
+    rows = [SUBSCRIPTIONS[k] for k in (ordered if ordered is not None else by_created(labels))]
+    people = [ASSOCIATES[row['associate']] for row in rows]
+    data = [[f"{person['first_name']} {person['last_name']}".strip() for person in people],
+            [person['email'] for person in people],
+            [STATUS_LANG[row['status']] for row in rows],
+            [current_year_text(row) for row in rows],
+            [f"{row['created'][8:10]}/{row['created'][5:7]}/{row['created'][:4]}" for row in rows],
+            ['presente' if row['medical'] else '-' for row in rows],
+            [USERS[row['user']]['username'] for row in rows],
+            [', '.join(TAGS[t]['name'] for t in row['tags']) for row in rows]]
+    columns = ['Tesserato', 'Email', 'Stato', 'Anno fiscale', 'Certificato', 'Data creazione', 'Utente', 'Tag']
+    return {'file': {'$xlsx': {'engine': 'excel_utils', 'columns': columns, 'data': data}},
+            'filename': f'[$today] {title} - {DENOMINATION[association]}.xlsx'}
+
+
+def excel(name, actor, query, status, response, **options):
+    if 'raw_body' not in options:
+        options.setdefault('body', EXCEL)
+    add(f'list-excel-{name}', actor, LIST + query, status, response, method='POST', **options)
+
+
+excel('owner', 'owner', '', 200, export(own_listed()))
+excel('full-collaborator', 'full_collaborator', '', 200, export(own_listed()))
+excel('admin-impersonating-owner', 'admin', '', 200, export(own_listed()), headers=ADMIN_OWNER)
+excel('owner-scoped-full-collaborator', 'owner', '', 200, export(own_listed()), headers=OWNER_FULL)
+excel('form-body', 'owner', '', 200, export(own_listed()), raw_body='format=excel', content_type='application/x-www-form-urlencoded')
+excel('form-last-format', 'owner', '', 200, export(own_listed()), raw_body='format=pdf&format=excel',
+      content_type='application/x-www-form-urlencoded')
+excel('extra-fields-ignored', 'owner', '', 200, export(own_listed()), body={'format': 'excel', 'title': 'x', 'm': '1'})
+excel('ignores-pagination', 'owner', '?pagination[perpage]=1&pagination[page]=9', 200, export(own_listed()))
+excel('group', 'owner', '', 200, export(own_listed(OWN_GROUP)), headers=GROUP)
+excel('group-foreign-empty', 'owner', '', 200, export([]), headers={'X-Group-Id': FOREIGN_GROUP})
+excel('type-athletes-title', 'owner', '?type=athletes', 200, export(where(lambda r: r['type'] in (2, 3)), 'Tesserati'))
+excel('type-associates-title', 'owner', '?type=associates', 200, export(where(lambda r: r['type'] in (1, 2)), 'Libro Soci'))
+excel('search', 'owner', '?query[generalSearch]=rossi', 200, export(searched(own_listed(), 'rossi')))
+excel('search-empty', 'owner', '?query[generalSearch]=zzzz', 200, export([]))
+excel('tags-any', 'owner', f"?query[tags]={T['master']['id']},{T['agonisti']['id']}", 200, export(where(lambda r: bool(r['tags']))))
+excel('status-several', 'owner', '?query[status_flag]=1,5', 200, export(where(lambda r: r['status'] in (1, 5))))
+excel('certificate-missing', 'owner', '?query[certificate_missing_flag]=1', 200, export(where(lambda r: r['medical'] is None)))
+excel('sort-lastname-asc', 'owner', '?query[current_year]=1&query[sort_lastname_asc_flag]=1', 200,
+      export(CURRENT, ordered=ordered_by(CURRENT, last)))
+excel('sort-associate-desc', 'owner', '?query[current_year]=1&sort[field]=associate&sort[sort]=desc', 200,
+      export(CURRENT, ordered=ordered_by(CURRENT, first, True)))
+excel('sort-creation-asc', 'owner', '?sort[field]=creation_date', 200, export(own_listed(), ordered=list(reversed(by_created(own_listed())))))
+excel('sort-unknown', 'owner', '?sort[field]=nope', 500, SERVER)
+# A relation path is compiled when the rows are read: an invalid one raises there.
+excel('sort-relation-unknown', 'owner', '?sort[field]=user__nope', 500, SERVER)
+excel('foreign-owner-row-without-associate', 'foreign_owner', '', 500, SERVER)
+excel('foreign-owner-status', 'foreign_owner', '?query[status_flag]=2', 200,
+      export(where(lambda r: r['status'] == 2, own_listed(association=FOREIGN)), association=FOREIGN))
+excel('foreign-owner-tag', 'foreign_owner', f"?query[tags]={T['estero']['id']}", 200,
+      export(where(lambda r: 'estero' in r['tags'], own_listed(association=FOREIGN)), association=FOREIGN))
+excel('format-case-sensitive', 'owner', '', 500, SERVER, body={'format': 'EXCEL'})
+excel('format-list', 'owner', '', 500, SERVER, body={'format': ['excel']})
+excel('string-body', 'owner', '', 500, SERVER, raw_body='"excel"', content_type='application/json')
+excel('malformed-json', 'owner', '', 400, {'detail': 'JSON parse error - Expecting value: line 1 column 1 (char 0)'}, raw_body='nope',
+      content_type='application/json')
+excel('filter-error-before-body', 'owner', '?query[from_age]=x', 500, SERVER, raw_body='nope', content_type='application/json')
+excel('mode-lists', 'owner', '?m=1', 200, mode_body(where(lambda r: r['status'] == 4)))
+excel('owner-without-association', 'owner_without_association', '', 500, SERVER)
+
 
 # --- subscription/list: field extraction ---
 def tutor_contact(label):
@@ -1164,6 +1261,7 @@ add('info-foreign-owner', 'foreign_owner', info_path('abroad'), 200, info_body('
 add('info-athlete-own', 'athlete', info_path('athlete'), 200, info_body('athlete'))
 add('info-athlete-other-association', 'multi_athlete', info_path('athlete_foreign'), 200, info_body('athlete_foreign'))
 add('info-athlete-same-tax-code', 'multi_athlete', info_path('abroad'), 200, info_body('abroad'))
+add('info-athlete-blank-tax-code-other-user', 'blank_athlete', info_path('e_other'), 403, {'detail': 'Subscription not found.'})
 add('info-athlete-not-own', 'athlete', info_path('cur_mario'), 403, {'detail': 'Subscription not found.'})
 add('info-athlete-uppercase', 'athlete', f"/subscription/{S['athlete'].upper()}/info", 403, {'detail': 'Subscription not found.'})
 add('info-athlete-unknown', 'athlete', f'/subscription/{UNKNOWN}/info', 403, {'detail': 'Subscription not found.'})
@@ -1248,7 +1346,7 @@ def athlete_item(label, group=None):
 def athlete_list(user, group=None):
     """Own subscriptions and those whose associate has a tax code of them (group-aware), by -creation_date."""
     own = [k for k, r in SUBSCRIPTIONS.items() if r['user'] == user and visible(r, group)]
-    taxes = {ASSOCIATES[SUBSCRIPTIONS[k]['associate']]['tax_code'] for k in own if SUBSCRIPTIONS[k]['associate']} - {None}
+    taxes = {ASSOCIATES[SUBSCRIPTIONS[k]['associate']]['tax_code'] for k in own if SUBSCRIPTIONS[k]['associate']} - {None, ''}
     labels = [k for k, r in SUBSCRIPTIONS.items() if visible(r, group) and (
         r['user'] == user or (r['associate'] and ASSOCIATES[r['associate']]['tax_code'] in taxes))]
     return {'data': {str(i): athlete_item(k, group) for i, k in enumerate(by_created(labels))}, 'meta': {}}
@@ -1256,10 +1354,12 @@ def athlete_list(user, group=None):
 
 add('list-athlete', 'list_athlete', LIST, 200, athlete_list(LISTER))
 add('list-athlete-post', 'list_athlete', LIST, 200, athlete_list(LISTER), method='POST', body={'format': 'pdf'})
+add('list-excel-athlete-lists', 'list_athlete', LIST, 200, athlete_list(LISTER), method='POST', body=EXCEL)
 add('list-athlete-ignores-filters', 'list_athlete', LIST + '?query[status_flag]=4&pagination[perpage]=1', 200, athlete_list(LISTER))
 add('list-athlete-group', 'list_athlete', LIST, 200, athlete_list(LISTER, FOREIGN_GROUP), headers={'X-Group-Id': FOREIGN_GROUP})
 add('list-athlete-own-association', 'athlete', LIST, 200, athlete_list(ATHLETE))
 add('list-athlete-tax-code-other-user', 'multi_athlete', LIST, 200, athlete_list(MULTI))
+add('list-athlete-blank-tax-code', 'blank_athlete', LIST, 200, athlete_list(BLANK))
 
 # --- subscription_info without document_pdf: print_document_subscription.delay(id, request.headers.get('authorization')) ---
 for name, actor, label in (('info-print-dispatch-owner', 'owner', 'baby'), ('info-print-dispatch-athlete', 'list_athlete', 'l_current')):

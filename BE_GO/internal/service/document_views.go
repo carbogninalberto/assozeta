@@ -567,6 +567,12 @@ func (s *DocumentViews) subscription(ctx context.Context, identity domain.Resolv
 	if err != nil {
 		return nil, lookupError(err)
 	}
+	// Rendered for the association's staff and for the member the subscription belongs to.
+	if err := memberDocumentAccess(ctx, s.store, identity, identity.ScopeUser, func(ctx context.Context, member string) (bool, error) {
+		return s.store.MemberSubscription(ctx, member, id)
+	}); err != nil {
+		return nil, err
+	}
 	var paymentData any
 	if subscription.HasPayment && subscription.PaymentMeta != nil {
 		meta, err := jsonValue(subscription.PaymentMeta)

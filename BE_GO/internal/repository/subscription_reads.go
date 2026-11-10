@@ -414,7 +414,7 @@ func (r *SubscriptionReads) AllowedForAthlete(ctx context.Context, user string, 
  LEFT JOIN application_associate a ON a.associate_id=s.associate_id
  WHERE ($2::uuid IS NULL OR s.group_id=$2::uuid) AND ($3::uuid IS NULL OR s.sport_association_id=$3::uuid)
  AND (s.user_id=$1 OR a.tax_code IN (SELECT ta.tax_code FROM application_subscription ts JOIN application_associate ta ON ta.associate_id=ts.associate_id
-   WHERE ts.user_id=$1 AND ta.tax_code IS NOT NULL AND ($2::uuid IS NULL OR ts.group_id=$2::uuid) AND ($3::uuid IS NULL OR ts.sport_association_id=$3::uuid)))`,
+   WHERE ts.user_id=$1 AND `+familyTaxCodeFilled("ta")+` AND ($2::uuid IS NULL OR ts.group_id=$2::uuid) AND ($3::uuid IS NULL OR ts.sport_association_id=$3::uuid)))`,
 		user, group, scope)
 	return ids, err
 }
@@ -549,4 +549,37 @@ func (r *SubscriptionReads) BalanceStart(ctx context.Context, user string) (int,
 	}
 	err := r.db.GetContext(ctx, &row, `SELECT balance_sheet_start_day, balance_sheet_start_month FROM bakney_user WHERE user_id=$1`, user)
 	return row.Day, row.Month, err
+}
+
+// ExportTags is prefetch_related('tags') as current_view_subscriptions runs
+// it: Django's statement, without ORDER BY, so each subscription keeps the
+// order the database returns (subscription-reads.md, "Excel export").
+func (r *SubscriptionReads) ExportTags(ctx context.Context, ids []string) ([]domain.SubscriptionReadsExportTag, error) {
+	rows := []domain.SubscriptionReadsExportTag{}
+	if len(ids) == 0 {
+		return rows, nil
+	}
+	found := []struct {
+		SubscriptionID string    `db:"subscription_id"`
+		ID             string    `db:"tag_id"`
+		Name           string    `db:"tag_name"`
+		AssociationID  string    `db:"sport_association_id"`
+		CreationDate   time.Time `db:"creation_date"`
+	}{}
+	err := r.db.SelectContext(ctx, &found, `SELECT ("application_subscription_tags"."subscription_id") AS "subscription_id",
+ "application_tags"."tag_id", "application_tags"."tag_name", "application_tags"."sport_association_id",
+ "application_tags"."creation_date" FROM "application_tags" INNER JOIN "application_subscription_tags"
+ ON ("application_tags"."tag_id" = "application_subscription_tags"."tags_id")
+ WHERE "application_subscription_tags"."subscription_id" = ANY($1::uuid[])`, ids)
+	for _, row := range found {
+		rows = append(rows, domain.SubscriptionReadsExportTag{SubscriptionID: row.SubscriptionID, Name: row.Name})
+	}
+	return rows, err
+}
+
+// AssociationDenomination is sport_association.denomination.
+func (r *SubscriptionReads) AssociationDenomination(ctx context.Context, association string) (*string, error) {
+	var denomination *string
+	err := r.db.GetContext(ctx, &denomination, `SELECT denomination FROM application_sportassociation WHERE sport_association_id=$1`, association)
+	return denomination, err
 }

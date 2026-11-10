@@ -85,23 +85,24 @@ func (s *InvoiceParties) scopedAssociation(ctx context.Context, identity domain.
 	return *association, nil
 }
 
-// CustomerList follows invoice_customers_list. Its first loop generates the
-// XML and runs the print task for every invoice without a PDF
-// (customerListPending; refused when not configured).
+// CustomerList follows invoice_customers_list: request.user.sport_association,
+// then a loop that generates the XML and runs the print task for each of the
+// association's invoices without a PDF (customerListPending; refused when not
+// configured), then the association's invoices.
 func (s *InvoiceParties) CustomerList(ctx context.Context, request InvoicePartyRequest) (map[string]any, error) {
+	association, err := s.userAssociation(ctx, request.Identity)
+	if err != nil {
+		return nil, err
+	}
 	if s.pendingCustomers == nil {
-		pending, err := s.store.CustomerInvoicesWithoutPDF(ctx)
+		pending, err := s.store.CustomerInvoicesWithoutPDF(ctx, association)
 		if err != nil {
 			return nil, err
 		}
 		if pending {
 			return nil, domain.ErrInvoicePartyNotPorted
 		}
-	} else if err := s.customerListPending(ctx, request); err != nil {
-		return nil, err
-	}
-	association, err := s.userAssociation(ctx, request.Identity)
-	if err != nil {
+	} else if err := s.customerListPending(ctx, request, association); err != nil {
 		return nil, err
 	}
 	rows, err := s.store.CustomerInvoices(ctx, association)

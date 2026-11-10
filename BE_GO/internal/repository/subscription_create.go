@@ -90,6 +90,19 @@ func (t *subscriptionCreateTransaction) Certificate(ctx context.Context, id stri
 	return err == nil, user, err
 }
 
+func (t *subscriptionCreateTransaction) LinkableCertificate(ctx context.Context, id, association string, accounts []string) (bool, *string, error) {
+	var user *string
+	err := t.tx.GetContext(ctx, &user, `SELECT m.user_id FROM application_medicalcertificate m WHERE m.medical_id=$1 AND (
+ m.user_id = ANY($3::uuid[])
+ OR EXISTS (SELECT 1 FROM application_subscription s WHERE s.medical_id=m.medical_id AND s.sport_association_id=$2)
+ OR (m.user_id IS NULL AND NOT EXISTS (SELECT 1 FROM application_subscription s WHERE s.medical_id=m.medical_id
+  AND s.sport_association_id IS DISTINCT FROM $2::uuid))) FOR UPDATE OF m`, id, association, accounts)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil, nil
+	}
+	return err == nil, user, err
+}
+
 func (t *subscriptionCreateTransaction) SaveCertificateUser(ctx context.Context, id, user string) error {
 	_, err := t.tx.ExecContext(ctx, `UPDATE application_medicalcertificate SET user_id=$2 WHERE medical_id=$1`, id, user)
 	return err
@@ -192,6 +205,10 @@ func subscriptionCreatePaymentDate(value time.Time) any {
 
 func (t *subscriptionCreateTransaction) QuickAssociate(ctx context.Context, id string) (*domain.SubscriptionEditAssociate, error) {
 	return t.oneAssociate(ctx, `associate_id=$1 AND NOT deleted`, id)
+}
+
+func (t *subscriptionCreateTransaction) QuickAssociationExists(ctx context.Context, id string) (bool, error) {
+	return t.exists(ctx, `SELECT 1 FROM application_sportassociation WHERE sport_association_id=$1 AND NOT deleted`, id)
 }
 
 func (t *subscriptionCreateTransaction) QuickCertificates(ctx context.Context, associate string) ([]domain.SubscriptionQuickCertificate, error) {
@@ -372,6 +389,34 @@ func (t *subscriptionCreateTransaction) InsertSignature(ctx context.Context, id,
 	return appendModelAudit(ctx, t.tx, entry)
 }
 
+func (t *subscriptionCreateTransaction) InsertFamily(ctx context.Context, id, kind string, audit domain.LoginAuditContext, at time.Time) error {
+	if _, err := t.tx.ExecContext(ctx, `INSERT INTO application_family (family_id, type) VALUES ($1, $2)`, id, kind); err != nil {
+		return err
+	}
+	changes, err := createdModelChanges(ctx, t.tx, "application_family", "family_id", id)
+	if err != nil {
+		return err
+	}
+	// Family has no association to resolve: the actor's own association, if any.
+	entry := modelAuditEntry{Model: "family", Key: id, Representation: "Family object (" + id + ")", Action: 0, Changes: changes,
+		Context: audit, At: at}
+	if err = actorIndex(ctx, t.tx, audit, &entry); err != nil {
+		return err
+	}
+	return appendModelAudit(ctx, t.tx, entry)
+}
+
+func (t *subscriptionCreateTransaction) RenderPayment(ctx context.Context, id string) (domain.PaymentStateRender, error) {
+	courses := &courseSubscriptionTransaction{paymentCategoryTransaction: &paymentCategoryTransaction{ownedTransaction: t.ownedTransaction}}
+	payment, err := courses.payment(ctx, id, nil)
+	if err != nil {
+		return domain.PaymentStateRender{}, err
+	}
+	render := domain.PaymentStateRender{Payment: payment}
+	render.Instructor, render.Invoice, err = paymentNestedRows(ctx, t.tx, payment.InvoicePartyPayment)
+	return render, err
+}
+
 func (t *subscriptionCreateTransaction) SaveSubscriptionSignature(ctx context.Context, id, association string, url, key *string,
 	audit domain.LoginAuditContext, at time.Time) error {
 	if _, err := t.tx.ExecContext(ctx, `UPDATE application_subscription SET signature_url=$2, signature_storage_key=$3 WHERE subscription_id=$1`,
@@ -410,6 +455,10 @@ func (t *subscriptionCreateTransaction) oneMember(ctx context.Context, query str
 
 func (t *subscriptionCreateTransaction) MemberByEmail(ctx context.Context, email string) (*domain.SubscriptionCreateMember, error) {
 	return t.oneMember(ctx, `email=$1 AND NOT deleted ORDER BY user_id LIMIT 1`, email)
+}
+
+func (t *subscriptionCreateTransaction) MemberByUsername(ctx context.Context, username string) (*domain.SubscriptionCreateMember, error) {
+	return t.oneMember(ctx, `username=$1 AND NOT deleted`, username)
 }
 
 func (t *subscriptionCreateTransaction) Member(ctx context.Context, id string) (*domain.SubscriptionCreateMember, error) {

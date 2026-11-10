@@ -93,6 +93,12 @@ func (s *InvoiceViews) invoice(ctx context.Context, identity domain.ResolvedIden
 	if err != nil {
 		return nil, lookupError(err)
 	}
+	// Rendered for the association's staff and for the member the receipt belongs to.
+	if err := memberDocumentAccess(ctx, s.store, identity, identity.ScopeUser, func(ctx context.Context, member string) (bool, error) {
+		return s.store.MemberInvoice(ctx, member, invoice.ID)
+	}); err != nil {
+		return nil, err
+	}
 	payments, err := s.store.Payments(ctx, invoice.ID, scope)
 	if err != nil {
 		return nil, err

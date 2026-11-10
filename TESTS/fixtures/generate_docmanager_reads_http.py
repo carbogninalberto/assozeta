@@ -23,6 +23,14 @@ in Django's order:
   401 'Invalid token. Not Authorized.' (a view Response: no challenge).
 - An 'export_' document reached without a download token needs its first
   archive row's association owner as request.user (403 otherwise).
+- A document reached by account (no document or download token) is served to
+  the association's staff, the instance owner and administrators, and to the
+  member it belongs to (docmanager.access): an athlete account needs it among
+  the PDFs, medical certificate documents and attached files of the
+  subscriptions of its user, of the associates of those subscriptions and of
+  associates sharing a tax code with them, the certificates of its user, or
+  the PDFs of the invoices of its payments (403 'Risorsa non disponibile per
+  questo utente e associazione.' otherwise).
 - An association-scoped impersonation session needs the document among
   visible_documents (403 'Documento non disponibile per questa associazione.').
 - The object is streamed from the S3 default storage: key from filepath or
@@ -104,6 +112,25 @@ document('invoice', 'ricevuta.pdf', created='2026-02-21T10:00:00+00:00', body='%
 document('deleted_invoice', 'annullata.pdf', created='2026-02-22T10:00:00+00:00', body='%PDF-deleted', content_type='application/pdf')
 document('foreign', 'foreign.pdf', created='2026-02-23T10:00:00+00:00', body='%PDF-foreign', content_type='application/pdf')
 document('docx', 'lettera.docx', created='2026-02-24T10:00:00+00:00', body='docx-fixture', content_type='application/x-fixture-docx')
+# The member's records (docmanager.access): each has its own document.
+for index, key in enumerate(('same_associate', 'same_tax', 'linked_associate', 'athlete_medical', 'associate_medical', 'attached',
+                             'attached_other', 'athlete_invoice', 'associate_invoice', 'other_tax')):
+    document(key, f'{key.replace("_", "-")}.pdf', created=f'2026-03-{index + 1:02d}T10:00:00+00:00', body=f'%PDF-{key}',
+             content_type='application/pdf')
+
+# Athletes of the family: another member, and the account the primary association belongs to.
+EXTRA_USERS = {label: {'id': uid(700 + index), 'username': f'docmanager-reads-{label}', 'email': f'docmanager-reads-{label}@example.test'}
+               for index, label in enumerate(('member', 'primary_athlete'))}
+PRIMARY = {'association': uid(710), 'user': 'primary_athlete', 'denomination': 'Associazione principale'}
+INSTANCE = {'id': 983090, 'domain': 'docmanager-reads.example.test', 'name': 'Docmanager reads', 'self_hosted': True,
+            'setup_provenance': 'fresh'}
+ASSOCIATES = {
+    'person': {'id': uid(720), 'association': 'own_association', 'user': None, 'tax_code': 'DCMRDS80A01H501A'},
+    'elsewhere': {'id': uid(721), 'association': 'foreign_association', 'user': None, 'tax_code': 'DCMRDS80A01H501A'},
+    'linked': {'id': uid(722), 'association': 'own_association', 'user': 'athlete', 'tax_code': 'DCMRDS81B02H501B'},
+    'blank': {'id': uid(723), 'association': 'own_association', 'user': None, 'tax_code': ''},
+    'blank_elsewhere': {'id': uid(724), 'association': 'foreign_association', 'user': None, 'tax_code': ''},
+}
 
 ARCHIVES = {
     'export': {'id': uid(300), 'association': 'own_association', 'document': 'export', 'date': '2026-02-15'},
@@ -111,15 +138,40 @@ ARCHIVES = {
 }
 SUBSCRIPTIONS = {
     'plain': {'id': uid(400), 'association': 'own_association', 'user': 'owner', 'document': 'plain', 'group': None},
-    'athlete': {'id': uid(401), 'association': 'own_association', 'user': 'athlete', 'document': 'athlete', 'group': None},
+    'athlete': {'id': uid(401), 'association': 'own_association', 'user': 'athlete', 'document': 'athlete', 'group': None,
+                'associate': 'person'},
     'group': {'id': uid(402), 'association': 'own_association', 'user': 'owner', 'document': 'group', 'group': 'own_group'},
     'nodoc': {'id': uid(403), 'association': 'own_association', 'user': 'owner', 'document': None, 'group': None},
     'foreign': {'id': uid(404), 'association': 'foreign_association', 'user': 'foreign_owner', 'document': 'foreign', 'group': None},
+    # Entered by the association for the athlete's associate, with a certificate of its own.
+    'same_associate': {'id': uid(405), 'association': 'own_association', 'user': 'owner', 'document': 'same_associate', 'group': None,
+                       'associate': 'person', 'medical': 'associate'},
+    # The same tax code in the other association's records.
+    'same_tax': {'id': uid(406), 'association': 'foreign_association', 'user': 'foreign_owner', 'document': 'same_tax', 'group': None,
+                 'associate': 'elsewhere'},
+    # An associate whose account is the athlete's.
+    'linked_associate': {'id': uid(407), 'association': 'own_association', 'user': 'owner', 'document': 'linked_associate',
+                         'group': None, 'associate': 'linked'},
+    # Blank tax codes do not join members: the athlete enrolled one, the other association keeps another.
+    'blank': {'id': uid(408), 'association': 'own_association', 'user': 'athlete', 'document': None, 'group': None, 'associate': 'blank'},
+    'blank_elsewhere': {'id': uid(409), 'association': 'foreign_association', 'user': 'foreign_owner', 'document': 'other_tax',
+                        'group': None, 'associate': 'blank_elsewhere'},
 }
-MEDICALS = {'medical': {'id': uid(500), 'document': 'medical'}, 'empty': {'id': uid(501), 'document': None}}
+MEDICALS = {'medical': {'id': uid(500), 'document': 'medical'}, 'empty': {'id': uid(501), 'document': None},
+            'athlete': {'id': uid(502), 'document': 'athlete_medical', 'user': 'athlete'},
+            'associate': {'id': uid(503), 'document': 'associate_medical'}}
+FILES = {'attached': {'id': uid(730), 'subscription': 'athlete', 'document': 'attached'},
+         'attached_other': {'id': uid(731), 'subscription': 'plain', 'document': 'attached_other'}}
 INVOICES = {
     'invoice': {'id': uid(600), 'association': 'own_association', 'document': 'invoice', 'deleted': False},
     'deleted': {'id': uid(601), 'association': 'own_association', 'document': 'deleted_invoice', 'deleted': True},
+    'athlete': {'id': uid(602), 'association': 'own_association', 'document': 'athlete_invoice', 'deleted': False},
+    'associate': {'id': uid(603), 'association': 'own_association', 'document': 'associate_invoice', 'deleted': False},
+}
+PAYMENTS = {
+    'invoice': {'id': uid(740), 'association': 'own_association', 'invoice': 'invoice', 'user': 'owner', 'associate': None},
+    'athlete': {'id': uid(741), 'association': 'own_association', 'invoice': 'athlete', 'user': 'athlete', 'associate': None},
+    'associate': {'id': uid(742), 'association': 'own_association', 'invoice': 'associate', 'user': 'owner', 'associate': 'person'},
 }
 UNKNOWN = uid(999)
 
@@ -172,6 +224,7 @@ NOT_FOUND = {'error': 'Document not found.'}
 BAD_TOKEN = {'error': 'Invalid download token.'}
 EXPORT_DENIED = {'error': 'Not authorized to access this export.'}
 NOT_VISIBLE = {'detail': 'Documento non disponibile per questa associazione.'}
+NOT_AVAILABLE = {'detail': 'Risorsa non disponibile per questo utente e associazione.'}
 BAD_UUID = ['badly formed hexadecimal UUID string']
 INVALID_JWT = {'detail': 'Given token not valid for any token type', 'code': 'token_not_valid',
                'messages': [{'token_class': 'AccessToken', 'token_type': 'access', 'message': 'Token is invalid'}]}
@@ -253,7 +306,7 @@ ok('retrieve-export-admin-impersonating-owner', 'admin', 'export', 'application/
 ok('retrieve-export-query-jwt-owner', 'anonymous', 'export', 'application/zip', query='token=$jwt:owner')
 add('retrieve-export-document-token', 'anonymous', retrieve('export', 'token=' + DOCUMENTS['export']['token']), 403, EXPORT_DENIED)
 ok('retrieve-orphan-export-owner', 'owner', 'orphan_export', 'application/zip')
-ok('retrieve-orphan-export-athlete', 'athlete', 'orphan_export', 'application/zip')
+add('retrieve-orphan-export-athlete', 'athlete', retrieve('orphan_export'), 403, NOT_AVAILABLE)
 ok('retrieve-download-token', 'anonymous', 'export', 'application/zip', query='download_token=$download:export')
 ok('retrieve-download-token-attachment', 'anonymous', 'export', 'application/zip', query='download=1&download_token=$download:export',
    attachment=True)
@@ -279,6 +332,59 @@ add('retrieve-download-token-malformed-association', 'anonymous', retrieve('expo
 add('retrieve-download-token-without-timestamp', 'anonymous', retrieve('export', 'download_token=$download:without_timestamp'), 500, SERVER)
 add('retrieve-download-token-bad-timestamp', 'anonymous', retrieve('export', 'download_token=$download:bad_timestamp'), 500, SERVER)
 ok('retrieve-download-token-empty-with-owner', 'owner', 'export', 'application/zip', query='download_token=')
+
+# --- retrieve: the member's own documents ---------------------------------------------------------
+ok('retrieve-athlete-by-subscription', 'athlete', 'athlete', 'application/pdf', path=retrieve(SUBSCRIPTIONS['athlete']['id']))
+ok('retrieve-athlete-associate-subscription-document', 'athlete', 'same_associate', 'application/pdf')
+ok('retrieve-athlete-by-associate-subscription', 'athlete', 'same_associate', 'application/pdf',
+   path=retrieve(SUBSCRIPTIONS['same_associate']['id']))
+ok('retrieve-athlete-same-tax-code-document', 'athlete', 'same_tax', 'application/pdf')
+ok('retrieve-athlete-linked-associate-document', 'athlete', 'linked_associate', 'application/pdf')
+ok('retrieve-athlete-own-certificate', 'athlete', 'athlete_medical', 'application/pdf')
+ok('retrieve-athlete-by-own-certificate', 'athlete', 'athlete_medical', 'application/pdf', path=retrieve(MEDICALS['athlete']['id']))
+ok('retrieve-athlete-associate-certificate', 'athlete', 'associate_medical', 'application/pdf')
+ok('retrieve-athlete-by-associate-certificate', 'athlete', 'associate_medical', 'application/pdf',
+   path=retrieve(MEDICALS['associate']['id']))
+ok('retrieve-athlete-attached-file', 'athlete', 'attached', 'application/pdf')
+ok('retrieve-athlete-own-receipt', 'athlete', 'athlete_invoice', 'application/pdf')
+ok('retrieve-athlete-by-own-invoice', 'athlete', 'athlete_invoice', 'application/pdf', path=retrieve(INVOICES['athlete']['id']))
+ok('retrieve-athlete-associate-receipt', 'athlete', 'associate_invoice', 'application/pdf')
+ok('retrieve-athlete-by-associate-invoice', 'athlete', 'associate_invoice', 'application/pdf',
+   path=retrieve(INVOICES['associate']['id']))
+ok('retrieve-athlete-view', 'athlete', 'athlete', 'application/pdf', query='download=false', view=True)
+ok('retrieve-athlete-cookie', 'anonymous', 'athlete', 'application/pdf', headers={'Cookie': 'BKN_AUTH=$jwt:athlete'})
+ok('retrieve-athlete-query-jwt', 'anonymous', 'same_associate', 'application/pdf', query='token=$jwt:athlete')
+add('retrieve-athlete-other-document', 'athlete', retrieve('plain'), 403, NOT_AVAILABLE)
+add('retrieve-athlete-by-other-subscription', 'athlete', retrieve(SUBSCRIPTIONS['plain']['id']), 403, NOT_AVAILABLE)
+add('retrieve-athlete-group-subscription-document', 'athlete', retrieve('group'), 403, NOT_AVAILABLE)
+add('retrieve-athlete-other-certificate', 'athlete', retrieve('medical'), 403, NOT_AVAILABLE)
+add('retrieve-athlete-by-other-certificate', 'athlete', retrieve(MEDICALS['medical']['id']), 403, NOT_AVAILABLE)
+add('retrieve-athlete-other-attached-file', 'athlete', retrieve('attached_other'), 403, NOT_AVAILABLE)
+add('retrieve-athlete-other-receipt', 'athlete', retrieve('invoice'), 403, NOT_AVAILABLE)
+add('retrieve-athlete-by-other-invoice', 'athlete', retrieve(INVOICES['invoice']['id']), 403, NOT_AVAILABLE)
+add('retrieve-athlete-unlinked-document', 'athlete', retrieve('docx'), 403, NOT_AVAILABLE)
+add('retrieve-athlete-blank-tax-code-document', 'athlete', retrieve('other_tax'), 403, NOT_AVAILABLE)
+add('retrieve-athlete-other-document-view', 'athlete', retrieve('plain', 'download=false'), 403, NOT_AVAILABLE)
+add('retrieve-athlete-missing-object-of-other', 'athlete', retrieve('missing'), 403, NOT_AVAILABLE)
+add('retrieve-athlete-unknown', 'athlete', retrieve(UNKNOWN), 404, NOT_FOUND)
+add('retrieve-athlete-cookie-other-document', 'anonymous', retrieve('plain'), 403, NOT_AVAILABLE,
+    headers={'Cookie': 'BKN_AUTH=$jwt:athlete'})
+add('retrieve-athlete-query-jwt-other-document', 'anonymous', retrieve('plain', 'token=$jwt:athlete'), 403, NOT_AVAILABLE)
+ok('retrieve-athlete-document-token-of-other', 'athlete', 'plain', 'application/pdf', query='token=' + DOCUMENTS['plain']['token'])
+add('retrieve-athlete-other-document-token-mismatch', 'athlete', retrieve('plain', 'token=' + DOCUMENTS['comma']['token']), 403,
+    NOT_AVAILABLE)
+add('retrieve-member-athlete-document', 'member', retrieve('athlete'), 403, NOT_AVAILABLE)
+add('retrieve-member-by-athlete-subscription', 'member', retrieve(SUBSCRIPTIONS['athlete']['id']), 403, NOT_AVAILABLE)
+add('retrieve-member-athlete-certificate', 'member', retrieve('athlete_medical'), 403, NOT_AVAILABLE)
+add('retrieve-member-athlete-receipt', 'member', retrieve('athlete_invoice'), 403, NOT_AVAILABLE)
+ok('retrieve-member-document-token', 'member', 'athlete', 'application/pdf', query='token=' + DOCUMENTS['athlete']['token'])
+ok('retrieve-primary-association-account', 'primary_athlete', 'plain', 'application/pdf')
+ok('retrieve-primary-association-account-by-invoice', 'primary_athlete', 'athlete_invoice', 'application/pdf',
+   path=retrieve(INVOICES['athlete']['id']))
+ok('retrieve-full-collaborator-athlete-document', 'full_collaborator', 'athlete', 'application/pdf')
+ok('retrieve-foreign-owner-athlete-receipt', 'foreign_owner', 'athlete_invoice', 'application/pdf')
+ok('retrieve-query-jwt-admin-athlete-document', 'anonymous', 'athlete', 'application/pdf', query='token=$jwt:admin')
+ok('retrieve-admin-impersonating-owner-athlete-document', 'admin', 'athlete', 'application/pdf', headers=ADMIN_OWNER)
 
 # --- retrieve: association-scoped impersonation --------------------------------------------------
 ok('retrieve-scoped-athlete-own-document', 'owner', 'athlete', 'application/pdf', headers=SCOPED)
@@ -322,6 +428,7 @@ assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'document retrieve streaming and document delete pre-checks',
     'ids': IDS, 'location': LOCATION, 'documents': DOCUMENTS, 'objects': OBJECTS, 'archives': ARCHIVES,
-    'subscriptions': SUBSCRIPTIONS, 'medicals': MEDICALS, 'invoices': INVOICES, 'cases': cases},
+    'subscriptions': SUBSCRIPTIONS, 'medicals': MEDICALS, 'invoices': INVOICES, 'extra_users': EXTRA_USERS, 'primary': PRIMARY,
+    'instance': INSTANCE, 'associates': ASSOCIATES, 'files': FILES, 'payments': PAYMENTS, 'cases': cases},
     ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

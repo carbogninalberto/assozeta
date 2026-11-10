@@ -209,9 +209,9 @@ func (s *DocumentRender) Render(ctx context.Context, identity domain.ResolvedIde
 	var err error
 	switch request.Route {
 	case RenderSubscription:
-		job, reply, err = s.subscriptionJob(ctx, request, scope)
+		job, reply, err = s.subscriptionJob(ctx, identity, request, scope)
 	case RenderInvoice:
-		job, reply, err = s.invoiceJob(ctx, request, scope)
+		job, reply, err = s.invoiceJob(ctx, identity, request, scope)
 	case RenderEinvoice:
 		job, reply, err = s.einvoiceJob(ctx, request)
 	case RenderCompensation:
@@ -324,7 +324,7 @@ func (s *DocumentRender) parseUID(raw string) (string, *DocumentRenderReply) {
 	return id.String(), nil
 }
 
-func (s *DocumentRender) subscriptionJob(ctx context.Context, request DocumentRenderRequest, scope domain.RenderScope) (*renderJob, *DocumentRenderReply, error) {
+func (s *DocumentRender) subscriptionJob(ctx context.Context, identity domain.ResolvedIdentity, request DocumentRenderRequest, scope domain.RenderScope) (*renderJob, *DocumentRenderReply, error) {
 	id, invalid := s.parseUID(request.UID)
 	if invalid != nil {
 		return nil, invalid, nil
@@ -333,6 +333,12 @@ func (s *DocumentRender) subscriptionJob(ctx context.Context, request DocumentRe
 	if err != nil {
 		reply, err := lookupFailure(err, renderException(500, "Subscription matching query does not exist."))
 		return nil, reply, err
+	}
+	// Generated for the association's staff and for the member the subscription belongs to.
+	if err := memberDocumentAccess(ctx, s.store, identity, identity.ScopeUser, func(ctx context.Context, member string) (bool, error) {
+		return s.store.MemberSubscription(ctx, member, subscription.ID)
+	}); err != nil {
+		return nil, nil, err
 	}
 	if !subscription.HasAssociate {
 		return nil, renderException(500, "'NoneType' object has no attribute 'get_full_name'"), nil
@@ -365,7 +371,7 @@ func receiptEmail(request DocumentRenderRequest) (bool, error) {
 	return value == "true" || value == "True" || value == "1", nil
 }
 
-func (s *DocumentRender) invoiceJob(ctx context.Context, request DocumentRenderRequest, scope domain.RenderScope) (*renderJob, *DocumentRenderReply, error) {
+func (s *DocumentRender) invoiceJob(ctx context.Context, identity domain.ResolvedIdentity, request DocumentRenderRequest, scope domain.RenderScope) (*renderJob, *DocumentRenderReply, error) {
 	email, err := receiptEmail(request)
 	if err != nil {
 		return nil, nil, err
@@ -378,6 +384,12 @@ func (s *DocumentRender) invoiceJob(ctx context.Context, request DocumentRenderR
 	if err != nil {
 		reply, err := lookupFailure(err, renderException(404, "Invoice not found"))
 		return nil, reply, err
+	}
+	// Generated for the association's staff and for the member the receipt belongs to.
+	if err := memberDocumentAccess(ctx, s.store, identity, identity.ScopeUser, func(ctx context.Context, member string) (bool, error) {
+		return s.store.MemberInvoice(ctx, member, invoice.ID)
+	}); err != nil {
+		return nil, nil, err
 	}
 	payments, err := s.store.InvoicePayments(ctx, invoice.ID, scope)
 	if err != nil {

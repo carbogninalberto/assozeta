@@ -115,7 +115,8 @@
    "born": "1995-01-01",
    "user": "athlete",
    "email": null,
-   "deleted": false
+   "deleted": false,
+   "family": "a1000000-0000-4000-8000-000000949001"
   },
   "invoiced": {
    "id": "a1000000-0000-4000-8000-000000945016",
@@ -124,6 +125,84 @@
    "last": "Fatturato",
    "tax_code": "FTTVIO80A01H501E",
    "born": "1980-01-01",
+   "user": "owner",
+   "email": null,
+   "deleted": false
+  },
+  "second": {
+   "id": "a1000000-0000-4000-8000-000000949002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Bruna",
+   "last": "Seconda",
+   "tax_code": "SCNBRN85A41H501R",
+   "born": "1985-01-01",
+   "user": "athlete",
+   "email": null,
+   "deleted": false
+  },
+  "relative": {
+   "id": "a1000000-0000-4000-8000-000000949003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Renata",
+   "last": "Parente",
+   "tax_code": "PRNRNT85A41H501P",
+   "born": "1985-01-01",
+   "user": "owner",
+   "email": null,
+   "deleted": false,
+   "family": "a1000000-0000-4000-8000-000000949001"
+  },
+  "coded_earlier": {
+   "id": "a1000000-0000-4000-8000-000000949004",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "first": "Carla",
+   "last": "Codice",
+   "tax_code": "CDCCRL85A41H501Q",
+   "born": "1985-01-01",
+   "user": "athlete",
+   "email": null,
+   "deleted": false
+  },
+  "coded_later": {
+   "id": "a1000000-0000-4000-8000-000000949005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Carla",
+   "last": "Codice",
+   "tax_code": "CDCCRL85A41H501Q",
+   "born": "1985-01-01",
+   "user": "owner",
+   "email": null,
+   "deleted": false
+  },
+  "stranger": {
+   "id": "a1000000-0000-4000-8000-000000949006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Sandra",
+   "last": "Estranea",
+   "tax_code": "STRSDR85A41H501S",
+   "born": "1985-01-01",
+   "user": "owner",
+   "email": null,
+   "deleted": false
+  },
+  "blank_earlier": {
+   "id": "a1000000-0000-4000-8000-000000949014",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "first": "Vera",
+   "last": "Vuota",
+   "tax_code": "",
+   "born": "1985-01-01",
+   "user": "athlete",
+   "email": null,
+   "deleted": false
+  },
+  "blank_stranger": {
+   "id": "a1000000-0000-4000-8000-000000949015",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Zita",
+   "last": "Senza",
+   "tax_code": "",
+   "born": "1985-01-01",
    "user": "owner",
    "email": null,
    "deleted": false
@@ -146,6 +225,82 @@
    "end": "$season_end",
    "archived": false,
    "number": "41",
+   "payment": null
+  },
+  "athlete_previous": {
+   "id": "a1000000-0000-4000-8000-000000949007",
+   "associate": "athlete_member",
+   "start": "$last_season_start",
+   "end": "$last_season_end",
+   "archived": false,
+   "number": "8",
+   "payment": null,
+   "user": "athlete"
+  },
+  "second_previous": {
+   "id": "a1000000-0000-4000-8000-000000949008",
+   "associate": "second",
+   "start": "$last_season_start",
+   "end": "$last_season_end",
+   "archived": false,
+   "number": "9",
+   "payment": null,
+   "user": "athlete"
+  },
+  "relative_previous": {
+   "id": "a1000000-0000-4000-8000-000000949009",
+   "associate": "relative",
+   "start": "$last_season_start",
+   "end": "$last_season_end",
+   "archived": false,
+   "number": "10",
+   "payment": null
+  },
+  "coded_earlier_2019": {
+   "id": "a1000000-0000-4000-8000-000000949010",
+   "associate": "coded_earlier",
+   "start": "2019-01-01",
+   "end": "2019-12-31",
+   "archived": false,
+   "number": "11",
+   "payment": null,
+   "user": "athlete"
+  },
+  "coded_later_previous": {
+   "id": "a1000000-0000-4000-8000-000000949011",
+   "associate": "coded_later",
+   "start": "$last_season_start",
+   "end": "$last_season_end",
+   "archived": false,
+   "number": "13",
+   "payment": null
+  },
+  "stranger_previous": {
+   "id": "a1000000-0000-4000-8000-000000949012",
+   "associate": "stranger",
+   "start": "$last_season_start",
+   "end": "$last_season_end",
+   "archived": false,
+   "number": "14",
+   "payment": null
+  },
+  "blank_earlier_2019": {
+   "id": "a1000000-0000-4000-8000-000000949016",
+   "associate": "blank_earlier",
+   "start": "2019-01-01",
+   "end": "2019-12-31",
+   "archived": false,
+   "number": "15",
+   "payment": null,
+   "user": "athlete"
+  },
+  "blank_stranger_previous": {
+   "id": "a1000000-0000-4000-8000-000000949017",
+   "associate": "blank_stranger",
+   "start": "$last_season_start",
+   "end": "$last_season_end",
+   "archived": false,
+   "number": "16",
    "payment": null
   }
  },
@@ -217,10 +372,15 @@
    "name": "Altro"
   }
  },
+ "family": "a1000000-0000-4000-8000-000000949001",
  "certificates": {
   "draft_cert": {
    "id": "a1000000-0000-4000-8000-000000945022",
    "user": null
+  },
+  "athlete_cert": {
+   "id": "a1000000-0000-4000-8000-000000949013",
+   "user": "athlete"
   }
  },
  "invoices": {
@@ -1736,10 +1896,6 @@
      [
       "$renew_subscription",
       "tag_a"
-     ],
-     [
-      "$renew_subscription",
-      "tag_other"
      ]
     ],
     "audit": [
@@ -4611,6 +4767,1021 @@
     "courses": [],
     "sport_association": {
      "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-in-another-association",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000945015",
+     "first_name": "Aurora",
+     "last_name": "Atleta",
+     "tax_code": "TLTRRA95A41H501W",
+     "born_date": "01/01/1995",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701002"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-another-member",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000949006",
+     "first_name": "Sandra",
+     "last_name": "Estranea",
+     "tax_code": "STRSDR85A41H501S",
+     "born_date": "01/01/1985",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Associazione"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-another-member-by-tax-code",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Sandra",
+     "last_name": "Estranea",
+     "tax_code": "STRSDR85A41H501S",
+     "born_date": "01/01/1985",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Associazione"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-blank-tax-code-member",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000949015",
+     "first_name": "Zita",
+     "last_name": "Senza",
+     "tax_code": "",
+     "born_date": "01/01/1985",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Associazione"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-associate-id-malformed",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "non-un-id",
+     "first_name": "Renata",
+     "last_name": "Parente",
+     "tax_code": "PRNRNT85A41H501P",
+     "born_date": "01/01/1985",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Associazione"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-associate-id-not-text",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": 5,
+     "first_name": "Renata",
+     "last_name": "Parente",
+     "tax_code": "PRNRNT85A41H501P",
+     "born_date": "01/01/1985",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Associazione"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-associate-id-empty",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "",
+     "first_name": "Renata",
+     "last_name": "Parente",
+     "tax_code": "PRNRNT85A41H501P",
+     "born_date": "01/01/1985",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Associazione"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-without-associate-data",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Associazione"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-tax-code-not-text",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": null,
+     "first_name": "Renata",
+     "last_name": "Parente",
+     "tax_code": 5,
+     "born_date": "01/01/1985",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Associazione"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-family-member",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new"
+   },
+   "effect": {
+    "actor": "athlete",
+    "new": [
+     {
+      "label": "payment",
+      "bind": "$relative_payment",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000949003",
+       "amount": "25.00"
+      },
+      "columns": {
+       "subject": 1,
+       "description": "Iscrizione",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
+       "amount": "25.00",
+       "payment_date": "$today_midnight",
+       "meta_payment_categories": null,
+       "meta": null
+      }
+     },
+     {
+      "label": "subscription",
+      "bind": "$relative_subscription",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000949003"
+      },
+      "columns": {
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner",
+       "payment_id": "$relative_payment",
+       "type": 1,
+       "role": 1,
+       "status_flag": 1,
+       "meta": {
+        "plan_id": null,
+        "plan_name": null,
+        "membership_plan_id": null,
+        "membership_plan_name": null
+       },
+       "subscription_type": "",
+       "subscription_number": "53",
+       "medical_id": null,
+       "custom_data": {},
+       "additional_fields": {},
+       "start_date": "$season_start",
+       "end_date": "$season_end"
+      }
+     }
+    ],
+    "changed": {
+     "associate": {
+      "relative": {
+       "sex": "F"
+      }
+     }
+    },
+    "deleted": {},
+    "tags": [],
+    "audit": [
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "relative",
+      "changes": {
+       "sex": [
+        "A",
+        "F"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$relative_payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "$relative_subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "$relative_subscription"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$relative_subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notifications": [
+     {
+      "msg": "Nuova Iscrizione aggiunta per Renata Parente.",
+      "association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000949003",
+     "first_name": "Renata",
+     "last_name": "Parente",
+     "tax_code": "PRNRNT85A41H501P",
+     "born_date": "01/01/1985",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Associazione"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-same-tax-code",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new"
+   },
+   "effect": {
+    "actor": "athlete",
+    "new": [
+     {
+      "label": "payment",
+      "bind": "$coded_later_payment",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000949005",
+       "amount": "25.00"
+      },
+      "columns": {
+       "subject": 1,
+       "description": "Iscrizione",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
+       "amount": "25.00",
+       "payment_date": "$today_midnight",
+       "meta_payment_categories": null,
+       "meta": null
+      }
+     },
+     {
+      "label": "subscription",
+      "bind": "$coded_later_subscription",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000949005"
+      },
+      "columns": {
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner",
+       "payment_id": "$coded_later_payment",
+       "type": 1,
+       "role": 1,
+       "status_flag": 1,
+       "meta": {
+        "plan_id": null,
+        "plan_name": null,
+        "membership_plan_id": null,
+        "membership_plan_name": null
+       },
+       "subscription_type": "",
+       "subscription_number": "54",
+       "medical_id": null,
+       "custom_data": {},
+       "additional_fields": {},
+       "start_date": "$season_start",
+       "end_date": "$season_end"
+      }
+     }
+    ],
+    "changed": {
+     "associate": {
+      "coded_later": {
+       "sex": "F"
+      }
+     }
+    },
+    "deleted": {},
+    "tags": [],
+    "audit": [
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "coded_later",
+      "changes": {
+       "sex": [
+        "A",
+        "F"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$coded_later_payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "$coded_later_subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "$coded_later_subscription"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$coded_later_subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notifications": [
+     {
+      "msg": "Nuova Iscrizione aggiunta per Carla Codice.",
+      "association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000949005",
+     "first_name": "Carla",
+     "last_name": "Codice",
+     "tax_code": "CDCCRL85A41H501Q",
+     "born_date": "01/01/1985",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Associazione"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-tax-code-of-another-member",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": null,
+     "first_name": "Bruna",
+     "last_name": "Seconda",
+     "tax_code": "STRSDR85A41H501S",
+     "born_date": "01/01/1985",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Associazione"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-keeps-the-account",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new"
+   },
+   "effect": {
+    "actor": "athlete",
+    "new": [
+     {
+      "label": "payment",
+      "bind": "$second_payment",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000949002",
+       "amount": "25.00"
+      },
+      "columns": {
+       "subject": 1,
+       "description": "Iscrizione",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
+       "amount": "25.00",
+       "payment_date": "$today_midnight",
+       "meta_payment_categories": null,
+       "meta": null
+      }
+     },
+     {
+      "label": "subscription",
+      "bind": "$second_subscription",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000949002"
+      },
+      "columns": {
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner",
+       "payment_id": "$second_payment",
+       "type": 1,
+       "role": 1,
+       "status_flag": 1,
+       "meta": {
+        "plan_id": null,
+        "plan_name": null,
+        "membership_plan_id": null,
+        "membership_plan_name": null
+       },
+       "subscription_type": "",
+       "subscription_number": "55",
+       "medical_id": "a1000000-0000-4000-8000-000000949013",
+       "custom_data": {},
+       "additional_fields": {},
+       "start_date": "$season_start",
+       "end_date": "$season_end"
+      }
+     }
+    ],
+    "changed": {
+     "associate": {
+      "second": {
+       "sex": "F",
+       "user_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    },
+    "deleted": {},
+    "tags": [],
+    "audit": [
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "second",
+      "changes": {
+       "sex": [
+        "A",
+        "F"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "second",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700004",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$second_payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "$second_subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "$second_subscription"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$second_subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notifications": [
+     {
+      "msg": "Nuova Iscrizione aggiunta per Bruna Seconda.",
+      "association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Bruna",
+     "last_name": "Seconda",
+     "tax_code": "scnbrn85a41h501r",
+     "born_date": "01/01/1985",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": "a1000000-0000-4000-8000-000000949013"
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Associazione"
+    },
+    "user": {
+     "email": "renew-target@example.test"
     }
    },
    "setup": null

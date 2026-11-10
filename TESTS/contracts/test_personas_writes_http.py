@@ -9,11 +9,15 @@ Placeholders in the authored bodies: '$aN' is an associate created by the case
 (a UTC 'Z' timestamp), {'$age': 'YYYY-MM-DD'} is Associate.calculate_age() on
 today's UTC date and {'$minor': ...} that age < 18. The relation and M2M
 managers have no ordering: nested `tutors` lists are compared sorted by the
-tutor's names, `family_members` and pk lists sorted.
+tutor's names, `family_members` and pk lists sorted. '$picN' is the URL of a
+picture the case uploads (the fixture's picture_base, AWS_LOCATION,
+associates/<folder>/picture_<timestamp>.jpg); the bound values of the last
+case stay in BOUND for the adapter, which ties them to the stored object.
 """
 from datetime import date, datetime, timezone
 import json
 from pathlib import Path
+import re
 import uuid
 
 from TESTS.contracts import http_family as family
@@ -23,6 +27,8 @@ from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, Response
 __all__ = ('require', 'load_source', 'assert_case', 'ResponseFailure')
 
 SOURCE = Path(__file__).resolve().parents[1] / 'fixtures/personas_writes_http.json'
+PICTURE = re.compile(r'https://bakney-object-spaces\.fra1\.cdn\.digitaloceanspaces\.com/[^/]+/associates/[^/]+/picture_\d+\.\d+\.jpg')
+BOUND = {}
 
 
 def load_source(path=SOURCE):
@@ -73,6 +79,11 @@ def bind(expected, actual, bindings, check):
             check(actual not in bindings.values(), 'response.new-associate-distinct')
             bindings[expected] = actual
         return bindings[expected]
+    if isinstance(expected, str) and expected.startswith('$pic'):
+        if expected not in bindings:
+            check(isinstance(actual, str) and PICTURE.fullmatch(actual) is not None, 'response.picture-url')
+            bindings[expected] = actual
+        return bindings[expected]
     if isinstance(expected, str) and expected.startswith('$now'):
         if expected not in bindings:
             check(isinstance(actual, str) and actual.endswith('Z'), 'response.new-creation-date')
@@ -99,6 +110,7 @@ def assert_case(case, base_url, *, token, sessions):
     if 'raw_body' in case:
         body = case['raw_body'].encode()
         headers['Content-Type'] = case['content_type']
+    BOUND.clear()
     status, raw, received = Client(base_url, token).request(case['method'], case['path'], body, headers, raw=True, include_headers=True)
 
     def check(condition, code):
@@ -121,7 +133,9 @@ def assert_case(case, base_url, *, token, sessions):
     except (ValueError, UnicodeDecodeError):
         raise ResponseFailure('response.json', status) from None
     actual = normalize(actual)
-    expected = bind(normalize(_resolve_only(case['response'])), actual, {}, check)
+    bindings = {}
+    expected = bind(normalize(_resolve_only(case['response'])), actual, bindings, check)
+    BOUND.update({key: value for key, value in bindings.items() if key.startswith('$pic')})
     check(actual == expected, 'response.body' + difference(expected, actual))
     check(received.get('Content-Type', '').split(';')[0] == 'application/json', 'response.type')
     return status

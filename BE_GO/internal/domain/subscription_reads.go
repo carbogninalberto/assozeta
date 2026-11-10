@@ -186,6 +186,10 @@ type SubscriptionReadsStore interface {
 	// NullTaxRenewal is has_future_renewal()'s lookup with associate__tax_code__iexact=None.
 	NullTaxRenewal(ctx context.Context, association string, end time.Time, group *string) (bool, error)
 	FieldValues(ctx context.Context, filter SubscriptionReadsFilter, column string, timestamp bool) ([]*string, error)
+	// ExportTags is prefetch_related('tags') of current_view_subscriptions for the subscriptions, in the database's order.
+	ExportTags(ctx context.Context, ids []string) ([]SubscriptionReadsExportTag, error)
+	// AssociationDenomination is sport_association.denomination.
+	AssociationDenomination(ctx context.Context, association string) (*string, error)
 	// AllowedForAthlete are subscription_info's athlete subscription ids (own and same tax code).
 	AllowedForAthlete(ctx context.Context, user string, group, scope *string) ([]string, error)
 	// Subscription is the group-aware, scoped subscription by id (nil: none).
@@ -201,4 +205,10 @@ type SubscriptionReadsStore interface {
 	Relations(ctx context.Context, associates []string) ([]PersonaRelation, error)
 	Tutors(ctx context.Context, associates []string, group *string) ([]PersonaRelation, error)
 	FamilyMembers(ctx context.Context, family, self string, group *string) ([]string, error)
+}
+
+// SubscriptionReadsExportTag is one prefetched tag of a subscription.
+type SubscriptionReadsExportTag struct {
+	SubscriptionID string `db:"subscription_id"`
+	Name           string `db:"tag_name"`
 }

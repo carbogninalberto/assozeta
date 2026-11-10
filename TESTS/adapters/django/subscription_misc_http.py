@@ -21,6 +21,7 @@ from decimal import Decimal
 from TESTS.contracts import test_subscription_misc_http as contract
 from TESTS.adapters.django import carnet_replace_http as replace
 from TESTS.adapters.django import carnet_subscription_topup_http as topup
+from TESTS.adapters.django import bakney_public_links as links
 from TESTS.adapters.django import family_harness as harness
 from TESTS.adapters.django.subscription_medical_http import additional_data
 from TESTS.adapters.django.workflow_writes_http import keyed
@@ -34,7 +35,8 @@ SOURCES = ('TESTS/fixtures/subscription_misc_http.json', 'TESTS/contracts/test_s
            'BE/application/models/payment_models.py', 'BE/docmanager/models.py', 'BE/application/mixin.py',
            'BE/application/utils/api_utils.py', 'BE/application/impersonation_scope.py', 'BE/application/audit_resolvers.py',
            'BE/application/signals.py', 'BE/application/permissions_registry.py', 'BE/application/urls.py',
-           'BE/instance/sso/public_links.py', 'BE/core/settings.py', 'BE/requirements.txt') + harness.SOURCES
+           'BE/instance/sso/public_links.py', 'BE/instance/sso/service.py', 'BE/instance/sso/models.py',
+           'TESTS/adapters/django/bakney_public_links.py', 'TESTS/adapters/django/sso_pairing_http.py', 'BE/core/settings.py', 'BE/requirements.txt') + harness.SOURCES
 LINK, FILE, DOCUMENT = 'application.CumulativeSubscriptionGymLinks', 'application.SubscriptionFile', 'docmanager.Document'
 MANAGED = (LINK, FILE, DOCUMENT, harness.AUDIT, harness.INDEX)
 
@@ -190,4 +192,6 @@ def assert_effect(case, before, after, source, context):
 
 
 fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(link_model,))
-run_workload = harness.run_workload_for(contract, assert_effect, prepare=deleted_rows)
+run_workload = harness.run_workload_for(links.Contract(contract, 'own_association'), assert_effect, prepare=deleted_rows)
+# The paired-server stub of the cases with a 'pairing' entry (public_links.source_token).
+service_context = links.service_context

@@ -108,6 +108,25 @@ class OnboardingUpdateTests(BaseOnboardingTestCase):
         response = self.client.patch('/onboarding/update', onboarding_data, format='json')
         self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST])
 
+    def test_update_onboarding_data_only_changes_checklist_fields_of_own_row(self):
+        """The onboarding update only changes the checklist fields of the caller's own row."""
+        other_user = create_test_user(role=User.ASSOCIATION)
+        row_id = self.users_onboarding.users_onboarding_id
+        onboarding_data = {
+            'onboarding_data': {
+                'users_onboarding_id': '6f1c2a34-0000-4000-8000-000000000001',
+                'user': str(other_user.user_id),
+                'view_membership': True,
+            }
+        }
+        response = self.client.patch('/onboarding/update', onboarding_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        rows = list(UsersOnboarding.objects.all())
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].users_onboarding_id, row_id)
+        self.assertEqual(rows[0].user_id, self.user.user_id)
+        self.assertTrue(rows[0].view_membership)
+
     def test_update_unauthorized_non_association(self):
         """Test that non-association users cannot update onboarding."""
         regular_user = create_test_user(role=User.ATHLETE)

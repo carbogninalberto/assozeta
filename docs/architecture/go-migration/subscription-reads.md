@@ -54,12 +54,14 @@ personas-reads and payment-reads.
   `payments_info` / `all_payments_paid` over the associate's live group-aware unarchived payments, age and
   `plain_medical_label` when there is an associate, `renewal_available` from the `future_renewal_exists` annotation, whose
   candidates are group-aware, medical and document ids and tokens, `signature_present`).
-- POST runs the export after the filters: a missing or unknown `format` is a 500.
+- POST runs the export after the filters and the sorting, reading `request.data` then (a parse error is DRF's 400): a
+  missing or unknown `format`, or a body that is not a dict, is a 500. See "Excel export".
 - With `m` (any value, even empty): only the basic filters, then `filter` (absent: accepted; `all`: any; else the status
   with `int()`), SubscriptionFastBasicSerializer rows by `-creation_date`, `meta` `{}`; POST answers the same.
 
 - Athletes (after the field mode, for GET and POST, every other parameter ignored): `get_optimized_subscriptions`. Their
-  own subscriptions and those whose associate has a tax code of one of them (both group-aware, soft-deleted rows included),
+  own subscriptions and those whose associate has a filled-in tax code of one of them (`family_tax_codes`: null and blank
+  tax codes link nothing; both group-aware, soft-deleted rows included),
   by `-creation_date`, as SubscriptionSerializerAthleteOptimizedList keyed by index with `meta` `{}`: the model fields
   (`signature_storage_key` excluded, forward relations and tags as keys), `is_current`, `carnets` (any CarnetSubscription),
   the certificate id, document, token and expiry, the live course subscriptions with their course (`one_fee` as a float),
@@ -67,6 +69,22 @@ personas-reads and payment-reads.
   user_serializers AssociateSerializer (`user`: the associate's, else its association owner's) and
   SportAssociationSearchSerializer (UserSerializerSearch of the owner: `registration_features()`, `online_payments` from
   the owner's flag and the Stripe credentials; the membership card configuration).
+
+### Excel export (POST with `format` `excel`)
+
+`current_view_subscriptions` over the whole filtered, sorted queryset (pagination parameters are ignored): 200 with
+`{'file': <base64 workbook>, 'filename': '[<dd/mm/YYYY today>] <title> - <denomination>.xlsx'}`; the title is `Tesserati`
+for `type=athletes`, `Libro Soci` for `type=associates`, else `Iscrizioni filtrate`. The workbook is `get_excel_base64`
+(`xlsxexport.PandasOpenpyxl`) of Tesserato (`get_full_name()`), Email, Stato (`get_status_lang()`), Anno fiscale
+(`current_year()`: `corrente`, `precedente`, `successivo` on the UTC date), Certificato, Data creazione, Utente
+(username) and Tag (tag names joined with `, `). The view's rows carry the creation date (`%d/%m/%Y`) under Certificato
+and `presente`/`-` for the certificate under Data creazione. A row without associate, or with a status outside 1–5, is
+a 500.
+
+Row order: the subscriptions follow the list's own `ORDER BY` (the clause the paginated list uses, the authored rows have
+distinct keys). A subscription's tags come from `prefetch_related('tags')`, which Django sends without `ORDER BY`; Go
+sends the same statement (`ExportTags` in `repository/subscription_reads.go`: same tables, join and predicate), so both
+read the rows in the order the database returns them. The fixture seeds tags and their through rows in id order.
 
 ## subscription/list/all
 
@@ -93,8 +111,8 @@ payments that have no associate.
 
 ## subscription/<uid>/info
 
-`is_valid_uuid` (400 list). Athletes: their own subscriptions and those of associates sharing a tax code with one of
-theirs (the raw path text is compared with the canonical ids: `403 Subscription not found.`), the subscription's live
+`is_valid_uuid` (400 list). Athletes: their own subscriptions and those of associates sharing a filled-in tax code
+(`family_tax_codes`) with one of theirs (the raw path text is compared with the canonical ids: `403 Subscription not found.`), the subscription's live
 association (`403 Sport association not found.`). Others: the scoped association. The group-aware subscription
 (`404 {'msg': 'Subscription not found.'}`, another association `403 User not allowed.`). Courses: CourseDetailSerializer
 of each live course subscription's course (deleted courses included; the tags and locations as keys) with its
@@ -115,7 +133,9 @@ registries of the courses of its live course subscriptions; each truthy events l
 ## Not ported (refused with the 500 page)
 
 - Association-scoped athlete sessions on subscription/list, list/all, info and calendar (scoped_queryset's family boundary).
-- The POST export of subscription/list with `format` `pdf` or `excel` (`current_view_subscriptions`).
+- The POST export of subscription/list with `format` `pdf` (a time-stamped PDF render). The Excel export is ported,
+  except workbook inputs `xlsxexport` does not reproduce (`xlsx-exports.md`) and exports sorted by an ordering compiled
+  with the rows.
 - Orderings compiled with the rows (relations, paths, transforms, `?`, annotations), field-mode relation paths and
   transforms, and search terms with characters at or above U+0250 or U+0130 (personas-reads).
 
@@ -165,3 +185,15 @@ invoice and instructor (loaded by the shared course-subscriptions repository). T
 three membership payments of one course subscription (invoiced, open, invoiced with an instructor); 261 cases. RED
 `v2misc-red-r1`: Django 261/261, Go 500. GREEN `v2misc-green-r1`: 261/261 on the four transports. Mutation `v2misc-mutation-r1`
 (the nested invoice not loaded) fails `info-hyphenless-uuid` on Go.
+- Excel export: 33 more cases (294 in all). RED `v2xlsx-red-r1`: Django 294/294, Go answers 500 on the first export case.
+  GREEN `v2xlsx-green-final`: 294/294 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation
+  `v2xlsx-mutation-final`: `precedente` decided by an end date after today fails Go on `list-excel-owner` (sheet1.xml
+  differs).
+
+Family matching by filled-in tax codes (296 cases; the seed adds two members stored with a blank tax code, one of an
+athlete and one of the own association):
+
+- RED (`secaw-red`): Django 296/296; Go answers 200 on `info-athlete-blank-tax-code-other-user`.
+- GREEN (`secaw-green`): 296/296 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`secaw-mutation`): `familyTaxCodeFilled` without the blank filter fails `info-athlete-blank-tax-code-other-user`
+  (CAUGHT).

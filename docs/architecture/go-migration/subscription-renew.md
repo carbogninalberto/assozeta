@@ -49,8 +49,8 @@
      entries in reverse key order indexed from the changes.
   2. When `'email' in data['user']` (dict key, list item or substring; other types are a `TypeError`), the first live user with
      that e-mail becomes the subscription's user: `save()` writes one update entry when it changes.
-  3. `data['tags']`: ids, or `{'tag_id'}` dicts when the first item is not a string. `Tags.objects.filter(tag_id__in=...)` resolves
-     the tags by id and links them; the through rows are not audited.
+  3. `data['tags']`: ids, or `{'tag_id'}` dicts when the first item is not a string. `Tags.objects.filter(tag_id__in=..., sport_association=...)`
+     links the association's own tags with those ids; the through rows are not audited.
   4. `data['courses']` with items: see Not ported.
 - Response `{"status": "success", "payment_id": <id or null>}`.
 
@@ -86,6 +86,26 @@ before the `try` block: a non-dict body or association, a missing key, a malform
 `create_subscription` and the post-processing then run for that owner (the associate's account becomes the owner with its own
 update entry, since the serializer's `user` is read-only); the audit actor stays the athlete (the notification broadcast rows are
 indexed through the athlete's association: none), and the notification goes to the owner.
+
+A member account renews its own subscriptions and those of its family, in the association they belong to
+(`_member_renewal_association`). After the association lookup, the named association must have a subscription
+
+- of the requester, or
+- of a person with the filled-in tax code of one of the requester's subscriptions (`family_tax_codes`: null and blank tax codes
+  link nothing), or
+- of a person in the family of one of the requester's subscriptions,
+
+for the associate of the request: by `associate_data.associate_id` when it is a non-empty string (through `uuid.UUID`), else, when
+`associate_id` is missing or null, by `associate_data.tax_code` (a non-empty string, case-insensitive). Anything else is 403
+`{"detail": "User not allowed."}` before any write, the shape the quick re-subscription already uses. Go: `renewMemberAllowed`
+and `MemberRenewable`.
+
+`data['user']['email']` sets the renewed subscription's account only for an association account (owners and collaborators
+acting as the owner, whose renewal is always in their own association); a member account's body does not choose it, and the key
+is not read at all for such a requester.
+
+The certificate named by `medical_certificate.medical_id` follows
+[subscription-create](subscription-create.md#the-certificate-a-registration-links) with the member as requester.
 
 ## Not ported
 
@@ -133,3 +153,20 @@ v2-sub-create: renewals by athletes. Cases `subscription-renew-renew-athlete*` (
 - RED (`v2create-red-r2`): Django 62/62; Go 500 on `subscription-renew-renew-athlete`.
 - GREEN (`v2create-versioned-r1`): 62/62 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`v2create-mutation-r1`): keeping the athlete as `request.user` fails `subscription-renew-renew-athlete` with 403 (CAUGHT).
+
+A member account renews its own subscriptions (74 cases). Cases `subscription-renew-renew-athlete-*`.
+
+- RED (`secsub2-red-r3`): Django 74/74; Go 200 on `subscription-renew-renew-athlete-in-another-association`.
+- GREEN (`secsub2-versioned-r1`, after merging `codex/go-backend-parity`): 74/74 on native Django, native Go, Caddy `/api/v1` and
+  `/api/v2`.
+- Mutation (`secsub2-mutation-r1`): skipping the member check fails `subscription-renew-renew-athlete-in-another-association`
+  (CAUGHT); (`secsub2-mutation-r2`): setting the account from the body's e-mail for every requester fails
+  `subscription-renew-renew-athlete-keeps-the-account` (CAUGHT).
+
+Family matching by filled-in tax codes (75 cases; the seed adds two members stored with a blank tax code, one of the requester in
+the other association and one of this association):
+
+- RED (`secaw-red`): Django 75/75; Go 200 on `subscription-renew-renew-athlete-blank-tax-code-member`.
+- GREEN (`secaw-green`): 75/75 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`secaw-mutation`): the member check without `familyTaxCodeFilled`'s blank filter fails
+  `subscription-renew-renew-athlete-blank-tax-code-member` (CAUGHT).

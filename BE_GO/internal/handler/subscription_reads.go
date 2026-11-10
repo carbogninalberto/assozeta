@@ -51,6 +51,17 @@ func (h *SubscriptionReadsHandler) serve(c echo.Context, operation, name, descri
 		input.Authorization = &value
 	}
 	body, err := read(input)
+	var export *service.SubscriptionReadsExport
+	if errors.As(err, &export) {
+		// The POST branch: request.data (a parse error is DRF's 400), then current_view_subscriptions.
+		data, bodyErr := readMessageMutationsBody(c)
+		if bodyErr != nil {
+			return restError(c, bodyErr)
+		}
+		if body, err = h.subscriptions.Export(request.Context(), export, data); err == nil {
+			return c.JSON(200, body)
+		}
+	}
 	var invalid *service.PaymentInfoUUIDError
 	var denied *domain.PermissionDenied
 	switch {

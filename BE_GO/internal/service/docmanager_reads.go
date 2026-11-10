@@ -130,6 +130,7 @@ func (s *DocmanagerReads) Retrieve(ctx context.Context, request RetrieveRequest)
 			}
 		}
 	}
+	byAccount := false
 	if document == nil {
 		if user == nil {
 			return docmanagerJSON(401, map[string]string{"error": "Invalid token. Not Authorized."}), nil
@@ -140,6 +141,7 @@ func (s *DocmanagerReads) Retrieve(ctx context.Context, request RetrieveRequest)
 		if document == nil {
 			return docmanagerJSON(404, map[string]string{"error": "Document not found."}), nil
 		}
+		byAccount = true
 	}
 	if !exportArchive && strings.HasPrefix(document.Filename, "export_") {
 		owner, found, err := s.store.FirstArchiveOwner(ctx, document.ID)
@@ -148,6 +150,14 @@ func (s *DocmanagerReads) Retrieve(ctx context.Context, request RetrieveRequest)
 		}
 		if found && !(user != nil && user.Role == domain.RoleAssociation && user.ID == owner) {
 			return docmanagerJSON(403, map[string]string{"error": "Not authorized to access this export."}), nil
+		}
+	}
+	if byAccount {
+		// Without a document token, documents are served to the association's staff and to the member they belong to.
+		if err := memberDocumentAccess(ctx, s.store, identity, user, func(ctx context.Context, member string) (bool, error) {
+			return s.store.MemberDocument(ctx, member, document.ID)
+		}); err != nil {
+			return nil, err
 		}
 	}
 	if identity.ImpersonationAssociationID != "" {

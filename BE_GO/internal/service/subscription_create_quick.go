@@ -210,6 +210,47 @@ func subscriptionQuickCertificate(certificates []domain.SubscriptionQuickCertifi
 	return &certificates[0].ID, nil
 }
 
+// quickMember is _handle_quick_subscription for an account that is not an
+// association: the body's association and associate are looked up (a miss or a
+// malformed id is the 500 page), then the answer is 403, since the quick
+// re-subscription is for the association's own owner.
+func (s *SubscriptionCreates) quickMember(ctx context.Context, identity domain.ResolvedIdentity, data domain.RequestObject) error {
+	if identity.ImpersonationAssociationID != "" {
+		// scoped_queryset's association filter is not ported.
+		return domain.ErrSubscriptionCreateNotPorted
+	}
+	named, _ := data.Lookup("sport_association")
+	association, err := subscriptionQuickID(named)
+	if err != nil {
+		return err
+	}
+	tx, err := s.store.BeginSubscriptionCreate(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	found, err := tx.QuickAssociationExists(ctx, association)
+	if err != nil {
+		return err
+	}
+	if !found {
+		return domain.ErrSubscriptionCreateServer // DoesNotExist
+	}
+	value, _ := data.Lookup("associate")
+	id, err := subscriptionQuickID(value)
+	if err != nil {
+		return err
+	}
+	associate, err := tx.QuickAssociate(ctx, id)
+	if err != nil {
+		return err
+	}
+	if associate == nil {
+		return domain.ErrSubscriptionCreateServer // DoesNotExist
+	}
+	return &domain.PermissionDenied{Detail: "User not allowed."}
+}
+
 // quick follows _handle_quick_subscription for an owner (or a collaborator acting as one).
 func (s *SubscriptionCreates) quick(ctx context.Context, identity domain.ResolvedIdentity, data domain.RequestObject,
 	request SubscriptionCreateRequest) (*SubscriptionCreateResult, error) {
@@ -243,6 +284,11 @@ func (s *SubscriptionCreates) quick(ctx context.Context, identity domain.Resolve
 	}
 	if associate == nil {
 		return nil, domain.ErrSubscriptionCreateServer // DoesNotExist
+	}
+	// The quick re-subscription only uses the association's own members, for
+	// its own owner (an anonymous request has no requester).
+	if request.Anonymous || associate.AssociationID == nil || *associate.AssociationID != association {
+		return nil, &domain.PermissionDenied{Detail: "User not allowed."}
 	}
 	fee, meta, err := subscriptionQuickFee(settings, data)
 	if err != nil {

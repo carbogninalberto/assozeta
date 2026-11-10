@@ -817,10 +817,14 @@ def invoice_customers_stats(request):
 # @cache_endpoint('invoice_customers_list', timeout=60 * 60 * 24 * 7)
 def invoice_customers_list(request):
 
+    sport_association = request.user.sport_association
+
     # TODO: remove this code once we implement a proper system
+    # Regenerate the listed invoices of the caller's association that have no PDF yet.
     invoices = CustomerInvoice.objects.filter(
+        sport_association=sport_association,
         pdf__isnull=True,
-    )
+    ).order_by('-creation_date', 'customer_invoice_id')
     for invoice in invoices:
         try:
             # store the xml in the invoice
@@ -836,7 +840,7 @@ def invoice_customers_list(request):
 
     # get all invoices
     invoices = CustomerInvoice.objects.filter(
-        sport_association=request.user.sport_association
+        sport_association=sport_association
     ).order_by('-creation_date').iterator(chunk_size=100)
 
     return Response({'data': [CustomerInvoiceSerializer(invoice).data for invoice in invoices]},
