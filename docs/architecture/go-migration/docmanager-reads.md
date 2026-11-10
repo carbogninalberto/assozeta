@@ -2,7 +2,8 @@
 
 `document/retrieve/<uid>` (`retrieve_document`, `BE/docmanager/views/document_view.py`) is implemented in Go
 (`BE_GO/internal/{domain,repository,service,handler}/docmanager_reads.go`), including the object stream from S3.
-`document/<uid>/delete` (`application.document_scope.delete_document`) is implemented up to its ownership check.
+`document/<uid>/delete` (`application.document_scope.delete_document`) is implemented too: its pre-checks are covered here, the
+ownership walk and the deletion by [document-delete.md](document-delete.md).
 The rendering routes of `BE/docmanager/urls.py` are not part of this family (see below). Django remains the execution owner.
 
 ## Retrieve behaviour
@@ -49,18 +50,16 @@ The rendering routes of `BE/docmanager/urls.py` are not part of this family (see
     is used, and then `application/octet-stream`.
   - `Content-Length` and `Content-Encoding` come from the object. Bytes are streamed unchanged, and there is no gzip.
 
-## Delete behaviour (implemented part)
+## Delete behaviour (pre-checks)
 
 `IsAuthenticated` (anonymous 401 with the challenge). `Allow: DELETE, OPTIONS`, OPTIONS `Delete Document`, other methods
 405. The path has no registry key, and `delete_document` is not an athlete operation in a scoped session. Next comes
 `is_valid_uuid` (400). An unknown document, or a requester (`request.user`, the owner for collaborators) without an
-active `SportAssociation`, gets `404 {"error": "Document not found."}`.
+active `SportAssociation`, gets `404 {"error": "Document not found."}`. The ownership walk and `Document.delete()` are in
+[document-delete.md](document-delete.md).
 
 ## Not ported (refused with the 500 page before any write)
 
-- **Delete** of an existing document by a requester with an association. `document_belongs_to` walks every object
-  referencing the document through each model's audit resolver, and its creation audit index. Then `Document.delete()`
-  cascades.
 - **Retrieve** of an absent object that exactly one subscription, or else one invoice, references. Django re-renders it
   with Puppeteer and the `save_to_storage` Celery task.
 - **Retrieve** provider errors: a HEAD failing with a status other than 404, or a failed `GetObject`. Django answers

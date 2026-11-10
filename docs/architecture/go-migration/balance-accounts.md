@@ -63,7 +63,7 @@ the create (the transfer relations' related_name accessors render as their
 empty manager) and the changed fields, indexed directly. A new
 `custom_account_id` on update would make `Model.save()` insert a copy; Go
 refuses it with a 500 (not ported). Account delete (a cascading hard delete of
-its payments) is not ported yet.
+its payments) is ported: see balance-sheet.md.
 `TESTS/fixtures/balance_account_writes_http.json` authors 29 cases.
 
 ## Transfer add, update and delete

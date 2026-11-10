@@ -109,34 +109,71 @@
    "code": "C",
    "editable": true,
    "enabled": true
+  },
+  "ledger": {
+   "id": "a1000000-0000-4000-8000-000001300009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Storico",
+   "initial": "0.00",
+   "type": 1,
+   "code": "C",
+   "editable": true,
+   "enabled": true
+  },
+  "ledger_transfers": {
+   "id": "a1000000-0000-4000-8000-000001300010",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Storico giri",
+   "initial": "0.00",
+   "type": 1,
+   "code": "C",
+   "editable": true,
+   "enabled": true
+  },
+  "ledger_installment": {
+   "id": "a1000000-0000-4000-8000-000001300011",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Storico rate",
+   "initial": "0.00",
+   "type": 1,
+   "code": "C",
+   "editable": true,
+   "enabled": true
   }
  },
  "transfers": {
   "t1": {
-   "id": "a1000000-0000-4000-8000-000001300009",
+   "id": "a1000000-0000-4000-8000-000001300012",
    "from": "main",
    "to": "cash",
    "amount": "20.00",
    "date": "2025-06-01T10:00:00Z"
   },
   "t2": {
-   "id": "a1000000-0000-4000-8000-000001300010",
+   "id": "a1000000-0000-4000-8000-000001300013",
    "from": "cash",
    "to": "main",
    "amount": "5.50",
    "date": "2025-12-31T12:00:00Z"
   },
   "t3": {
-   "id": "a1000000-0000-4000-8000-000001300011",
+   "id": "a1000000-0000-4000-8000-000001300014",
    "from": null,
    "to": "cash",
    "amount": "1.25",
    "date": "2025-12-31T00:00:00Z"
+  },
+  "t4": {
+   "id": "a1000000-0000-4000-8000-000001300036",
+   "from": "ledger_transfers",
+   "to": null,
+   "amount": "2.00",
+   "date": "2015-06-01T10:00:00Z"
   }
  },
  "payments": {
   "p1": {
-   "id": "a1000000-0000-4000-8000-000001300012",
+   "id": "a1000000-0000-4000-8000-000001300015",
    "amount": "40.00",
    "category": "a",
    "date": "2025-03-10T10:00:00Z",
@@ -151,7 +188,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "p2": {
-   "id": "a1000000-0000-4000-8000-000001300013",
+   "id": "a1000000-0000-4000-8000-000001300016",
    "amount": "12.50",
    "category": null,
    "date": null,
@@ -166,7 +203,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "p3": {
-   "id": "a1000000-0000-4000-8000-000001300014",
+   "id": "a1000000-0000-4000-8000-000001300017",
    "amount": "7.25",
    "category": "c",
    "date": "2025-05-05T10:00:00Z",
@@ -181,7 +218,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "p4": {
-   "id": "a1000000-0000-4000-8000-000001300015",
+   "id": "a1000000-0000-4000-8000-000001300018",
    "amount": "999.00",
    "category": "a",
    "date": "2025-03-01T10:00:00Z",
@@ -196,7 +233,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "p5": {
-   "id": "a1000000-0000-4000-8000-000001300016",
+   "id": "a1000000-0000-4000-8000-000001300019",
    "amount": "50.00",
    "category": "a",
    "date": "2025-03-02T10:00:00Z",
@@ -211,7 +248,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "p6": {
-   "id": "a1000000-0000-4000-8000-000001300017",
+   "id": "a1000000-0000-4000-8000-000001300020",
    "amount": "3.00",
    "category": "a",
    "date": "2025-02-01T10:00:00Z",
@@ -226,7 +263,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "p7": {
-   "id": "a1000000-0000-4000-8000-000001300018",
+   "id": "a1000000-0000-4000-8000-000001300021",
    "amount": "0.00",
    "category": "a",
    "date": "2025-02-03T10:00:00Z",
@@ -241,7 +278,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "p8": {
-   "id": "a1000000-0000-4000-8000-000001300019",
+   "id": "a1000000-0000-4000-8000-000001300022",
    "amount": "2.00",
    "category": "a",
    "date": "2025-02-02T10:00:00Z",
@@ -256,7 +293,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "p9": {
-   "id": "a1000000-0000-4000-8000-000001300020",
+   "id": "a1000000-0000-4000-8000-000001300023",
    "amount": "1000.00",
    "category": "a",
    "date": "2025-12-31T23:59:59.500000Z",
@@ -271,7 +308,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "p10": {
-   "id": "a1000000-0000-4000-8000-000001300021",
+   "id": "a1000000-0000-4000-8000-000001300024",
    "amount": "0.25",
    "category": "a",
    "date": "2025-12-31T23:59:59Z",
@@ -286,7 +323,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "p12": {
-   "id": "a1000000-0000-4000-8000-000001300022",
+   "id": "a1000000-0000-4000-8000-000001300025",
    "amount": "30.00",
    "category": "a",
    "date": "2025-07-01T10:00:00Z",
@@ -318,7 +355,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "p13": {
-   "id": "a1000000-0000-4000-8000-000001300023",
+   "id": "a1000000-0000-4000-8000-000001300026",
    "amount": "5.00",
    "category": "f",
    "date": "2025-03-03T10:00:00Z",
@@ -333,7 +370,7 @@
    "association": "a1000000-0000-4000-8000-000000701002"
   },
   "p20": {
-   "id": "a1000000-0000-4000-8000-000001300024",
+   "id": "a1000000-0000-4000-8000-000001300027",
    "amount": "8.00",
    "category": "c",
    "date": "2023-06-01T10:00:00Z",
@@ -353,7 +390,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "p21": {
-   "id": "a1000000-0000-4000-8000-000001300025",
+   "id": "a1000000-0000-4000-8000-000001300028",
    "amount": "1.00",
    "category": "a",
    "date": "2021-05-01T10:00:00Z",
@@ -368,7 +405,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "p22": {
-   "id": "a1000000-0000-4000-8000-000001300026",
+   "id": "a1000000-0000-4000-8000-000001300029",
    "amount": "6.00",
    "category": "a",
    "date": "2022-04-01T10:00:00Z",
@@ -385,11 +422,113 @@
    ],
    "created": "2026-01-01T00:00:00Z",
    "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "l1": {
+   "id": "a1000000-0000-4000-8000-000001300030",
+   "amount": "15.00",
+   "category": null,
+   "date": "2015-03-01T10:00:00Z",
+   "account": "ledger",
+   "expense": false,
+   "paid": true,
+   "deleted": true,
+   "archived": false,
+   "group": null,
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "l2": {
+   "id": "a1000000-0000-4000-8000-000001300031",
+   "amount": "16.00",
+   "category": null,
+   "date": "2015-03-02T10:00:00Z",
+   "account": "ledger",
+   "expense": false,
+   "paid": false,
+   "deleted": false,
+   "archived": false,
+   "group": "own_group",
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "l3": {
+   "id": "a1000000-0000-4000-8000-000001300032",
+   "amount": "17.00",
+   "category": null,
+   "date": "2015-03-03T10:00:00Z",
+   "account": "ledger",
+   "expense": false,
+   "paid": false,
+   "deleted": false,
+   "archived": false,
+   "group": null,
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "l4": {
+   "id": "a1000000-0000-4000-8000-000001300033",
+   "amount": "18.00",
+   "category": null,
+   "date": "2015-03-04T10:00:00Z",
+   "account": "ledger_transfers",
+   "expense": false,
+   "paid": true,
+   "deleted": true,
+   "archived": false,
+   "group": null,
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "l5": {
+   "id": "a1000000-0000-4000-8000-000001300034",
+   "amount": "19.00",
+   "category": null,
+   "date": "2015-03-05T10:00:00Z",
+   "account": "ledger_installment",
+   "expense": false,
+   "paid": false,
+   "deleted": false,
+   "archived": false,
+   "group": null,
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "l6": {
+   "id": "a1000000-0000-4000-8000-000001300035",
+   "amount": "20.00",
+   "category": null,
+   "date": "2015-03-06T10:00:00Z",
+   "account": "ledger_installment",
+   "expense": false,
+   "paid": false,
+   "deleted": true,
+   "archived": false,
+   "group": null,
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  }
+ },
+ "course": {
+  "course": "a1000000-0000-4000-8000-000001300037",
+  "subscription": "a1000000-0000-4000-8000-000001300038"
+ },
+ "installments": {
+  "i1": {
+   "id": "a1000000-0000-4000-8000-000001300039",
+   "payment": "l5",
+   "amount": "19.00",
+   "date": "2015-03-05T10:00:00Z"
   }
  },
  "sheets": {
   "y2025": {
-   "id": "a1000000-0000-4000-8000-000001300027",
+   "id": "a1000000-0000-4000-8000-000001300040",
    "association": "a1000000-0000-4000-8000-000000701001",
    "status": 1,
    "year": 2025,
@@ -435,7 +574,7 @@
    }
   },
   "y2024": {
-   "id": "a1000000-0000-4000-8000-000001300028",
+   "id": "a1000000-0000-4000-8000-000001300041",
    "association": "a1000000-0000-4000-8000-000000701001",
    "status": 2,
    "year": 2024,
@@ -457,7 +596,7 @@
    }
   },
   "y2022": {
-   "id": "a1000000-0000-4000-8000-000001300029",
+   "id": "a1000000-0000-4000-8000-000001300042",
    "association": "a1000000-0000-4000-8000-000000701001",
    "status": 1,
    "year": 2022,
@@ -478,7 +617,7 @@
    }
   },
   "y2021": {
-   "id": "a1000000-0000-4000-8000-000001300030",
+   "id": "a1000000-0000-4000-8000-000001300043",
    "association": "a1000000-0000-4000-8000-000000701001",
    "status": 1,
    "year": 2021,
@@ -489,7 +628,7 @@
    }
   },
   "y2019": {
-   "id": "a1000000-0000-4000-8000-000001300031",
+   "id": "a1000000-0000-4000-8000-000001300044",
    "association": "a1000000-0000-4000-8000-000000701001",
    "status": 1,
    "year": 2019,
@@ -919,12 +1058,12 @@
          }
         ]
        },
-       "cash": 31.5,
+       "cash": 29.5,
        "bank": 163.25,
        "other": 0,
        "draft": true,
        "version": 1,
-       "total": 194.75
+       "total": 192.75
       },
       "creation_date": "2025-02-01T09:00:00Z",
       "year": 2025,
@@ -997,12 +1136,12 @@
         }
        ]
       },
-      "cash": 31.5,
+      "cash": 29.5,
       "bank": 163.25,
       "other": 0,
       "draft": true,
       "version": 1,
-      "total": 194.75
+      "total": 192.75
      },
      "year": 2025,
      "status": 1
@@ -1010,7 +1149,7 @@
     "changes": {
      "data": [
       "{\"bank\": 0, \"cash\": 0, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 99}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 1}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"version\": 1}",
-      "{\"bank\": 163.25, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 57.75}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 194.75, \"version\": 1}"
+      "{\"bank\": 163.25, \"cash\": 29.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 57.75}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 192.75, \"version\": 1}"
      ]
     }
    }
@@ -1083,12 +1222,12 @@
          }
         ]
        },
-       "cash": 31.5,
+       "cash": 29.5,
        "bank": 163.25,
        "other": 0,
        "draft": true,
        "version": 1,
-       "total": 194.75
+       "total": 192.75
       },
       "creation_date": "2025-02-01T09:00:00Z",
       "year": 2025,
@@ -1161,12 +1300,12 @@
         }
        ]
       },
-      "cash": 31.5,
+      "cash": 29.5,
       "bank": 163.25,
       "other": 0,
       "draft": true,
       "version": 1,
-      "total": 194.75
+      "total": 192.75
      },
      "year": 2025,
      "status": 1
@@ -1244,12 +1383,12 @@
          }
         ]
        },
-       "cash": 31.5,
+       "cash": 29.5,
        "bank": 82.5,
        "other": 0,
        "draft": true,
        "version": 1,
-       "total": 114.0
+       "total": 112.0
       },
       "creation_date": "2025-02-01T09:00:00Z",
       "year": 2025,
@@ -1322,20 +1461,20 @@
         }
        ]
       },
-      "cash": 31.5,
+      "cash": 29.5,
       "bank": 82.5,
       "other": 0,
       "draft": true,
       "version": 1,
-      "total": 114.0
+      "total": 112.0
      },
      "year": 2025,
      "status": 1
     },
     "changes": {
      "data": [
-      "{\"bank\": 163.25, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 57.75}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 194.75, \"version\": 1}",
-      "{\"bank\": 82.5, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 2.0}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 114.0, \"version\": 1}"
+      "{\"bank\": 163.25, \"cash\": 29.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 57.75}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 192.75, \"version\": 1}",
+      "{\"bank\": 82.5, \"cash\": 29.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 2.0}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 112.0, \"version\": 1}"
      ]
     }
    }
@@ -1410,12 +1549,12 @@
          }
         ]
        },
-       "cash": 31.5,
+       "cash": 29.5,
        "bank": 163.25,
        "other": 0,
        "draft": true,
        "version": 1,
-       "total": 194.75
+       "total": 192.75
       },
       "creation_date": "2025-02-01T09:00:00Z",
       "year": 2025,
@@ -1488,20 +1627,20 @@
         }
        ]
       },
-      "cash": 31.5,
+      "cash": 29.5,
       "bank": 163.25,
       "other": 0,
       "draft": true,
       "version": 1,
-      "total": 194.75
+      "total": 192.75
      },
      "year": 2025,
      "status": 1
     },
     "changes": {
      "data": [
-      "{\"bank\": 82.5, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 2.0}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 114.0, \"version\": 1}",
-      "{\"bank\": 163.25, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 57.75}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 194.75, \"version\": 1}"
+      "{\"bank\": 82.5, \"cash\": 29.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 2.0}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 112.0, \"version\": 1}",
+      "{\"bank\": 163.25, \"cash\": 29.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 57.75}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 192.75, \"version\": 1}"
      ]
     }
    }
@@ -1574,12 +1713,12 @@
          }
         ]
        },
-       "cash": 31.5,
+       "cash": 29.5,
        "bank": 163.25,
        "other": 0,
        "draft": true,
        "version": 1,
-       "total": 194.75
+       "total": 192.75
       },
       "creation_date": "2025-02-01T09:00:00Z",
       "year": 2025,
@@ -1652,12 +1791,12 @@
         }
        ]
       },
-      "cash": 31.5,
+      "cash": 29.5,
       "bank": 163.25,
       "other": 0,
       "draft": true,
       "version": 1,
-      "total": 194.75
+      "total": 192.75
      },
      "year": 2025,
      "status": 1
@@ -1778,9 +1917,9 @@
         "",
         "",
         "163,25",
-        "31,50",
+        "29,50",
         "0,00",
-        "194,75"
+        "192,75"
        ]
       ]
      }
@@ -1849,12 +1988,12 @@
         }
        ]
       },
-      "cash": 31.5,
+      "cash": 29.5,
       "bank": 163.25,
       "other": 0,
       "draft": true,
       "version": 1,
-      "total": 194.75
+      "total": 192.75
      },
      "year": 2025,
      "status": 1
@@ -1977,9 +2116,9 @@
         "",
         "",
         "82,50",
-        "31,50",
+        "29,50",
         "0,00",
-        "114,00"
+        "112,00"
        ]
       ]
      }
@@ -2048,20 +2187,20 @@
         }
        ]
       },
-      "cash": 31.5,
+      "cash": 29.5,
       "bank": 82.5,
       "other": 0,
       "draft": true,
       "version": 1,
-      "total": 114.0
+      "total": 112.0
      },
      "year": 2025,
      "status": 1
     },
     "changes": {
      "data": [
-      "{\"bank\": 163.25, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 57.75}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 194.75, \"version\": 1}",
-      "{\"bank\": 82.5, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 2.0}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 114.0, \"version\": 1}"
+      "{\"bank\": 163.25, \"cash\": 29.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 57.75}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 192.75, \"version\": 1}",
+      "{\"bank\": 82.5, \"cash\": 29.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 2.0}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 112.0, \"version\": 1}"
      ]
     }
    },
@@ -2179,9 +2318,9 @@
         "",
         "",
         "163,25",
-        "31,50",
+        "29,50",
         "0,00",
-        "194,75"
+        "192,75"
        ]
       ]
      }
@@ -2250,20 +2389,20 @@
         }
        ]
       },
-      "cash": 31.5,
+      "cash": 29.5,
       "bank": 163.25,
       "other": 0,
       "draft": true,
       "version": 1,
-      "total": 194.75
+      "total": 192.75
      },
      "year": 2025,
      "status": 1
     },
     "changes": {
      "data": [
-      "{\"bank\": 82.5, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 2.0}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 114.0, \"version\": 1}",
-      "{\"bank\": 163.25, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 57.75}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 194.75, \"version\": 1}"
+      "{\"bank\": 82.5, \"cash\": 29.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 2.0}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 112.0, \"version\": 1}",
+      "{\"bank\": 163.25, \"cash\": 29.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 57.75}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 192.75, \"version\": 1}"
      ]
     }
    },
@@ -2380,9 +2519,9 @@
         "",
         "",
         "163,25",
-        "31,50",
+        "29,50",
         "0,00",
-        "194,75"
+        "192,75"
        ]
       ]
      }
@@ -2451,12 +2590,12 @@
         }
        ]
       },
-      "cash": 31.5,
+      "cash": 29.5,
       "bank": 163.25,
       "other": 0,
       "draft": true,
       "version": 1,
-      "total": 194.75
+      "total": 192.75
      },
      "year": 2025,
      "status": 1
@@ -2578,12 +2717,12 @@
          }
         ]
        },
-       "cash": 31.5,
+       "cash": 29.5,
        "bank": 163.25,
        "other": 0,
        "draft": true,
        "version": 1,
-       "total": 194.75
+       "total": 192.75
       },
       "creation_date": "2025-02-01T09:00:00Z",
       "year": 2025,
@@ -2656,12 +2795,12 @@
         }
        ]
       },
-      "cash": 31.5,
+      "cash": 29.5,
       "bank": 163.25,
       "other": 0,
       "draft": true,
       "version": 1,
-      "total": 194.75
+      "total": 192.75
      },
      "year": 2025,
      "status": 1
@@ -2688,9 +2827,9 @@
      "data": {
       "note": "x",
       "bank": 101.5,
-      "cash": 10.25,
+      "cash": 8.25,
       "other": 0,
-      "total": 111.75
+      "total": 109.75
      },
      "year": 2021,
      "status": 1
@@ -2698,7 +2837,7 @@
     "changes": {
      "data": [
       "{\"note\": \"x\"}",
-      "{\"bank\": 101.5, \"cash\": 10.25, \"note\": \"x\", \"other\": 0, \"total\": 111.75}"
+      "{\"bank\": 101.5, \"cash\": 8.25, \"note\": \"x\", \"other\": 0, \"total\": 109.75}"
      ]
     }
    },
@@ -2763,9 +2902,9 @@
       "data": {
        "note": "x",
        "bank": 101.5,
-       "cash": 10.25,
+       "cash": 8.25,
        "other": 0,
-       "total": 111.75
+       "total": 109.75
       },
       "creation_date": "2022-01-10T09:00:00Z",
       "year": 2021,
@@ -2784,9 +2923,9 @@
      "data": {
       "note": "x",
       "bank": 101.5,
-      "cash": 10.25,
+      "cash": 8.25,
       "other": 0,
-      "total": 111.75
+      "total": 109.75
      },
      "year": 2021,
      "status": 1
@@ -2821,12 +2960,12 @@
        "outgoing": {
         "generalExpenses": []
        },
-       "cash": 10.25,
+       "cash": 8.25,
        "bank": 107.5,
        "other": 0,
        "draft": true,
        "version": 1,
-       "total": 117.75
+       "total": 115.75
       },
       "creation_date": "2023-01-10T09:00:00Z",
       "year": 2022,
@@ -2858,12 +2997,12 @@
       "outgoing": {
        "generalExpenses": []
       },
-      "cash": 10.25,
+      "cash": 8.25,
       "bank": 107.5,
       "other": 0,
       "draft": true,
       "version": 1,
-      "total": 117.75
+      "total": 115.75
      },
      "year": 2022,
      "status": 1
@@ -2871,7 +3010,7 @@
     "changes": {
      "data": [
       "{\"bank\": 0, \"cash\": 0, \"draft\": true, \"incoming\": {\"generalIncome\": []}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"version\": 1}",
-      "{\"bank\": 107.5, \"cash\": 10.25, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 0, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 6.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"total\": 117.75, \"version\": 1}"
+      "{\"bank\": 107.5, \"cash\": 8.25, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 0, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 6.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"total\": 115.75, \"version\": 1}"
      ]
     }
    }
@@ -2894,12 +3033,12 @@
        "outgoing": {
         "generalExpenses": []
        },
-       "cash": 26.0,
+       "cash": 24.0,
        "bank": 1169.0,
        "other": 0,
        "draft": true,
        "version": 1,
-       "total": 1195.0
+       "total": 1193.0
       },
       "creation_date": "$now",
       "year": "$current_year",
@@ -2923,12 +3062,12 @@
       "outgoing": {
        "generalExpenses": []
       },
-      "cash": 26.0,
+      "cash": 24.0,
       "bank": 1169.0,
       "other": 0,
       "draft": true,
       "version": 1,
-      "total": 1195.0
+      "total": 1193.0
      },
      "year": "$current_year",
      "status": 1
@@ -3021,9 +3160,9 @@
         "",
         "",
         "100,50",
-        "10,25",
+        "8,25",
         "0,00",
-        "110,75"
+        "108,75"
        ]
       ]
      }
@@ -3043,12 +3182,12 @@
       "outgoing": {
        "generalExpenses": []
       },
-      "cash": 10.25,
+      "cash": 8.25,
       "bank": 100.5,
       "other": 0,
       "draft": true,
       "version": 1,
-      "total": 110.75
+      "total": 108.75
      },
      "year": 2017,
      "status": 1
@@ -3093,12 +3232,12 @@
        "outgoing": {
         "generalExpenses": []
        },
-       "cash": 10.25,
+       "cash": 8.25,
        "bank": 115.5,
        "other": 0,
        "draft": true,
        "version": 1,
-       "total": 125.75
+       "total": 123.75
       },
       "creation_date": "$now",
       "year": 2023,
@@ -3139,12 +3278,12 @@
       "outgoing": {
        "generalExpenses": []
       },
-      "cash": 10.25,
+      "cash": 8.25,
       "bank": 115.5,
       "other": 0,
       "draft": true,
       "version": 1,
-      "total": 125.75
+      "total": 123.75
      },
      "year": 2023,
      "status": 1
@@ -3326,7 +3465,7 @@
     },
     "changes": {
      "data": [
-      "{\"bank\": 115.5, \"cash\": 10.25, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 5.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 2.5}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"total\": 125.75, \"version\": 1}",
+      "{\"bank\": 115.5, \"cash\": 8.25, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 5.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 2.5}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"total\": 123.75, \"version\": 1}",
       "{\"draft\": \"\", \"incoming\": {\"generalIncome\": [{\"id\": \"x\", \"institutional\": 1.5}]}, \"note\": \"\\u00e8\", \"year\": \"2023\"}"
      ],
      "status_flag": [
@@ -3577,7 +3716,7 @@
     },
     "changes": {
      "data": [
-      "{\"bank\": 101.5, \"cash\": 10.25, \"note\": \"x\", \"other\": 0, \"total\": 111.75}",
+      "{\"bank\": 101.5, \"cash\": 8.25, \"note\": \"x\", \"other\": 0, \"total\": 109.75}",
       "{\"bank\": 0, \"cash\": 0, \"draft\": true, \"incoming\": {\"generalIncome\": []}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"version\": 1}"
      ]
     }
@@ -3933,6 +4072,130 @@
     "exception": "CustomAccounts matching query does not exist."
    },
    "effect": null
+  },
+  {
+   "name": "balance-sheet-account-deleted-with-payments",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300009/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "bank accounts deleted"
+   },
+   "effect": {
+    "kind": "delete-account-cascade",
+    "account": "ledger",
+    "transfers": [],
+    "payments": [
+     "l1",
+     "l2",
+     "l3"
+    ],
+    "installments": [],
+    "audit": [
+     [
+      "account",
+      "ledger"
+     ],
+     [
+      "payment",
+      "l3"
+     ],
+     [
+      "payment",
+      "l2"
+     ],
+     [
+      "payment",
+      "l1"
+     ]
+    ],
+    "actor": "owner"
+   }
+  },
+  {
+   "name": "balance-sheet-account-deleted-with-payments-and-transfers",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300010/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "bank accounts deleted"
+   },
+   "effect": {
+    "kind": "delete-account-cascade",
+    "account": "ledger_transfers",
+    "transfers": [
+     "t4"
+    ],
+    "payments": [
+     "l4"
+    ],
+    "installments": [],
+    "audit": [
+     [
+      "account",
+      "ledger_transfers"
+     ],
+     [
+      "transfer",
+      "t4"
+     ],
+     [
+      "payment",
+      "l4"
+     ]
+    ],
+    "actor": "full_collaborator"
+   }
+  },
+  {
+   "name": "balance-sheet-account-deleted-with-instalment-payment",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300011/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "bank accounts deleted"
+   },
+   "effect": {
+    "kind": "delete-account-cascade",
+    "account": "ledger_installment",
+    "transfers": [],
+    "payments": [
+     "l5",
+     "l6"
+    ],
+    "installments": [
+     "i1"
+    ],
+    "audit": [
+     [
+      "payment",
+      "l5"
+     ],
+     [
+      "installment",
+      "i1"
+     ],
+     [
+      "account",
+      "ledger_installment"
+     ],
+     [
+      "payment",
+      "l6"
+     ],
+     [
+      "payment",
+      "l5"
+     ]
+    ],
+    "actor": "owner"
+   }
   }
  ]
 }
