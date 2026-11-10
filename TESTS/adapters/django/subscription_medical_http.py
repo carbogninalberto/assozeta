@@ -271,7 +271,12 @@ def assert_effect(case, before, after, source, context):
         contract.require(listing() == STATE['objects'] | {name}, 'storage.placeholder-key')
         stored = STORAGE['client'].get_object(Bucket=BUCKET, Key=name)
         body = stored['Body'].read()
-        contract.require(body[:8] == b'\x89PNG\r\n\x1a\n' and body == buffer.getvalue(), f'storage.placeholder-bytes:{len(body)}:{len(buffer.getvalue())}:' + __import__('PIL.features').features.version('zlib') + ':' + __import__('platform').machine())
+        import PIL
+        from PIL import features as pil_features
+        maps = sorted({l.split()[-1] for l in open('/proc/self/maps') if 'libz' in l or 'zlib' in l}) if os.path.exists('/proc/self/maps') else []
+        idat = lambda b: b[b.index(b'IDAT') + 4:][:6].hex()
+        expected = buffer.getvalue()
+        contract.require(body[:8] == b'\x89PNG\r\n\x1a\n' and body == expected, f'storage.placeholder-bytes:{len(body)}:{len(expected)}:pil={PIL.__version__}:{pil_features.version("zlib")}:{maps}:go={idat(body)}:py={idat(expected)}:ihdr={expected[16:29].hex()}:{body[16:29].hex()}')
         contract.require(stored['ContentType'] == 'image/png' and stored.get('ContentEncoding') is None, 'storage.placeholder-metadata')
         STATE['objects'] = STATE['objects'] | {name}
         text = topup.auditlog_moment
