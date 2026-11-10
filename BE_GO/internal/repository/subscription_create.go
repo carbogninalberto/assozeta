@@ -38,7 +38,7 @@ func (t *subscriptionCreateTransaction) Settings(ctx context.Context, user strin
  a.subscription_fee_plans::text AS subscription_fee_plans, a.membership_fee_plans::text AS membership_fee_plans,
  u.subscription_start_day, u.subscription_start_month, u.custom_end_date, u.subscription_end_day, u.subscription_end_month,
  u.subscription_duration, u.membership_duration, u.membership_starting_number, u.default_membership_type, u.show_zero_payments,
- u.default_payment_category_id
+ u.default_payment_category_id, u.default_payment_category_courses_id
  FROM application_sportassociation a JOIN bakney_user u ON u.user_id=$1
  WHERE a.user_id=$1 AND NOT a.deleted ORDER BY a.sport_association_id`, user); err != nil {
 		return nil, 0, err
@@ -173,9 +173,28 @@ func (t *subscriptionCreateTransaction) InsertPayment(ctx context.Context, row d
  expense, description, payment_category_id, meta_payment_categories, invoice_id, user_id, associate_id, supplier_id, instructor_id,
  sport_association_id, payment_intent_id, archived, invoice_fiscal_code, meta, notes, custom_accounts_id, signature_id, deleted, group_id,
  course) VALUES ($1,'default',1,$2::numeric,$3,$4,false,false,'Iscrizione',$5,$6::jsonb,NULL,$7,$8,NULL,NULL,$9,NULL,false,NULL,$10::jsonb,NULL,
- $11,NULL,false,NULL,NULL)`, row.ID, row.Amount, row.Created, row.PaymentDate, row.CategoryID, row.MetaCategories, row.UserID, row.AssociateID,
+ $11,NULL,false,NULL,NULL)`, row.ID, row.Amount, row.Created, subscriptionCreatePaymentDate(row.PaymentDate), row.CategoryID, row.MetaCategories, row.UserID, row.AssociateID,
 		row.AssociationID, row.Meta, row.AccountID)
 	return err
+}
+
+// subscriptionCreatePaymentDate stores a zero payment date as NULL (no payment_date given).
+func subscriptionCreatePaymentDate(value time.Time) any {
+	if value.IsZero() {
+		return nil
+	}
+	return value
+}
+
+func (t *subscriptionCreateTransaction) QuickAssociate(ctx context.Context, id string) (*domain.SubscriptionEditAssociate, error) {
+	return t.oneAssociate(ctx, `associate_id=$1 AND NOT deleted`, id)
+}
+
+func (t *subscriptionCreateTransaction) QuickCertificates(ctx context.Context, associate string) ([]domain.SubscriptionQuickCertificate, error) {
+	rows := []domain.SubscriptionQuickCertificate{}
+	err := t.tx.SelectContext(ctx, &rows, `SELECT m.medical_id, m.expiration_date FROM application_subscription s
+ JOIN application_medicalcertificate m ON m.medical_id=s.medical_id WHERE s.associate_id=$1`, associate)
+	return rows, err
 }
 
 func (t *subscriptionCreateTransaction) LatestNumber(ctx context.Context, association string) (*string, error) {

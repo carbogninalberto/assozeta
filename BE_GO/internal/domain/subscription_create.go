@@ -49,6 +49,14 @@ type SubscriptionCreateSettings struct {
 	DefaultMembershipType    *string `db:"default_membership_type"`
 	ShowZeroPayments         bool    `db:"show_zero_payments"`
 	DefaultPaymentCategory   *string `db:"default_payment_category_id"`
+	// DefaultCoursesCategory is default_payment_category_courses (the quick re-subscription).
+	DefaultCoursesCategory *string `db:"default_payment_category_courses_id"`
+}
+
+// SubscriptionQuickCertificate is the certificate of one of an associate's subscriptions.
+type SubscriptionQuickCertificate struct {
+	ID         string     `db:"medical_id"`
+	Expiration *time.Time `db:"expiration_date"`
 }
 
 // SubscriptionCreateExisting is the first subscription subscription_exists finds.
@@ -131,6 +139,10 @@ type SubscriptionCreateTransaction interface {
 	InsertMembership(ctx context.Context, row SubscriptionCreateMembership) error
 	InsertRelation(ctx context.Context, associate, tutor string) (int64, error)
 	AuditEntry(ctx context.Context, entry SubscriptionCreateAudit) error
+	// QuickAssociate is Associate.objects.get(associate_id=id): a live row (nil when none).
+	QuickAssociate(ctx context.Context, id string) (*SubscriptionEditAssociate, error)
+	// QuickCertificates are the certificates of Subscription.objects.filter(associate=...), one per subscription.
+	QuickCertificates(ctx context.Context, associate string) ([]SubscriptionQuickCertificate, error)
 }
 
 type SubscriptionCreateStore interface {

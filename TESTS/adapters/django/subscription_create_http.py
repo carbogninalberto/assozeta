@@ -149,7 +149,8 @@ def seed_rows(source, created):
         insert(Subscription, Subscription(
             subscription_id=row['id'], sport_association_id=association, user_id=owner,
             associate_id=source['associates'][row['associate']]['id'], start_date=resolve_date(row['start']),
-            end_date=resolve_date(row['end']), archived=row['archived'], subscription_number=row['number'], status_flag=4))
+            end_date=resolve_date(row['end']), archived=row['archived'], subscription_number=row['number'], status_flag=4,
+            medical_id=source['certificates'][row['medical']]['id'] if row.get('medical') else None))
     for row in source['payments'].values():
         insert(Payment, Payment(payment_id=row['id'], associate_id=source['associates'][row['associate']]['id'],
                                 sport_association_id=ids['own_association'], user_id=ids['owner'], subject=Payment.SUBSCRIPTION,

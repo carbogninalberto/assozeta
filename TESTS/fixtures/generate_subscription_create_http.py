@@ -72,6 +72,24 @@ SUBSCRIPTIONS = {
     'text_number': {'id': next(ids), 'associate': 'archived', 'start': '2020-01-01', 'end': '2020-12-31', 'archived': True,
                     'number': '5000A'},
 }
+# The quick re-subscription (m=only_associate): members with older subscriptions and certificates.
+ASSOCIATES['quick'] = {'id': next(ids), 'association': OWN, 'first': 'Quinto', 'last': 'Rapido', 'tax_code': 'RPDQNT80A01H501U',
+                       'born': '1980-01-01', 'user': 'owner', 'email': None}
+ASSOCIATES['quick_plan'] = {'id': next(ids), 'association': OWN, 'first': 'Pia', 'last': 'Pianificata', 'tax_code': 'PNFPIA80A41H501V',
+                            'born': '1980-01-01', 'user': 'owner', 'email': None}
+ASSOCIATES['quick_abroad'] = {'id': next(ids), 'association': FOREIGN, 'first': 'Elio', 'last': 'Estero', 'tax_code': 'STRLEI80A01H501W',
+                              'born': '1980-01-01', 'user': 'foreign_owner', 'email': None}
+ASSOCIATES['quick_no_account'] = {'id': next(ids), 'association': OWN, 'first': 'Sara', 'last': 'Senzaconto', 'tax_code': 'SNZSRA80A41H501X',
+                                  'born': '1980-01-01', 'user': None, 'email': None}
+CERTIFICATES['quick_older'] = {'id': next(ids), 'user': 'owner', 'expiration': '2025-06-30'}
+CERTIFICATES['quick_latest'] = {'id': next(ids), 'user': 'owner', 'expiration': '2026-06-30'}
+CERTIFICATES['quick_undated'] = {'id': next(ids), 'user': 'owner'}
+SUBSCRIPTIONS['quick_2024'] = {'id': next(ids), 'associate': 'quick', 'start': '2024-01-01', 'end': '2024-12-31', 'archived': False,
+                               'number': '3', 'medical': 'quick_older'}
+SUBSCRIPTIONS['quick_2023'] = {'id': next(ids), 'associate': 'quick', 'start': '2023-01-01', 'end': '2023-12-31', 'archived': True,
+                               'number': '2', 'medical': 'quick_latest'}
+SUBSCRIPTIONS['quick_2022'] = {'id': next(ids), 'associate': 'quick', 'start': '2022-01-01', 'end': '2022-12-31', 'archived': True,
+                               'number': '1', 'medical': 'quick_undated'}
 PAYMENTS = {
     # An unpaid subscription payment of today with the amount the next case charges: reused.
     'reusable': {'id': next(ids), 'associate': 'payer', 'amount': '25.00', 'paid': False, 'date': '$today'},
@@ -447,6 +465,74 @@ wizard('wizard-uploaded-certificate-italian-date', person('Dina', 'Datata', 'DTT
 wizard('wizard-uploaded-certificate-invalid-date-kept', person('Kai', 'Tenuto', 'TNTKAI90C01H501K'), 'Kai Tenuto',
        {'medical_id': CERTIFICATES['kept']['id'], 'filename': 'c.pdf', 'certificate_expring_date': 'Invalid date'},
        medical={'label': 'kept', 'columns': {}, 'audit': {}, 'index': None}, medical_id=CERTIFICATES['kept']['id'])
+
+
+# --- The wizard in a modal: sport_association names an association by its owner's username ----------------
+# For an owner it is not an athlete request: User.objects.get(username=...) and its association replace
+# request.user's when found (the own username: the same association); a miss keeps request.user's.
+for label, username, first in (('own-username', 'message-reads-700001', 'Mara'), ('unknown-username', 'nessuno', 'Nina')):
+    data = person(first, 'Modale', f'MDL{first[:3].upper()}90C41H501K')
+    add('modal-' + label, 'owner', 200, SUCCESS(25.0), body=request(data, sport_association=username),
+        setup={'association': {'multiple_membership_fee': False, 'enable_quotes_management': True, 'membership_fee': None,
+                               'multiple_subscription_fee': False}, 'owner': {'subscription_duration': 2, 'membership_duration': 2}},
+        effect=success('owner', f'{first} Modale', associate=created_associate(data), payment=new_payment('25.00', audit_amount='25.0'),
+                       subscription=dict(PLAIN), membership=dict(MEMBER)))
+
+# --- The quick re-subscription (?m=only_associate) --------------------------------------------------------
+# The members list renews a member with {'associate': id[, 'plan_id']}. _prepare_subscription_request sets
+# data['sport_association'] to the owner's association; _handle_quick_subscription reads the association and
+# scoped_queryset(Associate.objects).get(associate_id=...) (not deleted; only an impersonation scope filters the
+# association), then in one transaction create_quick_subscription: the fee (the association's subscription_fee, or
+# with multiple fees the plan whose id equals plan_id, else the first plan's fee with the last plan's data), a payment
+# for request.user (always, whatever the amount; the courses default category, else the named one; no payment date),
+# the certificate of the associate's subscriptions with the latest expiration, Subscription.objects.create (not
+# signed, the account of the associate, meta {'plan_id': ...}, number 0); an associate without an account is an
+# AttributeError (500). On commit: new_subscription, print_document_subscription and the notification (the
+# association of request.user, an owner). Response {'status': 'success', 'payment_id': ...}.
+QUICK_SETUP = {'association': {'multiple_subscription_fee': False, 'subscription_fee': '25.00', 'enable_quotes_management': False},
+               'owner': {'subscription_duration': 2}}
+
+
+def quick(actor, label, full_name, *, payment, subscription, headers=None, setup=None, plan=None):
+    body = {'associate': ASSOCIATES[label]['id']}
+    if plan is not None:
+        body['plan_id'] = plan
+    audit = [{'model': 'payment', 'action': 0, 'ref': 'payment', 'changes': {'amount': ['None', payment.pop('$audit')]}, 'index': [OWN, 'direct']},
+             {'model': 'subscription', 'action': 0, 'ref': 'subscription', 'changes': {}, 'index': [OWN, 'direct']}]
+    columns = {'payment_date': None, 'meta_payment_categories': None, 'meta': None, **payment}
+    add('quick-' + label.replace('_', '-'), actor, 200, {'status': 'success', 'payment_id': '$new'}, query='?m=only_associate', body=body,
+        headers=headers, setup=setup,
+        effect={'actor': actor, 'associate': {'match': label, 'columns': {}}, 'payment': {'match': 'new', 'columns': columns},
+                'subscription': {'type': 2, 'role': 1, 'status_flag': 1, 'meta': {'plan_id': plan}, 'subscription_number': '0',
+                                 'subscription_type': None, **SEASON, **subscription},
+                'broadcast_created': False, 'audit': audit,
+                'celery': [{'task': 'check_workflows_trigger', 'args': [],
+                            'kwargs': [['trigger_type', 'new_subscription'], ['sport_association_id', {'uuid': OWN}],
+                                       ['subscription_id', '$subscription_uuid']]},
+                           {'task': 'print_document_subscription', 'args': ['$subscription', '$authorization'], 'kwargs': []}],
+                'notification': {'msg': f'Nuova Iscrizione aggiunta per {full_name}.', 'association': OWN}})
+
+
+add('quick-associate-malformed-server-error', 'owner', 500, SERVER, query='?m=only_associate', body={'associate': 'non-un-id'},
+    setup=QUICK_SETUP)
+add('quick-associate-unknown-server-error', 'owner', 500, SERVER, query='?m=only_associate', body={'associate': UNKNOWN})
+add('quick-associate-null-server-error', 'owner', 500, SERVER, query='?m=only_associate', body={'associate': None})
+# The payment is written, then associate.user.user_id raises: everything rolls back.
+add('quick-associate-without-account-server-error', 'owner', 500, SERVER, query='?m=only_associate',
+    body={'associate': ASSOCIATES['quick_no_account']['id']})
+add('quick-duplicate-current', 'owner', 409, {'msg': 'Questa iscrizione esiste già.', 'code': '409', 'ref': 'subscription_duplicate'},
+    query='?m=only_associate', body={'associate': ASSOCIATES['current']['id']})
+quick('owner', 'quick', 'Quinto Rapido', payment={'amount': '25.00', '$audit': '25.00'},
+      subscription={'medical_id': CERTIFICATES['quick_latest']['id']})
+quick('full_collaborator', 'quick_plan', 'Pia Pianificata', setup={'association': {'multiple_subscription_fee': True}}, plan='plan-base',
+      payment={'amount': '40.00', '$audit': '40', 'meta': {'subscription_data': {'subscription_fee': 40, 'name': 'Piano base', 'id': 'plan-base'}}},
+      subscription={})
+# Outside a session the associate is resolved by its id. An unknown plan: the first plan's fee, the last plan's data.
+quick('owner', 'quick_abroad', 'Elio Estero', plan='nessuno',
+      setup={'association': {'subscription_fee_plans': [{'id': 'p1', 'name': 'Uno', 'subscription_fee': '30'},
+                                                        {'id': 'p2', 'name': 'Due', 'subscription_fee': 45}]}},
+      payment={'amount': '30.00', '$audit': '30', 'meta': {'subscription_data': {'subscription_fee': 45, 'name': 'Due', 'id': 'p2'}}},
+      subscription={'user_id': IDS['foreign_owner']})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

@@ -92,12 +92,33 @@ failure (non-strings included) is swallowed. With an existing `medical_id` the p
 the placeholder branch raises (no effect) for today's date and unparseable values. The same parse is shared by renewals and the
 draft approval (`subscription-renew`).
 
+## The quick re-subscription and the wizard in a modal
+
+`?m=only_associate` with `associate` (the members list's renewal): `_prepare_subscription_request` sets `data['sport_association']`
+to the owner's association, then `_handle_quick_subscription`:
+- `Associate.objects.get(associate_id=...)`: a live row resolved by its id (a malformed id, `None` or an unknown row: 500);
+- in one transaction, the association row locked, `create_quick_subscription`: the fee is the association's `subscription_fee`, or
+  with multiple fees the plan whose `id` equals `plan_id` (its fee and `{'subscription_data': {subscription_fee, name, id}}` as the
+  payment meta), else the first plan's fee with the last plan's data; a payment for `request.user` whatever the amount and whatever
+  `enable_quotes_management` (the courses default category, else the named one; no payment date; the create entry renders the
+  in-memory fee: `25.00` from the column, `40` or `30` from a plan);
+- the certificate of the associate's subscriptions with the latest expiration (else the first one);
+- an associate without an account is a 500 (everything rolled back); `Subscription.objects.create` (409 for a current duplicate):
+  not signed, the account of the associate, meta `{'plan_id': ...}`, number `0`, no membership;
+- on commit `new_subscription`, `print_document_subscription` and the notification. Response `{"status": "success", "payment_id": ...}`.
+
+An owner's body with `sport_association` (the wizard inside a modal) is not an athlete request: the username's association replaces
+`request.user`'s when found (the own username: the same one), a miss keeps it.
+
 ## Not ported
 
 Refused with the 500 page before anything is committed:
-- anonymous requests (Django attributes them to the association named in `sport_association`), athlete requests and any body with a
-  `sport_association` key, form bodies, a non-empty `X-Group-Id` (the managers' group filter and stored group);
-- the quick subscription (`m=only_associate` with `associate`) and the family wizard (`is_family_wizard: true`);
+- anonymous requests (Django attributes them to the association named in `sport_association`), athlete requests with a
+  `sport_association` key, an owner naming another association, form bodies, a non-empty `X-Group-Id` (the managers' group filter
+  and stored group);
+- the family wizard (`is_family_wizard: true`); in the quick subscription an impersonation session with an association scope, an
+  owner with several associations, plan ids or fees of other shapes (booleans, containers, more than two decimals) and a
+  certificate choice that depends on the unordered subscriptions;
 - `preregistration: true` (next-season and renewal registrations);
 - `new_user_account.new_member` true (the account creation and its welcome e-mail);
 - `there_is_signature` with data (the `Signature` row and the storage upload);
@@ -130,3 +151,11 @@ it unchanged.
 - `websockets` (75/75, `rerun-subscription-create-r1`) stays green after the notification store change.
 - The subscription-renew family added two cases (40 in all: an `associate_id` creating the associate with that key, a None
   certificate after the associate serializer's errors) and re-ran this family green (`rerun-renew-r1`).
+
+v2-sub-create: the quick re-subscription and the owner's `sport_association` (55 cases).
+
+- RED (`v2create-red-r5`): Django 55/55; Go 500 on `subscription-create-modal-own-username`.
+- GREEN (`v2create-versioned-r1`): 55/55 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`v2create-mutation-r1`): the fallback plan's data taken from the first plan fails
+  `subscription-create-quick-quick-abroad` (CAUGHT).
+- `subscription-renew` re-run green (`v2create-rerun-create-r1`, 62/62).

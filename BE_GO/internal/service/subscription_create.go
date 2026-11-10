@@ -97,8 +97,8 @@ func (s *SubscriptionCreates) Add(ctx context.Context, identity domain.ResolvedI
 		return nil, domain.ErrSubscriptionCreateServer
 	}
 	quick := request.Mode != nil && *request.Mode == "only_associate"
-	if objectHas(data, "sport_association") {
-		// Athlete requests and associations named in the body are not ported.
+	if user.Role != domain.RoleAssociation && objectHas(data, "sport_association") {
+		// Athlete requests (the association named in the body) are not ported.
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
 	if quick {
@@ -116,9 +116,9 @@ func (s *SubscriptionCreates) Add(ctx context.Context, identity domain.ResolvedI
 				// .first().sport_association_id on None.
 				return nil, domain.ErrSubscriptionCreateServer
 			}
+			// data['sport_association'] is set to it: an associate key takes the quick branch.
 			if objectHas(data, "associate") {
-				// The quick subscription of an existing associate is not ported.
-				return nil, domain.ErrSubscriptionCreateNotPorted
+				return s.quick(ctx, identity, data, request)
 			}
 		}
 		return nil, errSubscriptionCreateValidation

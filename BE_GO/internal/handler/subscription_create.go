@@ -105,8 +105,11 @@ func (h *SubscriptionCreateHandler) Add(c echo.Context) error {
 	var body strings.Builder
 	body.WriteString(`{"status":"success","payment_id":`)
 	body.WriteString(payment)
-	body.WriteString(`,"amount":`)
-	body.WriteString(result.Amount)
+	if result.Amount != "" {
+		// The quick re-subscription answers without an amount.
+		body.WriteString(`,"amount":`)
+		body.WriteString(result.Amount)
+	}
 	body.WriteString(`}`)
 	return c.JSONBlob(200, []byte(body.String()))
 }
