@@ -141,7 +141,8 @@ func (h *PaymentWritesHandler) serve(c echo.Context, verb, operation, name, desc
 	}
 	defer release()
 	status, result, err := run(admitted.Context, *identity, service.PaymentWritesRequest{ID: c.Param("uid"),
-		GroupHeader: request.Header.Get("X-Group-Id"), Form: admitted.Form, Audit: admitted.Audit}, admitted.Body)
+		GroupHeader: request.Header.Get("X-Group-Id"), Form: admitted.Form, Audit: admitted.Audit,
+		Authorization: requestAuthorization(request)}, admitted.Body)
 	if err != nil {
 		return h.failure(c, err, repr)
 	}

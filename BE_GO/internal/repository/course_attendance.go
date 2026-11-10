@@ -304,3 +304,32 @@ func modelRepresentation(model string) string {
 	}
 	return "AttendanceDay"
 }
+
+// InstructorOfUser is Instructor.objects.filter(associated_user_id=user).first().
+func (t *courseAttendanceTransaction) InstructorOfUser(ctx context.Context, user string) (*string, error) {
+	var id string
+	err := t.tx.GetContext(ctx, &id, `SELECT instructor_id::text FROM application_instructor
+ WHERE associated_user_id=$1::uuid ORDER BY instructor_id LIMIT 1`, user)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &id, nil
+}
+
+// TodayDays is statistic_dashboard's todaylessons queryset: scoped days with
+// date__range=(from, to) of the association's courses ordered by date; for an
+// instructor only the days of scoped registries whose events::text ~* the id.
+func (t *courseAttendanceTransaction) TodayDays(ctx context.Context, association string, from, to time.Time,
+	instructor, scope *string) ([]domain.AttendanceTodayDay, error) {
+	days := []domain.AttendanceTodayDay{}
+	err := t.tx.SelectContext(ctx, &days, `SELECT `+strings.Replace(attendanceDayColumns, " FROM ", ", r.events::text AS events FROM ", 1)+`
+ WHERE `+attendanceDayScope+` AND d.date BETWEEN $3 AND $4 AND c.sport_association_id=$1::uuid
+ AND ($5::text IS NULL OR d.attendance_registry_id IN (SELECT r2.attendance_registry_id FROM application_attendanceregistry r2
+  WHERE r2.events::text ~* $5::text AND ($2::uuid IS NULL OR r2.course_id IN (SELECT course_id FROM application_course
+  WHERE sport_association_id=$2::uuid))))
+ ORDER BY d.date, d.attendance_day_id`, association, scope, from, to, instructor)
+	return days, err
+}

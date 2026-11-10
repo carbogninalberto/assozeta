@@ -234,7 +234,9 @@ func run() (runErr error) {
 	carnetWritesHandler := handler.NewCarnetWritesHandler(service.NewCarnetAdds(repository.NewCarnetWrites(db), carnetAssigns, time.Now, uuid.NewString), service.NewCarnetReplaces(repository.NewCarnetWrites(db), carnetAssigns, time.Now), carnetAssigns, service.NewCarnetTopups(repository.NewCarnetWrites(db), time.Now, uuid.NewString), service.NewCarnetMetas(repository.NewCarnetWrites(db), time.Now), service.NewCarnetLinks(repository.NewCarnetWrites(db)), service.NewCarnetToggles(repository.NewCarnetWrites(db), time.Now), service.NewCarnetDeletes(repository.NewCarnetWrites(db), time.Now), service.NewCarnetUpdates(repository.NewCarnetWrites(db), time.Now), service.NewCarnetUnassigns(repository.NewCarnetWrites(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	paymentArchiveHandler := handler.NewPaymentArchiveHandler(service.NewPaymentArchives(repository.NewPaymentArchives(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	attendanceDaysHandler := handler.NewAttendanceDaysHandler(service.NewAttendanceDays(repository.NewAttendanceDays(db), time.Now), service.NewAttendanceMarks(repository.NewAttendanceDays(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
-	statisticReadsHandler := handler.NewStatisticReadsHandler(service.NewStatisticReads(repository.NewStatisticReads(db), time.Now, time.Local), service.NewActorAuthentication(accounts, tokens), identities)
+	statisticReadsHandler := handler.NewStatisticReadsHandler(service.NewStatisticReads(repository.NewStatisticReads(db), time.Now, time.Local).
+		WithTodayLessons(service.NewCourseAttendance(repository.NewCourseAttendance(db), time.Now)),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	communicationSMTPHandler := handler.NewCommunicationSMTPHandler(service.NewCommunicationSMTP(repository.NewCommunicationSMTP(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	emailLogsHandler := handler.NewEmailLogsHandler(service.NewEmailLogs(repository.NewEmailLogs(db), time.Now, time.Local), service.NewActorAuthentication(accounts, tokens), identities)
 	staffBoardHandler := handler.NewStaffBoardHandler(service.NewStaffBoard(repository.NewStaffBoard(db), time.Now),
@@ -533,8 +535,11 @@ func run() (runErr error) {
 		middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment-bulk/archive", paymentStatesHandler.BulkArchive, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment-bulk/delete", paymentStatesHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
+	// payment update of an invoiced payment: print_document_invoice.apply (see invoice-sync-print).
+	paymentInvoicePrinter := service.NewInvoiceSyncPrint(service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
+		repository.NewRestoreStates(db), cfg.RestoreLockPath != ""), os.Getenv("CURRENT_HOST"))
 	paymentWritesHandler := handler.NewPaymentWritesHandler(service.NewPaymentWrites(repository.NewPaymentWrites(repository.NewPaymentStates(db)),
-		time.Now, uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
+		time.Now, uuid.NewString).WithInvoicePrint(paymentInvoicePrinter), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
 		paymentCategoryOperations)
 	e.Any("/payment/add", paymentWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/bulk-add", paymentWritesHandler.BulkAdd, middleware.DjangoSessionAudit(sessionAuthentication))

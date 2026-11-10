@@ -328,6 +328,138 @@ for label, row in CARNET_SUBSCRIPTIONS.items():
     row['created'] = '2026-09-01T10:00:00.123456Z'
     rid(label)
 
+# ---------------------------------------------------------------------------
+# A fourth association for the todaylessons and expiredPayments widgets, with an owner and a full
+# collaborator who is also linked to one of the owner's instructors (Instructor.associated_user_id).
+# Its rows are only read by the cases below.
+# ---------------------------------------------------------------------------
+FOUR = 'association_four'
+USERS['owner_four'] = {'role': 'association'}
+USERS['collab_four'] = {'role': 'collaborator', 'connected': 'owner_four'}
+for label in ('owner_four', 'collab_four', FOUR):
+    rid(label)
+EXTRA_ASSOCIATIONS = {FOUR: {'owner': 'owner_four', 'denomination': 'Statistiche quarta', 'tax_code': '93000000004'}}
+FOUR_ASSOCIATES = {
+    'a4_1': {'association': FOUR, 'first': 'Lucia', 'last': 'Neri', 'sex': 'F', 'born': None, 'age': 0, 'tax': 'NRELCU90A41H501X'},
+    'a4_2': {'association': FOUR, 'first': 'Paolo', 'last': 'Gialli', 'sex': 'M', 'born': None, 'age': 0},
+    'a4_3': {'association': FOUR, 'first': 'Sara', 'last': 'Blu', 'sex': 'F', 'born': None, 'age': 0},
+    'a4_4': {'association': FOUR, 'first': 'Ugo', 'last': 'Verde', 'sex': 'M', 'born': None, 'age': 0},
+}
+for label in FOUR_ASSOCIATES:
+    rid(label)
+ASSOCIATES.update(FOUR_ASSOCIATES)
+FOUR_SUBSCRIPTIONS = {
+    's4_1': sub(FOUR, status=4, start=day(-60), end=day(300), created='2023-03-01T10:00:00Z', associate='a4_1', user='owner_four'),
+    # Same associate and dates as s4_1, created later: the view's dict keeps the last row of the
+    # '-creation_date' order for a key, so s4_1 wins.
+    's4_dup': sub(FOUR, status=4, start=day(-60), end=day(300), created='2023-05-01T10:00:00Z', associate='a4_1', user='owner_four'),
+    's4_arch': sub(FOUR, status=4, start=day(-400), end=day(400), created='2023-06-01T10:00:00Z', associate='a4_1', archived=True,
+                   user='owner_four'),
+    's4_2': sub(FOUR, status=4, start=day(-60), end=day(-20), created='2023-02-01T10:00:00Z', associate='a4_2', user='owner_four'),
+    's4_3': sub(FOUR, status=4, start=day(-19), end=day(100), created='2023-04-01T10:00:00Z', associate='a4_2', user='owner_four'),
+    # end_date is compared with payment_date (a timestamp) in SQL: a payment at 10:00 on the end day is outside.
+    's4_5': sub(FOUR, status=4, start=day(-30), end=day(-2), created='2023-07-01T10:00:00Z', associate='a4_4', user='owner_four'),
+}
+for label in FOUR_SUBSCRIPTIONS:
+    rid(label)
+SUBSCRIPTIONS.update(FOUR_SUBSCRIPTIONS)
+PAYMENT_CATEGORIES = {'cat4': {'association': FOUR, 'name': 'Quota extra'}}
+for label in PAYMENT_CATEGORIES:
+    rid(label)
+
+
+def unpaid(amount, associate, created, *, paid_on=None, subject=0, **extra):
+    row = pay(amount, association=FOUR, paid=False, subject=subject, created=created, paid_on=paid_on)
+    row.update({'associate': associate, **extra})
+    return row
+
+
+FOUR_PAYMENTS = {
+    'e1': unpaid('12.50', 'a4_1', day(-3, '10:00:00'), paid_on=day(-3, '10:00:00'), subject=2, meta={'description': 'Rata judo è'}),
+    'e2': unpaid('30.00', 'a4_1', day(-10, '09:00:00'), subject=1),
+    'e3': unpaid('20.00', 'a4_2', day(-5, '11:00:00'), paid_on=day(-30, '12:00:00'), subject=2),
+    'e4': unpaid('7.00', 'a4_2', day(2, '08:00:00'), category='cat4'),
+    'e5': unpaid('15.00', 'a4_1', day(-7, '10:00:00'), subject=2, course={'label': 'Corso estivo'}, description='luglio'),
+    'e6': unpaid('5.00', 'a4_1', day(-12, '10:00:00'), subject=2),
+    'e7': unpaid('3.00', 'a4_1', day(-15, '10:00:00')),
+    'e8': unpaid('9.00', 'a4_3', day(-4, '10:00:00')),
+    'e9': unpaid('4.00', 'a4_4', day(-6, '10:00:00'), paid_on=day(-2, '10:00:00')),
+    # Excluded by the payment filters.
+    'pp4': {**unpaid('1.00', 'a4_2', OLD, paid_on=day(-1, '10:00:00')), 'paid': True},
+    'x_paid': {**unpaid('8.00', 'a4_1', day(-2, '10:00:00')), 'paid': True},
+    'x_archived': {**unpaid('8.00', 'a4_1', day(-2, '10:00:00')), 'archived': True},
+    'x_expense': {**unpaid('8.00', 'a4_1', day(-2, '10:00:00')), 'expense': True},
+    'x_zero': unpaid('0.00', 'a4_1', day(-2, '10:00:00')),
+    'x_deleted': {**unpaid('8.00', 'a4_1', day(-2, '10:00:00')), 'deleted': True},
+    'x_old': unpaid('8.00', 'a4_1', day(-40, '10:00:00')),
+    'x_future': unpaid('8.00', 'a4_1', day(9, '10:00:00')),
+    'x_no_associate': unpaid('8.00', None, day(-2, '10:00:00')),
+}
+for label in FOUR_PAYMENTS:
+    rid(label)
+PAYMENTS.update(FOUR_PAYMENTS)
+FOUR_COURSES = {'k4c1': course('Judo', association=FOUR), 'k4c2': course('Karate', association=FOUR)}
+for label in FOUR_COURSES:
+    rid(label)
+COURSES.update(FOUR_COURSES)
+cs('cs4_1', 'k4c1', subscription='s4_1')
+cs('cs4_del', 'k4c1', subscription='s4_1', deleted=True)
+cs('cs4_2', 'k4c2', subscription='s4_3')
+COURSE_SUBSCRIPTIONS['cs4_1']['payment'] = 'e1'
+COURSE_SUBSCRIPTIONS['cs4_2']['payment'] = 'e3'
+CARNETS['kc4'] = {'association': FOUR, 'title': 'Carnet judo', 'description': None, 'lessons': 8, 'fee': '40.00', 'public': True}
+rid('kc4')
+CARNET_SUBSCRIPTIONS['ck4_four'] = {'subscription': 's4_1', 'carnet': 'kc4', 'meta': {'lessons_left': 10}, 'payment': 'e6',
+                               'created': '2026-09-01T10:00:00.123456Z'}
+rid('ck4_four')
+
+INSTRUCTORS = {
+    'ins_c': {'owner': 'owner_four', 'first': 'Carla', 'last': 'Rossi', 'associated_user': 'collab_four'},
+    'ins_x': {'owner': 'owner_four', 'first': 'Dario', 'last': 'Neri'},
+    'ins_f': {'owner': IDS['foreign_owner'], 'first': 'Elena', 'last': 'Estera'},
+}
+for label in INSTRUCTORS:
+    rid(label)
+for label in ('ev4a', 'ev4b', 'ev4c', 'ev4d', 'ev4e', 'ev4h', 'ev4z'):
+    rid(label)
+
+
+def event4(label, start, *, title='Lezione', **extra):
+    item = {'event_id': R[label], 'title': title, 'start': {'$fmt': [start, MS]}, 'end': {'$fmt': [start, MS]}}
+    item.update(extra)
+    return item
+
+
+INSTRUCTOR_C_UPPER = R['ins_c'].upper()  # events__iregex matches it case-insensitively
+EV4A = event4('ev4a', day(0, '09:00:00'), allDay=False,
+              extendedProps={'instructor': {'instructor_id': INSTRUCTOR_C_UPPER}, 'location': 'Palestra'})
+EV4B = event4('ev4b', day(0, '18:00:00'), title='Serale', allDay=True, extendedProps={'instructor': [
+    {'instructor_id': R['ins_x']}, {'instructor_id': R['ins_f']}, {'name': 'esterno'}]})
+EV4C = event4('ev4c', day(-1, '22:30:00'))
+EV4D = event4('ev4d', day(-1, '21:00:00'))
+EV4E = event4('ev4e', day(1, '01:30:00'))
+EV4H = event4('ev4h', day(1, '03:00:00'))
+EV4I = {'title': 'Senza id', 'start': {'$fmt': [day(0, '15:00:00'), MS]}, 'end': None, 'extendedProps': {'note': 'libera'}}
+REGISTRIES['rg4'] = {'course': 'k4c1', 'events': [EV4C, EV4D, EV4A, EV4B, EV4E, EV4H]}
+REGISTRIES['rg4b'] = {'course': 'k4c2', 'events': [EV4I]}
+rid('rg4')
+rid('rg4b')
+FOUR_DAYS = {
+    'd4c': {'registry': 'rg4', 'date': day(-1, '22:30:00'), 'title': 'Lezione', 'event': 'ev4c'},
+    'd4d': {'registry': 'rg4', 'date': day(-1, '21:00:00'), 'title': 'Lezione', 'event': 'ev4d'},
+    'd4a': {'registry': 'rg4', 'date': day(0, '09:00:00'), 'title': 'Lezione', 'event': 'ev4a', 'attendees': ['cs4_1'],
+            'absences': ['cs4_2']},
+    'd4i': {'registry': 'rg4b', 'date': day(0, '15:00:00'), 'title': 'Senza id'},
+    # Unlinked: the first request links it to ev4b and saves the day (expected_absences None -> []).
+    'd4b': {'registry': 'rg4', 'date': day(0, '18:00:00'), 'title': 'Serale'},
+    # Linked to an event the registry does not list: no event data.
+    'd4e': {'registry': 'rg4', 'date': day(1, '01:30:00'), 'title': 'Notturna', 'event': 'ev4z'},
+    'd4h': {'registry': 'rg4', 'date': day(1, '03:00:00'), 'title': 'Lezione', 'event': 'ev4h'},
+}
+for label in FOUR_DAYS:
+    rid(label)
+DAYS.update(FOUR_DAYS)
+
 # ===========================================================================
 # Oracle (statistic_views.py read line by line).
 # ===========================================================================
@@ -621,6 +753,129 @@ def foreign_default_report():
     }}
 
 
+# --- statistic/dashboard?widget=todaylessons ------------------------------------------------------------------
+# Days whose date is in [today 00:00 - 121 min, today 23:59:59 + 121 min] (naive datetime.now(), UTC) of the
+# association's courses, ordered by date, each rendered by get_extended_prop_for_attendance_day: the event of the
+# registry starting in the same hour (and, for a linked day, with the linked event_id) provides allDay, start, end
+# and extendedProps (instructor labels from the course owner's instructors). Its subscription map is keyed by UUID
+# and looked up by str, so attendees keep their stored shape and expected_absences is always [].
+
+
+def potential(course_label):
+    out = []
+    for label, row in COURSE_SUBSCRIPTIONS.items():
+        if row['course'] != course_label or row['deleted']:
+            continue
+        a = ASSOCIATES[SUBSCRIPTIONS[row['subscription']]['associate']]
+        assert a['born'] is None  # calculate_age() is 0: the exemption label with 0 days
+        out.append({'course_subscription_id': R[label], 'subscription': {'associate': {
+            'first_name': a['first'], 'last_name': a['last'], 'tax_code': a.get('tax'),
+            'medical_label': '<span class="text-success font-weight-boldest">Esente per 0 giorni</span>'}}})
+    assert len(out) <= 1, 'CourseSubscription.objects.filter(course=...) has no order: keep one member per course'
+    return out
+
+
+def today_lesson(day_label, event=None, props=None):
+    row = DAYS[day_label]
+    registry = REGISTRIES[row['registry']]
+    attendees = [{'course_subscription_id': R[cs]} for cs in row.get('attendees', [])]
+    absences = row.get('absences', [])
+    members = potential(registry['course'])
+    return {'title': row['title'], 'allDay': event.get('allDay', False) if event else False,
+            'extended_props': props if event else {}, 'attendance_day_id': R[day_label],
+            'attendance_registry': R[row['registry']], 'date': {'$drf': row['date']},
+            'start': event.get('start') if event else None, 'end': event.get('end') if event else None,
+            'course_id': R[registry['course']], 'total_attendees': len(attendees), 'total_expected_absences': len(absences),
+            'potential_attendees': members, 'total_expected_total': len(members) - len(absences), 'attendees': attendees,
+            'expected_absences': []}
+
+
+PROPS_4A = {'instructor': {'instructor_id': INSTRUCTOR_C_UPPER, 'label': 'Carla Rossi'}, 'location': 'Palestra'}
+PROPS_4B = {'instructor': [{'instructor_id': R['ins_x'], 'label': 'Dario Neri'}, {'instructor_id': R['ins_f']}, {'name': 'esterno'}]}
+LESSONS_4C = today_lesson('d4c', EV4C, {})
+LESSONS_4A = today_lesson('d4a', EV4A, PROPS_4A)
+LESSONS_4I = today_lesson('d4i', EV4I, {'note': 'libera'})
+LESSONS_4B = today_lesson('d4b', EV4B, PROPS_4B)
+LESSONS_4E = today_lesson('d4e')
+# The owner: every day of the association in the window. The collaborator is ins_c's associated user,
+# so only days of registries whose events mention ins_c (rg4) are listed.
+TODAY_OWNER_FOUR = {'data': {'lessons': [LESSONS_4C, LESSONS_4A, LESSONS_4I, LESSONS_4B, LESSONS_4E]}}
+TODAY_COLLAB_FOUR = {'data': {'lessons': [LESSONS_4C, LESSONS_4A, LESSONS_4B, LESSONS_4E]}}
+# The first request links d4b to ev4b: auditlog's update entry for the save of the whole day.
+TODAY_LINK = {'day': R['d4b'], 'associated_event': R['ev4b'], 'attendees': None, 'expected_absences': [],
+              'changes': {'associated_event': ['None', R['ev4b']], 'expected_absences': ['null', '[]']},
+              'actor': 'owner_four', 'association': R[FOUR], 'path': 'attendance_registry.course.sport_association'}
+
+
+# --- statistic/dashboard?widget=expiredPayments ---------------------------------------------------------------
+
+def payment_title(label):
+    row = PAYMENTS[label]
+    if row['subject'] == 2:
+        for cs_label, cs_row in COURSE_SUBSCRIPTIONS.items():
+            if cs_row.get('payment') == label:
+                return (row.get('meta') or {}).get('description') or COURSES[cs_row['course']]['title']
+        for ck_label, ck_row in CARNET_SUBSCRIPTIONS.items():
+            if ck_row.get('payment') == label:
+                return (row.get('meta') or {}).get('description') or CARNETS[ck_row['carnet']]['title']
+        if row.get('course') and 'label' in row['course']:
+            return ', '.join([row['course']['label'], row.get('description') or ''])
+        return row.get('description')
+    if row['subject'] == 1:
+        return 'Iscrizione'
+    return PAYMENT_CATEGORIES[row['category']]['name'] if row.get('category') else None
+
+
+def expired_payments(association):
+    """The unpaid payments created in [now - 30 days, now + 7 days] with a matching subscription."""
+    chosen = []
+    for label, row in PAYMENTS.items():
+        if row['association'] != association or row['paid'] or row['archived'] or row['deleted'] or row['expense'] \
+                or row.get('associate') is None or Decimal(row['amount']) <= 0:
+            continue
+        k = days_of(row['created'])
+        if k is None or not -30 < k < 7:
+            assert k is None or k <= -31 or k >= 8, label
+            continue
+        chosen.append(label)
+    # Subscriptions with some payment of the same associate whose payment_date (a timestamp) lies in
+    # [start_date 00:00, end_date 00:00]; the dict keeps, per (associate, start, end), the last row of the
+    # '-creation_date' order and its first insertion position.
+    associates = {PAYMENTS[label]['associate'] for label in chosen}
+    rows = []
+    for label, s in SUBSCRIPTIONS.items():
+        if s['association'] != association or s['archived'] or s['associate'] not in associates or s['start'] is None:
+            continue
+        for p in PAYMENTS.values():
+            at = p['payment_date']
+            if p.get('associate') == s['associate'] and at is not None:
+                moment = (days_of(at), at['at'])
+                assert at['at'] != '00:00:00'
+                if days_of(s['start']) <= moment[0] < days_of(s['end']):
+                    rows.append(label)
+    assert all(is_static(SUBSCRIPTIONS[label]['created']) for label in rows)
+    rows.sort(key=lambda label: SUBSCRIPTIONS[label]['created'], reverse=True)
+    mapping = {}
+    for label in rows:
+        s = SUBSCRIPTIONS[label]
+        mapping[(s['associate'], days_of(s['start']), days_of(s['end']))] = label
+    out = []
+    for label in sorted(chosen, key=lambda item: (days_of(PAYMENTS[item]['created']), PAYMENTS[item]['created']['at']), reverse=True):
+        row = PAYMENTS[label]
+        effective = row['payment_date'] or row['created']
+        match = next((sub_label for (associate, start, end), sub_label in mapping.items()
+                      if associate == row['associate'] and start <= days_of(effective) <= end), None)
+        if match is None:
+            continue
+        out.append({'payment_id': R[label], 'expired_days': -days_of(row['created']), 'amount': float(Decimal(row['amount'])),
+                    'payment_date': {'$drf': row['payment_date']} if row['payment_date'] else None,
+                    'creation_date': {'$drf': row['created']}, 'title': payment_title(label), 'date': {'$dmy': effective},
+                    'associate': person(row['associate']), 'subscription_id': R[match]})
+    out.sort(key=lambda item: item['expired_days'])
+    assert len({item['expired_days'] for item in out}) == len(out)
+    return {'data': {'expired_payments': out}}
+
+
 # --- statistic/athlete-dashboard -----------------------------------------------------------------------------
 
 def lesson(event_id, title, start, day_label, cs_label, sub_label, course_label, *, present=False, absent=False):
@@ -663,11 +918,13 @@ D, A, P = '/statistic/dashboard', '/statistic/athlete-dashboard', '/statistic/re
 OPTIONS_PARSES = ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data']
 
 
-def add(name, actor, path, status, response, *, method='GET', headers=None, setup=None):
+def add(name, actor, path, status, response, *, method='GET', headers=None, setup=None, link=None):
     case = {'name': f'statistic-reads-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response}
     if setup:
         case['setup'] = setup
+    if link:
+        case['link'] = link
     cases.append(case)
 
 
@@ -709,6 +966,16 @@ add('income-group', 'owner', w('incomeAndExpenses'), 200, {'data': {'$income': [
 add('income-foreign-owner-empty', 'foreign_owner', w('incomeAndExpenses'), 200, {'data': {
     'today_income': None, 'today_expenses': None, 'last_month_income': None, 'last_month_expenses': None,
     'total_income': None, 'total_expenses': None}})
+# todaylessons: the first request links the unlinked day (a write during the GET); later ones read it linked.
+add('todaylessons-links-unlinked-day', 'owner_four', w('todaylessons'), 200, TODAY_OWNER_FOUR, link=TODAY_LINK)
+add('todaylessons-owner', 'owner_four', w('todaylessons'), 200, TODAY_OWNER_FOUR)
+add('todaylessons-instructor-collaborator', 'collab_four', w('todaylessons'), 200, TODAY_COLLAB_FOUR)
+add('todaylessons-other-association-empty', 'owner', w('todaylessons'), 200, {'data': {'lessons': []}})
+add('expiredpayments-owner', 'owner_four', w('expiredPayments'), 200, expired_payments(FOUR))
+add('expiredpayments-collaborator', 'collab_four', w('expiredPayments'), 200, expired_payments(FOUR))
+add('expiredpayments-group-empty', 'owner_four', w('expiredPayments'), 200, {'data': {'expired_payments': []}}, headers=GROUP_HEADER)
+add('expiredpayments-other-association-empty', 'owner', w('expiredPayments'), 200, expired_payments(OWN))
+add('widget-expiredpayments-lowercase', 'owner_four', w('expiredpayments'), 404, ['error: widget not found.'])
 # The widget parameter: QueryDict.get keeps the last value, matching is exact.
 add('widget-missing', 'owner', D, 400, ['error: widget is required.'])
 add('widget-missing-extra-parameter', 'owner', D + '?widgets=payments', 400, ['error: widget is required.'])
@@ -797,6 +1064,7 @@ OUTPUT.write_text(json.dumps({
     'course_subscriptions': COURSE_SUBSCRIPTIONS, 'registries': REGISTRIES, 'days': DAYS, 'messages': MESSAGES,
     'deliveries': DELIVERIES, 'carnets': CARNETS, 'carnet_subscriptions': CARNET_SUBSCRIPTIONS,
     'association_three': {'denomination': 'Statistiche terza', 'tax_code': '93000000003'},
+    'extra_associations': EXTRA_ASSOCIATIONS, 'payment_categories': PAYMENT_CATEGORIES, 'instructors': INSTRUCTORS,
     'own_review': {'review_url': 'https://example.test/recensioni', 'review_url_enabled': True},
     'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

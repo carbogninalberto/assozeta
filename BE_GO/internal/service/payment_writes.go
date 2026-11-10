@@ -15,9 +15,17 @@ import (
 
 // PaymentWrites ports payment_add, payment_update and payment_bulk_add.
 type PaymentWrites struct {
-	store domain.PaymentWritesStore
-	now   func() time.Time
-	newID func() string
+	store   domain.PaymentWritesStore
+	now     func() time.Time
+	newID   func() string
+	printer *InvoiceSyncPrint
+}
+
+// WithInvoicePrint sets print_document_invoice's eager runner (the update of
+// an invoiced payment prints the invoice after the save).
+func (s *PaymentWrites) WithInvoicePrint(printer *InvoiceSyncPrint) *PaymentWrites {
+	s.printer = printer
+	return s
 }
 
 func NewPaymentWrites(store domain.PaymentWritesStore, now func() time.Time, newID func() string) *PaymentWrites {
@@ -30,6 +38,8 @@ type PaymentWritesRequest struct {
 	GroupHeader string
 	Form        bool
 	Audit       domain.LoginAuditContext
+	// Authorization is the raw Authorization header (nil when absent).
+	Authorization *string
 }
 
 func (s *PaymentWrites) at() time.Time { return s.now().UTC().Truncate(time.Microsecond) }
@@ -726,6 +736,16 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 			object = dropField(object, name)
 		}
 	}
+	if value, present := object.Lookup("payment_id"); present {
+		// The edit form posts the row's own key: UUIDField accepts it, the
+		// UniqueValidator excludes the instance and the save keeps the row.
+		// Any other key would move the primary key (not ported).
+		if text, isText := value.(string); isText {
+			if key, ok := dto.DjangoUUIDLookup(text); ok && key == row.ID {
+				object = dropField(object, "payment_id")
+			}
+		}
+	}
 	input, err := s.entry(ctx, tx, identity, object, true)
 	if err != nil {
 		return nil, err
@@ -762,7 +782,7 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	if err != nil {
 		return nil, err
 	}
-	if row.InvoiceID != nil {
+	if row.InvoiceID != nil && s.printer == nil {
 		return nil, domain.ErrPaymentWritesNotPorted
 	}
 	failing, err := attachmentsStored(input)
@@ -799,7 +819,17 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	if err != nil {
 		return nil, err
 	}
-	return map[string]any{"data": map[string]any{"payment": item}}, tx.Commit()
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+	// print_document_invoice.apply(args=[invoice_id, Authorization]) runs
+	// after the save; the response renders the payment as loaded before it.
+	if m.row.InvoiceID != nil {
+		if err = s.printer.Invoice(ctx, *m.row.InvoiceID, request.Authorization); err != nil {
+			return nil, err
+		}
+	}
+	return map[string]any{"data": map[string]any{"payment": item}}, nil
 }
 
 func paymentBulkMessage(text string) error { return &domain.PaymentWritesMessage{Message: text} }
