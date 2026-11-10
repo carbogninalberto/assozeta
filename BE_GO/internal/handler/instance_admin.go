@@ -234,10 +234,11 @@ func (h *InstanceAdminHandler) Updates(c echo.Context) error {
 	case request.Method == http.MethodOptions:
 		return supplierOptions(c, "Instance Updates", "")
 	case isRead(request.Method):
-		body, err := h.admin.Updates()
+		body, err := h.admin.UpdatesStatus(request.Context())
 		return h.answer(c, body, err)
 	case request.Method == http.MethodPost:
-		return h.body(c, func(data any) error { return h.fail(c, h.admin.RequestUpdate(data)) })
+		actor, _ := c.Get(instanceAdminActorKey).(string)
+		return h.body(c, func(data any) error { return h.fail(c, h.admin.RequestUpdateFor(c.Request().Context(), actor, data)) })
 	}
 	return h.notAllowed(c)
 }
@@ -252,7 +253,8 @@ func (h *InstanceAdminHandler) Restarts(c echo.Context) error {
 	case http.MethodOptions:
 		return supplierOptions(c, "Instance Restarts", "")
 	case http.MethodPost:
-		return h.body(c, func(data any) error { return h.fail(c, h.admin.RequestRestart(data)) })
+		actor, _ := c.Get(instanceAdminActorKey).(string)
+		return h.body(c, func(data any) error { return h.fail(c, h.admin.RequestRestartFor(c.Request().Context(), actor, data)) })
 	}
 	return h.notAllowed(c)
 }

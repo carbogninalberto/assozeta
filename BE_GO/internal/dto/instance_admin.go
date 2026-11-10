@@ -797,3 +797,38 @@ func InstanceAdminRestartRequest(body any) error {
 	}
 	return nil
 }
+
+// InstanceAdminUpdate is UpdateRequestSerializer.validated_data.
+type InstanceAdminUpdate struct {
+	ReleaseID *big.Int
+	Tag       string
+	RequestID string
+}
+
+// InstanceAdminUpdateValues is InstanceAdminUpdateRequest with the validated values.
+func InstanceAdminUpdateValues(body any) (*InstanceAdminUpdate, error) {
+	if err := InstanceAdminUpdateRequest(body); err != nil {
+		return nil, err
+	}
+	object, _ := instanceAdminObject(body)
+	one := int64(1)
+	release, _ := object.Lookup("release_id")
+	tag, _ := object.Lookup("tag")
+	request, _ := object.Lookup("request_id")
+	update := &InstanceAdminUpdate{}
+	update.ReleaseID, _ = drfIntegerField(release, &one, nil)
+	update.Tag, _ = (drfText{max: 64}).run(tag)
+	update.RequestID, _ = drfUUIDField(request)
+	return update, nil
+}
+
+// InstanceAdminRestartValue is RestartRequestSerializer.validated_data['request_id'].
+func InstanceAdminRestartValue(body any) (string, error) {
+	if err := InstanceAdminRestartRequest(body); err != nil {
+		return "", err
+	}
+	object, _ := instanceAdminObject(body)
+	value, _ := object.Lookup("request_id")
+	id, _ := drfUUIDField(value)
+	return id, nil
+}

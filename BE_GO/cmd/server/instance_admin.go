@@ -5,10 +5,12 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handler"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/instanceprobe"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/middleware"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/updaterrunner"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -29,5 +31,11 @@ func composeInstanceAdmin(cfg config.Config, db *sqlx.DB, bootstrap *service.Ins
 		GoogleClientID: cfg.GoogleClientID, AppleClientID: cfg.AppleClientID, SecretKeys: []string{cfg.SessionSecret},
 	}
 	admin := service.NewInstanceAdmin(repository.NewInstanceAdmin(db), bootstrap, environment, time.Now)
+	// Production updates and restarts: the update runner socket and the release catalog
+	// (composeInstanceOutbound fails the start when the outbound client cannot be built).
+	if releases, err := instanceprobe.NewClient(); err == nil {
+		admin = admin.WithUpdates(updaterrunner.Client{Production: settings.DeploymentMode == "production", Directory: settings.UpdaterDirectory},
+			releases)
+	}
 	return handler.NewInstanceAdminHandler(admin, actors, identities, middleware.SessionAuditContext, operations), admin
 }

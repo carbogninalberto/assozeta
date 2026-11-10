@@ -38,8 +38,9 @@ Cross-cutting facts used for the classes:
 | association-transfer | `association/import/*` with `X-Setup-Token` | before an instance exists | same run |
 | instance-setup | `POST instance/configure` | `type: import` with a finished task | fixture `instance_setup_http.json` 99 cases; RED Django 99/99, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (`association_id` key ignored) CAUGHT |
 | data-restore | `POST instance/admin/data-restore` | every upload | fixture `data_restore_http.json` 150 cases; RED Django 150/150, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (summary record count) CAUGHT |
+| instance-updates | `GET/POST admin/updates`, `POST admin/restarts` | production mode | fixture `instance_updates_http.json` 40 cases; RED Django 40/40, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (version check) CAUGHT |
 
-Details in `statistic-reads.md`, `association-transfer.md`, `instance-setup.md` and `data-restore.md`.
+Details in `statistic-reads.md`, `association-transfer.md`, `instance-setup.md`, `data-restore.md` and `instance-updates.md`.
 
 ## Remaining A items, per family
 
@@ -131,8 +132,6 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | POST admin/diagnostics | every run | `SelfInstance.svelte:155` | `service/instance_admin.go:1227` | expensive |
-| GET/POST admin/updates | production mode | `SelfInstance.svelte:249,307` | `service/instance_admin.go:183,194` | medium |
-| POST admin/restarts | production mode | `SelfInstance.svelte:190` | `service/instance_admin.go:211` | medium |
 
 ### communications, camps, profile, personas, modules, oauth, google
 | Route | Condition | UI call | Go site | Cost |
@@ -433,8 +432,8 @@ Coordination/status doc; no refusals. Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST instance/admin/diagnostics | lease claimable (every real run) | `BE_GO/internal/service/instance_admin.go:1227`, `ErrInstanceAdminRefused` | **A** | `routes/profile/sections/SelfInstance.svelte:155`. |
-| GET/POST instance/admin/updates | production mode | `service/instance_admin.go:183,194` | **A** | `SelfInstance.svelte:249` (status), `:307` (request). Self-host installs run in production mode. |
-| POST instance/admin/restarts | production mode | `service/instance_admin.go:211` | **A** | `SelfInstance.svelte:190`. |
+| GET/POST instance/admin/updates | production mode | ported (`service/instance_updates.go`) | ported | `SelfInstance.svelte:249` (status), `:307` (request). Self-host installs run in production mode. |
+| POST instance/admin/restarts | production mode | ported (`service/instance_updates.go`) | ported | `SelfInstance.svelte:190`. |
 | writes | form/multipart bodies | `handler/instance_admin.go:67` | B | UI sends JSON (`InstanceEmail.svelte:55`, `InstanceIntegration.svelte:65`). cheap. |
 | PUT admin/integrations/<provider> | AI `base_url` with non-ASCII host | instance_admin service | B | Free-text field; IDN AI endpoints are unusual. legacy: no; cheap. |
 | admin, admin/email | env `EMAIL_PORT` non-integer, or `WHITELABEL_NAME`/`EMAIL_HOST_USER` outside the simple form | `service/instance_admin.go:470`; `BE_GO/internal/config/instance_admin.go:148-171` | B | Operator env, default `WHITELABEL_NAME=Assozeta` passes; a name with `.`, `,` or accents (e.g. "Polisportiva Città") would be refused when no stored e-mail config exists. legacy: yes (env); cheap. |

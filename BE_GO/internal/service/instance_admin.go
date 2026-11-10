@@ -27,8 +27,8 @@ import (
 // InstanceAdmin ports the owner-only installation administration views of
 // BE/instance: InstanceAdminView, EmailSettingsView, IntegrationSettingsView,
 // DiagnosticsView (GET; POST only while a lease is active), and
-// InstanceUpdatesView/InstanceRestartsView in development mode. Paths that
-// would contact the update runner or run outbound probes, and stored shapes
+// InstanceUpdatesView/InstanceRestartsView (the update runner in production,
+// instance_updates.go). Paths that run outbound probes, and stored shapes
 // the port does not interpret, return domain.ErrInstanceAdminRefused before
 // any write.
 type InstanceAdmin struct {
@@ -37,6 +37,9 @@ type InstanceAdmin struct {
 	env       InstanceAdminEnvironment
 	now       func() time.Time
 	random    io.Reader
+	// runner and releases enable the production update paths (WithUpdates).
+	runner   InstanceUpdatesRunner
+	releases InstanceReleaseFetcher
 }
 
 type InstanceAdminStore interface {
