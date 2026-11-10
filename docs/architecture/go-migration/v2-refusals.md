@@ -313,6 +313,15 @@ Still refused in these families, with the reason:
 - docmanager-reads: storage answers with a retry count or the endpoint address in botocore's text (429, 5xx, no answer); URL-like names with a bracketed or non-ASCII network location. Invalid UTF-8, NUL and creation dates outside Python's range cannot be read by Django either (class C).
 - Not started in this change: the document-views rows, the documents-writes rows, `medical-appointments/list` with a doc-less appointment, Biella without a primary tutor relation, and every invoice and instructor B row.
 
+### Ported in the v2-documents-4 change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2doc4-*` (`instance-logo-v2doc4-*` for the logo); each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| instance-logo | `GET instance/logo.png` | not a refusal: logo responses carry a restrictive content policy (`Content-Security-Policy: sandbox; default-src 'none'; style-src 'unsafe-inline'`, `X-Content-Type-Options: nosniff`) for every logo type, in Django and Go | Django test first (`instance.tests.test_logo`); 76 cases GREEN on 4 transports (`instance-logo-v2doc4-versioned-r1`); mutation `instance-logo-v2doc4-mutation-r1` (header dropped) CAUGHT |
+<!-- v2doc4-rows -->
+
 ### Ported in the v2-rest-a change
 
 Rare inputs and old data (class B rows). Receipts are `quality-reports/go-migration/<family>-http-v2resta-*`; each
