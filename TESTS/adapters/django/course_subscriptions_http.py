@@ -25,7 +25,6 @@ SOURCES = ('TESTS/fixtures/course_subscriptions_http.json', 'TESTS/contracts/tes
            'TESTS/adapters/django/course_subscriptions_http.py', 'TESTS/adapters/django/carnet_replace_http.py',
            'TESTS/adapters/django/course_writes_http.py',
            'BE/application/views/course_views.py', 'BE/application/serializers/courses_serializers.py',
-           'BE/application/utils/printing.py', 'BE/application/utils/excel_utils.py', 'TESTS/contracts/xlsx.py',
            'BE/application/serializers/payment_serializers.py', 'BE/application/serializers/subscriptions_serializers.py',
            'BE/application/serializers/user_serializers.py', 'BE/application/serializers/auth_serializers.py',
            'BE/application/models/courses_models.py', 'BE/application/models/payment_models.py',
@@ -64,7 +63,7 @@ def default_category():
 
 def seed_rows(source, created):
     from application.models import (Associate, Course, CourseSubscription, CourseSubscriptionInstallment, Instructor, Invoice,
-                                    MedicalCertificate, Payment, PaymentCategory, Subscription, Tags)
+                                    MedicalCertificate, Payment, PaymentCategory, Subscription)
     from application.models.carnet_models import Carnet, CarnetSubscription
     from docmanager.models import Document
     ids = source['ids']
@@ -91,11 +90,6 @@ def seed_rows(source, created):
                                           medical_id=source['medicals'][row['medical']]['id'] if row['medical'] else None,
                                           start_date=day(row['start']), end_date=day(row['end']), creation_date=moment(row['created']),
                                           group_id=group(row['group']), status_flag=Subscription.ACCEPTED))
-    for row in source['tags'].values():
-        insert(Tags, Tags(tag_id=row['id'], tag_name=row['name'], sport_association_id=row['association']))
-    for label, tags in source['subscription_tags'].items():
-        Subscription.tags.through.objects.bulk_create([Subscription.tags.through(
-            subscription_id=source['subscriptions'][label]['id'], tags_id=source['tags'][tag]['id']) for tag in tags])
     for row in source['courses'].values():
         insert(Course, Course(course_id=row['id'], sport_association_id=row['association'], course_type=row['type'], title=row['title'],
                               deleted=row['deleted'], group_id=group(row['group']), fee=Decimal('50.00')))
