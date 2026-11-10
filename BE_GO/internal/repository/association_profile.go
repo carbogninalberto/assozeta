@@ -16,6 +16,16 @@ func NewAssociationProfiles(db *sqlx.DB) *AssociationProfiles { return &Associat
 var _ domain.AssociationProfileReader = (*AssociationProfiles)(nil)
 
 func (r *AssociationProfiles) AssociationProfile(ctx context.Context, owner string) (domain.AssociationProfileSnapshot, error) {
+	return r.associationProfile(ctx, `a.user_id=$1 AND NOT a.deleted`, owner)
+}
+
+// AssociationProfileByID reads the association a foreign key points to: the
+// related descriptor resolves the row by id.
+func (r *AssociationProfiles) AssociationProfileByID(ctx context.Context, association string) (domain.AssociationProfileSnapshot, error) {
+	return r.associationProfile(ctx, `a.sport_association_id=$1`, association)
+}
+
+func (r *AssociationProfiles) associationProfile(ctx context.Context, where, key string) (domain.AssociationProfileSnapshot, error) {
 	var row domain.AssociationProfileSnapshot
 	owned, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{ReadOnly: true, Isolation: sql.LevelRepeatableRead})
 	if err != nil {
@@ -76,7 +86,7 @@ func (r *AssociationProfiles) AssociationProfile(ctx context.Context, owner stri
  a.show_demand_to_athletes,
  a.user_id,a.reviewed,u.date_joined
  FROM application_sportassociation a JOIN bakney_user u ON u.user_id=a.user_id
- WHERE a.user_id=$1 AND NOT a.deleted`, owner)
+ WHERE `+where, key)
 	if errors.Is(err, sql.ErrNoRows) {
 		return domain.AssociationProfileSnapshot{}, domain.ErrAssociationNotFound
 	}
