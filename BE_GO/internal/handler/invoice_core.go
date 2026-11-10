@@ -73,7 +73,7 @@ func (h *InvoiceCoreHandler) read(c echo.Context, operation, name string, run fu
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
 	body, err := run(request.Context(), service.InvoiceCoreRequest{Identity: *identity, Query: parseReferenceForm(request.URL.RawQuery),
-		GroupHeader: request.Header.Get("X-Group-Id")})
+		GroupHeader: request.Header.Get("X-Group-Id"), Authorization: requestAuthorization(request)})
 	return h.answer(c, body, err)
 }
 

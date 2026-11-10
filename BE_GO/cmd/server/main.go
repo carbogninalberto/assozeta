@@ -750,7 +750,7 @@ func run() (runErr error) {
 	e.Any("/invoice-suppliers/list", invoicePartiesHandler.SupplierList, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-suppliers/add", invoicePartiesHandler.SupplierAdd, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-suppliers/:uid/update", invoicePartiesHandler.SupplierUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
-	invoiceCoreHandler := handler.NewInvoiceCoreHandler(service.NewInvoiceCore(repository.NewInvoiceCore(db), time.Now),
+	invoiceCoreHandler := handler.NewInvoiceCoreHandler(service.NewInvoiceCore(repository.NewInvoiceCore(db), tasks, time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/invoice/list", invoiceCoreHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice/list/archived", invoiceCoreHandler.Archived, middleware.DjangoSessionAudit(sessionAuthentication))
