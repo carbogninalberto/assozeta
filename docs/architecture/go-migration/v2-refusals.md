@@ -176,9 +176,13 @@ Why these stay (v2-subscriptions):
 | POST course-subscriptions/list | export pdf/excel | `course-subscriptions-list.svelte:575-588` | `service/course_subscriptions.go:177` | medium |
 | POST course/list | print pdf (excel is ported) | `course/CourseList.svelte:806-812` | `service/course_list.go:359` | expensive |
 
-Still refused: both "Stampa vista corrente" exports. The `pdf` format (the modal's default) is reportlab's in-process
-`generate_pdf_from_data` (time-stamped, not byte-reproducible); `excel` is portable with `xlsxexport.PandasOpenpyxl` but
-the rows follow the querysets' unordered database order, which needs a deterministic order proof against Django first.
+Still refused: the `pdf` format of both "Stampa vista corrente" exports (the modal's default; reportlab's in-process
+`generate_pdf_from_data`, time-stamped, not byte-reproducible) and the `excel` format of course-subscriptions/list.
+course/list `excel` is ported (course-list.md, "Excel export"). For course-subscriptions/list the rows follow the
+database's order of an unordered four-table statement: a Go port sending the same statement (tables, joins, predicates
+and selected columns) returned one authored three-row listing in another order than Django in the harness, so the order
+is not proven and Go keeps refusing. The port and its 19 authored cases are parked outside the repository until the
+order is characterized.
 
 ### documents / docmanager / document-views
 | Route | Condition | UI call | Go site | Cost |
