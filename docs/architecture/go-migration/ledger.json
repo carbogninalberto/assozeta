@@ -9873,7 +9873,10 @@
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/service/course_subscription_events.go",
         "BE_GO/internal/service/course_subscription_update.go",
-        "BE_GO/internal/service/course_subscriptions.go"
+        "BE_GO/internal/service/course_subscriptions.go",
+        "BE_GO/internal/repository/course_subscriptions_export.go",
+        "BE_GO/internal/service/course_subscriptions_export.go",
+        "BE_GO/internal/xlsxexport/pandas.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, scoped-request guard and audit index",
@@ -9888,7 +9891,12 @@
         "application_payment_attachments",
         "application_paymentcategory",
         "application_subscription",
-        "docmanager_document"
+        "docmanager_document",
+        "application_tags",
+        "application_subscription_tags",
+        "application_carnet",
+        "application_carnetsubscription",
+        "application_sportassociation"
       ],
       "contract": {
         "methods": [
@@ -9920,25 +9928,25 @@
         "docs/architecture/go-migration/course-subscriptions.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 114/114; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-red/results.json",
-          "receipt_sha256": "dddcf139ae7f805f030b2dc3663610290174e12a96b699f26a83a1d29ac6707e"
+          "result": "RED: Django 132/132; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-famwiz-red-r1/results.json",
+          "receipt_sha256": "f9a2bec9688328ecf9f8fa9ed5be7e5a63d8f880f3070433ad5a235bf456aa39"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-green/results.json",
-          "receipt_sha256": "3f36d301cbdc0be5f07df0e5db06749667834b2e7c3d370b416ca3e6a77f62f5"
+          "result": "GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and the workbooks compared part by part, after merging codex/go-backend-parity.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-famwiz-versioned-r1/results.json",
+          "receipt_sha256": "836fdc435183d7a18dddd3403c60f0db736c796c9f16016e7b022221c5feb77f"
         },
         {
-          "revision": "committing change with the instalment label numbered from 0",
-          "result": "Mutation control: fails Go on course-subscriptions-update-events (state.created-unmatched).",
-          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-mutation-rata/results.json",
-          "receipt_sha256": "14225ceec8c8402f419fa923aec03fe3e58f06a1598cb50df8bbb23c3527ee7c"
+          "revision": "committing change with an export filename that keeps the list title instead of the last carnet title",
+          "result": "Mutation control: fails Go on course-subscriptions-list-excel-subscription-carnet-title (response.body:filename).",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-famwiz-mutation-r1/results.json",
+          "receipt_sha256": "a2086ca69bce340c9cfc4634c659d5360e917999cef94432e401d3fb5b6a1972"
         }
       ],
       "notes": [
-        "Implementing: API v2: installment edits through events (dropped installments with paid-payment relabel and pre_delete, new event payments and installments, atomic) and membership payments with a nested invoice or instructor are ported. Still refused: the list export (pdf/excel), events given as an object or string, shared payments among dropped installments, a changed primary key, form JSON fields."
+        "Implementing: API v2: installment edits through events (dropped installments with paid-payment relabel and pre_delete, new event payments and installments, atomic) and membership payments with a nested invoice or instructor are ported. famwiz: the list's excel export is ported (current_view_course_subscription: member and course columns, the subscription's tags, a Carnet column, one column per association tag, the last carnet title in the filename; get_excel_base64 workbook). Its statements have no ORDER BY: Go sends the statements the ORM compiles (LEFT OUTER JOIN on the subscription, INNER JOIN with a subscription_id filter) and the adapter runs VACUUM before and ANALYZE after seeding so every workload reads the same stored layout with the same statistics (the earlier order difference came from re-seeded rows stored in other places, on Django too). Still refused: the list export's pdf format, events given as an object or string, shared payments among dropped installments, a changed primary key, form JSON fields."
       ]
     },
     {
@@ -9967,7 +9975,10 @@
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/service/course_subscription_events.go",
         "BE_GO/internal/service/course_subscription_update.go",
-        "BE_GO/internal/service/course_subscriptions.go"
+        "BE_GO/internal/service/course_subscriptions.go",
+        "BE_GO/internal/repository/course_subscriptions_export.go",
+        "BE_GO/internal/service/course_subscriptions_export.go",
+        "BE_GO/internal/xlsxexport/pandas.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, scoped-request guard and audit index",
@@ -9982,7 +9993,12 @@
         "application_payment_attachments",
         "application_paymentcategory",
         "application_subscription",
-        "docmanager_document"
+        "docmanager_document",
+        "application_tags",
+        "application_subscription_tags",
+        "application_carnet",
+        "application_carnetsubscription",
+        "application_sportassociation"
       ],
       "contract": {
         "methods": [
@@ -10015,25 +10031,25 @@
         "docs/architecture/go-migration/course-subscriptions.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 114/114; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-red/results.json",
-          "receipt_sha256": "dddcf139ae7f805f030b2dc3663610290174e12a96b699f26a83a1d29ac6707e"
+          "result": "RED: Django 132/132; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-famwiz-red-r1/results.json",
+          "receipt_sha256": "f9a2bec9688328ecf9f8fa9ed5be7e5a63d8f880f3070433ad5a235bf456aa39"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-green/results.json",
-          "receipt_sha256": "3f36d301cbdc0be5f07df0e5db06749667834b2e7c3d370b416ca3e6a77f62f5"
+          "result": "GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and the workbooks compared part by part, after merging codex/go-backend-parity.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-famwiz-versioned-r1/results.json",
+          "receipt_sha256": "836fdc435183d7a18dddd3403c60f0db736c796c9f16016e7b022221c5feb77f"
         },
         {
-          "revision": "committing change with the instalment label numbered from 0",
-          "result": "Mutation control: fails Go on course-subscriptions-update-events (state.created-unmatched).",
-          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-mutation-rata/results.json",
-          "receipt_sha256": "14225ceec8c8402f419fa923aec03fe3e58f06a1598cb50df8bbb23c3527ee7c"
+          "revision": "committing change with an export filename that keeps the list title instead of the last carnet title",
+          "result": "Mutation control: fails Go on course-subscriptions-list-excel-subscription-carnet-title (response.body:filename).",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-famwiz-mutation-r1/results.json",
+          "receipt_sha256": "a2086ca69bce340c9cfc4634c659d5360e917999cef94432e401d3fb5b6a1972"
         }
       ],
       "notes": [
-        "Implementing: API v2: installment edits through events (dropped installments with paid-payment relabel and pre_delete, new event payments and installments, atomic) and membership payments with a nested invoice or instructor are ported. Still refused: the list export (pdf/excel), events given as an object or string, shared payments among dropped installments, a changed primary key, form JSON fields."
+        "Implementing: API v2: installment edits through events (dropped installments with paid-payment relabel and pre_delete, new event payments and installments, atomic) and membership payments with a nested invoice or instructor are ported. famwiz: the list's excel export is ported (current_view_course_subscription: member and course columns, the subscription's tags, a Carnet column, one column per association tag, the last carnet title in the filename; get_excel_base64 workbook). Its statements have no ORDER BY: Go sends the statements the ORM compiles (LEFT OUTER JOIN on the subscription, INNER JOIN with a subscription_id filter) and the adapter runs VACUUM before and ANALYZE after seeding so every workload reads the same stored layout with the same statistics (the earlier order difference came from re-seeded rows stored in other places, on Django too). Still refused: the list export's pdf format, events given as an object or string, shared payments among dropped installments, a changed primary key, form JSON fields."
       ]
     },
     {
@@ -10152,7 +10168,10 @@
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/service/course_subscription_events.go",
         "BE_GO/internal/service/course_subscription_update.go",
-        "BE_GO/internal/service/course_subscriptions.go"
+        "BE_GO/internal/service/course_subscriptions.go",
+        "BE_GO/internal/repository/course_subscriptions_export.go",
+        "BE_GO/internal/service/course_subscriptions_export.go",
+        "BE_GO/internal/xlsxexport/pandas.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, scoped-request guard and audit index",
@@ -10167,7 +10186,12 @@
         "application_payment_attachments",
         "application_paymentcategory",
         "application_subscription",
-        "docmanager_document"
+        "docmanager_document",
+        "application_tags",
+        "application_subscription_tags",
+        "application_carnet",
+        "application_carnetsubscription",
+        "application_sportassociation"
       ],
       "contract": {
         "methods": [
@@ -10199,25 +10223,25 @@
         "docs/architecture/go-migration/course-subscriptions.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 114/114; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-red/results.json",
-          "receipt_sha256": "dddcf139ae7f805f030b2dc3663610290174e12a96b699f26a83a1d29ac6707e"
+          "result": "RED: Django 132/132; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-famwiz-red-r1/results.json",
+          "receipt_sha256": "f9a2bec9688328ecf9f8fa9ed5be7e5a63d8f880f3070433ad5a235bf456aa39"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-green/results.json",
-          "receipt_sha256": "3f36d301cbdc0be5f07df0e5db06749667834b2e7c3d370b416ca3e6a77f62f5"
+          "result": "GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and the workbooks compared part by part, after merging codex/go-backend-parity.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-famwiz-versioned-r1/results.json",
+          "receipt_sha256": "836fdc435183d7a18dddd3403c60f0db736c796c9f16016e7b022221c5feb77f"
         },
         {
-          "revision": "committing change with the instalment label numbered from 0",
-          "result": "Mutation control: fails Go on course-subscriptions-update-events (state.created-unmatched).",
-          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-mutation-rata/results.json",
-          "receipt_sha256": "14225ceec8c8402f419fa923aec03fe3e58f06a1598cb50df8bbb23c3527ee7c"
+          "revision": "committing change with an export filename that keeps the list title instead of the last carnet title",
+          "result": "Mutation control: fails Go on course-subscriptions-list-excel-subscription-carnet-title (response.body:filename).",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-famwiz-mutation-r1/results.json",
+          "receipt_sha256": "a2086ca69bce340c9cfc4634c659d5360e917999cef94432e401d3fb5b6a1972"
         }
       ],
       "notes": [
-        "Implementing: API v2: installment edits through events (dropped installments with paid-payment relabel and pre_delete, new event payments and installments, atomic) and membership payments with a nested invoice or instructor are ported. Still refused: the list export (pdf/excel), events given as an object or string, shared payments among dropped installments, a changed primary key, form JSON fields."
+        "Implementing: API v2: installment edits through events (dropped installments with paid-payment relabel and pre_delete, new event payments and installments, atomic) and membership payments with a nested invoice or instructor are ported. famwiz: the list's excel export is ported (current_view_course_subscription: member and course columns, the subscription's tags, a Carnet column, one column per association tag, the last carnet title in the filename; get_excel_base64 workbook). Its statements have no ORDER BY: Go sends the statements the ORM compiles (LEFT OUTER JOIN on the subscription, INNER JOIN with a subscription_id filter) and the adapter runs VACUUM before and ANALYZE after seeding so every workload reads the same stored layout with the same statistics (the earlier order difference came from re-seeded rows stored in other places, on Django too). Still refused: the list export's pdf format, events given as an object or string, shared payments among dropped installments, a changed primary key, form JSON fields."
       ]
     },
     {
@@ -10246,7 +10270,10 @@
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/service/course_subscription_events.go",
         "BE_GO/internal/service/course_subscription_update.go",
-        "BE_GO/internal/service/course_subscriptions.go"
+        "BE_GO/internal/service/course_subscriptions.go",
+        "BE_GO/internal/repository/course_subscriptions_export.go",
+        "BE_GO/internal/service/course_subscriptions_export.go",
+        "BE_GO/internal/xlsxexport/pandas.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, scoped-request guard and audit index",
@@ -10261,7 +10288,12 @@
         "application_payment_attachments",
         "application_paymentcategory",
         "application_subscription",
-        "docmanager_document"
+        "docmanager_document",
+        "application_tags",
+        "application_subscription_tags",
+        "application_carnet",
+        "application_carnetsubscription",
+        "application_sportassociation"
       ],
       "contract": {
         "methods": [
@@ -10276,9 +10308,9 @@
           "/api/v2/course-subscriptions/list",
           "/api/course-subscriptions/list"
         ],
-        "request": "Optional query course_id and subscription_id (UUIDs; a blank or malformed value is a 500) and include_deleted ('true', any case). POST body {'format': ...} for the export.",
-        "response": "200 {'data': [course subscription]} unordered, with nested subscription, medical_label, installments, membership_payments and carnets; OPTIONS describes the serializer under actions.POST.",
-        "errors": "401; 403 registry / scoped session / athletes ('User is not a sport association'); 500 no association, malformed filter, DELETE without pk, export with an unknown or missing format (pdf/excel not ported, refused with 500).",
+        "request": "Optional query course_id and subscription_id (UUIDs; a blank or malformed value is a 500) and include_deleted ('true', any case). POST body {'format': 'excel' | 'pdf'} (JSON or form) for the export of the same queryset.",
+        "response": "200 {'data': [course subscription]} unordered, with nested subscription, medical_label, installments, membership_payments and carnets; OPTIONS describes the serializer under actions.POST. POST excel: 200 {'file': base64 xlsx, 'filename': '[DD/MM/YYYY] <last carnet title or Iscrizioni ai corsi> - <denomination>.xlsx'} with the rows in the database's order.",
+        "errors": "401; 403 registry / scoped session / athletes ('User is not a sport association'); 500 no association, malformed filter, DELETE without pk, export with an unknown or missing format, a body that is not an object, a listed row without subscription, associate or birth date; 400 for a body DRF cannot parse (after the filters); 500 pdf (not ported).",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.courses.read.",
         "resource_scope": "The owner's association rows through get_queryset (course__sport_association, soft-delete manager or all_objects() for include_deleted / the delete action); scoped sessions add scoped_queryset's subscription and course boundary on update and bulk-delete; installments and membership payments are group-aware (X-Group-Id).",
@@ -10296,25 +10328,25 @@
         "docs/architecture/go-migration/course-subscriptions.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 114/114; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-red/results.json",
-          "receipt_sha256": "dddcf139ae7f805f030b2dc3663610290174e12a96b699f26a83a1d29ac6707e"
+          "result": "RED: Django 132/132; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-famwiz-red-r1/results.json",
+          "receipt_sha256": "f9a2bec9688328ecf9f8fa9ed5be7e5a63d8f880f3070433ad5a235bf456aa39"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-green/results.json",
-          "receipt_sha256": "3f36d301cbdc0be5f07df0e5db06749667834b2e7c3d370b416ca3e6a77f62f5"
+          "result": "GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and the workbooks compared part by part, after merging codex/go-backend-parity.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-famwiz-versioned-r1/results.json",
+          "receipt_sha256": "836fdc435183d7a18dddd3403c60f0db736c796c9f16016e7b022221c5feb77f"
         },
         {
-          "revision": "committing change with the instalment label numbered from 0",
-          "result": "Mutation control: fails Go on course-subscriptions-update-events (state.created-unmatched).",
-          "artifact": "quality-reports/go-migration/course-subscriptions-http-v2c-mutation-rata/results.json",
-          "receipt_sha256": "14225ceec8c8402f419fa923aec03fe3e58f06a1598cb50df8bbb23c3527ee7c"
+          "revision": "committing change with an export filename that keeps the list title instead of the last carnet title",
+          "result": "Mutation control: fails Go on course-subscriptions-list-excel-subscription-carnet-title (response.body:filename).",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-famwiz-mutation-r1/results.json",
+          "receipt_sha256": "a2086ca69bce340c9cfc4634c659d5360e917999cef94432e401d3fb5b6a1972"
         }
       ],
       "notes": [
-        "Implementing: API v2: installment edits through events (dropped installments with paid-payment relabel and pre_delete, new event payments and installments, atomic) and membership payments with a nested invoice or instructor are ported. Still refused: the list export (pdf/excel), events given as an object or string, shared payments among dropped installments, a changed primary key, form JSON fields."
+        "Implementing: API v2: installment edits through events (dropped installments with paid-payment relabel and pre_delete, new event payments and installments, atomic) and membership payments with a nested invoice or instructor are ported. famwiz: the list's excel export is ported (current_view_course_subscription: member and course columns, the subscription's tags, a Carnet column, one column per association tag, the last carnet title in the filename; get_excel_base64 workbook). Its statements have no ORDER BY: Go sends the statements the ORM compiles (LEFT OUTER JOIN on the subscription, INNER JOIN with a subscription_id filter) and the adapter runs VACUUM before and ANALYZE after seeding so every workload reads the same stored layout with the same statistics (the earlier order difference came from re-seeded rows stored in other places, on Django too). Still refused: the list export's pdf format, events given as an object or string, shared payments among dropped installments, a changed primary key, form JSON fields."
       ]
     },
     {
@@ -26555,7 +26587,8 @@
         "BE_GO/internal/service/subscription_create_python.go",
         "BE_GO/internal/service/subscription_create_family.go",
         "BE_GO/internal/repository/payment_state.go",
-        "BE_GO/internal/dto/payment_state.go"
+        "BE_GO/internal/dto/payment_state.go",
+        "BE_GO/internal/service/subscription_create_renewal.go"
       ],
       "dependencies": [
         "subscription-renew",
@@ -26571,13 +26604,13 @@
           "/api/v2/subscription/add",
           "/api/subscription/add"
         ],
-        "request": "POST JSON {new_user_account, associate_data, associate_tutor_data, signature[, medical_certificate, custom_data, additional_fields, plan_id, membership_plan_id]}; ?m=only_associate quick mode. Anonymous or athlete: sport_association (the association user's username); preregistration: true for the next season. Family wizard: is_family_wizard: true, type, multiple_entry_form_data [{valid, associate_data, custom_data, ...}]. Quick mode from a member account: {sport_association: association id, associate}.",
-        "response": "{status: success, payment_id, amount (float or 0)}; quick mode {status: success, payment_id}. Family wizard: {status: success, subs: [], payments: [PaymentSerializer]}.",
-        "errors": "400 {msg: validation errors.}; 400 serializer errors (associate fields, born_date DD/MM/YYYY, signature data); 400 {msg, code: '400'} membership plan; 403 registry / admin session / 'Seleziona la tua associazione.' / 'User is not a sport association'; 405; 409 {msg, code: '409', ref: subscription_duplicate}; 500 non-dict body, born date, medical_certificate null, int() errors, no association; 500 refused inputs (not ported). 400 {msg: Firma non valida., code: 400, ref: invalid_signature}; 503 signature_storage; 400 new member field errors. 403 'User not allowed.' (quick mode on another association's member or without a session; an association naming another one); 500 anonymous without sport_association or with an unknown username. Family wizard: 500 for a missing or non-list multiple_entry_form_data, an entry that is not an object or lacks valid, a valid entry without data.sport_association or with associate_data/custom_data that is not an object (all rolled back); an entry's own 400/403/409; 500 after the commit when a payment was created by the request; 500 type grouped_subscriptions (not ported). Quick mode from a member account: 500 unknown or malformed association or associate, else 403 'User not allowed.'.",
+        "request": "POST JSON {new_user_account, associate_data, associate_tutor_data, signature[, medical_certificate, custom_data, additional_fields, plan_id, membership_plan_id]}; ?m=only_associate quick mode. Anonymous or athlete: sport_association (the association user's username); preregistration: true for the next season, with subscription_id to renew that subscription (the person, certificate, custom data, role and number are then the renewed subscription's; associate_data.type is kept). Family wizard: is_family_wizard: true, type (family or grouped_subscriptions), multiple_entry_form_data [{valid, associate_data, custom_data, ...}]. Quick mode from a member account: {sport_association: association id, associate}.",
+        "response": "{status: success, payment_id, amount (float or 0)}; quick mode {status: success, payment_id}. Family wizard: {status: success, subs: [], payments: [PaymentSerializer of each entry's stored payment, in entry order]}.",
+        "errors": "400 {msg: validation errors.}; 400 serializer errors (associate fields, born_date DD/MM/YYYY, signature data); 400 {msg, code: '400'} membership plan; 403 registry / admin session / 'Seleziona la tua associazione.' / 'User is not a sport association'; 405; 409 {msg, code: '409', ref: subscription_duplicate}; 500 non-dict body, born date, medical_certificate null, int() errors, no association; 500 refused inputs (not ported). 400 {msg: Firma non valida., code: 400, ref: invalid_signature}; 503 signature_storage; 400 new member field errors. 403 'User not allowed.' (quick mode on another association's member or without a session; an association naming another one); 500 anonymous without sport_association or with an unknown username. Family wizard: 500 for a missing or non-list multiple_entry_form_data, an entry that is not an object or lacks valid, a valid entry without data.sport_association or with associate_data/custom_data that is not an object (all rolled back); an entry's own 400/403/409; 500 type grouped_subscriptions when the account's matching custom data is not an object. Renewing preregistration: 400 {msg: 'Iscrizione da rinnovare non trovata.', code: '400'} without a requester, for an unknown or malformed id, a subscription of another association or one the requester may not renew; 403 'User is not a sport association' for an athlete without sport_association; 500 without associate_data.type or for a stored number that is not an integer; 409 when the next season's subscription exists. Quick mode from a member account: 500 unknown or malformed association or associate, else 403 'User not allowed.'.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "AllowAny view (anonymous requests are attributed to the named user); registry association.members.create; collaborators act as the owner.",
-        "resource_scope": "request.user.sport_association (exactly one live association) or, for athletes, the association of the named username; associates by tax code within it; the quick mode's associate must belong to it; certificates by id. The certificate by id only when it belongs to the association account or the requester, to a subscription of the association, or has no account and no subscription of another association.",
-        "side_effects": "Associate/tutor/relation, certificate owner, payment, subscription, membership rows with audit entries; after commit check_workflows_trigger(new_subscription) and print_document_subscription Celery messages, notification broadcast rows, Redis DB 0 list, user_broadcasts cache, Channels notification_push and mirrored envelope. Quick mode: a payment (always), the subscription (not signed, number 0, no membership), the same on_commit work. Signature row and the stored signature object (update entry); a new member user (create and username update entries) with the send_mail_async welcome e-mail on commit; send_email_template to the owner for an athlete user. Family wizard: a Family row (create entry) and, per valid entry, the single registration's rows, entries, tasks and notification.",
+        "resource_scope": "request.user.sport_association (exactly one live association) or, for athletes, the association of the named username; associates by tax code within it; the quick mode's associate must belong to it; certificates by id. The certificate by id only when it belongs to the association account or the requester, to a subscription of the association, or has no account and no subscription of another association. A renewing preregistration reads the subscription by id within the association of the registration, for that association's account or the subscription's account. The grouped wizard reads the requesting account's own subscriptions.",
+        "side_effects": "Associate/tutor/relation, certificate owner, payment, subscription, membership rows with audit entries; after commit check_workflows_trigger(new_subscription) and print_document_subscription Celery messages, notification broadcast rows, Redis DB 0 list, user_broadcasts cache, Channels notification_push and mirrored envelope. Quick mode: a payment (always), the subscription (not signed, number 0, no membership), the same on_commit work. Signature row and the stored signature object (update entry); a new member user (create and username update entries) with the send_mail_async welcome e-mail on commit; send_email_template to the owner for an athlete user. Family wizard: a Family row (create entry) and, per valid entry, the single registration's rows, entries, tasks and notification. A renewing preregistration updates the renewed associate by key, re-assigns the certificate's date and account, and creates the payment and the next season's subscription (owned by the renewed subscription's account) and membership. The grouped wizard stores the Family with type grouped_subscriptions and the merged custom data.",
         "transaction": "One atomic transaction; on_commit callbacks after it, failures logged. Family wizard: one transaction for the Family and every entry; the answer is built after the commit.",
         "execution_owner": "django"
       },
@@ -26591,25 +26624,25 @@
         "docs/architecture/go-migration/subscription-create.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 113/113; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/subscription-create-http-v2wiz-red-r1/results.json",
-          "receipt_sha256": "4f0d2a9bbfce8bb599370ce3133eb72a0796f0c3ad1fc31c9be022caed5847aa"
+          "result": "RED: Django 127/127; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-create-http-famwiz-red-r5/results.json",
+          "receipt_sha256": "81b079c5e8c2a7c706f0e910aa7d127e5fe749a11dd490cdc7bf6495245d6a81"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 113/113 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
-          "artifact": "quality-reports/go-migration/subscription-create-http-v2wiz-versioned-r1/results.json",
-          "receipt_sha256": "82c224600deac1277c401fd426f81efc1eedd85630e92ca7486548726ad0203f"
+          "result": "GREEN: 127/127 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity.",
+          "artifact": "quality-reports/go-migration/subscription-create-http-famwiz-versioned-r2/results.json",
+          "receipt_sha256": "e0d9661f74a46d962e86bd2021260159731baa1c423784e844649649c7598558"
         },
         {
-          "revision": "committing change serializing a payment created by the family wizard as stored instead of answering the 500 page",
-          "result": "Mutation control: fails Go on subscription-create-family-wizard (response.status 200).",
-          "artifact": "quality-reports/go-migration/subscription-create-http-v2wiz-mutation-r1/results.json",
-          "receipt_sha256": "1349fdff0ddaa050899588fe19550ffc19cd0c1d063ff54f780b762f21f12cc8"
+          "revision": "committing change reading the grouped wizard's merged cap from the stored cap key instead of zip",
+          "result": "Mutation control: fails Go on subscription-create-family-wizard-grouped (state.row:subscription custom_data).",
+          "artifact": "quality-reports/go-migration/subscription-create-http-famwiz-mutation-r3/results.json",
+          "receipt_sha256": "799440d33d578a374f1eec964b1a54200f02af2a12caa2a994385b9507ff876f"
         }
       ],
       "notes": [
-        "Implementing: subscription/add for authenticated owners and collaborators: create_subscription (associate get_or_create, minor tutor, certificate owner, fees and plans, payment reuse/create, numbering, subscription, membership) in one transaction, then check_workflows_trigger and print_document_subscription Celery messages and the notification (broadcast rows, Redis store, user_broadcasts cache, Channels group_send written by Go plus the mirrored envelope). The family mode, the renewing preregistration, certificate expirations, type_of_associate filters, associate_id updates, form bodies and X-Group-Id are refused with a 500 before anything is committed. See docs/architecture/go-migration/subscription-create.md. API v2: the owner wizard's medical certificate date (today default, unparseable, uploaded certificate expiration) is ported. v2-sub-create: the quick re-subscription (m=only_associate), an owner's sport_association, signature uploads (shared with subscription/sign) and new member accounts with the welcome e-mail are ported. Own records: the quick re-subscription only uses the association's own members and an association account only names its own association (403 User not allowed.). v2-public-forms: the anonymous form (attributed to the user sport_association names, no actor), a logged-in athlete naming an association and preregistration: true without a subscription to renew (next season) are ported; the family wizard and the preregistration that renews a subscription stay refused. secsub2: the certificate named by medical_id is linked when it belongs to the association account or the requester, to a subscription of the association, or is an upload without an account and without a subscription of another association; any other id is treated like an unknown one (RED secsub2-red-r2, mutation secsub2-mutation-r1). v2-wizard: the family wizard (one Family, a subscription per valid entry, PaymentSerializer of the reused payments; with a payment created by the request the answer is the 500 page after the commit, as in Django) and the quick mode from a member account (both lookups, then 403) are ported; the family cases are checked with the renewal runner's row, audit and notification checks. type: grouped_subscriptions and the preregistration that renews a subscription stay refused."
+        "Implementing: subscription/add for authenticated owners and collaborators: create_subscription (associate get_or_create, minor tutor, certificate owner, fees and plans, payment reuse/create, numbering, subscription, membership) in one transaction, then check_workflows_trigger and print_document_subscription Celery messages and the notification (broadcast rows, Redis store, user_broadcasts cache, Channels group_send written by Go plus the mirrored envelope). The family mode, the renewing preregistration, certificate expirations, type_of_associate filters, associate_id updates, form bodies and X-Group-Id are refused with a 500 before anything is committed. See docs/architecture/go-migration/subscription-create.md. API v2: the owner wizard's medical certificate date (today default, unparseable, uploaded certificate expiration) is ported. v2-sub-create: the quick re-subscription (m=only_associate), an owner's sport_association, signature uploads (shared with subscription/sign) and new member accounts with the welcome e-mail are ported. Own records: the quick re-subscription only uses the association's own members and an association account only names its own association (403 User not allowed.). v2-public-forms: the anonymous form (attributed to the user sport_association names, no actor), a logged-in athlete naming an association and preregistration: true without a subscription to renew (next season) are ported; the family wizard and the preregistration that renews a subscription stay refused. secsub2: the certificate named by medical_id is linked when it belongs to the association account or the requester, to a subscription of the association, or is an upload without an account and without a subscription of another association; any other id is treated like an unknown one (RED secsub2-red-r2, mutation secsub2-mutation-r1). v2-wizard: the family wizard (one Family, a subscription per valid entry, PaymentSerializer of the entries' payments) and the quick mode from a member account (both lookups, then 403) are ported; the family cases are checked with the renewal runner's row, audit and notification checks. famwiz: Django reads the family wizard's payments again before listing them (it answered the 500 page after the commit when the request created a payment; BE/application/tests/test_family_wizard_response.py) and Go renders every payment from its row (RED famwiz-red-r1, GREEN famwiz-versioned-r1, mutation famwiz-mutation-r1: payments in reverse entry order). A preregistration that renews a subscription is ported: the request takes the renewed subscription's person (by associate_id), certificate, custom data, additional fields, role and number, keeps its own type, and the new subscription stays with the renewed one's account; the requester must be the association's account or the subscription's account (RED famwiz-red-r4, mutation famwiz-mutation-r2: requester not compared). The family wizard with type grouped_subscriptions is ported: the club data of the account's latest subscription whose custom data text contains asd-o-ssd or scuola-asc is merged over every entry's custom data. Still refused in a renewing preregistration: a renewed member with a tutor, a sport_association or subscription_id that is not a string."
       ]
     },
     {
