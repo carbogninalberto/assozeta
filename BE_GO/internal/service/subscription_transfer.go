@@ -11,6 +11,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/djangoauth"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/emailrender"
@@ -149,7 +150,7 @@ func transferEmail(value any) (string, bool) {
 	if at < 0 {
 		return text, true
 	}
-	return stripped[:at] + "@" + strings.ToLower(stripped[at+1:]), true
+	return stripped[:at] + "@" + djangoauth.PythonLower(stripped[at+1:]), true
 }
 
 func asciiText(text string) bool {
@@ -223,15 +224,6 @@ func (s *SubscriptionTransfers) refused(ctx context.Context, identity domain.Res
 	first, last := transferNames(*associate, tutor)
 	if first == nil || last == nil {
 		return false, nil
-	}
-	// str.upper() / NFKC of the username prefix, str.lower() of the e-mail domain.
-	if !asciiText(pythonPrefix(*first, 3) + pythonPrefix(*last, 3)) {
-		return true, nil
-	}
-	if text, isText := email.(string); isText {
-		if stripped := dto.PythonStrip(text); strings.Contains(stripped, "@") && !asciiText(stripped[strings.LastIndex(stripped, "@")+1:]) {
-			return true, nil
-		}
 	}
 	return !row.DatesSet && identity.ScopeUser.Role != domain.RoleAthlete, nil
 }
@@ -391,11 +383,8 @@ func (s *SubscriptionTransfers) createAccount(ctx context.Context, identity doma
 	if err != nil {
 		return "", err
 	}
-	prefix := pythonPrefix(*first, 3) + pythonPrefix(*last, 3)
-	if !asciiText(prefix) {
-		return "", ErrSubscriptionTransferNotPorted
-	}
-	username := strings.ToUpper(prefix + suffix)
+	// str(username).upper(), then create_user's normalize_username (NFKC).
+	username := djangoauth.NormalizeUsername(djangoauth.PythonUpper(pythonPrefix(*first, 3) + pythonPrefix(*last, 3) + suffix))
 	address, ok := transferEmail(email)
 	if !ok {
 		return "", ErrSubscriptionTransferFailed

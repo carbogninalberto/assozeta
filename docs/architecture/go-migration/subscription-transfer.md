@@ -49,13 +49,14 @@ every statement and `save()` commits on its own. In Django's order:
 
 Refused with the 500 page before the first write (the expiry update), decided read-only with the same lookups:
 - a subscription with an empty `start_date` or `end_date` when the request would reach `Subscription.save()` (it fills them from
-  the owner's season settings);
-- the e-mail branch when the first three characters of the tutor's/associate's first or last name are not ASCII (Python's
-  `str.upper()` special casing and the username's NFKC normalization), or when the e-mail's domain is not ASCII (`str.lower()`).
+  the owner's season settings).
+
+Names and e-mail domains outside ASCII are ported: the username is `str.upper()` with Python's full case mapping (`ß` becomes
+`SS`) followed by `normalize_username`'s NFKC (`Ǆ` becomes `DŽ`), and the domain is `str.lower()` (`İ` becomes `i` + U+0307).
 
 ## Evidence
 
-`TESTS/fixtures/subscription_transfer_http.json` (29 cases, `TESTS/fixtures/generate_subscription_transfer_http.py`), contract
+`TESTS/fixtures/subscription_transfer_http.json` (31 cases, `TESTS/fixtures/generate_subscription_transfer_http.py`), contract
 `TESTS/contracts/test_subscription_transfer_http.py`, adapter `TESTS/adapters/django/subscription_transfer_http.py`. Every case
 checks the complete model state (transfers with the expiry rule, the new transfer bound to the response's token and expiry,
 subscription/associate/tutor users, relations, new accounts with their defaults and a password of the default hasher that matches
@@ -66,5 +67,8 @@ The welcome template is also pinned byte for byte by `go test ./internal/emailre
 
 - RED (`red-r2`, route unregistered): Django 29/29; Go 404 on the first case.
 - GREEN (`versioned-r1`): 29/29 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Non-ASCII names (`v2sub-*`, 31 cases): RED `v2sub-red-r1` (Django 31/31, Go 500 on
+  `subscription-transfer-email-new-account-accented-names`); GREEN `v2sub-versioned-r1` 31/31 on the four transports; mutation
+  `v2sub-mutation-r1` (no NFKC on the username) fails `subscription-transfer-email-new-account-expanding-names` (CAUGHT).
 - Mutation (`mutation-r1`): expiring only PENDING transfers (`AND status=1` in the expiry update) fails `subscription-transfer-pending-transfer` (CAUGHT).
 - `subscription-create` (38/38), `websockets` (75/75), `email-render-routes` (82/82) and `oauth-accounts` (109/109) re-run green after the notifier split and the new template (`Send` = store + push; `Deliver` swallows push errors).

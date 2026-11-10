@@ -36,6 +36,14 @@ Cross-cutting facts used for the classes:
 
 Details in `statistic-reads.md`.
 
+### Ported in the v2-subscriptions change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2sub-*`; each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| subscription-transfer | `POST subscription/<uid>/transfer` (e-mail branch) | tutor/associate names starting with non-ASCII letters; non-ASCII e-mail domain | 31 cases; RED `v2sub-red-r1` Django 31/31, Go 500; GREEN `v2sub-versioned-r1` 4 transports 31/31; mutation `v2sub-mutation-r1` (no NFKC) CAUGHT |
+
 ## Remaining A items, per family
 
 UI paths under `UI/src/`, Go under `BE_GO/internal/`. Cost: cheap (hours), medium (a family change with new
@@ -76,7 +84,6 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 | POST subscription/<uid>/delete | signed subscription (storage key) | `MembersList.svelte:1637` | `service/subscription_lifecycle.go:378` | cheap-medium |
 | POST subscription/<uid>/delete | related rows (appointments, carnets, memberships, transfers, files, tokens, sold products, camps) | same | `service/subscription_lifecycle.go:385` | expensive |
 | POST subscription/<uid>/delete | unpaid invoiced payment | same | `service/subscription_lifecycle.go:408` | medium |
-| POST subscription/<uid>/transfer | e-mail transfer, names starting with non-ASCII letters | `MembersList.svelte:1405-1411` | `service/subscription_transfer.go:261,396` | cheap-medium |
 | POST .../medical-certificate/set-certificate-expiration | member without a certificate | `Members/detail/sections/modals/AddMedicalCertificate.svelte:51` | `service/subscription_medical.go:389` | medium |
 | POST subscription/renew | athlete session | `activities/subscription/partials/subscription-element.svelte:231` | `service/subscription_renew.go:53` | medium |
 | POST subscription/renew | member with courses (pre-filled) | `Members/modals/RenewalModal.svelte:58` | `service/subscription_renew.go:96` | medium-expensive |
@@ -826,8 +833,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/<uid>/transfer | recipient branch on a subscription with empty `start_date`/`end_date` | `service/subscription_transfer.go:209` → `:261`, `ErrSubscriptionTransferNotPorted` | B | `Subscription.save()` fills the dates, so only rows never re-saved, or associations without season settings, have them empty. legacy: yes. cheap (season defaults are already ported elsewhere) |
-| same | e-mail branch when the first 3 chars of the tutor's (else the associate's) first or last name are non-ASCII | `:226+` → `:261`; also `:396` | **A** | UI sends `{recipient, email}` (`MembersList.svelte:1405-1411`, `MembersBook.svelte:1159`). When the e-mail has no account, `recipient` is undefined and the e-mail branch runs. Names come from the member forms, which accept any Unicode (e.g. `Émile`, `Çelik`, `Šimić`, `Ángel`) |
-| same | e-mail domain non-ASCII | same | B | IDN e-mail domains. legacy: no. cheap |
+| same | e-mail branch when the first 3 chars of the tutor's (else the associate's) first or last name are non-ASCII | `:226+` → `:261`; also `:396` | **ported** (v2-subscriptions) | UI sends `{recipient, email}` (`MembersList.svelte:1405-1411`, `MembersBook.svelte:1159`). When the e-mail has no account, `recipient` is undefined and the e-mail branch runs. Names come from the member forms, which accept any Unicode (e.g. `Émile`, `Çelik`, `Šimić`, `Ángel`) |
+| same | e-mail domain non-ASCII | same | **ported** (v2-subscriptions) | IDN e-mail domains. legacy: no. cheap |
 
 ### subscription-approve.md
 | route | refusal condition | Go site | class | notes |
