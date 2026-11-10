@@ -120,7 +120,12 @@ func TestInvoiceGenerateLocksBeforeNumberingAndPublishesAfterCommit(t *testing.T
 func TestInvoiceFees(t *testing.T) {
 	categories := `[{"amount": 10.5}, {"amount": 0}, {"amount": "2"}]`
 	fees, err := invoiceFees(1, domain.InvoiceGeneratePayment{Amount: "30.00", MetaPaymentCategories: &categories})
-	if err != nil || fees.membership != (invoiceFee{"17.5", "1.75000000e+01", "17.50"}) || fees.activity.memory != "12.5" {
+	if err != nil || fees.membership != (invoiceFee{memory: "17.5", stored: "1.75000000e+01", rendered: "17.50", column: "17.50"}) || fees.activity.memory != "12.5" {
+		t.Fatalf("%+v %v", fees, err)
+	}
+	tied := `[{"amount": "0.125"}]`
+	if fees, err = invoiceFeesAny(1, domain.InvoiceGeneratePayment{Amount: "10.00", MetaPaymentCategories: &tied}); err != nil ||
+		fees.activity.column != "0.13" || fees.activity.rendered != "0.12" || fees.membership.column != "9.88" || !fees.activity.tie {
 		t.Fatalf("%+v %v", fees, err)
 	}
 	small := `[{"amount": 0.1}]`

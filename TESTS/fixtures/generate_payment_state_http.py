@@ -145,6 +145,13 @@ PAYMENTS = {
     'pf_scoped': payment(amount='22.00', associate=True, linked=True),
     'pf_bad_meta': payment(subject=1, amount='23.00', associate=True, meta_categories=[{'amount': 'abc'}]),
     'pf_carnet_null': payment(amount='24.00', associate=True),
+    # Rare inputs: another spelling of the group header, fees that round on a tie, meta names that are not text.
+    'pf_group_spelling': payment(amount='19.50', associate=True, group='own_group'),
+    'pf_tie': payment(subject=1, amount='10.00', associate=True, meta_categories=[{'name': 'Corso', 'amount': '0.125'}]),
+    'pf_name_float': payment(subject=1, amount='26.00', associate=True, meta={'subscription_data': {'name': 1.5}}),
+    'pf_name_list': payment(subject=1, amount='27.00', associate=True,
+                            meta={'subscription_data': {'name': ['Agonisti', {'anno': None, 'ok': True}, 2]}}),
+    'pf_name_dict': payment(subject=1, amount='28.00', associate=True, meta={'subscription_data': {'name': {'it': "l'anno \"2026\""}}}),
 }
 SUPPLIER_INVOICES = {
     'si_approve': {'id': next(ids), 'payment': 'ap_supplier', 'identifier': 'FT-1', 'amount': '30.00'},
@@ -503,8 +510,22 @@ def drf(value):
     return str(Decimal(repr(float(value))).quantize(Decimal('0.01'), rounding=ROUND_HALF_EVEN))
 
 
+def column(value):
+    """A float fee as the numeric(9, 2) column keeps it: nine significant digits, then rounded half away from zero."""
+    from decimal import Context, Decimal, ROUND_HALF_UP
+    return str(Context(prec=9).create_decimal_from_float(float(value)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
+
+
+def stored_fees(row):
+    """(membership, activity) as stored: the float fees of a subscription payment are rounded by the column."""
+    if row['subject'] != 1:
+        return '0.00', row['amount']
+    (membership, _), (activity, _) = paid_fees(row)
+    return (column(membership) if float(row['amount']) > 0 else row['amount']), column(activity)
+
+
 def paid_fees(row):
-    """((membership str(), stored), (activity str(), stored)) of the approve view."""
+    """((membership str(), rendered), (activity str(), rendered)) of the approve view."""
     amount = row['amount']
     if row['subject'] == 1:
         activity = 0.0
@@ -523,12 +544,16 @@ def person_name(row):
 
 
 def paid_flow(name, label, *, description, notified, actor='owner', body=None, raw_body=None, content_type=None, headers=None, sent=None,
-              number_key='year', generate=True, receipt=False, broadcast=False, courses=(), supplier_invoice=None, group=None):
+              number_key='year', generate=True, receipt=False, broadcast=False, courses=(), supplier_invoice=None, group=None,
+              group_sent=None):
+    """group_sent: the X-Group-Id text as sent (the new invoice keeps it in memory; the column stores the uuid)."""
     row = STATE[label]
     association = row['association']
     flag = association == FLAG['association']
     payment_date = sent or row['payment_date'] or '$now'
     (membership_audit, membership), (activity_audit, activity) = paid_fees(row)
+    membership_stored, activity_stored = stored_fees(row)
+    group_memory = group_sent or (IDS[group] if group else None)
     creates = bool(row['associate'] or row['supplier'])
     audit, invoice, stored = [], None, None
     if creates:
@@ -544,24 +569,28 @@ def paid_flow(name, label, *, description, notified, actor='owner', body=None, r
         invoice = {'invoice_id': '$invoice', 'document_token': None, 'creation_date': created, 'membership_fee': membership,
                    'activity_fee': activity, 'meta_payment_categories': meta, 'description': description, 'number': number, 'archived': False,
                    'cancelled': False, 'meta': None, 'imported_from_associami': False, 'deleted': False, 'document_pdf': None,
-                   'sport_association': association, 'selected_tutor': None, 'group': IDS[group] if group else None, 'attached_documents': []}
+                   'sport_association': association, 'selected_tutor': None, 'group': group_memory, 'attached_documents': []}
         create = {'invoice_id': ['None', '$invoice'], 'document_pdf': ['None', 'None'], 'sport_association': ['None', association],
                   'creation_date': ['None', '$now'], 'membership_fee': ['None', membership_audit], 'activity_fee': ['None', activity_audit],
                   'meta_payment_categories': ['None', json.dumps(meta, sort_keys=True)],
                   'description': ['None', description], 'number': ['None', str(number)], 'archived': ['None', 'False'],
                   'cancelled': ['None', 'False'], 'selected_tutor': ['None', 'None'], 'meta': ['None', 'null'],
-                  'imported_from_associami': ['None', 'False'], 'group': ['None', IDS[group] if group else 'None'], 'deleted': ['None', 'False']}
+                  'imported_from_associami': ['None', 'False'], 'group': ['None', group_memory or 'None'], 'deleted': ['None', 'False']}
         audit.append({'model': 'invoice', 'label': '$invoice', 'action': 0, 'changes': create, 'index': [association, 'direct']})
         update = {}
         if flag:
             update['creation_date'] = ['$now', audit_moment(payment_date)]
-        if membership != membership_audit:
-            update['membership_fee'] = [membership, membership_audit]
-        if activity != activity_audit:
-            update['activity_fee'] = [activity, activity_audit]
+        if group and group_memory != IDS[group]:
+            # The re-save compares the stored uuid with the text the instance still holds.
+            update['group'] = [IDS[group], group_memory]
+        if membership_stored != membership_audit:
+            update['membership_fee'] = [membership_stored, membership_audit]
+        if activity_stored != activity_audit:
+            update['activity_fee'] = [activity_stored, activity_audit]
         if update:
             audit.append({'model': 'invoice', 'label': '$invoice', 'action': 1, 'changes': update, 'index': [association, 'direct']})
-        stored = {'sport_association_id': association, 'creation_date': created, 'membership_fee': membership, 'activity_fee': activity,
+        stored = {'sport_association_id': association, 'creation_date': created, 'membership_fee': membership_stored,
+                  'activity_fee': activity_stored,
                   'meta_payment_categories': meta, 'description': description, 'number': number, 'group_id': IDS[group] if group else None}
     columns = {'paid': True, 'payment_date': payment_date}
     if creates:
@@ -637,6 +666,26 @@ paid_flow('approve-paid-flow-flag-owner-invoice-date', 'pf_flag', actor='flag_ow
           notified='Quota flag', sent='2021-03-04T00:00:00Z', number_key='flag', broadcast=True, body={'payment_date': '2021-03-04'})
 paid_flow('approve-paid-flow-scoped-session', 'pf_scoped', headers=OWNER_FULL, description=course_text(COURSE['title']),
           notified=f'il corso "{COURSE["title"]}"', courses=['cs_pf_scoped'])
+# The header is read as a uuid in any spelling the uuid module accepts; the new invoice renders it as sent.
+paid_flow('approve-paid-flow-group-upper-case', 'pf_group_spelling', headers={'X-Group-Id': IDS['own_group'].upper()}, number_key='group',
+          group='own_group', group_sent=IDS['own_group'].upper(), description='Quota', notified='il corso')
+
+
+def subscription_text(name=''):
+    return (f"Ricevuta di pagamento per l'iscrizione {escape(name)}di <b>{escape(person_name({'associate': True}))}</b> all'associazione "
+            f"<b>{escape(DENOMINATION)}</b>.")
+
+
+# 9.875 and 0.125 are exact floats: the column rounds them away from zero, the response to the even cent.
+paid_flow('approve-paid-flow-fee-tie', 'pf_tie', notified="l'iscrizione all'associazione sportiva", description=subscription_text())
+assert stored_fees(STATE['pf_tie']) == ('9.88', '0.13') and paid_fees(STATE['pf_tie'])[1] == ('0.125', '0.12')
+# meta.subscription_data.name is formatted with str(): floats, lists and dicts as Python writes them.
+paid_flow('approve-paid-flow-meta-name-float', 'pf_name_float', notified="l'iscrizione all'associazione sportiva",
+          description=subscription_text('(1.5) '))
+paid_flow('approve-paid-flow-meta-name-list', 'pf_name_list', notified="l'iscrizione all'associazione sportiva",
+          description=subscription_text("(['Agonisti', {'ok': True, 'anno': None}, 2]) "))
+paid_flow('approve-paid-flow-meta-name-dict', 'pf_name_dict', notified="l'iscrizione all'associazione sportiva",
+          description=subscription_text('''({'it': 'l\\'anno "2026"'}) '''))
 # float(str('abc')) raises before any write; a carnet subscription without a carnet fails in the description: rolled back.
 add('approve-paid-flow-bad-meta-amount-server-error', 'owner', APPROVE('pf_bad_meta'), 500, SERVER)
 add('approve-paid-flow-carnet-without-carnet-server-error', 'owner', APPROVE('pf_carnet_null'), 500, SERVER)

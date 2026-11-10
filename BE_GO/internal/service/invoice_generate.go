@@ -22,10 +22,12 @@ const invoicePublishTimeout = 10 * time.Second
 
 // InvoiceGenerations ports payment_generate_invoice.
 type InvoiceGenerations struct {
-	store     domain.InvoiceGenerateStore
-	publisher celery.Publisher
-	now       func() time.Time
-	newID     func() string
+	// anyMetaName formats every meta.subscription_data.name with str().
+	anyMetaName bool
+	store       domain.InvoiceGenerateStore
+	publisher   celery.Publisher
+	now         func() time.Time
+	newID       func() string
 }
 
 func NewInvoiceGenerations(store domain.InvoiceGenerateStore, publisher celery.Publisher, now func() time.Time) *InvoiceGenerations {
@@ -254,13 +256,17 @@ func (s *InvoiceGenerations) nextNumber(ctx context.Context, tx domain.InvoiceGe
 }
 
 // invoiceFee is one in-memory fee: memory is its str() (auditlog), stored the
-// numeric text the column rounds, rendered DRF's two-place string.
-type invoiceFee struct{ memory, stored, rendered string }
+// numeric text the column rounds, rendered DRF's two-place string, column the
+// value the numeric(9, 2) column keeps (it differs from rendered on a tie).
+type invoiceFee struct {
+	memory, stored, rendered, column string
+	tie                              bool
+}
 
 type invoiceFeePair struct{ membership, activity invoiceFee }
 
 func decimalFee(text string) invoiceFee {
-	return invoiceFee{memory: text, stored: text, rendered: text}
+	return invoiceFee{memory: text, stored: text, rendered: text, column: text}
 }
 
 // floatFee is a Python float fee: Decimal from float at max_digits 9 in the
@@ -268,6 +274,16 @@ func decimalFee(text string) invoiceFee {
 // PostgreSQL and DRF round differently), Decimal(str(value)) quantized half
 // even in the response.
 func floatFee(value float64) (invoiceFee, error) {
+	fee, err := floatFeeAny(value)
+	if err == nil && fee.tie {
+		return invoiceFee{}, domain.ErrPaymentStateNotPorted
+	}
+	return fee, err
+}
+
+// floatFeeAny is floatFee with the ties: the column rounds half away from
+// zero, the response half to even.
+func floatFeeAny(value float64) (invoiceFee, error) {
 	if math.IsNaN(value) || math.IsInf(value, 0) {
 		return invoiceFee{}, domain.ErrPaymentStateNotPorted
 	}
@@ -277,10 +293,17 @@ func floatFee(value float64) (invoiceFee, error) {
 		return invoiceFee{}, domain.ErrPaymentStateNotPorted
 	}
 	scaled := new(big.Rat).Mul(rat, big.NewRat(1000, 1))
-	if scaled.IsInt() && new(big.Int).Rem(new(big.Int).Abs(scaled.Num()), big.NewInt(10)).Int64() == 5 {
-		return invoiceFee{}, domain.ErrPaymentStateNotPorted
+	tie := scaled.IsInt() && new(big.Int).Rem(new(big.Int).Abs(scaled.Num()), big.NewInt(10)).Int64() == 5
+	// numeric(9, 2): half away from zero.
+	cents := new(big.Rat).Mul(new(big.Rat).Abs(rat), big.NewRat(100, 1))
+	cents.Add(cents, big.NewRat(1, 2))
+	rounded := new(big.Int).Quo(cents.Num(), cents.Denom())
+	column := new(big.Rat).SetFrac(rounded, big.NewInt(100)).FloatString(2)
+	if rat.Sign() < 0 && rounded.Sign() != 0 {
+		column = "-" + column
 	}
-	return invoiceFee{memory: dto.PythonFloatStr(value), stored: stored, rendered: dto.PaymentFloatHalfEven(value)}, nil
+	return invoiceFee{memory: dto.PythonFloatStr(value), stored: stored, rendered: dto.PaymentFloatHalfEven(value), column: column,
+		tie: tie}, nil
 }
 
 // invoiceFees is the view's fee arithmetic: a subscription payment's
@@ -288,6 +311,15 @@ func floatFee(value float64) (invoiceFee, error) {
 // (float(str(amount))) and its positive amount minus that sum the membership
 // fee; other payments have membership 0.0 and the amount as activity fee.
 func invoiceFees(subject int, payment domain.InvoiceGeneratePayment) (invoiceFeePair, error) {
+	pair, err := invoiceFeesAny(subject, payment)
+	if err == nil && (pair.membership.tie || pair.activity.tie) {
+		return invoiceFeePair{}, domain.ErrPaymentStateNotPorted
+	}
+	return pair, err
+}
+
+// invoiceFeesAny is invoiceFees with the fees that round on a tie.
+func invoiceFeesAny(subject int, payment domain.InvoiceGeneratePayment) (invoiceFeePair, error) {
 	amount, ok := new(big.Rat).SetString(payment.Amount)
 	if !ok {
 		return invoiceFeePair{}, domain.ErrPaymentStateServer
@@ -328,7 +360,7 @@ func invoiceFees(subject int, payment domain.InvoiceGeneratePayment) (invoiceFee
 			}
 		}
 	}
-	activityFee, err := floatFee(activity)
+	activityFee, err := floatFeeAny(activity)
 	if err != nil {
 		return invoiceFeePair{}, err
 	}
@@ -339,7 +371,7 @@ func invoiceFees(subject int, payment domain.InvoiceGeneratePayment) (invoiceFee
 	if err != nil {
 		return invoiceFeePair{}, domain.ErrPaymentStateServer
 	}
-	membershipFee, err := floatFee(base - activity)
+	membershipFee, err := floatFeeAny(base - activity)
 	if err != nil {
 		return invoiceFeePair{}, err
 	}
@@ -414,7 +446,7 @@ func invoicePeriod(period domain.InvoiceGeneratePeriod) string {
 
 // metaName is (payment.meta or {}).get('subscription_data') or {} and its
 // truthy 'name' as str(); ok false: nothing to add.
-func metaName(meta *string) (string, bool, error) {
+func metaName(meta *string, anyValue bool) (string, bool, error) {
 	if meta == nil {
 		return "", false, nil
 	}
@@ -450,6 +482,9 @@ func metaName(meta *string) (string, bool, error) {
 		if !strings.ContainsAny(string(v), ".eE") {
 			return string(v), true, nil
 		}
+	}
+	if anyValue {
+		return dto.PythonStr(name), true, nil
 	}
 	// str() of floats, lists and dicts: not ported.
 	return "", false, domain.ErrPaymentStateNotPorted
@@ -501,7 +536,7 @@ func (s *InvoiceGenerations) description(ctx context.Context, tx domain.InvoiceG
 		if subscription != nil {
 			label = invoicePeriod(*period) + " "
 		}
-		metaLabel, present, err := metaName(row.Meta)
+		metaLabel, present, err := metaName(row.Meta, s.anyMetaName)
 		if err != nil {
 			return "", err
 		}
