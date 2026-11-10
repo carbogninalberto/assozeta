@@ -85,7 +85,7 @@ def U(n):
     return UUID(int=0xD9000000 + n)
 
 
-OWNER, COLLABORATOR, ATHLETE, EXTRA = U(1), U(2), U(3), U(4)
+OWNER, COLLABORATOR, ATHLETE, EXTRA, FORMER = U(1), U(2), U(3), U(4), U(6)
 ASSOCIATION, SECOND = U(11), U(12)
 OPERATION, PRIOR = U(300), U(301)
 D_PATH, D_MEDICAL, D_INVOICE, D_ATTACHMENT, D_EXTRA = (U(n) for n in range(21, 26))
@@ -105,6 +105,9 @@ class Scenario:
 
 SCENARIOS = [
     Scenario('an archive replaces the current association data', expect={'state': 'completed'}),
+    Scenario('only accounts of the replaced association take archived passwords', 'former-collaborator',
+             setup='passwordless-accounts',
+             expect={'state': 'completed', 'passwords': {str(ATHLETE): PBKDF2, str(FORMER): '!former'}}),
     Scenario('a second delivery after completion only cleans up', op={'state': 'completed', 'stage': 'completed',
                                                                         'completed_at': OP_CREATED},
              expect={'state': 'completed', 'untouched': True}),
@@ -156,7 +159,7 @@ MEDIA = {
 CURRENT_MEDIA = {'attachments/nuovo.pdf': PDF + b'nuovo'}
 
 
-def seed_association(current, course_subscription=False):
+def seed_association(current, course_subscription=False, former=False):
     """The instance's association: the backed-up state, or (current) the state the restore replaces."""
     from application.models import (User, SportAssociation, Group, Associate, Subscription, Tags, Payment,
                                     PaymentCategory, VatManagement, MedicalCertificate, Folder, Course, CourseLocation,
@@ -173,8 +176,12 @@ def seed_association(current, course_subscription=False):
     if current:
         users.append(User(user_id=EXTRA, username='restore-extra', role=1, password=PBKDF2, date_joined=SOURCE_CREATED,
                           email='extra@example.test', first_name='Nuovo'))
+    if former:
+        # A collaborator at backup time whose account now exists outside the association.
+        users.append(User(user_id=FORMER, username='restore-former', role=1, password=PBKDF2, date_joined=SOURCE_CREATED,
+                          email='former@example.test'))
     User.original_objects.bulk_create(users)
-    User.original_objects.filter(user_id__in=[COLLABORATOR, EXTRA]).update(connected_user_id=OWNER)
+    User.original_objects.filter(user_id__in=[COLLABORATOR, EXTRA, FORMER]).update(connected_user_id=OWNER)
     SportAssociation.original_objects.bulk_create([SportAssociation(
         sport_association_id=ASSOCIATION, user_id=OWNER, tax_code='01234567890',
         denomination='ASD Ripristino (corrente)' if current else 'ASD Ripristino «Uno»')])
@@ -341,6 +348,9 @@ def build_archives():
     seed_association(current=False, course_subscription=True)
     archives['course-subscription'] = export_archive()
     truncate()
+    seed_association(current=False, former=True)
+    archives['former-collaborator'] = export_archive()
+    truncate()
     return archives
 
 
@@ -373,6 +383,11 @@ class Stack:
         started = datetime.now(timezone.utc)
         truncate()
         seed_association(current=True)
+        if scenario.setup == 'passwordless-accounts':
+            # The member's account lost its password; the former collaborator's account is outside the association.
+            User.original_objects.filter(user_id=ATHLETE).update(password='!athlete')
+            User.original_objects.bulk_create([User(user_id=FORMER, username='restore-former', role=1, password='!former',
+                                                    date_joined=SOURCE_CREATED, email='former@example.test')])
         if scenario.setup == 'second-association':
             User.original_objects.bulk_create([User(user_id=U(5), username='second-owner', role=1, password=PBKDF2,
                                                     date_joined=SOURCE_CREATED, email='second@example.test')])
@@ -935,6 +950,11 @@ class Harness:
             return
         assert op['attempts'] == expect.get('attempts', 1), op
         assert op['stage'] == 'completed' and op['error'] == '', op
+        if expect.get('passwords'):
+            from application.models import User
+            stored = {str(k): v for k, v in User.original_objects.filter(
+                user_id__in=list(expect['passwords'])).values_list('user_id', 'password')}
+            assert stored == expect['passwords'], ('only accounts of the replaced association take archived passwords', stored)
         assert observed['models']['application.Payment']['removed'], 'the current payment is replaced'
         assert len(observed['recovery']) == 1, 'one recovery archive is kept'
         assert not [k for k in observed['bucket'] if str(PRIOR) in k], 'the earlier restore is pruned'

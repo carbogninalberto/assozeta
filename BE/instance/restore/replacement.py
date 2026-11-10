@@ -49,8 +49,10 @@ def deletion_plan(backup):
 
 
 class ReplacementImporter(AssociationImportService):
-    def __init__(self, archive, config, media, progress=None):
+    def __init__(self, archive, config, media, progress=None, replaced_user_ids=()):
         super().__init__(archive.path, ImportOptions())
+        # Accounts of the association being replaced (its safety backup).
+        self.replaced_user_ids = {str(user_id) for user_id in replaced_user_ids}
         self.progress = progress
         self.processed = set()
         self.total_records = archive.summary()['records']
@@ -62,6 +64,16 @@ class ReplacementImporter(AssociationImportService):
         for relation in archive.missing_relations:
             key = (relation['model'], relation['record_id'])
             self.missing_fields.setdefault(key, set()).add(relation['field'])
+
+    def _may_reuse_existing_user(self, existing_user):
+        # The archive's accounts are the instance's own; accounts outside the
+        # replaced association stay intact (see restore_user_links).
+        return True
+
+    def _takes_archived_password(self, existing_user):
+        # Only accounts of the replaced association without a usable password
+        # take the archived one; every other account keeps its credentials.
+        return str(existing_user.pk) in self.replaced_user_ids
 
     def _register_imported_object(self, model_name, old_pk, obj):
         super()._register_imported_object(model_name, old_pk, obj)
@@ -205,7 +217,8 @@ class ReplacementImporter(AssociationImportService):
 
 def replace(archive, backup, config, media, complete, progress=None):
     require_single(config)
-    importer = ReplacementImporter(archive, config, media, progress=progress)
+    importer = ReplacementImporter(archive, config, media, progress=progress,
+                                   replaced_user_ids=backup.identities['User'])
     with transaction.atomic():
         deletion_plan(backup).delete()
         importer.import_all()

@@ -71,7 +71,8 @@ def U(n):
 
 
 OWNER, COLLABORATOR, ATHLETE, OUTSIDER, OTHER_OWNER = U(1), U(2), U(3), U(4), U(5)
-ASSOCIATION, OTHER, EMPTY = U(11), U(12), U(13)
+ASSOCIATION, OTHER, EMPTY, COLLABORATOR_OWN = U(11), U(12), U(13), U(14)
+SMTP_SECRET = 'smtp-fixture-value'
 D_PATH, D_MISSING, D_RECONSTRUCTED, D_MEDICAL, D_INVOICE, D_ATTACHMENT, D_ARCHIVED = (U(n) for n in range(21, 28))
 E_OLD, E_NEW1, E_NEW2, E_NEW3 = U(31), U(32), U(33), U(34)
 SOURCE_CREATED = datetime(2026, 1, 2, 3, 4, 5, 123456, tzinfo=timezone.utc)
@@ -86,7 +87,7 @@ class Scenario:
 
 SCENARIOS = [
     Scenario('export of an association with members, subscriptions, payments, documents and media',
-             [str(ASSOCIATION), str(OWNER)], expect={'success': True, 'files': 7, 'deleted_exports': 2}),
+             [str(ASSOCIATION), str(OWNER)], expect={'success': True, 'files': 7, 'deleted_exports': 2, 'own_records': True}),
     Scenario('export of an association without other data', [str(EMPTY), str(OTHER_OWNER)], seed='empty',
              expect={'success': True, 'files': 0, 'deleted_exports': 0}),
     Scenario('a missing user stores the failure without an e-mail', [str(ASSOCIATION), str(U(99))],
@@ -168,7 +169,10 @@ class Stack:
         SportAssociation.original_objects.bulk_create([
             SportAssociation(sport_association_id=ASSOCIATION, user_id=OWNER, denomination='ASD Esporta «Uno»', tax_code='01234567890'),
             SportAssociation(sport_association_id=OTHER, user_id=OUTSIDER, denomination='Altra', tax_code='00000000000'),
-            SportAssociation(sport_association_id=EMPTY, user_id=OTHER_OWNER, denomination='Vuota', tax_code='99999999999')])
+            SportAssociation(sport_association_id=EMPTY, user_id=OTHER_OWNER, denomination='Vuota', tax_code='99999999999'),
+            # The collaborator also runs an association of its own.
+            SportAssociation(sport_association_id=COLLABORATOR_OWN, user_id=COLLABORATOR, denomination='Del collaboratore',
+                             tax_code='88888888888')])
         created_key = str(SOURCE_CREATED.timestamp())
         if scenario.seed == 'empty':
             self.fix_defaults(started)
@@ -234,6 +238,7 @@ class Stack:
         Course.objects.bulk_create([Course(course_id=U(171), sport_association_id=ASSOCIATION, title='Nuoto', fee=Decimal('100.00'), google_background_color='#123456',
                                            creation_date=SOURCE_CREATED, events=[{'d': 1}])])
         Course.locations.through.objects.bulk_create([Course.locations.through(course_id=U(171), courselocation_id=U(161))])
+        self.seed_own_records()
         if scenario.seed == 'referenced':
             Payment.attachments.through.objects.bulk_create([Payment.attachments.through(payment_id=U(131), document_id=E_OLD)])
         if scenario.seed == 'restore-pending':
@@ -253,6 +258,37 @@ class Stack:
         self.fix_defaults(started)
         self.reset_bucket(created_key)
         self.seeding = (started, datetime.now(timezone.utc))
+
+    @staticmethod
+    def seed_own_records():
+        """Mail settings, and records of the collaborator's own association next to the exported ones."""
+        from application.models import Signature
+        from application.models.modules_models import Module, ModuleResponses
+        from application.models.user_models import CollaborationInvites, Instructor, UsersOnboarding
+        from communications.models import CommunicationConfiguration
+        CommunicationConfiguration.objects.bulk_create([CommunicationConfiguration(
+            communication_configuration_id=U(211), sport_association_id=ASSOCIATION, email_smtp_host='smtp.example.test',
+            email_smtp_port=587, email_smtp_user='mittente@example.test', email_smtp_password=SMTP_SECRET,
+            email_encryption='TLS')])
+        Instructor.objects.bulk_create([
+            Instructor(instructor_id=U(221), user_id=OWNER, first_name='Marco', last_name='Verdi'),
+            Instructor(instructor_id=U(222), user_id=COLLABORATOR, first_name='Altro', last_name='Istruttore')])
+        CollaborationInvites.objects.bulk_create([
+            CollaborationInvites(collaboration_invite_id=U(231), user_id=OWNER, email='invito@example.test',
+                                 creation_date=SOURCE_CREATED, token='invite-own'),
+            CollaborationInvites(collaboration_invite_id=U(232), user_id=COLLABORATOR, email='altro@example.test',
+                                 creation_date=SOURCE_CREATED, token='invite-other')])
+        Module.objects.bulk_create([
+            Module(module_id=U(241), sport_association_id=ASSOCIATION, title='Modulo', creation_date=SOURCE_CREATED),
+            Module(module_id=U(242), sport_association_id=COLLABORATOR_OWN, title='Altro modulo', creation_date=SOURCE_CREATED)])
+        ModuleResponses.objects.bulk_create([
+            ModuleResponses(module_response_id=U(251), module_id=U(241), user_id=COLLABORATOR, response={'a': 1},
+                            creation_date=SOURCE_CREATED),
+            ModuleResponses(module_response_id=U(252), module_id=U(242), user_id=COLLABORATOR, response={'b': 2},
+                            creation_date=SOURCE_CREATED)])
+        Signature.objects.bulk_create([Signature(signature_id=U(261), user_id=OWNER, signature='titolare'),
+                                       Signature(signature_id=U(262), user_id=COLLABORATOR, signature='altrove')])
+        UsersOnboarding.objects.bulk_create([UsersOnboarding(users_onboarding_id=U(271), user_id=COLLABORATOR)])
 
     @staticmethod
     def fix_defaults(started):
@@ -703,6 +739,30 @@ class Harness:
         assert 'manifest.json' in members and 'data/01_sport_association.json' in members, members
         assert len([m for m in members if m.startswith('files/')]) == expect['files'], members
         assert len(observed['documents']['removed']) == expect['deleted_exports'], observed['documents']
+        if expect.get('own_records'):
+            records = {}
+            created = [item['Key'] for item in self.stack.s3.list_objects_v2(Bucket=BUCKET).get('Contents', [])
+                       if re.fullmatch(LOCATION + r'/exports/\d{8}_\d{6}/[0-9a-f-]{36}/export_.*\.zip', item['Key'])]
+            assert len(created) == 1, created
+            body = self.stack.s3.get_object(Bucket=BUCKET, Key=created[0])['Body'].read()
+            with zipfile.ZipFile(io.BytesIO(body)) as exported:
+                for name in exported.namelist():
+                    if name.startswith('data/'):
+                        member = exported.read(name)
+                        assert SMTP_SECRET.encode() not in member, name
+                        records[name] = json.loads(member)
+
+            def keys(member, key):
+                return {r[key] for r in records[member]}
+            assert keys('data/01_sport_association.json', 'sport_association_id') == {str(ASSOCIATION)}
+            config = records['data/21_communication_config.json']
+            assert len(config) == 1 and 'email_smtp_password' not in config[0] and config[0]['email_smtp_user'], config
+            assert keys('data/23_instructors.json', 'instructor_id') == {str(U(221))}
+            assert keys('data/05_collaboration_invites.json', 'collaboration_invite_id') == {str(U(231))}
+            assert keys('data/60_module_responses.json', 'module_response_id') == {str(U(251))}
+            assert keys('data/42_signatures.json', 'signature_id') == {str(U(261))}
+            assert keys('data/04_users_onboarding.json', 'users_onboarding_id') == {str(U(271))}
+            assert str(COLLABORATOR) in keys('data/02_users.json', 'user_id')
         last = [v for k, v in observed['cache'].items() if 'association-export-last' in k]
         assert len(last) == 1 and last[0]['value']['status'] == 'SUCCESS', observed['cache']
         assert not [k for k in observed['cache'] if 'association-export-active' in k], observed['cache']

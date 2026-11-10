@@ -476,6 +476,29 @@ class RestoreTests(TransactionTestCase):
         self.assertEqual(recovered[str(local_collaborator.pk)]['password'], local_credentials)
         self.assertEqual(recovered[str(self.owner.pk)]['password'], self.owner.password)
 
+    def test_restore_keeps_credentials_of_accounts_outside_the_restored_association(self):
+        from django.contrib.auth.hashers import make_password
+        outside = User.objects.create_user(username='outside-account', password=None)
+        outside_before = User.original_objects.values().get(pk=outside.pk)
+        member = User.objects.create_user(username='association-member', password=None,
+                                          connected_user=self.owner, role=User.COLLABORATOR)
+        users = [{'user_id': self.source_owner, 'username': 'source-owner'},
+                 {'user_id': str(outside.pk), 'username': 'archive-outside', 'connected_user_id': self.source_owner,
+                  'password': make_password('ArchivedOutside')},
+                 {'user_id': str(member.pk), 'username': 'association-member', 'role': User.COLLABORATOR,
+                  'connected_user_id': self.source_owner, 'password': make_password('ArchivedMember')}]
+        op = self.start(self.upload(self.archive({'User': users})))
+        execute(op.pk)
+        op.refresh_from_db()
+        self.assertEqual(op.state, 'completed', op.error)
+        self.assertEqual(User.original_objects.values().get(pk=outside.pk), outside_before)
+        outside.refresh_from_db()
+        self.assertFalse(outside.has_usable_password())
+        # Accounts of the restored association are the instance's own: a
+        # member without a usable password signs in with the archived one.
+        member.refresh_from_db()
+        self.assertTrue(member.check_password('ArchivedMember'))
+
     def test_unrelated_document_collision_fails_without_deleting_it(self):
         from docmanager.models import Document
         unrelated = Document.objects.create(filename='unrelated.txt')

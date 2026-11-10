@@ -89,8 +89,15 @@ class Scenario:
 SCENARIOS = [
     Scenario('an export archive is imported into an instance with other data', 'rich',
              expect={'success': True, 'files': 5}),
-    Scenario('an existing owner account without an association is reused', 'rich', target='owner-account',
-             expect={'success': True, 'files': 5}),
+    Scenario('an existing owner account without an association is reused with its own credentials', 'rich',
+             target='owner-account', expect={'success': True, 'files': 5, 'passwords': {OWNER: '!reset'}}),
+    Scenario('an existing owner account needs no recovery password', 'no-owner-hash', target='owner-account',
+             expect={'success': True, 'files': 5, 'passwords': {OWNER: '!reset'}}),
+    Scenario('an account linked to the archive owner is reused with its own credentials', 'rich', target='linked-account',
+             expect={'success': True, 'files': 5, 'passwords': {OWNER: '!reset', ATHLETE: '!existing'}}),
+    Scenario('an existing account not linked to the archive owner fails validation', 'rich', target='other-account',
+             expect={'success': False, 'error': f"Validazione fallita: ['User UUID collision: {ATHLETE} already exists "
+                                                "and is not linked to the archive owner']", 'passwords': {ATHLETE: '!existing'}}),
     Scenario('an owner without an archived hash gets the recovery password', 'no-owner-hash',
              kwargs={'owner_password': RECOVERY}, expect={'success': True, 'files': 5}),
     Scenario('an existing association fails validation', 'rich', target='association-exists',
@@ -358,17 +365,21 @@ class Stack:
         truncate()
         User.original_objects.bulk_create([
             User(user_id=OTHER_OWNER, username='other-owner', role=1, password=PBKDF2, date_joined=SOURCE_CREATED,
-                 email='other@example.test'),
-            # The archive's athlete already has an account here, without a usable password.
-            User(user_id=ATHLETE, username='existing-athlete', role=2, password='!existing', date_joined=SOURCE_CREATED,
-                 email='existing-athlete@example.test', first_name='Esistente')])
+                 email='other@example.test')])
         SportAssociation.original_objects.bulk_create([SportAssociation(sport_association_id=OTHER, user_id=OTHER_OWNER,
                                                                         denomination='Altra', tax_code='00000000000')])
         PaymentCategory.objects.bulk_create([PaymentCategory(payment_category_id=GLOBAL_CATEGORY, name='Entrate e proventi '
                                                              'da attività tipiche', creation_date=SOURCE_CREATED)])
-        if scenario.target == 'owner-account':
+        if scenario.target in ('owner-account', 'linked-account'):
             User.original_objects.bulk_create([User(user_id=OWNER, username='owner-account', role=1, password='!reset',
                                                     date_joined=SOURCE_CREATED, email='owner-account@example.test')])
+        if scenario.target in ('linked-account', 'other-account'):
+            # The archive's athlete already has an account here, without a usable password; linked to the archive
+            # owner or not.
+            User.original_objects.bulk_create([User(
+                user_id=ATHLETE, username='existing-athlete', role=2, password='!existing', date_joined=SOURCE_CREATED,
+                email='existing-athlete@example.test', first_name='Esistente',
+                connected_user_id=OWNER if scenario.target == 'linked-account' else OTHER_OWNER)])
         if scenario.target == 'association-exists':
             User.original_objects.bulk_create([User(user_id=OWNER, username='owner-account', role=1, password=PBKDF2,
                                                     date_joined=SOURCE_CREATED, email='owner-account@example.test')])
@@ -748,6 +759,10 @@ class Harness:
         assert row['status'] == 'SUCCESS', row
         result = row['result']
         assert result['success'] is expect['success'], result
+        if expect.get('passwords'):
+            from application.models import User
+            stored = dict(User.original_objects.filter(user_id__in=list(expect['passwords'])).values_list('user_id', 'password'))
+            assert stored == expect['passwords'], ('existing accounts keep their credentials', stored)
         keys = [k for k in observed['bucket'] if k.startswith(f'{LOCATION}/imports/')]
         assert not keys, ('the staged archive is deleted', keys)
         if not expect['success']:
