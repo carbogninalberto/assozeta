@@ -31526,16 +31526,16 @@
         "target": "configuration_send_email",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/communications_send_email.go",
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/communications_send_email.go",
         "BE_GO/internal/dto/communications_send_email.go",
+        "BE_GO/internal/handler/communications_send_email.go",
         "BE_GO/internal/repository/communications_send_email.go",
         "BE_GO/internal/service/communications_send_email.go",
-        "BE_GO/internal/service/communications_send_email_test.go",
-        "BE_GO/internal/handler/communications_send_email.go",
-        "BE_GO/cmd/server/communications_send_email.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/communications_send_email_test.go"
       ],
       "dependencies": [
         "smtpsend.Verify/Send/Render (send_email's MIMEMultipart text/plain)",
@@ -31569,21 +31569,28 @@
         "TESTS/adapters/django/communications_send_email_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/communications-send-email.md",
         {
-          "command": "python tools/go-migration/family.py run communications-send-email --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/communications-send-email-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "ef8a8df07ef02965f5ec471f8b630e6bdb324f9ceb943d7bfe41ee755d147f17",
-          "scope": "HTTP family communications-send-email: 55/55 cases on native Django and native Go, 55/55 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 61/61; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/communications-send-email-http-native-r4/results.json",
+          "receipt_sha256": "08d175c62f858884285159ff3e84e466d194c9a5431dd21e0ae68a119f25d5e6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 61/61 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/communications-send-email-http-sweep-restb2-ci-1/results.json",
+          "receipt_sha256": "f362d027bd698b6b9666cd9617129ed32e93bba9bc35300730cfa568cd8b1d9b"
+        },
+        {
+          "revision": "str.splitlines() without the vertical tab in the header folding",
+          "result": "Mutation control: fails Go on communications-send-email-subject-unicode-lines-delivered (smtp.transcripts)",
+          "artifact": "quality-reports/go-migration/communications-send-email-http-restb2-mutation-r2/results.json",
+          "receipt_sha256": "3b5d176f9ca78e18c5482e4201052688bbcd5bfc4f37bd0391ebe181785f0576"
         }
       ],
       "notes": [
-        "Implementing: Every create autocommits (Go: one transaction per step). SMTP deliveries outside smtpsend's subset are refused before any write whenever the configuration would take the SMTP path. send_email's (False, exception) is the 500 page after the writes.",
-        "Implementing evidence: docs/architecture/go-migration/communications-send-email.md",
-        "Implementing evidence: RED: Django 55/55; Go 404 on the first case. (quality-reports/go-migration/communications-send-email-http-native-r4/results.json)",
-        "Implementing evidence: GREEN: 55/55 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/communications-send-email-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on communications-send-email-limit-reached (quality-reports/go-migration/communications-send-email-http-mutation-r1/results.json)"
+        "Implementing: restb2: rare-input refusals ported (address and header encoding, smtp login forms, workflow cron time forms, copy under a new key). RED: documented refusal, see v2-refusals.md rows."
       ]
     },
     {
@@ -31704,10 +31711,10 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/communications_smtp.go",
         "BE_GO/internal/dto/communications_smtp.go",
+        "BE_GO/internal/handler/communications_smtp.go",
         "BE_GO/internal/repository/communications_smtp.go",
         "BE_GO/internal/service/communications_smtp.go",
         "BE_GO/internal/service/communications_smtp_test.go",
-        "BE_GO/internal/handler/communications_smtp.go",
         "BE_GO/internal/smtpsend/smtpsend.go",
         "BE_GO/internal/smtpsend/verify_send.go"
       ],
@@ -31750,25 +31757,25 @@
         "docs/architecture/go-migration/communications-smtp.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 88/88; Go 500 on the first case.",
+          "result": "RED: Django 107/107; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-red-r2/results.json",
           "receipt_sha256": "7082e2c4ca0c422594876938d46eb3e0c90e1e9d1943621e40c42bae8db8c5c9"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 88/88 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and SMTP transcripts.",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-final-r1/results.json",
-          "receipt_sha256": "daac10dff45bfa85700fc8adc3e4f91935e7820b8a8b42ab72ad91dd95ebdc15"
+          "result": "GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-sweep-restb2-ci-1/results.json",
+          "receipt_sha256": "182233eaff13660c15facc73f312afde3b47e1f01d62920be1ee23b41061fbbd"
         },
         {
-          "revision": "answering the handshake call site number of another CPython release",
-          "result": "Mutation control: fails Go on communications-smtp-verify-ssl-on-starttls-port (response.body).",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-mutation-r1/results.json",
-          "receipt_sha256": "bfe7e7ef267c9c1eb98a6933c0ae6c0b4d0a16b05c6d3b9669a9a575327406e4"
+          "revision": "user missing from the CRAM-MD5 response formatted as empty instead of the text None",
+          "result": "Mutation control: fails Go on communications-smtp-verify-cram-md5-missing-user (smtp.transcripts)",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-restb2-mutation-r1/results.json",
+          "receipt_sha256": "3e92526a0311b38f8d386b674b915a71318740fe6c8abc42c3ed0ca1a035c420"
         }
       ],
       "notes": [
-        "Implementing: Implementing: SMTP configuration info, update and verify. API v2 (v2-misc-2): verify against a connectable host is ported (connect, STARTTLS or implicit TLS, login, test email as bytes, quit; smtplib reply and fixed-text failures and a refused connection as verified false). API v2 (v2-misc-3): two platform texts are ported as verified false: SSL chosen for a port that speaks plain SMTP first ([SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032), CPython 3.13.16) and a host name the resolver does not know (socket.gaierror's EAI_NONAME text on macOS and glibc). Refused with the 500 page before any effect: connect timeouts (Python reports the last error of every address in the C library's order), an unreachable resolver, names the idna codec rejects, TLS handshake timeouts and other OpenSSL reasons, resets, a falsy port with a plain host, a missing user or password, envelope addresses outside smtpsend.CheckEnvelope and sender names outside letters, digits, spaces and . - _ &."
+        "Implementing: restb2: rare-input refusals ported (address and header encoding, smtp login forms, workflow cron time forms, copy under a new key). RED: documented refusal, see v2-refusals.md rows."
       ]
     },
     {
@@ -31791,10 +31798,10 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/communications_smtp.go",
         "BE_GO/internal/dto/communications_smtp.go",
+        "BE_GO/internal/handler/communications_smtp.go",
         "BE_GO/internal/repository/communications_smtp.go",
         "BE_GO/internal/service/communications_smtp.go",
         "BE_GO/internal/service/communications_smtp_test.go",
-        "BE_GO/internal/handler/communications_smtp.go",
         "BE_GO/internal/smtpsend/smtpsend.go",
         "BE_GO/internal/smtpsend/verify_send.go"
       ],
@@ -31837,25 +31844,25 @@
         "docs/architecture/go-migration/communications-smtp.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 88/88; Go 500 on the first case.",
+          "result": "RED: Django 107/107; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-red-r2/results.json",
           "receipt_sha256": "7082e2c4ca0c422594876938d46eb3e0c90e1e9d1943621e40c42bae8db8c5c9"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 88/88 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and SMTP transcripts.",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-final-r1/results.json",
-          "receipt_sha256": "daac10dff45bfa85700fc8adc3e4f91935e7820b8a8b42ab72ad91dd95ebdc15"
+          "result": "GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-sweep-restb2-ci-1/results.json",
+          "receipt_sha256": "182233eaff13660c15facc73f312afde3b47e1f01d62920be1ee23b41061fbbd"
         },
         {
-          "revision": "answering the handshake call site number of another CPython release",
-          "result": "Mutation control: fails Go on communications-smtp-verify-ssl-on-starttls-port (response.body).",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-mutation-r1/results.json",
-          "receipt_sha256": "bfe7e7ef267c9c1eb98a6933c0ae6c0b4d0a16b05c6d3b9669a9a575327406e4"
+          "revision": "user missing from the CRAM-MD5 response formatted as empty instead of the text None",
+          "result": "Mutation control: fails Go on communications-smtp-verify-cram-md5-missing-user (smtp.transcripts)",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-restb2-mutation-r1/results.json",
+          "receipt_sha256": "3e92526a0311b38f8d386b674b915a71318740fe6c8abc42c3ed0ca1a035c420"
         }
       ],
       "notes": [
-        "Implementing: Implementing: SMTP configuration info, update and verify. API v2 (v2-misc-2): verify against a connectable host is ported (connect, STARTTLS or implicit TLS, login, test email as bytes, quit; smtplib reply and fixed-text failures and a refused connection as verified false). API v2 (v2-misc-3): two platform texts are ported as verified false: SSL chosen for a port that speaks plain SMTP first ([SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032), CPython 3.13.16) and a host name the resolver does not know (socket.gaierror's EAI_NONAME text on macOS and glibc). Refused with the 500 page before any effect: connect timeouts (Python reports the last error of every address in the C library's order), an unreachable resolver, names the idna codec rejects, TLS handshake timeouts and other OpenSSL reasons, resets, a falsy port with a plain host, a missing user or password, envelope addresses outside smtpsend.CheckEnvelope and sender names outside letters, digits, spaces and . - _ &."
+        "Implementing: restb2: rare-input refusals ported (address and header encoding, smtp login forms, workflow cron time forms, copy under a new key). RED: documented refusal, see v2-refusals.md rows."
       ]
     },
     {
@@ -31878,10 +31885,10 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/communications_smtp.go",
         "BE_GO/internal/dto/communications_smtp.go",
+        "BE_GO/internal/handler/communications_smtp.go",
         "BE_GO/internal/repository/communications_smtp.go",
         "BE_GO/internal/service/communications_smtp.go",
         "BE_GO/internal/service/communications_smtp_test.go",
-        "BE_GO/internal/handler/communications_smtp.go",
         "BE_GO/internal/smtpsend/smtpsend.go",
         "BE_GO/internal/smtpsend/verify_send.go"
       ],
@@ -31924,25 +31931,25 @@
         "docs/architecture/go-migration/communications-smtp.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 88/88; Go 500 on the first case.",
+          "result": "RED: Django 107/107; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-red-r2/results.json",
           "receipt_sha256": "7082e2c4ca0c422594876938d46eb3e0c90e1e9d1943621e40c42bae8db8c5c9"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 88/88 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and SMTP transcripts.",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-final-r1/results.json",
-          "receipt_sha256": "daac10dff45bfa85700fc8adc3e4f91935e7820b8a8b42ab72ad91dd95ebdc15"
+          "result": "GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-sweep-restb2-ci-1/results.json",
+          "receipt_sha256": "182233eaff13660c15facc73f312afde3b47e1f01d62920be1ee23b41061fbbd"
         },
         {
-          "revision": "answering the handshake call site number of another CPython release",
-          "result": "Mutation control: fails Go on communications-smtp-verify-ssl-on-starttls-port (response.body).",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc3-mutation-r1/results.json",
-          "receipt_sha256": "bfe7e7ef267c9c1eb98a6933c0ae6c0b4d0a16b05c6d3b9669a9a575327406e4"
+          "revision": "user missing from the CRAM-MD5 response formatted as empty instead of the text None",
+          "result": "Mutation control: fails Go on communications-smtp-verify-cram-md5-missing-user (smtp.transcripts)",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-restb2-mutation-r1/results.json",
+          "receipt_sha256": "3e92526a0311b38f8d386b674b915a71318740fe6c8abc42c3ed0ca1a035c420"
         }
       ],
       "notes": [
-        "Implementing: Implementing: SMTP configuration info, update and verify. API v2 (v2-misc-2): verify against a connectable host is ported (connect, STARTTLS or implicit TLS, login, test email as bytes, quit; smtplib reply and fixed-text failures and a refused connection as verified false). API v2 (v2-misc-3): two platform texts are ported as verified false: SSL chosen for a port that speaks plain SMTP first ([SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032), CPython 3.13.16) and a host name the resolver does not know (socket.gaierror's EAI_NONAME text on macOS and glibc). Refused with the 500 page before any effect: connect timeouts (Python reports the last error of every address in the C library's order), an unreachable resolver, names the idna codec rejects, TLS handshake timeouts and other OpenSSL reasons, resets, a falsy port with a plain host, a missing user or password, envelope addresses outside smtpsend.CheckEnvelope and sender names outside letters, digits, spaces and . - _ &."
+        "Implementing: restb2: rare-input refusals ported (address and header encoding, smtp login forms, workflow cron time forms, copy under a new key). RED: documented refusal, see v2-refusals.md rows."
       ]
     },
     {
@@ -32475,11 +32482,11 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/automation_workflows.go",
         "BE_GO/internal/dto/automation_workflow_write.go",
+        "BE_GO/internal/handler/automation_workflow_writes.go",
         "BE_GO/internal/repository/automation_workflows.go",
         "BE_GO/internal/service/automation_workflow_update.go",
         "BE_GO/internal/service/automation_workflow_update_test.go",
-        "BE_GO/internal/service/automation_workflow_writes.go",
-        "BE_GO/internal/handler/automation_workflow_writes.go"
+        "BE_GO/internal/service/automation_workflow_writes.go"
       ],
       "dependencies": [
         "Automation workflow add/delete writes (owner lock, association, audit writer)",
@@ -32520,25 +32527,25 @@
         "docs/architecture/go-migration/workflow-update.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 63/63; Go 500 on the first case.",
+          "result": "RED: Django 75/75; Go 500 on the first case.",
           "artifact": "quality-reports/go-migration/workflow-update-http-v2misc-red-r3/results.json",
           "receipt_sha256": "7c3c88ac9ea39b9820389d0e66a7ab3d5ac64226f500106905741d03a96fe8ad"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 63/63 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/workflow-update-http-v2misc-green-r1/results.json",
-          "receipt_sha256": "440c2d3099f32b7646553f7de10e43e122d34858fa6d9b64374b4363a6d2379d"
+          "result": "GREEN: 75/75 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/workflow-update-http-sweep-restb2-ci-2/results.json",
+          "receipt_sha256": "cfba0839b445f6296f41c5d5be3f7f594014f349959e484e62bfe679abcb1033"
         },
         {
-          "revision": "committing change giving an ambiguous Europe/Rome wall time the summer offset",
-          "result": "Mutation control: fails Go on workflow-update-enable-cron-future-ambiguous-standard-offset (celery.eta).",
-          "artifact": "quality-reports/go-migration/workflow-update-http-v2misc-mutation-r1/results.json",
-          "receipt_sha256": "b3b3e9d281c4b6eb85672db8adf93af7e8d828be7ab0d196aa185fc006be9dff"
+          "revision": "a comma no longer starts the fraction of a cron time",
+          "result": "Mutation control: fails Go on workflow-update-enable-cron-comma-fraction-past (500)",
+          "artifact": "quality-reports/go-migration/workflow-update-http-restb2-mutation-r2/results.json",
+          "receipt_sha256": "5f345904523b50fb8f40a616f0cb0c4a2a2e21f79c24dbe3aa07c5d59e3e4ed5"
         }
       ],
       "notes": [
-        "Implementing: Partial AutomationWorkflowSerializer update (generic 400, tenant-scoped relation 403 ahead of other errors), full-row save with auditlog of changed request fields only, enabling resets a triggered cron flag with a second save, trigger() errors are a 500 after the saves, on four transports; enabling a cron workflow with a future, near or unclassified time (Celery countdown), a new automation_workflow_id (insert-copy save) and a form-encoded automation_tree are refused with 500 before any write. API v2 (v2-misc): enabling a future cron trigger publishes check_workflows_trigger_cron with the countdown's eta (pytz localize semantics)."
+        "Implementing: restb2: rare-input refusals ported (address and header encoding, smtp login forms, workflow cron time forms, copy under a new key). RED: documented refusal, see v2-refusals.md rows."
       ]
     },
     {
