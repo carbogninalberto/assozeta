@@ -41,6 +41,7 @@ SOURCES = ('TESTS/fixtures/documents_writes_http.json', 'TESTS/contracts/test_do
            'TESTS/adapters/django/carnet_subscription_topup_http.py',
            'BE/application/views/archive_views.py', 'BE/application/views/subscriptions_views.py',
            'BE/application/services/subscription_service.py', 'BE/docmanager/views/document_view.py', 'BE/docmanager/models.py',
+           'BE/docmanager/access.py', 'BE/instance/permissions.py',
            'BE/application/serializers/user_serializers.py', 'BE/application/models/user_models.py',
            'BE/application/models/subscriptions_models.py', 'BE/application/impersonation_scope.py', 'BE/application/impersonation.py',
            'BE/application/tenant_scope.py', 'BE/application/audit_resolvers.py', 'BE/application/signals.py',
