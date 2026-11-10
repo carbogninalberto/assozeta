@@ -113,6 +113,7 @@ def assert_effect(case, before, after, source, context):
     types = {ct['model']: ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'application'}
     users = keyed(before['application.User'], 'user_id')
     actor = ids[effect['actor']]
+    additional = writes.impersonation_additional(case, context, ids, actor)
     created_times = {str(row.pk): row.creation_date.astimezone(timezone.utc)
                      for row in writes.models()[writes.CSM]._base_manager.filter(pk__in=list(binder.binds.values()))}
     for position, (event, spec) in enumerate(zip(added, effect['audit'])):
@@ -133,7 +134,7 @@ def assert_effect(case, before, after, source, context):
             changes = binder.resolve(changes)
         contract.require(event['changes'] == changes, 'audit.changes' + where)
         contract.require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor')
-        contract.require(event['cid'] == case['name'] and event['additional_data'] is None and event['changes_text'] == '', 'audit.context')
+        contract.require(event['cid'] == case['name'] and event['additional_data'] == additional and event['changes_text'] == '', 'audit.context')
         ipaddress.ip_address(event['remote_addr'])
         contract.require(context['remote'].setdefault('addr', event['remote_addr']) == event['remote_addr'], 'audit.remote-consistent')
         index = indexes.get(str(event['id']))

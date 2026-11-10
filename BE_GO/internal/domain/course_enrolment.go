@@ -17,6 +17,9 @@ type CourseEnrolmentInstallment struct {
 	SubscriptionUserID *string   `db:"subscription_user_id"`
 	AssociateID        *string   `db:"associate_id"`
 	CourseAssociation  *string   `db:"course_association_id"`
+	// SubscriptionAssociation is the row's subscription association
+	// (scoped_queryset's relation during an impersonation session).
+	SubscriptionAssociation *string `db:"subscription_association_id"`
 }
 
 // CourseEnrolmentPayment is Payment.objects.create(...) of the enrolment

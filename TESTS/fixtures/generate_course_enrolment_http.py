@@ -79,6 +79,9 @@ def course(title, *, association=OWN, fee='50.00', one_fee='0.00', one_fee_payme
 EVENTS = [{'id': 0, 'amount': '20.00', 'payment_date': '10/01/2020'}, {'id': 1, 'amount': '30.00', 'payment_date': '10/01/2099'}]
 QUOTES = [{'quote_id': 'q1', 'title': 'Mensile', 'amount': '25,50', 'payment_category': {'value': QUOTE_CATEGORY}},
           {'quote_id': 'q2', 'title': 'Annuale', 'amount': '200'}]
+# Quote amounts are free text in the course form: float(amount.replace(',', '.')).
+TEXT_QUOTES = [{'quote_id': 'q1', 'title': 'Mille', 'amount': '1.000'}]
+WORD_QUOTES = [{'quote_id': 'q1', 'title': 'Prova', 'amount': 'dieci'}]
 COURSES = {
     'fee': course('Nuoto'),
     'one': course('Tennis', one_fee='40.00', one_fee_payment=True),
@@ -101,6 +104,12 @@ COURSES = {
     'ov_group': course('Squadra', fee='10.00', group=OWN_GROUP),
     'ov_athlete': course('Scherma', fee='12.00'),
     'ov_cross': course('Vela', fee='8.00'),
+    # impersonation sessions and quote amounts as typed in the course form
+    'session_fee': course('Sessione', fee='50.00'),
+    'ov_session_athlete': course('Arrampicata', fee='12.00'),
+    'ov_session_full': course('Canoa', fee='9.00'),
+    'ov_quote_text': course('Zumba', fee='0.00', course_type=2, quotes=TEXT_QUOTES),
+    'ov_quote_word': course('Boxe', fee='0.00', course_type=2, quotes=WORD_QUOTES),
 }
 
 
@@ -150,6 +159,8 @@ INSTALLMENTS = {
     'nosub': installment('mp_nosub', 0),
     'athlete': installment('mp_athlete', 0, amount='18.00'),
     'gone_row': installment('mp_gone', 0, amount='7.00'),
+    'athlete_session': installment('mp_athlete', 4, amount='19.00'),
+    'full_session': installment('mp', 5, amount='21.00'),
 }
 SEED = {'associates': copy.deepcopy(ASSOCIATES), 'subscriptions': copy.deepcopy(SUBSCRIPTIONS), 'locations': {}, 'tags': {},
         'courses': copy.deepcopy(COURSES), 'payments': copy.deepcopy(PAYMENTS), 'course_subscriptions': copy.deepcopy(CS),
@@ -260,6 +271,9 @@ MALFORMED = ['badly formed hexadecimal UUID string']
 NOT_ALLOWED = {'detail': 'User not allowed.'}
 NOT_ASSOCIATION = {'detail': 'User is not a sport association'}
 ATHLETE_SESSION = {'X-Impersonation-Id': '$session:owner_athlete', 'User-Id': ATHLETE}
+FULL = IDS['full_collaborator']
+FULL_SESSION = {'X-Impersonation-Id': '$session:owner_full', 'User-Id': FULL}
+HIDDEN = {'detail': 'Risorsa non disponibile per questo utente e associazione.'}
 GROUP = lambda key: {'X-Group-Id': IDS[key]}
 missing = lambda key: {'detail': f'Missing permission: {key}'}
 method_not_allowed = lambda verb: {'detail': f'Method "{verb}" not allowed.'}
@@ -405,6 +419,10 @@ make_payment('make-payment-course-association', 'owner', 'far', sym='@mp6')
 make_payment('make-payment-soft-deleted-row', 'owner', 'gone_row', sym='@mp7')
 add('make-payment-owner-scoped-athlete-hidden', 'owner', MP_PATH('plain'), 403,
     {'detail': 'Risorsa non disponibile per questo utente e associazione.'}, headers=ATHLETE_SESSION)
+# Impersonation sessions: the installment resolves inside the session's association.
+make_payment('make-payment-impersonated-athlete', 'owner', 'athlete_session', sym='@mp8', headers=ATHLETE_SESSION)
+make_payment('make-payment-impersonated-collaborator', 'owner', 'full_session', sym='@mp9', headers=FULL_SESSION)
+add('make-payment-impersonated-foreign-hidden', 'owner', MP_PATH('far'), 403, HIDDEN, headers=FULL_SESSION)
 
 # --- course/<uid>/overview/<uid_subscription>/add --------------------------------------
 
@@ -435,7 +453,8 @@ def course_json(label):
     return {'label': COURSES[label]['title'], 'value': cid(label)}
 
 
-def overview_add(name, actor, course_label, sub, *, sym, body=None, headers=None, group=None, kind='fee'):
+def overview_add(name, actor, course_label, sub, *, sym, body=None, headers=None, group=None, kind='fee', quotes=QUOTES, stored_amount='25.50',
+                 memory='25.5', quote_category=QUOTE_CATEGORY):
     """add_course_to_subscription's row, payment(s) and saves for the authored kind."""
     association = SUBSCRIPTIONS[sub]['sport_association_id']
     user, associate_id = person[sub]
@@ -443,7 +462,7 @@ def overview_add(name, actor, course_label, sub, *, sym, body=None, headers=None
     course_association = course_row['sport_association_id']
     cs_sym, pay = '@' + sym, '@' + sym + 'p'
     created, audit, payment_json, rows_payment = {}, [], None, None
-    quote = jsonb(QUOTES[0]) if kind == 'quote' else None
+    quote = jsonb(quotes[0]) if kind == 'quote' else None
     row = new_cs(cs_sym, course_label, sub, quote=quote, multi=kind == 'multi')
     multi_override = {'multi_payments': ['None', 'False']} if kind == 'multi' else {}
     audit.append(entry(CSM, cs_sym, 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None'], **multi_override),
@@ -460,11 +479,11 @@ def overview_add(name, actor, course_label, sub, *, sym, body=None, headers=None
         audit.append(created_entry(PAYMENT, pay, [association, DIRECT]))
         payment_json = {'payment_id': pay, 'amount': float(course_row['one_fee']), 'paid': False, 'creation_date': '$now'}
     elif kind == 'quote':
-        pays.append(new_payment(pay, '25.50', user=user, associate=associate_id, association=association, group=group,
-                                course_json=course_json(course_label), meta={'multiple_quote': QUOTES[0]}, category=QUOTE_CATEGORY))
-        audit += [created_entry(PAYMENT, pay, [association, DIRECT], amount=['None', '25.5']),
-                  entry(PAYMENT, pay, 1, {'amount': ['25.50', '25.5']}, [association, DIRECT])]
-        payment_json = {'payment_id': pay, 'amount': 25.5, 'paid': False, 'creation_date': '$now'}
+        pays.append(new_payment(pay, stored_amount, user=user, associate=associate_id, association=association, group=group,
+                                course_json=course_json(course_label), meta={'multiple_quote': quotes[0]}, category=quote_category))
+        audit += [created_entry(PAYMENT, pay, [association, DIRECT], amount=['None', memory]),
+                  entry(PAYMENT, pay, 1, {'amount': [stored_amount, memory]}, [association, DIRECT])]
+        payment_json = {'payment_id': pay, 'amount': float(memory), 'paid': False, 'creation_date': '$now'}
     elif kind == 'multi':
         audit.append(entry(CSM, cs_sym, 1, {'multi_payments': ['False', 'True'], 'membership_fee': ['0.00', '0.0']},
                            [course_association, COURSE_INDEX], cs_repr(cs_sym, course_label, sub, multi=True)))
@@ -506,6 +525,18 @@ overview_add('overview-add-grouped', 'owner', 'ov_group', 'group', sym='oa7', he
 overview_add('overview-add-athlete', 'athlete', 'ov_athlete', 'mario', sym='oa8')
 overview_add('overview-add-owner-without-association', 'owner_without_association', 'ov_free', 'mario', sym='oa9', kind='none')
 overview_add('overview-add-subscription-association', 'owner', 'ov_cross', 'hans', sym='oa10')
+# Impersonation sessions: the athlete's own subscription (its association), the collaborator as the owner.
+overview_add('overview-add-impersonated-athlete', 'owner', 'ov_session_athlete', 'mario', sym='oa13', headers=ATHLETE_SESSION)
+overview_add('overview-add-impersonated-collaborator', 'owner', 'ov_session_full', 'luisa', sym='oa14', headers=FULL_SESSION)
+add('overview-add-impersonated-foreign-course-hidden', 'owner', oa('far', 'luisa'), 403, HIDDEN, body={}, headers=FULL_SESSION)
+# A quote amount typed with a thousands dot: float('1.000') is 1.0.
+overview_add('overview-add-quote-amount-text', 'owner', 'ov_quote_text', 'luisa', sym='oa15', body={'multiple_quote': {'value': 'q1'}},
+             kind='quote', quotes=TEXT_QUOTES, stored_amount='1.00', memory='1.0', quote_category='$category')
+# float() fails after the row exists (not atomic).
+add('overview-add-quote-amount-not-a-number', 'owner', oa('ov_quote_word', 'luisa'), 500, SERVER, body={'multiple_quote': {'value': 'q1'}},
+    result=effect('owner', created={CSM: [new_cs('@oa16', 'ov_quote_word', 'luisa', quote=jsonb(WORD_QUOTES[0]))]}, audit=[
+        entry(CSM, '@oa16', 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None']), [OWN, COURSE_INDEX],
+              cs_repr('@oa16', 'ov_quote_word', 'luisa', quote=jsonb(WORD_QUOTES[0])))]))
 
 # --- course-subscriptions/add ---------------------------------------------------------
 
@@ -716,6 +747,59 @@ add('add-course-of-other-association', actor, CA, 201, [overview_item(row, 'luis
         entry(CSM, '@ca12', 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None']), [FOREIGN, COURSE_INDEX],
               cs_repr('@ca12', 'far', 'luisa')),
         created_entry(PAYMENT, '@ca12p', [OWN, DIRECT]), link_save('@ca12', 'far', 'luisa', '@ca12p', FOREIGN)]))
+
+# Impersonating a full collaborator: the collaborator acts as the owner.
+actor = 'owner'
+row = new_cs('@ca14', 'session_fee', 'luisa', payment='@ca14p')
+text = f"Quota corso del {today('%d/%m/%y')} Sessione"
+pay = new_payment('@ca14p', '50.00', user=OWNER, associate=aid('luisa'), meta=fee_meta('session_fee', text),
+                  course_json={'label': 'Sessione', 'value': cid('session_fee')})
+add('add-impersonated-collaborator', actor, CA, 201, [overview_item(row, 'luisa')], headers=FULL_SESSION,
+    body={'course': cid('session_fee'), 'subscription_id': sid('luisa')},
+    result=effect(actor, created={CSM: [row], PAYMENT: [pay]}, audit=[
+        entry(CSM, '@ca14', 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None']), [OWN, COURSE_INDEX],
+              cs_repr('@ca14', 'session_fee', 'luisa')),
+        created_entry(PAYMENT, '@ca14p', [OWN, DIRECT]), link_save('@ca14', 'session_fee', 'luisa', '@ca14p', OWN)]))
+add('add-impersonated-foreign-course-hidden', 'owner', CA, 403, HIDDEN, headers=FULL_SESSION,
+    body={'course': cid('far'), 'subscription_id': sid('luisa')})
+
+
+def quote_case(name, sym, subscription, amount, *, stored_amount=None, memory=None, linked=True):
+    """A multiple-quote enrolment whose quote amount is free text; stored_amount None: float() or the column raises (atomic: no effect)."""
+    quote = {'quote_id': 'q1', 'title': 'Testo', 'amount': amount}
+    body = {'course': cid('quotes'), 'subscription_id': sid(subscription), 'multiple_quote': quote}
+    if stored_amount is None:
+        add(name, 'owner', CA, 500, SERVER, body=body, result=effect('owner'))
+        return
+    row = new_cs('@' + sym, 'quotes', subscription, payment='@' + sym + 'p' if linked else None, type_=2, quote=quote)
+    text = 'Quota Testo a Pilates'
+    pay = new_payment('@' + sym + 'p', stored_amount, user=OWNER, associate=aid(subscription),
+                      meta={'multiple_quote': quote, 'description': text, 'course_id': cid('quotes'), 'course_title': 'Pilates', 'course_type': '2'},
+                      course_json={'label': 'Pilates', 'value': cid('quotes')})
+    audit = [entry(CSM, '@' + sym, 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None']), [OWN, COURSE_INDEX],
+                   cs_repr('@' + sym, 'quotes', subscription, type_=2, quote=quote)),
+             created_entry(PAYMENT, '@' + sym + 'p', [OWN, DIRECT], amount=['None', memory])]
+    if linked:
+        audit.append(link_save('@' + sym, 'quotes', subscription, '@' + sym + 'p', OWN, type_=2, quote=quote))
+    add(name, 'owner', CA, 201, [overview_item(row, subscription)], body=body,
+        result=effect('owner', created={CSM: [row], PAYMENT: [pay]}, audit=audit))
+
+
+# The quote amount is float(text.replace(',', '.')): stored through Decimal (9 digits) into numeric(9,2); the audit keeps str(float).
+quote_case('add-quote-amount-thousands-dot', 'ca15', 'luisa', '1.000', stored_amount='1.00', memory='1.0')
+quote_case('add-quote-amount-spaces', 'ca16', 'mario', ' 50 ', stored_amount='50.00', memory='50.0')
+quote_case('add-quote-amount-three-decimals', 'ca17', 'luisa', '2,675', stored_amount='2.68', memory='2.675')
+quote_case('add-quote-amount-underscores', 'ca18', 'mario', '1_200', stored_amount='1200.00', memory='1200.0')
+quote_case('add-quote-amount-exponent', 'ca19', 'luisa', '1e2', stored_amount='100.00', memory='100.0')
+# payment.amount > 0 compares the float: a sub-cent amount is linked, a negative one rounding to zero is not.
+quote_case('add-quote-amount-sub-cent', 'ca20', 'mario', '0,004', stored_amount='0.00', memory='0.004')
+quote_case('add-quote-amount-negative-sub-cent', 'ca21', 'luisa', '-0,001', stored_amount='0.00', memory='-0.001', linked=False)
+# The amount >= 0 check constraint rejects the insert.
+quote_case('add-quote-amount-negative', None, 'luisa', '-5')
+quote_case('add-quote-amount-not-a-number', None, 'luisa', '10 euro')
+quote_case('add-quote-amount-two-separators', None, 'luisa', '1.000,50')
+quote_case('add-quote-amount-nan', None, 'luisa', 'nan')
+quote_case('add-quote-amount-overflow', None, 'luisa', '12345678')
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Course enrolment (course-subscriptions add, course-overview add, installment '
