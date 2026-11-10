@@ -2776,6 +2776,10 @@ def subscription_upload_document(request, uid):
     if subscription is None:
         raise TypeError("subscription not found!")
 
+    # Files are attached by the association's staff and by the member the subscription belongs to.
+    from docmanager.access import require_document_access
+    require_document_access(request, subscription)
+
     data = request.data
 
     if 'document' in data.keys() and 'filename' in data.keys():
