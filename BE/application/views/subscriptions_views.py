@@ -360,6 +360,11 @@ def _handle_family_subscription(data, request, is_athlete_request):
         cleanup_storage_keys(created_storage_keys)
         raise
 
+    # A payment created by this request still holds the values it was built with (a plain
+    # date as payment_date); the answer lists every payment as it is stored.
+    for payment in payments:
+        payment.refresh_from_db()
+
     return Response({
         "status": "success",
         "subs": [],
