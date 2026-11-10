@@ -90,6 +90,19 @@ func (t *subscriptionCreateTransaction) Certificate(ctx context.Context, id stri
 	return err == nil, user, err
 }
 
+func (t *subscriptionCreateTransaction) LinkableCertificate(ctx context.Context, id, association string, accounts []string) (bool, *string, error) {
+	var user *string
+	err := t.tx.GetContext(ctx, &user, `SELECT m.user_id FROM application_medicalcertificate m WHERE m.medical_id=$1 AND (
+ m.user_id = ANY($3::uuid[])
+ OR EXISTS (SELECT 1 FROM application_subscription s WHERE s.medical_id=m.medical_id AND s.sport_association_id=$2)
+ OR (m.user_id IS NULL AND NOT EXISTS (SELECT 1 FROM application_subscription s WHERE s.medical_id=m.medical_id
+  AND s.sport_association_id IS DISTINCT FROM $2::uuid))) FOR UPDATE OF m`, id, association, accounts)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil, nil
+	}
+	return err == nil, user, err
+}
+
 func (t *subscriptionCreateTransaction) SaveCertificateUser(ctx context.Context, id, user string) error {
 	_, err := t.tx.ExecContext(ctx, `UPDATE application_medicalcertificate SET user_id=$2 WHERE medical_id=$1`, id, user)
 	return err

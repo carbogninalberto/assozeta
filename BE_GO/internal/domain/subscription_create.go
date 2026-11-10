@@ -146,6 +146,10 @@ type SubscriptionCreateTransaction interface {
 	Existing(ctx context.Context, association string, first, last, tax *string, start, end CalendarDate) (*SubscriptionCreateExisting, error)
 	FutureRenewal(ctx context.Context, association string, end CalendarDate, tax *string) (bool, error)
 	Certificate(ctx context.Context, id string) (found bool, user *string, err error)
+	// LinkableCertificate is _linkable_medical_certificates: the certificate by id when it
+	// belongs to one of accounts, is the certificate of a subscription of the association, or
+	// has no account and no subscription of another association (locked).
+	LinkableCertificate(ctx context.Context, id, association string, accounts []string) (found bool, user *string, err error)
 	SaveCertificateUser(ctx context.Context, id, user string) error
 	// CertificateExpiration is the stored expiration_date of the certificate.
 	CertificateExpiration(ctx context.Context, id string) (*time.Time, error)

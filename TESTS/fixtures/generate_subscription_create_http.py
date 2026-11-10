@@ -758,6 +758,86 @@ add('preregistration-flag-not-true', 'owner', 200, SUCCESS(25.0), body=request(p
     effect=success('owner', 'Furio Flag', associate=created_associate(plain_flag), payment=new_payment('25.00', audit_amount='25.0'),
                    subscription=dict(PLAIN), membership=dict(MEMBER)))
 
+# --- The certificate a registration links ------------------------------------------------------------------
+# _linkable_medical_certificates: the id is linked when the certificate belongs to the association account or to the
+# requester, is the certificate of a subscription of this association, or has no account and no
+# subscription of another association. Any other id is treated like an unknown one: the registration succeeds
+# without a certificate and the certificate keeps its account and expiration date.
+ASSOCIATES['certified'] = {'id': next(extra_ids), 'association': OWN, 'first': 'Cora', 'last': 'Certificata', 'tax_code': 'CRTCRO80A41H501C',
+                           'born': '1980-01-01', 'user': 'owner', 'email': None}
+ASSOCIATES['certified_abroad'] = {'id': next(extra_ids), 'association': FOREIGN, 'first': 'Carlo', 'last': 'Altrove',
+                                  'tax_code': 'LTRCRL80A01H501D', 'born': '1980-01-01', 'user': 'foreign_owner', 'email': None}
+CERTIFICATES['other_account'] = {'id': next(extra_ids), 'user': 'foreign_owner', 'expiration': '2026-02-02'}
+CERTIFICATES['other_subscription'] = {'id': next(extra_ids), 'user': None}
+CERTIFICATES['own_subscription'] = {'id': next(extra_ids), 'user': 'foreign_owner'}
+CERTIFICATES['athlete_account'] = {'id': next(extra_ids), 'user': 'athlete'}
+CERTIFICATES['public_upload'] = {'id': next(extra_ids), 'user': None}
+SUBSCRIPTIONS['certified_2019'] = {'id': next(extra_ids), 'associate': 'certified', 'start': '2019-01-01', 'end': '2019-12-31', 'archived': True,
+                                   'number': '4', 'medical': 'own_subscription'}
+SUBSCRIPTIONS['abroad_2019'] = {'id': next(extra_ids), 'associate': 'certified_abroad', 'start': '2019-01-01', 'end': '2019-12-31',
+                                'archived': True, 'number': '901', 'association': FOREIGN, 'medical': 'other_subscription'}
+EXPIRING = '2027-03-31'
+EXPIRATION_AUDIT = lambda before='None': {'expiration_date': [before, EXPIRING + ' 00:00:00']}
+
+
+def certificate_body(label):
+    return {'medical_id': CERTIFICATES[label]['id'], 'filename': 'certificato.pdf', 'certificate_expring_date': EXPIRING}
+
+
+def linked(effect, label, *, columns, audit, index):
+    """The subscription's certificate and its update entry, written before the payment."""
+    effect['subscription'] = {**effect['subscription'], 'medical_id': CERTIFICATES[label]['id']}
+    effect['medical'] = {'label': label, 'columns': columns, 'audit': audit, 'index': index}
+    position = next(i for i, e in enumerate(effect['audit']) if e['model'] in ('payment', 'subscription'))
+    effect['audit'].insert(position, {'model': 'medicalcertificate', 'action': 1, 'ref': label, 'changes': audit, 'index': index})
+    return effect
+
+
+def owner_registration(name, data, label, *, link):
+    effect = success('owner', f"{data['first_name']} {data['last_name']}", associate=created_associate(data),
+                     payment=new_payment('25.00', audit_amount='25.0'), subscription=dict(PLAIN), membership=dict(MEMBER))
+    if link:
+        linked(effect, label, **link)
+    add(name, 'owner', 200, SUCCESS(25.0), body=request(data, medical_certificate=certificate_body(label)), effect=effect)
+
+
+owner_registration('certificate-of-another-account-not-linked', person('Lia', 'Senzalink', 'SNZLIA90C41H501K'), 'other_account', link=None)
+owner_registration('certificate-of-another-association-subscription-not-linked', person('Leo', 'Senzalink', 'SNZLEO90C01H501K'),
+                   'other_subscription', link=None)
+owner_registration('certificate-of-own-subscription-linked', person('Lea', 'Collegata', 'CLLLEA90C41H501K'), 'own_subscription',
+                   link={'columns': {'expiration_date': EXPIRING}, 'audit': EXPIRATION_AUDIT(), 'index': [OWN, 'actor.sport_association']})
+
+public = person('Pia', 'Pubblica', 'PBBPIA90C41H501K')
+add('anonymous-certificate-of-another-account-not-linked', 'anonymous', 200, SUCCESS(25.0),
+    body=request(public, sport_association=OWNER_NAME, **{**FORM, 'medical_certificate': certificate_body('athlete_account')}),
+    effect=success('anonymous', 'Pia Pubblica', associate=created_associate(public), payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription=dict(PLAIN), membership=dict(MEMBER)))
+uploaded = person('Ugo', 'Pubblico', 'PBBUGO90C01H501K')
+add('anonymous-certificate-upload-linked', 'anonymous', 200, SUCCESS(25.0),
+    body=request(uploaded, sport_association=OWNER_NAME, **{**FORM, 'medical_certificate': certificate_body('public_upload')}),
+    effect=linked(success('anonymous', 'Ugo Pubblico', associate=created_associate(uploaded), payment=new_payment('25.00', audit_amount='25.0'),
+                          subscription=dict(PLAIN), membership=dict(MEMBER)),
+                  'public_upload', columns={'user_id': OWNER, 'expiration_date': EXPIRING},
+                  audit={'user': ['None', OWNER], **EXPIRATION_AUDIT()}, index=None))
+
+
+def athlete_registration(name, data, label, *, link):
+    effect = member_effect(f"{data['first_name']} {data['last_name']}", data, member=IDS['athlete'], member_label='athlete', actor='athlete',
+                           broadcast=False)
+    if link:
+        linked(effect, label, **link)
+    add(name, 'athlete', 200, SUCCESS(25.0),
+        body=request(data, sport_association=OWNER_NAME, **{**FORM, 'medical_certificate': certificate_body(label)}), effect=effect)
+
+
+athlete_registration('athlete-certificate-of-another-account-not-linked', person('Aldo', 'Slegato', 'SLGLDA90C01H501K'), 'other_account',
+                     link=None)
+athlete_registration('athlete-certificate-own-linked', person('Ada', 'Legata', 'LGTDAA90C41H501K'), 'athlete_account',
+                     link={'columns': {'expiration_date': EXPIRING}, 'audit': EXPIRATION_AUDIT(), 'index': None})
+# An upload without an account that another association's subscription already uses.
+athlete_registration('athlete-certificate-of-another-association-subscription-not-linked', person('Abe', 'Slegato', 'SLGBAE90C01H501K'),
+                     'other_subscription', link=None)
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/add authored sequence with row, audit, Celery and notification effects',

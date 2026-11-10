@@ -44,6 +44,9 @@ type SubscriptionCreateRequest struct {
 	Anonymous bool
 	// AthleteRequest is is_athlete_request: an account other than an association naming one.
 	AthleteRequest bool
+	// RequesterID is create_subscription's requester when it is not request.user (a member
+	// account's renewal runs as the association's owner).
+	RequesterID string
 }
 
 // SubscriptionCreates ports subscription_add and create_subscription
@@ -625,7 +628,16 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			return nil, djangoInvalidUUID(text)
 		}
 		id := parsed.String()
-		found, owner, err := tx.Certificate(ctx, id)
+		// The association account's and the requester's certificates, those of the
+		// association's subscriptions and uploads without an account; any other id is
+		// treated like an unknown one.
+		accounts := []string{settings.OwnerID}
+		if requester := request.RequesterID; requester != "" {
+			accounts = append(accounts, requester)
+		} else if !request.Anonymous {
+			accounts = append(accounts, identity.ScopeUser.ID)
+		}
+		found, owner, err := tx.LinkableCertificate(ctx, id, association, accounts)
 		if err != nil {
 			return nil, err
 		}

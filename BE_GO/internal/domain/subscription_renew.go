@@ -54,6 +54,11 @@ type SubscriptionRenewTransaction interface {
 	// RenewAssociationOwner is SportAssociation.objects.get(sport_association_id=id).user
 	// (nil when no live association has the id).
 	RenewAssociationOwner(ctx context.Context, id string) (*Account, error)
+	// MemberRenewable is _member_renewal_association's check: the association has a
+	// subscription of the requester, or of a person sharing a tax code or a family with one
+	// of the requester's subscriptions, for the associate (by key, or by tax code iexact
+	// when associate is nil).
+	MemberRenewable(ctx context.Context, requester, association string, associate, taxCode *string) (bool, error)
 }
 
 type SubscriptionRenewStore interface {

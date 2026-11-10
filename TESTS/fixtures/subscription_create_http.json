@@ -139,6 +139,26 @@
    "born": "1980-01-01",
    "user": "athlete",
    "email": null
+  },
+  "certified": {
+   "id": "a1000000-0000-4000-8000-000000939002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Cora",
+   "last": "Certificata",
+   "tax_code": "CRTCRO80A41H501C",
+   "born": "1980-01-01",
+   "user": "owner",
+   "email": null
+  },
+  "certified_abroad": {
+   "id": "a1000000-0000-4000-8000-000000939003",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "first": "Carlo",
+   "last": "Altrove",
+   "tax_code": "LTRCRL80A01H501D",
+   "born": "1980-01-01",
+   "user": "foreign_owner",
+   "email": null
   }
  },
  "certificates": {
@@ -176,6 +196,27 @@
   "quick_undated": {
    "id": "a1000000-0000-4000-8000-000000930021",
    "user": "owner"
+  },
+  "other_account": {
+   "id": "a1000000-0000-4000-8000-000000939004",
+   "user": "foreign_owner",
+   "expiration": "2026-02-02"
+  },
+  "other_subscription": {
+   "id": "a1000000-0000-4000-8000-000000939005",
+   "user": null
+  },
+  "own_subscription": {
+   "id": "a1000000-0000-4000-8000-000000939006",
+   "user": "foreign_owner"
+  },
+  "athlete_account": {
+   "id": "a1000000-0000-4000-8000-000000939007",
+   "user": "athlete"
+  },
+  "public_upload": {
+   "id": "a1000000-0000-4000-8000-000000939008",
+   "user": null
   }
  },
  "subscriptions": {
@@ -238,6 +279,25 @@
    "archived": true,
    "number": "1",
    "medical": "quick_undated"
+  },
+  "certified_2019": {
+   "id": "a1000000-0000-4000-8000-000000939009",
+   "associate": "certified",
+   "start": "2019-01-01",
+   "end": "2019-12-31",
+   "archived": true,
+   "number": "4",
+   "medical": "own_subscription"
+  },
+  "abroad_2019": {
+   "id": "a1000000-0000-4000-8000-000000939010",
+   "associate": "certified_abroad",
+   "start": "2019-01-01",
+   "end": "2019-12-31",
+   "archived": true,
+   "number": "901",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "medical": "other_subscription"
   }
  },
  "payments": {
@@ -9258,6 +9318,1794 @@
      "data": ""
     },
     "preregistration": "true"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-certificate-of-another-account-not-linked",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Lia",
+      "last_name": "Senzalink",
+      "tax_code": "SNZLIA90C41H501K",
+      "born_date": "1990-03-15",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "531"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "531"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Lia Senzalink.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Lia",
+     "last_name": "Senzalink",
+     "tax_code": "SNZLIA90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": "a1000000-0000-4000-8000-000000939004",
+     "filename": "certificato.pdf",
+     "certificate_expring_date": "2027-03-31"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-certificate-of-another-association-subscription-not-linked",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Leo",
+      "last_name": "Senzalink",
+      "tax_code": "SNZLEO90C01H501K",
+      "born_date": "1990-03-15",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "532"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "532"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Leo Senzalink.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Leo",
+     "last_name": "Senzalink",
+     "tax_code": "SNZLEO90C01H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": "a1000000-0000-4000-8000-000000939005",
+     "filename": "certificato.pdf",
+     "certificate_expring_date": "2027-03-31"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-certificate-of-own-subscription-linked",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Lea",
+      "last_name": "Collegata",
+      "tax_code": "CLLLEA90C41H501K",
+      "born_date": "1990-03-15",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "533",
+     "medical_id": "a1000000-0000-4000-8000-000000939006"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "533"
+    },
+    "medical": {
+     "label": "own_subscription",
+     "columns": {
+      "expiration_date": "2027-03-31"
+     },
+     "audit": {
+      "expiration_date": [
+       "None",
+       "2027-03-31 00:00:00"
+      ]
+     },
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "actor.sport_association"
+     ]
+    },
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "medicalcertificate",
+      "action": 1,
+      "ref": "own_subscription",
+      "changes": {
+       "expiration_date": [
+        "None",
+        "2027-03-31 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Lea Collegata.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Lea",
+     "last_name": "Collegata",
+     "tax_code": "CLLLEA90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": "a1000000-0000-4000-8000-000000939006",
+     "filename": "certificato.pdf",
+     "certificate_expring_date": "2027-03-31"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-anonymous-certificate-of-another-account-not-linked",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "anonymous",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Pia",
+      "last_name": "Pubblica",
+      "tax_code": "PBBPIA90C41H501K",
+      "born_date": "1990-03-15",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "534"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "534"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Pia Pubblica.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Pia",
+     "last_name": "Pubblica",
+     "tax_code": "PBBPIA90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "sport_association": "message-reads-700001",
+    "plan_id": null,
+    "membership_plan_id": null,
+    "medical_certificate": {
+     "medical_id": "a1000000-0000-4000-8000-000000939007",
+     "filename": "certificato.pdf",
+     "certificate_expring_date": "2027-03-31"
+    },
+    "custom_data": null,
+    "additional_fields": null,
+    "subscription_id": null
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-anonymous-certificate-upload-linked",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "anonymous",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Ugo",
+      "last_name": "Pubblico",
+      "tax_code": "PBBUGO90C01H501K",
+      "born_date": "1990-03-15",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "535",
+     "medical_id": "a1000000-0000-4000-8000-000000939008"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "535"
+    },
+    "medical": {
+     "label": "public_upload",
+     "columns": {
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "expiration_date": "2027-03-31"
+     },
+     "audit": {
+      "user": [
+       "None",
+       "a1000000-0000-4000-8000-000000700001"
+      ],
+      "expiration_date": [
+       "None",
+       "2027-03-31 00:00:00"
+      ]
+     },
+     "index": null
+    },
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "medicalcertificate",
+      "action": 1,
+      "ref": "public_upload",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "expiration_date": [
+        "None",
+        "2027-03-31 00:00:00"
+       ]
+      },
+      "index": null
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Ugo Pubblico.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Ugo",
+     "last_name": "Pubblico",
+     "tax_code": "PBBUGO90C01H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "sport_association": "message-reads-700001",
+    "plan_id": null,
+    "membership_plan_id": null,
+    "medical_certificate": {
+     "medical_id": "a1000000-0000-4000-8000-000000939008",
+     "filename": "certificato.pdf",
+     "certificate_expring_date": "2027-03-31"
+    },
+    "custom_data": null,
+    "additional_fields": null,
+    "subscription_id": null
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-athlete-certificate-of-another-account-not-linked",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "athlete",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Aldo",
+      "last_name": "Slegato",
+      "tax_code": "SLGLDA90C01H501K",
+      "born_date": "1990-03-15",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700004"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "user_id": "a1000000-0000-4000-8000-000000700004",
+     "subscription_number": "536"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "536"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700004"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     },
+     {
+      "task": "send_email_template",
+      "args": [],
+      "kwargs": [
+       [
+        "recipient_list",
+        [
+         "message-reads-700001@example.test"
+        ]
+       ],
+       [
+        "subject",
+        "[$denomination] Ricordati di approvare l'iscrizione di Aldo Slegato"
+       ],
+       [
+        "template",
+        "email/account/email_new_subscription.html"
+       ],
+       [
+        "data",
+        {
+         "athlete_first_name": "Aldo",
+         "athlete_last_name": "Slegato",
+         "sport_association": {
+          "denomination": "$denomination"
+         },
+         "app_host": "$app_url",
+         "settings": {
+          "WHITELABEL_NAME": "$whitelabel_name",
+          "IS_WHITELABEL": "$is_whitelabel"
+         }
+        }
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Aldo Slegato.",
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "user": "athlete"
+    },
+    "member": "a1000000-0000-4000-8000-000000700004"
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Aldo",
+     "last_name": "Slegato",
+     "tax_code": "SLGLDA90C01H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "sport_association": "message-reads-700001",
+    "plan_id": null,
+    "membership_plan_id": null,
+    "medical_certificate": {
+     "medical_id": "a1000000-0000-4000-8000-000000939004",
+     "filename": "certificato.pdf",
+     "certificate_expring_date": "2027-03-31"
+    },
+    "custom_data": null,
+    "additional_fields": null,
+    "subscription_id": null
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-athlete-certificate-own-linked",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "athlete",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Ada",
+      "last_name": "Legata",
+      "tax_code": "LGTDAA90C41H501K",
+      "born_date": "1990-03-15",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700004"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "user_id": "a1000000-0000-4000-8000-000000700004",
+     "subscription_number": "537",
+     "medical_id": "a1000000-0000-4000-8000-000000939007"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "537"
+    },
+    "medical": {
+     "label": "athlete_account",
+     "columns": {
+      "expiration_date": "2027-03-31"
+     },
+     "audit": {
+      "expiration_date": [
+       "None",
+       "2027-03-31 00:00:00"
+      ]
+     },
+     "index": null
+    },
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700004"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "medicalcertificate",
+      "action": 1,
+      "ref": "athlete_account",
+      "changes": {
+       "expiration_date": [
+        "None",
+        "2027-03-31 00:00:00"
+       ]
+      },
+      "index": null
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     },
+     {
+      "task": "send_email_template",
+      "args": [],
+      "kwargs": [
+       [
+        "recipient_list",
+        [
+         "message-reads-700001@example.test"
+        ]
+       ],
+       [
+        "subject",
+        "[$denomination] Ricordati di approvare l'iscrizione di Ada Legata"
+       ],
+       [
+        "template",
+        "email/account/email_new_subscription.html"
+       ],
+       [
+        "data",
+        {
+         "athlete_first_name": "Ada",
+         "athlete_last_name": "Legata",
+         "sport_association": {
+          "denomination": "$denomination"
+         },
+         "app_host": "$app_url",
+         "settings": {
+          "WHITELABEL_NAME": "$whitelabel_name",
+          "IS_WHITELABEL": "$is_whitelabel"
+         }
+        }
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Ada Legata.",
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "user": "athlete"
+    },
+    "member": "a1000000-0000-4000-8000-000000700004"
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Ada",
+     "last_name": "Legata",
+     "tax_code": "LGTDAA90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "sport_association": "message-reads-700001",
+    "plan_id": null,
+    "membership_plan_id": null,
+    "medical_certificate": {
+     "medical_id": "a1000000-0000-4000-8000-000000939007",
+     "filename": "certificato.pdf",
+     "certificate_expring_date": "2027-03-31"
+    },
+    "custom_data": null,
+    "additional_fields": null,
+    "subscription_id": null
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-athlete-certificate-of-another-association-subscription-not-linked",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "athlete",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Abe",
+      "last_name": "Slegato",
+      "tax_code": "SLGBAE90C01H501K",
+      "born_date": "1990-03-15",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700004"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "user_id": "a1000000-0000-4000-8000-000000700004",
+     "subscription_number": "538"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "538"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700004"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     },
+     {
+      "task": "send_email_template",
+      "args": [],
+      "kwargs": [
+       [
+        "recipient_list",
+        [
+         "message-reads-700001@example.test"
+        ]
+       ],
+       [
+        "subject",
+        "[$denomination] Ricordati di approvare l'iscrizione di Abe Slegato"
+       ],
+       [
+        "template",
+        "email/account/email_new_subscription.html"
+       ],
+       [
+        "data",
+        {
+         "athlete_first_name": "Abe",
+         "athlete_last_name": "Slegato",
+         "sport_association": {
+          "denomination": "$denomination"
+         },
+         "app_host": "$app_url",
+         "settings": {
+          "WHITELABEL_NAME": "$whitelabel_name",
+          "IS_WHITELABEL": "$is_whitelabel"
+         }
+        }
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Abe Slegato.",
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "user": "athlete"
+    },
+    "member": "a1000000-0000-4000-8000-000000700004"
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Abe",
+     "last_name": "Slegato",
+     "tax_code": "SLGBAE90C01H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "sport_association": "message-reads-700001",
+    "plan_id": null,
+    "membership_plan_id": null,
+    "medical_certificate": {
+     "medical_id": "a1000000-0000-4000-8000-000000939005",
+     "filename": "certificato.pdf",
+     "certificate_expring_date": "2027-03-31"
+    },
+    "custom_data": null,
+    "additional_fields": null,
+    "subscription_id": null
    },
    "setup": null
   }

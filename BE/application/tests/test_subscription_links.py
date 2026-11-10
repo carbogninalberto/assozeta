@@ -165,6 +165,12 @@ class MemberRenewalTests(Base):
         response, _ = self.renew(self.member, self.sport_association, relative.associate)
         self.assertEqual(response.status_code, 200, response.data)
 
+    def test_member_renews_a_person_with_the_tax_code_of_its_subscription(self):
+        own = self.past_subscription(self.other_association, self.member)
+        same = self.past_subscription(self.sport_association, self.user, tax_code=own.associate.tax_code)
+        response, _ = self.renew(self.member, self.sport_association, same.associate)
+        self.assertEqual(response.status_code, 200, response.data)
+
     def test_member_does_not_renew_another_member(self):
         self.past_subscription(self.sport_association, self.member)
         stranger = self.past_subscription(self.sport_association, self.user)
