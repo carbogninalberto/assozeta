@@ -145,7 +145,8 @@ def resolve_date(text):
     values = {'$today': today(), '$season_start': start, '$season_end': end,
               '$today_next_year': today().replace(year=today().year + 1) if (today().month, today().day) != (2, 29)
               else date(today().year + 1, 2, 28),
-              '$season_start_next_year_eve': start.replace(year=start.year + 1) - timedelta(days=1)}
+              '$season_start_next_year_eve': start.replace(year=start.year + 1) - timedelta(days=1),
+              '$next_season_start': start.replace(year=start.year + 1), '$next_season_end': end.replace(year=end.year + 1)}
     return values[text]
 
 
@@ -416,9 +417,9 @@ def resolve(value, binding):
     return value
 
 
-def membership_type_default():
+def membership_type_default(offset=0):
     start, end = season()
-    return f'Tesseramento {start.year}/{end.year}'
+    return f'Tesseramento {start.year + offset}/{end.year + offset}'
 
 
 def check_rows(case, effect, before, after, ids, since, until, binding):
@@ -436,13 +437,17 @@ def check_rows(case, effect, before, after, ids, since, until, binding):
     if member in ids:
         member = ids[member]
     binding['$member'] = member
+    # A preregistration is created on the next season's first day.
+    binding['$next_season_created'] = datetime.combine(resolve_date('$next_season_start'), day_time()).isoformat() + 'Z'
+    for name in ('start', 'end'):
+        binding[f'$next_season_{name}_text'] = resolve_date(f'$next_season_{name}').isoformat() + ' 00:00:00+00:00'
 
     def expect_new(label, columns, row):
         expected = {**defaults[label], **resolve(columns, binding)}
         key = KEYS[label]
         contract.require(uuid4_text(row[key]) or label == LABELS['relation'], 'state.key:' + label)
         expected[key] = row[key]
-        if 'creation_date' in expected:
+        if 'creation_date' in expected and 'creation_date' not in columns:
             contract.require(in_window(row['creation_date'], since, until), 'state.created:' + label)
             expected['creation_date'] = row['creation_date']
         contract.require(row == expected, 'state.row:' + label + json.dumps(
@@ -524,6 +529,8 @@ def check_rows(case, effect, before, after, ids, since, until, binding):
                    'associate_id': bound['$associate'], 'payment_id': binding['$payment'], **effect['membership']}
         if columns.get('membership_type') == '$default_membership_type':
             columns['membership_type'] = membership_type_default()
+        if columns.get('membership_type') == '$next_membership_type':
+            columns['membership_type'] = membership_type_default(1)
         expect_new(LABELS['membership'], columns, row)
     # Notification broadcast rows.
     broadcasts, subscriptions = new[LABELS['broadcast']], new[LABELS['user_broadcast']]
@@ -615,7 +622,8 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
     contract.require(len(added) == len(authored), f'audit.count:{len(added)}')
     types = {(ct['app_label'], ct['model']): ct['id'] for ct in before['contenttypes.ContentType']}
     users = keyed(before['application.User'], 'user_id')
-    actor = ids[effect['actor']]
+    # The public form has no actor.
+    actor = None if effect['actor'] == 'anonymous' else ids[effect['actor']]
     session = case['headers'].get('X-Impersonation-Id', '')
     additional = None
     if session.startswith('$session:'):
@@ -659,7 +667,7 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
         contract.require(event['changes'] == expected, 'audit.changes' + where + json.dumps(
             {k: [expected.get(k), event['changes'].get(k)] for k in set(expected) | set(event['changes'])
              if expected.get(k) != event['changes'].get(k)}))
-        contract.require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor' + where + json.dumps([event['actor_id'], event['actor_email'], actor]))
+        contract.require(event['actor_id'] == actor and event['actor_email'] == (users[actor]['email'] if actor else None), 'audit.actor' + where + json.dumps([event['actor_id'], event['actor_email'], actor]))
         contract.require(event['cid'] == case['name'] and event['additional_data'] == additional and event['changes_text'] == '',
                          'audit.context' + where)
         contract.require(context['remote'].setdefault('addr', event['remote_addr']) == event['remote_addr'], 'audit.remote' + where)

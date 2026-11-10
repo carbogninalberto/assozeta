@@ -608,8 +608,10 @@ add('new-member-invalid-email', 'owner', 400, {'email': ['Enter a valid email ad
                  account={'new_member': True, 'new_member_info': {'first_name': 'Nico', 'last_name': 'Errato', 'email': 'non-valida'}}))
 
 
-def member_effect(full_name, data, *, member, member_label, new_user=None, welcome=False, signature=None):
-    effect = success('owner', full_name, associate=created_associate(data, user_id=member),
+def member_effect(full_name, data, *, member, member_label, new_user=None, welcome=False, signature=None, actor='owner',
+                  broadcast=True, tutor=None):
+    effect = success(actor, full_name, associate=created_associate(data, user_id=member, **({'is_minor': True} if data.get('is_minor') else {})),
+                     tutor=created_associate(tutor, user_id=member) if tutor else None, relation=bool(tutor),
                      payment=new_payment('25.00', audit_amount='25.0'),
                      subscription={**PLAIN, 'user_id': member, **({'status_flag': 2, 'signature_url': signature} if signature else {})},
                      membership=dict(MEMBER))
@@ -619,20 +621,25 @@ def member_effect(full_name, data, *, member, member_label, new_user=None, welco
             entry['changes'] = {'user': ['None', member]}
     # The notification goes to the member: its broadcast rows are created once.
     effect['audit'] = [e for e in effect['audit'] if e.get('app') != 'notifications']
-    effect['audit'] += [{'model': model, 'action': 0, 'ref': model, 'changes': {}, 'app': 'notifications', 'index': [OWN, 'actor.sport_association']}
-                        for model in ('notificationsbroadcast', 'usernotificationsbroadcast')]
-    effect['broadcast_created'] = True
+    # Entries without an association of their own are indexed through the actor's association (none for the public forms).
+    through_actor = [OWN, 'actor.sport_association'] if actor == 'owner' else None
+    if broadcast:
+        effect['audit'] += [{'model': model, 'action': 0, 'ref': model, 'changes': {}, 'app': 'notifications', 'index': through_actor}
+                            for model in ('notificationsbroadcast', 'usernotificationsbroadcast')]
+    effect['broadcast_created'] = broadcast
     effect['notification']['user'] = member_label
     if new_user:
         effect['new_user'] = new_user
-        effect['audit'][:0] = [{'model': 'user', 'action': 0, 'ref': 'new_user', 'changes': {}, 'index': [OWN, 'actor.sport_association']},
+        effect['audit'][:0] = [{'model': 'user', 'action': 0, 'ref': 'new_user', 'changes': {}, 'index': through_actor},
                                {'model': 'user', 'action': 1, 'ref': 'new_user', 'changes': {'username': ['$token_username', '$username']},
-                                'index': [OWN, 'actor.sport_association']}]
+                                'index': through_actor}]
     if signature:
         effect['signature'] = {'user': member_label, 'data': signature}
         signature_entries(effect, upload=False)
         effect['audit'] = [{**e, 'changes': {'signature_url': ['None', signature]}} if e['model'] == 'subscription' and e['action'] == 1 else e
                            for e in effect['audit']]
+        if through_actor is None:
+            effect['audit'] = [{**e, 'index': None} if e['model'] == 'signature' else e for e in effect['audit']]
     first, last = data['first_name'], data['last_name']
     athlete = {'task': 'send_email_template', 'args': [], 'kwargs': [
         ['recipient_list', ['message-reads-700001@example.test']],
@@ -658,6 +665,98 @@ known_member = person('Elsa', 'Esistente', 'SSTLSE90C41H501K')
 add('new-member-existing-email', 'owner', 200, SUCCESS(25.0),
     body=request(known_member, account={'new_member': True, 'new_member_info': {'first_name': 'X', 'last_name': 'Y', 'email': ATHLETE_EMAIL}}),
     effect=member_effect('Elsa Esistente', known_member, member=IDS['athlete'], member_label='athlete'))
+
+# --- The public forms -------------------------------------------------------------------------------------
+# An anonymous request is attributed to the user named by data['sport_association'] (User.objects.get(username=...): a
+# missing key or an unknown name is a 500); with an association account the rest is the owner's flow without an actor
+# and without an Authorization header for print_document_subscription. The quick mode answers 403 after both lookups.
+# A logged-in athlete naming an association is an athlete request: the association of that username (unknown: 500),
+# the athlete owns the associate, the payment and the subscription, gets the notification, and the owner is e-mailed.
+OWNER_NAME, ATHLETE_NAME = 'message-reads-700001', 'message-reads-700004'
+FORM = {'plan_id': None, 'membership_plan_id': None, 'medical_certificate': {'medical_id': None, 'certificate_expring_date': None},
+        'custom_data': None, 'additional_fields': None, 'subscription_id': None}
+add('anonymous-without-association-server-error', 'anonymous', 500, SERVER, body=request(person('Anna', 'Anonima', 'NNMNNA90C41H501K')))
+add('anonymous-unknown-username-server-error', 'anonymous', 500, SERVER,
+    body=request(person('Anna', 'Anonima', 'NNMNNA90C41H501K'), sport_association='nessuno'))
+add('anonymous-athlete-username-server-error', 'anonymous', 500, SERVER,
+    body=request(person('Anna', 'Anonima', 'NNMNNA90C41H501K'), sport_association=ATHLETE_NAME))
+add('anonymous-list-body-server-error', 'anonymous', 500, SERVER, body=[])
+add('anonymous-missing-signature', 'anonymous', 400, VALIDATION,
+    body={k: v for k, v in request(person('Anna', 'A', 'X'), sport_association=OWNER_NAME).items() if k != 'signature'})
+add('anonymous-quick-not-allowed', 'anonymous', 403, {'detail': 'User not allowed.'}, query='?m=only_associate',
+    body={'sport_association': OWNER_NAME, 'associate': ASSOCIATES['quick_no_account']['id']})
+add('anonymous-quick-unknown-associate-server-error', 'anonymous', 500, SERVER, query='?m=only_associate',
+    body={'sport_association': OWNER_NAME, 'associate': UNKNOWN})
+add('anonymous-duplicate', 'anonymous', 409, {'msg': 'Questa iscrizione esiste già.', 'code': '409', 'ref': 'subscription_duplicate'},
+    body=request(person('dora', 'DOPPIA', 'dppdro90a41h501x', born='01/01/1990'), sport_association=OWNER_NAME, **FORM))
+anonymous = person('Anna', 'Anonima', 'NNMNNA90C41H501K')
+add('anonymous-form', 'anonymous', 200, SUCCESS(25.0), body=request(anonymous, sport_association=OWNER_NAME, **FORM),
+    effect=success('anonymous', 'Anna Anonima', associate=created_associate(anonymous), payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription=dict(PLAIN), membership=dict(MEMBER)))
+registered = person('Remo', 'Registrato', 'RGSRME90C01H501K')
+add('anonymous-form-new-account', 'anonymous', 200, SUCCESS(25.0),
+    body=request(registered, sport_association=OWNER_NAME, **FORM,
+                 account={'new_member': True, 'new_member_info': {'first_name': 'Remo', 'last_name': 'Registrato', 'phone': None,
+                                                                  'email': 'remo.registrato@example.test'}},
+                 signature={'there_is_signature': True, 'data': 'https://firme.example.test/remo.png'}),
+    effect=member_effect('Remo Registrato', registered, member='$new_user', member_label='$new_user', welcome=True, actor='anonymous',
+                         new_user={'prefix': 'RemReg', 'email': 'remo.registrato@example.test', 'first_name': 'Remo',
+                                   'last_name': 'Registrato', 'phone': None},
+                         signature='https://firme.example.test/remo.png'))
+
+add('athlete-form-unknown-username-server-error', 'athlete', 500, SERVER,
+    body=request(person('Tina', 'Atleta', 'TLTTNI90C41H501K'), sport_association='nessuno'))
+add('athlete-form-athlete-username-server-error', 'athlete', 500, SERVER,
+    body=request(person('Tina', 'Atleta', 'TLTTNI90C41H501K'), sport_association=ATHLETE_NAME))
+add('athlete-form-duplicate', 'athlete', 409, {'msg': 'Questa iscrizione esiste già.', 'code': '409', 'ref': 'subscription_duplicate'},
+    body=request(person('dora', 'DOPPIA', 'dppdro90a41h501x', born='01/01/1990'), sport_association=OWNER_NAME, **FORM))
+add('athlete-form-invalid-fields', 'athlete', 400, {'sex': ['"X" is not a valid choice.']},
+    body=request(person('Tina', 'Atleta', 'TLTTNI90C41H501K', sex='X'), sport_association=OWNER_NAME, **FORM))
+athlete_form = person('Tina', 'Atleta', 'TLTTNI90C41H501K')
+add('athlete-form', 'athlete', 200, SUCCESS(25.0), body=request(athlete_form, sport_association=OWNER_NAME, **FORM),
+    effect=member_effect('Tina Atleta', athlete_form, member=IDS['athlete'], member_label='athlete', actor='athlete', broadcast=False))
+# A minor with a tutor: both belong to the athlete.
+minor_form = person('Mino', 'Minore', 'MNRMNI15C01H501K', born='01/03/2015', is_minor=True)
+tutor_form = person('Tea', 'Tutrice', 'TTRTEA80C41H501K', born='01/03/1980', sex='f')
+effect = member_effect('Mino Minore', {**minor_form, 'is_minor': True}, member=IDS['athlete'], member_label='athlete', actor='athlete',
+                       broadcast=False, tutor={**tutor_form, 'sex': 'F'})
+add('athlete-form-minor', 'athlete', 200, SUCCESS(25.0), body=request(minor_form, tutor=tutor_form, sport_association=OWNER_NAME, **FORM),
+    effect=effect)
+
+# --- Preregistration (next season) ------------------------------------------------------------------------
+# data['preregistration'] is True without a subscription_id: the duplicate check, the subscription's creation date
+# (the season's first day), its dates and the membership's dates are those of the season after the current one.
+NEXT = {'creation_date': '$next_season_created', 'start_date': '$next_season_start', 'end_date': '$next_season_end'}
+NEXT_MEMBER = {'membership_type': '$next_membership_type', 'start_date': '$next_season_start', 'end_date': '$next_season_end', 'price': None}
+
+
+def next_season(effect):
+    """The create entry renders the datetimes create_subscription assigned to the date fields."""
+    for entry in effect['audit']:
+        if entry['model'] == 'subscription' and entry['action'] == 0:
+            entry['changes'] = {**entry['changes'], 'start_date': ['None', '$next_season_start_text'],
+                                'end_date': ['None', '$next_season_end_text']}
+    return effect
+
+
+early = person('Pietro', 'Prenotato', 'PRNPTR90C01H501K')
+add('preregistration', 'owner', 200, SUCCESS(25.0), body=request(early, preregistration=True, subscription_id=None),
+    effect=next_season(success('owner', 'Pietro Prenotato', associate=created_associate(early),
+                               payment=new_payment('25.00', audit_amount='25.0'), subscription={**PLAIN, **NEXT},
+                               membership=dict(NEXT_MEMBER))))
+add('preregistration-twice', 'owner', 409, {'msg': 'Questa iscrizione esiste già.', 'code': '409', 'ref': 'subscription_duplicate'},
+    body=request(early, preregistration=True))
+early_public = person('Paola', 'Prenotata', 'PRNPLA90C41H501K')
+add('preregistration-anonymous', 'anonymous', 200, SUCCESS(25.0),
+    body=request(early_public, sport_association=OWNER_NAME, preregistration=True, **FORM),
+    effect=next_season(success('anonymous', 'Paola Prenotata', associate=created_associate(early_public),
+                               payment=new_payment('25.00', audit_amount='25.0'), subscription={**PLAIN, **NEXT},
+                               membership=dict(NEXT_MEMBER))))
+# Not exactly True: an ordinary registration.
+plain_flag = person('Furio', 'Flag', 'FLGFRU90C01H501K')
+add('preregistration-flag-not-true', 'owner', 200, SUCCESS(25.0), body=request(plain_flag, preregistration='true'),
+    effect=success('owner', 'Furio Flag', associate=created_associate(plain_flag), payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription=dict(PLAIN), membership=dict(MEMBER)))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

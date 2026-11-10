@@ -412,6 +412,10 @@ func (t *subscriptionCreateTransaction) MemberByEmail(ctx context.Context, email
 	return t.oneMember(ctx, `email=$1 AND NOT deleted ORDER BY user_id LIMIT 1`, email)
 }
 
+func (t *subscriptionCreateTransaction) MemberByUsername(ctx context.Context, username string) (*domain.SubscriptionCreateMember, error) {
+	return t.oneMember(ctx, `username=$1 AND NOT deleted`, username)
+}
+
 func (t *subscriptionCreateTransaction) Member(ctx context.Context, id string) (*domain.SubscriptionCreateMember, error) {
 	return t.oneMember(ctx, `user_id=$1`, id)
 }
