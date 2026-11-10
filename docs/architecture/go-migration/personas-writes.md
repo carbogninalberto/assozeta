@@ -62,9 +62,23 @@ the production execution owner.
   association with the associate's tax code iexact, group-aware; `signature_present`; the associate as `BasicAssociateSerializer`
   with M2M tutors; `tags` as keys). `rowIds` are the subscriptions' associate ids.
 
+- **picture_path upload (add, update):** `to_internal_value` runs before the field validation. A string containing `base64` is
+  decoded with `base64.b64decode` (the text after the first comma, or the whole value) and saved through the default storage as
+  `associates/<body associate_id>/picture_<str(timezone.now().timestamp())>.jpg` (`image/jpeg`, `CacheControl: max-age=86400`;
+  the folder is `None` without an `associate_id` in the body), then `put_object_acl(ACL='public-read')` on
+  `<AWS_LOCATION>/<saved name>` and the field becomes `os.path.join` of the fixed CDN host, `AWS_LOCATION` and the storage path.
+  A `binascii.Error` is a ValidationError the surrounding handler wraps again:
+  `400 {'picture_path': "Error processing image: {'picture_path': ErrorDetail(string='Invalid base64 string', code='invalid')}"}`;
+  non-ASCII text and a refused ACL answer `Error processing image: <str(exception)>` the same way. The object is stored before the
+  other fields are validated: a later 400 leaves it in place. A tutor's `picture_path` goes through `BasicAssociateSerializer` and is
+  stored as sent. Go: `service/personas_picture.go` (`dto.PythonB64Decode`, `documentkey.S3Key`, `documentobjects.S3` `Exists`,
+  `Put`, `PutACL`).
+
 ## Not ported (refused with the 500 page before any write)
 
-- `picture_path` values containing `base64` on add and update (the serializer uploads them to object storage).
+- `picture_path` uploads with a body `associate_id` outside `[A-Za-z0-9_-]{1,64}` (the storage name normalisation), a
+  `picture_path` list or object that reaches the upload branch, an existing object under the new key, storage failures other than
+  a 403/404 answer to the ACL request (botocore's and s3transfer's texts), and uploads on the router's stock create.
 - `tutors_data` entries whose `is_primary` is not a boolean (auditlog renders the raw value), tutor ids that are numbers or
   booleans, `born_date` texts with non-ASCII digits, and tutors under an `X-Group-Id` the manager would store raw (not a canonical,
   existing group id) when a tutor may be created; an `X-Group-Id` of that kind on add (Django fails on the insert, or renders the
@@ -87,3 +101,20 @@ through-model M2M `tutors` metadata is read-only, and update entries are indexed
   `personas-writes-recover-owner` (CAUGHT).
 - `personas-reads` (`rerun-personas-writes`) stays 201/201 on four transports after its handler, service and repository gained the
   info soft delete and the render-by-id hook.
+
+### API v2: picture upload (v2-misc-3)
+
+The fixture has 188 cases (20 new: uploads on add and update by the owner, a FULL collaborator and an impersonating admin, JSON
+and form bodies, the body's `associate_id` as folder, an upload followed by a field error, padding errors, non-ASCII text, skipped
+characters, a value without a comma, an empty payload, a refused ACL, a tutor's picture stored as sent, a stored URL sent back,
+`null`). `service_context` owns a private MinIO behind subscription-sign's recording proxy; the serializer reads the bucket and
+`AWS_LOCATION` core.settings took from the environment, so only the endpoint and credentials are overridden. Every case checks the
+exact storage requests (HeadObject 404, PutObject, PutObjectAcl `public-read`), the key's timestamp against the request window, the
+stored bytes and metadata, and that the response and the saved row carry the URL of that key.
+
+- RED (`v2misc3-red-r4`): Django 188/188; Go 500 on `personas-writes-add-picture`.
+- GREEN (`v2misc3-final-r1`, after the last base merge; first `v2misc3-versioned-r3`): 188/188 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`v2misc3-mutation-r3`): the ACL request on the name without `AWS_LOCATION` fails Go on `personas-writes-add-picture`
+  (`storage.requests`, CAUGHT).
+- Re-run: subscription-sign 47/47 (`v2misc3-rerun-r1`, the proxy takes its bucket as a parameter), router-personas 51/51 and
+  router-persona-subscriptions 73/73 (`v2misc3-rerun-r2`).

@@ -56,8 +56,10 @@ association'; an owner whose association is missing or soft-deleted: 500).
 
 Personal data is synthetic. Run with ``python3 -I``.
 """
+import base64
 import copy
 import json
+import urllib.parse
 from pathlib import Path
 
 OUTPUT = Path(__file__).with_name('personas_writes_http.json')
@@ -70,6 +72,7 @@ EMPTY = '<empty>'
 _ids = iter(f'a1000000-0000-4000-8000-{677001 + n:012d}' for n in range(400))
 _relation_ids = iter(range(677001, 677200))
 UNKNOWN = 'a1000000-0000-4000-8000-000000677999'
+ACL_DENIED = 'acl-refused-folder'
 F1, F2 = next(_ids), next(_ids)
 
 FIELDS = ('picture_path', 'first_name', 'last_name', 'sex', 'tax_code', 'born_date', 'born_city', 'address_city', 'address',
@@ -149,6 +152,11 @@ SEED = {
     'subbed': person('Serena', 'Iscritta', born_date='1990-01-01', tax_code='SRNSCR90A41H501S'),
     'lone': person('Leo', 'Solitario', born_date='1991-01-01', tax_code='LNOSLT91A01H501L'),
     'sub_far': person('Hilde', 'Estera', association=FOREIGN, born_date='1992-01-01', tax_code='HLDSTR92A41Z112H'),
+    # picture uploads
+    'pic_upd': person('Fosca', 'Fotografata', picture_path='https://cdn.example.test/fosca-old.jpg'),
+    'pic_collab': person('Fulvio', 'Fotocollaborato'),
+    'pic_form': person('Flora', 'Fotomodulo'),
+    'pic_keep': person('Fabio', 'Fotofallita', picture_path='https://cdn.example.test/fabio.jpg'),
 }
 A = {label: row['id'] for label, row in SEED.items()}
 
@@ -968,11 +976,144 @@ add('subscriptions-delete-associate-id', 'owner', 'DELETE', subs_path('subbed'),
 add('subscriptions-delete-malformed', 'owner', 'DELETE', subs_path('abc'), 404, NOT_FOUND, allow=ALLOW_SUBS)
 add('subscriptions-delete-athlete', 'athlete', 'DELETE', subs_path('subbed'), 403, NOT_ASSOCIATION, allow=ALLOW_SUBS)
 
+# ================================================================= picture uploads
+# AssociateSerializer.to_internal_value: a picture_path containing 'base64' is decoded (base64.b64decode, the text
+# after the first comma) and saved through the default storage as associates/<body associate_id>/picture_<timestamp>.jpg
+# before the field validation; put_object_acl public-read; the field becomes the CDN URL of that key.
+PICTURE = base64.b64encode(b'\x89PNG\r\n\x1a\n personas picture fixture \xff\xfe').decode()
+PICTURE_2 = base64.b64encode(b'\xff\xd8\xff\xe0 second picture ?>~').decode()
+assert '+' in PICTURE_2 or '/' in PICTURE_2
+_pictures = iter(range(1, 100))
+
+
+def picture(folder, body, *, denied=False, case=None):
+    """A stored picture: its placeholder (the CDN URL) and the storage requests of the upload."""
+    ref = f'$pic{next(_pictures)}'
+    return ref, {'pictures': {ref: {'folder': folder, 'body_b64': body}},
+                 'storage': [f'HEAD {ref}', f'PUT {ref}', f'ACL {ref}' + (' denied' if denied else '')]}
+
+
+def add_picture(name, *args, upload=None, **kwargs):
+    add(name, *args, **kwargs)
+    if upload:
+        cases[-1].update(upload)
+
+
+effect = Effect('owner')
+pic, upload = picture('None', PICTURE)
+ref = effect.create(user=OWNER, first_name='Fiamma', last_name='Foto', picture_path=pic)
+add_picture('add-picture', 'owner', 'POST', ADD, 201, info(ref),
+            body={'first_name': 'Fiamma', 'last_name': 'Foto', 'picture_path': 'data:image/png;base64,' + PICTURE}, allow=ALLOW_ADD,
+            effect=effect, upload=upload)
+# The body's associate_id names the folder; the field itself is read-only.
+effect = Effect('owner')
+pic, upload = picture(UNKNOWN, PICTURE_2)
+ref = effect.create(user=OWNER, first_name='Fedra', picture_path=pic)
+add_picture('add-picture-associate-id-folder', 'owner', 'POST', ADD, 201, info(ref),
+            body={'associate_id': UNKNOWN, 'first_name': 'Fedra', 'picture_path': 'data:image/jpeg;base64,' + PICTURE_2},
+            allow=ALLOW_ADD, effect=effect, upload=upload)
+# The upload precedes the field validation: the object stays, nothing is saved.
+pic, upload = picture('None', PICTURE)
+add_picture('add-picture-then-invalid', 'owner', 'POST', ADD, 400, {'email': ['Enter a valid email address.']},
+            body={'first_name': 'Falco', 'email': 'nope', 'picture_path': 'data:image/png;base64,' + PICTURE}, allow=ALLOW_ADD,
+            upload=upload)
+# b64decode's binascii.Error becomes a ValidationError that the surrounding handler wraps again.
+PICTURE_INVALID = {'picture_path': "Error processing image: {'picture_path': ErrorDetail(string='Invalid base64 string', code='invalid')}"}
+add('add-picture-incorrect-padding', 'owner', 'POST', ADD, 400, PICTURE_INVALID,
+    body={'first_name': 'Fausto', 'picture_path': 'data:image/png;base64,QUJD' + 'QQ'}, allow=ALLOW_ADD)
+add('add-picture-one-character-quad', 'owner', 'POST', ADD, 400, PICTURE_INVALID,
+    body={'first_name': 'Fausto', 'picture_path': 'data:image/png;base64,QUJDQ'}, allow=ALLOW_ADD)
+add('add-picture-non-ascii', 'owner', 'POST', ADD, 400,
+    {'picture_path': 'Error processing image: string argument should contain only ASCII characters'},
+    body={'first_name': 'Fausto', 'picture_path': 'data:image/png;base64,QUJDè'}, allow=ALLOW_ADD)
+# Characters outside the alphabet are skipped by b64decode.
+effect = Effect('owner')
+pic, upload = picture('None', PICTURE)
+ref = effect.create(user=OWNER, first_name='Frida', picture_path=pic)
+add_picture('add-picture-spaced-base64', 'owner', 'POST', ADD, 201, info(ref),
+            body={'first_name': 'Frida', 'picture_path': 'data:image/png;base64,' + PICTURE[:10] + ' \n' + PICTURE[10:20] + '!' + PICTURE[20:]},
+            allow=ALLOW_ADD, effect=effect, upload=upload)
+# Without a comma the whole value is decoded.
+effect = Effect('owner')
+pic, upload = picture('None', 'base64AAAAAA')
+ref = effect.create(user=OWNER, first_name='Fulgenzio', picture_path=pic)
+add_picture('add-picture-without-comma', 'owner', 'POST', ADD, 201, info(ref), body={'first_name': 'Fulgenzio', 'picture_path': 'base64AAAAAA'},
+            allow=ALLOW_ADD, effect=effect, upload=upload)
+# Nothing after the comma: an empty object.
+effect = Effect('owner')
+pic, upload = picture('None', '')
+ref = effect.create(user=OWNER, first_name='Filippo', picture_path=pic)
+add_picture('add-picture-empty', 'owner', 'POST', ADD, 201, info(ref), body={'first_name': 'Filippo', 'picture_path': 'data:image/png;base64,'},
+            allow=ALLOW_ADD, effect=effect, upload=upload)
+# The storage refuses the ACL: the saved object stays and the error text is the answer.
+pic, upload = picture(ACL_DENIED, PICTURE, denied=True)
+add_picture('add-picture-acl-refused', 'owner', 'POST', ADD, 400,
+            {'picture_path': 'Error processing image: An error occurred (AccessDenied) when calling the PutObjectAcl operation: Access Denied.'},
+            body={'associate_id': ACL_DENIED, 'first_name': 'Fermo', 'picture_path': 'data:image/png;base64,' + PICTURE}, allow=ALLOW_ADD,
+            upload=upload)
+add('add-picture-athlete', 'athlete', 'POST', ADD, 403, NOT_ASSOCIATION,
+    body={'first_name': 'Atleta', 'picture_path': 'data:image/png;base64,' + PICTURE}, allow=ALLOW_ADD)
+# A new tutor's picture goes through BasicAssociateSerializer: stored as sent.
+effect = Effect('owner')
+pic, upload = picture('None', PICTURE)
+ref = effect.create(user=OWNER, first_name='Fiore', picture_path=pic)
+tutor_data = [{'tutor': {'associate_id': None, 'first_name': 'Fosco', 'picture_path': 'data:image/png;base64,QUJD'}, 'is_primary': True}]
+handle_tutors(effect, ref, tutor_data)
+add_picture('add-picture-tutor-picture-kept', 'owner', 'POST', ADD, 201, info(ref),
+            body={'first_name': 'Fiore', 'picture_path': 'data:image/png;base64,' + PICTURE, 'tutors_data': tutor_data}, allow=ALLOW_ADD,
+            effect=effect, upload=upload)
+
+# update: the edit form sends the associate back with its id.
+effect = Effect('owner')
+pic, upload = picture(A['pic_upd'], PICTURE_2)
+effect.save('pic_upd', picture_path=pic, notes='nuova foto')
+handle_tutors(effect, 'pic_upd', [])
+add_picture('update-picture', 'owner', 'PATCH', update_path('pic_upd'), 200, info('pic_upd'),
+            body={'associate_id': A['pic_upd'], 'notes': 'nuova foto', 'picture_path': 'data:image/jpeg;base64,' + PICTURE_2, 'incomplete': False,
+                  'tutors_data': []}, allow=ALLOW_UPDATE, effect=effect, upload=upload)
+# A stored URL sent back is not an upload.
+effect = Effect('owner')
+effect.save('pic_keep', first_name='Fabio Maria', picture_path='https://cdn.example.test/fabio-new.jpg')
+handle_tutors(effect, 'pic_keep', [])
+add('update-picture-url-not-uploaded', 'owner', 'PATCH', update_path('pic_keep'), 200, info('pic_keep'),
+    body={'associate_id': A['pic_keep'], 'first_name': 'Fabio Maria', 'picture_path': 'https://cdn.example.test/fabio-new.jpg'},
+    allow=ALLOW_UPDATE, effect=effect)
+# Without associate_id in the body the folder is 'None'.
+effect = Effect('full_collaborator')
+pic, upload = picture('None', PICTURE)
+effect.save('pic_collab', picture_path=pic)
+handle_tutors(effect, 'pic_collab', [])
+add_picture('update-picture-full-collaborator', 'full_collaborator', 'PATCH', update_path('pic_collab'), 200, info('pic_collab'),
+            body={'picture_path': 'data:image/png;base64,' + PICTURE}, allow=ALLOW_UPDATE, effect=effect, upload=upload)
+effect = Effect('admin')
+pic, upload = picture(A['pic_form'], PICTURE_2)
+effect.save('pic_form', picture_path=pic, first_name='Flora Anna')
+handle_tutors(effect, 'pic_form', [])
+add_picture('update-picture-form-body', 'admin', 'PATCH', update_path('pic_form'), 200, info('pic_form'),
+            raw_body=urllib.parse.urlencode({'associate_id': A['pic_form'], 'first_name': 'Flora Anna',
+                                             'picture_path': 'data:image/jpeg;base64,' + PICTURE_2}),
+            content_type='application/x-www-form-urlencoded', headers=ADMIN_OWNER, allow=ALLOW_UPDATE, effect=effect, upload=upload)
+pic, upload = picture(A['pic_keep'], PICTURE)
+add_picture('update-picture-then-invalid', 'owner', 'PATCH', update_path('pic_keep'), 400,
+            {'sex': ['"X" is not a valid choice.']},
+            body={'associate_id': A['pic_keep'], 'sex': 'X', 'picture_path': 'data:image/png;base64,' + PICTURE}, allow=ALLOW_UPDATE,
+            upload=upload)
+add('update-picture-incorrect-padding', 'owner', 'PATCH', update_path('pic_keep'), 400, PICTURE_INVALID,
+    body={'picture_path': 'data:image/png;base64,QUJDQQ'}, allow=ALLOW_UPDATE)
+# get_object() precedes the serializer: nothing is uploaded for a row that is not found.
+add('update-picture-missing-row', 'owner', 'PATCH', update_path(UNKNOWN), 404, NO_MATCH,
+    body={'picture_path': 'data:image/png;base64,' + PICTURE}, allow=ALLOW_UPDATE)
+effect = Effect('owner')
+effect.save('pic_keep', picture_path=None)
+handle_tutors(effect, 'pic_keep', [])
+add('update-picture-null', 'owner', 'PATCH', update_path('pic_keep'), 200, info('pic_keep'), body={'picture_path': None},
+    allow=ALLOW_UPDATE, effect=effect)
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'personas writes authored sequence with associate, tutor relation and audit effects',
     'ids': IDS, 'families': [F1, F2], 'associates': SEED, 'relations': RELATIONS, 'medical': MEDICAL, 'tag': TAG,
     'subscriptions': {label: {'id': SUB_IDS[label], 'associate': A[a], 'start': s, 'end': e, 'created': c, **x}
                       for label, (a, s, e, c, x) in SUBSCRIPTIONS.items()},
-    'reverse': REVERSE, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+    'reverse': REVERSE, 'acl_denied': ACL_DENIED,
+    'picture_base': 'https://bakney-object-spaces.fra1.cdn.digitaloceanspaces.com', 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

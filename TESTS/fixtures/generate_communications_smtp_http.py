@@ -221,13 +221,16 @@ RCPT = 'rcpt to:<$owner>\r\n'
 DELIVERY = [MAIL, RCPT, 'data\r\n', MESSAGE + '\r\n.\r\n', 'quit\r\n', '<quit>']
 
 
-def verify(name, actor, server, response, connections, *, headers=None, **columns):
-    """One verify case: the setup writes the connection columns; the row is otherwise untouched."""
+def verify(name, actor, server, response, connections, *, headers=None, opaque=0, **columns):
+    """One verify case: the setup writes the connection columns; the row is otherwise untouched.
+    opaque: that many connections whose bytes are not SMTP text (a TLS ClientHello) reach the server."""
     setup = {'email_smtp_host': '127.0.0.1', 'email_smtp_port': f'$port:{server}', 'email_smtp_user': SMTP_USER,
              'email_smtp_password': SMTP_PASSWORD, **columns}
     STATE.update(setup)
-    add(name, actor, VERIFY, 200, response, headers=headers, effect={
-        'kind': 'verify', 'row': dict(STATE), 'smtp': {'server': server, 'connections': connections} if connections else None})
+    smtp = {'server': server, 'connections': connections} if connections else None
+    if opaque:
+        smtp = {'server': server, 'opaque': opaque}
+    add(name, actor, VERIFY, 200, response, headers=headers, effect={'kind': 'verify', 'row': dict(STATE), 'smtp': smtp})
     cases[-1]['setup'] = setup
 
 
@@ -256,6 +259,21 @@ verify('verify-sender-refused', 'full_collaborator', 'nomail',
 # The server accepts and never greets: SMTP_TIMEOUT_SECONDS later the constructor's getreply() gives up.
 verify('verify-server-never-greets', 'owner', 'silent', failed('Connection unexpectedly closed: timed out'), [['<closed>']],
        email_encryption='NONE')
+
+# SSL chosen for a port that speaks plain SMTP first: the greeting arrives where the ServerHello is expected and
+# str(ssl.SSLError) is OpenSSL's reason with CPython 3.13.16's call site.
+verify('verify-ssl-on-starttls-port', 'owner', 'starttls',
+       failed('[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032)'), None, opaque=1, email_encryption='SSL')
+verify('verify-ssl-on-plain-port', 'full_collaborator', 'plain',
+       failed('[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032)'), None, opaque=1, email_encryption='SSL')
+# A host name the resolver does not know: str(socket.gaierror) with the C library's EAI_NONAME code and text
+# ('$unresolved'; the names are reserved ones, RFC 6761).
+verify('verify-unknown-host', 'owner', 'closed', failed('$unresolved'), None, email_encryption='TLS',
+       email_smtp_host='smtp.mistyped.invalid', email_smtp_port=587)
+verify('verify-unknown-host-ssl', 'admin', 'closed', failed('$unresolved'), None, headers=ADMIN_OWNER,
+       email_encryption='SSL', email_smtp_host='mail.mistyped.invalid', email_smtp_port=465)
+verify('verify-unknown-host-no-encryption', 'owner', 'closed', failed('$unresolved'), None, email_encryption='NONE',
+       email_smtp_host='smtp_x.mistyped.invalid', email_smtp_port=25)
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'SMTP configuration info, update and verify authored sequence with audit effects',

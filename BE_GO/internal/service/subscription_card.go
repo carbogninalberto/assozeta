@@ -15,6 +15,19 @@ type SubscriptionCard struct {
 	store domain.MiscRoutesStore
 	now   func() time.Time
 	ids   func() string
+	// links asks the paired server about unknown tokens (nil: such lookups are refused).
+	links PublicTokenSource
+}
+
+// PublicTokenSource is instance.sso.public_links.source_token.
+type PublicTokenSource interface {
+	SourceToken(ctx context.Context, kind, token, resourceID string, group *string) (*BakneyPublicToken, error)
+}
+
+// WithPublicLinks sets the paired server lookup for unknown tokens.
+func (s *SubscriptionCard) WithPublicLinks(links PublicTokenSource) *SubscriptionCard {
+	s.links = links
+	return s
 }
 
 func NewSubscriptionCard(store domain.MiscRoutesStore, now func() time.Time, ids func() string) *SubscriptionCard {
@@ -53,15 +66,28 @@ func (s *SubscriptionCard) Read(ctx context.Context, identity domain.ResolvedIde
 		// source_token: only canonical token and subscription ids reach the
 		// pairing; a qualifying pairing would ask the paired authority.
 		if subscriptionMiscCanonical(*token) && subscriptionMiscCanonical(raw) {
-			lookup, err := tx.PairingLookup(ctx)
-			if err != nil {
-				return nil, err
-			}
-			if lookup {
-				return nil, domain.ErrMiscRoutesNotPorted
+			if s.links == nil {
+				lookup, err := tx.PairingLookup(ctx)
+				if err != nil {
+					return nil, err
+				}
+				if lookup {
+					return nil, domain.ErrMiscRoutesNotPorted
+				}
+			} else {
+				granted, err := s.links.SourceToken(ctx, "card", *token, raw, supplierGroup(groupHeader))
+				if err != nil {
+					return nil, err
+				}
+				if granted != nil {
+					// An unsaved SubscriptionToken: nothing to delete, never expired here.
+					stored = &domain.SubscriptionCardToken{Expiration: granted.Expires}
+				}
 			}
 		}
-		return nil, miscRoutesBadRequest(subscriptionCardExpired)
+		if stored == nil {
+			return nil, miscRoutesBadRequest(subscriptionCardExpired)
+		}
 	}
 	if stored.Expiration.Before(now) {
 		var actorAssociation *string
