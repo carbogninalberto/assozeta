@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"sync"
 	"syscall"
 	"time"
@@ -559,11 +560,13 @@ func run() (runErr error) {
 	e.Any("/payment/add", paymentWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/bulk-add", paymentWritesHandler.BulkAdd, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/:uid/update", paymentWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
-	// payment_sign's print_document_compensation.apply and the apply's send_email_html (render + send_mail_async).
+	// payment_sign's print_document_compensation.apply and the apply's send_email_html (render + send_mail_async,
+	// or a CommunicationConfiguration's delayed SMTP send in this process).
 	paymentMiscHandler := handler.NewPaymentMiscHandler(service.NewPaymentMisc(repository.NewPaymentMisc(repository.NewPaymentStates(db)), time.Now,
 		uuid.NewString, cfg.WhitelabelName).WithCompensationPrint(paymentInvoicePrinter).WithMail(service.NewEmailRenderRoutes(
 		repository.NewEmailRenderRoutes(db), tasks, service.EmailRenderSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName,
-			DefaultFromEmail: cfg.DefaultFromEmail, DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel}, time.Now)),
+			DefaultFromEmail: cfg.DefaultFromEmail, DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel}, time.Now)).
+		WithConfiguredMail(paymentMiscConfiguredMail(cfg, db, tasks)),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
 		paymentCategoryOperations)
 	e.Any("/payment/simulation/partial-quotes", paymentMiscHandler.Simulation, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -1031,4 +1034,19 @@ func drainHTTPServer(server gracefulHTTPServer, operations admittedOperations) e
 		return fmt.Errorf("%s: %w", httpDrainDeadlineMessage, errors.Join(shutdownErr, cleanupErr))
 	}
 	return errors.New(httpDrainDeadlineMessage)
+}
+
+// paymentMiscConfiguredMail is send_email_html's CommunicationConfiguration
+// path inside the web process (Django's Timer thread). The delay is
+// random.randint(1, 30) seconds; SEND_EMAIL_HTML_DELAY_SECONDS (fixture runs
+// only, unset in production) pins it.
+func paymentMiscConfiguredMail(cfg config.Config, db *sqlx.DB, tasks celery.Publisher) *service.SendMailAsync {
+	mail := service.NewSendMailAsync(repository.NewSendMailAsyncStore(db), service.SystemEmail{}, time.Now).WithEmailTasks(tasks,
+		service.ConsumerEmailSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName,
+			DefaultFromEmail: cfg.DefaultFromEmail, DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel,
+			SecretKeys: []string{cfg.SessionSecret}}, slog.Default())
+	if seconds, err := strconv.Atoi(os.Getenv("SEND_EMAIL_HTML_DELAY_SECONDS")); err == nil && seconds >= 0 {
+		mail.WithDelay(func() time.Duration { return time.Duration(seconds) * time.Second })
+	}
+	return mail
 }
