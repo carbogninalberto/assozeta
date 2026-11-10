@@ -69,10 +69,15 @@ def payment_labels(payment, kwargs):
         labels.append('payment.update-fields')
     if payment.payment_category_id is not None:
         labels.append('payment.category.given')
-    elif PaymentCategory.objects.filter(name__iexact=DEFAULT_CATEGORY).exists():
-        labels.append('payment.category.default')
     else:
-        labels.append('payment.category.default-missing')
+        from django.db.models import Q
+        named = PaymentCategory.objects.filter(name__iexact=DEFAULT_CATEGORY).order_by('pk')
+        chosen = named.filter(Q(sport_association_id=payment.sport_association_id) | Q(sport_association__isnull=True)).first()
+        labels.append('payment.category.default' if chosen else 'payment.category.default-missing')
+        # A same-named category of another association sorts before the one save() takes.
+        first = named.first()
+        if first is not None and (chosen is None or first.pk != chosen.pk):
+            labels.append('payment.category.default-other-association-first')
     subject = payment.subject
     if payment.description is not None:
         labels.append('payment.description.given' + ('' if payment.description else '-empty'))

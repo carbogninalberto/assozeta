@@ -135,7 +135,7 @@ FAMILIES = {
 # family must take, so a Go writer reproduced the branch's stored result, audit entries and index rows.
 REQUIRED = [
     'payment.adding', 'payment.update', 'payment.update-fields',
-    'payment.category.given', 'payment.category.default',
+    'payment.category.given', 'payment.category.default', 'payment.category.default-other-association-first',
     'payment.description.given', 'payment.description.subscription', 'payment.description.other-category',
     'payment.description.course.subscription-title', 'payment.description.course.installment-meta',
     'payment.description.course.carnet-meta', 'payment.description.course.carnet-title',

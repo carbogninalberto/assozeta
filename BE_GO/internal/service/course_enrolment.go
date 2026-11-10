@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"math"
 	"math/big"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -52,18 +52,27 @@ type CourseEnrolmentRequest struct {
 
 const courseMembershipType = 3
 
-var (
-	courseEnrolmentServer = domain.ErrCourseSubscriptionServer
-	// float(text.replace(',', '.')) for the amounts this port reproduces exactly.
-	courseEnrolmentQuoteAmount = regexp.MustCompile(`^([0-9]{1,7})(?:\.([0-9]{1,2}))?$`)
-)
+var courseEnrolmentServer = domain.ErrCourseSubscriptionServer
 
-func (s *CourseEnrolment) begin(ctx context.Context, identity domain.ResolvedIdentity) (domain.CourseEnrolmentTransaction, error) {
-	// scoped_queryset() during an association-scoped impersonation is not ported.
-	if identity.ImpersonationAssociationID != "" {
-		return nil, ErrCourseEnrolmentNotPorted
-	}
+func (s *CourseEnrolment) begin(ctx context.Context) (domain.CourseEnrolmentTransaction, error) {
 	return s.store.BeginCourseEnrolment(ctx)
+}
+
+// courseEnrolmentScoped is scoped_queryset's association filter during an
+// association-scoped impersonation session: rows of another (or no)
+// association are not found. The scoped request guard has already checked
+// the referenced ids with the same filters (family visibility included).
+func courseEnrolmentScoped(identity domain.ResolvedIdentity, associations ...*string) bool {
+	scope := identity.ImpersonationAssociationID
+	if scope == "" {
+		return true
+	}
+	for _, association := range associations {
+		if association == nil || *association != scope {
+			return false
+		}
+	}
+	return true
 }
 
 func (s *CourseEnrolment) moment() time.Time { return s.now().UTC().Truncate(time.Microsecond) }
@@ -119,25 +128,57 @@ func floatFeeRepr(text string) string {
 	return strings.Replace(text, "'membership_fee': Decimal('0.00')", "'membership_fee': 0.0", 1)
 }
 
-// quoteAmount is float(quote['amount'].replace(',', '.')): the stored decimal
-// and str() of the float. Other spellings are not ported.
+// quoteAmount is float(quote['amount'].replace(',', '.')): the numeric(9,2)
+// value PostgreSQL stores for DecimalField.to_python(float) (Context(prec=9)
+// create_decimal_from_float, then the column's half-away-from-zero rounding)
+// and str() of the float. float() failures, NaN (to_python's
+// ValidationError), values the column cannot hold and negative amounts (the
+// amount >= 0 check constraint) raise (500).
 func quoteAmount(value any) (stored, memory string, err error) {
 	text, ok := value.(string)
 	if !ok {
 		// .replace on a non-string: AttributeError.
 		return "", "", courseEnrolmentServer
 	}
-	match := courseEnrolmentQuoteAmount.FindStringSubmatch(strings.ReplaceAll(text, ",", "."))
-	if match == nil {
-		return "", "", ErrCourseEnrolmentNotPorted
+	number, ok := dto.PythonFloatParse(strings.ReplaceAll(text, ",", "."))
+	if !ok || math.IsNaN(number) || math.IsInf(number, 0) {
+		return "", "", courseEnrolmentServer
 	}
-	whole := strings.TrimLeft(match[1], "0")
-	if whole == "" {
-		whole = "0"
+	stored, ok = courseEnrolmentNumeric92(number)
+	if !ok || strings.HasPrefix(stored, "-") {
+		// Overflow, or the payment_amount_positive check constraint (amount >= 0).
+		return "", "", courseEnrolmentServer
 	}
-	fraction := (match[2] + "00")[:2]
-	number, _ := strconv.ParseFloat(whole+"."+fraction, 64)
-	return whole + "." + fraction, dto.PythonFloatStr(number), nil
+	return stored, dto.PythonFloatStr(number), nil
+}
+
+// courseEnrolmentNumeric92 rounds Context(prec=9).create_decimal_from_float
+// to cents half away from zero (numeric's rounding); ok is false when the
+// result needs more than seven integer digits (numeric field overflow).
+func courseEnrolmentNumeric92(number float64) (string, bool) {
+	exact, ok := new(big.Rat).SetString(dto.DecimalFromFloat9(number))
+	if !ok {
+		return "", false
+	}
+	cents := new(big.Rat).Mul(exact, big.NewRat(100, 1))
+	negative := cents.Sign() < 0
+	cents.Abs(cents)
+	quotient, remainder := new(big.Int).QuoRem(cents.Num(), cents.Denom(), new(big.Int))
+	if new(big.Int).Mul(remainder, big.NewInt(2)).Cmp(cents.Denom()) >= 0 {
+		quotient.Add(quotient, big.NewInt(1))
+	}
+	if quotient.Cmp(big.NewInt(1_000_000_000)) >= 0 {
+		return "", false
+	}
+	digits := quotient.String()
+	for len(digits) < 3 {
+		digits = "0" + digits
+	}
+	result := digits[:len(digits)-2] + "." + digits[len(digits)-2:]
+	if negative && quotient.Sign() != 0 {
+		result = "-" + result
+	}
+	return result, true
 }
 
 func amountJSON(text string) json.Number {
@@ -431,7 +472,7 @@ func (s *CourseEnrolment) payment(ctx context.Context, tx domain.CourseEnrolment
 		return domain.CourseEnrolmentPayment{}, err
 	}
 	if category == nil {
-		if category, err = tx.DefaultPaymentCategory(ctx); err != nil {
+		if category, err = tx.DefaultPaymentCategory(ctx, association); err != nil {
 			return domain.CourseEnrolmentPayment{}, err
 		}
 	}
@@ -486,7 +527,7 @@ func (s *CourseEnrolment) addCourseSubscription(ctx context.Context, tx domain.C
 			return err
 		}
 		if category == nil {
-			if category, err = tx.DefaultPaymentCategory(ctx); err != nil {
+			if category, err = tx.DefaultPaymentCategory(ctx, &association); err != nil {
 				return err
 			}
 		}
@@ -568,7 +609,7 @@ func (s *CourseEnrolment) addCourseSubscription(ctx context.Context, tx domain.C
 		var chosen *string = category
 		if chosen == nil {
 			// Payment.save(): a None category takes the default one.
-			if chosen, err = tx.DefaultPaymentCategory(ctx); err != nil {
+			if chosen, err = tx.DefaultPaymentCategory(ctx, &association); err != nil {
 				return err
 			}
 		}
@@ -582,7 +623,8 @@ func (s *CourseEnrolment) addCourseSubscription(ctx context.Context, tx domain.C
 	if err = tx.CreatePayment(ctx, *payment, audit); err != nil {
 		return err
 	}
-	if positive, _ := decimalPositive(&payment.Amount); positive {
+	// payment.amount > 0 compares the in-memory value (a quote's float).
+	if positive, _ := decimalPositive(&payment.MemoryAmount); positive {
 		created.row.PaymentID = &payment.ID
 		return tx.SaveRow(ctx, created.save(), audit)
 	}
@@ -642,7 +684,7 @@ func (s *CourseEnrolment) Add(ctx context.Context, identity domain.ResolvedIdent
 	if err := canonicalGroup(request.GroupHeader); err != nil {
 		return nil, err
 	}
-	tx, err := s.begin(ctx, identity)
+	tx, err := s.begin(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -738,7 +780,7 @@ func (s *CourseEnrolment) StockCreate(ctx context.Context, identity domain.Resol
 	if err := canonicalGroup(request.GroupHeader); err != nil {
 		return err
 	}
-	tx, err := s.begin(ctx, identity)
+	tx, err := s.begin(ctx)
 	if err != nil {
 		return err
 	}

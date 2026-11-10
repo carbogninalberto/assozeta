@@ -49,12 +49,51 @@ func courseWritesLate(tx domain.CourseWritesTransaction, err error) error {
 	return err
 }
 
-func (s *CourseWrites) begin(ctx context.Context, identity domain.ResolvedIdentity) (domain.CourseWritesTransaction, error) {
-	// scoped_queryset() during an association-scoped impersonation is not ported.
-	if identity.ImpersonationAssociationID != "" {
-		return nil, domain.ErrCourseWritesNotPorted
-	}
+func (s *CourseWrites) begin(ctx context.Context) (domain.CourseWritesTransaction, error) {
 	return s.store.BeginCourseWrites(ctx)
+}
+
+// courseWritesOwner is scoped_queryset(SportAssociation).get(user=...): the
+// owner's association, which during an impersonation session must be the
+// session's association (otherwise DoesNotExist, a 500).
+func (s *CourseWrites) courseWritesOwner(ctx context.Context, tx domain.CourseWritesTransaction, identity domain.ResolvedIdentity) (string, error) {
+	association, err := tx.OwnerAssociation(ctx, identity.ScopeUser.ID)
+	if err != nil {
+		return "", err
+	}
+	if !courseEnrolmentScoped(identity, &association) {
+		return "", domain.ErrCourseWritesServer
+	}
+	return association, nil
+}
+
+// courseWritesOwnerFirst is scoped_queryset(SportAssociation).filter(user=...).first().
+func courseWritesOwnerFirst(ctx context.Context, tx domain.CourseWritesTransaction, identity domain.ResolvedIdentity) (*string, error) {
+	association, err := tx.OwnerAssociationFirst(ctx, identity.ScopeUser.ID)
+	if err != nil || association == nil || courseEnrolmentScoped(identity, association) {
+		return association, err
+	}
+	return nil, nil
+}
+
+// courseWritesLiveCourse is scoped_queryset(Course).filter(course_id=...).first().
+func courseWritesLiveCourse(ctx context.Context, tx domain.CourseWritesTransaction, identity domain.ResolvedIdentity, id string,
+	group *string) (*domain.CourseWriteRow, error) {
+	course, err := tx.LiveCourse(ctx, id, group)
+	if err != nil || course == nil || courseEnrolmentScoped(identity, course.AssociationID) {
+		return course, err
+	}
+	return nil, nil
+}
+
+// courseWritesLiveSubscription is scoped_queryset(Subscription).filter(...).first().
+func courseWritesLiveSubscription(ctx context.Context, tx domain.CourseWritesTransaction, identity domain.ResolvedIdentity, id string,
+	group *string) (*domain.CourseWriteSubscription, error) {
+	subscription, err := tx.LiveSubscription(ctx, id, group)
+	if err != nil || subscription == nil || courseEnrolmentScoped(identity, subscription.AssociationID) {
+		return subscription, err
+	}
+	return nil, nil
 }
 
 func (s *CourseWrites) auditContext(ctx context.Context, tx domain.CourseWritesTransaction, identity domain.ResolvedIdentity,
@@ -101,16 +140,16 @@ func (s *CourseWrites) Delete(ctx context.Context, identity domain.ResolvedIdent
 	if err != nil {
 		return err
 	}
-	tx, err := s.begin(ctx, identity)
+	tx, err := s.begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	association, err := tx.OwnerAssociation(ctx, identity.ScopeUser.ID)
+	association, err := s.courseWritesOwner(ctx, tx, identity)
 	if err != nil {
 		return err
 	}
-	course, err := tx.LiveCourse(ctx, id.String(), supplierGroup(request.GroupHeader))
+	course, err := courseWritesLiveCourse(ctx, tx, identity, id.String(), supplierGroup(request.GroupHeader))
 	if err != nil {
 		return err
 	}
@@ -240,20 +279,20 @@ func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdent
 	if err != nil {
 		return err
 	}
-	tx, err := s.begin(ctx, identity)
+	tx, err := s.begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 	group := supplierGroup(request.GroupHeader)
-	course, err := tx.LiveCourse(ctx, id.String(), group)
+	course, err := courseWritesLiveCourse(ctx, tx, identity, id.String(), group)
 	if err != nil {
 		return err
 	}
 	if course == nil {
 		return domain.ErrCourseWritesUpdateNotFound
 	}
-	association, err := tx.OwnerAssociationFirst(ctx, identity.ScopeUser.ID)
+	association, err := courseWritesOwnerFirst(ctx, tx, identity)
 	if err != nil {
 		return err
 	}
@@ -544,12 +583,12 @@ func (s *CourseWrites) Add(ctx context.Context, identity domain.ResolvedIdentity
 	if !hasCourse || !hasSubscriptions || len(data) != 2 {
 		return domain.ErrCourseWritesBodyKeys
 	}
-	tx, err := s.begin(ctx, identity)
+	tx, err := s.begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	association, err := tx.OwnerAssociation(ctx, identity.ScopeUser.ID)
+	association, err := s.courseWritesOwner(ctx, tx, identity)
 	if err != nil {
 		return err
 	}
@@ -606,7 +645,7 @@ func (s *CourseWrites) Add(ctx context.Context, identity domain.ResolvedIdentity
 	if !ok {
 		return courseWritesLate(tx, domain.ErrCourseWritesServer)
 	}
-	category, err := tx.DefaultPaymentCategory(ctx)
+	category, err := tx.DefaultPaymentCategory(ctx, &association)
 	if err != nil {
 		return err
 	}
@@ -628,7 +667,7 @@ func (s *CourseWrites) Add(ctx context.Context, identity domain.ResolvedIdentity
 		if !ok {
 			return courseWritesLate(tx, domain.ErrCourseWritesServer)
 		}
-		subscription, err := tx.LiveSubscription(ctx, id, audit.Group)
+		subscription, err := courseWritesLiveSubscription(ctx, tx, identity, id, audit.Group)
 		if err != nil {
 			return err
 		}

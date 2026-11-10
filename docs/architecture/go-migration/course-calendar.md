@@ -89,6 +89,11 @@ Registry `('GET', 'calendar/events')` `association.calendar.read`; `IsAssociatio
   only when both are given, the first day with the same title and date
   (`extendedProps.attendace_day_id`), `className` as a one-item list when absent (the view stores a
   tuple), `extendedProps.course`, a default description and `id`.
+- With `get_lesson` true (the default), a matched day gains `extendedProps.lesson`:
+  `get_extended_prop_for_attendance_day` (the same Go port as the attendance views and the todaylessons widget) in the view's
+  own transaction. Registry starts are read with `strptime('%Y-%m-%dT%H:%M:%S.%fZ')` (an offset start raises, 500); a day linked
+  to another spelling of the event id matches no event; an unlinked day is linked to its event (saved and audited, kept when a
+  later event raises: the view is not atomic).
 - When the acting user may read events (`can_manage_events(request, 'read')`), the association's
   global calendar (`get_or_create`: the first read creates the row with an auditlog entry) adds its
   events filtered by `event_id`, `start` and `end` independently.
@@ -107,10 +112,8 @@ and the scope user's instructors, and the calendar is saved: `{'message': 'Event
 
 ## Not ported (refused with the 500 page before any write)
 
-- Lesson details: `full_events_calendar` with `get_lesson` true (the default) when an event matches
-  an attendance day calls `get_extended_prop_for_attendance_day` (course subscriptions, medical
-  labels and a possible `associated_event` relink write). The calendar page's listing uses
-  `get_lesson=false`, which is ported.
+- Lesson details: the stored-data shapes the attendance port refuses (`course-attendance.md`: non-UUID linked event ids,
+  non-dict `extendedProps`/instructor items).
 - `calendar_update` POST payloads whose Python handling is not reproduced: a non-string, non-null
   `event_id` (Django accepts integers), `extendedProps` given as a list or string, a `start` that is
   not a string or null; a published registry whose stored events are not a list or have list/dict
@@ -142,3 +145,10 @@ bound to their generated keys on first sight; responses may reference them).
   exception) fails Go on `update-partial-failure-keeps-day`.
 - `BE_GO/internal/dto/course_calendar_test.go` pins `parse_datetime` (aware/naive, ValueError vs
   None), `event_datetime`, `int()` and `==` against Python 3.13 and Django.
+
+Lesson details (`get_lesson`, 164 cases):
+
+- RED (`v2c-red`): Django 164/164; Go refuses `events-lesson`.
+- GREEN (`v2c-green`): 164/164 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`v2c-mutation-lesson`): reading the lesson without the registry's events fails `events-lesson` (CAUGHT).
+- `course-attendance` and `statistic-reads` (shared attendance helper) re-ran green (`v2c-rerun-cal`).

@@ -8,12 +8,15 @@ model state unchanged. Each write case declares the invoice and payment
 columns it changes, the invoices and invoice rows it deletes (their
 attached-document links go with them) and its auditlog entries in order with
 their index rows; delete entries are rendered from the rows captured before
-the request. Every other model and row must be unchanged.
+the request. Every other model and row must be unchanged. Every case also
+declares the Celery messages it publishes (print_document_invoice for listed
+rows without a PDF), checked on the run's private broker.
 """
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 import ipaddress
 import json
+import time
 
 from TESTS.contracts import test_invoice_core_http as contract
 from TESTS.adapters.django import family_harness as harness
@@ -27,7 +30,8 @@ SOURCES = ('TESTS/fixtures/invoice_core_http.json', 'TESTS/contracts/test_invoic
            'BE/application/models/payment_models.py', 'BE/application/models/user_models.py', 'BE/application/mixin.py',
            'BE/application/impersonation_scope.py', 'BE/application/permissions.py', 'BE/application/audit_resolvers.py',
            'BE/application/signals.py', 'BE/application/utils/api_utils.py', 'BE/application/utils/subscriptions_utils.py',
-           'BE/application/permissions_registry.py', 'BE/docmanager/models.py', 'BE/core/settings.py') + harness.SOURCES
+           'BE/application/permissions_registry.py', 'BE/docmanager/models.py', 'BE/core/settings.py', 'BE/application/printing_tasks.py', 'BE/core/celery.py',
+           'BE/instance/restore/task_base.py') + harness.SOURCES
 INVOICE, ROWS, PAYMENT, LINKS = ('application.Invoice', 'application.InvoiceRows', 'application.Payment',
                                  'application.Invoice_attached_documents')
 MANAGED = (INVOICE, ROWS, PAYMENT, LINKS, harness.AUDIT, harness.INDEX)
@@ -117,7 +121,7 @@ def deleted_changes(model, row):
 def captured(source):
     """Delete diffs of the seeded invoices and invoice rows still stored, captured before each case."""
     from application.models import Invoice, InvoiceRows
-    rows = {}
+    rows = {'$started': time.time()}
     for model, key, seeded in ((Invoice, 'invoice_id', source['invoices']), (InvoiceRows, 'invoice_row_id', source['rows'])):
         for instance in model._base_manager.filter(pk__in=[r[key] for r in seeded.values()]):
             rows[str(instance.pk)] = deleted_changes(model, instance)
@@ -126,6 +130,11 @@ def captured(source):
 
 def assert_effect(case, before, after, source, context):
     harness.require_unmanaged_unchanged(contract, before, after, MANAGED)
+    fixture = context['fixture']
+    authorization = None if case['actor'] == 'anonymous' else 'Bearer ' + fixture['tokens'][case['actor']]
+    published = [{**spec, 'args': [authorization if item == '$authorization' else item for item in spec['args']]}
+                 for spec in case['celery']]
+    harness.celery_published(contract, fixture, published, since=context['prepared']['$started'], until=time.time())
     effect = case['effect']
     if effect is None:
         contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
@@ -173,5 +182,5 @@ def assert_effect(case, before, after, source, context):
                              and index['resolution_path'] == entry['index'][1], 'index.fields' + where)
 
 
-fixture_context = harness.fixture_context_for(contract, seed_rows)
+fixture_context = harness.with_celery_broker(harness.fixture_context_for(contract, seed_rows))
 run_workload = harness.run_workload_for(contract, assert_effect, prepare=captured)

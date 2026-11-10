@@ -818,6 +818,22 @@
    "paid_on": "2025-10-01T09:00:00Z",
    "id": "ba1dface-eeee-4eee-8eee-eeeeeeeeebaf",
    "created": "2025-10-01T09:00:00Z"
+  },
+  "membership": {
+   "amount": "25.00",
+   "paid": true,
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "associate": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "paid_on": "2025-09-08T10:00:00Z",
+   "subject": 2,
+   "description": "Abbonamento: Corso nuoto",
+   "invoice": true,
+   "instructor": true,
+   "id": "ba1dface-eeee-4eee-8eee-eeeeeeeeecdf",
+   "created": "2025-09-08T09:00:00Z"
   }
  },
  "subscriptions": {
@@ -1794,6 +1810,30 @@
    "id": "ca1eca1e-eeee-4eee-8eee-eeeeeeeeecdc",
    "subscription": "l_current"
   }
+ },
+ "membership_instructor": {
+  "id": "1a5e1a5e-eeee-4eee-8eee-eeeeeeeeecdd",
+  "first_name": "Anna è",
+  "last_name": "Bianchi",
+  "email": "anna@example.test",
+  "tax_code": "BNCNNA80A41H501X",
+  "default_hourly_billing": "12.50"
+ },
+ "membership_invoice": {
+  "id": "1a5ef00d-eeee-4eee-8eee-eeeeeeeeecde",
+  "created": "2026-02-02T09:00:00Z",
+  "membership_fee": "25.00",
+  "activity_fee": "0.00",
+  "description": "Fattura è",
+  "number": 7,
+  "meta": {
+   "numero": 7
+  }
+ },
+ "membership_payments": {
+  "giulia": [
+   "membership"
+  ]
  },
  "cases": [
   {
@@ -31176,7 +31216,7 @@
       "tags": [],
       "all_payments_paid": true,
       "payments_info": {
-       "total": 40.0,
+       "total": 65.0,
        "to_be_paid": 0.0
       },
       "age": null,
@@ -31566,7 +31606,7 @@
       "tags": [],
       "all_payments_paid": true,
       "payments_info": {
-       "total": 40.0,
+       "total": 65.0,
        "to_be_paid": 0.0
       },
       "age": null,
@@ -31959,7 +31999,7 @@
       "tags": [],
       "all_payments_paid": true,
       "payments_info": {
-       "total": 40.0,
+       "total": 65.0,
        "to_be_paid": 0.0
       },
       "age": null,
@@ -32352,7 +32392,7 @@
       "tags": [],
       "all_payments_paid": true,
       "payments_info": {
-       "total": 40.0,
+       "total": 65.0,
        "to_be_paid": 0.0
       },
       "age": null,
@@ -33386,7 +33426,7 @@
       "tags": [],
       "all_payments_paid": true,
       "payments_info": {
-       "total": 40.0,
+       "total": 65.0,
        "to_be_paid": 0.0
       },
       "age": null,
@@ -33814,7 +33854,7 @@
       "tags": [],
       "all_payments_paid": true,
       "payments_info": {
-       "total": 40.0,
+       "total": 65.0,
        "to_be_paid": 0.0
       },
       "age": null,
@@ -34204,7 +34244,7 @@
       "tags": [],
       "all_payments_paid": true,
       "payments_info": {
-       "total": 40.0,
+       "total": 65.0,
        "to_be_paid": 0.0
       },
       "age": null,
@@ -34594,7 +34634,7 @@
       "tags": [],
       "all_payments_paid": true,
       "payments_info": {
-       "total": 40.0,
+       "total": 65.0,
        "to_be_paid": 0.0
       },
       "age": null,
@@ -34674,7 +34714,7 @@
       "tags": [],
       "all_payments_paid": true,
       "payments_info": {
-       "total": 40.0,
+       "total": 65.0,
        "to_be_paid": 0.0
       },
       "age": null,
@@ -35096,7 +35136,7 @@
       "tags": [],
       "all_payments_paid": true,
       "payments_info": {
-       "total": 40.0,
+       "total": 65.0,
        "to_be_paid": 0.0
       },
       "age": null,
@@ -37251,7 +37291,92 @@
         "membership_active": true,
         "membership_fee": "0.00",
         "auto_renewal": false,
-        "membership_payments": [],
+        "membership_payments": [
+         {
+          "payment_id": "ba1dface-eeee-4eee-8eee-eeeeeeeeecdf",
+          "user": null,
+          "associate": null,
+          "subscription_id": null,
+          "instructor_id": "1a5e1a5e-eeee-4eee-8eee-eeeeeeeeecdd",
+          "instructor": {
+           "instructor_id": "1a5e1a5e-eeee-4eee-8eee-eeeeeeeeecdd",
+           "user": "a1000000-0000-4000-8000-000000700001",
+           "first_name": "Anna è",
+           "last_name": "Bianchi",
+           "email": "anna@example.test",
+           "born_date": null,
+           "born_city": null,
+           "born_province": null,
+           "tax_code": "BNCNNA80A41H501X",
+           "address_city": null,
+           "address": null,
+           "address_province": null,
+           "civic_number": null,
+           "study_title": null,
+           "role": "Istruttore",
+           "phone": null,
+           "phone_2": null,
+           "phone_3": null,
+           "phone_4": null,
+           "draft": false,
+           "associated_user_id": null,
+           "is_volunteer": false,
+           "stipulated_contract_in": null,
+           "default_hourly_billing": "12.50",
+           "default_percentage_billing": "0.00",
+           "documents": []
+          },
+          "supplier": null,
+          "supplier_id": null,
+          "custom_account_type": null,
+          "custom_account_name": null,
+          "invoice": {
+           "invoice_id": "1a5ef00d-eeee-4eee-8eee-eeeeeeeeecde",
+           "document_token": null,
+           "creation_date": "2026-02-02T09:00:00Z",
+           "membership_fee": "25.00",
+           "activity_fee": "0.00",
+           "meta_payment_categories": null,
+           "description": "Fattura è",
+           "number": 7,
+           "archived": false,
+           "cancelled": false,
+           "meta": {
+            "numero": 7
+           },
+           "imported_from_associami": false,
+           "deleted": false,
+           "document_pdf": null,
+           "sport_association": "a1000000-0000-4000-8000-000000701001",
+           "selected_tutor": null,
+           "group": null,
+           "attached_documents": []
+          },
+          "attachments": [],
+          "payment_category_name": null,
+          "type": "default",
+          "subject": 2,
+          "amount": "25.00",
+          "creation_date": "2025-09-08T09:00:00Z",
+          "payment_date": "2025-09-08T10:00:00Z",
+          "paid": true,
+          "expense": false,
+          "description": "Abbonamento: Corso nuoto",
+          "meta_payment_categories": null,
+          "payment_intent_id": null,
+          "archived": false,
+          "invoice_fiscal_code": null,
+          "meta": null,
+          "notes": null,
+          "deleted": false,
+          "course": null,
+          "payment_category": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "custom_accounts": null,
+          "signature": null,
+          "group": null
+         }
+        ],
         "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2025-09-05T08:00:00Z}</span>",
         "carnets": []
        }
@@ -37484,7 +37609,92 @@
         "membership_active": true,
         "membership_fee": "0.00",
         "auto_renewal": false,
-        "membership_payments": [],
+        "membership_payments": [
+         {
+          "payment_id": "ba1dface-eeee-4eee-8eee-eeeeeeeeecdf",
+          "user": null,
+          "associate": null,
+          "subscription_id": null,
+          "instructor_id": "1a5e1a5e-eeee-4eee-8eee-eeeeeeeeecdd",
+          "instructor": {
+           "instructor_id": "1a5e1a5e-eeee-4eee-8eee-eeeeeeeeecdd",
+           "user": "a1000000-0000-4000-8000-000000700001",
+           "first_name": "Anna è",
+           "last_name": "Bianchi",
+           "email": "anna@example.test",
+           "born_date": null,
+           "born_city": null,
+           "born_province": null,
+           "tax_code": "BNCNNA80A41H501X",
+           "address_city": null,
+           "address": null,
+           "address_province": null,
+           "civic_number": null,
+           "study_title": null,
+           "role": "Istruttore",
+           "phone": null,
+           "phone_2": null,
+           "phone_3": null,
+           "phone_4": null,
+           "draft": false,
+           "associated_user_id": null,
+           "is_volunteer": false,
+           "stipulated_contract_in": null,
+           "default_hourly_billing": "12.50",
+           "default_percentage_billing": "0.00",
+           "documents": []
+          },
+          "supplier": null,
+          "supplier_id": null,
+          "custom_account_type": null,
+          "custom_account_name": null,
+          "invoice": {
+           "invoice_id": "1a5ef00d-eeee-4eee-8eee-eeeeeeeeecde",
+           "document_token": null,
+           "creation_date": "2026-02-02T09:00:00Z",
+           "membership_fee": "25.00",
+           "activity_fee": "0.00",
+           "meta_payment_categories": null,
+           "description": "Fattura è",
+           "number": 7,
+           "archived": false,
+           "cancelled": false,
+           "meta": {
+            "numero": 7
+           },
+           "imported_from_associami": false,
+           "deleted": false,
+           "document_pdf": null,
+           "sport_association": "a1000000-0000-4000-8000-000000701001",
+           "selected_tutor": null,
+           "group": null,
+           "attached_documents": []
+          },
+          "attachments": [],
+          "payment_category_name": null,
+          "type": "default",
+          "subject": 2,
+          "amount": "25.00",
+          "creation_date": "2025-09-08T09:00:00Z",
+          "payment_date": "2025-09-08T10:00:00Z",
+          "paid": true,
+          "expense": false,
+          "description": "Abbonamento: Corso nuoto",
+          "meta_payment_categories": null,
+          "payment_intent_id": null,
+          "archived": false,
+          "invoice_fiscal_code": null,
+          "meta": null,
+          "notes": null,
+          "deleted": false,
+          "course": null,
+          "payment_category": null,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "custom_accounts": null,
+          "signature": null,
+          "group": null
+         }
+        ],
         "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2025-09-05T08:00:00Z}</span>",
         "carnets": []
        }
@@ -38078,7 +38288,7 @@
    "name": "subscription-reads-info-unknown",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeecdd/info",
+   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeecea/info",
    "headers": {},
    "status": 404,
    "response": {
@@ -38569,7 +38779,7 @@
    "name": "subscription-reads-info-athlete-unknown",
    "actor": "athlete",
    "method": "GET",
-   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeecdd/info",
+   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeecea/info",
    "headers": {},
    "status": 403,
    "response": {
@@ -38784,7 +38994,7 @@
    "name": "subscription-reads-calendar-unknown",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeecdd/calendar",
+   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeecea/calendar",
    "headers": {},
    "status": 200,
    "response": {

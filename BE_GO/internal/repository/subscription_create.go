@@ -110,16 +110,20 @@ func (t *subscriptionCreateTransaction) SaveCertificate(ctx context.Context, id,
 	return err
 }
 
-// Category is the default payment category by key, or the first category
-// named 'entrate e proventi da attività tipiche' (iexact, by key).
-func (t *subscriptionCreateTransaction) Category(ctx context.Context, id *string) (*string, error) {
+// Category is the default payment category by key, or
+// PaymentCategory.default_for(association).
+func (t *subscriptionCreateTransaction) Category(ctx context.Context, id *string, association string) (*string, error) {
 	var found string
 	var err error
 	if id != nil {
 		err = t.tx.GetContext(ctx, &found, `SELECT payment_category_id FROM application_paymentcategory WHERE payment_category_id=$1`, *id)
 	} else {
-		err = t.tx.GetContext(ctx, &found, `SELECT payment_category_id FROM application_paymentcategory
- WHERE UPPER(name::text)=UPPER('entrate e proventi da attività tipiche') ORDER BY payment_category_id LIMIT 1`)
+		var row struct {
+			ID   string `db:"payment_category_id"`
+			Name string `db:"name"`
+		}
+		err = t.tx.GetContext(ctx, &row, secCategoryDefaultSQL, association)
+		found = row.ID
 	}
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil

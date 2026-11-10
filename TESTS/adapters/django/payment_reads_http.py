@@ -10,7 +10,17 @@ complete model state unchanged.
 A CURRENT_HOST print stub (invoice-sync-print's service_context) runs for the
 whole run: each case's outbound requests must be exactly its authored 'prints'
 (payment_list prints the listed compensations whose hours have no document).
+
+A Stripe API stub (stripe-routes' handler) also runs for the whole run, with
+stripe.api_base and the Go server's STRIPE_API_BASE pointed at it. A case with
+'stripe_setup' has, only during its request, a self-hosted InstanceConfiguration
+whose Stripe integration holds the fixture keys (enabled or not) and, when
+authored, the Django cache entry of the range written with cache.set; its Stripe
+requests must be exactly the authored ones and, after it, cache.get of the key
+must equal the authored value (expiring within 300 seconds); the key and the
+configuration are then removed. Every other case makes no Stripe request.
 """
+from contextlib import contextmanager
 from datetime import date, datetime
 from decimal import Decimal
 
@@ -19,6 +29,7 @@ import types
 from TESTS.contracts import test_payment_reads_http as base_contract
 from TESTS.adapters.django import invoice_sync_print_http as printer
 from TESTS.adapters.django import family_harness as harness
+from TESTS.adapters.django import stripe_routes_http as stripe_routes
 
 SOURCES = ('TESTS/fixtures/payment_reads_http.json', 'TESTS/contracts/test_payment_reads_http.py',
            'TESTS/adapters/django/payment_reads_http.py', 'BE/application/views/payment_views.py',
@@ -31,7 +42,8 @@ SOURCES = ('TESTS/fixtures/payment_reads_http.json', 'TESTS/contracts/test_payme
            'BE/application/utils/api_utils.py', 'BE/application/utils/stripe_utils.py', 'BE/application/mixin.py',
            'BE/application/impersonation_scope.py', 'BE/application/permissions_registry.py', 'BE/application/urls.py',
            'BE/docmanager/models.py', 'TESTS/adapters/django/invoice_sync_print_http.py', 'BE/application/printing_tasks.py',
-           'BE/instance/restore/task_base.py') + harness.SOURCES
+           'BE/instance/restore/task_base.py', 'TESTS/adapters/django/stripe_routes_http.py',
+           'BE/instance/integration_configuration.py', 'BE/instance/models.py') + harness.SOURCES
 
 ASSOCIATE_FIELDS = ('picture_path', 'first_name', 'last_name', 'sex', 'tax_code', 'born_city', 'address_city', 'address', 'address_cap',
                     'nationality', 'nationality_residence', 'email', 'phone', 'phone_2', 'phone_3', 'phone_4', 'phone_label',
@@ -145,18 +157,85 @@ def seed_rows(source, created):
             payment_id=payments[row['payment']]['id'], document_id=documents[row['document']]['id'] if row['document'] else None))
 
 
-service_context = printer.service_context
+@contextmanager
+def service_context(report, log):
+    """The print stub and a private Stripe API stub, both visible to Django and the Go server."""
+    import os
+    import stripe
+    import threading
+    from http.server import ThreadingHTTPServer
+    with printer.service_context(report, log):
+        server = ThreadingHTTPServer(('127.0.0.1', 0), stripe_routes._StubHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        stripe_routes.STUB.update(lock=threading.Lock(), log=[], script=[])
+        base = f'http://127.0.0.1:{server.server_address[1]}'
+        saved_base, saved_env = stripe.api_base, os.environ.get('STRIPE_API_BASE')
+        report['service_cleanup']['stripe_stub'] = 'running'
+        thread.start()
+        try:
+            stripe.api_base = base
+            os.environ['STRIPE_API_BASE'] = base
+            yield
+        finally:
+            stripe.api_base = saved_base
+            if saved_env is None:
+                os.environ.pop('STRIPE_API_BASE', None)
+            else:
+                os.environ['STRIPE_API_BASE'] = saved_env
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=10)
+            report['service_cleanup']['stripe_stub'] = 'stopped' if not thread.is_alive() else 'cleanup_failed'
+            stripe_routes.STUB.clear()
+
+
+@contextmanager
+def _stripe_configuration(setup):
+    """The case's Stripe integration and cache entry, present only during its request."""
+    if setup is None:
+        yield
+        return
+    from django.core.cache import cache
+    from instance.integration_configuration import encrypt_secret
+    from instance.models import InstanceConfiguration
+    keys = base_contract.load_source()['stripe']
+    key = setup['cache_key']
+    contract.require(not InstanceConfiguration._base_manager.exists(), 'stripe.instance-exists')
+    contract.require(cache.get(key) is None, 'stripe.cache-clean')
+    row = InstanceConfiguration._base_manager.create(
+        domain='payment-reads.example.test', name='Payment reads fixture', self_hosted=True,
+        integration_settings={'stripe': {'revision': 1, 'settings': {
+            'enabled': setup['enabled'], 'public_key': keys['public_key'], 'secret_key': encrypt_secret(keys['secret_key']),
+            'webhook_secret': ''}}})
+    try:
+        if setup['cache_before'] is not None:
+            cache.set(key, setup['cache_before'], 300)
+        yield
+        value, expected = cache.get(key), setup['cache_after']
+        contract.require(value == expected and (expected is None or [type(v) for v in value.values()] == [float, float]
+                                                and list(value) == ['total', 'stripe_fee']), 'stripe.cache-value')
+        if expected is not None:
+            remaining = cache.ttl(key)
+            contract.require(remaining is not None and 0 < remaining <= 300, 'stripe.cache-expiry')
+    finally:
+        cache.delete(key)
+        InstanceConfiguration._base_manager.filter(pk=row.pk).delete()
 
 
 def _assert_case(case, base_url, *, token, sessions):
-    """The authored request, with the print stub scripted for it and its outbound requests checked after."""
+    """The authored request, with the print and Stripe stubs scripted for it and their outbound requests checked after."""
     stub = printer.STUB
     with stub['lock']:
         stub['log'] = []
         stub['script'] = [item['reply'] for item in case['prints']]
     stub['token'] = token
-    status = base_contract.assert_case(case, base_url, token=token, sessions=sessions)
-    printer.check_prints(case, None)
+    with stripe_routes.STUB['lock']:
+        stripe_routes.STUB['log'] = []
+        stripe_routes.STUB['script'] = case['stripe']
+    with _stripe_configuration(case['stripe_setup']):
+        status = base_contract.assert_case(case, base_url, token=token, sessions=sessions)
+        printer.check_prints(case, None)
+        stripe_routes.check_stripe(case, base_contract.load_source())
     return status
 
 

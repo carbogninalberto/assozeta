@@ -17,6 +17,62 @@ type invoiceSyncCustomer struct {
 	printer *InvoiceSyncPrint
 }
 
+// WithPendingCustomerInvoices enables invoice_customers_list's first loop
+// (it needs WithCustomerInvoiceSync's printer).
+func (s *InvoiceParties) WithPendingCustomerInvoices(store domain.CustomerInvoicePendingStore) *InvoiceParties {
+	s.pendingCustomers = store
+	return s
+}
+
+// customerListPending is invoice_customers_list's first loop: for every
+// customer invoice without a PDF, generate_invoice_xml of the stored row and
+// invoice.save() (an exception there is only logged), then
+// print_document_customer_invoice.apply. Inputs outside the FatturaPA port
+// are refused before any write.
+func (s *InvoiceParties) customerListPending(ctx context.Context, request InvoicePartyRequest) error {
+	pending, err := s.pendingCustomers.PendingCustomerInvoices(ctx)
+	if err != nil {
+		return err
+	}
+	if len(pending) == 0 {
+		return nil
+	}
+	if s.customerSync == nil {
+		return domain.ErrInvoicePartyNotPorted
+	}
+	sample := fatturapa.Progressivo(s.now().Unix(), 0)
+	for i := range pending {
+		if _, err = fatturapa.XML(InvoiceViewsFattura(&pending[i].Row), sample); errors.Is(err, fatturapa.ErrUnsupported) {
+			return domain.ErrInvoicePartyNotPorted
+		}
+	}
+	audit := paymentCategoryAuditContext(request.Identity, request.Audit)
+	ctx = context.WithoutCancel(ctx)
+	for i := range pending {
+		invoice := &pending[i]
+		progressivo, err := invoiceSyncNextProgressivo(time.Now())
+		if err != nil {
+			return err
+		}
+		xml, err := fatturapa.XML(InvoiceViewsFattura(&invoice.Row), progressivo)
+		switch {
+		case errors.Is(err, fatturapa.ErrInvalid):
+			// logger.error(...): no save.
+		case err != nil:
+			return err
+		default:
+			if err = s.pendingCustomers.SaveCustomerInvoiceXML(ctx, invoice.ID, invoice.Association, xml,
+				audit, s.now().UTC().Truncate(time.Microsecond)); err != nil {
+				return err
+			}
+		}
+		if err = s.customerSync.printer.CustomerInvoice(ctx, invoice.ID, request.Authorization); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // WithCustomerInvoiceSync enables the valid customer add.
 func (s *InvoiceParties) WithCustomerInvoiceSync(store domain.CustomerInvoiceSyncStore, printer *InvoiceSyncPrint) *InvoiceParties {
 	s.customerSync = &invoiceSyncCustomer{store: store, printer: printer}

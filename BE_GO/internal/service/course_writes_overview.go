@@ -68,17 +68,17 @@ func (s *CourseWrites) OverviewDelete(ctx context.Context, identity domain.Resol
 	if err != nil {
 		return err
 	}
-	tx, err := s.begin(ctx, identity)
+	tx, err := s.begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	association, err := tx.OwnerAssociation(ctx, identity.ScopeUser.ID)
+	association, err := s.courseWritesOwner(ctx, tx, identity)
 	if err != nil {
 		return err
 	}
 	group := supplierGroup(request.GroupHeader)
-	course, err := tx.LiveCourse(ctx, courseID, group)
+	course, err := courseWritesLiveCourse(ctx, tx, identity, courseID, group)
 	if err != nil {
 		return err
 	}
@@ -88,7 +88,7 @@ func (s *CourseWrites) OverviewDelete(ctx context.Context, identity domain.Resol
 	if *course.AssociationID != association {
 		return domain.ErrCourseWritesForeign
 	}
-	subscription, err := tx.LiveSubscription(ctx, subscriptionID, group)
+	subscription, err := courseWritesLiveSubscription(ctx, tx, identity, subscriptionID, group)
 	if err != nil {
 		return err
 	}
@@ -216,17 +216,17 @@ func (s *CourseWrites) OverviewUpdate(ctx context.Context, identity domain.Resol
 			return domain.ErrCourseWritesNotPorted
 		}
 	}
-	tx, err := s.begin(ctx, identity)
+	tx, err := s.begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	association, err := tx.OwnerAssociationFirst(ctx, identity.ScopeUser.ID)
+	association, err := courseWritesOwnerFirst(ctx, tx, identity)
 	if err != nil {
 		return err
 	}
 	group := supplierGroup(request.GroupHeader)
-	course, err := tx.LiveCourse(ctx, courseID, group)
+	course, err := courseWritesLiveCourse(ctx, tx, identity, courseID, group)
 	if err != nil {
 		return err
 	}
@@ -234,7 +234,10 @@ func (s *CourseWrites) OverviewUpdate(ctx context.Context, identity domain.Resol
 	if err != nil {
 		return err
 	}
-	subscription, err := tx.LiveSubscription(ctx, subscriptionID, group)
+	if row != nil && !courseEnrolmentScoped(identity, row.CourseAssociationID) {
+		row = nil
+	}
+	subscription, err := courseWritesLiveSubscription(ctx, tx, identity, subscriptionID, group)
 	if err != nil {
 		return err
 	}
@@ -291,7 +294,7 @@ func (s *CourseWrites) overviewPayment(ctx context.Context, tx domain.CourseWrit
 	if err != nil {
 		return domain.CourseWritePayment{}, err
 	}
-	category, err := tx.DefaultPaymentCategory(ctx)
+	category, err := tx.DefaultPaymentCategory(ctx, &association)
 	if err != nil {
 		return domain.CourseWritePayment{}, err
 	}

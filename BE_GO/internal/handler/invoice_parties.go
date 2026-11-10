@@ -143,8 +143,37 @@ func (h *InvoicePartiesHandler) write(c echo.Context, method, operation, name, m
 	return h.answer(c, 200, map[string]string{"message": message}, err)
 }
 
+// CustomerList is a read whose first loop writes (the XML of the invoices
+// without a PDF) and prints: it is admitted like a write and carries the
+// audit context and the Authorization header.
 func (h *InvoicePartiesHandler) CustomerList(c echo.Context) error {
-	return h.read(c, "invoice_customers_list", "Invoice Customers List", h.parties.CustomerList)
+	identity, err := messageReadsIdentity(c, h.actors, h.identities, http.MethodGet, "invoice_customers_list")
+	if identity == nil {
+		return err
+	}
+	request := c.Request()
+	if request.Method == http.MethodOptions {
+		return supplierOptions(c, "Invoice Customers List", "")
+	}
+	if request.Method != http.MethodGet {
+		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
+	}
+	tracked, err := h.operations.Track(request.Context())
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	defer tracked.Release()
+	auditContext, err := h.audit(request)
+	if err != nil {
+		return restError(c, err)
+	}
+	ctx, err := tracked.Admit()
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	body, err := h.parties.CustomerList(ctx, service.InvoicePartyRequest{Identity: *identity, Query: parseReferenceForm(request.URL.RawQuery),
+		Group: request.Header.Get("X-Group-Id"), Audit: auditContext, Authorization: requestAuthorization(request)})
+	return h.answer(c, 200, body, err)
 }
 
 func (h *InvoicePartiesHandler) SupplierList(c echo.Context) error {

@@ -25,17 +25,29 @@ payment/simulation/partial-quotes-apply (GET): the same selection through
 association_quote_assign; each quote is Payment.objects.create (user,
 associate, amount, subject 1, association, meta; the association's default
 bank account; the raw X-Group-Id; Payment.save() defaults; audited create).
-Quotes for users other than the owner send an e-mail: not ported and not
+A quote for a user other than the owner renders
+email/payment/fee_assigned.html (the request's language) and calls
+send_email_html in-process: without a CommunicationConfiguration of the
+association it publishes send_mail_async (subject, message, DEFAULT_FROM_EMAIL,
+the user's e-mail, html_message, fail_silently False, the association id, the
+owner's e-mail as reply_to); the effect checks the published message. With a
+configuration Django sends after a random delay on a Timer thread: not
 authored. The response is always {'msg': 'Partial quotes applied.'}.
 
 payment/sign (POST): ``request.data`` with exactly the keys payment_id and
 signature (otherwise 400 {'msg': 'validation errors.'}; a body without
 keys() is a 500), is_valid_uuid (400 list), the first live group-aware
 payment by id through scoped_queryset (none: 400 ['payment not found']),
-SignatureRequestSerializer with raise_exception (400 field errors); without a
+the caller's association (``request.user.sport_association``: athletes 403,
+owners without one 500; a payment of another association 403 'User not
+allowed.'), SignatureRequestSerializer with raise_exception (400 field errors); without a
 signature to store the answer is {'status': 'success'} and nothing is written.
-A signature to store (Signature row, payment save and the synchronous
-compensation PDF) is not ported and not authored.
+A signature to store creates a Signature (the scope user, or the selected
+person for collaborators, with the trimmed data; audited create indexed to
+the actor's own association), sets it on the payment and runs Payment.save()
+(defaults, audited update indexed directly), then
+print_document_compensation.apply: one GET to the CURRENT_HOST print stub
+(/document/compensation/<payment_id>, the request's Authorization).
 
 payment/<uid>/approve (POST) for payments with an invoice: InvoiceSerializer
 rendering. A paid payment with a falsy ``generate_invoice`` answers the
@@ -85,6 +97,9 @@ PLAN_D = {'id': 'plan-d', 'name': 'Quota D', 'subscription_fee': '25.50', 'auto_
           'previous_subscription_fee_plan': 'plan-q', 'from_day': 1, 'from_month': 4, 'to_day': 30, 'to_month': 4}
 PLAN_E = {'id': 'plan-e', 'name': 'Quota E', 'subscription_fee': 7.25, 'auto_assign': True, 'advanced_options': True,
           'previous_subscription_fee_plan': 'prev-e', 'from_day': 1, 'from_month': 5, 'to_day': 31, 'to_month': 5}
+# A member's own account (the athlete) holds the previous plan: the apply e-mails the member.
+PLAN_G = {'id': 'plan-g', 'name': 'Quota G è', 'subscription_fee': '15', 'auto_assign': True, 'advanced_options': True,
+          'previous_subscription_fee_plan': 'prev-g', 'from_day': 1, 'from_month': 6, 'to_day': 30, 'to_month': 6}
 OWN_PLANS = [
     PLAN_B, PLAN_C,
     {'id': 'plan-off', 'name': 'Fuori data', 'subscription_fee': '1', 'auto_assign': True, 'advanced_options': True,
@@ -95,7 +110,7 @@ OWN_PLANS = [
     {'id': 'plan-first', 'auto_assign': True, 'advanced_options': True, 'from_day': 'x'},
     {'id': 'plan-zero', 'auto_assign': True, 'advanced_options': 0, 'previous_subscription_fee_plan': 'plan-a', 'from_day': 'x'},
     {'id': 'plan-empty', 'auto_assign': 'x', 'advanced_options': [], 'previous_subscription_fee_plan': 'plan-a', 'from_day': 'x'},
-    PLAN_D, PLAN_E,
+    PLAN_D, PLAN_E, PLAN_G,
 ]
 PLAN_F = {'id': 'plan-f', 'name': 'Quota F', 'subscription_fee': '9', 'auto_assign': True, 'advanced_options': True,
           'previous_subscription_fee_plan': 'prev-f', 'from_day': 15, 'from_month': 3, 'to_day': 1, 'to_month': 4}
@@ -137,6 +152,7 @@ SUBSCRIPTIONS = {
     's_foreign': subscription('hans', 'prev-f', association=FOREIGN, user=IDS['foreign_owner']),
     's_foreign_plan_a': subscription('hans', 'plan-a', association=FOREIGN, user=IDS['foreign_owner']),
     's_z': subscription(None, 'prev-z', association=PLANS_OWNER['association'], user=PLANS_OWNER['id']),
+    's8': subscription('luca', 'prev-g', user=ATHLETE),
 }
 
 # Payments: the subscriptions' previous-plan payments are seeded by the runner from SUBSCRIPTIONS.
@@ -184,14 +200,16 @@ PAYMENTS = {
     'sign_group': {'id': next(ids), **row(group_id=IDS['own_group'])},
     'sign_removed': {'id': next(ids), **row(deleted=True)},
     'sign_abroad': {'id': next(ids), **row(sport_association_id=FOREIGN, user_id=IDS['foreign_owner'], payment_category_id=None)},
+    'sign_uncategorized': {'id': 'a1000000-0000-4000-8000-000000993301', **row(payment_category_id=None)},
 }
 STATE = copy.deepcopy(PAYMENTS)
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, effect=None,
+        prints=()):
     case = {'name': f'payment-misc-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'effect': effect}
+            'status': status, 'response': response, 'effect': effect, 'prints': list(prints)}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -356,6 +374,26 @@ add('apply-missing-associate-created', 'plans_owner', APPLY + '?date=2026-03-15'
     effect=created('plans_owner', quote_row(None, PLAN_Z, '5.00', association=PLANS_OWNER['association'], user=PLANS_OWNER['id'],
                                             account=None), '5', PLANS_OWNER['association']))
 add('apply-missing-associate-again-nothing', 'plans_owner', APPLY + '?date=2026-03-15', 200, APPLIED, effect=effect('plans_owner'))
+TASK = 'core.tasks.send_mail_async'
+
+
+def fee_mail(associate, plan, recipient):
+    person = ASSOCIATES[associate]
+    message = {'$render': 'email/payment/fee_assigned.html', 'language': 'en',
+               'context': {'recipient_name': person['first'] + ' ' + person['last'], 'fee_name': plan['name'],
+                           'amount': plan['subscription_fee'], 'application_name': '$whitelabel', 'association_name': DENOMINATION}}
+    subject = f"{DENOMINATION} | Nuova quota associativa '{plan['name']}' assegnata"
+    return {'task': TASK, 'args': [], 'kwargs': [['subject', subject], ['message', message], ['from_email', '$from_email'],
+                                                 ['recipient_list', [recipient]], ['html_message', message], ['fail_silently', False],
+                                                 ['sport_association_id', {'uuid': OWN}], ['reply_to', ['$email:owner']]]}
+
+
+add('simulation-june-member-account', 'owner', SIMULATE + '?date=2026-06-01', 200, simulation([PLAN_G], [quote('s8', PLAN_G)]))
+# The member's own account: the quote is created and the member is e-mailed (send_mail_async).
+add('apply-june-member-account-mail', 'full_collaborator', APPLY + '?date=2026-06-01', 200, APPLIED,
+    effect={**created('full_collaborator', quote_row('luca', PLAN_G, '15.00', user=ATHLETE), '15'),
+            'celery': [fee_mail('luca', PLAN_G, '$email:athlete')]})
+add('apply-june-again-nothing', 'owner', APPLY + '?date=2026-06-01', 200, APPLIED, effect=effect())
 
 # --- sign ------------------------------------------------------------------------
 
@@ -405,10 +443,50 @@ add('sign-default-flag', 'owner', SIGN, 200, SUCCESS, method='POST', body=sign(O
 add('sign-false-strings', 'owner', SIGN, 200, SUCCESS, method='POST', body=sign(OWN_ID, {'there_is_signature': 'off', 'data': 12}),
     effect=effect())
 add('sign-group', 'owner', SIGN, 200, SUCCESS, method='POST', body=sign(PAYMENTS['sign_group']['id'], UNSIGNED), headers=GROUP, effect=effect())
-add('sign-foreign-payment', 'owner', SIGN, 200, SUCCESS, method='POST', body=sign(PAYMENTS['sign_abroad']['id'], UNSIGNED), effect=effect())
-add('sign-athlete', 'athlete', SIGN, 200, SUCCESS, method='POST', body=sign(OWN_ID, UNSIGNED), effect=effect('athlete'))
+# Payment signing only applies to the caller's association (checked after the lookup, before the signature).
+NOT_ALLOWED = {'detail': 'User not allowed.'}
+add('sign-foreign-payment', 'owner', SIGN, 403, NOT_ALLOWED, method='POST', body=sign(PAYMENTS['sign_abroad']['id'], UNSIGNED))
+add('sign-foreign-payment-with-signature', 'owner', SIGN, 403, NOT_ALLOWED, method='POST',
+    body=sign(PAYMENTS['sign_abroad']['id'], {'there_is_signature': True, 'data': 'firma'}))
+add('sign-foreign-payment-invalid-signature', 'full_collaborator', SIGN, 403, NOT_ALLOWED, method='POST',
+    body=sign(PAYMENTS['sign_abroad']['id'], 'x'))
+add('sign-athlete', 'athlete', SIGN, 403, DENIED_ATHLETE, method='POST', body=sign(OWN_ID, UNSIGNED))
+add('sign-athlete-missing-payment', 'athlete', SIGN, 400, ['payment not found'], method='POST', body=sign(IDS['missing'], UNSIGNED))
+add('sign-owner-without-association-server-error', 'owner_without_association', SIGN, 500, SERVER, method='POST', body=sign(OWN_ID, UNSIGNED))
 add('sign-full-collaborator', 'full_collaborator', SIGN, 200, SUCCESS, method='POST', body=sign(OWN_ID, {'there_is_signature': 0, 'data': ''}),
     effect=effect('full_collaborator'))
+
+
+def signed(actor, label, user, data, *, index, payment_index, extra=None, prints=True):
+    """A stored signature: the Signature create, the payment's save (signature plus Payment.save() defaults) and the print."""
+    changes = {'signature': ['None', '$signature'], **(extra or {})}
+    columns = {'signature_id': '$signature', **{field_column(k): v[1] for k, v in (extra or {}).items()}}
+    STATE[label]['signature_id'] = '$signature'
+    return {**effect(actor, changed={label: columns}, audit=[
+        {'key': '$signature', 'model': 'signature', 'action': 0,
+         'changes': {'signature_id': ['None', '$signature'], 'user': ['None', user], 'signature': ['None', data]}, 'index': index},
+        {'key': label, 'action': 1, 'changes': changes, 'index': payment_index}]),
+        'signatures': [{'user': user, 'signature': data}]}
+
+
+def field_column(name):
+    return name + '_id' if name + '_id' in FOREIGN_KEYS else name
+
+
+def compensation_print(label):
+    return [{'path': f"/document/compensation/{PAYMENTS[label]['id']}", 'reply': {'status': 200, 'body': 'ok'}}]
+
+
+# A signature to store: Signature row, payment save, print_document_compensation.apply.
+add('sign-stores-signature', 'owner', SIGN, 200, SUCCESS, method='POST',
+    body=sign(OWN_ID, {'there_is_signature': True, 'data': '  data:image/png;base64,iVBORw0KGgo=  '}),
+    effect=signed('owner', 'sign_own', OWNER, 'data:image/png;base64,iVBORw0KGgo=', index=[OWN, 'actor.sport_association'],
+                  payment_index=[OWN, DIRECT]), prints=compensation_print('sign_own'))
+# A collaborator signs as the selected person; the payment without a category gets the default one on save.
+add('sign-collaborator-stores-signature-default-category', 'full_collaborator', SIGN, 200, SUCCESS, method='POST',
+    body=sign(PAYMENTS['sign_uncategorized']['id'], {'there_is_signature': 'true', 'data': 'firma'}),
+    effect=signed('full_collaborator', 'sign_uncategorized', IDS['full_collaborator'], 'firma', index=None, payment_index=[OWN, DIRECT],
+                  extra={'payment_category': ['None', '$default_category']}), prints=compensation_print('sign_uncategorized'))
 
 # --- approve with an invoice -----------------------------------------------------
 

@@ -252,13 +252,13 @@ func (s *SubscriptionCreates) quick(ctx context.Context, identity domain.Resolve
 	if err != nil {
 		return nil, err
 	}
-	category, err := tx.Category(ctx, settings.DefaultCoursesCategory)
+	category, err := tx.Category(ctx, settings.DefaultCoursesCategory, association)
 	if err != nil {
 		return nil, err
 	}
 	if category == nil {
 		// Payment.save() looks the named category up.
-		if category, err = tx.Category(ctx, nil); err != nil {
+		if category, err = tx.Category(ctx, nil, association); err != nil {
 			return nil, err
 		}
 	}

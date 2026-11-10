@@ -105,13 +105,13 @@ def run(work, log, tool_env):
             course=scale_course,payment_id=key,deleted=True) for i,key in enumerate(scaled)])
         before=snapshot();ct=ContentType.objects.get_for_model(Payment)
         # Authored expected descriptions are checked against actual model saves.
-        # Category expectations explicitly differ: the old lookup selects the
-        # lower-PK foreign category; the new reader must select own/global only.
+        # Payment.save() takes the default category from the payment's association
+        # (PaymentCategory.default_for): own or global, as the Go reader does.
         for row in valid:
             p=Payment._base_manager.get(pk=row['ID']);old_description=p.description;old_category=p.payment_category_id
             p.save();p.refresh_from_db()
             assert p.description==row['Description'],(row['Name'],p.description,row['Description'])
-            assert str(p.payment_category_id)==str(old_category or foreign_cat.pk),(row['Name'],'unexpected legacy category')
+            assert str(p.payment_category_id)==row['Category'],(row['Name'],str(p.payment_category_id),row['Category'])
             Payment._base_manager.filter(pk=p.pk).update(description=old_description,payment_category_id=old_category)
         # The legacy relation helper also exposes foreign titles. Rejecting those
         # references is an explicit scope correction, not a hidden normalization.
@@ -120,7 +120,7 @@ def run(work, log, tool_env):
             assert p.get_course_carnet_name()=='FOREIGN',row['Name']
         with disable_auditlog():LogEntry.objects.filter(content_type=ct,object_pk__in=[r['ID'] for r in valid]).delete()
         assert snapshot()==before,'Django input characterization changed unrelated data'
-        print('Django: 12 authored save descriptions, foreign default category and six reverse-reference scope defects established',flush=True)
+        print('Django: 12 authored save descriptions and categories, six reverse-reference scope defects established',flush=True)
         fixture=work/'payment-save-inputs.json'
         fixture.write_text(json.dumps(dict(Valid=valid,Denied=denied,Malformed=str(malformed.pk),Association=str(own.pk),Scaled=scaled)))
         completed=subprocess.run(['go','test','-race','-tags=paymentsaveinputsintegration','./internal/service','-run','^TestPaymentSaveInputsPostgres$','-json'],

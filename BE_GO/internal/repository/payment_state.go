@@ -65,33 +65,8 @@ func (t *paymentStateTransaction) RenderPayment(ctx context.Context, id string, 
 		return domain.PaymentStateRender{}, err
 	}
 	render := domain.PaymentStateRender{Payment: payment}
-	if payment.InstructorID != nil {
-		rows := []domain.InstructorRow{}
-		if err = t.tx.SelectContext(ctx, &rows, instructorColumns+` WHERE i.instructor_id=$1`, *payment.InstructorID); err != nil {
-			return render, err
-		}
-		if len(rows) == 1 {
-			render.Instructor = &rows[0]
-		}
-	}
-	if payment.InvoiceID != nil {
-		// payment.invoice and its document go through the base managers.
-		invoices := []domain.PaymentReadsInvoice{}
-		if err = t.tx.SelectContext(ctx, &invoices, `SELECT v.invoice_id, v.document_pdf_id, d.token::text AS document_token,
- v.sport_association_id, v.creation_date, v.membership_fee::text AS membership_fee, v.activity_fee::text AS activity_fee,
- v.meta_payment_categories::text AS meta_payment_categories, v.description, v.number, v.archived, v.cancelled, v.selected_tutor_id,
- v.meta::text AS meta, v.imported_from_associami, v.group_id, v.deleted,
- COALESCE((SELECT json_agg(l.document_id ORDER BY l.id) FROM application_invoice_attached_documents l WHERE l.invoice_id=v.invoice_id),
-  '[]'::json)::text AS attached_documents
- FROM application_invoice v LEFT JOIN docmanager_document d ON d.document_id=v.document_pdf_id WHERE v.invoice_id=$1`,
-			*payment.InvoiceID); err != nil {
-			return render, err
-		}
-		if len(invoices) == 1 {
-			render.Invoice = &invoices[0]
-		}
-	}
-	return render, nil
+	render.Instructor, render.Invoice, err = paymentNestedRows(ctx, t.tx, payment.InvoicePartyPayment)
+	return render, err
 }
 
 // SavePaymentState is Payment.save(): only the columns the views change differ
@@ -158,4 +133,38 @@ func (t *paymentStateTransaction) MarkPayments(ctx context.Context, column strin
  WHERE payment_id=ANY($1::uuid[]) AND sport_association_id=$2 AND NOT deleted AND ($3::uuid IS NULL OR group_id=$3::uuid)
  AND ($4::uuid IS NULL OR sport_association_id=$4::uuid)`, ids, association, group, scope)
 	return err
+}
+
+// paymentNestedRows loads PaymentSerializer's nested instructor and invoice
+// (payment.instructor and payment.invoice through the base managers).
+func paymentNestedRows(ctx context.Context, tx sqlx.QueryerContext, payment domain.InvoicePartyPayment) (*domain.InstructorRow,
+	*domain.PaymentReadsInvoice, error) {
+	var instructor *domain.InstructorRow
+	var invoice *domain.PaymentReadsInvoice
+	if payment.InstructorID != nil {
+		rows := []domain.InstructorRow{}
+		if err := sqlx.SelectContext(ctx, tx, &rows, instructorColumns+` WHERE i.instructor_id=$1`, *payment.InstructorID); err != nil {
+			return nil, nil, err
+		}
+		if len(rows) == 1 {
+			instructor = &rows[0]
+		}
+	}
+	if payment.InvoiceID != nil {
+		invoices := []domain.PaymentReadsInvoice{}
+		if err := sqlx.SelectContext(ctx, tx, &invoices, `SELECT v.invoice_id, v.document_pdf_id, d.token::text AS document_token,
+ v.sport_association_id, v.creation_date, v.membership_fee::text AS membership_fee, v.activity_fee::text AS activity_fee,
+ v.meta_payment_categories::text AS meta_payment_categories, v.description, v.number, v.archived, v.cancelled, v.selected_tutor_id,
+ v.meta::text AS meta, v.imported_from_associami, v.group_id, v.deleted,
+ COALESCE((SELECT json_agg(l.document_id ORDER BY l.id) FROM application_invoice_attached_documents l WHERE l.invoice_id=v.invoice_id),
+  '[]'::json)::text AS attached_documents
+ FROM application_invoice v LEFT JOIN docmanager_document d ON d.document_id=v.document_pdf_id WHERE v.invoice_id=$1`,
+			*payment.InvoiceID); err != nil {
+			return nil, nil, err
+		}
+		if len(invoices) == 1 {
+			invoice = &invoices[0]
+		}
+	}
+	return instructor, invoice, nil
 }

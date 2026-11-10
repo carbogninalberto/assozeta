@@ -48,7 +48,7 @@ type PaymentArchiveTransaction interface {
 	OwnerAssociation(ctx context.Context, owner string) (string, error)
 	// PaymentForArchive locks a live payment of the association (group-aware).
 	PaymentForArchive(ctx context.Context, id, association string, group *string) (PaymentSaveRow, error)
-	DefaultPaymentCategory(ctx context.Context) (id, name *string, err error)
+	DefaultPaymentCategory(ctx context.Context, association *string) (id, name *string, err error)
 	PaymentLinkedName(ctx context.Context, payment string) (PaymentLinkedName, error)
 	SavePaymentArchive(ctx context.Context, id string, archived bool, category, description *string) error
 	AppendPaymentAudit(ctx context.Context, event PaymentArchiveEvent) error

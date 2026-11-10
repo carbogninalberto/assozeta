@@ -22,11 +22,10 @@ its mutation transaction and appropriate concurrency controls before applying an
 plan; a read snapshot is neither a durable authorization grant nor a write receipt.
 
 Category lookup preserves case-insensitive name matching and lowest-primary-key
-ordering across eligible global/own categories, including archived/deleted ones.
-An existing foreign category fails; it is not silently replaced. When no eligible
-default exists, the planned category remains NULL. The actual Django lookup picks
-an earlier foreign category, even when deleted/archived. Excluding it is an explicit
-scope correction required before Go writes, rather than equivalent legacy output.
+ordering across eligible global/own categories, including archived/deleted ones,
+as `PaymentCategory.default_for` does in Django. An existing foreign category
+fails; it is not silently replaced. When no eligible default exists, the planned
+category remains NULL.
 Invoice and account references must also belong to the payment's association.
 
 For a NULL course-payment description, the first course subscription, installment
@@ -40,8 +39,8 @@ empty string, bypass reverse relationship lookup. A missing carnet can still use
 its stored payment metadata override, matching the calculator's established rules.
 
 Twelve authored description cases run through actual Django `Payment.save()` and
-then through Go preparation. The adapter separately confirms the legacy foreign
-default category and six reverse-reference scope defects. Eleven denial inputs
+then through Go preparation, categories included. The adapter separately confirms
+six reverse-reference scope defects. Eleven denial inputs
 cover top-level ownership/missing rows, categories, invoices, accounts, course,
 installment and carnet references, including parent memberships. Whole managed
 model snapshots prove preparation is read-only and fixture cleanup restores the

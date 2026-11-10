@@ -719,8 +719,8 @@ type campsPaymentAdapter struct {
 	tx domain.CampsTransaction
 }
 
-func (a campsPaymentAdapter) DefaultPaymentCategory(ctx context.Context) (*string, *string, error) {
-	return a.tx.DefaultPaymentCategory(ctx)
+func (a campsPaymentAdapter) DefaultPaymentCategory(ctx context.Context, association *string) (*string, *string, error) {
+	return a.tx.DefaultPaymentCategory(ctx, association)
 }
 
 func (a campsPaymentAdapter) PaymentLinkedName(ctx context.Context, payment string) (domain.PaymentLinkedName, error) {

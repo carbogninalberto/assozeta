@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 )
@@ -111,27 +112,40 @@ func (t *paymentWritesTransaction) GroupExists(ctx context.Context, id string) (
 	return t.exists(ctx, `SELECT 1 FROM application_group WHERE group_id=$1::uuid`, id)
 }
 
-func (t *paymentWritesTransaction) InstructorExists(ctx context.Context, id string) (bool, error) {
-	return t.exists(ctx, `SELECT 1 FROM application_instructor WHERE instructor_id=$1`, id)
-}
-
-func (t *paymentWritesTransaction) SupplierExists(ctx context.Context, id string, group *string) (bool, error) {
-	return t.exists(ctx, `SELECT 1 FROM application_supplierandcustomers WHERE supplier_id=$1 AND NOT deleted
- AND ($2::uuid IS NULL OR group_id=$2::uuid)`, id, group)
-}
-
-func (t *paymentWritesTransaction) SubscriptionAssociate(ctx context.Context, id string, group, scope *string) (bool, *string, error) {
-	var associate *string
-	err := t.tx.GetContext(ctx, &associate, `SELECT associate_id::text FROM application_subscription WHERE subscription_id=$1
- AND ($2::uuid IS NULL OR group_id=$2::uuid) AND ($3::uuid IS NULL OR sport_association_id=$3::uuid)`, id, group, scope)
+// paymentWritesOwning reads one nullable owning key of a row that may not exist.
+func (t *paymentWritesTransaction) paymentWritesOwning(ctx context.Context, query string, args ...any) (bool, *string, error) {
+	var owning *string
+	err := t.tx.GetContext(ctx, &owning, query, args...)
 	if errors.Is(err, sql.ErrNoRows) {
 		return false, nil, nil
 	}
-	return err == nil, associate, err
+	return err == nil, owning, err
 }
 
-func (t *paymentWritesTransaction) AssociateExists(ctx context.Context, id string, group, scope *string) (bool, error) {
-	return t.exists(ctx, `SELECT 1 FROM application_associate WHERE associate_id=$1 AND NOT deleted
+func (t *paymentWritesTransaction) InstructorOwner(ctx context.Context, id string) (bool, *string, error) {
+	return t.paymentWritesOwning(ctx, `SELECT user_id::text FROM application_instructor WHERE instructor_id=$1`, id)
+}
+
+func (t *paymentWritesTransaction) SupplierAssociation(ctx context.Context, id string, group *string) (bool, *string, error) {
+	return t.paymentWritesOwning(ctx, `SELECT sport_association_id::text FROM application_supplierandcustomers WHERE supplier_id=$1
+ AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid)`, id, group)
+}
+
+func (t *paymentWritesTransaction) SubscriptionAssociate(ctx context.Context, id string, group, scope *string) (bool, *string, *string, error) {
+	var row struct {
+		Associate   *string `db:"associate_id"`
+		Association *string `db:"sport_association_id"`
+	}
+	err := t.tx.GetContext(ctx, &row, `SELECT associate_id::text, sport_association_id::text FROM application_subscription
+ WHERE subscription_id=$1 AND ($2::uuid IS NULL OR group_id=$2::uuid) AND ($3::uuid IS NULL OR sport_association_id=$3::uuid)`, id, group, scope)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil, nil, nil
+	}
+	return err == nil, row.Associate, row.Association, err
+}
+
+func (t *paymentWritesTransaction) AssociateAssociation(ctx context.Context, id string, group, scope *string) (bool, *string, error) {
+	return t.paymentWritesOwning(ctx, `SELECT sport_association_id::text FROM application_associate WHERE associate_id=$1 AND NOT deleted
  AND ($2::uuid IS NULL OR group_id=$2::uuid) AND ($3::uuid IS NULL OR sport_association_id=$3::uuid)`, id, group, scope)
 }
 
@@ -202,8 +216,9 @@ func (t *paymentWritesTransaction) BulkAssociates(ctx context.Context, ids []str
 	return found, err
 }
 
-func (t *paymentWritesTransaction) CategoryExists(ctx context.Context, id string) (bool, error) {
-	return t.exists(ctx, `SELECT 1 FROM application_paymentcategory WHERE payment_category_id=$1`, id)
+func (t *paymentWritesTransaction) AssociationCategoryExists(ctx context.Context, id, association string) (bool, error) {
+	return t.exists(ctx, `SELECT 1 FROM application_paymentcategory WHERE payment_category_id=$1
+ AND (sport_association_id=$2 OR sport_association_id IS NULL)`, id, association)
 }
 
 func (t *paymentWritesTransaction) AssociationAccount(ctx context.Context, id, association string) (*string, error) {
@@ -223,4 +238,25 @@ func (t *paymentWritesTransaction) InsertBulkPayments(ctx context.Context, rows 
 		}
 	}
 	return nil
+}
+
+func (t *paymentWritesTransaction) AttachPaymentDocument(ctx context.Context, payment string, document domain.NewDocument,
+	actorAssociation *string, audit domain.LoginAuditContext, at time.Time) error {
+	if _, err := t.tx.ExecContext(ctx, `INSERT INTO docmanager_document (document_id, creation_date, filepath, filename, file_size_bytes, token)
+ VALUES ($1, $2, NULL, $3, NULL, $4)`, document.ID, document.Created, document.Filename, document.Token); err != nil {
+		return err
+	}
+	changes, err := createdModelChanges(ctx, t.tx, "docmanager_document", "document_id", document.ID)
+	if err != nil {
+		return err
+	}
+	for name, rendered := range documentReverse {
+		changes[name] = [2]string{"None", rendered}
+	}
+	if err := appendModelAuditForApp(ctx, t.tx, "docmanager", documentAudit(document.ID, 0, changes, actorAssociation, audit, at)); err != nil {
+		return err
+	}
+	_, err = t.tx.ExecContext(ctx, `INSERT INTO application_payment_attachments (payment_id, document_id) VALUES ($1, $2)
+ ON CONFLICT DO NOTHING`, payment, document.ID)
+	return err
 }

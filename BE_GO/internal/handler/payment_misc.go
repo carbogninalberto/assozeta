@@ -75,7 +75,8 @@ func (h *PaymentMiscHandler) entry(c echo.Context, verb, operation, name string)
 }
 
 func (h *PaymentMiscHandler) request(c echo.Context, write *restWrite) service.PaymentMiscRequest {
-	request := service.PaymentMiscRequest{Query: parseReferenceForm(c.Request().URL.RawQuery), GroupHeader: c.Request().Header.Get("X-Group-Id")}
+	request := service.PaymentMiscRequest{Query: parseReferenceForm(c.Request().URL.RawQuery), GroupHeader: c.Request().Header.Get("X-Group-Id"),
+		Language: djangoReadRouteLocale{}.Language(c.Request()), Authorization: requestAuthorization(c.Request())}
 	if write != nil {
 		request.Body, request.Audit = write.Body, write.Audit
 	}

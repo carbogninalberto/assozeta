@@ -205,7 +205,7 @@
    "sport": null,
    "abbreviated": null,
    "document_header": "<p><br></p>",
-   "invoice_footer": "",
+   "invoice_footer": "<pre><code>Orari @nome:\n  lun   18-20\n\n  <b>  </b>\n</code></pre>\n<p>  </p>",
    "subscription_template": "altro.html",
    "additional_sections": [],
    "additional_fields": [],
@@ -6098,7 +6098,7 @@
      },
      "footer": {
       "t": "str",
-      "v": ""
+      "v": "<pre><code>Orari :\n  lun   18-20\n\n  <b>  </b>\n</code></pre>\n<p> </p>"
      }
     }
    }
@@ -7896,7 +7896,7 @@
      },
      "footer": {
       "t": "str",
-      "v": ""
+      "v": "<pre><code>Orari :\n  lun   18-20\n\n  <b>  </b>\n</code></pre>\n<p> </p>"
      }
     }
    }

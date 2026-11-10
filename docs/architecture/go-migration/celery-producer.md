@@ -94,3 +94,12 @@ to a duplicate on retry.
    every case; optionally wrap `run_workload` to run `harness.celery_worker_accepts` on `fixture['celery_accepted'][-1]`.
 4. Go: inject `celery.Publisher`, publish at Django's point (after `Commit()` for autocommit code), unit-test the order with a fake
    transaction and `celery.Recorder`-style publisher; mutation candidates: a wrong argument type/name, publishing before commit.
+
+## Remote control (pidbox)
+
+`internal/celery/pidbox.go` sends `app.control.inspect(timeout=...).<command>()` over the Redis broker the way
+kombu does from a fresh process: the reply queue binding, the fanout PUBLISH on `/0.celery.pidbox` with kombu's
+envelope, BRPOP until the collection timeout passes without a reply, and the reply queue removed afterwards.
+The instance diagnostics `worker` probe uses it for `ping` ([instance-admin](instance-admin.md)); a real
+`core.celery` worker answered it.
+

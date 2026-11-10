@@ -11,6 +11,10 @@ when its entry is written resolves through its instructor's owner's
 association; otherwise (and when that owner has none) the actor's association,
 none when the actor has none. Rows the run creates are removed
 before the fixture cleanup compares the model state.
+
+A CURRENT_HOST print stub (invoice-sync-print's service_context) runs for the
+whole run: each case's outbound requests must be exactly its authored 'prints'
+(the list prints each page row with a payment and no document).
 """
 import ipaddress
 import json
@@ -18,7 +22,10 @@ import re
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 
-from TESTS.contracts import test_instructor_hours_http as contract
+import types
+
+from TESTS.contracts import test_instructor_hours_http as base_contract
+from TESTS.adapters.django import invoice_sync_print_http as printer
 from TESTS.adapters.django import carnet_replace_http as replace
 from TESTS.adapters.django import family_harness as harness
 from TESTS.adapters.django.workflow_writes_http import keyed
@@ -29,7 +36,25 @@ SOURCES = ('TESTS/fixtures/instructor_hours_http.json', 'TESTS/contracts/test_in
            'BE/application/models/user_models.py', 'BE/application/models/payment_models.py', 'BE/application/models/courses_models.py',
            'BE/application/models/subscriptions_models.py', 'BE/docmanager/models.py', 'BE/application/mixin.py',
            'BE/application/utils/api_utils.py', 'BE/application/tenant_scope.py', 'BE/application/audit_resolvers.py',
-           'BE/application/signals.py', 'BE/application/printing_tasks.py') + harness.SOURCES
+           'BE/application/signals.py', 'BE/application/printing_tasks.py', 'TESTS/adapters/django/invoice_sync_print_http.py',
+           'BE/instance/restore/task_base.py') + harness.SOURCES
+
+
+def _assert_case(case, base_url, *, token, sessions):
+    """The authored request, with the print stub scripted for it and its outbound requests checked after."""
+    stub = printer.STUB
+    with stub['lock']:
+        stub['log'] = []
+        stub['script'] = [item['reply'] for item in case['prints']]
+    stub['token'] = token
+    status = base_contract.assert_case(case, base_url, token=token, sessions=sessions)
+    printer.check_prints(case, None)
+    return status
+
+
+contract = types.SimpleNamespace(**{name: getattr(base_contract, name) for name in dir(base_contract) if not name.startswith('__')})
+contract.assert_case = _assert_case
+service_context = printer.service_context
 HOURS, DOCUMENT = 'application.InstructorHours', 'docmanager.Document'
 MANAGED = (HOURS, DOCUMENT, harness.AUDIT, harness.INDEX)
 

@@ -8,9 +8,12 @@ import (
 	"strings"
 	"time"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
+	"github.com/google/uuid"
 )
 
 // PaymentWrites ports payment_add, payment_update and payment_bulk_add.
@@ -19,6 +22,14 @@ type PaymentWrites struct {
 	now     func() time.Time
 	newID   func() string
 	printer *InvoiceSyncPrint
+	// documents stores attachments_data files (default_storage.save).
+	documents *DocumentUploads
+}
+
+// WithDocuments sets the storage of attachments_data files.
+func (s *PaymentWrites) WithDocuments(documents *DocumentUploads) *PaymentWrites {
+	s.documents = documents
+	return s
 }
 
 // WithInvoicePrint sets print_document_invoice's eager runner (the update of
@@ -219,20 +230,89 @@ func metaAmount(object domain.RequestObject) (*float64, error) {
 	return &total, nil
 }
 
-// attachmentsStored refuses attachments _handle_documents would store
-// (the first item has document and filename); otherwise it reports whether
-// the hook raises after the save.
-func attachmentsStored(input dto.PaymentEntryInput) (bool, error) {
-	if len(input.Attachments) == 0 {
-		return false, nil
+// paymentAttachment is one attachments_data item _handle_documents stores.
+type paymentAttachment struct {
+	content  []byte
+	filename string
+	// invalid is b64decode's binascii.Error / ValueError (the 500 page).
+	invalid bool
+}
+
+// paymentAttachmentPlan is _handle_documents' loop: the items stored in
+// order, then failing when an item lacks document or filename (its
+// ValidationError after the earlier ones are stored) or invalid base64 stops
+// the loop (500).
+type paymentAttachmentPlan struct {
+	stored  []paymentAttachment
+	failing bool
+}
+
+// attachmentsStored plans attachments_data before any write. Items outside
+// the ported subset are refused: a non-string document or filename (str()
+// stored, then os.path.join raises), a filename the column or the database
+// rejects, a storage name Storage.save rejects, or no storage configured.
+func (s *PaymentWrites) attachmentsStored(input dto.PaymentEntryInput) (paymentAttachmentPlan, error) {
+	plan := paymentAttachmentPlan{}
+	for _, item := range input.Attachments {
+		document, hasDocument := item.Lookup("document")
+		filename, hasFilename := item.Lookup("filename")
+		if !hasDocument || !hasFilename {
+			plan.failing = true
+			return plan, nil
+		}
+		if s.documents == nil {
+			return plan, domain.ErrPaymentWritesNotPorted
+		}
+		name, ok := filename.(string)
+		if !ok || strings.ContainsRune(name, 0) || utf8.RuneCountInString(name) > 255 || !utf8.ValidString(name) {
+			return plan, domain.ErrPaymentWritesNotPorted
+		}
+		if _, ok := document.(string); !ok {
+			return plan, domain.ErrPaymentWritesNotPorted
+		}
+		if _, err := documentkey.UploadName(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), uuid.New(), name); err != nil {
+			return plan, domain.ErrPaymentWritesNotPorted
+		}
+		content, err := dto.PythonB64Decode(document)
+		if err != nil {
+			plan.stored = append(plan.stored, paymentAttachment{invalid: true})
+			return plan, nil
+		}
+		plan.stored = append(plan.stored, paymentAttachment{content: content, filename: name})
 	}
-	first := input.Attachments[0]
-	_, document := first.Lookup("document")
-	_, filename := first.Lookup("filename")
-	if document && filename {
-		return false, domain.ErrPaymentWritesNotPorted
+	return plan, nil
+}
+
+// storeAttachments runs the plan: per item Document.objects.create (audited
+// create indexed to the actor's own association), the default_storage.save
+// of the decoded bytes under <timestamp>/<id>/<filename> and
+// obj.attachments.add. It returns the error Django raises after them.
+func (s *PaymentWrites) storeAttachments(ctx context.Context, tx domain.PaymentWritesTransaction, identity domain.ResolvedIdentity,
+	audit domain.LoginAuditContext, payment string, plan paymentAttachmentPlan) error {
+	if len(plan.stored) > 0 {
+		actorAssociation, err := tx.ActorAssociation(ctx, identity.Actor.ID)
+		if err != nil {
+			return err
+		}
+		auditContext := paymentCategoryAuditContext(identity, audit)
+		for _, item := range plan.stored {
+			if item.invalid {
+				return domain.ErrPaymentWritesServer
+			}
+			at := s.at()
+			document := domain.NewDocument{ID: s.newID(), Token: s.newID(), Filename: item.filename, Created: at}
+			if err := tx.AttachPaymentDocument(ctx, payment, document, actorAssociation, auditContext, at); err != nil {
+				return err
+			}
+			if err := s.documents.save(ctx, document, item.content); err != nil {
+				return err
+			}
+		}
 	}
-	return true, nil
+	if plan.failing {
+		return domain.ErrPaymentWritesAttachment
+	}
+	return nil
 }
 
 // paymentMemory is the in-memory payment: the row to write plus the
@@ -328,7 +408,7 @@ func (s *PaymentWrites) defaults(ctx context.Context, tx domain.PaymentWritesTra
 		}
 		save.CategoryName = name
 	}
-	if err := paymentSaveDefaults(ctx, tx, &save, map[string][2]string{}); err != nil {
+	if err := secCategorySaveDefaults(ctx, tx, &save, m.row.AssociationID, map[string][2]string{}); err != nil {
 		if errors.Is(err, ErrPaymentSaveFailed) {
 			return domain.ErrPaymentWritesServer
 		}
@@ -420,8 +500,27 @@ type paymentParty struct {
 	setAssociate                    bool
 }
 
-// party is the views' complex_item branch (a Python exception is a 500).
-func (s *PaymentWrites) party(ctx context.Context, tx domain.PaymentWritesTransaction, item any, group, scope *string) (paymentParty, error) {
+// errPaymentWritesForeignParty is the views' PermissionDenied for a party of another association.
+var errPaymentWritesForeignParty = &domain.PermissionDenied{Detail: "User not allowed."}
+
+// paymentWritesOwned is a party's owning key compared with the caller's.
+func paymentWritesOwned(found bool, owning *string, err error, caller string) error {
+	if err != nil {
+		return err
+	}
+	if !found {
+		return domain.ErrPaymentWritesServer
+	}
+	if owning == nil || *owning != caller {
+		return errPaymentWritesForeignParty
+	}
+	return nil
+}
+
+// party is the views' complex_item branch (a Python exception is a 500); payment parties only apply to
+// the caller's association (instructors through the association's user).
+func (s *PaymentWrites) party(ctx context.Context, tx domain.PaymentWritesTransaction, item any, group, scope *string,
+	association, owner string) (paymentParty, error) {
 	object, ok := item.(domain.RequestObject)
 	if !ok {
 		return paymentParty{}, domain.ErrPaymentWritesServer
@@ -442,15 +541,6 @@ func (s *PaymentWrites) party(ctx context.Context, tx domain.PaymentWritesTransa
 		}
 		return id, nil
 	}
-	missing := func(found bool, err error) error {
-		if err != nil {
-			return err
-		}
-		if !found {
-			return domain.ErrPaymentWritesServer
-		}
-		return nil
-	}
 	party := paymentParty{}
 	switch name {
 	case "Istruttori":
@@ -458,7 +548,8 @@ func (s *PaymentWrites) party(ctx context.Context, tx domain.PaymentWritesTransa
 		if err != nil {
 			return party, err
 		}
-		if err = missing(tx.InstructorExists(ctx, id)); err != nil {
+		found, user, err := tx.InstructorOwner(ctx, id)
+		if err = paymentWritesOwned(found, user, err, owner); err != nil {
 			return party, err
 		}
 		party.instructor = &id
@@ -467,7 +558,8 @@ func (s *PaymentWrites) party(ctx context.Context, tx domain.PaymentWritesTransa
 		if err != nil {
 			return party, err
 		}
-		if err = missing(tx.SupplierExists(ctx, id, group)); err != nil {
+		found, owning, err := tx.SupplierAssociation(ctx, id, group)
+		if err = paymentWritesOwned(found, owning, err, association); err != nil {
 			return party, err
 		}
 		party.supplier = &id
@@ -476,8 +568,8 @@ func (s *PaymentWrites) party(ctx context.Context, tx domain.PaymentWritesTransa
 		if err != nil {
 			return party, err
 		}
-		found, associate, err := tx.SubscriptionAssociate(ctx, id, group, scope)
-		if err = missing(found, err); err != nil {
+		found, associate, owning, err := tx.SubscriptionAssociate(ctx, id, group, scope)
+		if err = paymentWritesOwned(found, owning, err, association); err != nil {
 			return party, err
 		}
 		party.associate, party.setAssociate = associate, true
@@ -486,7 +578,8 @@ func (s *PaymentWrites) party(ctx context.Context, tx domain.PaymentWritesTransa
 		if err != nil {
 			return party, err
 		}
-		if err = missing(tx.AssociateExists(ctx, id, group, scope)); err != nil {
+		found, owning, err := tx.AssociateAssociation(ctx, id, group, scope)
+		if err = paymentWritesOwned(found, owning, err, association); err != nil {
 			return party, err
 		}
 		party.associate, party.setAssociate = &id, true
@@ -611,7 +704,7 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 	if err != nil {
 		return nil, err
 	}
-	failing, err := attachmentsStored(input)
+	attachments, err := s.attachmentsStored(input)
 	if err != nil {
 		return nil, err
 	}
@@ -643,8 +736,11 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 		}
 		return nil, failure
 	}
-	if failing {
-		return fail(domain.ErrPaymentWritesAttachment)
+	if err := s.storeAttachments(ctx, tx, identity, request.Audit, m.row.ID, attachments); errors.Is(err, domain.ErrPaymentWritesAttachment) ||
+		errors.Is(err, domain.ErrPaymentWritesServer) {
+		return fail(err)
+	} else if err != nil {
+		return nil, err
 	}
 	item, present := object.Lookup("complex_item")
 	if !present {
@@ -658,8 +754,8 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 		return nil, err
 	}
 	if dto.PythonTruthy(item) {
-		party, err := s.party(ctx, tx, item, readGroup, scope)
-		if errors.Is(err, domain.ErrPaymentWritesServer) {
+		party, err := s.party(ctx, tx, item, readGroup, scope, association, owner)
+		if errors.Is(err, domain.ErrPaymentWritesServer) || errors.Is(err, errPaymentWritesForeignParty) {
 			return fail(err)
 		}
 		if err != nil {
@@ -754,7 +850,7 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	m.row.InstructorID, m.row.SupplierID = nil, nil
 	if item, present := object.Lookup("complex_item"); present && dto.PythonTruthy(item) {
 		m.row.AssociateID = nil
-		party, err := s.party(ctx, tx, item, group, scope)
+		party, err := s.party(ctx, tx, item, group, scope, association, identity.ScopeUser.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -768,12 +864,9 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 		if !ok {
 			return nil, domain.ErrPaymentWritesServer
 		}
-		found, associate, err := tx.SubscriptionAssociate(ctx, subscription, group, scope)
-		if err != nil {
+		found, associate, owning, err := tx.SubscriptionAssociate(ctx, subscription, group, scope)
+		if err = paymentWritesOwned(found, owning, err, association); err != nil {
 			return nil, err
-		}
-		if !found {
-			return nil, domain.ErrPaymentWritesServer
 		}
 		m.row.AssociateID = associate
 	}
@@ -785,7 +878,7 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	if row.InvoiceID != nil && s.printer == nil {
 		return nil, domain.ErrPaymentWritesNotPorted
 	}
-	failing, err := attachmentsStored(input)
+	attachments, err := s.attachmentsStored(input)
 	if err != nil {
 		return nil, err
 	}
@@ -809,11 +902,14 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 			return nil, err
 		}
 	}
-	if failing {
-		if err = tx.Commit(); err != nil {
+	if err := s.storeAttachments(ctx, tx, identity, request.Audit, id, attachments); errors.Is(err, domain.ErrPaymentWritesAttachment) ||
+		errors.Is(err, domain.ErrPaymentWritesServer) {
+		if err := tx.Commit(); err != nil {
 			return nil, err
 		}
-		return nil, domain.ErrPaymentWritesAttachment
+		return nil, err
+	} else if err != nil {
+		return nil, err
 	}
 	item, err := s.render(ctx, tx, m, group)
 	if err != nil {
@@ -1002,14 +1098,14 @@ func (s *PaymentWrites) BulkAdd(ctx context.Context, identity domain.ResolvedIde
 		if !ok {
 			return 0, nil, domain.ErrPaymentWritesServer
 		}
-		exists, err := tx.CategoryExists(ctx, id)
+		exists, err := tx.AssociationCategoryExists(ctx, id, association)
 		if err != nil {
 			return 0, nil, err
 		}
 		if exists {
 			category = &id
 		}
-	} else if category, _, err = tx.DefaultPaymentCategory(ctx); err != nil {
+	} else if category, _, err = tx.DefaultPaymentCategory(ctx, &association); err != nil {
 		return 0, nil, err
 	}
 	var description *string

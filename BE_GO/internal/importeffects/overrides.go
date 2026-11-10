@@ -29,13 +29,22 @@ func (e *Effects) paymentSave(ctx context.Context, instance *Instance) error {
 	categoryName := sql.NullString{}
 	category := instance.Get("payment_category_id")
 	if category.IsNone() {
-		// PaymentCategory.objects.filter(name__iexact=...).first()
+		// PaymentCategory.default_for(self.sport_association_id): the association's own or a global row.
+		var association *string
+		switch value := instance.Get("sport_association_id"); value.Kind {
+		case None:
+		case UUID:
+			association = &value.S
+		default:
+			return unsupported("payment association value")
+		}
 		var row struct {
 			ID   string         `db:"payment_category_id"`
 			Name sql.NullString `db:"name"`
 		}
 		err := e.tx().GetContext(ctx, &row, `SELECT "payment_category_id"::text, "name" FROM "application_paymentcategory"
- WHERE UPPER("name"::text) = UPPER($1) ORDER BY "payment_category_id" ASC LIMIT 1`, "entrate e proventi da attività tipiche")
+ WHERE UPPER("name"::text) = UPPER($1) AND ("sport_association_id" IS NULL OR "sport_association_id" = $2::uuid)
+ ORDER BY "payment_category_id" ASC LIMIT 1`, "entrate e proventi da attività tipiche", association)
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
 		case err != nil:

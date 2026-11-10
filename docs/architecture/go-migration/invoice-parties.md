@@ -24,8 +24,14 @@ remains the production execution owner.
   `.filter().first()` and raise a bare `Exception` (500) when the association
   or the association's invoice is missing. Updates validate the UUID first
   (`400 ["badly formed hexadecimal UUID string"]`).
-- **Customer list:** every invoice of the association by `-creation_date`
-  with `CustomerInvoiceSerializer` (all fields, `pdf_token` from the PDF).
+- **Customer list:** first, for every customer invoice without a PDF (any association, the database's order),
+  `generate_invoice_xml` of the stored row (`internal/fatturapa`, ProgressivoInvio from invoice-sync-print's counter) and
+  `invoice.save()`: one auditlog update of `xml` indexed `direct` to the invoice's association (an exception in the XML is only
+  logged: no save), then `print_document_customer_invoice.apply` (invoice-sync-print's eager runner,
+  `GET CURRENT_HOST/document/einvoice/<id>`). This runs before `request.user.sport_association`, so athletes and owners without
+  an association regenerate and print too. Then every invoice of the association by `-creation_date`
+  with `CustomerInvoiceSerializer` (all fields, `pdf_token` from the PDF). Go admits the list like a write (operation
+  lifecycle, audit context).
 - **Customer add:** the view writes into `request.data` (a list, scalar,
   `null` or form body is a 500), defaults missing or null
   `transmitting_date`/`payment_expiry_date` to today and converts both with
@@ -94,8 +100,8 @@ ISO datetimes, ChoiceFields, `PrimaryKeyRelatedField` with `''` as None).
 
 ## Not ported (refused with a 500 before any write)
 
-- The customer list's XML generation and synchronous `print_document_customer_invoice`
-  for invoices without a PDF: any such invoice refuses the list.
+- Customer-list invoices without a PDF whose FatturaPA inputs are outside `internal/fatturapa`'s subset (`ErrUnsupported`,
+  checked for all of them before the first save).
 - A valid customer add was refused here; it is ported in
   [invoice-sync-print](invoice-sync-print.md) (save, XML/JSON, eager print task).
 - Nested `payment` or `supplier` objects (DRF's nested serializer validation
@@ -115,7 +121,7 @@ ISO datetimes, ChoiceFields, `PrimaryKeyRelatedField` with `''` as None).
 
 ## Evidence (TDD)
 
-`TESTS/fixtures/invoice_parties_http.json` (generator alongside) authors 136
+`TESTS/fixtures/invoice_parties_http.json` (generator alongside) authors 138
 cases with every seeded field explicit; each write case declares the rows it
 changes or creates and its auditlog entries in order with their index rows.
 The Django reference corrected one expectation: the payment save's index
@@ -130,3 +136,14 @@ Model hooks ([model-hooks](model-hooks.md)): `supplier-update-payment-descriptio
 `Iscrizione`) and `supplier-update-payment-quota-meta-description` (`QUOTA corso` -> the meta description), in the foreign
 association (its owner updates them, so the own lists stay as authored). Native 138/138; mutation (`model-hooks-mutation`:
 the description hook skipped) fails Go on the first (audit fields; CAUGHT).
+
+Customer-list loop over invoices without a PDF (API v2 gap): a printing-pending customer invoice of the foreign association
+(every list request regenerates and prints it); the adapter runs invoice-sync-print's CURRENT_HOST stub, checks each case's
+outbound requests and requires the stored XML to equal `generate_invoice_xml` of the stored row with a ProgressivoInvio drawn
+during the request.
+
+- RED (`v2doc-red-r1`): Django 138/138; Go 500 on `invoice-parties-customer-list-athlete-not-association`.
+- GREEN (`v2doc-versioned-r1`): 138/138 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact effects.
+- Mutation (`v2doc-mutation-r1`): saving the XML without its auditlog entry fails
+  `invoice-parties-customer-list-athlete-not-association` (`audit.count`, CAUGHT).
+- Re-run for shared code: invoice-sync-print (`v2doc-rerun-r1`, 70/70).

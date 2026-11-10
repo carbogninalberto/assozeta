@@ -1,0 +1,3337 @@
+[
+[
+"Assozeta <>",
+"Assozeta",
+""
+],
+[
+"Assozeta <None>",
+"Assozeta",
+"None"
+],
+[
+"Assozeta <segreteria@polisportiva.example>",
+"Assozeta",
+"segreteria@polisportiva.example"
+],
+[
+"Assozeta <info@example.test>",
+"Assozeta",
+"info@example.test"
+],
+[
+"Assozeta <Mixed.Case@Example.Test>",
+"Assozeta",
+"Mixed.Case@Example.Test"
+],
+[
+"Assozeta <user>",
+"Assozeta",
+"user"
+],
+[
+"Assozeta <a@b@c>",
+"",
+""
+],
+[
+"Assozeta <first last@example.test>",
+"Assozeta",
+"first last@example.test"
+],
+[
+"Assozeta <\"quoted\"@example.test>",
+"Assozeta",
+"\"quoted\"@example.test"
+],
+[
+"Assozeta <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Assozeta <user@>",
+"Assozeta",
+""
+],
+[
+"Assozeta <@example.test>",
+"Assozeta",
+""
+],
+[
+"Assozeta <us,er@example.test>",
+"",
+""
+],
+[
+"Assozeta <user@exa mple.test>",
+"Assozeta",
+"user@example.test"
+],
+[
+"Assozeta <user.@example.test>",
+"Assozeta",
+"user.@example.test"
+],
+[
+"Assozeta <user@example.test>>",
+"",
+""
+],
+[
+"Assozeta <<user@example.test>",
+"",
+""
+],
+[
+"Bakney Sport <>",
+"Bakney Sport",
+""
+],
+[
+"Bakney Sport <None>",
+"Bakney Sport",
+"None"
+],
+[
+"Bakney Sport <segreteria@polisportiva.example>",
+"Bakney Sport",
+"segreteria@polisportiva.example"
+],
+[
+"Bakney Sport <info@example.test>",
+"Bakney Sport",
+"info@example.test"
+],
+[
+"Bakney Sport <Mixed.Case@Example.Test>",
+"Bakney Sport",
+"Mixed.Case@Example.Test"
+],
+[
+"Bakney Sport <user>",
+"Bakney Sport",
+"user"
+],
+[
+"Bakney Sport <a@b@c>",
+"",
+""
+],
+[
+"Bakney Sport <first last@example.test>",
+"Bakney Sport",
+"first last@example.test"
+],
+[
+"Bakney Sport <\"quoted\"@example.test>",
+"Bakney Sport",
+"\"quoted\"@example.test"
+],
+[
+"Bakney Sport <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Bakney Sport <user@>",
+"Bakney Sport",
+""
+],
+[
+"Bakney Sport <@example.test>",
+"Bakney Sport",
+""
+],
+[
+"Bakney Sport <us,er@example.test>",
+"",
+""
+],
+[
+"Bakney Sport <user@exa mple.test>",
+"Bakney Sport",
+"user@example.test"
+],
+[
+"Bakney Sport <user.@example.test>",
+"Bakney Sport",
+"user.@example.test"
+],
+[
+"Bakney Sport <user@example.test>>",
+"",
+""
+],
+[
+"Bakney Sport <<user@example.test>",
+"",
+""
+],
+[
+"A.S.D. Polisportiva <>",
+"A.S.D. Polisportiva",
+""
+],
+[
+"A.S.D. Polisportiva <None>",
+"A.S.D. Polisportiva",
+"None"
+],
+[
+"A.S.D. Polisportiva <segreteria@polisportiva.example>",
+"A.S.D. Polisportiva",
+"segreteria@polisportiva.example"
+],
+[
+"A.S.D. Polisportiva <info@example.test>",
+"A.S.D. Polisportiva",
+"info@example.test"
+],
+[
+"A.S.D. Polisportiva <Mixed.Case@Example.Test>",
+"A.S.D. Polisportiva",
+"Mixed.Case@Example.Test"
+],
+[
+"A.S.D. Polisportiva <user>",
+"A.S.D. Polisportiva",
+"user"
+],
+[
+"A.S.D. Polisportiva <a@b@c>",
+"",
+""
+],
+[
+"A.S.D. Polisportiva <first last@example.test>",
+"A.S.D. Polisportiva",
+"first last@example.test"
+],
+[
+"A.S.D. Polisportiva <\"quoted\"@example.test>",
+"A.S.D. Polisportiva",
+"\"quoted\"@example.test"
+],
+[
+"A.S.D. Polisportiva <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"A.S.D. Polisportiva <user@>",
+"A.S.D. Polisportiva",
+""
+],
+[
+"A.S.D. Polisportiva <@example.test>",
+"A.S.D. Polisportiva",
+""
+],
+[
+"A.S.D. Polisportiva <us,er@example.test>",
+"",
+""
+],
+[
+"A.S.D. Polisportiva <user@exa mple.test>",
+"A.S.D. Polisportiva",
+"user@example.test"
+],
+[
+"A.S.D. Polisportiva <user.@example.test>",
+"A.S.D. Polisportiva",
+"user.@example.test"
+],
+[
+"A.S.D. Polisportiva <user@example.test>>",
+"",
+""
+],
+[
+"A.S.D. Polisportiva <<user@example.test>",
+"",
+""
+],
+[
+"Polisportiva Città <>",
+"Polisportiva Città",
+""
+],
+[
+"Polisportiva Città <None>",
+"Polisportiva Città",
+"None"
+],
+[
+"Polisportiva Città <segreteria@polisportiva.example>",
+"Polisportiva Città",
+"segreteria@polisportiva.example"
+],
+[
+"Polisportiva Città <info@example.test>",
+"Polisportiva Città",
+"info@example.test"
+],
+[
+"Polisportiva Città <Mixed.Case@Example.Test>",
+"Polisportiva Città",
+"Mixed.Case@Example.Test"
+],
+[
+"Polisportiva Città <user>",
+"Polisportiva Città",
+"user"
+],
+[
+"Polisportiva Città <a@b@c>",
+"",
+""
+],
+[
+"Polisportiva Città <first last@example.test>",
+"Polisportiva Città",
+"first last@example.test"
+],
+[
+"Polisportiva Città <\"quoted\"@example.test>",
+"Polisportiva Città",
+"\"quoted\"@example.test"
+],
+[
+"Polisportiva Città <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Polisportiva Città <user@>",
+"Polisportiva Città",
+""
+],
+[
+"Polisportiva Città <@example.test>",
+"Polisportiva Città",
+""
+],
+[
+"Polisportiva Città <us,er@example.test>",
+"",
+""
+],
+[
+"Polisportiva Città <user@exa mple.test>",
+"Polisportiva Città",
+"user@example.test"
+],
+[
+"Polisportiva Città <user.@example.test>",
+"Polisportiva Città",
+"user.@example.test"
+],
+[
+"Polisportiva Città <user@example.test>>",
+"",
+""
+],
+[
+"Polisportiva Città <<user@example.test>",
+"",
+""
+],
+[
+"Società Sportiva \"Aurora\" <>",
+"Società Sportiva Aurora",
+""
+],
+[
+"Società Sportiva \"Aurora\" <None>",
+"Società Sportiva Aurora",
+"None"
+],
+[
+"Società Sportiva \"Aurora\" <segreteria@polisportiva.example>",
+"Società Sportiva Aurora",
+"segreteria@polisportiva.example"
+],
+[
+"Società Sportiva \"Aurora\" <info@example.test>",
+"Società Sportiva Aurora",
+"info@example.test"
+],
+[
+"Società Sportiva \"Aurora\" <Mixed.Case@Example.Test>",
+"Società Sportiva Aurora",
+"Mixed.Case@Example.Test"
+],
+[
+"Società Sportiva \"Aurora\" <user>",
+"Società Sportiva Aurora",
+"user"
+],
+[
+"Società Sportiva \"Aurora\" <a@b@c>",
+"",
+""
+],
+[
+"Società Sportiva \"Aurora\" <first last@example.test>",
+"Società Sportiva Aurora",
+"first last@example.test"
+],
+[
+"Società Sportiva \"Aurora\" <\"quoted\"@example.test>",
+"Società Sportiva Aurora",
+"\"quoted\"@example.test"
+],
+[
+"Società Sportiva \"Aurora\" <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Società Sportiva \"Aurora\" <user@>",
+"Società Sportiva Aurora",
+""
+],
+[
+"Società Sportiva \"Aurora\" <@example.test>",
+"Società Sportiva Aurora",
+""
+],
+[
+"Società Sportiva \"Aurora\" <us,er@example.test>",
+"",
+""
+],
+[
+"Società Sportiva \"Aurora\" <user@exa mple.test>",
+"Società Sportiva Aurora",
+"user@example.test"
+],
+[
+"Società Sportiva \"Aurora\" <user.@example.test>",
+"Società Sportiva Aurora",
+"user.@example.test"
+],
+[
+"Società Sportiva \"Aurora\" <user@example.test>>",
+"",
+""
+],
+[
+"Società Sportiva \"Aurora\" <<user@example.test>",
+"",
+""
+],
+[
+"Polisportiva, Città <>",
+"",
+""
+],
+[
+"Polisportiva, Città <None>",
+"",
+""
+],
+[
+"Polisportiva, Città <segreteria@polisportiva.example>",
+"",
+""
+],
+[
+"Polisportiva, Città <info@example.test>",
+"",
+""
+],
+[
+"Polisportiva, Città <Mixed.Case@Example.Test>",
+"",
+""
+],
+[
+"Polisportiva, Città <user>",
+"",
+""
+],
+[
+"Polisportiva, Città <a@b@c>",
+"",
+""
+],
+[
+"Polisportiva, Città <first last@example.test>",
+"",
+""
+],
+[
+"Polisportiva, Città <\"quoted\"@example.test>",
+"",
+""
+],
+[
+"Polisportiva, Città <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Polisportiva, Città <user@>",
+"",
+""
+],
+[
+"Polisportiva, Città <@example.test>",
+"",
+""
+],
+[
+"Polisportiva, Città <us,er@example.test>",
+"",
+""
+],
+[
+"Polisportiva, Città <user@exa mple.test>",
+"",
+""
+],
+[
+"Polisportiva, Città <user.@example.test>",
+"",
+""
+],
+[
+"Polisportiva, Città <user@example.test>>",
+"",
+""
+],
+[
+"Polisportiva, Città <<user@example.test>",
+"",
+""
+],
+[
+"A.S.D. Polisportiva \"Città\" (Aurora) <>",
+"A.S.D. Polisportiva Città (Aurora)",
+""
+],
+[
+"A.S.D. Polisportiva \"Città\" (Aurora) <None>",
+"A.S.D. Polisportiva Città (Aurora)",
+"None"
+],
+[
+"A.S.D. Polisportiva \"Città\" (Aurora) <segreteria@polisportiva.example>",
+"A.S.D. Polisportiva Città (Aurora)",
+"segreteria@polisportiva.example"
+],
+[
+"A.S.D. Polisportiva \"Città\" (Aurora) <info@example.test>",
+"A.S.D. Polisportiva Città (Aurora)",
+"info@example.test"
+],
+[
+"A.S.D. Polisportiva \"Città\" (Aurora) <Mixed.Case@Example.Test>",
+"A.S.D. Polisportiva Città (Aurora)",
+"Mixed.Case@Example.Test"
+],
+[
+"A.S.D. Polisportiva \"Città\" (Aurora) <user>",
+"A.S.D. Polisportiva Città (Aurora)",
+"user"
+],
+[
+"A.S.D. Polisportiva \"Città\" (Aurora) <a@b@c>",
+"",
+""
+],
+[
+"A.S.D. Polisportiva \"Città\" (Aurora) <first last@example.test>",
+"A.S.D. Polisportiva Città (Aurora)",
+"first last@example.test"
+],
+[
+"A.S.D. Polisportiva \"Città\" (Aurora) <\"quoted\"@example.test>",
+"A.S.D. Polisportiva Città (Aurora)",
+"\"quoted\"@example.test"
+],
+[
+"A.S.D. Polisportiva \"Città\" (Aurora) <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"A.S.D. Polisportiva \"Città\" (Aurora) <user@>",
+"A.S.D. Polisportiva Città (Aurora)",
+""
+],
+[
+"A.S.D. Polisportiva \"Città\" (Aurora) <@example.test>",
+"A.S.D. Polisportiva Città (Aurora)",
+""
+],
+[
+"A.S.D. Polisportiva \"Città\" (Aurora) <us,er@example.test>",
+"",
+""
+],
+[
+"A.S.D. Polisportiva \"Città\" (Aurora) <user@exa mple.test>",
+"A.S.D. Polisportiva Città (Aurora)",
+"user@example.test"
+],
+[
+"A.S.D. Polisportiva \"Città\" (Aurora) <user.@example.test>",
+"A.S.D. Polisportiva Città (Aurora)",
+"user.@example.test"
+],
+[
+"A.S.D. Polisportiva \"Città\" (Aurora) <user@example.test>>",
+"",
+""
+],
+[
+"A.S.D. Polisportiva \"Città\" (Aurora) <<user@example.test>",
+"",
+""
+],
+[
+"ASD Ginnastica & Danza <>",
+"ASD Ginnastica & Danza",
+""
+],
+[
+"ASD Ginnastica & Danza <None>",
+"ASD Ginnastica & Danza",
+"None"
+],
+[
+"ASD Ginnastica & Danza <segreteria@polisportiva.example>",
+"ASD Ginnastica & Danza",
+"segreteria@polisportiva.example"
+],
+[
+"ASD Ginnastica & Danza <info@example.test>",
+"ASD Ginnastica & Danza",
+"info@example.test"
+],
+[
+"ASD Ginnastica & Danza <Mixed.Case@Example.Test>",
+"ASD Ginnastica & Danza",
+"Mixed.Case@Example.Test"
+],
+[
+"ASD Ginnastica & Danza <user>",
+"ASD Ginnastica & Danza",
+"user"
+],
+[
+"ASD Ginnastica & Danza <a@b@c>",
+"",
+""
+],
+[
+"ASD Ginnastica & Danza <first last@example.test>",
+"ASD Ginnastica & Danza",
+"first last@example.test"
+],
+[
+"ASD Ginnastica & Danza <\"quoted\"@example.test>",
+"ASD Ginnastica & Danza",
+"\"quoted\"@example.test"
+],
+[
+"ASD Ginnastica & Danza <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"ASD Ginnastica & Danza <user@>",
+"ASD Ginnastica & Danza",
+""
+],
+[
+"ASD Ginnastica & Danza <@example.test>",
+"ASD Ginnastica & Danza",
+""
+],
+[
+"ASD Ginnastica & Danza <us,er@example.test>",
+"",
+""
+],
+[
+"ASD Ginnastica & Danza <user@exa mple.test>",
+"ASD Ginnastica & Danza",
+"user@example.test"
+],
+[
+"ASD Ginnastica & Danza <user.@example.test>",
+"ASD Ginnastica & Danza",
+"user.@example.test"
+],
+[
+"ASD Ginnastica & Danza <user@example.test>>",
+"",
+""
+],
+[
+"ASD Ginnastica & Danza <<user@example.test>",
+"",
+""
+],
+[
+"L'Atletica Sud <>",
+"L'Atletica Sud",
+""
+],
+[
+"L'Atletica Sud <None>",
+"L'Atletica Sud",
+"None"
+],
+[
+"L'Atletica Sud <segreteria@polisportiva.example>",
+"L'Atletica Sud",
+"segreteria@polisportiva.example"
+],
+[
+"L'Atletica Sud <info@example.test>",
+"L'Atletica Sud",
+"info@example.test"
+],
+[
+"L'Atletica Sud <Mixed.Case@Example.Test>",
+"L'Atletica Sud",
+"Mixed.Case@Example.Test"
+],
+[
+"L'Atletica Sud <user>",
+"L'Atletica Sud",
+"user"
+],
+[
+"L'Atletica Sud <a@b@c>",
+"",
+""
+],
+[
+"L'Atletica Sud <first last@example.test>",
+"L'Atletica Sud",
+"first last@example.test"
+],
+[
+"L'Atletica Sud <\"quoted\"@example.test>",
+"L'Atletica Sud",
+"\"quoted\"@example.test"
+],
+[
+"L'Atletica Sud <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"L'Atletica Sud <user@>",
+"L'Atletica Sud",
+""
+],
+[
+"L'Atletica Sud <@example.test>",
+"L'Atletica Sud",
+""
+],
+[
+"L'Atletica Sud <us,er@example.test>",
+"",
+""
+],
+[
+"L'Atletica Sud <user@exa mple.test>",
+"L'Atletica Sud",
+"user@example.test"
+],
+[
+"L'Atletica Sud <user.@example.test>",
+"L'Atletica Sud",
+"user.@example.test"
+],
+[
+"L'Atletica Sud <user@example.test>>",
+"",
+""
+],
+[
+"L'Atletica Sud <<user@example.test>",
+"",
+""
+],
+[
+"S.S.D. a r.l. Nuoto Club <>",
+"S.S.D. a r.l. Nuoto Club",
+""
+],
+[
+"S.S.D. a r.l. Nuoto Club <None>",
+"S.S.D. a r.l. Nuoto Club",
+"None"
+],
+[
+"S.S.D. a r.l. Nuoto Club <segreteria@polisportiva.example>",
+"S.S.D. a r.l. Nuoto Club",
+"segreteria@polisportiva.example"
+],
+[
+"S.S.D. a r.l. Nuoto Club <info@example.test>",
+"S.S.D. a r.l. Nuoto Club",
+"info@example.test"
+],
+[
+"S.S.D. a r.l. Nuoto Club <Mixed.Case@Example.Test>",
+"S.S.D. a r.l. Nuoto Club",
+"Mixed.Case@Example.Test"
+],
+[
+"S.S.D. a r.l. Nuoto Club <user>",
+"S.S.D. a r.l. Nuoto Club",
+"user"
+],
+[
+"S.S.D. a r.l. Nuoto Club <a@b@c>",
+"",
+""
+],
+[
+"S.S.D. a r.l. Nuoto Club <first last@example.test>",
+"S.S.D. a r.l. Nuoto Club",
+"first last@example.test"
+],
+[
+"S.S.D. a r.l. Nuoto Club <\"quoted\"@example.test>",
+"S.S.D. a r.l. Nuoto Club",
+"\"quoted\"@example.test"
+],
+[
+"S.S.D. a r.l. Nuoto Club <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"S.S.D. a r.l. Nuoto Club <user@>",
+"S.S.D. a r.l. Nuoto Club",
+""
+],
+[
+"S.S.D. a r.l. Nuoto Club <@example.test>",
+"S.S.D. a r.l. Nuoto Club",
+""
+],
+[
+"S.S.D. a r.l. Nuoto Club <us,er@example.test>",
+"",
+""
+],
+[
+"S.S.D. a r.l. Nuoto Club <user@exa mple.test>",
+"S.S.D. a r.l. Nuoto Club",
+"user@example.test"
+],
+[
+"S.S.D. a r.l. Nuoto Club <user.@example.test>",
+"S.S.D. a r.l. Nuoto Club",
+"user.@example.test"
+],
+[
+"S.S.D. a r.l. Nuoto Club <user@example.test>>",
+"",
+""
+],
+[
+"S.S.D. a r.l. Nuoto Club <<user@example.test>",
+"",
+""
+],
+[
+"Circolo (Tennis) Club <>",
+"Circolo Club (Tennis)",
+""
+],
+[
+"Circolo (Tennis) Club <None>",
+"Circolo Club (Tennis)",
+"None"
+],
+[
+"Circolo (Tennis) Club <segreteria@polisportiva.example>",
+"Circolo Club (Tennis)",
+"segreteria@polisportiva.example"
+],
+[
+"Circolo (Tennis) Club <info@example.test>",
+"Circolo Club (Tennis)",
+"info@example.test"
+],
+[
+"Circolo (Tennis) Club <Mixed.Case@Example.Test>",
+"Circolo Club (Tennis)",
+"Mixed.Case@Example.Test"
+],
+[
+"Circolo (Tennis) Club <user>",
+"Circolo Club (Tennis)",
+"user"
+],
+[
+"Circolo (Tennis) Club <a@b@c>",
+"",
+""
+],
+[
+"Circolo (Tennis) Club <first last@example.test>",
+"Circolo Club (Tennis)",
+"first last@example.test"
+],
+[
+"Circolo (Tennis) Club <\"quoted\"@example.test>",
+"Circolo Club (Tennis)",
+"\"quoted\"@example.test"
+],
+[
+"Circolo (Tennis) Club <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Circolo (Tennis) Club <user@>",
+"Circolo Club (Tennis)",
+""
+],
+[
+"Circolo (Tennis) Club <@example.test>",
+"Circolo Club (Tennis)",
+""
+],
+[
+"Circolo (Tennis) Club <us,er@example.test>",
+"",
+""
+],
+[
+"Circolo (Tennis) Club <user@exa mple.test>",
+"Circolo Club (Tennis)",
+"user@example.test"
+],
+[
+"Circolo (Tennis) Club <user.@example.test>",
+"Circolo Club (Tennis)",
+"user.@example.test"
+],
+[
+"Circolo (Tennis) Club <user@example.test>>",
+"",
+""
+],
+[
+"Circolo (Tennis) Club <<user@example.test>",
+"",
+""
+],
+[
+"Gruppo <Sportivo> <>",
+"",
+""
+],
+[
+"Gruppo <Sportivo> <None>",
+"",
+""
+],
+[
+"Gruppo <Sportivo> <segreteria@polisportiva.example>",
+"",
+""
+],
+[
+"Gruppo <Sportivo> <info@example.test>",
+"",
+""
+],
+[
+"Gruppo <Sportivo> <Mixed.Case@Example.Test>",
+"",
+""
+],
+[
+"Gruppo <Sportivo> <user>",
+"",
+""
+],
+[
+"Gruppo <Sportivo> <a@b@c>",
+"",
+""
+],
+[
+"Gruppo <Sportivo> <first last@example.test>",
+"",
+""
+],
+[
+"Gruppo <Sportivo> <\"quoted\"@example.test>",
+"",
+""
+],
+[
+"Gruppo <Sportivo> <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Gruppo <Sportivo> <user@>",
+"",
+""
+],
+[
+"Gruppo <Sportivo> <@example.test>",
+"",
+""
+],
+[
+"Gruppo <Sportivo> <us,er@example.test>",
+"",
+""
+],
+[
+"Gruppo <Sportivo> <user@exa mple.test>",
+"",
+""
+],
+[
+"Gruppo <Sportivo> <user.@example.test>",
+"",
+""
+],
+[
+"Gruppo <Sportivo> <user@example.test>>",
+"",
+""
+],
+[
+"Gruppo <Sportivo> <<user@example.test>",
+"",
+""
+],
+[
+"Club: Tennis <>",
+"Tennis",
+""
+],
+[
+"Club: Tennis <None>",
+"Tennis",
+"None"
+],
+[
+"Club: Tennis <segreteria@polisportiva.example>",
+"Tennis",
+"segreteria@polisportiva.example"
+],
+[
+"Club: Tennis <info@example.test>",
+"Tennis",
+"info@example.test"
+],
+[
+"Club: Tennis <Mixed.Case@Example.Test>",
+"Tennis",
+"Mixed.Case@Example.Test"
+],
+[
+"Club: Tennis <user>",
+"Tennis",
+"user"
+],
+[
+"Club: Tennis <a@b@c>",
+"",
+""
+],
+[
+"Club: Tennis <first last@example.test>",
+"Tennis",
+"first last@example.test"
+],
+[
+"Club: Tennis <\"quoted\"@example.test>",
+"Tennis",
+"\"quoted\"@example.test"
+],
+[
+"Club: Tennis <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Club: Tennis <user@>",
+"Tennis",
+""
+],
+[
+"Club: Tennis <@example.test>",
+"Tennis",
+""
+],
+[
+"Club: Tennis <us,er@example.test>",
+"",
+""
+],
+[
+"Club: Tennis <user@exa mple.test>",
+"Tennis",
+"user@example.test"
+],
+[
+"Club: Tennis <user.@example.test>",
+"Tennis",
+"user.@example.test"
+],
+[
+"Club: Tennis <user@example.test>>",
+"Tennis",
+"user@example.test"
+],
+[
+"Club: Tennis <<user@example.test>",
+"",
+""
+],
+[
+"Club; Tennis <>",
+"",
+""
+],
+[
+"Club; Tennis <None>",
+"",
+""
+],
+[
+"Club; Tennis <segreteria@polisportiva.example>",
+"",
+""
+],
+[
+"Club; Tennis <info@example.test>",
+"",
+""
+],
+[
+"Club; Tennis <Mixed.Case@Example.Test>",
+"",
+""
+],
+[
+"Club; Tennis <user>",
+"",
+""
+],
+[
+"Club; Tennis <a@b@c>",
+"",
+""
+],
+[
+"Club; Tennis <first last@example.test>",
+"",
+""
+],
+[
+"Club; Tennis <\"quoted\"@example.test>",
+"",
+""
+],
+[
+"Club; Tennis <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Club; Tennis <user@>",
+"",
+""
+],
+[
+"Club; Tennis <@example.test>",
+"",
+""
+],
+[
+"Club; Tennis <us,er@example.test>",
+"",
+""
+],
+[
+"Club; Tennis <user@exa mple.test>",
+"",
+""
+],
+[
+"Club; Tennis <user.@example.test>",
+"",
+""
+],
+[
+"Club; Tennis <user@example.test>>",
+"",
+""
+],
+[
+"Club; Tennis <<user@example.test>",
+"",
+""
+],
+[
+"Club @ Lago <>",
+"",
+""
+],
+[
+"Club @ Lago <None>",
+"",
+""
+],
+[
+"Club @ Lago <segreteria@polisportiva.example>",
+"",
+""
+],
+[
+"Club @ Lago <info@example.test>",
+"",
+""
+],
+[
+"Club @ Lago <Mixed.Case@Example.Test>",
+"",
+""
+],
+[
+"Club @ Lago <user>",
+"",
+""
+],
+[
+"Club @ Lago <a@b@c>",
+"",
+""
+],
+[
+"Club @ Lago <first last@example.test>",
+"",
+""
+],
+[
+"Club @ Lago <\"quoted\"@example.test>",
+"",
+""
+],
+[
+"Club @ Lago <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Club @ Lago <user@>",
+"",
+""
+],
+[
+"Club @ Lago <@example.test>",
+"",
+""
+],
+[
+"Club @ Lago <us,er@example.test>",
+"",
+""
+],
+[
+"Club @ Lago <user@exa mple.test>",
+"",
+""
+],
+[
+"Club @ Lago <user.@example.test>",
+"",
+""
+],
+[
+"Club @ Lago <user@example.test>>",
+"",
+""
+],
+[
+"Club @ Lago <<user@example.test>",
+"",
+""
+],
+[
+"Club [Lago] <>",
+"",
+""
+],
+[
+"Club [Lago] <None>",
+"",
+""
+],
+[
+"Club [Lago] <segreteria@polisportiva.example>",
+"",
+""
+],
+[
+"Club [Lago] <info@example.test>",
+"",
+""
+],
+[
+"Club [Lago] <Mixed.Case@Example.Test>",
+"",
+""
+],
+[
+"Club [Lago] <user>",
+"",
+""
+],
+[
+"Club [Lago] <a@b@c>",
+"",
+""
+],
+[
+"Club [Lago] <first last@example.test>",
+"",
+""
+],
+[
+"Club [Lago] <\"quoted\"@example.test>",
+"",
+""
+],
+[
+"Club [Lago] <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Club [Lago] <user@>",
+"",
+""
+],
+[
+"Club [Lago] <@example.test>",
+"",
+""
+],
+[
+"Club [Lago] <us,er@example.test>",
+"",
+""
+],
+[
+"Club [Lago] <user@exa mple.test>",
+"",
+""
+],
+[
+"Club [Lago] <user.@example.test>",
+"",
+""
+],
+[
+"Club [Lago] <user@example.test>>",
+"",
+""
+],
+[
+"Club [Lago] <<user@example.test>",
+"",
+""
+],
+[
+"Unione \"Sportiva <>",
+"",
+"Unione"
+],
+[
+"Unione \"Sportiva <None>",
+"",
+"Unione"
+],
+[
+"Unione \"Sportiva <segreteria@polisportiva.example>",
+"",
+"Unione"
+],
+[
+"Unione \"Sportiva <info@example.test>",
+"",
+"Unione"
+],
+[
+"Unione \"Sportiva <Mixed.Case@Example.Test>",
+"",
+"Unione"
+],
+[
+"Unione \"Sportiva <user>",
+"",
+"Unione"
+],
+[
+"Unione \"Sportiva <a@b@c>",
+"",
+"Unione"
+],
+[
+"Unione \"Sportiva <first last@example.test>",
+"",
+"Unione"
+],
+[
+"Unione \"Sportiva <\"quoted\"@example.test>",
+"",
+"Unione"
+],
+[
+"Unione \"Sportiva <user@[192.0.2.1]>",
+"",
+"Unione"
+],
+[
+"Unione \"Sportiva <user@>",
+"",
+"Unione"
+],
+[
+"Unione \"Sportiva <@example.test>",
+"",
+"Unione"
+],
+[
+"Unione \"Sportiva <us,er@example.test>",
+"",
+"Unione"
+],
+[
+"Unione \"Sportiva <user@exa mple.test>",
+"",
+"Unione"
+],
+[
+"Unione \"Sportiva <user.@example.test>",
+"",
+"Unione"
+],
+[
+"Unione \"Sportiva <user@example.test>>",
+"",
+"Unione"
+],
+[
+"Unione \"Sportiva <<user@example.test>",
+"",
+"Unione"
+],
+[
+"Club (aperto <>",
+"",
+""
+],
+[
+"Club (aperto <None>",
+"",
+""
+],
+[
+"Club (aperto <segreteria@polisportiva.example>",
+"",
+""
+],
+[
+"Club (aperto <info@example.test>",
+"",
+""
+],
+[
+"Club (aperto <Mixed.Case@Example.Test>",
+"",
+""
+],
+[
+"Club (aperto <user>",
+"",
+""
+],
+[
+"Club (aperto <a@b@c>",
+"",
+""
+],
+[
+"Club (aperto <first last@example.test>",
+"",
+""
+],
+[
+"Club (aperto <\"quoted\"@example.test>",
+"",
+""
+],
+[
+"Club (aperto <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Club (aperto <user@>",
+"",
+""
+],
+[
+"Club (aperto <@example.test>",
+"",
+""
+],
+[
+"Club (aperto <us,er@example.test>",
+"",
+""
+],
+[
+"Club (aperto <user@exa mple.test>",
+"",
+""
+],
+[
+"Club (aperto <user.@example.test>",
+"",
+""
+],
+[
+"Club (aperto <user@example.test>>",
+"",
+""
+],
+[
+"Club (aperto <<user@example.test>",
+"",
+""
+],
+[
+"Club chiuso) <>",
+"",
+""
+],
+[
+"Club chiuso) <None>",
+"",
+""
+],
+[
+"Club chiuso) <segreteria@polisportiva.example>",
+"",
+""
+],
+[
+"Club chiuso) <info@example.test>",
+"",
+""
+],
+[
+"Club chiuso) <Mixed.Case@Example.Test>",
+"",
+""
+],
+[
+"Club chiuso) <user>",
+"",
+""
+],
+[
+"Club chiuso) <a@b@c>",
+"",
+""
+],
+[
+"Club chiuso) <first last@example.test>",
+"",
+""
+],
+[
+"Club chiuso) <\"quoted\"@example.test>",
+"",
+""
+],
+[
+"Club chiuso) <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Club chiuso) <user@>",
+"",
+""
+],
+[
+"Club chiuso) <@example.test>",
+"",
+""
+],
+[
+"Club chiuso) <us,er@example.test>",
+"",
+""
+],
+[
+"Club chiuso) <user@exa mple.test>",
+"",
+""
+],
+[
+"Club chiuso) <user.@example.test>",
+"",
+""
+],
+[
+"Club chiuso) <user@example.test>>",
+"",
+""
+],
+[
+"Club chiuso) <<user@example.test>",
+"",
+""
+],
+[
+"\"Polisportiva\" <>",
+"Polisportiva",
+""
+],
+[
+"\"Polisportiva\" <None>",
+"Polisportiva",
+"None"
+],
+[
+"\"Polisportiva\" <segreteria@polisportiva.example>",
+"Polisportiva",
+"segreteria@polisportiva.example"
+],
+[
+"\"Polisportiva\" <info@example.test>",
+"Polisportiva",
+"info@example.test"
+],
+[
+"\"Polisportiva\" <Mixed.Case@Example.Test>",
+"Polisportiva",
+"Mixed.Case@Example.Test"
+],
+[
+"\"Polisportiva\" <user>",
+"Polisportiva",
+"user"
+],
+[
+"\"Polisportiva\" <a@b@c>",
+"",
+""
+],
+[
+"\"Polisportiva\" <first last@example.test>",
+"Polisportiva",
+"first last@example.test"
+],
+[
+"\"Polisportiva\" <\"quoted\"@example.test>",
+"Polisportiva",
+"\"quoted\"@example.test"
+],
+[
+"\"Polisportiva\" <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"\"Polisportiva\" <user@>",
+"Polisportiva",
+""
+],
+[
+"\"Polisportiva\" <@example.test>",
+"Polisportiva",
+""
+],
+[
+"\"Polisportiva\" <us,er@example.test>",
+"",
+""
+],
+[
+"\"Polisportiva\" <user@exa mple.test>",
+"Polisportiva",
+"user@example.test"
+],
+[
+"\"Polisportiva\" <user.@example.test>",
+"Polisportiva",
+"user.@example.test"
+],
+[
+"\"Polisportiva\" <user@example.test>>",
+"",
+""
+],
+[
+"\"Polisportiva\" <<user@example.test>",
+"",
+""
+],
+[
+"  Spazi   Multipli   <>",
+"Spazi Multipli",
+""
+],
+[
+"  Spazi   Multipli   <None>",
+"Spazi Multipli",
+"None"
+],
+[
+"  Spazi   Multipli   <segreteria@polisportiva.example>",
+"Spazi Multipli",
+"segreteria@polisportiva.example"
+],
+[
+"  Spazi   Multipli   <info@example.test>",
+"Spazi Multipli",
+"info@example.test"
+],
+[
+"  Spazi   Multipli   <Mixed.Case@Example.Test>",
+"Spazi Multipli",
+"Mixed.Case@Example.Test"
+],
+[
+"  Spazi   Multipli   <user>",
+"Spazi Multipli",
+"user"
+],
+[
+"  Spazi   Multipli   <a@b@c>",
+"",
+""
+],
+[
+"  Spazi   Multipli   <first last@example.test>",
+"Spazi Multipli",
+"first last@example.test"
+],
+[
+"  Spazi   Multipli   <\"quoted\"@example.test>",
+"Spazi Multipli",
+"\"quoted\"@example.test"
+],
+[
+"  Spazi   Multipli   <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"  Spazi   Multipli   <user@>",
+"Spazi Multipli",
+""
+],
+[
+"  Spazi   Multipli   <@example.test>",
+"Spazi Multipli",
+""
+],
+[
+"  Spazi   Multipli   <us,er@example.test>",
+"",
+""
+],
+[
+"  Spazi   Multipli   <user@exa mple.test>",
+"Spazi Multipli",
+"user@example.test"
+],
+[
+"  Spazi   Multipli   <user.@example.test>",
+"Spazi Multipli",
+"user.@example.test"
+],
+[
+"  Spazi   Multipli   <user@example.test>>",
+"",
+""
+],
+[
+"  Spazi   Multipli   <<user@example.test>",
+"",
+""
+],
+[
+"Tab\tName <>",
+"Tab Name",
+""
+],
+[
+"Tab\tName <None>",
+"Tab Name",
+"None"
+],
+[
+"Tab\tName <segreteria@polisportiva.example>",
+"Tab Name",
+"segreteria@polisportiva.example"
+],
+[
+"Tab\tName <info@example.test>",
+"Tab Name",
+"info@example.test"
+],
+[
+"Tab\tName <Mixed.Case@Example.Test>",
+"Tab Name",
+"Mixed.Case@Example.Test"
+],
+[
+"Tab\tName <user>",
+"Tab Name",
+"user"
+],
+[
+"Tab\tName <a@b@c>",
+"",
+""
+],
+[
+"Tab\tName <first last@example.test>",
+"Tab Name",
+"first last@example.test"
+],
+[
+"Tab\tName <\"quoted\"@example.test>",
+"Tab Name",
+"\"quoted\"@example.test"
+],
+[
+"Tab\tName <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Tab\tName <user@>",
+"Tab Name",
+""
+],
+[
+"Tab\tName <@example.test>",
+"Tab Name",
+""
+],
+[
+"Tab\tName <us,er@example.test>",
+"",
+""
+],
+[
+"Tab\tName <user@exa mple.test>",
+"Tab Name",
+"user@example.test"
+],
+[
+"Tab\tName <user.@example.test>",
+"Tab Name",
+"user.@example.test"
+],
+[
+"Tab\tName <user@example.test>>",
+"",
+""
+],
+[
+"Tab\tName <<user@example.test>",
+"",
+""
+],
+[
+"Back\\slash <>",
+"Back\\slash",
+""
+],
+[
+"Back\\slash <None>",
+"Back\\slash",
+"None"
+],
+[
+"Back\\slash <segreteria@polisportiva.example>",
+"Back\\slash",
+"segreteria@polisportiva.example"
+],
+[
+"Back\\slash <info@example.test>",
+"Back\\slash",
+"info@example.test"
+],
+[
+"Back\\slash <Mixed.Case@Example.Test>",
+"Back\\slash",
+"Mixed.Case@Example.Test"
+],
+[
+"Back\\slash <user>",
+"Back\\slash",
+"user"
+],
+[
+"Back\\slash <a@b@c>",
+"",
+""
+],
+[
+"Back\\slash <first last@example.test>",
+"Back\\slash",
+"first last@example.test"
+],
+[
+"Back\\slash <\"quoted\"@example.test>",
+"Back\\slash",
+"\"quoted\"@example.test"
+],
+[
+"Back\\slash <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Back\\slash <user@>",
+"Back\\slash",
+""
+],
+[
+"Back\\slash <@example.test>",
+"Back\\slash",
+""
+],
+[
+"Back\\slash <us,er@example.test>",
+"",
+""
+],
+[
+"Back\\slash <user@exa mple.test>",
+"Back\\slash",
+"user@example.test"
+],
+[
+"Back\\slash <user.@example.test>",
+"Back\\slash",
+"user.@example.test"
+],
+[
+"Back\\slash <user@example.test>>",
+"",
+""
+],
+[
+"Back\\slash <<user@example.test>",
+"",
+""
+],
+[
+"Quote \\\" Escape <>",
+"",
+"Quote"
+],
+[
+"Quote \\\" Escape <None>",
+"",
+"Quote"
+],
+[
+"Quote \\\" Escape <segreteria@polisportiva.example>",
+"",
+"Quote"
+],
+[
+"Quote \\\" Escape <info@example.test>",
+"",
+"Quote"
+],
+[
+"Quote \\\" Escape <Mixed.Case@Example.Test>",
+"",
+"Quote"
+],
+[
+"Quote \\\" Escape <user>",
+"",
+"Quote"
+],
+[
+"Quote \\\" Escape <a@b@c>",
+"",
+"Quote"
+],
+[
+"Quote \\\" Escape <first last@example.test>",
+"",
+"Quote"
+],
+[
+"Quote \\\" Escape <\"quoted\"@example.test>",
+"",
+"Quote"
+],
+[
+"Quote \\\" Escape <user@[192.0.2.1]>",
+"",
+"Quote"
+],
+[
+"Quote \\\" Escape <user@>",
+"",
+"Quote"
+],
+[
+"Quote \\\" Escape <@example.test>",
+"",
+"Quote"
+],
+[
+"Quote \\\" Escape <us,er@example.test>",
+"",
+"Quote"
+],
+[
+"Quote \\\" Escape <user@exa mple.test>",
+"",
+"Quote"
+],
+[
+"Quote \\\" Escape <user.@example.test>",
+"",
+"Quote"
+],
+[
+"Quote \\\" Escape <user@example.test>>",
+"",
+"Quote"
+],
+[
+"Quote \\\" Escape <<user@example.test>",
+"",
+"Quote"
+],
+[
+"Ünïcödé Ñame <>",
+"Ünïcödé Ñame",
+""
+],
+[
+"Ünïcödé Ñame <None>",
+"Ünïcödé Ñame",
+"None"
+],
+[
+"Ünïcödé Ñame <segreteria@polisportiva.example>",
+"Ünïcödé Ñame",
+"segreteria@polisportiva.example"
+],
+[
+"Ünïcödé Ñame <info@example.test>",
+"Ünïcödé Ñame",
+"info@example.test"
+],
+[
+"Ünïcödé Ñame <Mixed.Case@Example.Test>",
+"Ünïcödé Ñame",
+"Mixed.Case@Example.Test"
+],
+[
+"Ünïcödé Ñame <user>",
+"Ünïcödé Ñame",
+"user"
+],
+[
+"Ünïcödé Ñame <a@b@c>",
+"",
+""
+],
+[
+"Ünïcödé Ñame <first last@example.test>",
+"Ünïcödé Ñame",
+"first last@example.test"
+],
+[
+"Ünïcödé Ñame <\"quoted\"@example.test>",
+"Ünïcödé Ñame",
+"\"quoted\"@example.test"
+],
+[
+"Ünïcödé Ñame <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Ünïcödé Ñame <user@>",
+"Ünïcödé Ñame",
+""
+],
+[
+"Ünïcödé Ñame <@example.test>",
+"Ünïcödé Ñame",
+""
+],
+[
+"Ünïcödé Ñame <us,er@example.test>",
+"",
+""
+],
+[
+"Ünïcödé Ñame <user@exa mple.test>",
+"Ünïcödé Ñame",
+"user@example.test"
+],
+[
+"Ünïcödé Ñame <user.@example.test>",
+"Ünïcödé Ñame",
+"user.@example.test"
+],
+[
+"Ünïcödé Ñame <user@example.test>>",
+"",
+""
+],
+[
+"Ünïcödé Ñame <<user@example.test>",
+"",
+""
+],
+[
+"中文 俱乐部 <>",
+"中文 俱乐部",
+""
+],
+[
+"中文 俱乐部 <None>",
+"中文 俱乐部",
+"None"
+],
+[
+"中文 俱乐部 <segreteria@polisportiva.example>",
+"中文 俱乐部",
+"segreteria@polisportiva.example"
+],
+[
+"中文 俱乐部 <info@example.test>",
+"中文 俱乐部",
+"info@example.test"
+],
+[
+"中文 俱乐部 <Mixed.Case@Example.Test>",
+"中文 俱乐部",
+"Mixed.Case@Example.Test"
+],
+[
+"中文 俱乐部 <user>",
+"中文 俱乐部",
+"user"
+],
+[
+"中文 俱乐部 <a@b@c>",
+"",
+""
+],
+[
+"中文 俱乐部 <first last@example.test>",
+"中文 俱乐部",
+"first last@example.test"
+],
+[
+"中文 俱乐部 <\"quoted\"@example.test>",
+"中文 俱乐部",
+"\"quoted\"@example.test"
+],
+[
+"中文 俱乐部 <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"中文 俱乐部 <user@>",
+"中文 俱乐部",
+""
+],
+[
+"中文 俱乐部 <@example.test>",
+"中文 俱乐部",
+""
+],
+[
+"中文 俱乐部 <us,er@example.test>",
+"",
+""
+],
+[
+"中文 俱乐部 <user@exa mple.test>",
+"中文 俱乐部",
+"user@example.test"
+],
+[
+"中文 俱乐部 <user.@example.test>",
+"中文 俱乐部",
+"user.@example.test"
+],
+[
+"中文 俱乐部 <user@example.test>>",
+"",
+""
+],
+[
+"中文 俱乐部 <<user@example.test>",
+"",
+""
+],
+[
+"Name.With.Dots. <>",
+"Name.With.Dots.",
+""
+],
+[
+"Name.With.Dots. <None>",
+"Name.With.Dots.",
+"None"
+],
+[
+"Name.With.Dots. <segreteria@polisportiva.example>",
+"Name.With.Dots.",
+"segreteria@polisportiva.example"
+],
+[
+"Name.With.Dots. <info@example.test>",
+"Name.With.Dots.",
+"info@example.test"
+],
+[
+"Name.With.Dots. <Mixed.Case@Example.Test>",
+"Name.With.Dots.",
+"Mixed.Case@Example.Test"
+],
+[
+"Name.With.Dots. <user>",
+"Name.With.Dots.",
+"user"
+],
+[
+"Name.With.Dots. <a@b@c>",
+"",
+""
+],
+[
+"Name.With.Dots. <first last@example.test>",
+"Name.With.Dots.",
+"first last@example.test"
+],
+[
+"Name.With.Dots. <\"quoted\"@example.test>",
+"Name.With.Dots.",
+"\"quoted\"@example.test"
+],
+[
+"Name.With.Dots. <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Name.With.Dots. <user@>",
+"Name.With.Dots.",
+""
+],
+[
+"Name.With.Dots. <@example.test>",
+"Name.With.Dots.",
+""
+],
+[
+"Name.With.Dots. <us,er@example.test>",
+"",
+""
+],
+[
+"Name.With.Dots. <user@exa mple.test>",
+"Name.With.Dots.",
+"user@example.test"
+],
+[
+"Name.With.Dots. <user.@example.test>",
+"Name.With.Dots.",
+"user.@example.test"
+],
+[
+"Name.With.Dots. <user@example.test>>",
+"",
+""
+],
+[
+"Name.With.Dots. <<user@example.test>",
+"",
+""
+],
+[
+".Leading <>",
+".Leading",
+""
+],
+[
+".Leading <None>",
+".Leading",
+"None"
+],
+[
+".Leading <segreteria@polisportiva.example>",
+".Leading",
+"segreteria@polisportiva.example"
+],
+[
+".Leading <info@example.test>",
+".Leading",
+"info@example.test"
+],
+[
+".Leading <Mixed.Case@Example.Test>",
+".Leading",
+"Mixed.Case@Example.Test"
+],
+[
+".Leading <user>",
+".Leading",
+"user"
+],
+[
+".Leading <a@b@c>",
+"",
+""
+],
+[
+".Leading <first last@example.test>",
+".Leading",
+"first last@example.test"
+],
+[
+".Leading <\"quoted\"@example.test>",
+".Leading",
+"\"quoted\"@example.test"
+],
+[
+".Leading <user@[192.0.2.1]>",
+"",
+""
+],
+[
+".Leading <user@>",
+".Leading",
+""
+],
+[
+".Leading <@example.test>",
+".Leading",
+""
+],
+[
+".Leading <us,er@example.test>",
+"",
+""
+],
+[
+".Leading <user@exa mple.test>",
+".Leading",
+"user@example.test"
+],
+[
+".Leading <user.@example.test>",
+".Leading",
+"user.@example.test"
+],
+[
+".Leading <user@example.test>>",
+"",
+""
+],
+[
+".Leading <<user@example.test>",
+"",
+""
+],
+[
+"a,b,c <>",
+"",
+""
+],
+[
+"a,b,c <None>",
+"",
+""
+],
+[
+"a,b,c <segreteria@polisportiva.example>",
+"",
+""
+],
+[
+"a,b,c <info@example.test>",
+"",
+""
+],
+[
+"a,b,c <Mixed.Case@Example.Test>",
+"",
+""
+],
+[
+"a,b,c <user>",
+"",
+""
+],
+[
+"a,b,c <a@b@c>",
+"",
+""
+],
+[
+"a,b,c <first last@example.test>",
+"",
+""
+],
+[
+"a,b,c <\"quoted\"@example.test>",
+"",
+""
+],
+[
+"a,b,c <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"a,b,c <user@>",
+"",
+""
+],
+[
+"a,b,c <@example.test>",
+"",
+""
+],
+[
+"a,b,c <us,er@example.test>",
+"",
+""
+],
+[
+"a,b,c <user@exa mple.test>",
+"",
+""
+],
+[
+"a,b,c <user.@example.test>",
+"",
+""
+],
+[
+"a,b,c <user@example.test>>",
+"",
+""
+],
+[
+"a,b,c <<user@example.test>",
+"",
+""
+],
+[
+" <>",
+"",
+""
+],
+[
+" <None>",
+"",
+"None"
+],
+[
+" <segreteria@polisportiva.example>",
+"",
+"segreteria@polisportiva.example"
+],
+[
+" <info@example.test>",
+"",
+"info@example.test"
+],
+[
+" <Mixed.Case@Example.Test>",
+"",
+"Mixed.Case@Example.Test"
+],
+[
+" <user>",
+"",
+"user"
+],
+[
+" <a@b@c>",
+"",
+""
+],
+[
+" <first last@example.test>",
+"",
+"first last@example.test"
+],
+[
+" <\"quoted\"@example.test>",
+"",
+"\"quoted\"@example.test"
+],
+[
+" <user@[192.0.2.1]>",
+"",
+""
+],
+[
+" <user@>",
+"",
+""
+],
+[
+" <@example.test>",
+"",
+""
+],
+[
+" <us,er@example.test>",
+"",
+""
+],
+[
+" <user@exa mple.test>",
+"",
+"user@example.test"
+],
+[
+" <user.@example.test>",
+"",
+"user.@example.test"
+],
+[
+" <user@example.test>>",
+"",
+""
+],
+[
+" <<user@example.test>",
+"",
+""
+],
+[
+"None <>",
+"None",
+""
+],
+[
+"None <None>",
+"None",
+"None"
+],
+[
+"None <segreteria@polisportiva.example>",
+"None",
+"segreteria@polisportiva.example"
+],
+[
+"None <info@example.test>",
+"None",
+"info@example.test"
+],
+[
+"None <Mixed.Case@Example.Test>",
+"None",
+"Mixed.Case@Example.Test"
+],
+[
+"None <user>",
+"None",
+"user"
+],
+[
+"None <a@b@c>",
+"",
+""
+],
+[
+"None <first last@example.test>",
+"None",
+"first last@example.test"
+],
+[
+"None <\"quoted\"@example.test>",
+"None",
+"\"quoted\"@example.test"
+],
+[
+"None <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"None <user@>",
+"None",
+""
+],
+[
+"None <@example.test>",
+"None",
+""
+],
+[
+"None <us,er@example.test>",
+"",
+""
+],
+[
+"None <user@exa mple.test>",
+"None",
+"user@example.test"
+],
+[
+"None <user.@example.test>",
+"None",
+"user.@example.test"
+],
+[
+"None <user@example.test>>",
+"",
+""
+],
+[
+"None <<user@example.test>",
+"",
+""
+],
+[
+"Emoji 🏐 Club <>",
+"Emoji 🏐 Club",
+""
+],
+[
+"Emoji 🏐 Club <None>",
+"Emoji 🏐 Club",
+"None"
+],
+[
+"Emoji 🏐 Club <segreteria@polisportiva.example>",
+"Emoji 🏐 Club",
+"segreteria@polisportiva.example"
+],
+[
+"Emoji 🏐 Club <info@example.test>",
+"Emoji 🏐 Club",
+"info@example.test"
+],
+[
+"Emoji 🏐 Club <Mixed.Case@Example.Test>",
+"Emoji 🏐 Club",
+"Mixed.Case@Example.Test"
+],
+[
+"Emoji 🏐 Club <user>",
+"Emoji 🏐 Club",
+"user"
+],
+[
+"Emoji 🏐 Club <a@b@c>",
+"",
+""
+],
+[
+"Emoji 🏐 Club <first last@example.test>",
+"Emoji 🏐 Club",
+"first last@example.test"
+],
+[
+"Emoji 🏐 Club <\"quoted\"@example.test>",
+"Emoji 🏐 Club",
+"\"quoted\"@example.test"
+],
+[
+"Emoji 🏐 Club <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Emoji 🏐 Club <user@>",
+"Emoji 🏐 Club",
+""
+],
+[
+"Emoji 🏐 Club <@example.test>",
+"Emoji 🏐 Club",
+""
+],
+[
+"Emoji 🏐 Club <us,er@example.test>",
+"",
+""
+],
+[
+"Emoji 🏐 Club <user@exa mple.test>",
+"Emoji 🏐 Club",
+"user@example.test"
+],
+[
+"Emoji 🏐 Club <user.@example.test>",
+"Emoji 🏐 Club",
+"user.@example.test"
+],
+[
+"Emoji 🏐 Club <user@example.test>>",
+"",
+""
+],
+[
+"Emoji 🏐 Club <<user@example.test>",
+"",
+""
+],
+[
+"Club Nbsp <>",
+"Club Nbsp",
+""
+],
+[
+"Club Nbsp <None>",
+"Club Nbsp",
+"None"
+],
+[
+"Club Nbsp <segreteria@polisportiva.example>",
+"Club Nbsp",
+"segreteria@polisportiva.example"
+],
+[
+"Club Nbsp <info@example.test>",
+"Club Nbsp",
+"info@example.test"
+],
+[
+"Club Nbsp <Mixed.Case@Example.Test>",
+"Club Nbsp",
+"Mixed.Case@Example.Test"
+],
+[
+"Club Nbsp <user>",
+"Club Nbsp",
+"user"
+],
+[
+"Club Nbsp <a@b@c>",
+"",
+""
+],
+[
+"Club Nbsp <first last@example.test>",
+"Club Nbsp",
+"first last@example.test"
+],
+[
+"Club Nbsp <\"quoted\"@example.test>",
+"Club Nbsp",
+"\"quoted\"@example.test"
+],
+[
+"Club Nbsp <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Club Nbsp <user@>",
+"Club Nbsp",
+""
+],
+[
+"Club Nbsp <@example.test>",
+"Club Nbsp",
+""
+],
+[
+"Club Nbsp <us,er@example.test>",
+"",
+""
+],
+[
+"Club Nbsp <user@exa mple.test>",
+"Club Nbsp",
+"user@example.test"
+],
+[
+"Club Nbsp <user.@example.test>",
+"Club Nbsp",
+"user.@example.test"
+],
+[
+"Club Nbsp <user@example.test>>",
+"",
+""
+],
+[
+"Club Nbsp <<user@example.test>",
+"",
+""
+],
+[
+"Ctrl\u001cName <>",
+"Ctrl\u001cName",
+""
+],
+[
+"Ctrl\u001cName <None>",
+"Ctrl\u001cName",
+"None"
+],
+[
+"Ctrl\u001cName <segreteria@polisportiva.example>",
+"Ctrl\u001cName",
+"segreteria@polisportiva.example"
+],
+[
+"Ctrl\u001cName <info@example.test>",
+"Ctrl\u001cName",
+"info@example.test"
+],
+[
+"Ctrl\u001cName <Mixed.Case@Example.Test>",
+"Ctrl\u001cName",
+"Mixed.Case@Example.Test"
+],
+[
+"Ctrl\u001cName <user>",
+"Ctrl\u001cName",
+"user"
+],
+[
+"Ctrl\u001cName <a@b@c>",
+"",
+""
+],
+[
+"Ctrl\u001cName <first last@example.test>",
+"Ctrl\u001cName",
+"first last@example.test"
+],
+[
+"Ctrl\u001cName <\"quoted\"@example.test>",
+"Ctrl\u001cName",
+"\"quoted\"@example.test"
+],
+[
+"Ctrl\u001cName <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Ctrl\u001cName <user@>",
+"Ctrl\u001cName",
+""
+],
+[
+"Ctrl\u001cName <@example.test>",
+"Ctrl\u001cName",
+""
+],
+[
+"Ctrl\u001cName <us,er@example.test>",
+"",
+""
+],
+[
+"Ctrl\u001cName <user@exa mple.test>",
+"Ctrl\u001cName",
+"user@example.test"
+],
+[
+"Ctrl\u001cName <user.@example.test>",
+"Ctrl\u001cName",
+"user.@example.test"
+],
+[
+"Ctrl\u001cName <user@example.test>>",
+"",
+""
+],
+[
+"Ctrl\u001cName <<user@example.test>",
+"",
+""
+],
+[
+"Paren (nested (deep)) Club <>",
+"Paren Club (nested deep)",
+""
+],
+[
+"Paren (nested (deep)) Club <None>",
+"Paren Club (nested deep)",
+"None"
+],
+[
+"Paren (nested (deep)) Club <segreteria@polisportiva.example>",
+"Paren Club (nested deep)",
+"segreteria@polisportiva.example"
+],
+[
+"Paren (nested (deep)) Club <info@example.test>",
+"Paren Club (nested deep)",
+"info@example.test"
+],
+[
+"Paren (nested (deep)) Club <Mixed.Case@Example.Test>",
+"Paren Club (nested deep)",
+"Mixed.Case@Example.Test"
+],
+[
+"Paren (nested (deep)) Club <user>",
+"Paren Club (nested deep)",
+"user"
+],
+[
+"Paren (nested (deep)) Club <a@b@c>",
+"",
+""
+],
+[
+"Paren (nested (deep)) Club <first last@example.test>",
+"Paren Club (nested deep)",
+"first last@example.test"
+],
+[
+"Paren (nested (deep)) Club <\"quoted\"@example.test>",
+"Paren Club (nested deep)",
+"\"quoted\"@example.test"
+],
+[
+"Paren (nested (deep)) Club <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Paren (nested (deep)) Club <user@>",
+"Paren Club (nested deep)",
+""
+],
+[
+"Paren (nested (deep)) Club <@example.test>",
+"Paren Club (nested deep)",
+""
+],
+[
+"Paren (nested (deep)) Club <us,er@example.test>",
+"",
+""
+],
+[
+"Paren (nested (deep)) Club <user@exa mple.test>",
+"Paren Club (nested deep)",
+"user@example.test"
+],
+[
+"Paren (nested (deep)) Club <user.@example.test>",
+"Paren Club (nested deep)",
+"user.@example.test"
+],
+[
+"Paren (nested (deep)) Club <user@example.test>>",
+"",
+""
+],
+[
+"Paren (nested (deep)) Club <<user@example.test>",
+"",
+""
+],
+[
+"Quoted \"a, b\" Club <>",
+"Quoted a, b Club",
+""
+],
+[
+"Quoted \"a, b\" Club <None>",
+"Quoted a, b Club",
+"None"
+],
+[
+"Quoted \"a, b\" Club <segreteria@polisportiva.example>",
+"Quoted a, b Club",
+"segreteria@polisportiva.example"
+],
+[
+"Quoted \"a, b\" Club <info@example.test>",
+"Quoted a, b Club",
+"info@example.test"
+],
+[
+"Quoted \"a, b\" Club <Mixed.Case@Example.Test>",
+"Quoted a, b Club",
+"Mixed.Case@Example.Test"
+],
+[
+"Quoted \"a, b\" Club <user>",
+"Quoted a, b Club",
+"user"
+],
+[
+"Quoted \"a, b\" Club <a@b@c>",
+"",
+""
+],
+[
+"Quoted \"a, b\" Club <first last@example.test>",
+"Quoted a, b Club",
+"first last@example.test"
+],
+[
+"Quoted \"a, b\" Club <\"quoted\"@example.test>",
+"Quoted a, b Club",
+"\"quoted\"@example.test"
+],
+[
+"Quoted \"a, b\" Club <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Quoted \"a, b\" Club <user@>",
+"Quoted a, b Club",
+""
+],
+[
+"Quoted \"a, b\" Club <@example.test>",
+"Quoted a, b Club",
+""
+],
+[
+"Quoted \"a, b\" Club <us,er@example.test>",
+"",
+""
+],
+[
+"Quoted \"a, b\" Club <user@exa mple.test>",
+"Quoted a, b Club",
+"user@example.test"
+],
+[
+"Quoted \"a, b\" Club <user.@example.test>",
+"Quoted a, b Club",
+"user.@example.test"
+],
+[
+"Quoted \"a, b\" Club <user@example.test>>",
+"",
+""
+],
+[
+"Quoted \"a, b\" Club <<user@example.test>",
+"",
+""
+],
+[
+"\"Mixed\" (comment) Name <>",
+"Mixed Name (comment)",
+""
+],
+[
+"\"Mixed\" (comment) Name <None>",
+"Mixed Name (comment)",
+"None"
+],
+[
+"\"Mixed\" (comment) Name <segreteria@polisportiva.example>",
+"Mixed Name (comment)",
+"segreteria@polisportiva.example"
+],
+[
+"\"Mixed\" (comment) Name <info@example.test>",
+"Mixed Name (comment)",
+"info@example.test"
+],
+[
+"\"Mixed\" (comment) Name <Mixed.Case@Example.Test>",
+"Mixed Name (comment)",
+"Mixed.Case@Example.Test"
+],
+[
+"\"Mixed\" (comment) Name <user>",
+"Mixed Name (comment)",
+"user"
+],
+[
+"\"Mixed\" (comment) Name <a@b@c>",
+"",
+""
+],
+[
+"\"Mixed\" (comment) Name <first last@example.test>",
+"Mixed Name (comment)",
+"first last@example.test"
+],
+[
+"\"Mixed\" (comment) Name <\"quoted\"@example.test>",
+"Mixed Name (comment)",
+"\"quoted\"@example.test"
+],
+[
+"\"Mixed\" (comment) Name <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"\"Mixed\" (comment) Name <user@>",
+"Mixed Name (comment)",
+""
+],
+[
+"\"Mixed\" (comment) Name <@example.test>",
+"Mixed Name (comment)",
+""
+],
+[
+"\"Mixed\" (comment) Name <us,er@example.test>",
+"",
+""
+],
+[
+"\"Mixed\" (comment) Name <user@exa mple.test>",
+"Mixed Name (comment)",
+"user@example.test"
+],
+[
+"\"Mixed\" (comment) Name <user.@example.test>",
+"Mixed Name (comment)",
+"user.@example.test"
+],
+[
+"\"Mixed\" (comment) Name <user@example.test>>",
+"",
+""
+],
+[
+"\"Mixed\" (comment) Name <<user@example.test>",
+"",
+""
+],
+[
+"Trailing\\ <>",
+"Trailing\\",
+""
+],
+[
+"Trailing\\ <None>",
+"Trailing\\",
+"None"
+],
+[
+"Trailing\\ <segreteria@polisportiva.example>",
+"Trailing\\",
+"segreteria@polisportiva.example"
+],
+[
+"Trailing\\ <info@example.test>",
+"Trailing\\",
+"info@example.test"
+],
+[
+"Trailing\\ <Mixed.Case@Example.Test>",
+"Trailing\\",
+"Mixed.Case@Example.Test"
+],
+[
+"Trailing\\ <user>",
+"Trailing\\",
+"user"
+],
+[
+"Trailing\\ <a@b@c>",
+"",
+""
+],
+[
+"Trailing\\ <first last@example.test>",
+"Trailing\\",
+"first last@example.test"
+],
+[
+"Trailing\\ <\"quoted\"@example.test>",
+"Trailing\\",
+"\"quoted\"@example.test"
+],
+[
+"Trailing\\ <user@[192.0.2.1]>",
+"",
+""
+],
+[
+"Trailing\\ <user@>",
+"Trailing\\",
+""
+],
+[
+"Trailing\\ <@example.test>",
+"Trailing\\",
+""
+],
+[
+"Trailing\\ <us,er@example.test>",
+"",
+""
+],
+[
+"Trailing\\ <user@exa mple.test>",
+"Trailing\\",
+"user@example.test"
+],
+[
+"Trailing\\ <user.@example.test>",
+"Trailing\\",
+"user.@example.test"
+],
+[
+"Trailing\\ <user@example.test>>",
+"",
+""
+],
+[
+"Trailing\\ <<user@example.test>",
+"",
+""
+],
+[
+"",
+"",
+""
+],
+[
+"plain@example.test",
+"",
+"plain@example.test"
+],
+[
+"Name <a@b>, Other <c@d>",
+"",
+""
+],
+[
+"group: a@b, c@d;",
+"",
+""
+],
+[
+"<>",
+"",
+""
+],
+[
+"Name <>",
+"Name",
+""
+],
+[
+"()",
+"",
+""
+],
+[
+"(x",
+"",
+""
+],
+[
+"x)",
+"",
+""
+],
+[
+"\"unterminated",
+"",
+"unterminated"
+],
+[
+"Name <a@b> trailing",
+"",
+""
+],
+[
+"<<a@b>>",
+"",
+""
+],
+[
+"Name <@route:a@b>",
+"Name",
+"a@b"
+],
+[
+"a@b (Comment)",
+"Comment",
+"a@b"
+],
+[
+"Name (c) <a@b>",
+"Name (c)",
+"a@b"
+],
+[
+"Name\r\n <a@b>",
+"Name",
+"a@b"
+],
+[
+"a . b @ c . d",
+"",
+"a.b@c.d"
+],
+[
+"\"a\\\"b\" <x@y>",
+"a\"b",
+"x@y"
+],
+[
+"\\",
+"",
+"\\"
+],
+[
+"\"\\\"",
+"",
+"\""
+],
+[
+"Name <a@[b>",
+"",
+""
+]
+]

@@ -14,6 +14,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/emailrender"
 )
 
 // PaymentMisc ports payment_simulation_partial_quotes (calculate_simulation),
@@ -24,6 +25,22 @@ type PaymentMisc struct {
 	writes     *PaymentWrites
 	now        func() time.Time
 	whitelabel string
+	// mails renders and publishes the apply's send_email_html calls.
+	mails *EmailRenderRoutes
+	// printer runs payment_sign's print_document_compensation.apply.
+	printer *InvoiceSyncPrint
+}
+
+// WithMail sets the e-mail renderer and Celery producer of the apply.
+func (s *PaymentMisc) WithMail(mails *EmailRenderRoutes) *PaymentMisc {
+	s.mails = mails
+	return s
+}
+
+// WithCompensationPrint sets the eager print runner of payment_sign.
+func (s *PaymentMisc) WithCompensationPrint(printer *InvoiceSyncPrint) *PaymentMisc {
+	s.printer = printer
+	return s
 }
 
 func NewPaymentMisc(store domain.PaymentMiscStore, now func() time.Time, newID func() string, whitelabel string) *PaymentMisc {
@@ -36,6 +53,10 @@ type PaymentMiscRequest struct {
 	GroupHeader string
 	Body        any
 	Audit       domain.LoginAuditContext
+	// Language is the request's active language (render_to_string).
+	Language string
+	// Authorization is the raw Authorization header (nil when absent).
+	Authorization *string
 }
 
 // errPaymentMiscStop is a Python exception inside the views' try/except:
@@ -455,11 +476,19 @@ func (s *PaymentMisc) message(association *domain.PaymentSimulationAssociation, 
 		paymentMiscText(association.Denomination) + "</p>\n                        "
 }
 
+// paymentMiscMail is one send_email_html call of the apply, published after the commit.
+type paymentMiscMail struct {
+	subject, message, recipient string
+}
+
 // Apply follows payment_simulation_partial_quotes_apply. Every quote is a
 // Payment.objects.create with its audited create entry; Django commits each
-// one, so a Python exception keeps the earlier ones. Quotes for users other
-// than the association owner send an e-mail: not ported, refused before
-// anything is committed.
+// one, so a Python exception keeps the earlier ones. A quote for a user other
+// than the association owner renders email/payment/fee_assigned.html and calls
+// send_email_html: without a CommunicationConfiguration it publishes
+// send_mail_async (after the commit, in order; its own try/except swallows
+// failures). With a configuration Django sends on a Timer thread after a
+// random delay: not ported, refused before anything is committed.
 func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentity, request PaymentMiscRequest) error {
 	run, err := s.prepare(ctx, identity, request)
 	if run == nil {
@@ -470,12 +499,22 @@ func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentit
 		return run.tx.Commit()
 	}
 	tx := run.tx
+	mails := []paymentMiscMail{}
 	err = run.quotes(ctx, func(plan paymentQuotePlan, subscription domain.PaymentSimulationSubscription, stored, audit string,
 		float *float64) error {
 		other := subscription.UserID != run.association.OwnerID
 		if other && subscription.AssociateID != nil {
-			// render_to_string and send_email_html: not ported.
-			return domain.ErrPaymentMiscNotPorted
+			if s.mails == nil {
+				return domain.ErrPaymentMiscNotPorted
+			}
+			configured, err := tx.CommunicationConfigured(ctx, run.association.ID)
+			if err != nil {
+				return err
+			}
+			if configured {
+				// configuration.send_email on a Timer thread: not ported.
+				return domain.ErrPaymentMiscNotPorted
+			}
 		}
 		account, err := tx.DefaultBankAccount(ctx, run.association.ID)
 		if err != nil {
@@ -514,16 +553,59 @@ func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentit
 		if err := s.writes.audit(ctx, tx, identity, request.Audit, m.row.ID, 0, createdPaymentChanges(created), m.row.AssociationID); err != nil {
 			return err
 		}
-		if other {
+		if !other {
+			return nil
+		}
+		if subscription.AssociateID == nil {
 			// subscription.associate.first_name on None while rendering the e-mail.
 			return errPaymentMiscStop
 		}
+		mail, err := s.feeMail(ctx, run.association, plan, subscription, request.Language)
+		if err != nil {
+			return err
+		}
+		mails = append(mails, mail)
 		return nil
 	})
 	if err != nil && !errors.Is(err, errPaymentMiscStop) {
 		return err
 	}
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	for _, mail := range mails {
+		// send_email_html's try/except swallows a failed publish.
+		_ = s.mails.sendMail(ctx, mail.subject, mail.message, s.mails.settings.DefaultFromEmail, []any{mail.recipient}, run.association.ID,
+			[]any{optionalValue(run.association.OwnerEmail)})
+	}
+	return nil
+}
+
+// feeMail renders association_quote_assign's e-mail: the template with the
+// plan's stored name and fee, the subject with the denomination. Template
+// values the renderer does not take are not ported.
+func (s *PaymentMisc) feeMail(ctx context.Context, association *domain.PaymentSimulationAssociation, plan paymentQuotePlan,
+	subscription domain.PaymentSimulationSubscription, language string) (paymentMiscMail, error) {
+	name, err := quoteAssignTemplateValue(plan.name)
+	if err != nil {
+		return paymentMiscMail{}, domain.ErrPaymentMiscNotPorted
+	}
+	amount, err := quoteAssignTemplateValue(plan.fee)
+	if err != nil {
+		return paymentMiscMail{}, domain.ErrPaymentMiscNotPorted
+	}
+	if subscription.UserEmail == nil {
+		return paymentMiscMail{}, domain.ErrPaymentMiscNotPorted
+	}
+	message, err := s.mails.render(ctx, emailrender.FeeAssigned, map[string]any{
+		"recipient_name": paymentMiscText(subscription.AssociateFirst) + " " + paymentMiscText(subscription.AssociateLast),
+		"fee_name":       name, "amount": amount, "application_name": s.whitelabel, "association_name": optionalValue(association.Denomination)},
+		language)
+	if err != nil {
+		return paymentMiscMail{}, errors.Join(domain.ErrPaymentMiscNotPorted, err)
+	}
+	subject := paymentMiscText(association.Denomination) + " | Nuova quota associativa '" + dto.PythonStr(plan.name) + "' assegnata"
+	return paymentMiscMail{subject: subject, message: message, recipient: *subscription.UserEmail}, nil
 }
 
 // paymentSignUUID is is_valid_uuid's ValidationError detail for any value.
@@ -540,9 +622,9 @@ func paymentSignUUID(value any) (string, error) {
 // PaymentSignRequired is SignatureRequestSerializer.validate's error code.
 const PaymentSignRequired = "signature-required"
 
-// Sign follows payment_sign without a signature to store (storing one
-// creates a Signature, saves the payment and renders the compensation PDF
-// synchronously: not ported).
+// Sign follows payment_sign. Storing a signature creates the Signature (the
+// scope user, or the selected person for collaborators), sets it on the
+// payment and runs Payment.save(), commits, then print_document_compensation.apply.
 func (s *PaymentMisc) Sign(ctx context.Context, identity domain.ResolvedIdentity, request PaymentMiscRequest) (map[string]any, error) {
 	object, ok := request.Body.(domain.RequestObject)
 	if !ok {
@@ -563,12 +645,26 @@ func (s *PaymentMisc) Sign(ctx context.Context, identity domain.ResolvedIdentity
 		return nil, err
 	}
 	defer tx.Rollback()
-	found, err := tx.SignPayment(ctx, key, supplierGroup(request.GroupHeader), paymentStateScope(identity))
+	found, paymentAssociation, err := tx.SignPayment(ctx, key, supplierGroup(request.GroupHeader), paymentStateScope(identity))
 	if err != nil {
 		return nil, err
 	}
 	if !found {
 		return nil, &dto.MessageReadUUIDError{Detail: "payment not found"}
+	}
+	// Payment signing only applies to the caller's association (request.user.sport_association).
+	if identity.ScopeUser.Role == domain.RoleAthlete {
+		return nil, &domain.PermissionDenied{Detail: "User is not a sport association"}
+	}
+	association, err := tx.ScopedAssociation(ctx, identity.ScopeUser.ID, nil)
+	if errors.Is(err, domain.ErrAssociationNotFound) {
+		return nil, domain.ErrPaymentMiscServer
+	}
+	if err != nil {
+		return nil, err
+	}
+	if paymentAssociation == nil || *paymentAssociation != association {
+		return nil, &domain.PermissionDenied{Detail: "User not allowed."}
 	}
 	fields, ok := signature.(domain.RequestObject)
 	if signature == nil {
@@ -608,7 +704,64 @@ func (s *PaymentMisc) Sign(ctx context.Context, identity domain.ResolvedIdentity
 		return nil, &domain.PaymentMiscValidation{Fields: map[string][]string{"data": {PaymentSignRequired}}}
 	}
 	if flag {
-		return nil, domain.ErrPaymentMiscNotPorted
+		if s.printer == nil {
+			return nil, domain.ErrPaymentMiscNotPorted
+		}
+		if err := s.storeSignature(ctx, tx, identity, request, key, data); err != nil {
+			return nil, err
+		}
+		if err := tx.Commit(); err != nil {
+			return nil, err
+		}
+		if err := s.printer.Compensation(ctx, key, request.Authorization); err != nil {
+			return nil, err
+		}
 	}
 	return map[string]any{"status": "success"}, nil
+}
+
+// storeSignature is Signature.objects.create, payment.signature = it and
+// payment.save(): Payment.save() defaults plus the audited update.
+func (s *PaymentMisc) storeSignature(ctx context.Context, tx domain.PaymentMiscTransaction, identity domain.ResolvedIdentity,
+	request PaymentMiscRequest, key, data string) error {
+	row, err := tx.PaymentState(ctx, domain.PaymentStateQuery{ID: key, Scope: paymentStateScope(identity), Group: supplierGroup(request.GroupHeader)})
+	if err != nil {
+		return err
+	}
+	if row == nil {
+		return domain.ErrPaymentMiscServer
+	}
+	user := identity.ScopeUser
+	if identity.Collaborator && identity.Effective != nil {
+		user = identity.Effective
+	}
+	audit := paymentCategoryAuditContext(identity, request.Audit)
+	actorAssociation, err := tx.ActorAssociation(ctx, identity.Actor.ID)
+	if err != nil {
+		return err
+	}
+	signature := s.writes.newID()
+	at := s.writes.at()
+	if err := tx.CreatePaymentSignature(ctx, domain.PaymentSignatureSave{ID: signature, User: user.ID, Data: data, Audit: audit,
+		AssociationID: actorAssociation, At: at}); err != nil {
+		return err
+	}
+	previous, err := tx.SetPaymentSignature(ctx, row.ID, signature)
+	if err != nil {
+		return err
+	}
+	before := "None"
+	if previous != nil {
+		before = *previous
+	}
+	changes := map[string][2]string{"signature": {before, signature}}
+	if err := paymentSaveDefaults(ctx, tx, &row.PaymentSaveRow, changes); err != nil {
+		return err
+	}
+	if err := tx.SavePaymentState(ctx, domain.PaymentStateSave{ID: row.ID, Paid: row.Paid, PaymentDate: row.PaymentDate,
+		CategoryID: row.CategoryID, Description: row.Description}); err != nil {
+		return err
+	}
+	return tx.AppendPaymentAudit(ctx, domain.PaymentArchiveEvent{PaymentID: row.ID, AssociationID: row.AssociationID, Changes: changes,
+		Context: audit, At: at})
 }

@@ -28,6 +28,7 @@ type PaymentSimulationAssociation struct {
 	ID           string  `db:"sport_association_id"`
 	OwnerID      string  `db:"user_id"`
 	Denomination *string `db:"denomination"`
+	OwnerEmail   *string `db:"owner_email"`
 	Plans        *string `db:"subscription_fee_plans"`
 	StartDay     int     `db:"balance_sheet_start_day"`
 	StartMonth   int     `db:"balance_sheet_start_month"`
@@ -39,6 +40,7 @@ type PaymentSimulationSubscription struct {
 	UserID         string  `db:"user_id"`
 	UserFirst      *string `db:"user_first_name"`
 	UserLast       *string `db:"user_last_name"`
+	UserEmail      *string `db:"user_email"`
 	AssociateID    *string `db:"associate_id"`
 	AssociateFirst *string `db:"associate_first_name"`
 	AssociateLast  *string `db:"associate_last_name"`
@@ -70,6 +72,23 @@ type PaymentMiscTransaction interface {
 	SimulationAssociation(ctx context.Context, id string) (*PaymentSimulationAssociation, error)
 	SimulationSubscriptions(ctx context.Context, query PaymentSimulationQuery) ([]PaymentSimulationSubscription, error)
 	QuoteExists(ctx context.Context, check PaymentQuoteCheck) (bool, error)
-	// SignPayment is scoped_queryset(request, Payment.objects).filter(payment_id=id).first() is not None.
-	SignPayment(ctx context.Context, id string, group, scope *string) (bool, error)
+	// SignPayment is scoped_queryset(request, Payment.objects).filter(payment_id=id).first(): whether it
+	// exists and its sport_association_id.
+	SignPayment(ctx context.Context, id string, group, scope *string) (bool, *string, error)
+	// CommunicationConfigured is CommunicationConfiguration.objects.filter(sport_association_id=...).first() is not None.
+	CommunicationConfigured(ctx context.Context, association string) (bool, error)
+	// CreatePaymentSignature is Signature.objects.create(signature=..., user=...) with its audited create.
+	CreatePaymentSignature(ctx context.Context, save PaymentSignatureSave) error
+	// SetPaymentSignature writes the payment's signature_id (the rest of Payment.save() goes through
+	// SavePaymentState) and returns the previous one.
+	SetPaymentSignature(ctx context.Context, payment, signature string) (*string, error)
+}
+
+// PaymentSignatureSave is payment_sign's Signature row and its audit entry.
+type PaymentSignatureSave struct {
+	ID, User, Data string
+	Audit          LoginAuditContext
+	// AssociationID indexes the create entry (the actor's own association); nil leaves it unindexed.
+	AssociationID *string
+	At            time.Time
 }

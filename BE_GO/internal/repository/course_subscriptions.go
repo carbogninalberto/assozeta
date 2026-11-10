@@ -149,6 +149,9 @@ func (t *courseSubscriptionTransaction) MembershipPayments(ctx context.Context, 
 		if err != nil {
 			return nil, err
 		}
+		if payment.Instructor, payment.Invoice, err = paymentNestedRows(ctx, t.tx, payment.InvoicePartyPayment); err != nil {
+			return nil, err
+		}
 		result[link.Row] = append(result[link.Row], payment)
 	}
 	return result, nil
@@ -332,12 +335,14 @@ func (t *courseSubscriptionTransaction) MembershipPaymentOverlaps(ctx context.Co
 	return exists, err
 }
 
-// DefaultPaymentCategory is PaymentCategory.objects.filter(name__iexact=
-// 'entrate e proventi da attività tipiche').first() (by key).
-func (t *courseSubscriptionTransaction) DefaultPaymentCategory(ctx context.Context) (*string, error) {
-	var id string
-	err := t.tx.GetContext(ctx, &id, `SELECT payment_category_id FROM application_paymentcategory
- WHERE UPPER(name::text)=UPPER('entrate e proventi da attività tipiche') ORDER BY payment_category_id LIMIT 1`)
+// DefaultPaymentCategory is PaymentCategory.default_for(association).
+func (t *courseSubscriptionTransaction) DefaultPaymentCategory(ctx context.Context, association *string) (*string, error) {
+	var row struct {
+		ID   string `db:"payment_category_id"`
+		Name string `db:"name"`
+	}
+	err := t.tx.GetContext(ctx, &row, secCategoryDefaultSQL, association)
+	id := row.ID
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}

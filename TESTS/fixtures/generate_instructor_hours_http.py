@@ -79,6 +79,12 @@ HOURS = {
     'copyable': hour('draft', '2026-09-12', '1.50', '18.00', '2026-09-12T18:00:00Z', notes='copia', courses={'k': [1, 'è']}),
     'abroad_row': hour('abroad', '2026-09-15', '4.00', '40.00', '2026-09-15T18:00:00Z'),
 }
+# Compensations without their document yet: the list prints them (print_document_compensation.apply).
+PAYMENTS.update({'comp_paid': payment(OWN, '15.00'), 'comp_unpaid': payment(OWN, '8.00', paid=False)})
+HOURS.update({
+    'print_paid': hour('draft', '2026-09-14', '1.00', '15.00', '2026-09-14T18:00:00Z', payment='comp_paid'),
+    'print_unpaid': hour('draft', '2026-09-13', '1.00', '8.00', '2026-09-13T18:00:00Z', payment='comp_unpaid'),
+})
 
 # calculate: courses, their subscriptions and payments.
 ASSOCIATES = {'maria': {'id': next(ids), 'first': 'Maria', 'last': 'Bianchi'}, 'luca': {'id': next(ids), 'first': 'Luca', 'last': 'Verdi'},
@@ -137,9 +143,13 @@ UNKNOWN, NEW_KEY, FULL_KEY = 'a1000000-0000-4000-8000-000000966998', next(ids), 
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, effect=None,
+        prints=()):
+    """prints: the CURRENT_HOST requests of the eager print_document_compensation tasks, in loop order."""
     case = {'name': f'instructor-hours-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'effect': effect}
+            'status': status, 'response': response, 'effect': effect,
+            'prints': [{'path': f'/document/compensation/{PAYMENTS[label]["id"]}', 'reply': {'status': 200, 'body': 'printed'}}
+                       for label in prints]}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -228,9 +238,19 @@ add('list-range-two-separators-server-error', 'owner', LIST(query=query(**{RANGE
 add('list-athlete-empty', 'athlete', LIST(), 200, page([]))
 add('list-foreign-instructor-empty', 'owner', LIST('abroad'), 200, page([]))
 add('list-foreign-owner', 'foreign_owner', LIST('abroad'), 200, page([serialized('abroad_row')]))
+# Each row with a payment and no document prints it after its own paid sync; the response keeps the in-memory document (None).
+DRAFT = ['print_paid', 'print_unpaid', 'copyable', 'movable', 'draft_row']
+add('list-owner-prints-compensations', 'owner', LIST('draft'), 200,
+    page([serialized(label, paid=True) if label == 'print_paid' else serialized(label) for label in DRAFT]),
+    effect=hours_effect('owner', rows={'print_paid': {'paid': True}}, audit=[updated('print_paid', {'paid': ['False', 'True']})]),
+    prints=['comp_paid', 'comp_unpaid'])
 add('list-admin-impersonating-owner', 'admin', LIST('draft'), 200,
-    page([serialized('copyable'), serialized('movable'), serialized('draft_row')]),
-    headers={'X-Impersonation-Id': '$session:admin_owner', 'User-Id': IDS['owner']})
+    page([serialized(label, paid=True) if label == 'print_paid' else serialized(label) for label in DRAFT]),
+    headers={'X-Impersonation-Id': '$session:admin_owner', 'User-Id': IDS['owner']}, prints=['comp_paid', 'comp_unpaid'])
+add('list-prints-only-page-rows', 'owner', LIST('draft', query(**{PERPAGE: '1', PAGE: '2'})), 200,
+    page([serialized('print_unpaid')], total=5, number=2, pages=5, perpage=1), prints=['comp_unpaid'])
+add('list-page-without-compensation-no-print', 'owner', LIST('draft', query(**{PERPAGE: '3', PAGE: '2'})), 200,
+    page([serialized('movable'), serialized('draft_row')], total=5, number=2, pages=2, perpage=3))
 add('list-malformed', 'owner', LIST('abc'), 400, BAD_UUID)
 add('list-restricted-missing-permission', 'restricted_collaborator', LIST(), 403, missing('read'))
 add('list-owner-scoped-athlete-denied', 'owner', LIST(), 403, SCOPED_DENIED, headers=SCOPED)

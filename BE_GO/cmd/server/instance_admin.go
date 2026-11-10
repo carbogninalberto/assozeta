@@ -24,7 +24,7 @@ func composeInstanceAdmin(cfg config.Config, db *sqlx.DB, bootstrap *service.Ins
 		Version: cfg.Version, ConfiguredVersion: settings.ConfiguredVersion, DeploymentMode: settings.DeploymentMode, AppURL: settings.AppURL,
 		EmailHost: settings.EmailHost, EmailUsername: settings.EmailUsername, EmailPassword: settings.EmailPassword,
 		EmailPort: settings.EmailPort, EmailPortInvalid: settings.EmailPortInvalid, EmailUseTLS: settings.EmailUseTLS, EmailUseSSL: settings.EmailUseSSL,
-		FromName: settings.FromName, FromAddress: settings.FromAddress, FromInvalid: settings.FromInvalid,
+		FromName: settings.FromName, FromAddress: settings.FromAddress,
 		AIAPIKey: settings.AIAPIKey, AIModel: settings.AIModel, AICheapModel: settings.AICheapModel, AIBaseURL: settings.AIBaseURL,
 		AIIntegers: settings.AIIntegers, AIIntegersInvalid: settings.AIIntegersInvalid,
 		StripePublicKey: settings.StripePublicKey, StripeKey: settings.StripeKey, StripeWebhookSecret: settings.StripeWebhookSecret,

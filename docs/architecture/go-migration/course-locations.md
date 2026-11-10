@@ -18,6 +18,16 @@ Evidence: `TESTS/fixtures/course_locations_list_http.json` (13 cases). RED: Djan
 - `update` and `delete` start with `get_object()`: the association lookup precedes the pk lookup. A malformed pk is a bare `Not found.`; an unknown or foreign one is `No CourseLocation matches the given query.`. `update` is partial, saves every field and audits the changed ones (200); `delete` removes the document links and the location (204, no body), and the documents stay.
 - The viewset's own `delete()` answers DELETE on every mapped route. On `add` (no pk) it is a 500; on `update` it deletes the location. `Allow` lists the mapped method, DELETE and OPTIONS.
 - Requests are not atomic. The serializer saves the location before handling `documents_data`, so a document without `document` and `filename` (400 `{'exception': 'document key not present'}`) or with undecodable base64 (500, CPython's non-strict `a2b_base64` rules) leaves the saved row.
-- Not ported: a document that would upload (Document creation plus the storage write), indexed form keys `documents_data[n]`, and a changed `course_location_id` on update. Go refuses them with a 500 before any write.
+- Each `documents_data` item with both keys, in order: `base64.b64decode`, `Document.objects.create(filename=...)` (auditlog create
+  entry indexed to the actor's own association; the second `save()` changes nothing), `default_storage.save` of
+  `<str(creation_date.timestamp())>/<id>/<filename>` (the document storage of `documents-writes.md`: name validation, the
+  exists check, one PutObject with `mimetypes.guess_type` type and encoding and the cache header) and `documents.add`. An item
+  that raises leaves the location and the earlier documents saved.
+- Not ported: indexed form keys `documents_data[n]`, filenames that are not plain storable text of at most 255 characters or
+  that `Storage.save` rejects, and a changed `course_location_id` on update. Go refuses them with a 500 before any write.
 
 Evidence: `TESTS/fixtures/course_location_writes_http.json` (47 cases). RED: Django 47/47, Go 404. GREEN: 47/47 on native Django, native Go, Caddy `/api/v1` and `/api/v2` with exact location, link, audit and index effects. Rolling back the save on a `documents_data` failure fails the first add whose document lacks its keys. The supplier writes (31) and the locations list (13) stay green after sharing their text-field and rendering helpers.
+
+Document uploads (API v2, 51 cases): the runner owns a private MinIO (`service_context`) and checks the new Documents, their
+links and the stored objects (django-storages' own key, exact bytes, type, encoding and cache header). RED `v2c-red`
+(Django 51/51, Go refused), GREEN `v2c-green` on four transports, mutation `v2c-mutation-upload` CAUGHT.

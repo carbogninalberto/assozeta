@@ -116,7 +116,6 @@ registries of the courses of its live course subscriptions; each truthy events l
 
 - Association-scoped athlete sessions on subscription/list, list/all, info and calendar (scoped_queryset's family boundary).
 - The POST export of subscription/list with `format` `pdf` or `excel` (`current_view_subscriptions`).
-- subscription/info rows whose course subscriptions have membership payments with an instructor or an invoice.
 - Orderings compiled with the rows (relations, paths, transforms, `?`, annotations), field-mode relation paths and
   transforms, and search terms with characters at or above U+0250 or U+0130 (personas-reads).
 
@@ -138,6 +137,14 @@ years).
   the last-name orderings depended on the query plan (one concurrent run returned the tied rows swapped); the fixture now
   gives one of them its own associate, and `red-r3` re-ran RED on it: Django 253/253, Go 404 with the routes unregistered.
 - GREEN (`versioned-r2`): 253/253 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with the model state unchanged.
+
+Membership payments with an instructor and an invoice in subscription/info (API v2 gap): the course subscriptions' membership
+payments render PaymentSerializer with the nested InstructorSerializer and InvoiceSerializer (course-subscriptions' loader and
+renderer); the fixture links one such payment to a course subscription of an info case.
+
+- RED (`v2doc-red-r1`): Django 261/261; Go 500 on `subscription-reads-info-hyphenless-uuid`.
+- GREEN (`v2doc-versioned-r1`): 261/261 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`v2doc-mutation-r1`): rendering the nested invoice as null fails `subscription-reads-info-hyphenless-uuid` (CAUGHT).
 - Stability: `stability-r1`..`r3` 253/253 natively, each run concurrently with personas-reads.
 - Mutation (`mutation-r2`): dropping the group filter from the null-tax-code renewal lookup fails
   `subscription-reads-archived-group` (CAUGHT).

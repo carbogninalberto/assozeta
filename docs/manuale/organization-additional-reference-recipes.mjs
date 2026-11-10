@@ -48,10 +48,13 @@ export const organizationAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/connectedCollaborators/CollaboratorActions.svelte": "2df48f56f3e4035b34ca2db58fa83423b7db8f2cce72d983e5dd1c826907ca8b",
     "BE/application/views/collaborator_views.py": "170561838fb06cf89016da5356cb0d39a2731b3591cc6a3487113c395ecbc558",
     "UI/src/routes/association/communication/messages/Messages.svelte": "7a5862099d6165b59b93bbb3ff1be6fa7703a85db6dbae7749aca198d115a43f",
-    "BE/communications/models.py": "32530538f7a66f9cf0a6e0c94f7846ef142bce13e5a1cae67663126927ebc591"
+    "BE/communications/models.py": "32530538f7a66f9cf0a6e0c94f7846ef142bce13e5a1cae67663126927ebc591",
+    // Reviewed: import reuses only accounts linked to the archive owner, and
+    // existing accounts keep their own credentials.
+    "BE/application/services/import_service.py": "26afb1fbcd70a47484bdf2c189a85bcf57a1646de9cb7ba013ff5ba61a02a344"
 });
 
-const sourceKeys = Object.freeze(["card_settings", "card_info", "card_render", "card_backend", "card_multiactions", "permissions_cards", "members_export", "members_backend", "members_current", "current_modal", "payment_export", "payment_backend", "export_ui", "export_start", "export_cleanup", "export_navigation", "export_service", "instructor_list", "instructor_model", "hours_model", "instructor_create_ui", "instructor_edit_ui", "instructor_delete", "hours_form", "hours_actions", "hours_info", "hours_list_backend", "hours_update", "hours_delete", "percentage_backend", "compensation_backend", "calendar_hours", "report_ui", "report_backend", "report_data", "course_fields", "calendar_ui", "calendar_create", "calendar_edit", "attendance_registry", "archive_members", "subscription_archive", "archive_members_nav", "archive_members_list", "course_archive_nav", "payment_archive_ui", "receipt_archive_ui", "document_archive", "auto_archive_ui", "auto_archive_task", "settings_backend", "profile_navigation", "collaborator_actions", "collaborator_delete", "collaborator_list", "collaborator_add", "permissions_members", "permissions_payments", "permissions_instructors", "permissions_calendar", "permissions_settings", "permissions_collaborators", "communication_types", "communication_model", "staff_model", "workflow_model"]);
+const sourceKeys = Object.freeze(["card_settings", "card_info", "card_render", "card_backend", "card_multiactions", "permissions_cards", "members_export", "members_backend", "members_current", "current_modal", "payment_export", "payment_backend", "export_ui", "export_start", "export_cleanup", "export_navigation", "export_service", "instructor_list", "instructor_model", "hours_model", "instructor_create_ui", "instructor_edit_ui", "instructor_delete", "hours_form", "hours_actions", "hours_info", "hours_list_backend", "hours_update", "hours_delete", "percentage_backend", "compensation_backend", "calendar_hours", "report_ui", "report_backend", "report_data", "course_fields", "calendar_ui", "calendar_create", "calendar_edit", "attendance_registry", "archive_members", "subscription_archive", "archive_members_nav", "archive_members_list", "course_archive_nav", "payment_archive_ui", "receipt_archive_ui", "document_archive", "auto_archive_ui", "auto_archive_task", "settings_backend", "profile_navigation", "collaborator_actions", "collaborator_delete", "collaborator_list", "collaborator_add", "permissions_members", "permissions_payments", "permissions_instructors", "permissions_calendar", "permissions_settings", "permissions_collaborators", "communication_types", "communication_model", "staff_model", "workflow_model", "import_service"]);
 export const organizationAdditionalSourceContracts = Object.freeze([
     [
         "UI/src/routes/profile/sections/Settings.svelte",
@@ -382,6 +385,11 @@ export const organizationAdditionalSourceContracts = Object.freeze([
         "BE/communications/models.py",
         "class AutomationWorkflow(models.Model):",
         115
+    ],
+    [
+        "BE/application/services/import_service.py",
+        "def _sanitize_user_data(",
+        45
     ]
 ].map(contract => Object.freeze(contract)));
 
@@ -454,7 +462,8 @@ const sections = [
             "export_start",
             "export_cleanup",
             "export_navigation",
-            "export_service"
+            "export_service",
+            "import_service"
         ],
         "reason": "Procedura descritta dalle sorgenti; mancano esercizio in browser, controlli del risultato e schermate reali."
     },

@@ -71,8 +71,17 @@ search. The aggregates run over the distinct payments: `Sum(...) or 0` renders N
 as floats; `net_balance` is income − expenses + to pay − to cash in − Stripe fees. The account balances group the paid
 payments by account type (and creation date, from the ordering) and add the net changes to `{cash, bank, other}`; the
 search joins repeat a payment once per matching tutor row there (an associate with two tutors doubles a matching payment's
-balance change but not the aggregates). Stripe is not configured in the test environment: `stripe_charges` is
-`{total: 0, stripe_fee: 0}`.
+balance change but not the aggregates). Without Stripe credentials `stripe_charges` is `{total: 0, stripe_fee: 0}`.
+
+With `stripe_direct_credentials_configured()` (the instance integration, else the environment) the view reads
+`stripe_fees_direct_<sha256(secret)[:24]>_<int(from)>_<int(to)>` from the Django cache; on a miss it lists
+`GET /v1/balance_transactions?created[gte]=..&created[lte]=..` through every page (`starting_after` the last id, on the
+list's `url`), skips payouts, sums only `stripe_fee` amounts (the total is added inside that branch, so both values are
+equal), stores `round(float(sum) / 100, 2)` for 300 seconds and answers it. Any exception inside the try (a Stripe error,
+a missing key in a transaction) answers zero charges, uncached. `net_balance` then subtracts `Decimal(total or 0)` (the
+float's exact value, default 28-digit context). Go (`service/payment_stats_stripe.go`) uses the stripe/* SDK port
+(`stripeapi.Session.List`) and writes the entry as django-redis does (`repository/payment_stats_stripe.go`: pickle
+protocol 4, `:1:` prefix); a cached value other than that dict, non-integer fee amounts and non-string ids are refused.
 
 ## subscription/<uid>/payments
 
@@ -92,8 +101,6 @@ course subscription by key (`all_objects()`), else the first installment's (`all
 
 - payment/list for athletes outside the compressed mode (their branch, PaymentCompressedSerializer, online-payment flags and
   the synchronous invoice PDF generation), and the compressed mode in an association-scoped athlete session.
-- payment/stats when Stripe credentials are configured (environment `STRIPE_KEY` and `STRIPE_PUBLIC_KEY`, or instance
-  integration settings): the balance transactions and their cache are not ported.
 - Orderings Django resolves only when compiling the rows (relations other than `user`, relation paths and transforms, the
   `full_name` annotation of the subscription search), refused after the count and page checks; random ordering together with
   the payment/list text search (DISTINCT with `RANDOM()` in the select list); reverse relation names are refused as unknown.
@@ -129,3 +136,10 @@ cases hold while no seeded payment (2024) is within a year of the run date.
   join rows) fails `payment-reads-stats-search-rossi` (CAUGHT).
 - Shared code: none changed (new files and a route block in `main.go`); payment-state 130/130 and personas-reads 201/201
   stay green natively.
+
+API v2 Stripe fees (`v2pay2-stats-*`): 6 cases (248 in all): fees fetched over two pages and cached, read from a cache entry
+written by Django, a Stripe 400 and a transaction without a fee type (zero, uncached), the integration disabled, and an empty
+list (zero floats cached). The adapter runs a Stripe API stub (stripe-routes' handler and request checks), configures the
+instance integration only during the case and reads the entry back with `cache.get` (with its expiry). RED
+`v2pay2-stats-red-r1`: Django 248/248, Go 500. GREEN `v2pay2-stats-versioned-r1`: 248/248 on the four transports. Mutation
+`v2pay2-stats-mutation-r1` (skipping refunds instead of payouts) CAUGHT.

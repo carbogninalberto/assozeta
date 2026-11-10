@@ -159,8 +159,8 @@ func courseSubscriptionCarnet(row domain.CourseSubscriptionCarnet) (map[string]a
 		"creation_date": row.CreationDate.UTC().Format("02/01/2006")}, nil
 }
 
-// courseSubscriptionPayment is PaymentSerializer for a membership payment
-// (the service refuses instructors and invoices).
+// courseSubscriptionPayment is PaymentSerializer for a payment without its
+// nested instructor and invoice (see courseSubscriptionMembershipPayment).
 func courseSubscriptionPayment(row domain.CourseSubscriptionPayment) map[string]any {
 	item := InvoicePartyPaymentItem(row.InvoicePartyPayment)
 	if row.AssociateRow != nil {
@@ -180,7 +180,11 @@ func CourseSubscriptionItem(render CourseSubscriptionRender, now time.Time) (map
 	}
 	payments := make([]map[string]any, 0, len(render.Payments))
 	for _, payment := range render.Payments {
-		payments = append(payments, courseSubscriptionPayment(payment))
+		item, err := PaymentStateItem(domain.PaymentStateRender{Payment: payment, Instructor: payment.Instructor, Invoice: payment.Invoice})
+		if err != nil {
+			return nil, err
+		}
+		payments = append(payments, item)
 	}
 	carnets := make([]map[string]any, 0, len(render.Carnets))
 	for _, carnet := range render.Carnets {

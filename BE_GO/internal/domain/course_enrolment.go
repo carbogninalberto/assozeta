@@ -17,6 +17,9 @@ type CourseEnrolmentInstallment struct {
 	SubscriptionUserID *string   `db:"subscription_user_id"`
 	AssociateID        *string   `db:"associate_id"`
 	CourseAssociation  *string   `db:"course_association_id"`
+	// SubscriptionAssociation is the row's subscription association
+	// (scoped_queryset's relation during an impersonation session).
+	SubscriptionAssociation *string `db:"subscription_association_id"`
 }
 
 // CourseEnrolmentPayment is Payment.objects.create(...) of the enrolment
@@ -59,7 +62,7 @@ type CourseEnrolmentTransaction interface {
 	OwnerAssociationFirst(ctx context.Context, owner string) (*string, error)
 	ActorAssociation(ctx context.Context, actor string) (*string, error)
 	GroupExists(ctx context.Context, id string) (bool, error)
-	DefaultPaymentCategory(ctx context.Context) (*string, error)
+	DefaultPaymentCategory(ctx context.Context, association *string) (*string, error)
 	DefaultBankAccount(ctx context.Context, association *string) (*string, error)
 	// AssociationUser is sport_association.user (base manager).
 	AssociationUser(ctx context.Context, association string) (*string, error)

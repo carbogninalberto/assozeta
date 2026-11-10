@@ -68,6 +68,7 @@ The search, ordering and serializer expectations below are computed by an
 independent model of those Django semantics over the authored rows. Personal
 data is synthetic. Run with ``python3 -I``.
 """
+import hashlib
 import json
 import re
 from datetime import datetime, timezone
@@ -573,13 +574,16 @@ def prints_for(path, response):
             for h in PRINTED if PAYMENTS[h['payment']]['id'] in listed_ids]
 
 
-def add(name, actor, path, status, response, *, method='GET', headers=None, unordered=False, challenge=None):
+def add(name, actor, path, status, response, *, method='GET', headers=None, unordered=False, challenge=None, stripe=None):
     """unordered: the rows (and rowIds) are compared as multisets (an ordering Django leaves to the database).
-    prints: the CURRENT_HOST requests the case makes (compensation prints of listed rows)."""
+    prints: the CURRENT_HOST requests the case makes (compensation prints of listed rows).
+    stripe: (setup, requests): the instance's Stripe integration and Django cache entry around the request,
+    and the Stripe API requests it makes with the stub's replies (none for every other case)."""
     case = {'name': f'payment-reads-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'unordered': unordered, 'prints': prints_for(path, response)}
     if challenge is not None:
         case['challenge'] = challenge
+    case['stripe_setup'], case['stripe'] = stripe if stripe else (None, [])
     cases.append(case)
 
 
@@ -832,7 +836,8 @@ add('list-empty-page-two', 'owner', LIST + '?query[type]=bitcoin&pagination[page
 
 
 # --- payment/stats ---
-def stats(labels, multiplicity=None):
+def stats(labels, multiplicity=None, stripe=None):
+    """stripe: the (total, stripe_fee) charges; net_balance subtracts Decimal(total or 0) (default context)."""
     multiplicity = multiplicity or {}
     rows = [PAYMENTS[k] for k in labels]
 
@@ -852,14 +857,16 @@ def stats(labels, multiplicity=None):
     expenses = sum((Decimal(r['amount']) for r in rows if r['expense']), Decimal('0'))
     to_pay = sum((Decimal(r['amount']) for r in rows if r['expense'] and not r['paid']), Decimal('0'))
     to_cash_in = sum((Decimal(r['amount']) for r in rows if not r['expense'] and not r['paid']), Decimal('0'))
-    return {'data': {'stripe_charges': {'total': 0, 'stripe_fee': 0},
+    total_fee, fee = stripe or (0, 0)
+    return {'data': {'stripe_charges': {'total': total_fee, 'stripe_fee': fee},
                      'monthly_income': total(lambda r: not r['expense'] and r['paid']),
                      'monthly_expenses': total(lambda r: r['expense'] and r['paid']),
                      'monthly_to_pay': total(lambda r: r['expense'] and not r['paid']),
                      'monthly_to_cash_in': total(lambda r: not r['expense'] and not r['paid']),
                      'current_income': total(lambda r: not r['expense']), 'current_expenses': total(lambda r: r['expense']),
                      'accounts': {k: (float(v) if isinstance(v, Decimal) else v) for k, v in accounts.items()},
-                     'total_transactions': len(rows), 'net_balance': float(income - expenses + to_pay - to_cash_in)}}
+                     'total_transactions': len(rows),
+                     'net_balance': float(income - expenses + to_pay - to_cash_in - Decimal(total_fee or 0))}}
 
 
 def stats_range(start, end, labels=None):
@@ -869,6 +876,63 @@ def stats_range(start, end, labels=None):
 YEAR = '?query[payment_range]=2024/01/01%20al%202024/12/31'
 IN_YEAR = stats_range('2024-01-01T00:00:00Z', '2024-12-31T00:00:00Z')
 add('stats-owner-this-month', 'owner', STATS, 200, stats([]))
+
+
+# Stripe configured (the instance's integration): the fees of the range from the cache, else
+# BalanceTransaction.list(created={gte, lte}).auto_paging_iter() (payouts skipped, only stripe_fee
+# amounts summed), round(float/100, 2) cached for 300 seconds; any exception: zero charges, uncached.
+STRIPE = {'secret_key': 'sk_test_payment_reads_fixture', 'public_key': 'pk_test_payment_reads_fixture',
+          'api_version': '2025-02-24.acacia', 'user_agent': 'Stripe/v1 PythonBindings/11.6.0'}
+STRIPE_IDENTITY = hashlib.sha256(STRIPE['secret_key'].encode()).hexdigest()[:24]
+
+
+def epoch(text):
+    return int(datetime.fromisoformat(text.replace('Z', '+00:00')).timestamp())
+
+
+def stripe_page(items, more):
+    return {'object': 'list', 'url': '/v1/balance_transactions', 'has_more': more, 'data': items}
+
+
+def stripe_get(start, end, reply, *, after=None, telemetry=None, status=200):
+    path = f'/v1/balance_transactions?created%5Bgte%5D={start}&created%5Blte%5D={end}'
+    if after:
+        path += '&starting_after=' + after
+    return {'method': 'GET', 'path': path, 'body': '', 'same_key_as_previous': False, 'telemetry': telemetry,
+            'status': status, 'response': reply}
+
+
+def stripe_setup(start, end, *, enabled=True, before=None, after=None):
+    return {'enabled': enabled, 'cache_key': f'stripe_fees_direct_{STRIPE_IDENTITY}_{start}_{end}', 'cache_before': before,
+            'cache_after': after}
+
+
+START, END = epoch('2024-01-01T00:00:00Z'), epoch('2024-12-31T00:00:00Z')
+FIRST = stripe_page([
+    {'id': 'txn_reads_1', 'object': 'balance_transaction', 'type': 'charge',
+     'fee_details': [{'type': 'stripe_fee', 'amount': 31}, {'type': 'application_fee', 'amount': 50}]},
+    {'id': 'txn_reads_2', 'object': 'balance_transaction', 'type': 'payout', 'fee_details': [{'type': 'stripe_fee', 'amount': 999}]}], True)
+SECOND = stripe_page([{'id': 'txn_reads_3', 'object': 'balance_transaction', 'type': 'charge',
+                       'fee_details': [{'type': 'stripe_fee', 'amount': 1234}]}], False)
+FETCHED = {'total': 12.65, 'stripe_fee': 12.65}
+add('stats-stripe-fees-fetched-and-cached', 'owner', STATS + YEAR, 200, stats(IN_YEAR, stripe=(12.65, 12.65)),
+    stripe=(stripe_setup(START, END, after=FETCHED),
+            [stripe_get(START, END, FIRST), stripe_get(START, END, SECOND, after='txn_reads_2', telemetry='req_stub_1')]))
+CACHED = {'total': 3.3, 'stripe_fee': 2.2}
+add('stats-stripe-fees-from-cache', 'full_collaborator', STATS + YEAR, 200, stats(IN_YEAR, stripe=(3.3, 2.2)),
+    stripe=(stripe_setup(START, END, before=CACHED, after=CACHED), []))
+add('stats-stripe-error-zero-uncached', 'owner', STATS + YEAR, 200, stats(IN_YEAR),
+    stripe=(stripe_setup(START, END),
+            [stripe_get(START, END, {'error': {'type': 'invalid_request_error', 'message': 'fixture'}}, status=400)]))
+add('stats-stripe-missing-fee-type-zero-uncached', 'owner', STATS + YEAR, 200, stats(IN_YEAR),
+    stripe=(stripe_setup(START, END), [stripe_get(START, END, stripe_page([{'id': 'txn_reads_4', 'type': 'charge',
+                                                                             'fee_details': [{'amount': 5}]}], False))]))
+add('stats-stripe-disabled', 'owner', STATS + YEAR, 200, stats(IN_YEAR), stripe=(stripe_setup(START, END, enabled=False), []))
+MID_START, MID_END = epoch('2024-02-01T00:00:00Z'), epoch('2024-07-02T00:00:00Z')
+add('stats-stripe-no-transactions', 'owner', STATS + '?query[payment_range]=2024/02/01%20al%202024/07/02', 200,
+    stats(stats_range('2024-02-01T00:00:00Z', '2024-07-02T00:00:00Z'), stripe=(0.0, 0.0)),
+    stripe=(stripe_setup(MID_START, MID_END, after={'total': 0.0, 'stripe_fee': 0.0}),
+            [stripe_get(MID_START, MID_END, stripe_page([], False))]))
 add('stats-full-collaborator', 'full_collaborator', STATS + YEAR, 200, stats(IN_YEAR))
 add('stats-admin-impersonating-owner', 'admin', STATS + YEAR, 200, stats(IN_YEAR), headers=ADMIN_OWNER)
 add('stats-scoped-athlete-not-available', 'owner', STATS, 403, NOT_AVAILABLE, headers=SCOPED_ATHLETE)
@@ -1012,7 +1076,7 @@ add('subscription-search-duplicates-paginated', 'owner', SS + 'corso&pagination[
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
-    'matrix_version': 1, 'scope': 'Payment list, payment stats and subscription payments authored sequence', 'ids': IDS,
+    'matrix_version': 1, 'scope': 'Payment list, payment stats and subscription payments authored sequence', 'ids': IDS, 'stripe': STRIPE,
     'category': CATEGORY, 'accounts': ACCOUNTS, 'documents': DOCUMENTS, 'associates': ASSOCIATES,
     'tutors': {A[k]: [[A[t], primary] for t, primary in v] for k, v in TUTORS.items()}, 'instructor': INSTRUCTOR, 'supplier': SUPPLIER,
     'courses': COURSES, 'carnet': CARNET, 'invoice': INVOICE, 'subscriptions': SUBSCRIPTIONS, 'payments': PAYMENTS,

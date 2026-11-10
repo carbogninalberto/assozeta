@@ -360,6 +360,15 @@ MENTION_CASES = [
     ('mixed', '<h1>Modulo</h1><p>Io sottoscritto @nome @cognome, ' + mention('associate.tax_code') +
               ', socio di ' + mention('sport_association.denomination') + ' (@dataodierna)</p>'),
     ('text-gt', '<p>a > b</p>'),
+    # TipTap's CodeBlock: whitespace-only strings inside <pre> are kept (bs4's preserve_whitespace_tags).
+    ('pre-code-block', '<p>Prima</p><pre><code>const a = 1;\n\n  if (a &lt; 2) {\n    b();\n  }\n</code></pre><p>Dopo</p>'),
+    ('pre-language', '<pre><code class="language-python">def f():\n    return @nome\n</code></pre>'),
+    ('pre-whitespace-only', '<pre>   </pre><pre>\n\t\n</pre><pre><code>  </code>\n<b> </b></pre><p>  </p><p>\n </p>'),
+    ('pre-leading-newline', '<pre>\nriga\n</pre>'),
+    ('pre-mention', '<pre><code>  ' + mention('associate.first_name') + '\n  @cognome  \n</code></pre>'),
+    ('pre-nested', '<div><pre><span> </span>\n<i>\n</i></pre> <span> </span></div>'),
+    ('pre-unclosed', '<p>x</p><pre><code>  \n  '),
+    ('pre-uppercase', '<PRE>  <CODE>  </CODE>  </PRE>'),
 ]
 
 

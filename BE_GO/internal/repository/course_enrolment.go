@@ -43,7 +43,7 @@ func (t *courseEnrolmentTransaction) CoursesCategory(ctx context.Context, associ
 	if preferred != nil && preferred.Valid {
 		return t.CategoryFirst(ctx, preferred.String)
 	}
-	return t.DefaultPaymentCategory(ctx)
+	return t.DefaultPaymentCategory(ctx, &association)
 }
 
 func (t *courseEnrolmentTransaction) CategoryFirst(ctx context.Context, id string) (*string, error) {
@@ -174,7 +174,8 @@ func (t *courseEnrolmentTransaction) AddMembershipPayment(ctx context.Context, r
 // subscription read through the forward relations.
 func (t *courseEnrolmentTransaction) Installment(ctx context.Context, id string, group *string) (*domain.CourseEnrolmentInstallment, error) {
 	return courseWritesFirst[domain.CourseEnrolmentInstallment](ctx, t.tx, `SELECT i.course_subscription_installment_id, i.amount::text AS amount,
- i.payment_date, i.payment_id, cs.subscription_id, s.user_id AS subscription_user_id, s.associate_id, c.sport_association_id AS course_association_id
+ i.payment_date, i.payment_id, cs.subscription_id, s.user_id AS subscription_user_id, s.associate_id, c.sport_association_id AS course_association_id,
+ s.sport_association_id AS subscription_association_id
  FROM application_coursesubscriptioninstallment i JOIN application_coursesubscription cs ON cs.course_subscription_id=i.course_subscription_id
  JOIN application_course c ON c.course_id=cs.course_id LEFT JOIN application_subscription s ON s.subscription_id=cs.subscription_id
  WHERE i.course_subscription_installment_id=$1 AND NOT i.deleted AND ($2::uuid IS NULL OR i.group_id=$2::uuid)

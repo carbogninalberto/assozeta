@@ -152,7 +152,7 @@ type SubscriptionCreateTransaction interface {
 	// SaveCertificate is MedicalCertificate.save() of the loaded certificate
 	// with its user and, when given, a new expiration date.
 	SaveCertificate(ctx context.Context, id, user string, expiration *time.Time) error
-	Category(ctx context.Context, id *string) (*string, error)
+	Category(ctx context.Context, id *string, association string) (*string, error)
 	DefaultBankAccount(ctx context.Context, association string) (*string, error)
 	ReusablePayments(ctx context.Context, associate, association, amount string, day time.Time) ([]string, bool, error)
 	PaymentAmount(ctx context.Context, id string) (string, error)

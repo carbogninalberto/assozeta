@@ -251,7 +251,7 @@ func run() (runErr error) {
 	})
 	instanceHandler := handler.NewInstanceBootstrapHandler(instanceService, service.NewActorAuthentication(accounts, tokens), identities)
 	instanceAdminHandler, instanceAdminService := composeInstanceAdmin(cfg, db, instanceService, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
-	instanceOutboundHandler, err := composeInstanceOutbound(db, cache, instanceAdminHandler, instanceAdminService)
+	instanceOutboundHandler, err := composeInstanceOutbound(cfg, db, cache, broker, instanceAdminHandler, instanceAdminService)
 	if err != nil {
 		return err
 	}
@@ -409,7 +409,7 @@ func run() (runErr error) {
 	e.Any("/subscription/:uid/edit", subscriptionWritesHandler.Edit, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course/locations/list", courseLocationListHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	courseLocationWritesHandler := handler.NewCourseLocationWritesHandler(service.NewCourseLocationWrites(repository.NewCourseLocationWrites(db), time.Now,
-		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+		uuid.NewString).WithUploads(composeCourseLocationUploads(cfg, db)), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/course/locations/add", courseLocationWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course/locations/:pk/update", courseLocationWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course/locations/:pk/delete", courseLocationWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -501,8 +501,14 @@ func run() (runErr error) {
 	// (print_document_compensation), with invoice-sync-print's CoordinatedTask gate.
 	paymentInvoicePrinter := service.NewInvoiceSyncPrint(service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
 		repository.NewRestoreStates(db), cfg.RestoreLockPath != ""), os.Getenv("CURRENT_HOST"))
+	// payment_stats' Stripe fees: the stripe/* SDK client and Django's cache (DB 1).
+	paymentStatsStripeCache, err := repository.NewPaymentStatsStripeCache(cache)
+	if err != nil {
+		return err
+	}
 	paymentReadsHandler := handler.NewPaymentReadsHandler(service.NewPaymentReads(repository.NewPaymentReads(db), time.Now,
-		cfg.StripePublicKey != "" && cfg.StripeSecretConfigured).WithCompensationPrint(paymentInvoicePrinter),
+		cfg.StripePublicKey != "" && cfg.StripeSecretConfigured).WithCompensationPrint(paymentInvoicePrinter).
+		WithStripeFees(service.NewPaymentStatsStripe(stripeRoutes, paymentStatsStripeCache)),
 		service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/payment/list", paymentReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/stats", paymentReadsHandler.Stats, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -545,13 +551,18 @@ func run() (runErr error) {
 	e.Any("/payment-bulk/archive", paymentStatesHandler.BulkArchive, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment-bulk/delete", paymentStatesHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
 	paymentWritesHandler := handler.NewPaymentWritesHandler(service.NewPaymentWrites(repository.NewPaymentWrites(repository.NewPaymentStates(db)),
-		time.Now, uuid.NewString).WithInvoicePrint(paymentInvoicePrinter), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
+		time.Now, uuid.NewString).WithInvoicePrint(paymentInvoicePrinter).WithDocuments(composeDocumentStorage(cfg, db, sessions)),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
 		paymentCategoryOperations)
 	e.Any("/payment/add", paymentWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/bulk-add", paymentWritesHandler.BulkAdd, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/:uid/update", paymentWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	// payment_sign's print_document_compensation.apply and the apply's send_email_html (render + send_mail_async).
 	paymentMiscHandler := handler.NewPaymentMiscHandler(service.NewPaymentMisc(repository.NewPaymentMisc(repository.NewPaymentStates(db)), time.Now,
-		uuid.NewString, cfg.WhitelabelName), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
+		uuid.NewString, cfg.WhitelabelName).WithCompensationPrint(paymentInvoicePrinter).WithMail(service.NewEmailRenderRoutes(
+		repository.NewEmailRenderRoutes(db), tasks, service.EmailRenderSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName,
+			DefaultFromEmail: cfg.DefaultFromEmail, DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel}, time.Now)),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
 		paymentCategoryOperations)
 	e.Any("/payment/simulation/partial-quotes", paymentMiscHandler.Simulation, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/simulation/partial-quotes-apply", paymentMiscHandler.Apply, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -621,7 +632,7 @@ func run() (runErr error) {
 	e.Any("/modules/response/:module_response_id/add-attachment", modulesResponsesHandler.Attachment, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/info", instructorListHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	instructorHoursHandler := handler.NewInstructorHoursHandler(service.NewInstructorHoursService(repository.NewInstructorHours(db), time.Now,
-		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+		uuid.NewString).WithCompensationPrint(paymentInvoicePrinter), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/instructor/:uid/hours/list", instructorHoursHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/hours/add", instructorHoursHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/hours/calculate", instructorHoursHandler.Calculate, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -732,7 +743,7 @@ func run() (runErr error) {
 	invoiceSyncPrinter := service.NewInvoiceSyncPrint(service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
 		repository.NewRestoreStates(db), cfg.RestoreLockPath != ""), os.Getenv("CURRENT_HOST"))
 	invoicePartiesHandler := handler.NewInvoicePartiesHandler(service.NewInvoiceParties(repository.NewInvoiceParties(db), time.Now, uuid.NewString).
-		WithCustomerInvoiceSync(invoiceSyncStore, invoiceSyncPrinter),
+		WithCustomerInvoiceSync(invoiceSyncStore, invoiceSyncPrinter).WithPendingCustomerInvoices(invoiceSyncStore),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	invoiceSyncHandler := handler.NewInvoiceSyncPrintHandler(paymentStatesHandler,
 		service.NewInvoiceSyncUpdates(invoiceSyncStore, invoiceSyncPrinter, time.Now))
@@ -745,7 +756,7 @@ func run() (runErr error) {
 	e.Any("/invoice-suppliers/list", invoicePartiesHandler.SupplierList, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-suppliers/add", invoicePartiesHandler.SupplierAdd, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-suppliers/:uid/update", invoicePartiesHandler.SupplierUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
-	invoiceCoreHandler := handler.NewInvoiceCoreHandler(service.NewInvoiceCore(repository.NewInvoiceCore(db), time.Now),
+	invoiceCoreHandler := handler.NewInvoiceCoreHandler(service.NewInvoiceCore(repository.NewInvoiceCore(db), tasks, time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/invoice/list", invoiceCoreHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice/list/archived", invoiceCoreHandler.Archived, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -831,7 +842,7 @@ func run() (runErr error) {
 	e.Any("/instance/admin/data-restore/backups", dataRestoreHandler.Backups, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/data-restore/:id/download", dataRestoreHandler.Download, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/data-restore/:id/:action", dataRestoreHandler.Action, middleware.DjangoSessionAudit(sessionAuthentication))
-	e.Any("/instance/admin/diagnostics", instanceAdminHandler.Diagnostics, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/diagnostics", instanceOutboundHandler.Diagnostics, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/updates", instanceAdminHandler.Updates, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/restarts", instanceAdminHandler.Restarts, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/bakney-pairing", bakneySSOHandler.Admin, middleware.DjangoSessionAudit(sessionAuthentication))

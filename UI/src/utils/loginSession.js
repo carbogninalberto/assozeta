@@ -39,8 +39,8 @@ export function reloadAppAt(path) {
     // A target without a fragment is always a new document: replace to it
     // directly, without first changing this document's URL (that change makes
     // the browser start a favicon load the reload then abandons).
-    if (!new URL(path, location.href).hash) {
-        location.replace(path);
+    if (!new URL(path, window.location.href).hash) {
+        window.location.replace(path);
         return;
     }
     // A hash-only location.replace is a same-document navigation. Explicitly

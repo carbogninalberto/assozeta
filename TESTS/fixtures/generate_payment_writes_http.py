@@ -23,7 +23,8 @@ description defaults and the create audit entry (indexed through the actor's
 association), then attachments_data (an item without document/filename keys
 raises ValidationError: 400 with the payment kept). The view then sets user,
 association and the complex_item party (Istruttori, Fornitori, Iscrizioni,
-Persone: a failing lookup is a 500 after the create) and saves again (audited
+Persone: a failing lookup is a 500 after the create; a party of another
+association is 403 'User not allowed.', the created payment kept) and saves again (audited
 update, indexed directly). The response is PaymentSerializer of the in-memory
 payment (a float amount quantized half-even). Paid payments (auto_paid_payment)
 are not ported and not authored.
@@ -35,15 +36,27 @@ dates dropped, PaymentEntrySerializer(partial) with raise_exception (400 JSON
 errors), the parties (instructor and supplier always cleared; complex_item and
 subscription_id), payment_intent_id cleared, the save hook, the full audited
 save, then attachments_data. Response {'data': {'payment': ...}}.
-Invoiced payments (PDF task), form bodies and attachments with content are
-not ported and not authored.
+An invoiced payment prints its invoice after the save. Form bodies are not
+ported and not authored.
+
+attachments_data (add and update, after the payment's save): for each item
+with document and filename, b64decode(document) (invalid: 500, the payment and
+earlier documents kept), Document.objects.create(filename=...) (audited create
+indexed to the actor's own association; the second save changes nothing),
+default_storage.save('<str(creation_date.timestamp())>/<id>/<filename>') of the
+bytes and payment.attachments.add(document) (no audit entry); an item without
+the keys raises ValidationError (400) after the earlier items are stored. The
+response renders the new attachments (DocumentSerializer). The adapter owns a
+private MinIO: each case's new objects must be exactly its authored documents.
 
 payment/bulk-add (POST): athletes 403 without a body, the association, then
 the view's own checks (400 messages), the live group-aware associates of the
 association (unknown ids are reported by str(); nothing valid: 200), the
-defaults computed by the view and one atomic bulk_create (no save(), no
+defaults computed by the view (the category among the association's own or
+shared categories, the account among its own) and one atomic bulk_create (no save(), no
 signals, no audit, no group). Run with ``python3 -I``.
 """
+import base64
 import copy
 import json
 from decimal import Context, Decimal, ROUND_HALF_EVEN, ROUND_HALF_UP
@@ -60,6 +73,10 @@ CATEGORIES = {
     'own': {'id': next(ids), 'name': 'Quote fixture', 'association': OWN},
     'global': {'id': next(ids), 'name': 'Categoria globale', 'association': None},
     'foreign': {'id': next(ids), 'name': 'Categoria estera', 'association': FOREIGN},
+    # Same name as Payment.save()'s default, owned by the other association and keyed
+    # below every uuid4 key: the default stays the own or global row.
+    'foreign_default': {'id': '00000000-0000-4000-8000-000000000501', 'name': 'Entrate e proventi da attività tipiche',
+                        'association': FOREIGN},
 }
 ACCOUNTS = {
     'bank': {'id': next(ids), 'name': 'Banca fixture', 'type': 2, 'code': 'BNK', 'association': OWN, 'editable': False},
@@ -84,6 +101,13 @@ SUBSCRIPTIONS = {
 INSTRUCTOR = {'id': next(ids), 'first_name': 'Anna è', 'last_name': 'Bianchi', 'email': 'anna@example.test', 'tax_code': 'BNCNNA80A41H501X',
               'default_hourly_billing': '12.50'}
 SUPPLIER = {'id': next(ids), 'name': 'Fornitore è', 'vat_number': '01234567890', 'email': 'fornitore@example.test'}
+# Parties of the other association (payment parties only apply to the caller's association).
+FOREIGN_PARTIES = {
+    'subscription': {'id': 'a1000000-0000-4000-8000-000000988301', 'associate': 'abroad', 'association': FOREIGN, 'created': '2026-08-01T10:00:00Z'},
+    'instructor': {'id': 'a1000000-0000-4000-8000-000000988302', 'user': IDS['foreign_owner'], 'first_name': 'Klaus', 'last_name': 'Weber'},
+    'supplier': {'id': 'a1000000-0000-4000-8000-000000988303', 'name': 'Fornitore estero', 'vat_number': '09999999999',
+                 'email': 'fornitore-estero@example.test', 'association': FOREIGN},
+}
 OWNER_USER = {'first_name': 'Message', 'last_name': 'Fixture', 'email': 'message-reads-700001@example.test', 'phone': None,
               'username': 'message-reads-700001', 'role': 1}
 
@@ -141,6 +165,9 @@ PAYMENTS = {
     'up_own_upper': payment(),
     'up_invoiced': payment(invoice_id=INVOICE['id']),
     'up_invoiced_print_fails': payment(invoice_id=INVOICE['id']),
+    'up_attach_one': payment(),
+    'up_attach_partial': payment(),
+    'up_attach_bad64': payment(),
 }
 STATE = copy.deepcopy(PAYMENTS)
 cases = []
@@ -411,7 +438,21 @@ add('add-unknown-group-header-server-error', 'owner', ADD, 500, SERVER, headers=
     body={'creation_date': None, 'payment_date': None, 'complex_item': None}, effect=effect('owner'))
 
 
-def added(name, actor, body, values, *, amount=None, headers=None, status=201, response=None, party=None, finish=True):
+def attachment_docs(specs, actor, payment):
+    """The Document creates (audit specs), the effect's stored documents and the rendered attachments."""
+    audit, stored, rendered = [], [], []
+    for index, (filename, body) in enumerate(specs):
+        key = f'$doc{index}'
+        audit.append({'key': key, 'model': 'document', 'action': 0, 'index': actor_index(actor),
+                      'changes': {'document_id': ['None', key], 'creation_date': ['None', key + '_created'], 'filename': ['None', filename],
+                                  'token': ['None', key + '_token'], 'customer_invoice_pdf': ['None', 'application.CustomerInvoice.None']}})
+        stored.append({'filename': filename, 'body_b64': base64.b64encode(body).decode(), 'payment': payment})
+        rendered.append({'document_id': f'$bind:doc{index}', 'creation_date': '$now', 'filepath': None, 'filename': filename,
+                         'file_size_bytes': None, 'token': f'$bind:doc{index}_token'})
+    return audit, stored, rendered
+
+
+def added(name, actor, body, values, *, amount=None, headers=None, status=201, response=None, party=None, finish=True, documents=()):
     """A created payment: the create entry from serializer.save(), then (finish) the view's audited save of
     user, association and party. amount: (str(float), stored, rendered) for a float amount."""
     stored_amount, shown = (amount[1], amount[2]) if amount else (None, None)
@@ -425,6 +466,8 @@ def added(name, actor, body, values, *, amount=None, headers=None, status=201, r
     floated = amount[0] if amount else None
     audit = [event('$id', 0, created_changes(first, floated),
                    DIRECT if first['sport_association_id'] else actor_index(actor))]
+    document_audit, stored_documents, rendered = attachment_docs(documents, actor, '$id')
+    audit.extend(document_audit)
     final = first
     if finish:
         final = created
@@ -433,8 +476,9 @@ def added(name, actor, body, values, *, amount=None, headers=None, status=201, r
         index = DIRECT if first['sport_association_id'] else [OWN, 'changes_json.sport_association']
         audit.append(event('$id', 1, updated_changes(first, created, floated, stored_amount), index))
     if response is None:
-        response = payment_item(final, '$bind:payment', shown)
-    add(name, actor, ADD, status, response, body=body, headers=headers, effect=effect(actor, created=[final], audit=audit))
+        response = {**payment_item(final, '$bind:payment', shown), 'attachments': rendered}
+    add(name, actor, ADD, status, response, body=body, headers=headers,
+        effect={**effect(actor, created=[final], audit=audit), 'documents': stored_documents})
 
 
 DEFAULT = '$default_category'
@@ -517,6 +561,14 @@ added('add-without-complex-item-server-error', 'owner', {'creation_date': '2026-
                                                          'description': 'Persa'},
       {**unfinished, 'creation_date': '2026-03-23T00:00:00Z', 'amount': '9.00', 'description': 'Persa'}, status=500, response=SERVER,
       finish=False)
+# A party of another association: 403 after serializer.save() (the created payment stays, like a failing lookup).
+for group, key, party in [('Persone', 'associate_id', A('abroad')), ('Iscrizioni', 'subscription_id', FOREIGN_PARTIES['subscription']['id']),
+                          ('Istruttori', 'instructor_id', FOREIGN_PARTIES['instructor']['id']),
+                          ('Fornitori', 'supplier_id', FOREIGN_PARTIES['supplier']['id'])]:
+    added(f'add-foreign-party-{group.lower()}-denied', 'owner', {'creation_date': '2026-03-25', 'payment_date': None, 'amount': '10',
+                                                               'description': 'Estero', 'complex_item': {'group': group, key: party}},
+          {**unfinished, 'creation_date': '2026-03-25T00:00:00Z', 'amount': '10.00', 'description': 'Estero'}, status=403, response=DENIED,
+          finish=False)
 added('add-attachment-without-keys', 'owner', {'creation_date': '2026-03-24', 'payment_date': None, 'amount': '11', 'description': 'Allegato',
                                                'attachments_data': [{'name': 'ricevuta.pdf'}], 'complex_item': None},
       {**unfinished, 'creation_date': '2026-03-24T00:00:00Z', 'amount': '11.00', 'description': 'Allegato'}, status=400,
@@ -554,13 +606,22 @@ add('update-missing-party-server-error', 'owner', UPDATE('up_plain'), 500, SERVE
     body={'complex_item': {'group': 'Istruttori', 'instructor_id': IDS['missing']}}, effect=effect('owner'))
 add('update-missing-subscription-server-error', 'owner', UPDATE('up_plain'), 500, SERVER, method='PATCH',
     body={'subscription_id': IDS['missing']}, effect=effect('owner'))
+# A party of another association: 403 before the save.
+for group, key, party in [('Persone', 'associate_id', A('abroad')), ('Iscrizioni', 'subscription_id', FOREIGN_PARTIES['subscription']['id']),
+                          ('Istruttori', 'instructor_id', FOREIGN_PARTIES['instructor']['id']),
+                          ('Fornitori', 'supplier_id', FOREIGN_PARTIES['supplier']['id'])]:
+    add(f'update-foreign-party-{group.lower()}-denied', 'owner', UPDATE('up_party'), 403, DENIED, method='PATCH',
+        body={'complex_item': {'group': group, key: party}}, effect=effect('owner'))
+add('update-foreign-subscription-id-denied', 'owner', UPDATE('up_subscription'), 403, DENIED, method='PATCH',
+    body={'complex_item': {'group': 'Persone', 'associate_id': A('luca')}, 'subscription_id': FOREIGN_PARTIES['subscription']['id']},
+    effect=effect('owner'))
 add('update-meta-without-amount-server-error', 'owner', UPDATE('up_plain'), 500, SERVER, method='PATCH',
     body={'meta_payment_categories': []}, effect=effect('owner'))
 add('update-transfer-without-description-server-error', 'owner', UPDATE('up_transfer'), 500, SERVER, method='PATCH',
     body={'description': None}, effect=effect('owner'))
 
 
-def updated(name, actor, label, body, changes, *, amount=None, headers=None, status=200, response=None, prints=()):
+def updated(name, actor, label, body, changes, *, amount=None, headers=None, status=200, response=None, prints=(), documents=()):
     """Payment.save() of the in-memory payment; amount: (str(float), stored, rendered) for a float amount."""
     old = STATE[label]
     new = {**old, **changes}
@@ -571,10 +632,12 @@ def updated(name, actor, label, body, changes, *, amount=None, headers=None, sta
     columns = {column: value for column, value in new.items() if column != 'id' and old[column] != value}
     STATE[label] = new
     audit = [event(label, 1, audit_changes, DIRECT)] if audit_changes else []
+    document_audit, stored_documents, rendered = attachment_docs(documents, actor, label)
+    audit.extend(document_audit)
     if response is None:
-        response = {'data': {'payment': payment_item(new, old['id'], shown)}}
+        response = {'data': {'payment': {**payment_item(new, old['id'], shown), 'attachments': rendered}}}
     add(name, actor, UPDATE(label), status, response, method='PATCH', body=body, headers=headers,
-        effect=effect(actor, changed={label: columns}, audit=audit), prints=prints)
+        effect={**effect(actor, changed={label: columns}, audit=audit), 'documents': stored_documents}, prints=prints)
 
 
 updated('update-empty-body-clears-parties', 'owner', 'up_plain', {}, {'supplier_id': None, 'payment_intent_id': None})
@@ -621,6 +684,25 @@ updated('update-invoiced-prints-invoice', 'owner', 'up_invoiced', {'amount': '18
         prints=[{'path': PRINT_INVOICE, 'reply': {'status': 200, 'body': 'printed'}}])
 updated('update-invoiced-print-failure-ignored', 'owner', 'up_invoiced_print_fails', {'amount': '19', 'payment_id': PAYMENTS['up_invoiced_print_fails']['id']},
         {'amount': '19.00'}, prints=[{'path': PRINT_INVOICE, 'reply': {'status': 500, 'body': 'renderer down'}}])
+
+# attachments_data with a file (AddEditModal.svelte builds {document: base64, filename}).
+PDF = b'%PDF-1.4\n% ricevuta fixture \xe8\n%%EOF\n'
+PNG = b'\x89PNG\r\n\x1a\nfixture'
+b64 = lambda data: base64.b64encode(data).decode()
+added('add-attachment', 'owner', {'creation_date': '2026-03-20', 'payment_date': None, 'amount': '12', 'description': 'Con allegato',
+                                  'complex_item': None, 'attachments_data': [{'document': b64(PDF), 'filename': 'ricevuta è.pdf'}]},
+      {**plain, 'creation_date': '2026-03-20T00:00:00Z', 'amount': '12.00', 'description': 'Con allegato'},
+      documents=[('ricevuta è.pdf', PDF)])
+updated('update-attachment', 'owner', 'up_attach_one', {'amount': '21', 'attachments_data': [{'document': b64(PNG), 'filename': 'foto.png',
+                                                                                              'extra': 1}]},
+        {'amount': '21.00'}, documents=[('foto.png', PNG)])
+# The first item is stored, the second lacks its keys: 400 after the save and the first document.
+updated('update-attachment-then-missing-keys', 'full_collaborator', 'up_attach_partial',
+        {'amount': '22', 'attachments_data': [{'document': b64(PDF), 'filename': 'primo.pdf'}, {'document': b64(PDF)}]},
+        {'amount': '22.00'}, status=400, response={'exception': 'document key not present'}, documents=[('primo.pdf', PDF)])
+# b64decode raises binascii.Error (incorrect padding) after the save: the 500 page, no document.
+updated('update-attachment-invalid-base64', 'owner', 'up_attach_bad64', {'amount': '23', 'attachments_data': [{'document': 'abc', 'filename': 'x.pdf'}]},
+        {'amount': '23.00'}, status=500, response=SERVER)
 
 # --- payment/bulk-add ------------------------------------------------------------
 
@@ -694,6 +776,13 @@ bulk('bulk-add-unmatched-references', 'owner', {'associate_ids': [A('mario')], '
                                                 'payment_date': '2026-05-02T10:00:00+02:00', 'meta_payment_categories': None},
      ['mario'], {'subject': 1, 'paid': True, 'description': 'Iscrizione', 'payment_category_id': None, 'custom_accounts_id': None,
                  'payment_date': '2026-05-02T08:00:00Z', 'creation_date': '$now', 'meta_payment_categories': None})
+# The category comes from the association's own or shared categories (another association's: none).
+bulk('bulk-add-foreign-category', 'owner', {'associate_ids': [A('mario')], 'amount': 1, 'creation_date': '2026-05-07',
+                                            'payment_category': CATEGORIES['foreign']['id']},
+     ['mario'], {'amount': '1.00', 'creation_date': '2026-05-07T00:00:00Z', 'payment_category_id': None})
+bulk('bulk-add-shared-category', 'owner', {'associate_ids': [A('mario')], 'amount': 2, 'creation_date': '2026-05-08',
+                                           'payment_category': CATEGORIES['global']['id']},
+     ['mario'], {'amount': '2.00', 'creation_date': '2026-05-08T00:00:00Z', 'payment_category_id': CATEGORIES['global']['id']})
 bulk('bulk-add-group', 'owner', {'associate_ids': [A('grouped'), A('mario')], 'amount': 3, 'subject': 0, 'creation_date': '2026-5-3',
                                  'payment_date': '2026-05-04', 'paid': 'f'},
      ['grouped'], {'amount': '3.00', 'creation_date': '2026-05-03T00:00:00Z', 'payment_date': '2026-05-04T00:00:00Z'}, headers=GROUP,
@@ -714,6 +803,7 @@ add('bulk-add-invalid-payment-date-server-error', 'owner', BULK, 500, SERVER,
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Payment add, update and bulk add authored sequence with payment and audit effects',
                               'ids': IDS, 'categories': CATEGORIES, 'accounts': ACCOUNTS, 'associates': ASSOCIATES,
-                              'subscriptions': SUBSCRIPTIONS, 'instructor': INSTRUCTOR, 'supplier': SUPPLIER, 'payments': PAYMENTS, 'invoice': INVOICE,
-                              'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+                              'subscriptions': SUBSCRIPTIONS, 'instructor': INSTRUCTOR, 'supplier': SUPPLIER,
+                              'foreign_parties': FOREIGN_PARTIES, 'payments': PAYMENTS, 'invoice': INVOICE,
+                              'location': 'payment-writes-media', 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

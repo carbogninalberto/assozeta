@@ -99,6 +99,10 @@ type CourseSubscriptionCarnet struct {
 type CourseSubscriptionPayment struct {
 	InvoicePartyPayment
 	AssociateRow *InconsistencyAssociate
+	// Instructor and Invoice are PaymentSerializer's nested rows, loaded for
+	// the membership payments the course subscription list renders.
+	Instructor *InstructorRow
+	Invoice    *PaymentReadsInvoice
 }
 
 // CourseSubscriptionCourse is the course field's queryset row (live courses).
@@ -128,6 +132,24 @@ type CourseSubscriptionAudit struct {
 }
 
 // CourseSubscriptionPaymentState is the stored payment the update saves.
+// CourseSubscriptionEventInstallment is an installment the events edit
+// loads (live, group-aware, in the database's order).
+type CourseSubscriptionEventInstallment struct {
+	ID          string    `db:"course_subscription_installment_id"`
+	Number      int       `db:"id"`
+	PaymentID   *string   `db:"payment_id"`
+	PaymentDate time.Time `db:"payment_date"`
+}
+
+// CourseSubscriptionEventContext is what Payment.objects.create needs for
+// an event payment of the course's association: its owner user (nil when the
+// association is gone), the default bank account and the default category.
+type CourseSubscriptionEventContext struct {
+	UserID     *string
+	AccountID  *string
+	CategoryID *string
+}
+
 type CourseSubscriptionPaymentState struct {
 	Amount        string     `db:"amount"`
 	CreationDate  time.Time  `db:"creation_date"`
@@ -183,13 +205,24 @@ type CourseSubscriptionTransaction interface {
 	// meta billed_until filters, locked.
 	MembershipPaymentsWhere(ctx context.Context, row string, group *string, unpaid bool, billedUntil *string, limit int) ([]CourseSubscriptionMembershipPayment, error)
 	MembershipPaymentOverlaps(ctx context.Context, row, exclude string, group *string, end, start string) (bool, error)
-	DefaultPaymentCategory(ctx context.Context) (*string, error)
+	DefaultPaymentCategory(ctx context.Context, association *string) (*string, error)
 	PaymentState(ctx context.Context, payment string) (CourseSubscriptionPaymentState, error)
 	// SharedPayment reports whether the row's own payment is also the unpaid
 	// payment of one of its live group-aware installments.
 	SharedPayment(ctx context.Context, row CourseSubscriptionRow, group *string) (bool, error)
 	SaveCourseSubscription(ctx context.Context, save CourseSubscriptionSave, audit CourseSubscriptionAudit) error
 	SavePayment(ctx context.Context, save CourseSubscriptionPaymentSave, audit CourseSubscriptionAudit) error
+
+	// The serializer's events edit (CourseSubscriptionOverviewSerializer.update).
+	EventInstallments(ctx context.Context, row string, group *string) ([]CourseSubscriptionEventInstallment, error)
+	PaymentPaid(ctx context.Context, payment string) (bool, error)
+	// DeleteInstallment is installment.delete() with its pre_delete signal.
+	DeleteInstallment(ctx context.Context, id string, audit CourseSubscriptionAudit) error
+	EventPaymentContext(ctx context.Context, association string) (CourseSubscriptionEventContext, error)
+	SubscriptionAssociate(ctx context.Context, subscription string) (bool, *string, error)
+	GroupExists(ctx context.Context, id string) (bool, error)
+	CreateEventPayment(ctx context.Context, payment CourseWritePayment, audit CourseSubscriptionAudit) error
+	CreateEventInstallment(ctx context.Context, installment CourseWriteInstallmentCreate, audit CourseSubscriptionAudit) error
 
 	// SoftDelete is CourseSubscription.delete(): the live group-aware
 	// installments through the collector and their signals.

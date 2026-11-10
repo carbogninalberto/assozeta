@@ -419,7 +419,8 @@ func (r *campsSubscriptionRequest) generatePayment(ctx context.Context, cs domai
 		periodAmount += fee
 		amount += periodAmount
 	}
-	category, categoryName, err := r.tx.DefaultPaymentCategory(ctx)
+	campAssociation := cs.CampAssociationID
+	category, categoryName, err := r.tx.DefaultPaymentCategory(ctx, &campAssociation)
 	if err != nil {
 		return err
 	}

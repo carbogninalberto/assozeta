@@ -22,6 +22,8 @@ type PaymentReads struct {
 	stripeEnvironment bool
 	// printer runs print_document_compensation eagerly (payment_list).
 	printer *InvoiceSyncPrint
+	// fees computes payment_stats' stripe_charges when Stripe is configured.
+	fees *PaymentStatsStripe
 }
 
 // WithCompensationPrint sets the eager print runner of payment_list.
@@ -613,13 +615,20 @@ func (s *PaymentReads) Stats(ctx context.Context, request PaymentReadsRequest) (
 			return nil, err
 		}
 	}
-	instance, err := s.store.StripeInstanceSettings(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if instance || s.stripeEnvironment {
-		// The Stripe balance transactions (and their cache) are not ported.
-		return nil, domain.ErrPaymentReadsNotPorted
+	var stripeCharges *domain.PaymentStripeCharges
+	if s.fees != nil {
+		if stripeCharges, err = s.fees.charges(ctx, from, to); err != nil {
+			return nil, err
+		}
+	} else {
+		instance, err := s.store.StripeInstanceSettings(ctx)
+		if err != nil {
+			return nil, err
+		}
+		if instance || s.stripeEnvironment {
+			// Without the Stripe client and cache the balance transactions are refused.
+			return nil, domain.ErrPaymentReadsNotPorted
+		}
 	}
 	totals, err := s.store.Totals(ctx, filter)
 	if err != nil {
@@ -651,8 +660,12 @@ func (s *PaymentReads) Stats(ctx context.Context, request PaymentReadsRequest) (
 		return dto.PaymentReadsFloat(number), number, nil
 	}
 	values := map[string]*big.Rat{}
-	data := domain.RequestObject{{Name: "stripe_charges", Value: domain.RequestObject{{Name: "total", Value: json.Number("0")},
-		{Name: "stripe_fee", Value: json.Number("0")}}}}
+	charges := domain.RequestObject{{Name: "total", Value: json.Number("0")}, {Name: "stripe_fee", Value: json.Number("0")}}
+	if stripeCharges != nil {
+		charges = domain.RequestObject{{Name: "total", Value: json.Number(dto.PythonFloatStr(stripeCharges.Total))},
+			{Name: "stripe_fee", Value: json.Number(dto.PythonFloatStr(stripeCharges.StripeFee))}}
+	}
+	data := domain.RequestObject{{Name: "stripe_charges", Value: charges}}
 	for _, field := range []struct {
 		name  string
 		value *string
@@ -698,6 +711,10 @@ func (s *PaymentReads) Stats(ctx context.Context, request PaymentReadsRequest) (
 	net := new(big.Rat).Sub(values["current_income"], values["current_expenses"])
 	net.Add(net, values["monthly_to_pay"])
 	net.Sub(net, values["monthly_to_cash_in"])
+	if stripeCharges != nil && stripeCharges.Total != 0 {
+		// - Decimal(stripe_charges['total'] or 0): the float's exact value, in the default context.
+		net = paymentStatsContext(net.Sub(net, paymentStatsDecimal(stripeCharges.Total)))
+	}
 	data = append(data, domain.RequestField{Name: "accounts", Value: balances},
 		domain.RequestField{Name: "total_transactions", Value: paymentReadsNumber(totals.Count)},
 		domain.RequestField{Name: "net_balance", Value: dto.PaymentReadsFloat(net)})

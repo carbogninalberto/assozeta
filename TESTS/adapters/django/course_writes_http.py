@@ -219,6 +219,7 @@ def assert_effect(case, before, after, source, context):
     types = {ct['model']: ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'application'}
     users = keyed(before['application.User'], 'user_id')
     actor = ids[effect['actor']]
+    additional = impersonation_additional(case, context, ids, actor)
     created_times = {str(row.pk): row.creation_date.astimezone(timezone.utc)
                      for row in models()[CSM]._base_manager.filter(pk__in=list(binder.binds.values()))}
     for position, (event, spec) in enumerate(zip(added, effect['audit'])):
@@ -242,7 +243,7 @@ def assert_effect(case, before, after, source, context):
             changes = binder.resolve(changes)
         contract.require(event['changes'] == changes, 'audit.changes' + where)
         contract.require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor')
-        contract.require(event['cid'] == case['name'] and event['additional_data'] is None and event['changes_text'] == '', 'audit.context')
+        contract.require(event['cid'] == case['name'] and event['additional_data'] == additional and event['changes_text'] == '', 'audit.context')
         ipaddress.ip_address(event['remote_addr'])
         contract.require(context['remote'].setdefault('addr', event['remote_addr']) == event['remote_addr'], 'audit.remote-consistent')
         index = indexes.get(str(event['id']))
@@ -251,6 +252,16 @@ def assert_effect(case, before, after, source, context):
         else:
             contract.require(index is not None and index['sport_association_id'] == spec['index'][0]
                              and index['resolution_path'] == spec['index'][1], 'index.fields' + where)
+
+
+def impersonation_additional(case, context, ids, actor):
+    """auditlog's additional_data for a request in an impersonation session (None otherwise)."""
+    session = case['headers'].get('X-Impersonation-Id', '')
+    if not session.startswith('$session:'):
+        return None
+    label = session.removeprefix('$session:')
+    return {'impersonation_session': context['fixture']['sessions'][label], 'actor_id': actor, 'target_user_id': case['headers']['User-Id'],
+            'association_id': None if label.startswith('admin_') else ids['own_association']}
 
 
 run_workload = harness.run_workload_for(contract, assert_effect, prepare=captured)

@@ -15,7 +15,11 @@ const reviewed = {
   "BE/instance/restore/views.py": "279a0a03b75681534b84944c09a684fa14402ff3b6e57da222e6619f70da6c0a",
   "BE/application/views/auth_views.py": "ff45ee9f1e2665b0ab19e7ae832834a481256e4ff266d7d0cec3860a5854975c",
   "BE/application/audit_context.py": "8609c865f5b2d5c4f818cd6b4fe6620ec9504fae2d5a2368fccb5745cbce25ff",
-  "BE/application/signals.py": "a14dd1d21a83573a8d2da26ca6da76c2c090d6bc419b51d593a7ead1012d2ff1"
+  "BE/application/signals.py": "a14dd1d21a83573a8d2da26ca6da76c2c090d6bc419b51d593a7ead1012d2ff1",
+  // Reviewed: download, restore, delete, un-keep and remote copy changes on the
+  // owner Backup page confirm the owner password again.
+  "BE/instance/backups.py": "952402ded4623e2e762d7bd86ddc7de515a113a78c0aa90eb94512f26839c123",
+  "BE/instance/remote_backups.py": "d930d4ce634f0df806f54e19ac28f162a0a136bdb5dee1eb7f673703b543d46b"
 };
 const contracts = [
   ["BE/application/management/commands/seed_selfhost.py","class Command(BaseCommand):",6],
@@ -29,7 +33,10 @@ const contracts = [
   ["BE/instance/permissions.py","def is_instance_administrator(",12],
   ["BE/application/views/auth_views.py","def oauth2_login(request):",182],
   ["BE/application/audit_context.py","_strict_audit_indexes = ContextVar(",20],
-  ["BE/application/signals.py","def create_audit_log_index(",37]
+  ["BE/application/signals.py","def create_audit_log_index(",37],
+  ["BE/instance/backups.py","class BackupItemView(APIView):",34],
+  ["BE/instance/backups.py","def password_refusal(actor, password):",30],
+  ["BE/instance/remote_backups.py","class RemoteBackupSettingsView(APIView):",90]
 ];
 const sections = [
   {
@@ -129,7 +136,10 @@ const sections = [
     "contracts": [
       7,
       6,
-      8
+      8,
+      12,
+      13,
+      14
     ]
   },
   {
@@ -282,7 +292,10 @@ const references = [
     "contracts": [
       7,
       6,
-      8
+      8,
+      12,
+      13,
+      14
     ]
   },
   {

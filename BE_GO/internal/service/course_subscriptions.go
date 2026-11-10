@@ -26,10 +26,10 @@ var (
 	// invalid formats are Django's 500 as well.
 	ErrCourseSubscriptionExportUnsupported = errors.New("course subscription export is not ported")
 	// ErrCourseSubscriptionNotPorted refuses inputs this port does not
-	// reproduce, before any write: installment edits through non-null events,
-	// HTML-form JSON fields, a changed primary key, membership payments with
-	// an instructor or invoice, and a soft delete whose row shares its payment
-	// with an installment.
+	// reproduce, before any write: events given as an object or a string,
+	// unmatched installments sharing a payment, HTML-form JSON fields, a
+	// changed primary key, and a soft delete whose row shares its payment with
+	// an installment.
 	ErrCourseSubscriptionNotPorted = errors.New("course subscription input is not ported")
 )
 
@@ -109,11 +109,6 @@ func (s *CourseSubscriptions) render(ctx context.Context, tx domain.CourseSubscr
 		if row.SubscriptionID != nil {
 			if person, ok := persons[*row.SubscriptionID]; ok {
 				render.Person = &person
-			}
-		}
-		for _, payment := range render.Payments {
-			if payment.InstructorID != nil || payment.InvoiceID != nil {
-				return nil, ErrCourseSubscriptionNotPorted
 			}
 		}
 		for _, installment := range installments {

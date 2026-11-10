@@ -149,7 +149,7 @@ type CarnetTopupTransaction interface {
 	// TopupSource gets CarnetSubscription.objects.get(id) and, for an owner,
 	// subscription__sport_association__user=owner; ErrCarnetSubscriptionNotFound.
 	TopupSource(ctx context.Context, holding string, owner *string) (CarnetTopupSource, error)
-	DefaultPaymentCategory(ctx context.Context) (id, name *string, err error)
+	DefaultPaymentCategory(ctx context.Context, association *string) (id, name *string, err error)
 	// DefaultBankAccount is Payment.get_default_bank_account(association).
 	DefaultBankAccount(ctx context.Context, association *string) (*string, error)
 	// CreateTopup inserts the payment and carnet subscription with their
@@ -199,7 +199,7 @@ type CarnetAssignTransaction interface {
 	// live course (nil: course IS NULL) for the subscription.
 	SubscriptionCourse(ctx context.Context, course *string, group *string, subscription string) (*string, error)
 	LinkCourse(ctx context.Context, holding, course string) error
-	DefaultPaymentCategory(ctx context.Context) (id, name *string, err error)
+	DefaultPaymentCategory(ctx context.Context, association *string) (id, name *string, err error)
 	DefaultBankAccount(ctx context.Context, association *string) (*string, error)
 	CreateTopup(ctx context.Context, write CarnetTopupWrite) error
 	Commit() error
