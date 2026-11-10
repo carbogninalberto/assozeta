@@ -237,7 +237,7 @@ func run() (runErr error) {
 	statisticReadsHandler := handler.NewStatisticReadsHandler(service.NewStatisticReads(repository.NewStatisticReads(db), time.Now, time.Local).
 		WithTodayLessons(service.NewCourseAttendance(repository.NewCourseAttendance(db), time.Now)),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
-	communicationSMTPHandler := handler.NewCommunicationSMTPHandler(service.NewCommunicationSMTP(repository.NewCommunicationSMTP(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	communicationSMTPHandler := handler.NewCommunicationSMTPHandler(service.NewCommunicationSMTP(repository.NewCommunicationSMTP(db), time.Now).WithWhitelabelName(cfg.WhitelabelName), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	emailLogsHandler := handler.NewEmailLogsHandler(service.NewEmailLogs(repository.NewEmailLogs(db), time.Now, time.Local), service.NewActorAuthentication(accounts, tokens), identities)
 	staffBoardHandler := handler.NewStaffBoardHandler(service.NewStaffBoard(repository.NewStaffBoard(db), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)

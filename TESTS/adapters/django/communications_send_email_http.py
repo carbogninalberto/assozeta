@@ -97,6 +97,12 @@ class FakeSMTP:
             connection.settimeout(15)
             stream = self.context.wrap_socket(connection, server_side=True) if self.mode == 'ssl' else connection
             tls = self.mode == 'ssl'
+            if self.mode == 'silent':
+                # Accepts and never greets; the client gives up on its own timeout.
+                while stream.recv(65536):
+                    pass
+                units.append('<eof>')
+                return
             stream.sendall(b'220 fake.smtp.test ESMTP\r\n')
             buffer, data = b'', False
             while True:
@@ -134,7 +140,9 @@ class FakeSMTP:
                     units.append('<quit>')
                     return
                 elif verb == b'RCPT':
-                    stream.sendall(b'550 refused\r\n' if b'rifiutato@' in unit else b'250 ok\r\n')
+                    stream.sendall(b'550 refused\r\n' if b'rifiutato@' in unit or self.mode == 'norcpt' else b'250 ok\r\n')
+                elif verb == b'MAIL' and self.mode == 'nomail':
+                    stream.sendall(b'550 sender refused\r\n')
                 elif verb in (b'MAIL', b'RSET'):
                     stream.sendall(b'250 ok\r\n')
                 else:

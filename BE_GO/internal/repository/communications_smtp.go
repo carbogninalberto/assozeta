@@ -45,6 +45,14 @@ func (t *communicationSMTPTransaction) Association(ctx context.Context, owner st
 	return association, err
 }
 
+// OwnerEmail is sport_association.user.email (the related user row as stored).
+func (t *communicationSMTPTransaction) OwnerEmail(ctx context.Context, association string) (string, error) {
+	var email string
+	err := t.tx.GetContext(ctx, &email, `SELECT u.email FROM application_sportassociation a
+ JOIN bakney_user u ON u.user_id=a.user_id WHERE a.sport_association_id=$1`, association)
+	return email, err
+}
+
 func (t *communicationSMTPTransaction) FirstConfiguration(ctx context.Context, association string, lock bool) (domain.CommunicationConfigurationRecord, error) {
 	query := communicationConfigurationColumns + ` WHERE sport_association_id=$1 ORDER BY communication_configuration_id LIMIT 1`
 	if lock {

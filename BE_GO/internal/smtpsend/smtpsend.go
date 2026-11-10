@@ -33,6 +33,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -67,6 +68,20 @@ type Error struct {
 	Kind string
 	Code int
 	Msg  string
+	// Text is the Python exception message of a failure without a reply
+	// code, when it is a fixed text (see PythonMessage).
+	Text string
+	// Sender is SMTPSenderRefused's third argument (the from_addr given).
+	Sender string
+	// Refused are SMTPRecipientsRefused's recipients in command order.
+	Refused []Refusal
+}
+
+// Refusal is one refused recipient with the server's reply.
+type Refusal struct {
+	Address string
+	Code    int
+	Msg     string
 }
 
 func (e *Error) Error() string {
@@ -77,6 +92,8 @@ func (e *Error) Error() string {
 }
 
 func failure(kind string) error { return &Error{Kind: kind} }
+
+func failureText(kind, text string) error { return &Error{Kind: kind, Text: text} }
 
 func replyFailure(kind string, code int, msg []byte) error {
 	return &Error{Kind: kind, Code: code, Msg: string(msg)}
@@ -225,7 +242,7 @@ func (c *client) send(data []byte) error {
 		if c.ctx.Err() != nil {
 			return c.ctx.Err()
 		}
-		return failure("SMTPServerDisconnected")
+		return failureText("SMTPServerDisconnected", "Server not connected")
 	}
 	return nil
 }
@@ -282,6 +299,13 @@ func (c *client) getreply() (int, []byte, error) {
 			c.close()
 			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				return 0, nil, err
+			}
+			switch {
+			case errors.Is(err, io.EOF):
+				return 0, nil, failureText("SMTPServerDisconnected", "Connection unexpectedly closed")
+			case errors.Is(err, os.ErrDeadlineExceeded) && c.conn == c.raw:
+				// A plain socket's timeout text; ssl sockets word theirs differently.
+				return 0, nil, failureText("SMTPServerDisconnected", "Connection unexpectedly closed: timed out")
 			}
 			return 0, nil, failure("SMTPServerDisconnected")
 		}
@@ -410,7 +434,7 @@ func (c *client) starttls() error {
 		return err
 	}
 	if !c.hasExtn("starttls") {
-		return failure("SMTPNotSupportedError")
+		return failureText("SMTPNotSupportedError", "STARTTLS extension not supported by server.")
 	}
 	code, msg, err := c.docmd("STARTTLS", "")
 	if err != nil {
@@ -435,7 +459,7 @@ func (c *client) login(user, password string) error {
 		return err
 	}
 	if !c.hasExtn("auth") {
-		return failure("SMTPNotSupportedError")
+		return failureText("SMTPNotSupportedError", "SMTP AUTH extension not supported by server.")
 	}
 	advertised := pythonSplit(c.features["auth"])
 	var methods []string
@@ -448,7 +472,7 @@ func (c *client) login(user, password string) error {
 		}
 	}
 	if len(methods) == 0 {
-		return failure("SMTPException")
+		return failureText("SMTPException", "No suitable authentication method found.")
 	}
 	var last error
 	for _, method := range methods {
@@ -562,6 +586,13 @@ func (c *client) sendmail(from string, to []string, message string) error {
 // sendmailBytes follows SMTP.sendmail for a bytes message (sent as given)
 // without options.
 func (c *client) sendmailBytes(from string, to []string, data []byte) error {
+	return c.sendmailFrom(from, from, to, data)
+}
+
+// sendmailFrom is sendmailBytes for a from_addr whose envelope address
+// (smtplib.quoteaddr's parse) is given separately; given is the from_addr
+// SMTPSenderRefused reports.
+func (c *client) sendmailFrom(given, from string, to []string, data []byte) error {
 	if err := c.ehloOrHeloIfNeeded(); err != nil {
 		return err
 	}
@@ -579,25 +610,25 @@ func (c *client) sendmailBytes(from string, to []string, data []byte) error {
 		} else {
 			c.rset()
 		}
-		return replyFailure("SMTPSenderRefused", code, msg)
+		return &Error{Kind: "SMTPSenderRefused", Code: code, Msg: string(msg), Sender: given}
 	}
-	refused := 0
+	var refused []Refusal
 	for _, each := range to {
-		code, _, err := c.docmd("rcpt", "to:"+quoteaddr(each))
+		code, msg, err := c.docmd("rcpt", "to:"+quoteaddr(each))
 		if err != nil {
 			return err
 		}
 		if code != 250 && code != 251 {
-			refused++
+			refused = append(refused, Refusal{Address: each, Code: code, Msg: string(msg)})
 		}
 		if code == 421 {
 			c.close()
-			return failure("SMTPRecipientsRefused")
+			return &Error{Kind: "SMTPRecipientsRefused", Refused: refused}
 		}
 	}
-	if refused == len(to) {
+	if len(refused) == len(to) {
 		c.rset()
-		return failure("SMTPRecipientsRefused")
+		return &Error{Kind: "SMTPRecipientsRefused", Refused: refused}
 	}
 	code, msg, err = c.docmd("data", "")
 	if err != nil {

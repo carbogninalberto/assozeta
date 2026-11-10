@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port) and 1 in v2-athlete-payments, below), **B 218** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, below), **B 218** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -139,6 +139,16 @@ Receipts are `quality-reports/go-migration/<family>-http-v2pay3-*`; each family 
 | payment-writes | `POST payment/add` | owner setting `auto_paid_payment` on (paid payment, invoice numbering, invoice, eager print) | 152 cases; RED `v2pay3-add-red-r1` Django 152/152, Go 500; GREEN `v2pay3-add-versioned-r1` 4 transports; mutation `v2pay3-add-mutation-r1` (no invoice without an associate) CAUGHT |
 | payment-misc | `GET payment/simulation/partial-quotes-apply` | a member's own account while the association has an SMTP `CommunicationConfiguration` (delayed send in the web process) | 96 cases; RED `v2pay3-misc-red-r1` Django 96/96, Go 500; GREEN `v2pay3-misc-versioned-r1` 4 transports; mutation `v2pay3-misc-mutation-r1` (message sent to the owner) CAUGHT |
 
+### Ported in the v2-misc-2 change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2misc2-*` (profile-misc: `seconb-*`); each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| communications-smtp | `GET communications/settings/smtp/verify` | a configuration with a connectable host (connect, STARTTLS or implicit TLS, login, test email, quit, and the smtplib failure texts) | 83 cases; RED `v2misc2-red-r1` Django 83/83, Go 500; GREEN `v2misc2-green-r2` 4 transports; mutation `v2misc2-mutation-r1` (test email addressed to the SMTP user) CAUGHT; communications-send-email 55/55 and instance-outbound 106/106 re-run |
+| camps-periods | `PATCH camps-and-retreats/periods/services/<uid>/update` | payment walk over a soft-deleted or other-group unpaid payment (saved, each save audited as an update of every field against None, indexed through `changes_json.sport_association`) | 110 cases; RED `v2misc2-red-r2` Django 110/110, Go 500; GREEN `v2misc2-green-r2` 4 transports; mutation `v2misc2-mutation-r1` (final amount rendered from the stored decimal) CAUGHT |
+| profile-misc | `PATCH onboarding/update` | `onboarding_data` with a `users_onboarding_id` or `user` other than the row's own (both are read-only serializer fields now) | 107 cases; RED `seconb-red-r1` Django 107/107, Go 500; GREEN `seconb-green-r2` 4 transports; mutation `seconb-mutation-r1` (row id taken from the body) CAUGHT |
+
 ### Ported in the v2-athlete-payments change
 
 Receipts are `quality-reports/go-migration/payment-reads-http-v2athpay-*`; details in `payment-reads.md`
@@ -233,15 +243,13 @@ legacy Bakney invoices or tutors that would be reassigned (refused by the valida
 ### communications, camps, profile, personas, modules, oauth, google
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| GET communications/settings/smtp/verify | a real SMTP host | `communication/settings/sections/EmailSMTP.svelte:155` | `service/communications_smtp.go:224` | medium |
-| PATCH camps-and-retreats/periods/services/<uid>/update | walks a soft-deleted/other-group unpaid payment | `EditServiceModal.svelte:29-35` | `service/camps_periods.go:755` | medium |
+| GET communications/settings/smtp/verify | a failed connection whose Python text comes from the platform libraries: TLS handshake error (for example `SSL` on a STARTTLS port), name resolution failure, connect timeout | `communication/settings/sections/EmailSMTP.svelte:155` | `service/communications_smtp.go` (`Verify`) | medium |
 | personas add/update | `picture_path` data URL (photo) | `preview-blocks/image-upload.svelte:35-38` | `service/personas_writes.go:270-288` | medium |
 | oauth2/signup | Google/Apple configured | `routes/login/Login.svelte:425-447` | `service/oauth_accounts.go:448` | medium-expensive |
 
 Why these stay (v2-misc):
-- smtp/verify: needs a fake SMTP server in the communications-smtp adapter (STARTTLS/SSL/login answers); not reached.
-- camps service update on a soft-deleted or other-group payment: Django saves it and auditlog, reading the old row through the
-  soft-delete manager, writes an update entry diffed against None; that entry and its index row need their own characterization.
+- smtp/verify: the dialogue is ported (v2-misc-2). What stays is the text of OpenSSL, resolver and connect-timeout errors, which
+  depends on the Python build and the platform; Go answers the 500 page instead of a `verified: false` body.
 - personas photo: the data URL is stored under a timestamped key with a `put_object_acl` and a CDN URL; needs a MinIO in the
   personas-writes adapter.
 - oauth2/signup with providers: needs stubbed Google/Apple token verification in the oauth-accounts adapter.
@@ -331,7 +339,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 |---|---|---|---|---|
 | PATCH periods/<uid>/update, periods/services/<uid>/update | changed primary key passing validation | service/camps_periods.go:244,600 (`ErrCampsPrimaryKeyChange`) | B | Period update (`overview/CampsAndRetreatsPeriodOverview.svelte:49-53`) and service update (`overview/modals/EditServiceModal.svelte:29-35`) send form fields without the pk. Cost: medium. |
 | POST periods/add, PATCH periods/<uid>/update, services add/update | form body with the services key or file parts | dto/camps_period_write.go:245,320 (`ErrCampsFormNotPorted`) | B | UI sends JSON (`overview/modals/AddModal.svelte:33-34`, `AddServiceModal.svelte:31-32`, and the two above). Cost: cheap. |
-| PATCH camps-and-retreats/periods/services/<uid>/update | an unpaid walked payment is soft-deleted, or (with `X-Group-Id` set) belongs to another/no group | service/camps_periods.go:755 (`ErrCampsPaymentNotPorted`) | A | Service edit is UI-driven (`EditServiceModal.svelte:29-35`). Deleting a camp payment from the payment list is a soft delete (`views/payment_views.py:506`) and leaves the subscription period linked; a multi-group association editing with a different group selected (`ApiMiddleware.js:141`) also hits it. |
+| PATCH camps-and-retreats/periods/services/<uid>/update | an unpaid walked payment is soft-deleted, or (with `X-Group-Id` set) belongs to another/no group | service/camps_periods.go (`campsWalk`) | ported | Ported in v2-misc-2 (`camps-periods.md`, `v2misc2-green-r2`). A hidden payment without an association stays refused (B). |
 | PATCH services/<uid>/update | walk failure with more than one subscription period; `Payment.save()` description failure | service/camps_periods.go:773,816 | B | Failures need malformed metas (e.g. null) on camp payments, which the camp writers never produce; legacy: yes (admin-edited metas). Cost: medium. |
 | PATCH services/<uid>/update | amount over `numeric(9,2)`/negative, notes > 5120 chars | service/camps_periods.go:780 | B | Needs extreme fees or very many services. Cost: cheap. |
 
@@ -418,7 +426,8 @@ Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples)
 ### communications-smtp.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| GET communications/settings/smtp/verify | configuration with a host that would connect | service/communications_smtp.go:224 (`ErrSMTPVerifyNotPorted`) | A | `association/communication/settings/sections/EmailSMTP.svelte:155` calls verify; any saved SMTP host reaches it. |
+| GET communications/settings/smtp/verify | configuration with a host that would connect | `service/communications_smtp.go` (`Verify`) | ported | Ported in v2-misc-2 (`communications-smtp.md`, `v2misc2-green-r2`). |
+| GET communications/settings/smtp/verify | TLS handshake error, name resolution failure, connect timeout, reset; falsy port with a plain host; missing user or password; sender name outside letters, digits, spaces and `. - _ &` | `service/communications_smtp.go` (`Verify`, `smtpVerifyPlan`) | A (failed connection) / B (the rest) | A wrong encryption or a mistyped host in `EmailSMTP.svelte` reaches the first group. Cost: medium (platform error texts). |
 | GET communications/settings/smtp/verify | host port suffix with non-ASCII/separator characters | service/communications_smtp.go:217 | B | Needs a host typed as `smtp:２５` or similar. Cost: cheap. |
 
 ### course-writes.md
@@ -743,7 +752,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### profile-misc.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH onboarding/update | `onboarding_data` with a `users_onboarding_id` or `user` other than the row's own | `dto/profile_misc.go` (`ParseOnboardingFlags`) | B | Ported in v2-misc for the row's own values, which the checklist always sends (`components/onboarding/onboarding-checklist.svelte:95-100`); other values never come from the UI. |
+| PATCH onboarding/update | `onboarding_data` with a `users_onboarding_id` or `user` other than the row's own | `dto/profile_misc.go` (`ParseOnboardingFlags`) | ported | Both keys are read-only serializer fields in Django; Go reads only the checklist flags (`profile-misc.md`, `seconb-green-r2`). |
 | PATCH onboarding/update | multipart | `service/profile_misc.go:298` | B | The UI sends JSON. |
 | same | soft-deleted owner association | `service/profile_misc.go:350` | B | legacy: low. |
 | same | season/fiscal not int 0..32767; fee repr with exponent; lead containers/too long | `service/profile_misc.go:521,556,588,592` | B | The UI sends ints from selects and `parseFloat` fees (`routes/onboarding/partials/step1.svelte:59-75`). An exponent needs an extreme fee. Lead values are select strings. |
