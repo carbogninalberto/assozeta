@@ -268,9 +268,14 @@ def user_model():
     return User
 
 
+def family_model():
+    from application.models.user_models import Family
+    return Family
+
+
 # Tutor relations (integer keys) go with their associates.
 _identity_context = harness.with_celery_broker(harness.fixture_context_for(contract, seed_rows, purge=tuple(
-    (lambda label=label: models()[label]) for label in LABELS.values() if label != LABELS['relation']) + (user_model,)))
+    (lambda label=label: models()[label]) for label in LABELS.values() if label != LABELS['relation']) + (user_model, family_model)))
 
 
 
@@ -733,7 +738,54 @@ def check_notification(effect, fixture, ids, since, until, prepared, binding=Non
                      'notification.mirror')
 
 
+def assert_family_effect(case, before, after, source, context):
+    """A family wizard case: one Family and several subscriptions, checked with the renewal runner's row, audit
+    and notification checks (rows by label, bound in order); the response's payments are PaymentSerializer of the
+    stored rows (None: the answer is not the success body)."""
+    from TESTS.adapters.django import subscription_renew_http as renew
+    fixture, ids = context['fixture'], source['ids']
+    prepared = context['prepared']
+    since, until = prepared['started'], time.time()
+    effect = case['effect']
+    renew.STATE.update(source={'tags': {}, 'drafts': {}, 'statuses': {}, **source}, category=STATE['category'])
+    harness.require_unmanaged_unchanged(contract, before, after, tuple(dict.fromkeys((*MANAGED, *renew.MANAGED))))
+    contract.require(all(before[k] == after[k] for k in (USER, LABELS['signature'], LABELS['relation'])), 'state.family-other-rows')
+    contract.require(listing() == STATE['objects'], 'storage.no-effect')
+    token = fixture['tokens'].get(case['actor'])
+    binding = {'$authorization': f'Bearer {token}' if token else None, '$category': STATE['category'], '$owner': ids['owner']}
+    try:
+        renew.check_rows(effect, before, after, ids, since, until, binding)
+        check_family_response(effect, binding)
+        celery = [{**task, 'args': renew.resolve(task['args'], binding),
+                   'kwargs': [[k, {'uuid': renew.resolve(v['uuid'], binding)} if isinstance(v, dict) else renew.resolve(v, binding)]
+                              for k, v in task['kwargs']]} for task in effect['celery']]
+        harness.celery_published(contract, fixture, celery, since=since, until=until)
+        renew.check_audit(case, effect, before, after, fixture, ids, {**context, 'deletes': {}}, binding)
+    finally:
+        renew.check_notifications(effect, fixture, ids, since, until, prepared)
+
+
+def check_family_response(effect, binding):
+    from rest_framework.renderers import JSONRenderer
+    from application.models import Payment
+    from application.serializers.payment_serializers import PaymentSerializer
+    if effect['payments'] is None:
+        return
+    body = contract.LAST.get('body')
+    contract.require(isinstance(body, dict) and set(body) == {'status', 'subs', 'payments'} and isinstance(body['payments'], list),
+                     'response.family-shape')
+    contract.require(len(body['payments']) == len(effect['payments']), f"response.family-payments:{len(body['payments'])}")
+    for position, (item, ref) in enumerate(zip(body['payments'], effect['payments'])):
+        key = binding[ref] if ref.startswith('$') else STATE['source']['payments'][ref]['id']
+        expected = json.loads(JSONRenderer().render(PaymentSerializer(Payment._base_manager.get(pk=key)).data))
+        contract.require(isinstance(item, dict) and item == expected, f'response.family-payment:{position}' + json.dumps(
+            {k: [expected.get(k), item.get(k)] for k in set(expected) | set(item if isinstance(item, dict) else {})
+             if not isinstance(item, dict) or expected.get(k) != item.get(k)}, default=str)[:1500])
+
+
 def assert_effect(case, before, after, source, context):
+    if case['effect'] is not None and 'new' in case['effect']:
+        return assert_family_effect(case, before, after, source, context)
     harness.require_unmanaged_unchanged(contract, before, after, MANAGED)
     fixture, ids = context['fixture'], source['ids']
     prepared = context['prepared']

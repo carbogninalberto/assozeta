@@ -91,6 +91,32 @@ TAGS = {
 CERTIFICATES = {
     'draft_cert': {'id': next(ids), 'user': None},
 }
+# Ids added later come from their own range so the earlier ones stay stable.
+extra_ids = iter(f'a1000000-0000-4000-8000-{949001 + n:012d}' for n in range(50))
+FAMILY = next(extra_ids)
+ASSOCIATES['athlete_member']['family'] = FAMILY
+# Members a member account renews (or not): the requester's own second member, a relative (same family), a person
+# stored in two associations with one tax code, and a member of the association with no relation to the requester.
+ASSOCIATES['second'] = {'id': next(extra_ids), 'association': OWN, 'first': 'Bruna', 'last': 'Seconda', 'tax_code': 'SCNBRN85A41H501R',
+                        'born': '1985-01-01', 'user': 'athlete', 'email': None, 'deleted': False}
+ASSOCIATES['relative'] = {'id': next(extra_ids), 'association': OWN, 'first': 'Renata', 'last': 'Parente', 'tax_code': 'PRNRNT85A41H501P',
+                          'born': '1985-01-01', 'user': 'owner', 'email': None, 'deleted': False, 'family': FAMILY}
+ASSOCIATES['coded_earlier'] = {'id': next(extra_ids), 'association': FOREIGN, 'first': 'Carla', 'last': 'Codice', 'tax_code': 'CDCCRL85A41H501Q',
+                               'born': '1985-01-01', 'user': 'athlete', 'email': None, 'deleted': False}
+ASSOCIATES['coded_later'] = {'id': next(extra_ids), 'association': OWN, 'first': 'Carla', 'last': 'Codice', 'tax_code': 'CDCCRL85A41H501Q',
+                             'born': '1985-01-01', 'user': 'owner', 'email': None, 'deleted': False}
+ASSOCIATES['stranger'] = {'id': next(extra_ids), 'association': OWN, 'first': 'Sandra', 'last': 'Estranea', 'tax_code': 'STRSDR85A41H501S',
+                          'born': '1985-01-01', 'user': 'owner', 'email': None, 'deleted': False}
+for label, associate, account, start, end, number in (
+        ('athlete_previous', 'athlete_member', 'athlete', '$last_season_start', '$last_season_end', '8'),
+        ('second_previous', 'second', 'athlete', '$last_season_start', '$last_season_end', '9'),
+        ('relative_previous', 'relative', None, '$last_season_start', '$last_season_end', '10'),
+        ('coded_earlier_2019', 'coded_earlier', 'athlete', '2019-01-01', '2019-12-31', '11'),
+        ('coded_later_previous', 'coded_later', None, '$last_season_start', '$last_season_end', '13'),
+        ('stranger_previous', 'stranger', None, '$last_season_start', '$last_season_end', '14')):
+    SUBSCRIPTIONS[label] = {'id': next(extra_ids), 'associate': associate, 'start': start, 'end': end, 'archived': False, 'number': number,
+                            'payment': None, **({'user': account} if account else {})}
+CERTIFICATES['athlete_cert'] = {'id': next(extra_ids), 'user': 'athlete'}
 TARGET_USER = {'id': next(ids), 'username': 'renew-target-user', 'email': 'renew-target@example.test'}
 ACCOUNT = next(ids)
 
@@ -563,11 +589,82 @@ add('renew-athlete', 'renew', 'athlete', 200, {'status': 'success', 'payment_id'
 add('renew-athlete-duplicate', 'renew', 'athlete', 409, {'msg': 'Questa iscrizione esiste già.', 'code': '409', 'ref': 'subscription_duplicate'},
     body=renewal(athlete_member, sport_association={'sport_association_id': OWN}))
 
+
+# --- subscription/renew by a member account: its own subscriptions, in their association -----------------
+# _member_renewal_association: the named association must have a subscription of the requester, or of a person sharing a
+# tax code or a family with one of the requester's subscriptions, for the associate of the request (by associate_id when
+# it is a string, else by tax code); otherwise 403 'User not allowed.' before anything is written. Only an association
+# account sets the renewed subscription's account from data['user']['email'].
+NOT_ALLOWED = {'detail': 'User not allowed.'}
+HERE = {'sport_association_id': OWN, 'denomination': 'Associazione'}
+
+
+def member_body(label, **extra):
+    row = ASSOCIATES[label]
+    return {'associate_id': row['id'], 'first_name': row['first'], 'last_name': row['last'], 'tax_code': row['tax_code'],
+            'born_date': '/'.join(reversed(row['born'].split('-'))), 'sex': 'F', 'type': 1, 'role': 1, **extra}
+
+
+add('renew-athlete-in-another-association', 'renew', 'athlete', 403, NOT_ALLOWED,
+    body=renewal(athlete_member, sport_association={'sport_association_id': FOREIGN}))
+add('renew-athlete-another-member', 'renew', 'athlete', 403, NOT_ALLOWED, body=renewal(member_body('stranger'), sport_association=HERE))
+add('renew-athlete-another-member-by-tax-code', 'renew', 'athlete', 403, NOT_ALLOWED,
+    body=renewal({k: v for k, v in member_body('stranger').items() if k != 'associate_id'}, sport_association=HERE))
+add('renew-athlete-associate-id-malformed', 'renew', 'athlete', 403, NOT_ALLOWED,
+    body=renewal(member_body('relative', associate_id='non-un-id'), sport_association=HERE))
+add('renew-athlete-associate-id-not-text', 'renew', 'athlete', 403, NOT_ALLOWED,
+    body=renewal(member_body('relative', associate_id=5), sport_association=HERE))
+add('renew-athlete-associate-id-empty', 'renew', 'athlete', 403, NOT_ALLOWED,
+    body=renewal(member_body('relative', associate_id=''), sport_association=HERE))
+add('renew-athlete-without-associate-data', 'renew', 'athlete', 403, NOT_ALLOWED, body=renewal(None, sport_association=HERE))
+add('renew-athlete-tax-code-not-text', 'renew', 'athlete', 403, NOT_ALLOWED,
+    body=renewal({**member_body('relative', tax_code=5), 'associate_id': None}, sport_association=HERE))
+
+
+def member_renewal(name, label, full_name, *, changed, audit, medical=None, **extra):
+    payment, subscription = f'${label}_payment', f'${label}_subscription'
+    rows = [new_payment(payment, ASSOCIATES[label]['id']),
+            *subscription_rows(subscription, ASSOCIATES[label]['id'], kind=1, payment=payment, medical=medical)]
+    add(name, 'renew', 'athlete', 200, {'status': 'success', 'payment_id': '$new'},
+        body=renewal(member_body(label), sport_association=HERE, **extra),
+        effect=effect('athlete', new=rows, changed={'associate': {label: changed}},
+                      audit=[*audit, entry('payment', 0, payment, {'amount': ['None', '25.0']}), entry('subscription', 0, subscription),
+                             *notification_entries('athlete')],
+                      celery=tasks(subscription),
+                      notifications=[{'msg': f'Nuova Iscrizione aggiunta per {full_name}.', 'association': OWN}]))
+
+
+# A person of the same family as one of the requester's subscriptions.
+member_renewal('renew-athlete-family-member', 'relative', 'Renata Parente', changed={'sex': 'F'},
+               audit=[entry('associate', 1, 'relative', {'sex': ['A', 'F']})])
+# A person with the tax code of one of the requester's subscriptions.
+member_renewal('renew-athlete-same-tax-code', 'coded_later', 'Carla Codice', changed={'sex': 'F'},
+               audit=[entry('associate', 1, 'coded_later', {'sex': ['A', 'F']})])
+# By tax code, without an associate_id: the requester's own member; the body's e-mail does not choose the account, and
+# the requester's certificate is linked.
+add('renew-athlete-tax-code-of-another-member', 'renew', 'athlete', 403, NOT_ALLOWED,
+    body=renewal({**member_body('second', tax_code=ASSOCIATES['stranger']['tax_code']), 'associate_id': None}, sport_association=HERE))
+payment, subscription = '$second_payment', '$second_subscription'
+add('renew-athlete-keeps-the-account', 'renew', 'athlete', 200, {'status': 'success', 'payment_id': '$new'},
+    body=renewal({k: v for k, v in member_body('second', tax_code=ASSOCIATES['second']['tax_code'].lower()).items() if k != 'associate_id'},
+                 sport_association=HERE, user={'email': TARGET_USER['email']},
+                 medical_certificate={'medical_id': CERTIFICATES['athlete_cert']['id']}),
+    effect=effect('athlete', new=[new_payment(payment, ASSOCIATES['second']['id']),
+                                  *subscription_rows(subscription, ASSOCIATES['second']['id'], kind=1, payment=payment,
+                                                     medical=CERTIFICATES['athlete_cert']['id'])],
+                  changed={'associate': {'second': {'sex': 'F', 'user_id': OWNER}}},
+                  audit=[entry('associate', 1, 'second', {'sex': ['A', 'F']}),
+                         entry('associate', 1, 'second', {'user': [IDS['athlete'], OWNER]}),
+                         entry('payment', 0, payment, {'amount': ['None', '25.0']}), entry('subscription', 0, subscription),
+                         *notification_entries('athlete')],
+                  celery=tasks(subscription),
+                  notifications=[{'msg': 'Nuova Iscrizione aggiunta per Bruna Seconda.', 'association': OWN}]))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/renew and associates-draft approve authored sequence with row, audit, Celery and '
                                   'notification effects',
     'ids': IDS, 'associates': ASSOCIATES, 'subscriptions': SUBSCRIPTIONS, 'payments': PAYMENTS, 'tags': TAGS,
-    'certificates': CERTIFICATES, 'invoices': INVOICES, 'target_user': TARGET_USER, 'account': ACCOUNT, 'drafts': DRAFTS, 'statuses': STATUSES,
+    'family': FAMILY, 'certificates': CERTIFICATES, 'invoices': INVOICES, 'target_user': TARGET_USER, 'account': ACCOUNT, 'drafts': DRAFTS, 'statuses': STATUSES,
     'settings': BASE_SETTINGS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

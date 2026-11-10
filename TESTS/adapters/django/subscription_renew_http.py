@@ -55,19 +55,21 @@ LABELS = {
     'membership': 'application.SubscriptionMembership', 'medical': 'application.MedicalCertificate',
     'broadcast': 'notifications.NotificationsBroadcast', 'user_broadcast': 'notifications.UserNotificationsBroadcast',
     'draft': 'application.AssociateImportDraft', 'status': 'application.AssociateImportDraftStatus', 'link': 'application.Subscription_tags',
+    'family': 'application.Family',
 }
 MANAGED = (*LABELS.values(), harness.AUDIT, harness.INDEX)
 KEYS = {'application.Associate': 'associate_id', 'application.Payment': 'payment_id', 'application.Subscription': 'subscription_id',
         'application.SubscriptionMembership': 'subscription_membership_id', 'application.MedicalCertificate': 'medical_id',
         'notifications.NotificationsBroadcast': 'broadcast_id', 'notifications.UserNotificationsBroadcast': 'user_broadcast_id',
         'application.AssociateImportDraft': 'associate_import_draft_id',
-        'application.AssociateImportDraftStatus': 'associate_import_draft_status_id', 'application.Subscription_tags': 'id'}
+        'application.AssociateImportDraftStatus': 'associate_import_draft_status_id', 'application.Subscription_tags': 'id',
+        'application.Family': 'family_id'}
 # Seed sections by row label (for references by name).
 SECTIONS = {'associate': 'associates', 'payment': 'payments', 'subscription': 'subscriptions', 'medical': 'certificates',
             'draft': 'drafts', 'status': 'statuses', 'tag': 'tags'}
 AUDIT_MODELS = {'associate': 'associate', 'payment': 'payment', 'subscription': 'subscription', 'subscriptionmembership': 'membership',
                 'medicalcertificate': 'medical', 'associateimportdraft': 'draft', 'associateimportdraftstatus': 'status',
-                'notificationsbroadcast': 'broadcast', 'usernotificationsbroadcast': 'user_broadcast'}
+                'notificationsbroadcast': 'broadcast', 'usernotificationsbroadcast': 'user_broadcast', 'family': 'family'}
 STATE = {}
 
 
@@ -88,6 +90,8 @@ def today():
 
 
 def resolve_date(text):
+    if not text.startswith('$'):
+        return date.fromisoformat(text)
     year = today().year
     values = {'$today': today(), '$season_start': date(year, 1, 1), '$season_end': date(year, 12, 31),
               '$last_season_start': date(year - 1, 1, 1), '$last_season_end': date(year - 1, 12, 31)}
@@ -125,10 +129,13 @@ def seed_rows(source, created):
                                           sport_association_id=ids['own_association']))
     target = source['target_user']
     insert(User, User(user_id=target['id'], username=target['username'], email=target['email'], role=User.ATHLETE, password='!synthetic'))
+    from application.models.user_models import Family
+    insert(Family, Family(family_id=source['family']))
     for row in source['associates'].values():
         insert(Associate, Associate(associate_id=row['id'], sport_association_id=row['association'], first_name=row['first'],
                                     last_name=row['last'], tax_code=row['tax_code'], born_date=date.fromisoformat(row['born']),
-                                    user_id=ids[row['user']] if row['user'] else None, email=row['email'], deleted=row['deleted']))
+                                    user_id=ids[row['user']] if row['user'] else None, email=row['email'], deleted=row['deleted'],
+                                    family_id=row.get('family')))
     for row in source['certificates'].values():
         insert(MedicalCertificate, MedicalCertificate(medical_id=row['id'], user_id=ids[row['user']] if row['user'] else None))
     from application.models.invoices_models import Invoice
@@ -142,7 +149,8 @@ def seed_rows(source, created):
                                 payment_date=datetime.combine(resolve_date(row['date']), day_time(), tzinfo=timezone.utc)))
     for row in source['subscriptions'].values():
         insert(Subscription, Subscription(
-            subscription_id=row['id'], sport_association_id=ids['own_association'], user_id=ids['owner'],
+            subscription_id=row['id'], sport_association_id=source['associates'][row['associate']]['association'],
+            user_id=ids[row.get('user', 'owner')],
             associate_id=source['associates'][row['associate']]['id'], start_date=resolve_date(row['start']),
             end_date=resolve_date(row['end']), archived=row['archived'], subscription_number=row['number'], status_flag=4,
             payment_id=source['payments'][row['payment']]['id'] if row['payment'] else None))
@@ -313,7 +321,8 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
     contract.require(len(added) == len(authored), f'audit.count:{len(added)}')
     types = {(ct['app_label'], ct['model']): ct['id'] for ct in before['contenttypes.ContentType']}
     users = keyed(before['application.User'], 'user_id')
-    actor = ids[effect['actor']]
+    # The public form has no actor.
+    actor = None if effect['actor'] == 'anonymous' else ids[effect['actor']]
     session = case['headers'].get('X-Impersonation-Id', '')
     additional = None
     if session.startswith('$session:'):
@@ -360,7 +369,8 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
         contract.require(event['changes'] == expected, 'audit.changes' + where + json.dumps(
             {k: [expected.get(k), event['changes'].get(k)] for k in set(expected) | set(event['changes'])
              if expected.get(k) != event['changes'].get(k)}, ensure_ascii=False))
-        contract.require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor' + where)
+        contract.require(event['actor_id'] == actor and event['actor_email'] == (users[actor]['email'] if actor else None),
+                         'audit.actor' + where)
         contract.require(event['cid'] == case['name'] and event['additional_data'] == additional and event['changes_text'] == '',
                          'audit.context' + where)
         contract.require(context['remote'].setdefault('addr', event['remote_addr']) == event['remote_addr'], 'audit.remote' + where)
