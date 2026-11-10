@@ -1,4 +1,5 @@
 <script>
+    import {rewriteApiUrl} from 'utils/apiVersion.js';
     import moment from 'moment';
     import BasicModal from 'components/modals/BasicModal.svelte';
     import {
@@ -792,8 +793,7 @@
                                     <div>
                                         <File size={14} weight="bold" class="mr-1 text-primary" />
                                         <a
-                                            href="{__bakney.env.API.DOCUMENT
-                                                .RETRIEVE}/{doc.document_id}?token={doc.token}"
+                                            href={rewriteApiUrl(`${__bakney.env.API.DOCUMENT.RETRIEVE}/${doc.document_id}?token=${doc.token}`)}
                                             target="_blank">{doc.filename}</a>
                                     </div>
                                     <button

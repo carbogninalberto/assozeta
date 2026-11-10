@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"strconv"
 	"time"
@@ -98,11 +99,11 @@ func applyInstanceAdminUpdate(ctx context.Context, tx *sqlx.Tx, id int64, update
 	return err
 }
 
-// UpdateBranding is InstanceReconfigureSerializer.update for the OEM fields:
-// save(update_fields=[...the edited fields..., 'updated_at']).
+// UpdateBranding is InstanceAdminSerializer.update for the OEM fields and
+// ui_api_version: save(update_fields=[...the edited fields..., 'updated_at']).
 func (r *InstanceAdmin) UpdateBranding(ctx context.Context, fields map[string]string, now time.Time) error {
 	sets, args := "updated_at=$1", []any{now}
-	for _, column := range []string{"name", "abbreviation", "primary_color", "support_email"} {
+	for _, column := range []string{"name", "abbreviation", "primary_color", "support_email", "ui_api_version"} {
 		if value, ok := fields[column]; ok {
 			args = append(args, value)
 			sets += "," + column + "=$" + strconv.Itoa(len(args))
@@ -127,4 +128,36 @@ func (r *InstanceAdmin) DiagnosticsLease(ctx context.Context) (results []byte, o
 		return nil, false
 	}
 	return raw, true
+}
+
+// UIAPIVersion is InstanceConfiguration.get_config().ui_api_version.
+func (r *InstanceAdmin) UIAPIVersion(ctx context.Context) (string, error) {
+	var version string
+	err := r.db.GetContext(ctx, &version, `SELECT ui_api_version FROM instance_instanceconfiguration ORDER BY id LIMIT 1`)
+	return version, err
+}
+
+// AppendUIAPIVersionChange is LogEntry.objects.log_create(config, action=UPDATE,
+// actor=actor, changes={'ui_api_version': [previous, new]},
+// additional_data={'actor_id': actor}, force_log=True) with its AuditLogIndex
+// row (the same entry shape as backups.audit).
+func (r *InstanceAdmin) AppendUIAPIVersionChange(ctx context.Context, change domain.InstanceUIAPIVersionChange) error {
+	logs := &InstanceBackups{db: r.db}
+	target, err := logs.LogTarget(ctx)
+	if err != nil {
+		return err
+	}
+	if target == nil {
+		return errors.New("instance configuration missing")
+	}
+	changes, err := json.Marshal(map[string][]string{"ui_api_version": {change.Previous, change.Version}})
+	if err != nil {
+		return err
+	}
+	additional, err := json.Marshal(map[string]string{"actor_id": change.ActorID})
+	if err != nil {
+		return err
+	}
+	return logs.AppendBackupAction(ctx, InstanceBackupAction{Target: *target, ActorID: change.ActorID, Changes: changes,
+		Additional: additional, Audit: change.Audit, At: change.At})
 }

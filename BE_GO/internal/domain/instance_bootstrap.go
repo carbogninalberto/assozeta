@@ -33,6 +33,7 @@ type InstanceBootstrapSnapshot struct {
 	ShowCourseAthletes          bool            `db:"show_course_athletes"`
 	ShowMinorExemption          bool            `db:"show_minor_exemption"`
 	ShowTutorial                bool            `db:"show_tutorial"`
+	UIAPIVersion                string          `db:"ui_api_version"`
 	SetupProvenance             string          `db:"setup_provenance"`
 	OnboardingCompletedAt       *time.Time      `db:"onboarding_completed_at"`
 	AssociationID               *string         `db:"association_id"`

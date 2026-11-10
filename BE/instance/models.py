@@ -55,6 +55,13 @@ class InstanceConfiguration(models.Model):
     # Display settings (JSON for flexibility)
     display_settings = models.JSONField(default=dict)
 
+    # API the web interface calls: v1 is the Django API (/api), v2 the Go API
+    # (/api/v2, beta). Both stay served; v1 is the rollback.
+    UI_API_V1 = 'v1'
+    UI_API_V2 = 'v2'
+    UI_API_VERSION_CHOICES = ((UI_API_V1, 'Django API (v1)'), (UI_API_V2, 'Go API (v2, beta)'))
+    ui_api_version = models.CharField(max_length=2, choices=UI_API_VERSION_CHOICES, default=UI_API_V1)
+
     # Feature flags
     is_reseller = models.BooleanField(default=False)
     self_hosted = models.BooleanField(default=True)

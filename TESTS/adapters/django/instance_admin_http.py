@@ -6,9 +6,12 @@ diagnostics lease and a Stripe override; secret markers are encrypted with
 the run's SECRET_KEY. Every case is checked against the complete model state:
 only that row may change, and a write case states every managed field. Stored
 secrets are compared by decrypting them; updated_at must advance exactly when
-the view saves it. No auditlog entries are expected (the model is not
-registered).
+the view saves it. The model is not registered with auditlog; the only entry
+is the explicit UPDATE log of a web UI API version change (case['audit']),
+with its AuditLogIndex row resolved from the actor's association.
 """
+import ipaddress
+import time
 from datetime import datetime
 
 from TESTS.contracts import test_instance_admin_http as contract
@@ -22,7 +25,8 @@ SOURCES = ('TESTS/fixtures/instance_admin_http.json', 'TESTS/contracts/test_inst
            'BE/instance/serializers.py', 'BE/instance/models.py', 'BE/instance/updater_client.py',
            'BE/instance/defaults.py', 'BE/application/impersonation.py', 'BE/core/settings.py') + harness.SOURCES
 CONFIG = 'instance.InstanceConfiguration'
-FIELDS = ('name', 'abbreviation', 'primary_color', 'support_email', 'email_settings', 'email_revision',
+AUDIT, INDEX = harness.AUDIT, harness.INDEX
+FIELDS = ('name', 'abbreviation', 'primary_color', 'support_email', 'ui_api_version', 'email_settings', 'email_revision',
           'diagnostic_results', 'integration_settings')
 FERNET = '$fernet-integration:'
 
@@ -72,7 +76,8 @@ def moment(value):
 def assert_effect(case, before, after, source, context):
     from instance.email_configuration import decrypt_password
     from instance.integration_configuration import decrypt_secret
-    harness.require_unmanaged_unchanged(contract, before, after, (CONFIG,))
+    harness.require_unmanaged_unchanged(contract, before, after, (CONFIG, AUDIT, INDEX))
+    check_audit(case, before, after, source, context)
     key = str(source['instance']['id'])
     old, new = keyed(before[CONFIG], 'id'), keyed(after[CONFIG], 'id')
     contract.require(set(old) == set(new) == {key}, 'state.instance-row')
@@ -96,3 +101,38 @@ def assert_effect(case, before, after, source, context):
 
 fixture_context = harness.fixture_context_for(contract, seed_rows)
 run_workload = harness.run_workload_for(contract, assert_effect)
+
+
+def check_audit(case, before, after, source, context):
+    """No entry, or the one UPDATE entry of a web UI API version change."""
+    added, indexes = harness.audit_delta(contract, before, after)
+    expected = case.get('audit')
+    contract.require(len(added) == (1 if expected else 0), 'audit.count')
+    if not expected:
+        contract.require(not indexes, 'audit.index-count')
+        return
+    event = added[0]
+    types = {(ct['app_label'], ct['model']): ct['id'] for ct in before['contenttypes.ContentType']}
+    instance = source['instance']
+    after_row = keyed(after[CONFIG], 'id')[str(instance['id'])]
+    actor = source['ids'][expected['actor']]
+    contract.require(event['content_type_id'] == types[('instance', 'instanceconfiguration')] and event['action'] == 1
+                     and event['object_pk'] == str(instance['id']) and event['object_id'] == instance['id']
+                     and event['object_repr'] == f"Instance: {after_row['name']} ({instance['domain']})"
+                     and event['serialized_data'] is None, 'audit.identity')
+    contract.require(event['changes'] == expected['changes'] and event['changes_text'] == '', 'audit.changes')
+    contract.require(str(event['actor_id']) == actor and event['actor_email'] is None, 'audit.actor')
+    contract.require(event['cid'] == case['name'], 'audit.cid')
+    contract.require(event['additional_data'] == {'actor_id': actor}, 'audit.additional-data')
+    ipaddress.ip_address(event['remote_addr'])
+    contract.require(context['remote'].setdefault('addr', event['remote_addr']) == event['remote_addr'], 'audit.remote-consistent')
+    stamp = event['timestamp']
+    stamp = datetime.fromisoformat(stamp.replace('Z', '+00:00')) if isinstance(stamp, str) else stamp
+    contract.require(stamp.tzinfo is not None and time.time() - 600 <= stamp.timestamp() <= time.time() + 1, 'audit.timestamp')
+    if expected['association'] is None:
+        contract.require(not indexes, 'index.none')
+    else:
+        index = indexes.get(str(event['id']))
+        contract.require(index is not None and len(indexes) == 1
+                         and str(index['sport_association_id']) == source['ids'][expected['association']]
+                         and index['resolution_path'] == 'actor.sport_association', 'index.fields')

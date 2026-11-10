@@ -115,3 +115,20 @@ test('the release component renders complete Markdown while neutralizing executa
     assert.match(html, /href="https:\/\/example.test\/notes"/);
     assert.match(html, /rel="noopener noreferrer"/);
 });
+
+test('the API (beta) setting shows its state, the badge and a per-browser override', async () => {
+    const {default: InstanceApiVersion} = await server.ssrLoadModule('/src/routes/profile/sections/InstanceApiVersion.svelte');
+    cache.delete('assozeta_api_override');
+    let {html} = InstanceApiVersion.render({request: async () => ({}), config: {features: {uiApiVersion: 'v1'}}});
+    assert.match(html, /Usa la nuova API \(v2\) — beta/);
+    assert.match(html, />Beta</);
+    assert.match(html, /id="instance-api-v2"/);
+    assert.match(html, /aria-checked="false"/);
+    assert.doesNotMatch(html, /override \?api=/);
+    cache.set('assozeta_api_override', 'v2');
+    ({html} = InstanceApiVersion.render({request: async () => ({}), config: {features: {uiApiVersion: 'v2'}}}));
+    assert.match(html, /aria-checked="true"/);
+    assert.match(html, /Questo browser usa la v2 \(override \?api=v2\)/);
+    assert.match(html, /Rimuovi override/);
+    cache.delete('assozeta_api_override');
+});

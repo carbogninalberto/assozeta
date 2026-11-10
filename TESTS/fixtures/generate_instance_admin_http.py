@@ -71,7 +71,7 @@ INSTANCE = {
 # (decrypts to plain; '' stays '') or {'$literal': stored}.
 state = {
     'name': INSTANCE['name'], 'abbreviation': INSTANCE['abbreviation'], 'primary_color': INSTANCE['primary_color'],
-    'support_email': INSTANCE['support_email'], 'email_settings': copy.deepcopy(INSTANCE['email_settings']),
+    'support_email': INSTANCE['support_email'], 'ui_api_version': 'v1', 'email_settings': copy.deepcopy(INSTANCE['email_settings']),
     'email_password': {'$literal': 'not-a-fernet-token'}, 'email_revision': 0,
     'diagnostic_results': copy.deepcopy(INSTANCE['diagnostic_results']),
     'integration_settings': {'stripe': {'revision': 3, 'settings': {
@@ -84,11 +84,12 @@ cases = []
 
 
 def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None,
-        effect=None, cache=None, retry=None):
+        effect=None, cache=None, retry=None, audit=None):
     if cache is None:
         cache = 'no-store' if path.startswith(NO_STORE) and response != SERVER else None
     case = {'name': f'instance-admin-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'effect': effect, 'cache_control': cache, 'retry_after': retry}
+            'status': status, 'response': response, 'effect': effect, 'cache_control': cache, 'retry_after': retry,
+            'audit': audit}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -193,7 +194,8 @@ def config_body():
         'meta': {'title': state['name'], 'description': 'Gestionale per associazioni sportive', 'manifest': '/api/instance/manifest.json'},
         'features': {'aiEnabled': ai['enabled'], 'manualEnabled': False, 'isReseller': False, 'selfHosted': True,
                      'supportMultipleAssociations': False, 'showCourseAthletes': True, 'showMinorExemption': True,
-                     'showTutorial': True, 'familyRegistration': True, 'federationRegistration': False, 'multipleRegistration': False},
+                     'showTutorial': True, 'familyRegistration': True, 'federationRegistration': False, 'multipleRegistration': False,
+                     'uiApiVersion': state['ui_api_version']},
         'setup': {'provenance': 'fresh', 'onboardingComplete': False},
     }
 
@@ -345,6 +347,44 @@ add('put-oem-blank-optional', 'owner', ADMIN, 200, {'config': config_body()}, me
 state.update(name='42', support_email='Admin@Example.test', abbreviation='AB')
 add('superuser-put-oem', 'admin', ADMIN, 200, {'config': config_body()}, method='PUT',
     body={'oem': {'name': 42, 'supportEmail': ' Admin@Example.test ', 'abbreviation': 'AB'}}, effect=write())
+
+# The web UI API version (ChoiceField v1/v2, source ui_api_version) is the
+# other editable key. A change writes one UPDATE log entry on the
+# configuration with [previous, new]; an unchanged value saves without one.
+add('ui-version-denied-collaborator', 'full_collaborator', ADMIN, 403, DENIED, method='PUT', body={'uiApiVersion': 'v2'})
+add('ui-version-anonymous', 'anonymous', ADMIN, 401, ANON, method='PUT', body={'uiApiVersion': 'v2'})
+add('ui-version-extra-key', 'owner', ADMIN, 400, ONLY_BRANDING, method='PUT', body={'uiApiVersion': 'v2', 'meta_title': 'x'})
+add('ui-version-string-body', 'owner', ADMIN, 400, ONLY_BRANDING, method='PUT', body='uiApiVersion')
+add('ui-version-list-body', 'owner', ADMIN, 400, {'non_field_errors': ['Invalid data. Expected a dictionary, but got list.']},
+    method='PUT', body=['uiApiVersion', 'oem'])
+add('ui-version-list-other-item', 'owner', ADMIN, 400, ONLY_BRANDING, method='PUT', body=['uiApiVersion', 1])
+add('ui-version-list-unhashable', 'owner', ADMIN, 500, SERVER, method='PUT', body=['uiApiVersion', ['oem']])
+CHOICE = '"{}" is not a valid choice.'
+add('ui-version-invalid-choice', 'owner', ADMIN, 400, {'uiApiVersion': [CHOICE.format('v3')]}, method='PUT', body={'uiApiVersion': 'v3'})
+add('ui-version-blank', 'owner', ADMIN, 400, {'uiApiVersion': [CHOICE.format('')]}, method='PUT', body={'uiApiVersion': ''})
+add('ui-version-padded', 'owner', ADMIN, 400, {'uiApiVersion': [CHOICE.format(' v2')]}, method='PUT', body={'uiApiVersion': ' v2'})
+add('ui-version-upper', 'owner', ADMIN, 400, {'uiApiVersion': [CHOICE.format('V2')]}, method='PUT', body={'uiApiVersion': 'V2'})
+add('ui-version-null', 'owner', ADMIN, 400, {'uiApiVersion': [NULL]}, method='PUT', body={'uiApiVersion': None})
+add('ui-version-bool', 'owner', ADMIN, 400, {'uiApiVersion': [CHOICE.format('True')]}, method='PUT', body={'uiApiVersion': True})
+add('ui-version-int', 'owner', ADMIN, 400, {'uiApiVersion': [CHOICE.format('2')]}, method='PUT', body={'uiApiVersion': 2})
+add('ui-version-float', 'owner', ADMIN, 400, {'uiApiVersion': [CHOICE.format('2.0')]}, method='PUT', body={'uiApiVersion': 2.0})
+add('ui-version-list', 'owner', ADMIN, 400, {'uiApiVersion': [CHOICE.format("['v2']")]}, method='PUT', body={'uiApiVersion': ['v2']})
+add('ui-version-dict', 'owner', ADMIN, 400, {'uiApiVersion': [CHOICE.format("{'v': 2, 'x': None}")]}, method='PUT',
+    body={'uiApiVersion': {'v': 2, 'x': None}})
+add('ui-version-with-invalid-oem', 'owner', ADMIN, 400, {'oem': {'primaryColor': ['This value does not match the required pattern.']},
+                                                       'uiApiVersion': [CHOICE.format('v9')]},
+    method='PUT', body={'oem': {'primaryColor': 'red'}, 'uiApiVersion': 'v9'})
+add('ui-version-oem-null', 'owner', ADMIN, 400, {'oem': [NULL]}, method='PUT', body={'oem': None, 'uiApiVersion': 'v2'})
+state.update(ui_api_version='v2')
+add('ui-version-enable', 'owner', ADMIN, 200, {'config': config_body()}, method='PUT', body={'uiApiVersion': 'v2'}, effect=write(),
+    audit={'actor': 'owner', 'association': 'own_association', 'changes': {'ui_api_version': ['v1', 'v2']}})
+add('ui-version-unchanged', 'owner', ADMIN, 200, {'config': config_body()}, method='PUT', body={'uiApiVersion': 'v2', 'oem': {}},
+    effect=write())
+add('ui-version-admin-read', 'owner', ADMIN, 200, admin_body())
+state.update(name='Istanza v1', ui_api_version='v1')
+add('ui-version-superuser-disable-with-branding', 'admin', ADMIN, 200, {'config': config_body()}, method='PUT',
+    body={'oem': {'name': 'Istanza v1'}, 'uiApiVersion': 'v1'}, effect=write(),
+    audit={'actor': 'admin', 'association': 'admin_association', 'changes': {'ui_api_version': ['v2', 'v1']}})
 
 # ---------------------------------------------------------------------------
 # admin/updates and admin/restarts in development mode: validation first,
