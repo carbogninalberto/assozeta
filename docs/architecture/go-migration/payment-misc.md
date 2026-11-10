@@ -174,5 +174,5 @@ Five more cases (101 in all) and a seeded plan whose days and month are written 
 RED `v2resta-red-r1`: Django 101/101, Go 500 on `payment-misc-simulation-march` (the plan with digits of other
 scripts). GREEN `v2resta-green-r1` (after merging `codex/go-backend-parity` `b64953a5`): 101/101 on native Django,
 native Go, Caddy `/api/v1` and `/api/v2`. Mutation `v2resta-mutation-r1` (the day's second digit limited to ASCII)
-fails `payment-misc-simulation-other-script-digits` (CAUGHT). `paymentStateDate` keeps its refusal for the approve and
-payment-writes dates; payment-state and payment-writes re-run green natively (`v2resta-rerun-r1`).
+fails `payment-misc-simulation-other-script-digits` (CAUGHT). The approve and payment-writes dates use the same parser since the second v2-rest-a block (payment-state.md,
+payment-writes.md); payment-misc re-run natively (`v2resta-rerun-r2`).

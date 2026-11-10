@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -73,15 +72,10 @@ func (s *PaymentWrites) begin(ctx context.Context, identity domain.ResolvedIdent
 }
 
 // paymentWritesStrptime is datetime.strptime(text, '%Y-%m-%d'): ok false is
-// the ValueError the views catch. strptime's \d also matches non-ASCII
-// decimal digits: not ported.
+// the ValueError the views catch. strptime's \d also matches decimal digits
+// of other scripts (paymentStateDateAny).
 func paymentWritesStrptime(text string) (time.Time, bool, error) {
-	for _, r := range text {
-		if r > unicode.MaxASCII && unicode.IsDigit(r) {
-			return time.Time{}, false, domain.ErrPaymentWritesNotPorted
-		}
-	}
-	moment, err := paymentStateDate(text)
+	moment, err := paymentStateDateAny(text)
 	if err != nil {
 		return time.Time{}, false, nil
 	}

@@ -85,6 +85,7 @@ PAYMENTS = {
     # approve
     'ap_plain': payment(),
     'ap_dated': payment(amount='12.00', meta={'note': 'è'}),
+    'ap_script': payment(amount='12.50'),
     'ap_stored': payment(paid_on='2026-05-06T07:08:09.123456Z'),
     'ap_defaults': payment(subject=1, category=None, description=None),
     'ap_supplier': payment(amount='30.00', expense=True, supplier=True, user=True, description='Fattura fornitore'),
@@ -432,6 +433,13 @@ add('approve-unpaid-now', 'owner', APPROVE('ap_plain'), 200, {'data': {'payment'
     effect=effect('owner', changed={'ap_plain': {'paid': True, 'payment_date': '$now'}}, audit=[updated('payment', 'ap_plain', changes)]))
 add('approve-paid-answers-message', 'owner', APPROVE('ap_plain'), 200,
     {'data': {'msg': 'payment mark as payed.', 'payment': payment_item('ap_plain')}}, body={'payment_date': '2020-01-01'}, effect=nothing())
+# strptime's \d (the year and the day's second digit) matches decimal digits of any script.
+changes = save('ap_script', {'paid': True, 'payment_date': '2026-03-14T00:00:00Z'})
+add('approve-other-script-date', 'owner', APPROVE('ap_script'), 200, {'data': {'payment': payment_item('ap_script')}},
+    body={'payment_date': '\uff12\u0660\uff12\u0666-03-1\u0664'},
+    effect=effect('owner', changed={'ap_script': {'paid': True, 'payment_date': '2026-03-14T00:00:00Z'}},
+                  audit=[updated('payment', 'ap_script', changes)]))
+add('approve-other-script-month-server-error', 'owner', APPROVE('ap_plain'), 500, SERVER, body={'payment_date': '2026-0\uff13-14'})
 changes = save('ap_dated', {'paid': True, 'payment_date': '2026-03-04T00:00:00Z'})
 add('approve-sent-date', 'owner', APPROVE('ap_dated'), 200, {'data': {'payment': payment_item('ap_dated')}},
     body={'payment_date': '2026-03-04', 'generate_invoice': True, 'send_receipt_email': True},

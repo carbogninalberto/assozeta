@@ -135,9 +135,33 @@
    "meta_categories": null,
    "linked": false
   },
-  "ap_stored": {
+  "ap_script": {
    "invoice": null,
    "id": "a1000000-0000-4000-8000-000000985012",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "12.50",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
+  },
+  "ap_stored": {
+   "invoice": null,
+   "id": "a1000000-0000-4000-8000-000000985013",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -161,7 +185,7 @@
   },
   "ap_defaults": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985013",
+   "id": "a1000000-0000-4000-8000-000000985014",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 1,
    "amount": "10.00",
@@ -185,7 +209,7 @@
   },
   "ap_supplier": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985014",
+   "id": "a1000000-0000-4000-8000-000000985015",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "30.00",
@@ -209,7 +233,7 @@
   },
   "ap_instructor": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985015",
+   "id": "a1000000-0000-4000-8000-000000985016",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "40.00",
@@ -233,7 +257,7 @@
   },
   "ap_paid": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985016",
+   "id": "a1000000-0000-4000-8000-000000985017",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "25.00",
@@ -257,7 +281,7 @@
   },
   "ap_collab": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985017",
+   "id": "a1000000-0000-4000-8000-000000985018",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -281,7 +305,7 @@
   },
   "ap_admin": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985018",
+   "id": "a1000000-0000-4000-8000-000000985019",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -305,7 +329,7 @@
   },
   "ap_group": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985019",
+   "id": "a1000000-0000-4000-8000-000000985020",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -329,7 +353,7 @@
   },
   "ap_form": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985020",
+   "id": "a1000000-0000-4000-8000-000000985021",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -353,7 +377,7 @@
   },
   "ap_transfer": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985021",
+   "id": "a1000000-0000-4000-8000-000000985022",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 3,
    "amount": "10.00",
@@ -377,7 +401,7 @@
   },
   "ap_removed": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985022",
+   "id": "a1000000-0000-4000-8000-000000985023",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -401,7 +425,7 @@
   },
   "ca_plain": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985023",
+   "id": "a1000000-0000-4000-8000-000000985024",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -425,7 +449,7 @@
   },
   "ca_uncategorized": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985024",
+   "id": "a1000000-0000-4000-8000-000000985025",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -449,7 +473,7 @@
   },
   "ca_instructor": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985025",
+   "id": "a1000000-0000-4000-8000-000000985026",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "40.00",
@@ -473,7 +497,7 @@
   },
   "ca_supplier": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985026",
+   "id": "a1000000-0000-4000-8000-000000985027",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "30.00",
@@ -497,7 +521,7 @@
   },
   "ca_unpaid": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985027",
+   "id": "a1000000-0000-4000-8000-000000985028",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -521,7 +545,7 @@
   },
   "ca_collab": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985028",
+   "id": "a1000000-0000-4000-8000-000000985029",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -545,7 +569,7 @@
   },
   "ca_admin": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985029",
+   "id": "a1000000-0000-4000-8000-000000985030",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -569,7 +593,7 @@
   },
   "ca_transfer": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985030",
+   "id": "a1000000-0000-4000-8000-000000985031",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 3,
    "amount": "10.00",
@@ -593,7 +617,7 @@
   },
   "ca_removed": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985031",
+   "id": "a1000000-0000-4000-8000-000000985032",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -617,7 +641,7 @@
   },
   "ca_invoiced": {
    "invoice": "v2pay3_cancel",
-   "id": "a1000000-0000-4000-8000-000000985032",
+   "id": "a1000000-0000-4000-8000-000000985033",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "25.00",
@@ -641,7 +665,7 @@
   },
   "ca_invoiced_plain": {
    "invoice": "v2pay3_cancel_plain",
-   "id": "a1000000-0000-4000-8000-000000985033",
+   "id": "a1000000-0000-4000-8000-000000985034",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "14.00",
@@ -665,7 +689,7 @@
   },
   "ca_invoiced_unpaid": {
    "invoice": "v2pay3_cancel_unpaid",
-   "id": "a1000000-0000-4000-8000-000000985034",
+   "id": "a1000000-0000-4000-8000-000000985035",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "10.00",
@@ -689,7 +713,7 @@
   },
   "de_plain": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985035",
+   "id": "a1000000-0000-4000-8000-000000985036",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -713,7 +737,7 @@
   },
   "de_installments": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985036",
+   "id": "a1000000-0000-4000-8000-000000985037",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "60.00",
@@ -737,7 +761,7 @@
   },
   "de_paid": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985037",
+   "id": "a1000000-0000-4000-8000-000000985038",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "20.00",
@@ -761,7 +785,7 @@
   },
   "de_group": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985038",
+   "id": "a1000000-0000-4000-8000-000000985039",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -785,7 +809,7 @@
   },
   "de_collab": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985039",
+   "id": "a1000000-0000-4000-8000-000000985040",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -809,7 +833,7 @@
   },
   "de_admin": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985040",
+   "id": "a1000000-0000-4000-8000-000000985041",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -833,7 +857,7 @@
   },
   "de_removed": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985041",
+   "id": "a1000000-0000-4000-8000-000000985042",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -857,7 +881,7 @@
   },
   "de_invoiced": {
    "invoice": "v2pay3_delete",
-   "id": "a1000000-0000-4000-8000-000000985042",
+   "id": "a1000000-0000-4000-8000-000000985043",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "27.00",
@@ -881,7 +905,7 @@
   },
   "de_invoiced_collab": {
    "invoice": "v2pay3_delete_collab",
-   "id": "a1000000-0000-4000-8000-000000985043",
+   "id": "a1000000-0000-4000-8000-000000985044",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "13.00",
@@ -905,7 +929,7 @@
   },
   "ba_a": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985044",
+   "id": "a1000000-0000-4000-8000-000000985045",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -929,7 +953,7 @@
   },
   "ba_b": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985045",
+   "id": "a1000000-0000-4000-8000-000000985046",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -953,7 +977,7 @@
   },
   "ba_stored": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985046",
+   "id": "a1000000-0000-4000-8000-000000985047",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -977,7 +1001,7 @@
   },
   "ba_group": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985047",
+   "id": "a1000000-0000-4000-8000-000000985048",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -1001,7 +1025,7 @@
   },
   "ba_plain": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985048",
+   "id": "a1000000-0000-4000-8000-000000985049",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -1025,7 +1049,7 @@
   },
   "ba_collab": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985049",
+   "id": "a1000000-0000-4000-8000-000000985050",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -1049,7 +1073,7 @@
   },
   "ba_removed": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985050",
+   "id": "a1000000-0000-4000-8000-000000985051",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -1073,7 +1097,7 @@
   },
   "bd_a": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985051",
+   "id": "a1000000-0000-4000-8000-000000985052",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -1097,7 +1121,7 @@
   },
   "bd_installment": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985052",
+   "id": "a1000000-0000-4000-8000-000000985053",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -1121,7 +1145,7 @@
   },
   "bd_group": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985053",
+   "id": "a1000000-0000-4000-8000-000000985054",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -1145,7 +1169,7 @@
   },
   "bd_plain": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985054",
+   "id": "a1000000-0000-4000-8000-000000985055",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -1169,7 +1193,7 @@
   },
   "bd_collab": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985055",
+   "id": "a1000000-0000-4000-8000-000000985056",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -1193,7 +1217,7 @@
   },
   "bd_admin": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985056",
+   "id": "a1000000-0000-4000-8000-000000985057",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -1217,7 +1241,7 @@
   },
   "abroad": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985057",
+   "id": "a1000000-0000-4000-8000-000000985058",
    "association": "a1000000-0000-4000-8000-000000701002",
    "subject": 2,
    "amount": "10.00",
@@ -1241,7 +1265,7 @@
   },
   "pf_other": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985058",
+   "id": "a1000000-0000-4000-8000-000000985059",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "15.00",
@@ -1265,7 +1289,7 @@
   },
   "pf_old": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985059",
+   "id": "a1000000-0000-4000-8000-000000985060",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "20.00",
@@ -1289,7 +1313,7 @@
   },
   "pf_subscription": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985060",
+   "id": "a1000000-0000-4000-8000-000000985061",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 1,
    "amount": "30.00",
@@ -1325,7 +1349,7 @@
   },
   "pf_course": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985061",
+   "id": "a1000000-0000-4000-8000-000000985062",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "50.00",
@@ -1349,7 +1373,7 @@
   },
   "pf_installment": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985062",
+   "id": "a1000000-0000-4000-8000-000000985063",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "18.00",
@@ -1373,7 +1397,7 @@
   },
   "pf_carnet": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985063",
+   "id": "a1000000-0000-4000-8000-000000985064",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "35.00",
@@ -1397,7 +1421,7 @@
   },
   "pf_course_none": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985064",
+   "id": "a1000000-0000-4000-8000-000000985065",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "11.00",
@@ -1421,7 +1445,7 @@
   },
   "pf_supplier": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985065",
+   "id": "a1000000-0000-4000-8000-000000985066",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "12.00",
@@ -1445,7 +1469,7 @@
   },
   "pf_instructor": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985066",
+   "id": "a1000000-0000-4000-8000-000000985067",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "40.00",
@@ -1469,7 +1493,7 @@
   },
   "pf_collab": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985067",
+   "id": "a1000000-0000-4000-8000-000000985068",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "16.00",
@@ -1493,7 +1517,7 @@
   },
   "pf_admin": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985068",
+   "id": "a1000000-0000-4000-8000-000000985069",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "17.00",
@@ -1517,7 +1541,7 @@
   },
   "pf_group": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985069",
+   "id": "a1000000-0000-4000-8000-000000985070",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "19.00",
@@ -1541,7 +1565,7 @@
   },
   "pf_form": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985070",
+   "id": "a1000000-0000-4000-8000-000000985071",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "21.00",
@@ -1565,7 +1589,7 @@
   },
   "pf_scoped": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985071",
+   "id": "a1000000-0000-4000-8000-000000985072",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "22.00",
@@ -1589,7 +1613,7 @@
   },
   "pf_bad_meta": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985072",
+   "id": "a1000000-0000-4000-8000-000000985073",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 1,
    "amount": "23.00",
@@ -1617,7 +1641,7 @@
   },
   "pf_carnet_null": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985073",
+   "id": "a1000000-0000-4000-8000-000000985074",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "24.00",
@@ -1641,7 +1665,7 @@
   },
   "pf_group_spelling": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985074",
+   "id": "a1000000-0000-4000-8000-000000985075",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "19.50",
@@ -1665,7 +1689,7 @@
   },
   "pf_tie": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985075",
+   "id": "a1000000-0000-4000-8000-000000985076",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 1,
    "amount": "10.00",
@@ -1694,7 +1718,7 @@
   },
   "pf_name_float": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985076",
+   "id": "a1000000-0000-4000-8000-000000985077",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 1,
    "amount": "26.00",
@@ -1722,7 +1746,7 @@
   },
   "pf_name_list": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985077",
+   "id": "a1000000-0000-4000-8000-000000985078",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 1,
    "amount": "27.00",
@@ -1757,7 +1781,7 @@
   },
   "pf_name_dict": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985078",
+   "id": "a1000000-0000-4000-8000-000000985079",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 1,
    "amount": "28.00",
@@ -1787,8 +1811,8 @@
   },
   "pf_flag": {
    "invoice": null,
-   "id": "a1000000-0000-4000-8000-000000985103",
-   "association": "a1000000-0000-4000-8000-000000985101",
+   "id": "a1000000-0000-4000-8000-000000985104",
+   "association": "a1000000-0000-4000-8000-000000985102",
    "subject": 0,
    "amount": "26.00",
    "paid": false,
@@ -1812,7 +1836,7 @@
  },
  "invoices": {
   "v2pay3_cancel": {
-   "id": "a1000000-0000-4000-8000-000000985104",
+   "id": "a1000000-0000-4000-8000-000000985105",
    "payment": "ca_invoiced",
    "number": 901,
    "created": "2026-02-01T10:00:00Z",
@@ -1821,7 +1845,7 @@
    "description": "Ricevuta 901"
   },
   "v2pay3_cancel_plain": {
-   "id": "a1000000-0000-4000-8000-000000985105",
+   "id": "a1000000-0000-4000-8000-000000985106",
    "payment": "ca_invoiced_plain",
    "number": 902,
    "created": "2026-02-01T10:00:00Z",
@@ -1830,7 +1854,7 @@
    "description": "Ricevuta 902"
   },
   "v2pay3_cancel_unpaid": {
-   "id": "a1000000-0000-4000-8000-000000985106",
+   "id": "a1000000-0000-4000-8000-000000985107",
    "payment": "ca_invoiced_unpaid",
    "number": 903,
    "created": "2026-02-01T10:00:00Z",
@@ -1839,7 +1863,7 @@
    "description": "Ricevuta 903"
   },
   "v2pay3_delete": {
-   "id": "a1000000-0000-4000-8000-000000985107",
+   "id": "a1000000-0000-4000-8000-000000985108",
    "payment": "de_invoiced",
    "number": 904,
    "created": "2026-02-01T10:00:00Z",
@@ -1848,7 +1872,7 @@
    "description": "Ricevuta 904"
   },
   "v2pay3_delete_collab": {
-   "id": "a1000000-0000-4000-8000-000000985108",
+   "id": "a1000000-0000-4000-8000-000000985109",
    "payment": "de_invoiced_collab",
    "number": 905,
    "created": "2026-02-01T10:00:00Z",
@@ -1859,19 +1883,19 @@
  },
  "supplier_invoices": {
   "si_approve": {
-   "id": "a1000000-0000-4000-8000-000000985079",
+   "id": "a1000000-0000-4000-8000-000000985080",
    "payment": "ap_supplier",
    "identifier": "FT-1",
    "amount": "30.00"
   },
   "si_linked": {
-   "id": "a1000000-0000-4000-8000-000000985080",
+   "id": "a1000000-0000-4000-8000-000000985081",
    "payment": "de_plain",
    "identifier": "FT-2",
    "amount": "10.00"
   },
   "si_paid_flow": {
-   "id": "a1000000-0000-4000-8000-000000985081",
+   "id": "a1000000-0000-4000-8000-000000985082",
    "payment": "pf_supplier",
    "identifier": "FT-3",
    "amount": "12.00"
@@ -1879,46 +1903,46 @@
  },
  "course_subscriptions": {
   "cs_linked": {
-   "id": "a1000000-0000-4000-8000-000000985082",
+   "id": "a1000000-0000-4000-8000-000000985083",
    "payment": "de_plain",
    "memberships": [
     "de_plain"
    ]
   },
   "cs_installments": {
-   "id": "a1000000-0000-4000-8000-000000985083",
+   "id": "a1000000-0000-4000-8000-000000985084",
    "payment": null,
    "memberships": []
   },
   "cs_pf": {
-   "id": "a1000000-0000-4000-8000-000000985084",
+   "id": "a1000000-0000-4000-8000-000000985085",
    "payment": "pf_course",
    "memberships": []
   },
   "cs_pf_parent": {
-   "id": "a1000000-0000-4000-8000-000000985085",
-   "payment": null,
-   "memberships": []
-  },
-  "cs_pf_carnet": {
    "id": "a1000000-0000-4000-8000-000000985086",
    "payment": null,
    "memberships": []
   },
-  "cs_pf_scoped": {
+  "cs_pf_carnet": {
    "id": "a1000000-0000-4000-8000-000000985087",
+   "payment": null,
+   "memberships": []
+  },
+  "cs_pf_scoped": {
+   "id": "a1000000-0000-4000-8000-000000985088",
    "payment": "pf_scoped",
    "memberships": []
   },
   "cs_pf_null": {
-   "id": "a1000000-0000-4000-8000-000000985088",
+   "id": "a1000000-0000-4000-8000-000000985089",
    "payment": null,
    "memberships": []
   }
  },
  "installments": {
   "i1": {
-   "id": "a1000000-0000-4000-8000-000000985089",
+   "id": "a1000000-0000-4000-8000-000000985090",
    "payment": "de_installments",
    "deleted": false,
    "group": null,
@@ -1926,7 +1950,7 @@
    "number": 1
   },
   "i2": {
-   "id": "a1000000-0000-4000-8000-000000985090",
+   "id": "a1000000-0000-4000-8000-000000985091",
    "payment": "de_installments",
    "deleted": false,
    "group": null,
@@ -1934,7 +1958,7 @@
    "number": 2
   },
   "i_deleted": {
-   "id": "a1000000-0000-4000-8000-000000985091",
+   "id": "a1000000-0000-4000-8000-000000985092",
    "payment": "de_installments",
    "deleted": true,
    "group": null,
@@ -1942,7 +1966,7 @@
    "number": 3
   },
   "i_paid": {
-   "id": "a1000000-0000-4000-8000-000000985092",
+   "id": "a1000000-0000-4000-8000-000000985093",
    "payment": "de_paid",
    "deleted": false,
    "group": null,
@@ -1950,7 +1974,7 @@
    "number": 4
   },
   "ig_in": {
-   "id": "a1000000-0000-4000-8000-000000985093",
+   "id": "a1000000-0000-4000-8000-000000985094",
    "payment": "de_group",
    "deleted": false,
    "group": "own_group",
@@ -1958,7 +1982,7 @@
    "number": 5
   },
   "ig_out": {
-   "id": "a1000000-0000-4000-8000-000000985094",
+   "id": "a1000000-0000-4000-8000-000000985095",
    "payment": "de_group",
    "deleted": false,
    "group": null,
@@ -1966,7 +1990,7 @@
    "number": 6
   },
   "i_bulk": {
-   "id": "a1000000-0000-4000-8000-000000985095",
+   "id": "a1000000-0000-4000-8000-000000985096",
    "payment": "bd_installment",
    "deleted": false,
    "group": null,
@@ -1974,7 +1998,7 @@
    "number": 7
   },
   "i_pf": {
-   "id": "a1000000-0000-4000-8000-000000985096",
+   "id": "a1000000-0000-4000-8000-000000985097",
    "payment": "pf_installment",
    "deleted": false,
    "group": null,
@@ -1984,11 +2008,11 @@
  },
  "holdings": {
   "h_linked": {
-   "id": "a1000000-0000-4000-8000-000000985097",
+   "id": "a1000000-0000-4000-8000-000000985098",
    "payment": "de_plain"
   },
   "h_pf": {
-   "id": "a1000000-0000-4000-8000-000000985098",
+   "id": "a1000000-0000-4000-8000-000000985099",
    "payment": "pf_carnet",
    "subscription": true,
    "courses": [
@@ -1996,7 +2020,7 @@
    ]
   },
   "h_pf_null": {
-   "id": "a1000000-0000-4000-8000-000000985099",
+   "id": "a1000000-0000-4000-8000-000000985100",
    "payment": "pf_carnet_null",
    "subscription": true,
    "carnet": false,
@@ -2006,8 +2030,8 @@
   }
  },
  "flag_owner": {
-  "id": "a1000000-0000-4000-8000-000000985100",
-  "association": "a1000000-0000-4000-8000-000000985101",
+  "id": "a1000000-0000-4000-8000-000000985101",
+  "association": "a1000000-0000-4000-8000-000000985102",
   "username": "payment-state-flag",
   "email": "payment-state-flag@example.test",
   "first": "Flavia",
@@ -2016,7 +2040,7 @@
   "starting_number": 40
  },
  "flag_associate": {
-  "id": "a1000000-0000-4000-8000-000000985102",
+  "id": "a1000000-0000-4000-8000-000000985103",
   "first": "Giulia",
   "last": "Verdi"
  },
@@ -2217,7 +2241,7 @@
    "name": "payment-state-approve-deleted-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985022/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985023/approve",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -2228,7 +2252,7 @@
    "name": "payment-state-approve-other-group-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985019/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985020/approve",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
    },
@@ -2241,7 +2265,7 @@
    "name": "payment-state-approve-foreign-denied",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985057/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985058/approve",
    "headers": {},
    "status": 403,
    "response": {
@@ -2254,7 +2278,7 @@
    "name": "payment-state-approve-scoped-session-foreign-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985057/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985058/approve",
    "headers": {
     "X-Impersonation-Id": "$session:owner_full",
     "User-Id": "a1000000-0000-4000-8000-000000700002"
@@ -2268,7 +2292,7 @@
    "name": "payment-state-approve-transfer-without-description-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985021/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985022/approve",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -2421,6 +2445,106 @@
    }
   },
   {
+   "name": "payment-state-approve-other-script-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985012/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985012",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "12.50",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-03-14T00:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "ap_script": {
+      "paid": true,
+      "payment_date": "2026-03-14T00:00:00Z"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ap_script",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "2026-03-14 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "payment_date": "２٠２٦-03-1٤"
+   }
+  },
+  {
+   "name": "payment-state-approve-other-script-month-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985010/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment_date": "2026-0３-14"
+   }
+  },
+  {
    "name": "payment-state-approve-sent-date",
    "actor": "owner",
    "method": "POST",
@@ -2514,13 +2638,13 @@
    "name": "payment-state-approve-keeps-stored-date",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985012/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985013/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985012",
+      "payment_id": "a1000000-0000-4000-8000-000000985013",
       "user": null,
       "associate": null,
       "subscription_id": null,
@@ -2595,13 +2719,13 @@
    "name": "payment-state-approve-save-defaults",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985013/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985014/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985013",
+      "payment_id": "a1000000-0000-4000-8000-000000985014",
       "user": null,
       "associate": null,
       "subscription_id": null,
@@ -2691,13 +2815,13 @@
    "name": "payment-state-approve-expense-pays-supplier-invoice",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985014/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985015/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985014",
+      "payment_id": "a1000000-0000-4000-8000-000000985015",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -2826,13 +2950,13 @@
    "name": "payment-state-approve-expense-instructor-now",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985015/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985016/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985015",
+      "payment_id": "a1000000-0000-4000-8000-000000985016",
       "user": null,
       "associate": null,
       "subscription_id": null,
@@ -2936,14 +3060,14 @@
    "name": "payment-state-approve-paid-with-party",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985016/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985017/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985016",
+      "payment_id": "a1000000-0000-4000-8000-000000985017",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -3029,13 +3153,13 @@
    "name": "payment-state-approve-full-collaborator",
    "actor": "full_collaborator",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985017/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985018/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985017",
+      "payment_id": "a1000000-0000-4000-8000-000000985018",
       "user": null,
       "associate": null,
       "subscription_id": null,
@@ -3115,7 +3239,7 @@
    "name": "payment-state-approve-admin-impersonating-owner",
    "actor": "admin",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985018/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985019/approve",
    "headers": {
     "X-Impersonation-Id": "$session:admin_owner",
     "User-Id": "a1000000-0000-4000-8000-000000700001"
@@ -3124,7 +3248,7 @@
    "response": {
     "data": {
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985018",
+      "payment_id": "a1000000-0000-4000-8000-000000985019",
       "user": null,
       "associate": null,
       "subscription_id": null,
@@ -3204,7 +3328,7 @@
    "name": "payment-state-approve-group",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985019/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985020/approve",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },
@@ -3212,7 +3336,7 @@
    "response": {
     "data": {
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985019",
+      "payment_id": "a1000000-0000-4000-8000-000000985020",
       "user": null,
       "associate": null,
       "subscription_id": null,
@@ -3292,13 +3416,13 @@
    "name": "payment-state-approve-form-body",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985020/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985021/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985020",
+      "payment_id": "a1000000-0000-4000-8000-000000985021",
       "user": null,
       "associate": null,
       "subscription_id": null,
@@ -3377,14 +3501,14 @@
    "name": "payment-state-approve-paid-flow-other-now",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985058/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985059/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985058",
+      "payment_id": "a1000000-0000-4000-8000-000000985059",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -3649,14 +3773,14 @@
    "name": "payment-state-approve-paid-flow-old-date-no-print",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985059/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985060/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985059",
+      "payment_id": "a1000000-0000-4000-8000-000000985060",
       "user": null,
       "associate": {
        "associate_id": "a1000000-0000-4000-8000-000000985004",
@@ -3886,14 +4010,14 @@
    "name": "payment-state-approve-paid-flow-subscription-fees",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985060/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985061/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985060",
+      "payment_id": "a1000000-0000-4000-8000-000000985061",
       "user": null,
       "associate": {
        "associate_id": "a1000000-0000-4000-8000-000000985004",
@@ -4174,14 +4298,14 @@
    "name": "payment-state-approve-paid-flow-course",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985061/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985062/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985061",
+      "payment_id": "a1000000-0000-4000-8000-000000985062",
       "user": null,
       "associate": {
        "associate_id": "a1000000-0000-4000-8000-000000985004",
@@ -4436,14 +4560,14 @@
    "name": "payment-state-approve-paid-flow-installment-course",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985062/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985063/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985062",
+      "payment_id": "a1000000-0000-4000-8000-000000985063",
       "user": null,
       "associate": {
        "associate_id": "a1000000-0000-4000-8000-000000985004",
@@ -4698,14 +4822,14 @@
    "name": "payment-state-approve-paid-flow-carnet",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985063/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985064/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985063",
+      "payment_id": "a1000000-0000-4000-8000-000000985064",
       "user": null,
       "associate": {
        "associate_id": "a1000000-0000-4000-8000-000000985004",
@@ -4960,14 +5084,14 @@
    "name": "payment-state-approve-paid-flow-course-without-link",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985064/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985065/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985064",
+      "payment_id": "a1000000-0000-4000-8000-000000985065",
       "user": null,
       "associate": {
        "associate_id": "a1000000-0000-4000-8000-000000985004",
@@ -5205,14 +5329,14 @@
    "name": "payment-state-approve-paid-flow-supplier",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985065/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985066/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985065",
+      "payment_id": "a1000000-0000-4000-8000-000000985066",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -5481,14 +5605,14 @@
    "name": "payment-state-approve-paid-flow-instructor-without-invoice",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985066/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985067/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985066",
+      "payment_id": "a1000000-0000-4000-8000-000000985067",
       "user": null,
       "associate": null,
       "subscription_id": null,
@@ -5600,14 +5724,14 @@
    "name": "payment-state-approve-paid-flow-full-collaborator",
    "actor": "full_collaborator",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985067/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985068/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985067",
+      "payment_id": "a1000000-0000-4000-8000-000000985068",
       "user": null,
       "associate": {
        "associate_id": "a1000000-0000-4000-8000-000000985004",
@@ -5845,7 +5969,7 @@
    "name": "payment-state-approve-paid-flow-admin-impersonating-owner",
    "actor": "admin",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985068/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985069/approve",
    "headers": {
     "X-Impersonation-Id": "$session:admin_owner",
     "User-Id": "a1000000-0000-4000-8000-000000700001"
@@ -5855,7 +5979,7 @@
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985068",
+      "payment_id": "a1000000-0000-4000-8000-000000985069",
       "user": null,
       "associate": {
        "associate_id": "a1000000-0000-4000-8000-000000985004",
@@ -6093,7 +6217,7 @@
    "name": "payment-state-approve-paid-flow-group",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985069/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985070/approve",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },
@@ -6102,7 +6226,7 @@
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985069",
+      "payment_id": "a1000000-0000-4000-8000-000000985070",
       "user": null,
       "associate": {
        "associate_id": "a1000000-0000-4000-8000-000000985004",
@@ -6340,14 +6464,14 @@
    "name": "payment-state-approve-paid-flow-form-body",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985070/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985071/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985070",
+      "payment_id": "a1000000-0000-4000-8000-000000985071",
       "user": null,
       "associate": {
        "associate_id": "a1000000-0000-4000-8000-000000985004",
@@ -6587,17 +6711,17 @@
    "name": "payment-state-approve-paid-flow-flag-owner-invoice-date",
    "actor": "flag_owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985103/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985104/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985103",
+      "payment_id": "a1000000-0000-4000-8000-000000985104",
       "user": null,
       "associate": {
-       "associate_id": "a1000000-0000-4000-8000-000000985102",
+       "associate_id": "a1000000-0000-4000-8000-000000985103",
        "address": null,
        "address_cap": null,
        "address_city": null,
@@ -6608,9 +6732,9 @@
        "first_name": "Giulia",
        "last_name": "Verdi",
        "is_minor": false,
-       "sport_association": "a1000000-0000-4000-8000-000000985101",
+       "sport_association": "a1000000-0000-4000-8000-000000985102",
        "tax_code": null,
-       "user": "a1000000-0000-4000-8000-000000985100",
+       "user": "a1000000-0000-4000-8000-000000985101",
        "phone": null,
        "family": null,
        "family_role": null
@@ -6637,7 +6761,7 @@
        "imported_from_associami": false,
        "deleted": false,
        "document_pdf": null,
-       "sport_association": "a1000000-0000-4000-8000-000000985101",
+       "sport_association": "a1000000-0000-4000-8000-000000985102",
        "selected_tutor": null,
        "group": null,
        "attached_documents": []
@@ -6661,7 +6785,7 @@
       "deleted": false,
       "course": null,
       "payment_category": "$default_category",
-      "sport_association": "a1000000-0000-4000-8000-000000985101",
+      "sport_association": "a1000000-0000-4000-8000-000000985102",
       "custom_accounts": null,
       "signature": null,
       "group": null,
@@ -6699,7 +6823,7 @@
        ],
        "sport_association": [
         "None",
-        "a1000000-0000-4000-8000-000000985101"
+        "a1000000-0000-4000-8000-000000985102"
        ],
        "creation_date": [
         "None",
@@ -6755,7 +6879,7 @@
        ]
       },
       "index": [
-       "a1000000-0000-4000-8000-000000985101",
+       "a1000000-0000-4000-8000-000000985102",
        "direct"
       ]
      },
@@ -6774,7 +6898,7 @@
        ]
       },
       "index": [
-       "a1000000-0000-4000-8000-000000985101",
+       "a1000000-0000-4000-8000-000000985102",
        "direct"
       ]
      },
@@ -6801,7 +6925,7 @@
        ]
       },
       "index": [
-       "a1000000-0000-4000-8000-000000985101",
+       "a1000000-0000-4000-8000-000000985102",
        "direct"
       ]
      },
@@ -6811,7 +6935,7 @@
       "action": 0,
       "changes": "$created",
       "index": [
-       "a1000000-0000-4000-8000-000000985101",
+       "a1000000-0000-4000-8000-000000985102",
        "actor.sport_association"
       ]
      },
@@ -6821,13 +6945,13 @@
       "action": 0,
       "changes": "$created",
       "index": [
-       "a1000000-0000-4000-8000-000000985101",
+       "a1000000-0000-4000-8000-000000985102",
        "actor.sport_association"
       ]
      }
     ],
     "invoice": {
-     "sport_association_id": "a1000000-0000-4000-8000-000000985101",
+     "sport_association_id": "a1000000-0000-4000-8000-000000985102",
      "creation_date": "2021-03-04T00:00:00Z",
      "membership_fee": "0.00",
      "activity_fee": "26.00",
@@ -6852,7 +6976,7 @@
     "notification": {
      "user": "flag_owner",
      "msg": "Pagamento di € 26,00per Quota flag. Pagamento dell'associato Giulia Verdi.",
-     "association": "a1000000-0000-4000-8000-000000985101"
+     "association": "a1000000-0000-4000-8000-000000985102"
     }
    },
    "prints": [],
@@ -6864,7 +6988,7 @@
    "name": "payment-state-approve-paid-flow-scoped-session",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985071/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985072/approve",
    "headers": {
     "X-Impersonation-Id": "$session:owner_full",
     "User-Id": "a1000000-0000-4000-8000-000000700002"
@@ -6874,7 +6998,7 @@
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985071",
+      "payment_id": "a1000000-0000-4000-8000-000000985072",
       "user": null,
       "associate": {
        "associate_id": "a1000000-0000-4000-8000-000000985004",
@@ -7129,7 +7253,7 @@
    "name": "payment-state-approve-paid-flow-group-upper-case",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985074/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985075/approve",
    "headers": {
     "X-Group-Id": "A1000000-0000-4000-8000-000000714001"
    },
@@ -7138,7 +7262,7 @@
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985074",
+      "payment_id": "a1000000-0000-4000-8000-000000985075",
       "user": null,
       "associate": {
        "associate_id": "a1000000-0000-4000-8000-000000985004",
@@ -7380,14 +7504,14 @@
    "name": "payment-state-approve-paid-flow-fee-tie",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985075/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985076/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985075",
+      "payment_id": "a1000000-0000-4000-8000-000000985076",
       "user": null,
       "associate": {
        "associate_id": "a1000000-0000-4000-8000-000000985004",
@@ -7644,14 +7768,14 @@
    "name": "payment-state-approve-paid-flow-meta-name-float",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985076/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985077/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985076",
+      "payment_id": "a1000000-0000-4000-8000-000000985077",
       "user": null,
       "associate": {
        "associate_id": "a1000000-0000-4000-8000-000000985004",
@@ -7897,14 +8021,14 @@
    "name": "payment-state-approve-paid-flow-meta-name-list",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985077/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985078/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985077",
+      "payment_id": "a1000000-0000-4000-8000-000000985078",
       "user": null,
       "associate": {
        "associate_id": "a1000000-0000-4000-8000-000000985004",
@@ -8157,14 +8281,14 @@
    "name": "payment-state-approve-paid-flow-meta-name-dict",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985078/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985079/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985078",
+      "payment_id": "a1000000-0000-4000-8000-000000985079",
       "user": null,
       "associate": {
        "associate_id": "a1000000-0000-4000-8000-000000985004",
@@ -8412,7 +8536,7 @@
    "name": "payment-state-approve-paid-flow-bad-meta-amount-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985072/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985073/approve",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -8423,7 +8547,7 @@
    "name": "payment-state-approve-paid-flow-carnet-without-carnet-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985073/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985074/approve",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -8434,7 +8558,7 @@
    "name": "payment-state-cancel-anonymous",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985024/cancel",
    "headers": {},
    "status": 401,
    "response": {
@@ -8447,7 +8571,7 @@
    "name": "payment-state-cancel-restricted-missing-permission",
    "actor": "restricted_collaborator",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985024/cancel",
    "headers": {},
    "status": 403,
    "response": {
@@ -8460,7 +8584,7 @@
    "name": "payment-state-cancel-admin-without-session",
    "actor": "admin",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985024/cancel",
    "headers": {},
    "status": 403,
    "response": {
@@ -8473,7 +8597,7 @@
    "name": "payment-state-cancel-owner-scoped-athlete-denied",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985024/cancel",
    "headers": {
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
@@ -8489,7 +8613,7 @@
    "name": "payment-state-cancel-wrong-method",
    "actor": "owner",
    "method": "GET",
-   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985024/cancel",
    "headers": {},
    "status": 405,
    "response": {
@@ -8502,7 +8626,7 @@
    "name": "payment-state-cancel-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985024/cancel",
    "headers": {},
    "status": 200,
    "response": {
@@ -8535,7 +8659,7 @@
    "name": "payment-state-cancel-athlete-server-error",
    "actor": "athlete",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985024/cancel",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -8546,7 +8670,7 @@
    "name": "payment-state-cancel-owner-without-association-server-error",
    "actor": "owner_without_association",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985024/cancel",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -8568,7 +8692,7 @@
    "name": "payment-state-cancel-deleted-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985031/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985032/cancel",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -8579,7 +8703,7 @@
    "name": "payment-state-cancel-foreign-denied",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985057/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985058/cancel",
    "headers": {},
    "status": 403,
    "response": {
@@ -8592,7 +8716,7 @@
    "name": "payment-state-cancel-scoped-session-foreign-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985057/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985058/cancel",
    "headers": {
     "X-Impersonation-Id": "$session:owner_full",
     "User-Id": "a1000000-0000-4000-8000-000000700002"
@@ -8606,7 +8730,7 @@
    "name": "payment-state-cancel-unpaid",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985027/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985028/cancel",
    "headers": {},
    "status": 400,
    "response": {
@@ -8627,7 +8751,7 @@
    "name": "payment-state-cancel-transfer-without-description-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985030/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985031/cancel",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -8638,14 +8762,14 @@
    "name": "payment-state-cancel-paid",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985024/cancel",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment cancelled.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985023",
+      "payment_id": "a1000000-0000-4000-8000-000000985024",
       "user": null,
       "associate": null,
       "subscription_id": null,
@@ -8717,7 +8841,7 @@
    "name": "payment-state-cancel-again-unpaid",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985024/cancel",
    "headers": {},
    "status": 400,
    "response": {
@@ -8738,14 +8862,14 @@
    "name": "payment-state-cancel-fills-category-after-serializing",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985024/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985025/cancel",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment cancelled.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985024",
+      "payment_id": "a1000000-0000-4000-8000-000000985025",
       "user": null,
       "associate": null,
       "subscription_id": null,
@@ -8822,14 +8946,14 @@
    "name": "payment-state-cancel-expense-instructor",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985025/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985026/cancel",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment cancelled.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985025",
+      "payment_id": "a1000000-0000-4000-8000-000000985026",
       "user": null,
       "associate": null,
       "subscription_id": null,
@@ -8928,14 +9052,14 @@
    "name": "payment-state-cancel-expense-supplier",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985026/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985027/cancel",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment cancelled.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985026",
+      "payment_id": "a1000000-0000-4000-8000-000000985027",
       "user": null,
       "associate": null,
       "subscription_id": null,
@@ -9025,14 +9149,14 @@
    "name": "payment-state-cancel-full-collaborator",
    "actor": "full_collaborator",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985028/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985029/cancel",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment cancelled.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985028",
+      "payment_id": "a1000000-0000-4000-8000-000000985029",
       "user": null,
       "associate": null,
       "subscription_id": null,
@@ -9104,7 +9228,7 @@
    "name": "payment-state-cancel-admin-impersonating-owner",
    "actor": "admin",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985029/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985030/cancel",
    "headers": {
     "X-Impersonation-Id": "$session:admin_owner",
     "User-Id": "a1000000-0000-4000-8000-000000700001"
@@ -9114,7 +9238,7 @@
     "data": {
      "msg": "payment cancelled.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985029",
+      "payment_id": "a1000000-0000-4000-8000-000000985030",
       "user": null,
       "associate": null,
       "subscription_id": null,
@@ -9267,7 +9391,7 @@
    "name": "payment-state-cancel-invoiced-unpaid",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985034/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985035/cancel",
    "headers": {},
    "status": 400,
    "response": {
@@ -9288,14 +9412,14 @@
    "name": "payment-state-cancel-invoiced-publishes-print",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985032/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985033/cancel",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment cancelled.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985032",
+      "payment_id": "a1000000-0000-4000-8000-000000985033",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -9331,7 +9455,7 @@
       "custom_account_type": null,
       "custom_account_name": null,
       "invoice": {
-       "invoice_id": "a1000000-0000-4000-8000-000000985104",
+       "invoice_id": "a1000000-0000-4000-8000-000000985105",
        "document_token": null,
        "creation_date": "2026-02-01T10:00:00Z",
        "membership_fee": "0.00",
@@ -9390,7 +9514,7 @@
      "v2pay3_cancel": {
       "cancelled": true,
       "meta": {
-       "payment_id": "a1000000-0000-4000-8000-000000985032",
+       "payment_id": "a1000000-0000-4000-8000-000000985033",
        "user": "{'first_name': 'Message', 'last_name': 'Fixture', 'email': 'message-reads-700001@example.test', 'phone': None, 'username': 'message-reads-700001', 'role': 1}",
        "associate": "{'associate_id': 'a1000000-0000-4000-8000-000000985004', 'address': None, 'address_cap': None, 'address_city': None, 'born_city': None, 'born_date': '1990-05-10', 'email': 'mario@example.test', 'sex': 'M', 'first_name': 'Mario', 'last_name': 'Rossi', 'is_minor': False, 'sport_association': UUID('a1000000-0000-4000-8000-000000701001'), 'tax_code': 'RSSMRA90E10H501Z', 'user': 'a1000000-0000-4000-8000-000000700001', 'phone': None, 'family': None, 'family_role': None}",
        "subscription": null,
@@ -9428,7 +9552,7 @@
        ],
        "meta": [
         "null",
-        "{\"amount\": \"25.00\", \"associate\": \"{'associate_id': 'a1000000-0000-4000-8000-000000985004', 'address': None, 'address_cap': None, 'address_city': None, 'born_city': None, 'born_date': '1990-05-10', 'email': 'mario@example.test', 'sex': 'M', 'first_name': 'Mario', 'last_name': 'Rossi', 'is_minor': False, 'sport_association': UUID('a1000000-0000-4000-8000-000000701001'), 'tax_code': 'RSSMRA90E10H501Z', 'user': 'a1000000-0000-4000-8000-000000700001', 'phone': None, 'family': None, 'family_role': None}\", \"creation_date\": \"2026-10-01T08:00:00Z\", \"payment_date\": \"2026-03-10T09:00:00Z\", \"payment_id\": \"a1000000-0000-4000-8000-000000985032\", \"subject\": 0, \"subscription\": null, \"user\": \"{'first_name': 'Message', 'last_name': 'Fixture', 'email': 'message-reads-700001@example.test', 'phone': None, 'username': 'message-reads-700001', 'role': 1}\"}"
+        "{\"amount\": \"25.00\", \"associate\": \"{'associate_id': 'a1000000-0000-4000-8000-000000985004', 'address': None, 'address_cap': None, 'address_city': None, 'born_city': None, 'born_date': '1990-05-10', 'email': 'mario@example.test', 'sex': 'M', 'first_name': 'Mario', 'last_name': 'Rossi', 'is_minor': False, 'sport_association': UUID('a1000000-0000-4000-8000-000000701001'), 'tax_code': 'RSSMRA90E10H501Z', 'user': 'a1000000-0000-4000-8000-000000700001', 'phone': None, 'family': None, 'family_role': None}\", \"creation_date\": \"2026-10-01T08:00:00Z\", \"payment_date\": \"2026-03-10T09:00:00Z\", \"payment_id\": \"a1000000-0000-4000-8000-000000985033\", \"subject\": 0, \"subscription\": null, \"user\": \"{'first_name': 'Message', 'last_name': 'Fixture', 'email': 'message-reads-700001@example.test', 'phone': None, 'username': 'message-reads-700001', 'role': 1}\"}"
        ]
       },
       "index": [
@@ -9441,7 +9565,7 @@
      {
       "task": "print_document_invoice",
       "args": [
-       "a1000000-0000-4000-8000-000000985104",
+       "a1000000-0000-4000-8000-000000985105",
        "$authorization"
       ],
       "kwargs": [],
@@ -9455,14 +9579,14 @@
    "name": "payment-state-cancel-invoiced-without-party-full-collaborator",
    "actor": "full_collaborator",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985033/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985034/cancel",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment cancelled.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000985033",
+      "payment_id": "a1000000-0000-4000-8000-000000985034",
       "user": null,
       "associate": null,
       "subscription_id": null,
@@ -9473,7 +9597,7 @@
       "custom_account_type": null,
       "custom_account_name": null,
       "invoice": {
-       "invoice_id": "a1000000-0000-4000-8000-000000985105",
+       "invoice_id": "a1000000-0000-4000-8000-000000985106",
        "document_token": null,
        "creation_date": "2026-02-01T10:00:00Z",
        "membership_fee": "0.00",
@@ -9532,7 +9656,7 @@
      "v2pay3_cancel_plain": {
       "cancelled": true,
       "meta": {
-       "payment_id": "a1000000-0000-4000-8000-000000985033",
+       "payment_id": "a1000000-0000-4000-8000-000000985034",
        "user": "None",
        "associate": "None",
        "subscription": null,
@@ -9570,7 +9694,7 @@
        ],
        "meta": [
         "null",
-        "{\"amount\": \"14.00\", \"associate\": \"None\", \"creation_date\": \"2026-10-01T08:00:00Z\", \"payment_date\": \"2026-03-11T09:30:00.250000Z\", \"payment_id\": \"a1000000-0000-4000-8000-000000985033\", \"subject\": 2, \"subscription\": null, \"user\": \"None\"}"
+        "{\"amount\": \"14.00\", \"associate\": \"None\", \"creation_date\": \"2026-10-01T08:00:00Z\", \"payment_date\": \"2026-03-11T09:30:00.250000Z\", \"payment_id\": \"a1000000-0000-4000-8000-000000985034\", \"subject\": 2, \"subscription\": null, \"user\": \"None\"}"
        ]
       },
       "index": [
@@ -9583,7 +9707,7 @@
      {
       "task": "print_document_invoice",
       "args": [
-       "a1000000-0000-4000-8000-000000985105",
+       "a1000000-0000-4000-8000-000000985106",
        "$authorization"
       ],
       "kwargs": [],
@@ -9597,7 +9721,7 @@
    "name": "payment-state-cancel-invoiced-again-unpaid",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985032/cancel",
+   "path": "/payment/a1000000-0000-4000-8000-000000985033/cancel",
    "headers": {},
    "status": 400,
    "response": {
@@ -9618,7 +9742,7 @@
    "name": "payment-state-delete-anonymous",
    "actor": "anonymous",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985035/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985036/delete",
    "headers": {},
    "status": 401,
    "response": {
@@ -9631,7 +9755,7 @@
    "name": "payment-state-delete-restricted-missing-permission",
    "actor": "restricted_collaborator",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985035/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985036/delete",
    "headers": {},
    "status": 403,
    "response": {
@@ -9644,7 +9768,7 @@
    "name": "payment-state-delete-admin-without-session",
    "actor": "admin",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985035/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985036/delete",
    "headers": {},
    "status": 403,
    "response": {
@@ -9657,7 +9781,7 @@
    "name": "payment-state-delete-owner-scoped-athlete-denied",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985035/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985036/delete",
    "headers": {
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
@@ -9673,7 +9797,7 @@
    "name": "payment-state-delete-wrong-method",
    "actor": "owner",
    "method": "GET",
-   "path": "/payment/a1000000-0000-4000-8000-000000985035/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985036/delete",
    "headers": {},
    "status": 405,
    "response": {
@@ -9686,7 +9810,7 @@
    "name": "payment-state-delete-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/payment/a1000000-0000-4000-8000-000000985035/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985036/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -9721,7 +9845,7 @@
    "name": "payment-state-delete-athlete-server-error",
    "actor": "athlete",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985035/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985036/delete",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -9732,7 +9856,7 @@
    "name": "payment-state-delete-owner-without-association-server-error",
    "actor": "owner_without_association",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985035/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985036/delete",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -9756,7 +9880,7 @@
    "name": "payment-state-delete-foreign-not-found",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985057/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985058/delete",
    "headers": {},
    "status": 404,
    "response": {
@@ -9769,7 +9893,7 @@
    "name": "payment-state-delete-deleted-not-found",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985041/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985042/delete",
    "headers": {},
    "status": 404,
    "response": {
@@ -9782,7 +9906,7 @@
    "name": "payment-state-delete-other-group-not-found",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985038/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985039/delete",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
    },
@@ -9797,7 +9921,7 @@
    "name": "payment-state-delete-clears-references",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985035/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985036/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -9833,7 +9957,7 @@
    "name": "payment-state-delete-unpaid-installments",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985036/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985037/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -9902,7 +10026,7 @@
    "name": "payment-state-delete-paid-installment",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985037/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985038/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -9950,7 +10074,7 @@
    "name": "payment-state-delete-group-installments",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985038/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985039/delete",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },
@@ -10010,7 +10134,7 @@
    "name": "payment-state-delete-full-collaborator",
    "actor": "full_collaborator",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985039/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985040/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -10046,7 +10170,7 @@
    "name": "payment-state-delete-admin-impersonating-owner",
    "actor": "admin",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985040/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985041/delete",
    "headers": {
     "X-Impersonation-Id": "$session:admin_owner",
     "User-Id": "a1000000-0000-4000-8000-000000700001"
@@ -10085,7 +10209,7 @@
    "name": "payment-state-delete-again-not-found",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985035/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985036/delete",
    "headers": {},
    "status": 404,
    "response": {
@@ -10098,7 +10222,7 @@
    "name": "payment-state-delete-invoiced-prints-before-delete",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985042/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985043/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -10118,7 +10242,7 @@
      "v2pay3_delete": {
       "cancelled": true,
       "meta": {
-       "payment_id": "a1000000-0000-4000-8000-000000985042",
+       "payment_id": "a1000000-0000-4000-8000-000000985043",
        "user": "{'first_name': 'Message', 'last_name': 'Fixture', 'email': 'message-reads-700001@example.test', 'phone': None, 'username': 'message-reads-700001', 'role': 1}",
        "associate": "{'associate_id': 'a1000000-0000-4000-8000-000000985004', 'address': None, 'address_cap': None, 'address_city': None, 'born_city': None, 'born_date': '1990-05-10', 'email': 'mario@example.test', 'sex': 'M', 'first_name': 'Mario', 'last_name': 'Rossi', 'is_minor': False, 'sport_association': UUID('a1000000-0000-4000-8000-000000701001'), 'tax_code': 'RSSMRA90E10H501Z', 'user': 'a1000000-0000-4000-8000-000000700001', 'phone': None, 'family': None, 'family_role': None}",
        "subscription": null,
@@ -10141,7 +10265,7 @@
        ],
        "meta": [
         "null",
-        "{\"amount\": \"27.00\", \"associate\": \"{'associate_id': 'a1000000-0000-4000-8000-000000985004', 'address': None, 'address_cap': None, 'address_city': None, 'born_city': None, 'born_date': '1990-05-10', 'email': 'mario@example.test', 'sex': 'M', 'first_name': 'Mario', 'last_name': 'Rossi', 'is_minor': False, 'sport_association': UUID('a1000000-0000-4000-8000-000000701001'), 'tax_code': 'RSSMRA90E10H501Z', 'user': 'a1000000-0000-4000-8000-000000700001', 'phone': None, 'family': None, 'family_role': None}\", \"creation_date\": \"2026-10-01T08:00:00Z\", \"payment_date\": \"2026-02-12T00:00:00Z\", \"payment_id\": \"a1000000-0000-4000-8000-000000985042\", \"subject\": 0, \"subscription\": null, \"user\": \"{'first_name': 'Message', 'last_name': 'Fixture', 'email': 'message-reads-700001@example.test', 'phone': None, 'username': 'message-reads-700001', 'role': 1}\"}"
+        "{\"amount\": \"27.00\", \"associate\": \"{'associate_id': 'a1000000-0000-4000-8000-000000985004', 'address': None, 'address_cap': None, 'address_city': None, 'born_city': None, 'born_date': '1990-05-10', 'email': 'mario@example.test', 'sex': 'M', 'first_name': 'Mario', 'last_name': 'Rossi', 'is_minor': False, 'sport_association': UUID('a1000000-0000-4000-8000-000000701001'), 'tax_code': 'RSSMRA90E10H501Z', 'user': 'a1000000-0000-4000-8000-000000700001', 'phone': None, 'family': None, 'family_role': None}\", \"creation_date\": \"2026-10-01T08:00:00Z\", \"payment_date\": \"2026-02-12T00:00:00Z\", \"payment_id\": \"a1000000-0000-4000-8000-000000985043\", \"subject\": 0, \"subscription\": null, \"user\": \"{'first_name': 'Message', 'last_name': 'Fixture', 'email': 'message-reads-700001@example.test', 'phone': None, 'username': 'message-reads-700001', 'role': 1}\"}"
        ]
       },
       "index": [
@@ -10163,7 +10287,7 @@
    },
    "prints": [
     {
-     "path": "/document/invoice/a1000000-0000-4000-8000-000000985107?send_receipt_email=False",
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000985108?send_receipt_email=False",
      "reply": {
       "status": 200,
       "body": "printed"
@@ -10175,7 +10299,7 @@
    "name": "payment-state-delete-invoiced-full-collaborator",
    "actor": "full_collaborator",
    "method": "DELETE",
-   "path": "/payment/a1000000-0000-4000-8000-000000985043/delete",
+   "path": "/payment/a1000000-0000-4000-8000-000000985044/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -10195,7 +10319,7 @@
      "v2pay3_delete_collab": {
       "cancelled": true,
       "meta": {
-       "payment_id": "a1000000-0000-4000-8000-000000985043",
+       "payment_id": "a1000000-0000-4000-8000-000000985044",
        "user": "None",
        "associate": "None",
        "subscription": null,
@@ -10218,7 +10342,7 @@
        ],
        "meta": [
         "null",
-        "{\"amount\": \"13.00\", \"associate\": \"None\", \"creation_date\": \"2026-10-01T08:00:00Z\", \"payment_date\": null, \"payment_id\": \"a1000000-0000-4000-8000-000000985043\", \"subject\": 2, \"subscription\": null, \"user\": \"None\"}"
+        "{\"amount\": \"13.00\", \"associate\": \"None\", \"creation_date\": \"2026-10-01T08:00:00Z\", \"payment_date\": null, \"payment_id\": \"a1000000-0000-4000-8000-000000985044\", \"subject\": 2, \"subscription\": null, \"user\": \"None\"}"
        ]
       },
       "index": [
@@ -10240,7 +10364,7 @@
    },
    "prints": [
     {
-     "path": "/document/invoice/a1000000-0000-4000-8000-000000985108?send_receipt_email=False",
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000985109?send_receipt_email=False",
      "reply": {
       "status": 200,
       "body": "printed"
@@ -10252,7 +10376,7 @@
    "name": "payment-state-approve-hard-deleted-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985037/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985038/approve",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -10454,7 +10578,7 @@
    "prints": [],
    "body": {
     "payment_ids": [
-     "a1000000-0000-4000-8000-000000985044",
+     "a1000000-0000-4000-8000-000000985045",
      "abc"
     ]
    }
@@ -10504,7 +10628,7 @@
    "body": {
     "payment_ids": [
      [
-      "a1000000-0000-4000-8000-000000985057"
+      "a1000000-0000-4000-8000-000000985058"
      ]
     ]
    }
@@ -10520,7 +10644,7 @@
    "effect": null,
    "prints": [],
    "body": {
-    "payment_ids": "a1000000-0000-4000-8000-000000985057"
+    "payment_ids": "a1000000-0000-4000-8000-000000985058"
    }
   },
   {
@@ -10533,7 +10657,7 @@
    "response": "<stable-server-error-page>",
    "effect": null,
    "prints": [],
-   "raw_body": "payment_ids=a1000000-0000-4000-8000-000000985057",
+   "raw_body": "payment_ids=a1000000-0000-4000-8000-000000985058",
    "content_type": "application/x-www-form-urlencoded"
   },
   {
@@ -10642,14 +10766,14 @@
    "prints": [],
    "body": {
     "payment_ids": [
-     "a1000000-0000-4000-8000-000000985044",
-     "A1000000-0000-4000-8000-000000985045",
-     "a1000000-0000-4000-8000-000000985046",
-     "a1000000-0000-4000-8000-000000985057",
-     "a1000000-0000-4000-8000-000000985050",
+     "a1000000-0000-4000-8000-000000985045",
+     "A1000000-0000-4000-8000-000000985046",
+     "a1000000-0000-4000-8000-000000985047",
+     "a1000000-0000-4000-8000-000000985058",
+     "a1000000-0000-4000-8000-000000985051",
      "a1000000-0000-4000-8000-000000720009",
      null,
-     "a1000000-0000-4000-8000-000000985044"
+     "a1000000-0000-4000-8000-000000985045"
     ]
    }
   },
@@ -10681,8 +10805,8 @@
    "prints": [],
    "body": {
     "payment_ids": [
-     "a1000000-0000-4000-8000-000000985047",
-     "a1000000-0000-4000-8000-000000985048"
+     "a1000000-0000-4000-8000-000000985048",
+     "a1000000-0000-4000-8000-000000985049"
     ]
    }
   },
@@ -10711,7 +10835,7 @@
    "prints": [],
    "body": {
     "payment_ids": [
-     "a1000000-0000-4000-8000-000000985057"
+     "a1000000-0000-4000-8000-000000985058"
     ]
    }
   },
@@ -10741,7 +10865,7 @@
    "prints": [],
    "body": {
     "payment_ids": [
-     "a1000000-0000-4000-8000-000000985049"
+     "a1000000-0000-4000-8000-000000985050"
     ]
    }
   },
@@ -10774,7 +10898,7 @@
    "prints": [],
    "body": {
     "payment_ids": [
-     "a1000000-0000-4000-8000-000000985048"
+     "a1000000-0000-4000-8000-000000985049"
     ]
    }
   },
@@ -10973,7 +11097,7 @@
    "prints": [],
    "body": {
     "payment_ids": [
-     "a1000000-0000-4000-8000-000000985051",
+     "a1000000-0000-4000-8000-000000985052",
      "abc"
     ]
    }
@@ -11023,7 +11147,7 @@
    "body": {
     "payment_ids": [
      [
-      "a1000000-0000-4000-8000-000000985057"
+      "a1000000-0000-4000-8000-000000985058"
      ]
     ]
    }
@@ -11039,7 +11163,7 @@
    "effect": null,
    "prints": [],
    "body": {
-    "payment_ids": "a1000000-0000-4000-8000-000000985057"
+    "payment_ids": "a1000000-0000-4000-8000-000000985058"
    }
   },
   {
@@ -11052,7 +11176,7 @@
    "response": "<stable-server-error-page>",
    "effect": null,
    "prints": [],
-   "raw_body": "payment_ids=a1000000-0000-4000-8000-000000985057",
+   "raw_body": "payment_ids=a1000000-0000-4000-8000-000000985058",
    "content_type": "application/x-www-form-urlencoded"
   },
   {
@@ -11161,10 +11285,10 @@
    "prints": [],
    "body": {
     "payment_ids": [
-     "a1000000-0000-4000-8000-000000985051",
      "a1000000-0000-4000-8000-000000985052",
-     "a1000000-0000-4000-8000-000000985057",
-     "a1000000-0000-4000-8000-000000985041",
+     "a1000000-0000-4000-8000-000000985053",
+     "a1000000-0000-4000-8000-000000985058",
+     "a1000000-0000-4000-8000-000000985042",
      "a1000000-0000-4000-8000-000000720009"
     ]
    }
@@ -11197,8 +11321,8 @@
    "prints": [],
    "body": {
     "payment_ids": [
-     "a1000000-0000-4000-8000-000000985053",
-     "a1000000-0000-4000-8000-000000985054"
+     "a1000000-0000-4000-8000-000000985054",
+     "a1000000-0000-4000-8000-000000985055"
     ]
    }
   },
@@ -11228,7 +11352,7 @@
    "prints": [],
    "body": {
     "payment_ids": [
-     "a1000000-0000-4000-8000-000000985055"
+     "a1000000-0000-4000-8000-000000985056"
     ]
    }
   },
@@ -11261,7 +11385,7 @@
    "prints": [],
    "body": {
     "payment_ids": [
-     "a1000000-0000-4000-8000-000000985056"
+     "a1000000-0000-4000-8000-000000985057"
     ]
    }
   },
@@ -11287,7 +11411,7 @@
    "prints": [],
    "body": {
     "payment_ids": [
-     "a1000000-0000-4000-8000-000000985051"
+     "a1000000-0000-4000-8000-000000985052"
     ]
    }
   },
@@ -11295,7 +11419,7 @@
    "name": "payment-state-approve-bulk-deleted-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000985051/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000985052/approve",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",

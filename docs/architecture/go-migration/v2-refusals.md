@@ -244,6 +244,26 @@ Receipts are `quality-reports/go-migration/<family>-http-v2del-*`; each family d
 | document-delete | `DELETE document/<uid>/delete` | every existing document of a requester with an association (A): the ownership walk over the objects referencing it, then `Document.delete()` with its cascade and audit entries | 57 cases; RED `v2del-red-r3` Django 57/57, Go 500; GREEN `v2del-versioned-r1` 4 transports; mutation `v2del-mutation-r1` (update entries counted as creation entries) CAUGHT; docmanager-reads 155/155 re-run (`v2del-rerun-r1`) |
 | balance-sheet | `DELETE balance-sheet/accounts/<uid>/delete` | an account that any payment references (A: payments removed from the list or of another group leave it deletable in the UI): the collector deletes the account, its transfers and its payments, with the payments' delete receivers | 80 cases; RED `v2del-red-r1` Django 80/80, Go 500; GREEN `v2del-versioned-r1` 4 transports; mutation `v2del-mutation-r1` (payment receiver skipped) CAUGHT; balance-account-writes 29/29, balance-transfer-writes 30/30 and balance-accounts 25/25 re-run (`v2del-rerun-r1`) |
 
+### Ported in the v2-rest-a change
+
+Rare inputs and old data (class B rows). Receipts are `quality-reports/go-migration/<family>-http-v2resta-*`; each
+family doc has the details. Eleven appendix conditions over five families, three of them `legacy: yes` rows (the module
+of an association in another state, the paid flow's old `meta` names on approve and on Stripe).
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| modules-responses | `GET modules/<link>/info` (B, legacy: yes) | module whose association is not an owner's active one (the nested profile is the row the foreign key resolves by id) | 148 cases; RED `v2resta-red-r2` Django 148/148, Go 500; GREEN `v2resta-green-r4` 4 transports; mutation `v2resta-mutation-r2` (the by-id reader given the owner reader's row condition) CAUGHT; modules-reads 81/81 re-run |
+| payment-state | `POST payment/<id>/approve` paid flow (B, legacy: yes) | `X-Group-Id` in another spelling; float fees on an exact two-place tie; `meta.subscription_data.name` that is a float, list or dict | 158 cases; RED `v2resta-red-r3` Django 158/158, Go 500; GREEN `v2resta-green-r3` 4 transports; mutation `v2resta-mutation-r2` (re-save compared with the half-even value) CAUGHT; invoice-generate 50/50 re-run |
+| payment-state | `POST payment/<id>/approve` (B) | `payment_date` with decimal digits of other scripts | 160 cases; GREEN `v2resta-green-r4` 4 transports; mutation `v2resta-mutation-r3` (year limited to ASCII digits) CAUGHT |
+| payment-writes | `POST payment/add`, bulk-add (B) | dates with decimal digits of other scripts | 156 cases; GREEN `v2resta-green-r3` 4 transports; mutation `v2resta-mutation-r2` (year limited to ASCII digits) CAUGHT |
+| stripe-routes | `stripe/webhook`, `stripe/pay`, `stripe/multiple-pay` paid flow (B, legacy: yes) | the same three conversions in `mark_payment_as_paid` | 105 cases; RED `v2resta-red-r2` Django 105/105, Go fails (no invoice); GREEN `v2resta-green-r1` 4 transports; mutation `v2resta-mutation-r1` (create entry with the stored uuid) CAUGHT |
+| payment-writes | `POST payment/add` (B) | `X-Group-Id` in another spelling (also on the auto-paid invoice); auto-paid fees on an exact half cent | 155 cases; RED `v2resta-red-r1` Django 155/155, Go 500; GREEN `v2resta-green-r1` 4 transports; mutation `v2resta-mutation-r1` (second invoice save compared with the half-even value) CAUGHT; payment-misc re-run |
+| payment-misc | `GET payment/simulation/partial-quotes`, `partial-quotes-apply` (B) | plan days/months and `date` written with decimal digits of other scripts; `X-Group-Id` in another spelling on apply | 101 cases; RED `v2resta-red-r1` Django 101/101, Go 500; GREEN `v2resta-green-r1` 4 transports; mutation `v2resta-mutation-r1` (day's second digit limited to ASCII) CAUGHT; payment-state and payment-writes re-run |
+
+Left refused in these families, with the reason: payment-misc plan fees and plan ids of other JSON types (each type has
+its own lookup and insert failure in Django; the plan editor writes strings and numbers); `send_receipt_email` of other types; modules-responses attachment names and form
+bodies; the Stripe request-shape rows (non-string ids, unencodable `stripe_available_methods`).
+
 ## Remaining A items, per family
 
 UI paths under `UI/src/`, Go under `BE_GO/internal/`. Cost: cheap (hours), medium (a family change with new
@@ -777,7 +797,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | POST add-attachment / response/add | form or multipart body | `service/modules_responses.go:213,370` | B | The UI sends JSON (`PublicModule.svelte:47-50,67-73`). |
 | POST add-attachment | non-string `filename`/`base64` | `service/modules_responses.go:466` | B | The UI sends strings. |
 | DELETE add-attachment | non-string `document_id`; document referenced elsewhere | `service/modules_responses.go:392,416` | B | The UI sends the string id (`PublicModule.svelte:84-92`). Attachment documents are created per response, so another reference would be legacy or imported data. legacy: low. Cost: medium (collector). |
-| GET modules/<link>/info | module whose association is not active | `service/modules_responses.go:130` | B | Deleted or disabled associations only. legacy: yes. Cost: cheap. |
+| GET modules/<link>/info | module whose association is not active | `service/modules_responses.go` (`ReadAssociation`) | ported (v2-rest-a) | Deleted or disabled associations only. legacy: yes. Cost: cheap. |
 | GET modules/<id>/export | list/dict labels, ints beyond int64, xlsxwriter-refused text, non-dict `props` | `service/modules_export.go:94,114,150,162,176,260,266,272` | B | `routes/association/Members/overview/ModuleOverview.svelte:37`. The form builder writes string labels. Free-text answers starting with `=` or holding URLs with `#` would hit the xlsxwriter path. legacy: yes. Cost: medium. |
 
 ### modules-writes.md
@@ -791,7 +811,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | GET payment/simulation/partial-quotes-apply | a member's own account to e-mail while the association has a `CommunicationConfiguration` | `service/payment_misc.go` (`Apply`, `ErrPaymentMiscNotPorted`) | A (ported in v2-payments-3) | Same UI call (`SubscriptionFeesPlanModal.svelte:46`). Without an SMTP configuration the e-mail is ported (published `send_mail_async`); with one Django sends on a `Timer` thread after a random delay. |
-| partial-quotes(-apply) | non-ASCII-digit dates, odd fee/plan types, non-canonical X-Group-Id | `service/payment_misc.go:103,115,250-284,345,489`; `service/quote_assign.go:301-309` | B | The UI sends `?date=YYYY-MM-DD`. Plans come from template data. legacy: yes (old plan JSON). Cost: cheap. |
+| partial-quotes(-apply) | non-ASCII-digit dates and plan days/months, non-canonical X-Group-Id | `service/payment_misc.go` | ported (v2-rest-a) | See `payment-misc.md`. |
+| partial-quotes(-apply) | odd fee/plan types (fees that are not a number or decimal string, plan ids that are not strings or numbers, ints beyond int64) | `service/payment_misc.go` (`paymentMiscAmount`, `paymentMiscPattern`); `service/quote_assign.go` | B | The UI sends `?date=YYYY-MM-DD`. Plans come from template data. legacy: yes (old plan JSON). Cost: cheap. |
 | POST payment/<id>/approve (via payment-state) | `send_receipt_email` not None/bool/str/int64 | payment-state | B | Exotic. |
 
 ### oauth2-accounts.md
@@ -846,7 +867,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | POST payment/add | owner has `auto_paid_payment` | `service/payment_writes.go:570` | **A** (ported in v2-payments-3) | The toggle is in `routes/profile/sections/Settings.svelte:1013`. Django: `payment_views.py:78-79`. Cost: medium–expensive (invoice numbering + `print_document_invoice`). |
 | PATCH payment/<id>/update | payment has an invoice | `service/payment_writes.go:766` | **A** | Any edit of an invoiced (receipted) payment from `AddEditModal.svelte:142`. Cost: medium (invoice re-print dispatch). |
 | add/update | form/multipart bodies | `service/payment_writes.go:722` | B | The UI sends JSON. |
-| add | non-canonical X-Group-Id; non-ASCII-digit dates | `service/payment_writes.go:534,59` | B | See the X-Group-ID note. The UI sends `DD/MM/YYYY` ASCII. |
+| add | non-canonical X-Group-Id; auto-paid fees on an exact half cent | `service/payment_writes.go` (`createGroupSent`) | ported (v2-rest-a) | See `payment-writes.md`. |
+| add, update | non-ASCII-digit dates | `service/payment_writes.go` (`paymentWritesStrptime`) | ported (v2-rest-a) | See `payment-writes.md`. |
 
 ### personas-reads.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -859,8 +881,9 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 |---|---|---|---|---|
 | POST payment/<id>/cancel | paid payment with an invoice | `service/payment_state.go:322` | **A** (ported in v2-payments-3) | `routes/accounting/payment/PaymentList.svelte:575`, `partials/payment-overview.svelte:187`. Receipted payments are normal. Cost: medium (invoice cancellation + PDF task). |
 | DELETE payment/<id>/delete | payment with an invoice | `service/payment_state.go:363` | **A** (ported in v2-payments-3) | `PaymentList.svelte:689`. Cost: medium–expensive (synchronous PDF). |
-| approve paid flow | non-canonical X-Group-Id; float fee tie; odd `meta.subscription_data.name`; user without association id | `service/payment_state.go:52-60` and paid flow | B | Exotic or legacy data. Fee ties are rare. legacy: yes (old meta). Cost: cheap. |
-| approve/date | non-ASCII-digit `payment_date` | `service/payment_state.go:133` | B | |
+| approve paid flow | non-canonical X-Group-Id; float fee tie; odd `meta.subscription_data.name` | `service/payment_paid_flow.go` | ported (v2-rest-a) | See `payment-state.md` ("Paid flow rare inputs"). |
+| approve paid flow | user without association id | `service/payment_paid_flow.go` | B | Exotic or legacy data. Fee ties are rare. legacy: yes (old meta). Cost: cheap. |
+| approve/date | non-ASCII-digit `payment_date` | `service/payment_state.go` (`paymentStateDateAny`) | ported (v2-rest-a) | See `payment-state.md`. |
 | approve | task dispatcher missing / tx type | `service/payment_state.go:227,254` | C | Wiring only. |
 
 ### printing-generate.md
@@ -960,7 +983,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### stripe-routes.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| stripe/pay, multiple-pay, webhook | paid-flow conversions (X-Group-Id, fee ties, odd meta name) | `service/stripe_routes.go:233,284,321,391,655` (`ErrStripeNotPorted`) | B | See payment-state. legacy: yes (meta). |
+| stripe/pay, multiple-pay, webhook | paid-flow conversions (X-Group-Id, fee ties, odd meta name) | `service/payment_paid_flow.go` | ported (v2-rest-a) | See `stripe-routes.md` ("Paid flow rare inputs"). |
 | same | `stripe_available_methods` floats/nested lists, mixed `payments` lists, non-string ids, odd `payment_intent`, intent without id, amounts beyond int64 | same | B | The UI sends string lists and ids. Webhook input comes from Stripe. |
 | webhook | body over `DATA_UPLOAD_MAX_MEMORY_SIZE` | | B | Stripe client only. |
 

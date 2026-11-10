@@ -89,7 +89,6 @@ payment dates are a 500 with nothing written. Response `201`.
   row's own key (a primary key change). The edit form's own key (any spelling `uuid.UUID` accepts) is accepted: the
   UniqueValidator excludes the instance and the save keeps the row.
 - Update form bodies and add multipart bodies carrying files (mutable QueryDict).
-- Dates with non-ASCII decimal digits (accepted by `strptime`).
 
 ## Attachments (`attachments_data`)
 
@@ -192,3 +191,9 @@ RED `v2resta-red-r1`: Django 155/155, Go 500 on `payment-writes-add-group-upper-
 merging `codex/go-backend-parity` `b64953a5`): 155/155 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 Mutation `v2resta-mutation-r1` (the second invoice save comparing the response's half-even value) fails
 `payment-writes-add-auto-paid-fee-tie` (CAUGHT). Re-run: payment-misc (`v2resta-rerun-r1`, shared `PaymentWrites`).
+
+Dates (v2-rest-a, second block): the add and bulk-add `strptime` attempts use `paymentStateDateAny` (decimal
+digits of any script for the year and the day's second digit). One more case (156 in all): an add with both dates (the update view has no `strptime` attempt: the serializer
+validates the text). The old refusal is the RED (v2-refusals.md, payment-writes row "non-ASCII-digit dates").
+GREEN `v2resta-green-r3`: 156/156 on the four transports. Mutation `v2resta-mutation-r2` (the year limited to ASCII
+digits) fails `payment-writes-add-other-script-dates` (CAUGHT).

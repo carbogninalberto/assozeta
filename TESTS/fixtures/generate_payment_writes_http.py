@@ -509,6 +509,11 @@ added('add-every-field', 'owner', {
     {**plain, 'creation_date': '2026-03-05T08:20:30.123456Z', 'payment_date': '2026-03-06T00:00:00Z', 'type': 'cash', 'subject': 1,
      'amount': '40.00', 'expense': True, 'payment_category_id': CATEGORIES['own']['id'], 'custom_accounts_id': ACCOUNTS['cash']['id'],
      'notes': 'Nota è', 'course': {'value': 3, 'label': 'Corso X'}, 'description': 'Iscrizione', 'associate_id': A('mario')})
+# strptime's \d (the year and the day's second digit) matches decimal digits of any script; a month written with
+# them is left to the serializer, which rejects it.
+added('add-other-script-dates', 'owner', {'creation_date': '\uff12\u0660\uff12\u0666-03-1\u0664', 'payment_date': '2026-03-2\u096b',
+                                          'amount': '6', 'description': 'Cifre', 'complex_item': None},
+      {**plain, 'creation_date': '2026-03-14T00:00:00Z', 'payment_date': '2026-03-25T00:00:00Z', 'amount': '6.00', 'description': 'Cifre'})
 added('add-course-label-description', 'owner', {'creation_date': '2026-03-07', 'payment_date': None, 'subject': 2, 'amount': '30.00',
                                                 'course': {'label': 'Corso Y'}, 'payment_category': CATEGORIES['global']['id'],
                                                 'complex_item': None},

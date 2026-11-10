@@ -124,7 +124,6 @@ untouched. Responses `{'message': 'All payments archived'}` / `{'message': 'All 
   is not null, a boolean, a string or an int64. The other paid flow conversions are ported (v2-rest-a, below).
 - Delete of an invoiced payment while the print task is deferred for maintenance (a pending restore or a busy operation
   lock: Django re-applies the task synchronously); the invoice save is already committed, as in Django.
-- A `payment_date` containing non-ASCII decimal digits (accepted by `strptime`).
 
 ## Evidence
 
@@ -179,3 +178,9 @@ the column's) fails `payment-state-approve-paid-flow-fee-tie` (CAUGHT). `invoice
 their refusals for `payment/<id>/generate-invoice` and `payment/add` (other families); the paid flow calls
 `invoiceFeesAny`/`floatFeeAny` and `InvoiceGenerations{anyMetaName: true}`. Re-run: `invoice-generate` and
 `payment-writes` (`v2resta-rerun-r1`), `stripe-routes` (`v2resta-green-r1`).
+
+Dates (v2-rest-a, second block): `payment_date` goes through `paymentStateDateAny`, so the year and the day's second
+digit accept decimal digits of any script, as `strptime`'s `\d` does; a month written with them is the same 500 as any
+other mismatch. Two more cases (160 in all). The old refusal is the RED (v2-refusals.md, payment-state row
+"approve/date"). GREEN `v2resta-green-r4`: 160/160 on the four transports. Mutation `v2resta-mutation-r3` (the year
+limited to ASCII digits) fails `payment-state-approve-other-script-date` (CAUGHT).
