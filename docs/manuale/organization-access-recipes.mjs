@@ -16,7 +16,7 @@ const reviewed = {
   "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
   "BE/application/utils/api_utils.py": "5db286fc73e92356b476514f4d6561a3300b36668ee99831ca1b197835a5cabf",
   "BE/application/models/subscriptions_models.py": "348705bf0908ccd489167eb26c4975dc51ddfd77d82d7699f7cc1dbf69c17c7c",
-  "BE/application/views/subscriptions_views.py": "9e564ffd44c50aad0e53977412a51c6e396f5f8baadb6321e8268d18a7a058ac",
+  "BE/application/views/subscriptions_views.py": "f058d86753ef02c4c1f542e469e16a3338e07a9b5209ed5365ad86ccd0b9733c",
   "BE/application/serializers/subscriptions_serializers.py": "dcad47643b654acc19e687561f1231b63392bf4315e74110b69a75e20f9d0edc",
   "UI/src/routes/connectedCollaborators/ConnectedCollaborators.svelte": "e4a1f60f0fd4683722136602d0e0f3db8f67f9d5cb2b3b71972ae810f50eedf6",
   "UI/src/routes/connectedCollaborators/CollaboratorActions.svelte": "2df48f56f3e4035b34ca2db58fa83423b7db8f2cce72d983e5dd1c826907ca8b",

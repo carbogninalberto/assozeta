@@ -6,8 +6,8 @@ const reviewed = {
   "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644",
   "UI/src/routes/association/Members/MembersList.svelte": "2205d4071d49dc3c96bad02299dd157668037807f33811b395f811197841650a",
   "UI/src/components/tables/BKNDatatable.svelte": "a236f1526b3033905925d3354b4361907c2f3e96699efc1e59cc1e927c6b9692",
-  "BE/application/views/subscriptions_views.py": "9e564ffd44c50aad0e53977412a51c6e396f5f8baadb6321e8268d18a7a058ac",
-  "BE/application/services/subscription_service.py": "306c242434367467ada10f14cccbf2b4b7413184364da72ac5d3f062043e9206",
+  "BE/application/views/subscriptions_views.py": "f058d86753ef02c4c1f542e469e16a3338e07a9b5209ed5365ad86ccd0b9733c",
+  "BE/application/services/subscription_service.py": "dabb1369f276602e5f95694843c61c94e63b947133b908d3edcb7d77fec01d82",
   "BE/application/models/subscriptions_models.py": "348705bf0908ccd489167eb26c4975dc51ddfd77d82d7699f7cc1dbf69c17c7c",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
   "BE/application/urls.py": "b475e7ed8c26a891854c4021d7308aefb192d2a26df8b3ee916a33f88e7cc359"

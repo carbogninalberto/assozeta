@@ -16,7 +16,7 @@ const reviewed = {
   "BE/application/serializers/user_serializers.py": "b6c13df61ad39bf22722f3fc69659129fd0cedbbda588e7cbc727989b00e07f6",
   "BE/application/models/user_models.py": "4800cd1f7a757e9e7d5203d1ea086d58e92ac4592e43c7fa7758103071336c96",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
-  "BE/core/settings.py": "03e00b50c788c9d399d0aae87266f17d60755907f639d0e2d9ed0fbf5180bebb"
+  "BE/core/settings.py": "c613a7e2897d41731ce92e9074b26bd99091e0a5bf823aa6269291a59a52c056"
 };
 const contracts = [
   ["UI/src/components/Sidebar.svelte","<span class=\"menu-text\">Corsi e Abbonamenti</span>",75],
