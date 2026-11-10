@@ -50,13 +50,18 @@ are implemented in Go (`BE_GO/internal/{domain,repository,service,handler}/camps
   `str(float)`). Requests are not atomic: a failing walk (for example metas that are null) leaves the saved service
   and earlier payment saves and answers 500 `{'error': str(e)}`.
 - Service delete removes its link rows and the service (actor-indexed entry).
+- A walked payment its manager does not return (soft-deleted, or outside the request's `X-Group-Id`) is saved like
+  any other. auditlog reads the stored row through that manager, finds none and diffs the instance against None:
+  each save writes an update entry with every field as on a create (`deleted` included, the amount as the stored
+  decimal on the metas save and as `str(float)` on the final save). Its index row is resolved from the entry's own
+  `sport_association` (`changes_json.sport_association`).
 
 ## Not ported (refused with a 500 before any write)
 
 - A changed primary key on update that passes validation (Model.save() would insert a copy).
 - HTML form input carrying the many-to-many services key (QueryDict.getlist) or file parts.
 - Payment walks whose outcome this port does not reproduce: a soft-deleted payment or one outside the request's
-  `X-Group-Id` (auditlog would diff against no row), a failure with more than one subscription period in the walk
+  `X-Group-Id` that has no association (the index row is not characterized), a failure with more than one subscription period in the walk
   (Django's order is the database's), `Payment.save()` description failures, and amounts or notes PostgreSQL would
   reject (numeric overflow, the non-negative amount constraint, notes over 5120 characters).
 
@@ -68,3 +73,9 @@ service, subscription period, payment, link, audit and index effects (`versioned
 nothing when the payment walk fails (an atomic service update) fails
 `services-update-null-metas-server-error` (`mutation-r2`); dropping the period re-save fee audit fails `add-owner`
 (`mutation-r3`). `course-location-writes` stays green after the route block was added to `main.go`.
+
+API v2 (v2-misc-2): the payment walk over a soft-deleted or other-group payment. Two cases: a period whose only
+subscription period carries a soft-deleted unpaid payment (two saves, two full entries) and a service update with
+`X-Group-Id` over a payment without a group. RED `v2misc2-red-r2`: Django 110/110, Go 500. GREEN `v2misc2-green-r2`:
+110/110 on the four transports. Mutation `v2misc2-mutation-r1` (final entry's amount rendered from the stored
+decimal) fails `services-update-deleted-payment` on Go (`audit.changes`).

@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 5 in v2-misc (one v2-misc row duplicated a v2-documents port) and 1 in v2-misc-2, below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 5 in v2-misc (one v2-misc row duplicated a v2-documents port) and 2 in v2-misc-2, below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -126,6 +126,7 @@ Receipts are `quality-reports/go-migration/<family>-http-v2misc2-*` (profile-mis
 | Family | Route | Was refused | Evidence |
 |---|---|---|---|
 | communications-smtp | `GET communications/settings/smtp/verify` | a configuration with a connectable host (connect, STARTTLS or implicit TLS, login, test email, quit, and the smtplib failure texts) | 83 cases; RED `v2misc2-red-r1` Django 83/83, Go 500; GREEN `v2misc2-green-r1` 4 transports; mutation `v2misc2-mutation-r1` (test email addressed to the SMTP user) CAUGHT; communications-send-email 55/55 and instance-outbound 106/106 re-run |
+| camps-periods | `PATCH camps-and-retreats/periods/services/<uid>/update` | payment walk over a soft-deleted or other-group unpaid payment (saved, each save audited as an update of every field against None, indexed through `changes_json.sport_association`) | 110 cases; RED `v2misc2-red-r2` Django 110/110, Go 500; GREEN `v2misc2-green-r2` 4 transports; mutation `v2misc2-mutation-r1` (final amount rendered from the stored decimal) CAUGHT |
 | profile-misc | `PATCH onboarding/update` | `onboarding_data` with a `users_onboarding_id` or `user` other than the row's own (both are read-only serializer fields now) | 107 cases; RED `seconb-red-r1` Django 107/107, Go 500; GREEN `seconb-green-r1` 4 transports; mutation `seconb-mutation-r1` (row id taken from the body) CAUGHT |
 
 ## Remaining A items, per family
@@ -221,15 +222,12 @@ legacy Bakney invoices or tutors that would be reassigned (refused by the valida
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | GET communications/settings/smtp/verify | a failed connection whose Python text comes from the platform libraries: TLS handshake error (for example `SSL` on a STARTTLS port), name resolution failure, connect timeout | `communication/settings/sections/EmailSMTP.svelte:155` | `service/communications_smtp.go` (`Verify`) | medium |
-| PATCH camps-and-retreats/periods/services/<uid>/update | walks a soft-deleted/other-group unpaid payment | `EditServiceModal.svelte:29-35` | `service/camps_periods.go:755` | medium |
 | personas add/update | `picture_path` data URL (photo) | `preview-blocks/image-upload.svelte:35-38` | `service/personas_writes.go:270-288` | medium |
 | oauth2/signup | Google/Apple configured | `routes/login/Login.svelte:425-447` | `service/oauth_accounts.go:448` | medium-expensive |
 
 Why these stay (v2-misc):
 - smtp/verify: the dialogue is ported (v2-misc-2). What stays is the text of OpenSSL, resolver and connect-timeout errors, which
   depends on the Python build and the platform; Go answers the 500 page instead of a `verified: false` body.
-- camps service update on a soft-deleted or other-group payment: Django saves it and auditlog, reading the old row through the
-  soft-delete manager, writes an update entry diffed against None; that entry and its index row need their own characterization.
 - personas photo: the data URL is stored under a timestamped key with a `put_object_acl` and a CDN URL; needs a MinIO in the
   personas-writes adapter.
 - oauth2/signup with providers: needs stubbed Google/Apple token verification in the oauth-accounts adapter.
@@ -319,7 +317,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 |---|---|---|---|---|
 | PATCH periods/<uid>/update, periods/services/<uid>/update | changed primary key passing validation | service/camps_periods.go:244,600 (`ErrCampsPrimaryKeyChange`) | B | Period update (`overview/CampsAndRetreatsPeriodOverview.svelte:49-53`) and service update (`overview/modals/EditServiceModal.svelte:29-35`) send form fields without the pk. Cost: medium. |
 | POST periods/add, PATCH periods/<uid>/update, services add/update | form body with the services key or file parts | dto/camps_period_write.go:245,320 (`ErrCampsFormNotPorted`) | B | UI sends JSON (`overview/modals/AddModal.svelte:33-34`, `AddServiceModal.svelte:31-32`, and the two above). Cost: cheap. |
-| PATCH camps-and-retreats/periods/services/<uid>/update | an unpaid walked payment is soft-deleted, or (with `X-Group-Id` set) belongs to another/no group | service/camps_periods.go:755 (`ErrCampsPaymentNotPorted`) | A | Service edit is UI-driven (`EditServiceModal.svelte:29-35`). Deleting a camp payment from the payment list is a soft delete (`views/payment_views.py:506`) and leaves the subscription period linked; a multi-group association editing with a different group selected (`ApiMiddleware.js:141`) also hits it. |
+| PATCH camps-and-retreats/periods/services/<uid>/update | an unpaid walked payment is soft-deleted, or (with `X-Group-Id` set) belongs to another/no group | service/camps_periods.go (`campsWalk`) | ported | Ported in v2-misc-2 (`camps-periods.md`, `v2misc2-green-r2`). A hidden payment without an association stays refused (B). |
 | PATCH services/<uid>/update | walk failure with more than one subscription period; `Payment.save()` description failure | service/camps_periods.go:773,816 | B | Failures need malformed metas (e.g. null) on camp payments, which the camp writers never produce; legacy: yes (admin-edited metas). Cost: medium. |
 | PATCH services/<uid>/update | amount over `numeric(9,2)`/negative, notes > 5120 chars | service/camps_periods.go:780 | B | Needs extreme fees or very many services. Cost: cheap. |
 

@@ -307,6 +307,16 @@ func (t *campsTransaction) DeletePeriod(ctx context.Context, id string) ([]domai
 func (t *campsTransaction) AppendAudit(ctx context.Context, event domain.CampsAudit, audit domain.LoginAuditContext, at time.Time) error {
 	entry := modelAuditEntry{Model: lowerASCII(event.Model), Key: event.Key, Representation: event.Model + " object (" + event.Key + ")",
 		Action: event.Action, Changes: event.Changes, Context: audit, At: at}
+	if event.Full {
+		changes, err := createdModelChanges(ctx, t.tx, "application_payment", "payment_id", event.Key)
+		if err != nil {
+			return err
+		}
+		for field, pair := range event.Changes {
+			changes[field] = pair
+		}
+		entry.Changes = changes
+	}
 	if event.AssociationID != nil {
 		path := event.Path
 		entry.AssociationID, entry.ResolutionPath = event.AssociationID, &path
