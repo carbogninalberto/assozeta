@@ -452,7 +452,18 @@ def attachment_docs(specs, actor, payment):
     return audit, stored, rendered
 
 
-def added(name, actor, body, values, *, amount=None, headers=None, status=201, response=None, party=None, finish=True, documents=()):
+def sent_group(audit, response, stored, sent):
+    """X-Group-Id in another spelling: the column stores the uuid, the in-memory payment keeps the text as sent, so
+    the create entry and the response carry the text and every later save records [stored uuid, sent text]."""
+    for entry in audit:
+        if entry.get('model') == 'invoice':
+            continue
+        entry['changes']['group'] = ['None' if entry['action'] == 0 else stored, sent]
+    response['group'] = sent
+
+
+def added(name, actor, body, values, *, amount=None, headers=None, status=201, response=None, party=None, finish=True, documents=(),
+          group_sent=None):
     """A created payment: the create entry from serializer.save(), then (finish) the view's audited save of
     user, association and party. amount: (str(float), stored, rendered) for a float amount."""
     stored_amount, shown = (amount[1], amount[2]) if amount else (None, None)
@@ -477,6 +488,8 @@ def added(name, actor, body, values, *, amount=None, headers=None, status=201, r
         audit.append(event('$id', 1, updated_changes(first, created, floated, stored_amount), index))
     if response is None:
         response = {**payment_item(final, '$bind:payment', shown), 'attachments': rendered}
+    if group_sent:
+        sent_group(audit, response, final['group_id'], group_sent)
     add(name, actor, ADD, status, response, body=body, headers=headers,
         effect={**effect(actor, created=[final], audit=audit), 'documents': stored_documents})
 
@@ -537,6 +550,11 @@ added('add-group', 'owner', {'creation_date': '2026-03-17', 'payment_date': None
                              'complex_item': {'group': 'Persone', 'associate_id': A('grouped')}},
       {**plain, 'creation_date': '2026-03-17T00:00:00Z', 'amount': '3.00', 'description': 'Gruppo', 'associate_id': A('grouped'),
        'group_id': IDS['own_group']}, headers=GROUP)
+UPPER_GROUP = {'X-Group-Id': IDS['own_group'].upper()}
+added('add-group-upper-case', 'owner', {'creation_date': '2026-03-17', 'payment_date': None, 'amount': '3', 'description': 'Gruppo maiuscolo',
+                                        'complex_item': {'group': 'Persone', 'associate_id': A('grouped')}},
+      {**plain, 'creation_date': '2026-03-17T00:00:00Z', 'amount': '3.00', 'description': 'Gruppo maiuscolo', 'associate_id': A('grouped'),
+       'group_id': IDS['own_group']}, headers=UPPER_GROUP, group_sent=IDS['own_group'].upper())
 added('add-full-collaborator', 'full_collaborator', {'creation_date': '2026-03-18', 'payment_date': None, 'amount': '4',
                                                      'description': 'Collaboratore', 'complex_item': None},
       {**plain, 'creation_date': '2026-03-18T00:00:00Z', 'amount': '4.00', 'description': 'Collaboratore'})
@@ -601,9 +619,12 @@ def recipient_text(recipient, reason):
             f"<b>{escape(DENOMINATION)}</b>.")
 
 
-def auto_paid(name, actor, body, values, *, invoice=None, amount=None, headers=None, settings=None, prints=None, status=201):
+def auto_paid(name, actor, body, values, *, invoice=None, amount=None, headers=None, settings=None, prints=None, status=201,
+              group_sent=None):
     """A payment added with auto_paid_payment. invoice: number, description, membership and activity as (rendered,
-    str() in memory), created ('$now' or the payment date), meta, group. amount: (str(float), stored, rendered)."""
+    str() in memory), created ('$now' or the payment date), meta, group, stored (membership, activity as the column
+    keeps them, when a tie rounds them away from the rendered text). amount: (str(float), stored, rendered).
+    group_sent: the X-Group-Id text when it is not the stored spelling."""
     stored_amount, shown = (amount[1], amount[2]) if amount else (None, None)
     floated = amount[0] if amount else None
     created = row(**{**values, 'paid': True, 'amount': stored_amount or values.get('amount', '0.00')})
@@ -621,24 +642,27 @@ def auto_paid(name, actor, body, values, *, invoice=None, amount=None, headers=N
             item = {'invoice_id': '$bind:invoice', 'document_token': None, 'creation_date': date, 'membership_fee': membership[0],
                     'activity_fee': activity[0], 'meta_payment_categories': meta, 'description': invoice['description'],
                     'number': invoice['number'], 'archived': False, 'cancelled': False, 'meta': None, 'imported_from_associami': False,
-                    'deleted': False, 'document_pdf': None, 'sport_association': OWN, 'selected_tutor': None, 'group': group,
-                    'attached_documents': []}
+                    'deleted': False, 'document_pdf': None, 'sport_association': OWN, 'selected_tutor': None,
+                    'group': group_sent or group, 'attached_documents': []}
+            columns = invoice.get('stored', (membership[0], activity[0]))
             audit.append({'key': '$invoice', 'model': 'invoice', 'action': 0, 'index': DIRECT, 'changes': {
                 'invoice_id': ['None', '$invoice'], 'document_pdf': ['None', 'None'], 'sport_association': ['None', OWN],
                 'creation_date': ['None', '$now'], 'membership_fee': ['None', membership[1]], 'activity_fee': ['None', activity[1]],
                 'meta_payment_categories': ['None', json.dumps(meta, sort_keys=True)], 'description': ['None', invoice['description']],
                 'number': ['None', str(invoice['number'])], 'archived': ['None', 'False'], 'cancelled': ['None', 'False'],
                 'selected_tutor': ['None', 'None'], 'meta': ['None', 'null'], 'imported_from_associami': ['None', 'False'],
-                'group': ['None', group or 'None'], 'deleted': ['None', 'False']}})
+                'group': ['None', group_sent or group or 'None'], 'deleted': ['None', 'False']}})
             if date != '$now':
-                # invoice.save(): the payment date, and the float fees against the stored decimals.
+                # invoice.save(): the payment date, and the float fees (and a group sent in another spelling) against the stored row.
                 update = {'creation_date': ['$now', naive(date)]}
-                for column, fee in (('membership_fee', membership), ('activity_fee', activity)):
-                    if fee[0] != fee[1]:
-                        update[column] = list(fee)
+                if group_sent:
+                    update['group'] = [group, group_sent]
+                for column, fee, kept in (('membership_fee', membership, columns[0]), ('activity_fee', activity, columns[1])):
+                    if kept != fee[1]:
+                        update[column] = [kept, fee[1]]
                 audit.append({'key': '$invoice', 'model': 'invoice', 'action': 1, 'index': DIRECT, 'changes': update})
-            stored_invoice = {'sport_association_id': OWN, 'creation_date': date, 'membership_fee': membership[0],
-                              'activity_fee': activity[0], 'meta_payment_categories': meta, 'description': invoice['description'],
+            stored_invoice = {'sport_association_id': OWN, 'creation_date': date, 'membership_fee': columns[0],
+                              'activity_fee': columns[1], 'meta_payment_categories': meta, 'description': invoice['description'],
                               'number': invoice['number'], 'group_id': group}
             final = {**created, 'invoice_id': '$invoice'}
             prints = [PRINT_NEW] if prints is None else prints
@@ -649,6 +673,8 @@ def auto_paid(name, actor, body, values, *, invoice=None, amount=None, headers=N
     response = SERVER
     if status == 201:
         response = {**payment_item({**final, 'invoice_id': None}, '$bind:payment', shown), 'invoice': item}
+        if group_sent:
+            sent_group(audit, response, created['group_id'], group_sent)
     add(name, actor, ADD, status, response, body=body, headers=headers, prints=prints or (),
         effect={**effect(actor, created=[final], audit=audit), 'documents': [], 'invoice': stored_invoice})
     cases[-1]['owner_settings'] = settings or AUTO_PAID
@@ -709,6 +735,32 @@ auto_paid('add-auto-paid-group-invoice', 'owner',
            'associate_id': A('grouped'), 'group_id': IDS['own_group']}, headers=GROUP,
           invoice={'number': 1, 'group': IDS['own_group'], 'description': other_text(CATEGORIES['own']['name']), 'membership': ZERO,
                    'activity': ('17.00', '17.00')})
+# The header in another spelling: the payment and the invoice keep the text as sent in memory; the invoice is saved
+# again (payment_date_equal_invoice_date) and records the stored uuid against it.
+auto_paid('add-auto-paid-group-upper-case-invoice', 'owner',
+          {'creation_date': '2026-04-05', 'payment_date': '2026-04-09', 'amount': '17.5', 'description': 'Gruppo maiuscolo auto',
+           'payment_category': CATEGORIES['own']['id'], 'complex_item': PERSON('grouped')},
+          {**OWN_CATEGORY, 'creation_date': '2026-04-05T00:00:00Z', 'payment_date': '2026-04-09T00:00:00Z', 'amount': '17.50',
+           'description': 'Gruppo maiuscolo auto', 'associate_id': A('grouped'), 'group_id': IDS['own_group']}, headers=UPPER_GROUP,
+          group_sent=IDS['own_group'].upper(), settings={**AUTO_PAID, 'payment_date_equal_invoice_date': True},
+          invoice={'number': 2, 'group': IDS['own_group'], 'created': '2026-04-09T00:00:00Z',
+                   'description': other_text(CATEGORIES['own']['name']), 'membership': ZERO, 'activity': ('17.50', '17.50')})
+# 10.125 and 0.125 are exact floats: the columns round them away from zero, the response to the even cent; the
+# invoice's second save compares the column values with the floats.
+tie_total = float('10') + (0 + float('0.125'))
+tie_meta = [{'amount': '0.125', 'title': 'Extra'}]
+assert float_amount(tie_total) == ('10.13', '10.12')
+auto_paid('add-auto-paid-fee-tie', 'owner',
+          {'creation_date': '2026-04-06', 'payment_date': '2026-04-11', 'subject': 1, 'amount': '10', 'description': 'Iscrizione pari',
+           'meta_payment_categories': tie_meta, 'complex_item': PERSON('luca')},
+          {**plain, 'creation_date': '2026-04-06T00:00:00Z', 'payment_date': '2026-04-11T00:00:00Z', 'subject': 1,
+           'description': 'Iscrizione pari', 'meta_payment_categories': tie_meta, 'associate_id': A('luca')},
+          amount=(repr(tie_total), *float_amount(tie_total)),
+          settings={**AUTO_PAID, 'payment_date_equal_invoice_date': True},
+          invoice={'number': 45, 'meta': tie_meta, 'created': '2026-04-11T00:00:00Z',
+                   'membership': ('10.00', '10.0'), 'activity': ('0.12', '0.125'), 'stored': ('10.00', '0.13'),
+                   'description': f"Ricevuta di pagamento per l'iscrizione di <b>{escape('Luca Verdi è')}</b> all'associazione "
+                                  f"<b>{escape(DENOMINATION)}</b>."})
 auto_paid('add-auto-paid-invoice-date-and-starting-number', 'owner',
           {'creation_date': '2026-04-06', 'payment_date': '2026-04-10', 'amount': '18', 'description': 'Datata',
            'payment_category': CATEGORIES['own']['id'], 'complex_item': PERSON('mario')},

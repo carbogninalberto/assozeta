@@ -79,9 +79,8 @@ payment dates are a 500 with nothing written. Response `201`.
 
 ## Not ported (refused with a 500 before any write)
 
-- Add for a user with `auto_paid_payment` and a party when a float fee (amount with `meta_payment_categories`) rounds on an
-  exact half cent, where the invoice column and the response round differently; a non-canonical `X-Group-Id`; a print
-  deferred by a pending restore.
+- Add for a user with `auto_paid_payment` and a party when the print is deferred by a pending restore. (Fees on an
+  exact half cent and `X-Group-Id` in another spelling are ported, v2-rest-a below.)
 - `attachments_data` items outside the ported subset: a non-string `document` or `filename` (Django stores `str()` of the
   filename, then `os.path.join` raises), a filename over 255 characters, with NUL or not valid UTF-8, a storage name
   `Storage.save` rejects (path traversal, empty base name), and an existing key without `AWS_S3_FILE_OVERWRITE`
@@ -90,7 +89,7 @@ payment dates are a 500 with nothing written. Response `201`.
   row's own key (a primary key change). The edit form's own key (any spelling `uuid.UUID` accepts) is accepted: the
   UniqueValidator excludes the instance and the save keeps the row.
 - Update form bodies and add multipart bodies carrying files (mutable QueryDict).
-- Dates with non-ASCII decimal digits (accepted by `strptime`) and non-canonical X-Group-Id spellings on add.
+- Dates with non-ASCII decimal digits (accepted by `strptime`).
 
 ## Attachments (`attachments_data`)
 
@@ -171,3 +170,25 @@ the created invoice, its audit entries and the `$invoice` print request. RED `v2
 on `add-auto-paid-without-party`. GREEN `v2pay3-add-versioned-r1`: 152/152 on native Django, native Go, Caddy `/api/v1`
 and `/api/v2`. Mutation `v2pay3-add-mutation-r1` (no invoice for a payment without an associate) CAUGHT on
 `add-auto-paid-instructor-invoice`.
+
+## Add: group header spelling and fee ties (v2-rest-a)
+
+Three more add cases (155 in all):
+
+- `X-Group-Id` in another spelling the `uuid` module accepts (upper case): `GroupAwareManager.create` stores the uuid
+  while the in-memory payment keeps the text as sent. The create entry and the response carry the sent text, and each
+  later `payment.save()` of the request records `group: [stored uuid, sent text]`. With `auto_paid_payment` the invoice
+  is created with the same header: its create entry and the response carry the sent text, and the second invoice save
+  (`payment_date_equal_invoice_date`) records the same pair.
+- `auto_paid_payment` with fees on an exact half cent (`10` plus a `0.125` meta amount): the payment amount and the
+  invoice fees are floats, the `numeric(9, 2)` columns round half away from zero (`10.13`, `0.13`), the response half to
+  even (`10.12`, `0.12`), and the second invoice save audits `[column value, str(float)]`.
+
+Go: `paymentMemory.groupSent` (audit values and the rendered `group`), `createGroupSent`, `paymentPaidFlowSentGroup`
+for the invoice, `invoiceFeesAny`/`floatFeeAny` in `paymentWritesFees`, and `invoiceFee.column` for the second save.
+`createGroup` keeps its refusal for payment-misc.
+
+RED `v2resta-red-r1`: Django 155/155, Go 500 on `payment-writes-add-group-upper-case`. GREEN `v2resta-green-r1` (after
+merging `codex/go-backend-parity` `b64953a5`): 155/155 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+Mutation `v2resta-mutation-r1` (the second invoice save comparing the response's half-even value) fails
+`payment-writes-add-auto-paid-fee-tie` (CAUGHT). Re-run: payment-misc (`v2resta-rerun-r1`, shared `PaymentWrites`).
