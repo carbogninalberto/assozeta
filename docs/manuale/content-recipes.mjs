@@ -14,7 +14,7 @@ const reviewed = {
   "UI/src/routes/association/Members/MembersList.svelte": "2205d4071d49dc3c96bad02299dd157668037807f33811b395f811197841650a",
   "UI/src/routes/association/Members/MembersListArchive.svelte": "8426ce4abf1e1146aaf85d87a983642170548305820bbdb8590813fe666e3578",
   "UI/src/components/buttons/ArchiveButton.svelte": "1586f271e9651a1126b3f2662d32808de697c4d8b1cccd95150b6371ed32f4bb",
-  "BE/application/views/subscriptions_views.py": "e5d79e68e34138a9449d76a73c77136416fe6b3c8aae42d2db832ec6d7e98614",
+  "BE/application/views/subscriptions_views.py": "21a2c68109203865b73d749123fbf9c8e178d6ef9a6e06485d5f6074aca90f80",
   "BE/application/views/payment_views.py": "eb2a9bc1bbb5caf2a0fe8261aa898e85e046d96d47417f2c155e7b9c136f277c"
 };
 const contracts = [

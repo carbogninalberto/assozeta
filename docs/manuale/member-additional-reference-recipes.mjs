@@ -19,7 +19,7 @@ export const memberAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/association/Members/import/sections/Section2.svelte": "daed198843e35fa49571df4536fa2d607ccea16448d836128efb6d10c2fc6ee0",
     "UI/src/routes/association/Members/import/sections/Section3.svelte": "f227a9a8c79c49aceaa2ab4b4ca04b92b490f2b6de262ecf3a0ba742b00aa103",
     "BE/application/utils/api_utils.py": "5db286fc73e92356b476514f4d6561a3300b36668ee99831ca1b197835a5cabf",
-    "BE/application/views/subscriptions_views.py": "e5d79e68e34138a9449d76a73c77136416fe6b3c8aae42d2db832ec6d7e98614",
+    "BE/application/views/subscriptions_views.py": "21a2c68109203865b73d749123fbf9c8e178d6ef9a6e06485d5f6074aca90f80",
     "BE/application/services/subscription_service.py": "dabb1369f276602e5f95694843c61c94e63b947133b908d3edcb7d77fec01d82",
     "UI/src/routes/association/Members/import/modals/ApproveModal.svelte": "2e53a4c6a9442f6719395cd0c5d5e6fedf39de80780b762b89a0b3a5cd80dcb5",
     "UI/src/routes/association/Members/import/AssociateTable.svelte": "6a329fafff0c5871a5f3df98284db8ff0e6d8dccef5e74a0a7ac1ba58da4d068",

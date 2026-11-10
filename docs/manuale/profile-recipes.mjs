@@ -8,7 +8,7 @@ const reviewed = {
   "UI/src/routes/association/Members/detail/DetailDrawer.svelte": "27863e56e04a266fa1184d72397972b66de35c1e9d097fc9bab29dfe0b493f18",
   "UI/src/routes/association/Members/detail/Detail.svelte": "f7b31cc364221cb6c1acff533dec9ea286a926bbc0fc6a70075e4b5593874bb6",
   "UI/src/routes/association/Members/detail/sections/Info.svelte": "720d401c86e498d7efdba75321ce399fe2788033cf453690b3c6bf6869d5cff7",
-  "BE/application/views/subscriptions_views.py": "e5d79e68e34138a9449d76a73c77136416fe6b3c8aae42d2db832ec6d7e98614",
+  "BE/application/views/subscriptions_views.py": "21a2c68109203865b73d749123fbf9c8e178d6ef9a6e06485d5f6074aca90f80",
   "BE/application/services/subscription_service.py": "dabb1369f276602e5f95694843c61c94e63b947133b908d3edcb7d77fec01d82",
   "BE/application/serializers/subscriptions_serializers.py": "dcad47643b654acc19e687561f1231b63392bf4315e74110b69a75e20f9d0edc",
   "BE/application/models/subscriptions_models.py": "348705bf0908ccd489167eb26c4975dc51ddfd77d82d7699f7cc1dbf69c17c7c",
