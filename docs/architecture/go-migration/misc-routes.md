@@ -102,7 +102,7 @@ the calendar bytes with each `DTSTAMP` checked against the request window; adapt
 which checks the message, delivery, configuration and token rows with their auditlog entries and index rows).
 
 - v2-rest-c (times with a UTC offset, float texts): 137 cases. RED (`v2restc-red-r2`): the documented refusals
-  (`v2-refusals.md`, misc-routes), Django 137/137 and the committed Go 500. GREEN (`v2restc-green-r2`): 137/137 on the four
+  (`v2-refusals.md`, misc-routes), Django 137/137 and the committed Go 500. GREEN (`v2restc-green-r3`): 137/137 on the four
   transports. Mutation (`v2restc-mutation-r2`): the timezone table read with the
   offset's sign reversed fails `misc-routes-export-offset-times` (CAUGHT). google-calendar, which reads dates with the same
   parser, re-runs green natively (`v2restc-rerun-r1`); it keeps refusing the offset forms its own reader does not take.

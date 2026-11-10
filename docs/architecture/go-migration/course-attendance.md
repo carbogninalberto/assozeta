@@ -127,7 +127,7 @@ registries with events, days (some dated today in Europe/Rome at seeding) and ca
 checks every case against the complete model state with exact day, holding, auditlog and index effects.
 
 - v2-rest-c (events of older calendars): 111 cases. RED: the documented refusal (`v2-refusals.md`, course-attendance,
-  `legacy: yes` row). GREEN (`v2restc-green-r2`): 111/111 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+  `legacy: yes` row). GREEN (`v2restc-green-r3`): 111/111 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
   Mutation (`v2restc-mutation-r1`): storing the day even when the field rejects the event id fails
   `course-attendance-attendees-old-event-ids` (state.days, CAUGHT).
 - RED (`native-r1`): Django 96/96; Go 404 on the first case.

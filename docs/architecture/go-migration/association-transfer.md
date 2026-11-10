@@ -73,7 +73,7 @@ v2 admin change: the fixture has 210 cases (snapshot reads, deletes with storage
 
 Exception-state task rows (v2-rest-c): 235 cases (18 stored exceptions on import/status, the revoked row, four snapshots on
 export/active). RED: the documented refusal (`v2-refusals.md`, association-transfer, `legacy: yes` row). GREEN
-(`v2restc-green-r1`): 235/235 on the four transports. Mutation (`v2restc-mutation-r1`): the single-argument `repr` applied
+(`v2restc-green-r3`): 235/235 on the four transports. Mutation (`v2restc-mutation-r1`): the single-argument `repr` applied
 to the classes Celery creates instead of the builtin `KeyError` fails `association-transfer-import-status-owner-failed-key`.
 
 Legacy export sizes: 212 cases (a foreign export without a stored size, listed without and with its object). RED
