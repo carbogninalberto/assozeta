@@ -63,6 +63,13 @@ func (a *reportArgs) add(value any) string {
 // PlanReportTool binds the merged params like the Python call
 // tool_fn(sport_association_id=..., **params) and plans the tool.
 func PlanReportTool(tool string, params domain.RequestObject, association string, settings func() (ReportSettings, error)) (ReportPlan, error) {
+	return PlanReportToolGroup(tool, params, association, nil, settings)
+}
+
+// PlanReportToolGroup is PlanReportTool during a request whose X-Group-Id is
+// group (canonical text; nil without a usable header): the default managers
+// of the group-aware models filter by it.
+func PlanReportToolGroup(tool string, params domain.RequestObject, association string, group *string, settings func() (ReportSettings, error)) (ReportPlan, error) {
 	if _, present := params.Lookup("sport_association_id"); present {
 		return ReportPlan{}, ErrReportFailed // multiple values for keyword argument
 	}
@@ -81,12 +88,17 @@ func PlanReportTool(tool string, params domain.RequestObject, association string
 	if _, present := params.Lookup("field_name"); tool == "get_field_values" && !present {
 		return ReportPlan{}, ErrReportFailed
 	}
-	return PlanMCPTool(tool, params, association, settings)
+	return PlanMCPToolGroup(tool, params, association, group, settings)
 }
 
 // PlanMCPTool runs QueryBuilder for a bound call (the arguments are the
 // function's keyword arguments; required ones are present).
 func PlanMCPTool(tool string, params domain.RequestObject, association string, settings func() (ReportSettings, error)) (ReportPlan, error) {
+	return PlanMCPToolGroup(tool, params, association, nil, settings)
+}
+
+// PlanMCPToolGroup is PlanMCPTool with the request's group (see PlanReportToolGroup).
+func PlanMCPToolGroup(tool string, params domain.RequestObject, association string, group *string, settings func() (ReportSettings, error)) (ReportPlan, error) {
 	// QueryBuilder.__init__ reads the integration settings before _resolve_model.
 	config, err := settings()
 	if err != nil {
@@ -108,7 +120,7 @@ func PlanMCPTool(tool string, params domain.RequestObject, association string, s
 		}
 	}
 	archived, _ := params.Lookup("include_archived")
-	q, err := mcpBaseQuery(model, entry, association, PythonTruthy(archived))
+	q, err := mcpBaseQuery(model, entry, association, group, PythonTruthy(archived))
 	if err != nil {
 		return ReportPlan{}, err
 	}

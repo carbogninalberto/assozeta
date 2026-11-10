@@ -44,7 +44,6 @@ var goldenNotPorted = map[string]bool{
 	"ir-mailto":      true, // internal: and {=...} tokens
 	"sub-specials":   true, // formulas
 	"mod-strings":    true, // a '=' formula
-	"rs-collision":   true, // a generated sheet name equal to an earlier one
 }
 
 func decodeValue(t *testing.T, raw json.RawMessage) Value {
@@ -209,13 +208,22 @@ func buildGolden(t *testing.T, item goldenCase, now time.Time) ([]byte, error) {
 		}
 		return PandasXlsxwriter(frame, now)
 	case "report_xlsx", "report_sheets":
+		unhashable := false
 		type sheetInput struct {
 			Title   string              `json:"title"`
-			Columns []string            `json:"columns"`
+			Columns []json.RawMessage   `json:"columns"`
 			Rows    [][]json.RawMessage `json:"rows"`
 		}
 		decode := func(input sheetInput) ReportSheet {
-			sheet := ReportSheet{Title: input.Title, Columns: input.Columns, Data: make([][]Value, len(input.Columns))}
+			sheet := ReportSheet{Title: input.Title, Data: make([][]Value, len(input.Columns))}
+			for _, raw := range input.Columns {
+				label := decodeValue(t, raw)
+				if label.Kind == Object {
+					unhashable = true // a list or dict label: the caller raises before the workbook
+				}
+				sheet.Labels = append(sheet.Labels, label)
+			}
+			sheet.Columns = LabelTexts(sheet.Labels)
 			for _, row := range input.Rows {
 				for c, value := range decodeRow(t, row) {
 					sheet.Data[c] = append(sheet.Data[c], value)
@@ -226,7 +234,11 @@ func buildGolden(t *testing.T, item goldenCase, now time.Time) ([]byte, error) {
 		if item.Kind == "report_xlsx" {
 			var input sheetInput
 			json.Unmarshal(item.Input, &input)
-			return ReportWorkbook(decode(input), now)
+			sheet := decode(input)
+			if unhashable {
+				return nil, ErrDjango
+			}
+			return ReportWorkbook(sheet, now)
 		}
 		var input struct {
 			Sheets []sheetInput `json:"sheets"`
@@ -241,7 +253,7 @@ func buildGolden(t *testing.T, item goldenCase, now time.Time) ([]byte, error) {
 		var input struct {
 			Mode    string `json:"mode"`
 			Courses []struct {
-				Course string   `json:"course"`
+				Course *string  `json:"course"`
 				Dates  []string `json:"dates"`
 				Rows   []struct {
 					Name       string   `json:"name"`
@@ -253,7 +265,10 @@ func buildGolden(t *testing.T, item goldenCase, now time.Time) ([]byte, error) {
 		json.Unmarshal(item.Input, &input)
 		var courses []AttendanceCourse
 		for _, course := range input.Courses {
-			entry := AttendanceCourse{Course: course.Course, Dates: course.Dates}
+			entry := AttendanceCourse{Untitled: course.Course == nil, Dates: course.Dates}
+			if course.Course != nil {
+				entry.Course = *course.Course
+			}
 			for _, row := range course.Rows {
 				entry.Rows = append(entry.Rows, AttendanceRow{Name: row.Name, Attendance: row.Attendance, Present: row.Present})
 			}

@@ -1,6 +1,7 @@
 package xlsxexport
 
 import (
+	"errors"
 	"math"
 	"regexp"
 	"strconv"
@@ -14,6 +15,101 @@ type ReportSheet struct {
 	Title   string
 	Columns []string
 	Data    [][]Value
+	// Labels, when set, runs parallel to Columns: a label that is not text
+	// (Int, Float, Bool or None) is written as such in the header row, and
+	// Columns holds LabelTexts(Labels).
+	Labels []Value
+}
+
+// LabelTexts is str(label) of the column labels as pandas holds them: labels
+// that are all numbers or None, with a float or a None among them, form a
+// float index (an int is written as a float, None as nan).
+func LabelTexts(labels []Value) []string {
+	numbers, floats := 0, false
+	for _, label := range labels {
+		switch label.Kind {
+		case Int:
+			numbers++
+		case Float:
+			numbers++
+			floats = true
+		case None:
+			floats = true
+		default:
+			numbers = -len(labels) - 1
+		}
+	}
+	texts := make([]string, len(labels))
+	for i, label := range labels {
+		texts[i] = labelText(label)
+		if numbers > 0 && floats {
+			switch label.Kind {
+			case Int:
+				texts[i] = pythonFloatRepr(float64(label.Int))
+			case None:
+				texts[i] = "nan"
+			}
+		}
+	}
+	return texts
+}
+
+func labelText(label Value) string {
+	switch label.Kind {
+	case None:
+		return "None"
+	case Int:
+		return strconv.FormatInt(label.Int, 10)
+	case Float:
+		return pythonFloatRepr(label.Float)
+	case Bool:
+		if label.Bool {
+			return "True"
+		}
+		return "False"
+	}
+	return label.Text
+}
+
+// typedLabels puts the labels that are not text into the header row. Two of
+// them naming the same pandas column (equal numbers) are not ported.
+func typedLabels(sheet *opSheet, labels []Value) error {
+	if labels == nil || len(sheet.rows) == 0 {
+		return nil
+	}
+	seen := map[string]bool{}
+	for i, label := range labels {
+		cell := opCell{col: i + 1, styled: true}
+		key := "None"
+		switch label.Kind {
+		case Str:
+			continue
+		case None:
+			cell.kind = 's'
+		case Int:
+			cell.kind, cell.text = 'n', percentG(float64(label.Int), false)
+			key = strconv.FormatFloat(float64(label.Int), 'g', -1, 64)
+		case Float:
+			if math.IsNaN(label.Float) || math.IsInf(label.Float, 0) {
+				return ErrNotPorted
+			}
+			cell.kind, cell.text = 'n', percentG(label.Float, false)
+			key = strconv.FormatFloat(label.Float, 'g', -1, 64)
+		case Bool:
+			cell.kind, cell.text, key = 'b', "0", "0"
+			if label.Bool {
+				cell.text, key = "1", "1"
+			}
+		default:
+			return ErrNotPorted
+		}
+		if seen[key] {
+			return ErrNotPorted
+		}
+		seen[key] = true
+		sheet.rows[0].cells[i] = cell
+	}
+	return nil
 }
 
 var openpyxlInvalidTitle = regexp.MustCompile(`[\\*?:/\[\]]`)
@@ -21,8 +117,10 @@ var openpyxlInvalidTitle = regexp.MustCompile(`[\\*?:/\[\]]`)
 // sheetTitles tracks the titles pandas hands openpyxl: an invalid or empty
 // one raises, one that differs from an earlier title only by case raises
 // (openpyxl renames the sheet and pandas does not find it), and an equal one
-// would write into the earlier sheet, which is not ported.
+// writes into the earlier sheet (errSheetExists; see mergeSheet).
 type sheetTitles []string
+
+var errSheetExists = errors.New("xlsxexport: sheet title already used")
 
 func (titles *sheetTitles) add(title string) error {
 	if title == "" || openpyxlInvalidTitle.MatchString(title) {
@@ -30,7 +128,7 @@ func (titles *sheetTitles) add(title string) error {
 	}
 	for _, earlier := range *titles {
 		if earlier == title {
-			return ErrNotPorted
+			return errSheetExists
 		}
 		if strings.EqualFold(earlier, title) {
 			if strings.ToLower(earlier) == strings.ToLower(title) {
@@ -59,8 +157,11 @@ func pySlice(text string, n int) string {
 // all-integer columns and the widths min(max(len(str(value)), len(label)) +
 // 2, 50).
 func reportSheet(title string, columns []string, data [][]Value) (opSheet, error) {
-	if len(data) != len(columns) || len(columns) == 0 || len(columns) > 702 {
+	if len(data) != len(columns) || len(columns) > 702 {
 		return opSheet{}, ErrNotPorted
+	}
+	if len(columns) == 0 {
+		return opSheet{title: title}, nil // a frame without columns writes no cell
 	}
 	rows := len(data[0])
 	uses := map[string]int{}
@@ -147,6 +248,9 @@ func ReportWorkbook(sheet ReportSheet, now time.Time) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err = typedLabels(&built, sheet.Labels); err != nil {
+		return nil, err
+	}
 	return openpyxlPackage([]opSheet{built}, true, now)
 }
 
@@ -162,6 +266,39 @@ func dedupTitle(used map[string]int, raw, cut string) string {
 	return cut
 }
 
+// mergeSheet is to_excel into a sheet an earlier frame was written to (a
+// numbered name equal to an earlier title): the later cells and widths
+// replace the earlier ones in place, the others stay.
+func mergeSheet(sheet *opSheet, later opSheet) {
+	for r, row := range later.rows {
+		if r >= len(sheet.rows) {
+			sheet.rows = append(sheet.rows, row)
+			continue
+		}
+		for c, cell := range row.cells {
+			if c < len(sheet.rows[r].cells) {
+				if cell.style == 3 {
+					// Only the alignment is set on a cell the later frame does not write.
+					if earlier := &sheet.rows[r].cells[c]; earlier.styled || earlier.style == 2 {
+						earlier.style = 2
+					}
+					continue
+				}
+				sheet.rows[r].cells[c] = cell
+			} else {
+				sheet.rows[r].cells = append(sheet.rows[r].cells, cell)
+			}
+		}
+	}
+	for c, width := range later.widths {
+		if c < len(sheet.widths) {
+			sheet.widths[c] = width
+		} else {
+			sheet.widths = append(sheet.widths, width)
+		}
+	}
+}
+
 // ReportSheetsWorkbook is XLSXExporter.export_multi_sheet.
 func ReportSheetsWorkbook(sheets []ReportSheet, now time.Time) ([]byte, error) {
 	used := map[string]int{}
@@ -169,12 +306,25 @@ func ReportSheetsWorkbook(sheets []ReportSheet, now time.Time) ([]byte, error) {
 	var out []opSheet
 	for _, sheet := range sheets {
 		name := dedupTitle(used, sheet.Title, pySlice(sheet.Title, 31))
-		if err := titles.add(name); err != nil {
+		err := titles.add(name)
+		exists := errors.Is(err, errSheetExists)
+		if err != nil && !exists {
 			return nil, err
 		}
 		built, err := reportSheet(name, sheet.Columns, sheet.Data)
 		if err != nil {
 			return nil, err
+		}
+		if err = typedLabels(&built, sheet.Labels); err != nil {
+			return nil, err
+		}
+		if exists {
+			for i := range out {
+				if out[i].title == name {
+					mergeSheet(&out[i], built)
+				}
+			}
+			continue
 		}
 		out = append(out, built)
 	}
@@ -194,8 +344,10 @@ type AttendanceRow struct {
 // AttendanceCourse is one course matrix.
 type AttendanceCourse struct {
 	Course string
-	Dates  []string
-	Rows   []AttendanceRow
+	// Untitled: the course has no title (Course is then empty).
+	Untitled bool
+	Dates    []string
+	Rows     []AttendanceRow
 }
 
 // attendanceFrame is the DataFrame of the dict rows: '#', [Corso,] the name,
@@ -296,6 +448,9 @@ func AttendanceWorkbook(mode string, courses []AttendanceCourse, now time.Time) 
 		if len(courses) != 1 {
 			return nil, ErrNotPorted
 		}
+		if courses[0].Untitled {
+			return nil, ErrDjango // the sheet name is a slice of the title
+		}
 		name := pySlice(courses[0].Course, 31)
 		if err := titles.add(name); err != nil {
 			return nil, err
@@ -321,12 +476,22 @@ func AttendanceWorkbook(mode string, courses []AttendanceCourse, now time.Time) 
 			if len(course.Rows) == 0 {
 				return nil, ErrDjango
 			}
-			if err := titles.add(name); err != nil {
+			err := titles.add(name)
+			exists := errors.Is(err, errSheetExists)
+			if err != nil && !exists {
 				return nil, err
 			}
 			sheet, err := courseSheet(name, course)
 			if err != nil {
 				return nil, err
+			}
+			if exists {
+				for i := range out {
+					if out[i].title == name {
+						mergeSheet(&out[i], sheet)
+					}
+				}
+				continue
 			}
 			out = append(out, sheet)
 		}
@@ -359,7 +524,13 @@ func AttendanceWorkbook(mode string, courses []AttendanceCourse, now time.Time) 
 			for r, row := range course.Rows {
 				rows++
 				frame[0].values = append(frame[0].values, IntValue(int64(r+1)))
-				frame[1].values = append(frame[1].values, StrValue(course.Course))
+				if course.Untitled {
+					// None: an empty cell, measured as str(None).
+					frame[1].values = append(frame[1].values, Value{Kind: None})
+					corso = max(corso, pyLen("None"))
+				} else {
+					frame[1].values = append(frame[1].values, StrValue(course.Course))
+				}
 				frame[2].values = append(frame[2].values, StrValue(row.Name))
 				corso, names = max(corso, pyLen(course.Course)), max(names, pyLen(row.Name))
 				for i, date := range ordered {

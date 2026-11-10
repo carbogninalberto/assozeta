@@ -209,6 +209,18 @@ func openpyxlPackageFlags(sheets []opSheet, styled bool, now time.Time, flags ui
 	for i, sheet := range sheets {
 		entries = append(entries, zipEntry{name: "xl/worksheets/sheet" + strconv.Itoa(i+1) + ".xml", external: externalRegular, data: sheet.xml()})
 	}
+	// The header style exists once a header cell was written: a workbook
+	// whose frames have no column keeps the plain styles.
+	if styled {
+		styled = false
+		for _, sheet := range sheets {
+			for _, row := range sheet.rows {
+				for _, cell := range row.cells {
+					styled = styled || cell.styled || cell.style != 0
+				}
+			}
+		}
+	}
 	styles := openpyxlStylesPlain
 	if styled {
 		styles = openpyxlStylesHeader

@@ -138,7 +138,7 @@ def _report_sheets(sheets):
     out = io.BytesIO()
     with pd.ExcelWriter(out, engine='openpyxl', mode='w') as writer:
         for sheet in sheets:
-            labels = sheet['columns']
+            labels = [decode(label) for label in sheet['columns']]  # a label may be a typed value
             df = pd.DataFrame([[decode(value) for value in row] for row in sheet['rows']], columns=list(range(len(labels))))
             df = df.rename(columns=dict(enumerate(labels)))
             for col in df.columns:

@@ -97,3 +97,10 @@ past the data, as openpyxl writes them). openpyxl's sheet-title rules apply: an 
 from an earlier title only by case fail as in Django. Contract engines `report_sheets` and `attendance`
 (`TESTS/contracts/xlsx.py`); the golden generator builds 40 more workbooks with Django's own code and checks that the
 contract's builders give the same parts. Evidence: templates-reports 125/125 on four transports (`v2rep-versioned-r2`).
+
+v2-reports-2: a frame without columns writes no cell (a workbook without any header cell keeps openpyxl's plain styles); a
+numbered sheet name equal to an earlier one writes the later frame over the earlier sheet (cells and widths in place; an
+alignment-only cell keeps the earlier header's text); a course without a title is the sheet `Foglio` and an empty `Corso`
+cell measured as `None`, and fails as in Django for its own workbook; labels that are not text keep their type in the
+header row (`ReportSheet.Labels`, `LabelTexts`). 14 more golden workbooks (`rs-collision` is now compared). Evidence:
+templates-reports 174/174 on four transports (`v2rep2-versioned-r2`).

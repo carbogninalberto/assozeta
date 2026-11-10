@@ -25,7 +25,7 @@ from pathlib import Path
 OUTPUT = Path(__file__).with_name('templates_reports_http.json')
 IDS = json.loads(Path(__file__).with_name('message_mutations.json').read_text())['ids']
 OWN, FOREIGN = IDS['own_association'], IDS['foreign_association']
-ids = iter(f'a1000000-0000-4000-8000-{930001 + n:012d}' for n in range(200))
+ids = iter(f'a1000000-0000-4000-8000-{930001 + n:012d}' for n in range(400))
 SERVER = '<stable-server-error-page>'
 FAILED = {'error': "Errore durante l'esecuzione del report."}
 
@@ -81,24 +81,44 @@ CARNETS = {
 PEOPLE = {key: {'id': next(ids), 'subscription': next(ids), 'first': first, 'last': last} for key, (first, last) in {
     'rossi': ('Mario', 'Rossi'), 'bianchi': ('Anna', 'Bianchi'), 'verdi': ('Luca', 'verdi'), 'deluca': ('Ugo', 'de Luca'),
     'acca': ('Zoe', 'ÀCCA')}.items()}
-COURSES = {key: {'id': next(ids), 'association': association, 'title': title, 'deleted': deleted, 'group': group}
-           for key, (association, title, deleted, group) in {
-    'nuoto': (OWN, 'Nuoto', False, None), 'calcio': (OWN, 'Calcio a 5', False, IDS['own_group']), 'baby': (OWN, 'Nuoto baby', False, None),
-    'tennis': (OWN, 'Tennis', False, None), 'old': (OWN, 'Vecchio corso', True, None), 'foreign': (FOREIGN, 'Nuoto estero', False, None)}.items()}
+# A second group of the association: three courses whose sheet names collide (two titles equal in their first 31
+# characters, and one equal to the numbered name of the second), with texts shaped like ISO dates and times.
+GROUPS = {'gym': {'id': next(ids), 'association': OWN, 'name': 'Palestra'}}
+GYM = GROUPS['gym']['id']
+LONG_COURSE = 'Ginnastica dolce per gli adulti'
+assert len(LONG_COURSE) == 31
+COURSES = {key: {'id': next(ids), 'association': association, 'title': title, 'deleted': deleted, 'group': group,
+                 'description': description, 'calendar': calendar}
+           for key, (association, title, deleted, group, description, calendar) in {
+    'nuoto': (OWN, 'Nuoto', False, None, None, None), 'calcio': (OWN, 'Calcio a 5', False, IDS['own_group'], None, None),
+    'baby': (OWN, 'Nuoto baby', False, None, None, None), 'tennis': (OWN, 'Tennis', False, None, None, None),
+    'old': (OWN, 'Vecchio corso', True, None, None, None), 'foreign': (FOREIGN, 'Nuoto estero', False, None, None, None),
+    'gx': (OWN, LONG_COURSE[:27] + ' (2)', False, GYM, '2026-W03-4T10:30:00', '2026-01-15T10:30:00,5+01:00'),
+    'ga': (OWN, LONG_COURSE + ' A', False, GYM, '2026-01-15T10:30:00.+01:00', '2026-01-15T10300012'),
+    'gb': (OWN, LONG_COURSE + ' B', False, GYM, '2026-02-30T10:30:00', '2026-01-15T10:30:00Z'),
+    # A course without a title.
+    'senza': (OWN, None, False, None, None, None)}.items()}
 ENROLLED = {key: {'id': next(ids), 'course': course, 'person': person, 'deleted': deleted} for key, (course, person, deleted) in {
     'n_rossi': ('nuoto', 'rossi', False), 'n_bianchi': ('nuoto', 'bianchi', False), 'n_verdi': ('nuoto', 'verdi', False),
     'n_acca': ('nuoto', 'acca', True), 'n_none': ('nuoto', None, False), 'c_rossi': ('calcio', 'rossi', False),
     'c_deluca': ('calcio', 'deluca', False), 'c_acca': ('calcio', 'acca', False), 'b_rossi': ('baby', 'rossi', False),
-    'o_rossi': ('old', 'rossi', False), 'f_rossi': ('foreign', 'rossi', False)}.items()}
+    'o_rossi': ('old', 'rossi', False), 'f_rossi': ('foreign', 'rossi', False), 'x_rossi': ('gx', 'rossi', False),
+    'x_bianchi': ('gx', 'bianchi', False), 'a_verdi': ('ga', 'verdi', False), 'b_deluca': ('gb', 'deluca', False),
+    's_bianchi': ('senza', 'bianchi', False)}.items()}
 E = {key: value['id'] for key, value in ENROLLED.items()}
-REGISTRIES = {key: {'id': next(ids), 'course': key} for key in ('nuoto', 'calcio', 'baby', 'old', 'foreign')}
+REGISTRIES = {key: {'id': next(ids), 'course': key} for key in ('nuoto', 'calcio', 'baby', 'old', 'foreign', 'gx', 'ga', 'gb', 'senza')}
 DAYS = {key: {'id': next(ids), 'registry': registry, 'date': date, 'attendees': attendees} for key, (registry, date, attendees) in {
     'n1': ('nuoto', '2026-09-01T18:00:00+00:00', [{'course_subscription_id': E['n_rossi']}, {'course_subscription_id': E['n_verdi']}]),
     'n2': ('nuoto', '2026-09-08T23:30:00+00:00', [E['n_bianchi'], E['n_acca']]),
     'n3': ('nuoto', '2026-09-15T18:00:00+00:00', None),
     'c1': ('calcio', '2026-09-01T17:00:00+00:00', [{'course_subscription_id': E['c_rossi']}, {'course_subscription_id': E['c_deluca']}]),
     'c2': ('calcio', '2026-10-06T17:00:00+00:00', [{'course_subscription_id': E['c_acca']}, {'other': 1}]),
-    'o1': ('old', '2026-09-01T18:00:00+00:00', []), 'f1': ('foreign', '2026-09-01T18:00:00+00:00', [])}.items()}
+    'o1': ('old', '2026-09-01T18:00:00+00:00', []), 'f1': ('foreign', '2026-09-01T18:00:00+00:00', []),
+    'x1': ('gx', '2026-11-03T18:00:00+00:00', [{'course_subscription_id': E['x_rossi']}]),
+    'x2': ('gx', '2026-11-10T18:00:00+00:00', [{'course_subscription_id': E['x_rossi']}, {'course_subscription_id': E['x_bianchi']}]),
+    'a1': ('ga', '2026-11-04T18:00:00+00:00', [{'course_subscription_id': E['a_verdi']}]),
+    'b1': ('gb', '2026-11-05T18:00:00+00:00', []),
+    's1': ('senza', '2026-11-06T18:00:00+00:00', [{'course_subscription_id': E['s_bianchi']}])}.items()}
 
 REPORTS = {}
 
@@ -253,10 +273,11 @@ add('run-override-model-not-whitelisted-error', 'owner', 'POST', RUN('count'), 5
 add('run-override-model-number-error', 'owner', 'POST', RUN('count'), 500, FAILED, body={'overrides': {'model_name': 5}})
 
 
-def run(name, tool, params, status, response, *, overrides=None, actor='owner'):
+def run(name, tool, params, status, response, *, overrides=None, actor='owner', group=None):
     label = name.replace('-', '_')
     report(label, tool, params)
-    add(f'run-{name}', actor, 'POST', RUN(label), status, response, body={} if overrides is None else {'overrides': overrides})
+    add(f'run-{name}', actor, 'POST', RUN(label), status, response, body={} if overrides is None else {'overrides': overrides},
+        headers=None if group is None else {'X-Group-Id': group})
 
 
 # query_data
@@ -337,6 +358,26 @@ run('aggregate-empty-set', 'aggregate_data', {'model_name': 'Carnet', 'filters':
 run('aggregate-group-boolean-filtered', 'aggregate_data', {'model_name': 'Carnet', 'exclude': {'lessons_number': 0},
     'aggregations': [{'function': 'sum', 'field': 'lessons_number', 'alias': 'lezioni'}], 'group_by': ['public']}, 200,
     {'data': {'data': [{'public': False, 'lezioni': 5}, {'public': True, 'lezioni': 10}], 'count': 2}})
+# The default managers of the group-aware models (Course here) follow the request's X-Group-Id.
+COURSE_TITLES = sorted(c['title'] for c in COURSES.values() if c['association'] == OWN and not c['deleted'] and c['title'])
+GYM_TITLES = sorted(c['title'] for c in COURSES.values() if c['group'] == GYM)
+COURSE_QUERY = {'model_name': 'Course', 'fields': ['title'], 'order_by': ['title']}
+run('query-courses-without-group', 'query_data', COURSE_QUERY, 200, listing(8, [{'title': t} for t in COURSE_TITLES] + [{'title': None}]))
+run('query-courses-group-header', 'query_data', COURSE_QUERY, 200, listing(1, [{'title': 'Calcio a 5'}]), group=IDS['own_group'])
+run('query-courses-second-group-header', 'query_data', COURSE_QUERY, 200, listing(3, [{'title': t} for t in GYM_TITLES]), group=GYM)
+run('count-courses-group-header-archived', 'count_data', {'model_name': 'Course', 'include_archived': True}, 200, {'data': {'count': 1}},
+    group=IDS['own_group'])
+run('count-courses-group-header-other-spelling', 'count_data', {'model_name': 'Course'}, 200, {'data': {'count': 3}}, group=GYM.upper())
+run('count-courses-group-header-no-rows', 'count_data', {'model_name': 'Course'}, 200, {'data': {'count': 0}}, group=IDS['missing'])
+# A header value that is not a UUID is no filter.
+run('count-courses-group-header-not-uuid', 'count_data', {'model_name': 'Course'}, 200, {'data': {'count': 8}}, group='nope')
+# Tags has no group: the header changes nothing.
+run('count-tags-group-header', 'count_data', {'model_name': 'Tags'}, 200, {'data': {'count': 3}}, group=GYM)
+run('count-associates-group-header', 'count_data', {'model_name': 'Associate'}, 200, {'data': {'count': 0}}, group=GYM)
+run('values-courses-group-header', 'get_field_values', {'model_name': 'Course', 'field_name': 'title'}, 200,
+    {'data': {'values': GYM_TITLES, 'total_distinct': 3}}, group=GYM)
+run('aggregate-courses-group-header', 'aggregate_data', {'model_name': 'Course', 'aggregations': [{'function': 'count', 'field': '*'}]},
+    200, {'data': {'count_*': 3}}, group=GYM)
 # get_schema
 run('schema-unknown-model', 'get_schema', {'model_name': 'Nope'}, 400, {'error': 'Model Nope not found'})
 
@@ -417,6 +458,58 @@ run('export-pdf-texts-over-pages', 'export_data', {'model_name': 'Tags', 'format
     download('Tags.pdf', 'application/pdf', pdf={'engine': 'report_table', 'headers': ['tag_name'], 'title': 'Tags',
              'rows': [['Nuoto'], ['nuoto agonistico']], 'text_before': LONG_TEXT, 'text_after': LONG_TEXT}))
 
+# The queries of the file tools follow the group as well.
+run('export-csv-courses-group-header', 'export_data', {'model_name': 'Course', 'fields': ['title'], 'order_by': ['title']}, 200,
+    download('Course.csv', 'text/csv; charset=utf-8', csv='title\r\n' + ''.join(t + '\r\n' for t in GYM_TITLES)), group=GYM)
+# Texts shaped like an ISO date and time: the ones datetime.fromisoformat reads are rewritten, the others kept.
+run('export-csv-iso-texts', 'export_data', {'model_name': 'Course', 'fields': ['description', 'google_calendar_id'], 'order_by': ['title']},
+    200, download('Course.csv', 'text/csv; charset=utf-8', csv='description,google_calendar_id\r\n15/01/2026 10:30,15/01/2026 10:30\r\n'
+                  '2026-01-15T10:30:00.+01:00,15/01/2026 10:30\r\n2026-02-30T10:30:00,15/01/2026 10:30\r\n'), group=GYM)
+# format: a value that is not a str is named in the error; a list is not hashable.
+for label, value, shown in (('number', 5, '5'), ('null', None, 'None'), ('boolean', True, 'True'), ('float', 1.5, '1.5')):
+    run(f'export-format-{label}', 'export_data', {'model_name': 'Tags'}, 400,
+        {'error': f'Unsupported format: {shown}. Use: csv, xlsx, pdf'}, overrides={'format': value})
+run('export-format-list-error', 'export_data', {'model_name': 'Tags', 'format': ['csv']}, 500, FAILED)
+run('export-format-dict-error', 'export_data', {'model_name': 'Tags', 'format': {'csv': 1}}, 500, FAILED)
+NUOTO = {'model_name': 'Tags', 'fields': ['tag_name', 'creation_date'], 'filters': {'tag_name': 'Nuoto'}}
+run('export-title-number-error', 'export_data', {**NUOTO, 'title': 5}, 500, FAILED)
+run('export-title-zero-model-name', 'export_data', {**NUOTO, 'title': 0}, 200,
+    download('Tags.csv', 'text/csv; charset=utf-8', csv='tag_name,creation_date\r\nNuoto,15/09/2026 08:30\r\n'))
+run('export-labels-list-error', 'export_data', {**NUOTO, 'column_labels': ['tag_name']}, 500, FAILED)
+run('export-csv-label-values', 'export_data', {**NUOTO, 'column_labels': {'tag_name': ['a', 'b'], 'creation_date': None}}, 200,
+    download('Tags.csv', 'text/csv; charset=utf-8', csv='"[\'a\', \'b\']",\r\nNuoto,15/09/2026 08:30\r\n'))
+run('export-csv-label-numbers', 'export_data', {**NUOTO, 'column_labels': {'tag_name': 1.5, 'creation_date': True}}, 200,
+    download('Tags.csv', 'text/csv; charset=utf-8', csv='1.5,True\r\nNuoto,15/09/2026 08:30\r\n'))
+run('export-csv-json-cell', 'export_data', {'model_name': 'Carnet', 'fields': ['title', 'meta'], 'filters': {'lessons_number': 10}}, 200,
+    download('Carnet.csv', 'text/csv; charset=utf-8', csv="Dieci ingressi,{'colore': 'blu'}\r\n".join(['title,meta\r\n', ''])))
+# Only identifier columns: nothing is left to write.
+ONLY_IDS = {'model_name': 'Tags', 'fields': ['tag_id']}
+run('export-csv-no-columns', 'export_data', ONLY_IDS, 200, download('Tags.csv', 'text/csv; charset=utf-8', csv='\r\n' * 4))
+run('export-csv-no-columns-labels-list', 'export_data', {**ONLY_IDS, 'column_labels': ['x']}, 200,
+    download('Tags.csv', 'text/csv; charset=utf-8', csv='\r\n' * 4))
+run('export-xlsx-no-columns', 'export_data', {**ONLY_IDS, 'format': 'xlsx'}, 200,
+    download('Tags.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [{'title': 'Tags', 'columns': [], 'rows': [[], [], []]}]}))
+# Workbook labels of other types: numbers, null and booleans are written as such; a list raises.
+run('export-xlsx-label-values', 'export_data', {**NUOTO, 'format': 'xlsx', 'column_labels': {'tag_name': 5, 'creation_date': None}}, 200,
+    download('Tags.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': [I(5), None], 'rows': [['Nuoto', '15/09/2026 08:30']]}]}))
+run('export-xlsx-label-float-boolean', 'export_data', {**NUOTO, 'format': 'xlsx', 'column_labels': {'tag_name': 1.5, 'creation_date': True}},
+    200, download('Tags.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': [F(1.5), {'bool': True}], 'rows': [['Nuoto', '15/09/2026 08:30']]}]}))
+run('export-xlsx-label-list-error', 'export_data', {**NUOTO, 'format': 'xlsx', 'column_labels': {'tag_name': ['a']}}, 500, FAILED)
+run('sheets-label-dict-error', 'export_multi_sheet', {'sheets': [{**NUOTO, 'column_labels': {'tag_name': {'a': 1}}}]}, 500, FAILED)
+run('export-pdf-no-columns-error', 'export_data', {**ONLY_IDS, 'format': 'pdf'}, 500, FAILED)
+NUOTO_PDF = {**NUOTO, 'format': 'pdf'}
+NUOTO_TABLE = {'engine': 'report_table', 'headers': ['tag_name', 'creation_date'], 'title': 'Tags', 'rows': [['Nuoto', '15/09/2026 08:30']]}
+run('export-pdf-label-number-error', 'export_data', {**NUOTO_PDF, 'column_labels': {'tag_name': 5}}, 500, FAILED)
+run('export-pdf-header-number-error', 'export_data', {**NUOTO_PDF, 'header_text': 5}, 500, FAILED)
+run('export-pdf-text-before-list-error', 'export_data', {**NUOTO_PDF, 'text_before': ['a']}, 500, FAILED)
+run('export-pdf-text-after-number-error', 'export_data', {**NUOTO_PDF, 'text_after': 1.5}, 500, FAILED)
+run('export-pdf-footer-number', 'export_data', {**NUOTO_PDF, 'footer_text': 7}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'footer_text': '7'}))
+run('export-pdf-footer-list', 'export_data', {**NUOTO_PDF, 'footer_text': [1, 'a', None]}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'footer_text': "[1, 'a', None]"}))
+
 run('sheets-missing-error', 'export_multi_sheet', {'filename': 'x'}, 500, FAILED)
 run('sheets-none', 'export_multi_sheet', {'sheets': []}, 400, {'error': 'No sheets specified'})
 run('sheets-model-required', 'export_multi_sheet', {'sheets': [{'model_name': 'Tags'}, {'title': 'x'}]}, 400,
@@ -438,6 +531,25 @@ run('sheets-repeated-titles-filename', 'export_multi_sheet', {'filename': 'Repor
     download('Report- tag-2026.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
         {'title': 'Tags', 'columns': ['tag_name'], 'rows': [['Calcio & Basket']]},
         {'title': 'Tags (2)', 'columns': ['tag_name'], 'rows': [['nuoto agonistico']]}]}))
+# A numbered name equal to a later title: the third frame is written over the second sheet.
+run('sheets-generated-name-equal', 'export_multi_sheet', {'sheets': [
+    {'model_name': 'Tags', 'fields': ['tag_name'], 'order_by': ['tag_name']},
+    {'model_name': 'Carnet', 'title': 'Tags', 'fields': ['title', 'lessons_number'], 'order_by': ['lessons_number'],
+     'column_labels': {'lessons_number': 'Lezioni'}},
+    {'model_name': 'Tags', 'title': 'Tags (2)', 'fields': ['tag_name'], 'filters': {'tag_name': 'Nuoto'}}]}, 200,
+    download('Export.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': ['tag_name'], 'rows': [['Calcio & Basket'], ['Nuoto'], ['nuoto agonistico']]},
+        {'title': 'Tags (2)', 'columns': ['title', 'Lezioni'], 'rows': [['', I(0)], ['Cinque', I(5)], ['Dieci ingressi', I(10)]]},
+        {'title': 'Tags (2)', 'columns': ['tag_name'], 'rows': [['Nuoto']]}]}))
+run('sheets-no-columns', 'export_multi_sheet', {'sheets': [ONLY_IDS, {'model_name': 'Carnet', 'fields': ['title'], 'order_by': ['lessons_number']}]},
+    200, download('Export.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': [], 'rows': [[], [], []]},
+        {'title': 'Carnet', 'columns': ['title'], 'rows': [[''], ['Cinque'], ['Dieci ingressi']]}]}))
+run('sheets-text-error', 'export_multi_sheet', {'sheets': 'Tags'}, 500, FAILED)
+run('sheets-number-item-error', 'export_multi_sheet', {'sheets': [{'model_name': 'Tags'}, 5]}, 500, FAILED)
+run('sheets-group-header', 'export_multi_sheet', {'sheets': [{'model_name': 'Course', 'fields': ['title'], 'order_by': ['title']}]}, 200,
+    download('Export.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Course', 'columns': ['title'], 'rows': [['Calcio a 5']]}]}), group=IDS['own_group'])
 
 
 def matrix(course, low=None, high=None):
@@ -474,10 +586,12 @@ run('attendance-preview-dates-ignored', 'get_attendance_matrix', {'course_id': C
     preview('nuoto'))
 run('attendance-preview-period', 'get_attendance_matrix', {'course_name': 'CALC', 'date_from': '2026-09-02', 'date_to': '2026-12-31'}, 200,
     preview('calcio', '2026-09-02', '2026-12-31'))
-MULTI = [matrix('calcio'), matrix('nuoto')]
+# Every course with days, by title (the one without a title last).
+MULTI = [matrix(key) for key in ('calcio', 'gx', 'ga', 'gb', 'nuoto', 'senza')]
+GYM_MULTI = [matrix(key) for key in ('gx', 'ga', 'gb')]
 run('attendance-preview-all', 'get_attendance_matrix', {}, 200, {'data': {
     'multi': True, 'courses': [{'course': m['course'], 'total_enrolled': len(m['rows']), 'total_dates': len(m['dates'])} for m in MULTI],
-    'summary': {'total_courses': 2, 'total_enrolled': sum(len(m['rows']) for m in MULTI), 'total_dates': sum(len(m['dates']) for m in MULTI)},
+    'summary': {'total_courses': 6, 'total_enrolled': sum(len(m['rows']) for m in MULTI), 'total_dates': sum(len(m['dates']) for m in MULTI)},
     'note': 'Usa export=true per generare un unico file Excel con tutti i corsi (include colonna Corso).'}})
 run('attendance-course-missing', 'get_attendance_matrix', {'course_id': IDS['missing']}, 400,
     {'error': f'Corso non trovato con ID: {IDS["missing"]}'})
@@ -502,8 +616,17 @@ run('attendance-export-xlsx-all', 'get_attendance_matrix', {'export': True, 'for
     download('Presenze - tutti i corsi.xlsx', XLSX, xlsx={'engine': 'attendance', 'mode': 'flat', 'courses': MULTI}))
 run('attendance-export-xlsx-sheets', 'get_attendance_matrix', {'export': True, 'multi_sheet': True}, 200,
     download('Presenze - tutti i corsi.xlsx', XLSX, xlsx={'engine': 'attendance', 'mode': 'sheets', 'courses': MULTI}))
+# The heading of a course without a title cannot be written.
+run('attendance-export-pdf-all-untitled-error', 'get_attendance_matrix', {'export': True, 'format': 'pdf', 'multi_sheet': True}, 500, FAILED)
 run('attendance-export-pdf-all', 'get_attendance_matrix', {'export': True, 'format': 'pdf', 'multi_sheet': True}, 200,
-    download('Presenze - tutti i corsi.pdf', 'application/pdf', pdf={'engine': 'attendance', 'courses': MULTI}))
+    download('Presenze - tutti i corsi.pdf', 'application/pdf', pdf={'engine': 'attendance', 'courses': GYM_MULTI}), group=GYM)
+# The third sheet's numbered name is the first one's: its frame is written over that sheet.
+run('attendance-export-xlsx-sheets-same-name', 'get_attendance_matrix', {'export': True, 'multi_sheet': True}, 200,
+    download('Presenze - tutti i corsi.xlsx', XLSX, xlsx={'engine': 'attendance', 'mode': 'sheets', 'courses': GYM_MULTI}), group=GYM)
+run('attendance-untitled-preview', 'get_attendance_matrix', {'course_id': CID('senza')}, 200, preview('senza'))
+run('attendance-untitled-export-xlsx-error', 'get_attendance_matrix', {'course_id': CID('senza'), 'export': True}, 500, FAILED)
+run('attendance-untitled-export-pdf', 'get_attendance_matrix', {'course_id': CID('senza'), 'export': True, 'format': 'pdf'}, 200,
+    download('Presenze - None.pdf', 'application/pdf', pdf={'engine': 'attendance', 'courses': [matrix('senza')]}))
 # Course.objects follows the request's group: only the course of that group is left.
 report('attendance_group', 'get_attendance_matrix', {})
 add('run-attendance-group-header', 'owner', 'POST', RUN('attendance_group'), 200, preview('calcio'), body={},
@@ -518,6 +641,6 @@ add('run-delete-method-deletes', 'owner', 'DELETE', RUN('remove'), 204, '<empty>
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Template update and saved report run authored sequence', 'ids': IDS,
                               'seed': {'templates': TEMPLATES, 'tags': TAGS, 'categories': CATEGORIES, 'carnets': CARNETS, 'reports': REPORTS,
-                                       'people': PEOPLE, 'courses': COURSES, 'enrolled': ENROLLED, 'registries': REGISTRIES, 'days': DAYS},
+                                       'people': PEOPLE, 'groups': GROUPS, 'courses': COURSES, 'enrolled': ENROLLED, 'registries': REGISTRIES, 'days': DAYS},
                               'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')
