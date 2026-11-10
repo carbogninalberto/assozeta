@@ -6338,6 +6338,55 @@
    "method": "POST",
    "path": "/instance/admin/backups/remote/test",
    "headers": {},
+   "status": 400,
+   "response": {
+    "password": [
+     "This field is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false
+  },
+  {
+   "name": "instance-backups-actions-remote-test-empty-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "password": [
+     "This field is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": []
+  },
+  {
+   "name": "instance-backups-actions-remote-test-saved-settings",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
    "status": 200,
    "response": {
     "ok": true,
@@ -6365,17 +6414,36 @@
      }
     ]
    },
-   "cache": {},
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": 3
+    }
+   },
    "cache_after": {},
    "password": null,
    "rehash": false,
-   "audit": null,
+   "audit": {
+    "changes": {
+     "backup_remote_test": [
+      "",
+      "{}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
    "send": null,
-   "no_store": true
+   "no_store": true,
+   "body": {
+    "password": "Fixture-backup-placeholder-2"
+   }
   },
   {
-   "name": "instance-backups-actions-remote-test-empty-list",
-   "actor": "owner",
+   "name": "instance-backups-actions-remote-test-saved-settings-admin",
+   "actor": "admin",
    "method": "POST",
    "path": "/instance/admin/backups/remote/test",
    "headers": {},
@@ -6410,10 +6478,221 @@
    "cache_after": {},
    "password": null,
    "rehash": false,
-   "audit": null,
+   "audit": {
+    "changes": {
+     "backup_remote_test": [
+      "",
+      "{}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000710001"
+    },
+    "actor": "admin",
+    "association": "admin_association"
+   },
    "send": null,
    "no_store": true,
-   "body": []
+   "body": {
+    "password": "Fixture-backup-placeholder-2"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-wrong-password",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Password non corretta."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": {
+      "value": 1,
+      "ttl": "fresh"
+     }
+    }
+   },
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "endpoint": "https://s3.example.test",
+    "password": "nope"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-wrong-password-counts",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Password non corretta."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": 4
+    }
+   },
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": {
+      "value": 5,
+      "ttl": "kept"
+     }
+    }
+   },
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "password": "nope"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-too-many",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 429,
+   "response": {
+    "error": "Troppi tentativi. Riprova tra qualche minuto."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": 5
+    }
+   },
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": {
+      "value": 5,
+      "ttl": "kept"
+     }
+    }
+   },
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "password": "Fixture-backup-placeholder-2"
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-password-rules",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "bucket": [
+     "Ensure this field has no more than 63 characters."
+    ],
+    "password": [
+     "Not a valid string."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "bucket": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "password": [
+     "x"
+    ]
+   }
+  },
+  {
+   "name": "instance-backups-actions-remote-test-upgrades-hash",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "ok": true,
+    "message": "Connessione riuscita."
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"ok\": true, \"message\": \"Connessione riuscita.\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups/remote/test",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "bucket": "b"
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": "pbkdf2_sha256$1000$backupactionslegacy000001$Ij8YG6oolj7MD+4ambBbEgHK0Lj3pUMGFDBmuZcw18A=",
+   "rehash": true,
+   "audit": {
+    "changes": {
+     "backup_remote_test": [
+      "",
+      "{\"bucket\": \"b\"}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
+   "send": null,
+   "no_store": true,
+   "body": {
+    "password": "Fixture-backup-placeholder-2",
+    "bucket": "b"
+   }
   },
   {
    "name": "instance-backups-actions-remote-test-list",
@@ -6483,14 +6762,27 @@
    "cache_after": {},
    "password": null,
    "rehash": false,
-   "audit": null,
+   "audit": {
+    "changes": {
+     "backup_remote_test": [
+      "",
+      "{\"endpoint\": \"https://s3.example.test\", \"retention\": 2, \"secret_key\": \"provided\"}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
    "send": null,
    "no_store": true,
    "body": {
     "enabled": true,
     "endpoint": " https://s3.example.test ",
     "secret_key": "segreto-placeholder",
-    "retention": 2
+    "retention": 2,
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -6517,7 +6809,8 @@
    "send": null,
    "no_store": false,
    "body": {
-    "enabled": "x"
+    "enabled": "x",
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -6545,7 +6838,8 @@
    "no_store": false,
    "body": {
     "endpoint": "http://s3.example.test",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -6573,7 +6867,8 @@
    "no_store": false,
    "body": {
     "endpoint": "http://192.168.1.20:9000",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -6601,7 +6896,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://169.254.169.254",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -6629,7 +6925,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://169.254.169.254./latest/meta-data",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -6657,7 +6954,8 @@
    "no_store": false,
    "body": {
     "endpoint": "http://169.254.170.2/v2/credentials",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -6685,7 +6983,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://[fd00:ec2::254]",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -6713,7 +7012,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://[::ffff:169.254.169.254]:443",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -6741,7 +7041,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://[64:ff9b::a9fe:a9fe]",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -6769,7 +7070,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://127.0.0.1:9000",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -6797,7 +7099,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://LOCALHOST",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -6825,7 +7128,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://api.localhost.",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -6853,7 +7157,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://metadata.google.internal/computeMetadata",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -6881,7 +7186,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://[::1]",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -6909,7 +7215,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://0.0.0.0",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -6937,7 +7244,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://100.100.100.200",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -6965,7 +7273,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://[fe80::1]",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -6993,7 +7302,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://255.255.255.255",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -7021,7 +7331,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://2852039166",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -7049,7 +7360,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://0xa9fea9fe",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -7077,7 +7389,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://169.254.169.254.1",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -7105,7 +7418,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://0251.0376.0251.0376",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -7133,7 +7447,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://user:secret@s3.example.test",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -7161,7 +7476,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://s3.example.test:0",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -7189,7 +7505,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://s3.example.test:65536",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -7217,7 +7534,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://s3.example.test/?x=1",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -7245,7 +7563,8 @@
    "no_store": false,
    "body": {
     "endpoint": "HTTPS://s3.example.test",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -7273,7 +7592,8 @@
    "no_store": false,
    "body": {
     "endpoint": "ftp://s3.example.test",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -7301,7 +7621,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://[fe80::1%25en0]",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -7329,7 +7650,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://::1",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -7357,7 +7679,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://[1::2::3]",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -7385,7 +7708,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://.",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -7413,7 +7737,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://s3 .example.test",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -7441,7 +7766,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://s3\u000b.example.test",
-    "bucket": "b"
+    "bucket": "b",
+    "password": "wrong"
    }
   },
   {
@@ -7474,7 +7800,8 @@
    "no_store": false,
    "body": {
     "endpoint": "https://[::]",
-    "retention": 0
+    "retention": 0,
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -7516,11 +7843,24 @@
    "cache_after": {},
    "password": null,
    "rehash": false,
-   "audit": null,
+   "audit": {
+    "changes": {
+     "backup_remote_test": [
+      "",
+      "{\"endpoint\": \"https://10.0.0.5\"}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
    "send": null,
    "no_store": true,
    "body": {
-    "endpoint": "https://10.0.0.5"
+    "endpoint": "https://10.0.0.5",
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -7562,11 +7902,24 @@
    "cache_after": {},
    "password": null,
    "rehash": false,
-   "audit": null,
+   "audit": {
+    "changes": {
+     "backup_remote_test": [
+      "",
+      "{\"endpoint\": \"https://172.16.0.1:9000/\"}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
    "send": null,
    "no_store": true,
    "body": {
-    "endpoint": "https://172.16.0.1:9000/"
+    "endpoint": "https://172.16.0.1:9000/",
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -7608,11 +7961,24 @@
    "cache_after": {},
    "password": null,
    "rehash": false,
-   "audit": null,
+   "audit": {
+    "changes": {
+     "backup_remote_test": [
+      "",
+      "{\"endpoint\": \"https://s3.eu-south-1.amazonaws.com\"}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
    "send": null,
    "no_store": true,
    "body": {
-    "endpoint": "https://s3.eu-south-1.amazonaws.com"
+    "endpoint": "https://s3.eu-south-1.amazonaws.com",
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -7654,11 +8020,24 @@
    "cache_after": {},
    "password": null,
    "rehash": false,
-   "audit": null,
+   "audit": {
+    "changes": {
+     "backup_remote_test": [
+      "",
+      "{\"endpoint\": \"https://[2001:db8::5]:9000/base\"}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
    "send": null,
    "no_store": true,
    "body": {
-    "endpoint": "https://[2001:db8::5]:9000/base"
+    "endpoint": "https://[2001:db8::5]:9000/base",
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -7700,11 +8079,24 @@
    "cache_after": {},
    "password": null,
    "rehash": false,
-   "audit": null,
+   "audit": {
+    "changes": {
+     "backup_remote_test": [
+      "",
+      "{\"endpoint\": \"https://[::ffff:192.168.1.20]\"}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
    "send": null,
    "no_store": true,
    "body": {
-    "endpoint": "https://[::ffff:192.168.1.20]"
+    "endpoint": "https://[::ffff:192.168.1.20]",
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -7746,11 +8138,24 @@
    "cache_after": {},
    "password": null,
    "rehash": false,
-   "audit": null,
+   "audit": {
+    "changes": {
+     "backup_remote_test": [
+      "",
+      "{\"endpoint\": \"https://minio.lan.\"}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
    "send": null,
    "no_store": true,
    "body": {
-    "endpoint": "https://minio.lan."
+    "endpoint": "https://minio.lan.",
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -7792,11 +8197,24 @@
    "cache_after": {},
    "password": null,
    "rehash": false,
-   "audit": null,
+   "audit": {
+    "changes": {
+     "backup_remote_test": [
+      "",
+      "{\"endpoint\": \"https://8.8.8.8\"}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
    "send": null,
    "no_store": true,
    "body": {
-    "endpoint": "https://8.8.8.8"
+    "endpoint": "https://8.8.8.8",
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -7838,11 +8256,24 @@
    "cache_after": {},
    "password": null,
    "rehash": false,
-   "audit": null,
+   "audit": {
+    "changes": {
+     "backup_remote_test": [
+      "",
+      "{\"endpoint\": \"https://xn--s3-fka.example.test\"}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
    "send": null,
    "no_store": true,
    "body": {
-    "endpoint": "https://xn--s3-fka.example.test"
+    "endpoint": "https://xn--s3-fka.example.test",
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -7884,11 +8315,24 @@
    "cache_after": {},
    "password": null,
    "rehash": false,
-   "audit": null,
+   "audit": {
+    "changes": {
+     "backup_remote_test": [
+      "",
+      "{\"endpoint\": \"https://s3.example.test:65535/a/b\"}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
    "send": null,
    "no_store": true,
    "body": {
-    "endpoint": "https://s3.example.test:65535/a/b"
+    "endpoint": "https://s3.example.test:65535/a/b",
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {
@@ -7933,7 +8377,8 @@
    "send": null,
    "no_store": false,
    "body": {
-    "bucket": "b"
+    "bucket": "b",
+    "password": "Fixture-backup-placeholder-2"
    }
   },
   {

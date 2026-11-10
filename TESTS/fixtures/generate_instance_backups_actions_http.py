@@ -8,7 +8,7 @@ ASGI wrapper hands the upload body to the view unread), in Django's order:
 identity, IsInstanceOwner, method dispatch, the archive name, the request
 data or serializer, the password attempts and check (restore, delete,
 un-keep, the remote settings and key), the runner call, then the UPDATE
-audit entry when the runner accepted. Uploads above the configured
+audit entry when the runner accepted (the connection test too). Uploads above the configured
 'upload_max_bytes' are refused before the runner; the remote endpoint is
 checked before the runner (https://, no loopback, link-local or instance
 addresses).
@@ -603,17 +603,44 @@ add('remote-put-no-socket', 'owner', REMOTE, 503, error(UNREACHABLE), method='PU
     run=runner(state='no-socket'))
 
 TESTED = {'ok': True, 'message': 'Connessione riuscita.'}
-add('remote-test-no-body', 'owner', REMOTE_TEST, 200, TESTED, method='POST',
-    run=runner(200, TESTED, expect=[call('POST', '/backups/remote/test', {})]), no_store=True)
-add('remote-test-empty-list', 'owner', REMOTE_TEST, 200, TESTED, method='POST', body=[],
-    run=runner(200, TESTED, expect=[call('POST', '/backups/remote/test', {})]), no_store=True)
+
+
+def tested(value):
+    """audit 'backup_remote_test': the tried settings fields, the secret only as 'provided'."""
+    tried = {key: value[key] for key in ('endpoint', 'region', 'bucket', 'prefix', 'access_key', 'path_style', 'retention',
+                                         'enabled') if key in value}
+    if value.get('secret_key'):
+        tried['secret_key'] = 'provided'
+    return json.dumps(tried, sort_keys=True)
+
+
+def test_ok(name, body, value, *, actor='owner', association='own_association', **options):
+    add(name, actor, REMOTE_TEST, 200, TESTED, method='POST', body=body,
+        run=runner(200, TESTED, expect=[call('POST', '/backups/remote/test', value)]),
+        audit=logged('backup_remote_test', tested(value), actor=actor, association=association), no_store=True, **options)
+
+
+add('remote-test-no-body', 'owner', REMOTE_TEST, 400, {'password': [REQUIRED]}, method='POST')
+add('remote-test-empty-list', 'owner', REMOTE_TEST, 400, {'password': [REQUIRED]}, method='POST', body=[])
+test_ok('remote-test-saved-settings', {'password': PASSWORD}, {}, cache=attempts(OWNER, 3), cache_after={})
+test_ok('remote-test-saved-settings-admin', {'password': PASSWORD}, {}, actor='admin', association='admin_association')
+add('remote-test-wrong-password', 'owner', REMOTE_TEST, 400, error(WRONG), method='POST',
+    body={'endpoint': 'https://s3.example.test', 'password': 'nope'}, cache_after=attempts(OWNER, 1, 'fresh'))
+add('remote-test-wrong-password-counts', 'owner', REMOTE_TEST, 400, error(WRONG), method='POST', body={'password': 'nope'},
+    cache=attempts(OWNER, 4), cache_after=attempts(OWNER, 5, 'kept'))
+add('remote-test-too-many', 'owner', REMOTE_TEST, 429, error(TOO_MANY), method='POST', body={'password': PASSWORD},
+    cache=attempts(OWNER, 5), cache_after=attempts(OWNER, 5, 'kept'))
+add('remote-test-password-rules', 'owner', REMOTE_TEST, 400,
+    {'bucket': ['Ensure this field has no more than 63 characters.'], 'password': [STRING]}, method='POST',
+    body={'bucket': 'b' * 64, 'password': ['x']})
+test_ok('remote-test-upgrades-hash', {'password': PASSWORD, 'bucket': 'b'}, {'bucket': 'b'}, password=LEGACY_HASH, rehash=True)
 add('remote-test-list', 'owner', REMOTE_TEST, 400,
     {'non_field_errors': ['Invalid data. Expected a dictionary, but got list.']}, method='POST', body=[{}])
-add('remote-test-without-enabled', 'owner', REMOTE_TEST, 200, TESTED, method='POST',
-    body={'enabled': True, 'endpoint': ' https://s3.example.test ', 'secret_key': 'segreto-placeholder', 'retention': 2},
-    run=runner(200, TESTED, expect=[call('POST', '/backups/remote/test', {
-        'endpoint': 'https://s3.example.test', 'secret_key': 'segreto-placeholder', 'retention': 2})]), no_store=True)
-add('remote-test-invalid', 'owner', REMOTE_TEST, 400, {'enabled': [BOOLEAN]}, method='POST', body={'enabled': 'x'})
+test_ok('remote-test-without-enabled',
+        {'enabled': True, 'endpoint': ' https://s3.example.test ', 'secret_key': 'segreto-placeholder', 'retention': 2,
+         'password': PASSWORD},
+        {'endpoint': 'https://s3.example.test', 'secret_key': 'segreto-placeholder', 'retention': 2})
+add('remote-test-invalid', 'owner', REMOTE_TEST, 400, {'enabled': [BOOLEAN]}, method='POST', body={'enabled': 'x', 'password': PASSWORD})
 for index, (endpoint, message) in enumerate((
         ('http://s3.example.test', HTTPS_ENDPOINT), ('http://192.168.1.20:9000', HTTPS_ENDPOINT),
         ('https://169.254.169.254', BLOCKED_ENDPOINT), ('https://169.254.169.254./latest/meta-data', BLOCKED_ENDPOINT),
@@ -631,17 +658,16 @@ for index, (endpoint, message) in enumerate((
         ('https://[1::2::3]', INVALID_ENDPOINT), ('https://.', INVALID_ENDPOINT), ('https://s3 .example.test', INVALID_ENDPOINT),
         ('https://s3\x0b.example.test', INVALID_ENDPOINT))):
     add(f'remote-test-endpoint-{index}', 'owner', REMOTE_TEST, 400, {'endpoint': [message]}, method='POST',
-        body={'endpoint': endpoint, 'bucket': 'b'})
+        body={'endpoint': endpoint, 'bucket': 'b', 'password': 'wrong'})
 add('remote-test-endpoint-italian', 'owner', REMOTE_TEST, 400,
     {'endpoint': [BLOCKED_ENDPOINT], 'retention': ['Assicurati che il valore sia maggiore o uguale a 1.']}, method='POST',
-    body={'endpoint': 'https://[::]', 'retention': 0}, headers={'Accept-Language': 'it'})
+    body={'endpoint': 'https://[::]', 'retention': 0, 'password': PASSWORD}, headers={'Accept-Language': 'it'})
 for index, endpoint in enumerate(('https://10.0.0.5', 'https://172.16.0.1:9000/', 'https://s3.eu-south-1.amazonaws.com',
                                   'https://[2001:db8::5]:9000/base', 'https://[::ffff:192.168.1.20]', 'https://minio.lan.',
                                   'https://8.8.8.8', 'https://xn--s3-fka.example.test', 'https://s3.example.test:65535/a/b')):
-    add(f'remote-test-endpoint-allowed-{index}', 'owner', REMOTE_TEST, 200, TESTED, method='POST',
-        body={'endpoint': endpoint}, run=runner(200, TESTED, expect=[call('POST', '/backups/remote/test', {'endpoint': endpoint})]),
-        no_store=True)
-add('remote-test-refused', 'owner', REMOTE_TEST, 400, error('Accesso negato dal bucket.'), method='POST', body={'bucket': 'b'},
+    test_ok(f'remote-test-endpoint-allowed-{index}', {'endpoint': endpoint, 'password': PASSWORD}, {'endpoint': endpoint})
+add('remote-test-refused', 'owner', REMOTE_TEST, 400, error('Accesso negato dal bucket.'), method='POST',
+    body={'bucket': 'b', 'password': PASSWORD},
     run=runner(400, {'error': 'Accesso negato dal bucket.'}, expect=[call('POST', '/backups/remote/test', {'bucket': 'b'})]))
 
 KEY = {'key_id': 'a1b2c3d4', 'recovery_key': 'AGE-SECRET-KEY-PLACEHOLDER', 'public_key': 'age1placeholder'}
