@@ -183,7 +183,7 @@ type CourseSubscriptionTransaction interface {
 	// meta billed_until filters, locked.
 	MembershipPaymentsWhere(ctx context.Context, row string, group *string, unpaid bool, billedUntil *string, limit int) ([]CourseSubscriptionMembershipPayment, error)
 	MembershipPaymentOverlaps(ctx context.Context, row, exclude string, group *string, end, start string) (bool, error)
-	DefaultPaymentCategory(ctx context.Context) (*string, error)
+	DefaultPaymentCategory(ctx context.Context, association *string) (*string, error)
 	PaymentState(ctx context.Context, payment string) (CourseSubscriptionPaymentState, error)
 	// SharedPayment reports whether the row's own payment is also the unpaid
 	// payment of one of its live group-aware installments.

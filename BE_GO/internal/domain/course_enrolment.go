@@ -59,7 +59,7 @@ type CourseEnrolmentTransaction interface {
 	OwnerAssociationFirst(ctx context.Context, owner string) (*string, error)
 	ActorAssociation(ctx context.Context, actor string) (*string, error)
 	GroupExists(ctx context.Context, id string) (bool, error)
-	DefaultPaymentCategory(ctx context.Context) (*string, error)
+	DefaultPaymentCategory(ctx context.Context, association *string) (*string, error)
 	DefaultBankAccount(ctx context.Context, association *string) (*string, error)
 	// AssociationUser is sport_association.user (base manager).
 	AssociationUser(ctx context.Context, association string) (*string, error)

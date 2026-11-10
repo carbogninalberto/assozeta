@@ -606,7 +606,7 @@ func (s *CourseWrites) Add(ctx context.Context, identity domain.ResolvedIdentity
 	if !ok {
 		return courseWritesLate(tx, domain.ErrCourseWritesServer)
 	}
-	category, err := tx.DefaultPaymentCategory(ctx)
+	category, err := tx.DefaultPaymentCategory(ctx, &association)
 	if err != nil {
 		return err
 	}

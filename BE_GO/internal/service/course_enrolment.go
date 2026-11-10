@@ -431,7 +431,7 @@ func (s *CourseEnrolment) payment(ctx context.Context, tx domain.CourseEnrolment
 		return domain.CourseEnrolmentPayment{}, err
 	}
 	if category == nil {
-		if category, err = tx.DefaultPaymentCategory(ctx); err != nil {
+		if category, err = tx.DefaultPaymentCategory(ctx, association); err != nil {
 			return domain.CourseEnrolmentPayment{}, err
 		}
 	}
@@ -486,7 +486,7 @@ func (s *CourseEnrolment) addCourseSubscription(ctx context.Context, tx domain.C
 			return err
 		}
 		if category == nil {
-			if category, err = tx.DefaultPaymentCategory(ctx); err != nil {
+			if category, err = tx.DefaultPaymentCategory(ctx, &association); err != nil {
 				return err
 			}
 		}
@@ -568,7 +568,7 @@ func (s *CourseEnrolment) addCourseSubscription(ctx context.Context, tx domain.C
 		var chosen *string = category
 		if chosen == nil {
 			// Payment.save(): a None category takes the default one.
-			if chosen, err = tx.DefaultPaymentCategory(ctx); err != nil {
+			if chosen, err = tx.DefaultPaymentCategory(ctx, &association); err != nil {
 				return err
 			}
 		}

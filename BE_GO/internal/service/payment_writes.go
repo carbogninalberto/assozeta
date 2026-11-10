@@ -321,6 +321,9 @@ func (m *paymentMemory) apply(input dto.PaymentEntryInput, total *float64) {
 func (s *PaymentWrites) defaults(ctx context.Context, tx domain.PaymentWritesTransaction, m *paymentMemory) error {
 	save := domain.PaymentSaveRow{ID: m.row.ID, Subject: m.row.Subject, CategoryID: m.row.CategoryID, Description: m.row.Description,
 		Meta: m.row.Meta, Course: m.row.Course}
+	if m.row.AssociationID != nil {
+		save.AssociationID = *m.row.AssociationID
+	}
 	if save.CategoryID != nil {
 		name, err := tx.CategoryName(ctx, *save.CategoryID)
 		if err != nil {
@@ -1009,7 +1012,7 @@ func (s *PaymentWrites) BulkAdd(ctx context.Context, identity domain.ResolvedIde
 		if exists {
 			category = &id
 		}
-	} else if category, _, err = tx.DefaultPaymentCategory(ctx); err != nil {
+	} else if category, _, err = tx.DefaultPaymentCategory(ctx, &association); err != nil {
 		return 0, nil, err
 	}
 	var description *string

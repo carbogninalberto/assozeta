@@ -680,7 +680,7 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 		paymentChanges["payment_date"] = [2]string{old, new}
 	}
 	if category == nil {
-		if category, err = s.store.DefaultPaymentCategory(ctx); err != nil {
+		if category, err = s.store.DefaultPaymentCategory(ctx, payment.AssociationID); err != nil {
 			return err
 		}
 		if category != nil {

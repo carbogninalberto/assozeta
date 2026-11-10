@@ -569,7 +569,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			category := fees.category
 			if category == nil {
 				// Payment.save() looks the default category up again.
-				if category, err = tx.Category(ctx, nil); err != nil {
+				if category, err = tx.Category(ctx, nil, association); err != nil {
 					return nil, err
 				}
 			}
@@ -1040,7 +1040,7 @@ func (s *SubscriptionCreates) fees(ctx context.Context, tx domain.SubscriptionCr
 		fees.membershipSet, fees.membershipFloat, fees.membershipFee = true, true, *membership
 	}
 	fees.amount = amount
-	category, err := tx.Category(ctx, settings.DefaultPaymentCategory)
+	category, err := tx.Category(ctx, settings.DefaultPaymentCategory, settings.AssociationID)
 	if err != nil {
 		return fees, err
 	}
@@ -1059,7 +1059,7 @@ func (s *SubscriptionCreates) fees(ctx context.Context, tx domain.SubscriptionCr
 
 func (s *SubscriptionCreates) membershipCategory(ctx context.Context, tx domain.SubscriptionCreateTransaction,
 	settings *domain.SubscriptionCreateSettings) (string, error) {
-	category, err := tx.Category(ctx, settings.DefaultPaymentCategory)
+	category, err := tx.Category(ctx, settings.DefaultPaymentCategory, settings.AssociationID)
 	if err != nil {
 		return "", err
 	}

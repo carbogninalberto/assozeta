@@ -132,7 +132,7 @@ type CourseWritesTransaction interface {
 	// LiveCourse is Course.objects.filter(course_id=id).first(): live and group-aware.
 	LiveCourse(ctx context.Context, id string, group *string) (*CourseWriteRow, error)
 	UserFullInstallmentsPlan(ctx context.Context, user string) (bool, error)
-	DefaultPaymentCategory(ctx context.Context) (*string, error)
+	DefaultPaymentCategory(ctx context.Context, association *string) (*string, error)
 	DefaultBankAccount(ctx context.Context, association *string) (*string, error)
 	GroupExists(ctx context.Context, id string) (bool, error)
 

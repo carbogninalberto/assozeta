@@ -311,11 +311,14 @@ func (r *InvoiceParties) SupplierPaymentCategory(ctx context.Context, associatio
 	return nil, nil
 }
 
-// DefaultPaymentCategory is Payment.save()'s default category lookup.
-func (r *InvoiceParties) DefaultPaymentCategory(ctx context.Context) (*string, error) {
-	var id string
-	err := r.db.GetContext(ctx, &id, `SELECT payment_category_id FROM application_paymentcategory
- WHERE UPPER(name::text)=UPPER('entrate e proventi da attività tipiche') ORDER BY payment_category_id LIMIT 1`)
+// DefaultPaymentCategory is Payment.save()'s default category lookup (PaymentCategory.default_for).
+func (r *InvoiceParties) DefaultPaymentCategory(ctx context.Context, association *string) (*string, error) {
+	var row struct {
+		ID   string `db:"payment_category_id"`
+		Name string `db:"name"`
+	}
+	err := r.db.GetContext(ctx, &row, secCategoryDefaultSQL, association)
+	id := row.ID
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}

@@ -116,7 +116,7 @@ type SubscriptionCreateTransaction interface {
 	FutureRenewal(ctx context.Context, association string, end CalendarDate, tax *string) (bool, error)
 	Certificate(ctx context.Context, id string) (found bool, user *string, err error)
 	SaveCertificateUser(ctx context.Context, id, user string) error
-	Category(ctx context.Context, id *string) (*string, error)
+	Category(ctx context.Context, id *string, association string) (*string, error)
 	DefaultBankAccount(ctx context.Context, association string) (*string, error)
 	ReusablePayments(ctx context.Context, associate, association, amount string, day time.Time) ([]string, bool, error)
 	PaymentAmount(ctx context.Context, id string) (string, error)

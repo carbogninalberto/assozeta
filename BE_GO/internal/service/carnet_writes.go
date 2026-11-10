@@ -355,7 +355,7 @@ func (s *CarnetTopups) Topup(ctx context.Context, identity domain.ResolvedIdenti
 			return ErrCarnetNotAllowed
 		}
 	}
-	category, _, err := tx.DefaultPaymentCategory(ctx)
+	category, _, err := tx.DefaultPaymentCategory(ctx, source.CarnetAssociation)
 	if err != nil {
 		return err
 	}
@@ -590,7 +590,7 @@ func (s *CarnetAssigns) Assign(ctx context.Context, identity domain.ResolvedIden
 		}
 		return course, tx.Commit()
 	}
-	category, _, err := tx.DefaultPaymentCategory(ctx)
+	category, _, err := tx.DefaultPaymentCategory(ctx, sportAssociation)
 	if err != nil {
 		return nil, err
 	}
