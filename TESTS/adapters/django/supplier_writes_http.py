@@ -131,6 +131,23 @@ def assert_effect(case, before, after, source, remote, fixture):
             assert_audit(event, case, actor, users, remote, types['supplierandcustomers'], key, 1, effect['changes'], (own, 'direct'), indexes)
         contract.require(not indexes, 'index.extra')
         return
+    if effect['kind'] == 'copy':
+        # An update naming an unused supplier_id: Model.save() inserts a copy, the named row stays.
+        key, origin = effect['id'], source['suppliers'][effect['supplier']]['id']
+        contract.require(key not in old_s and set(new_s) == set(old_s) | {key} and all(new_s[k] == old_s[k] for k in old_s),
+                         'state.kept')
+        expected = dict(old_s[origin], supplier_id=key)
+        for field in FIELDS:
+            expected[field] = case['response'][field]
+        contract.require(stored(new_s[key]) == stored(expected) and case['response']['supplier_id'] == key, 'state.supplier')
+        row = SupplierAndCustomers._base_manager.get(pk=key)
+        # auditlog's pre_save finds no row under the new key (an update against nothing), then post_save logs the create.
+        created = topup.created_changes(SupplierAndCustomers, row, {})
+        contract.require(len(added) == 2, 'audit.count')
+        for event, action, path in zip(added, (1, 0), ('changes_json.sport_association', 'direct')):
+            assert_audit(event, case, actor, users, remote, types['supplierandcustomers'], key, action, created, (own, path), indexes)
+        contract.require(not indexes, 'index.extra')
+        return
     new_keys = set(new_s) - set(old_s)
     contract.require(len(new_keys) == 1 and len(new_s) == len(old_s) + 1 and all(new_s[k] == old_s[k] for k in old_s), 'state.created')
     key = new_keys.pop()

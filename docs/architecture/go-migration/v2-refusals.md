@@ -333,6 +333,22 @@ Left refused in these families, with the reason: payment-misc plan fees and plan
 its own lookup and insert failure in Django; the plan editor writes strings and numbers); `send_receipt_email` of other types; modules-responses attachment names and form
 bodies; the Stripe request-shape rows (non-string ids, unencodable `stripe_available_methods`).
 
+### Ported in the v2-rest-b change
+
+Rare inputs and old data (class B rows) of the payment, supplier, communication, camp, profile, module and persona
+families. Receipts are `quality-reports/go-migration/<family>-http-v2restb-*`; each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| modules-responses | `GET modules/<link>/info` | not a refusal: the public module page returns the fields the form needs, and a module of an association marked deleted answers `module not found` (Django changed first) | 149 cases; Django unit tests first; GREEN `v2restb-green-r2` 4 transports; mutation `v2restb-mutation-r2` (deleted check dropped) CAUGHT; modules-reads 81/81 re-run |
+| supplier-writes | `PATCH supplier/<uid>/update` (B) | body naming a new `supplier_id` (the copy `Model.save()` inserts, with its two audit entries) | 34 cases; GREEN `v2restb-green-r3` 4 transports; mutation `v2restb-mutation-r1` (create entry indexed from its changes) CAUGHT |
+| payment-reads | `GET payment/list`, `payment/stats`, `subscription/<uid>/payments` (B) | infinite search term | 280 cases; GREEN `v2restb-green-r3` 4 transports; mutation `v2restb-mutation-r1` (infinity searched as an amount) CAUGHT |
+
+Left refused in these families, with the reason: payment-reads random ordering with the text search (rows repeat in random
+order: nothing to compare); supplier list orderings through relations (open-ended paths); supplier deletes with references
+from tables outside the supplier flows; `invoice/<uid>/send` with a payment date before year 1000 (`strftime('%Y')` pads
+the year differently on glibc and macOS, so the text is the platform's).
+
 ## Remaining A items, per family
 
 UI paths under `UI/src/`, Go under `BE_GO/internal/`. Cost: cheap (hours), medium (a family change with new
@@ -660,7 +676,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST collaborators/add | permission floats with exponent / `-0.0`; NUL or lone surrogates in e-mail | `BE_GO/internal/service/email_render_routes.go:128,166,256` | B | `routes/connectedCollaborators/ConnectedCollaborators.svelte:36-43` sends the permission list built by the UI (no such floats). legacy: no; cheap. |
-| POST invoice/<uid>/send | payment date before year 1000 | `service/email_render_routes.go:434` (`emailrender.ErrUnsupported`) | B | Needs a mistyped date; unusual data. legacy: possible; cheap. |
+| POST invoice/<uid>/send | payment date before year 1000 | `service/email_render_routes.go:434` (`emailrender.ErrUnsupported`) | B | Needs a mistyped date; unusual data. legacy: possible. Stays: `strftime('%Y')` pads such years differently per platform. |
 | all | non-English `Accept-Language` | — | n/a | Not a refusal (rendered correctly; test harness only). |
 
 ### export-all-data.md
@@ -921,7 +937,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | GET payment/list | random ordering + text search | `service/payment_reads.go:430` | B | The UI never sends a random order. |
 | GET payment/stats | Stripe configured (env or instance integration) | `service/payment_reads.go:579` | A (conditional on config) | Called on every list load (`PaymentList.svelte:997`). Stripe is configurable in the UI (`routes/profile/sections/InstanceIntegrations.svelte:9`). Cost: medium (balance transactions + cache). |
 | payment/list compressed, athlete scoped session | scoped athlete | `service/payment_reads.go:329` | n/a | Not a gap: an athlete has no association, so Django and Go both answer the 500 page before that line (payment-reads `athlete-scoped-compressed`). The UI does not send `mode=compressed`. |
-| search | `inf` / special lower-casing | `service/payment_reads.go:126,143` | B | Exotic search text. |
+| search | special lower-casing | `service/payment_reads.go` (`paymentReadsSearch`) | B | Exotic search text. An infinite term (`inf`) is ported in v2-rest-b (it follows NaN). |
 
 ### payment-writes.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1158,9 +1174,9 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### suppliers.md
 | route | refusal condition | Go site | class | notes |
 |---|---|---|---|---|
-| GET supplier/list | ordering by a relation path `field__other` | `service/suppliers.go:17`, `ErrSupplierOrdering` | B | UI sortable columns are `name`, `email`, `address`, `tax_code` (`suppliers-and-customers/SuppliersAndCustomers.svelte:355-402`). legacy: no |
+| GET supplier/list | ordering by a relation path `field__other` | `service/suppliers.go:17`, `ErrSupplierOrdering` | B | UI sortable columns are `name`, `email`, `address`, `tax_code` (`suppliers-and-customers/SuppliersAndCustomers.svelte:355-402`). legacy: no. Stays: paths through relations are open-ended and reverse ones repeat rows. |
 | DELETE supplier/<uid>/delete, bulk-delete | supplier referenced by a table other than payments, supplier invoices, subscriptions, sold products | service/supplier_writes.go | B | The four Django-referenced tables are handled. Other references need models outside the UI's supplier flows. legacy: yes (if any). medium |
-| PATCH supplier/<uid>/update | body changes `supplier_id` | `service/supplier_writes.go:146`, `ErrSupplierPrimaryKeyChange` | B | `modals/EditModal.svelte:131-138` PATCHes the form data for `row.supplier_id`. The form has no editable id. legacy: no |
+| PATCH supplier/<uid>/update | body changes `supplier_id` | `service/supplier_writes.go` | ported (v2-rest-b) | The copy under the new key is inserted as `Model.save()` does. Only a body that also clears `sport_association` stays refused (`ErrSupplierPrimaryKeyChange`). |
 
 ### ui-api-version.md
 | route | refusal condition | Go site | class | evidence / notes |
