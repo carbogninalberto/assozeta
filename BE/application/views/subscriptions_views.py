@@ -18,6 +18,7 @@ from dateutil.relativedelta import relativedelta
 import os
 import secrets
 import string
+import uuid
 import logging
 import base64
 import csv
@@ -191,6 +192,38 @@ def subscription_tags_unassign(request, tag_id, subscription_id):
         return Response({'msg': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
 
+def _member_renewal_association(request, data):
+    """The association a member account renews in.
+
+    A member account renews its own subscriptions and those of its family, in
+    the association they belong to: the named association must have a
+    subscription of the account (or of a person sharing a tax code or a family
+    with one of the account's subscriptions) for the associate of the request.
+    """
+    association = scoped_queryset(request, SportAssociation.objects).get(
+        sport_association_id=data['sport_association']['sport_association_id'])
+    own = Subscription._base_manager.filter(user=request.user)
+    renewable = Subscription._base_manager.filter(sport_association=association).filter(
+        Q(user=request.user)
+        | Q(associate__tax_code__in=own.filter(associate__tax_code__isnull=False).values('associate__tax_code'))
+        | Q(associate__family__in=own.filter(associate__family__isnull=False).values('associate__family'))
+    )
+    associate = data.get('associate_data')
+    associate = associate if isinstance(associate, dict) else {}
+    associate_id, tax_code = associate.get('associate_id'), associate.get('tax_code')
+    allowed = False
+    if isinstance(associate_id, str) and associate_id:
+        try:
+            allowed = renewable.filter(associate_id=uuid.UUID(associate_id)).exists()
+        except ValueError:
+            allowed = False
+    elif associate_id is None and isinstance(tax_code, str) and tax_code:
+        allowed = renewable.filter(associate__tax_code__iexact=tax_code).exists()
+    if not allowed:
+        raise PermissionDenied("User not allowed.")
+    return association
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def subscription_renew(request):
@@ -198,7 +231,7 @@ def subscription_renew(request):
     data = request.data
     requester = request.user
     if request.user.role != User.ASSOCIATION:
-        request.user = scoped_queryset(request, SportAssociation.objects).get(sport_association_id=data['sport_association']['sport_association_id']).user
+        request.user = _member_renewal_association(request, data).user
 
     created_storage_keys = []
     try:
@@ -226,7 +259,8 @@ def subscription_renew(request):
                 payments = payments.exclude(payment_id=fresh_sub.payment.payment_id)
             payments.order_by('creation_date').delete()
 
-            if 'user' in data and 'email' in data['user']:
+            # Only the association chooses the account of the renewed subscription.
+            if requester.role == User.ASSOCIATION and 'user' in data and 'email' in data['user']:
                 user = User.objects.filter(email=data['user']['email']).first()
                 if user is not None:
                     fresh_sub.user = user

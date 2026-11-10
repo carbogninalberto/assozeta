@@ -685,6 +685,25 @@ def fill_data_preregisration(data, user=None, requester=None):
         raise ValidationError({'msg': 'Iscrizione da rinnovare non trovata.', "code": 400})
 
 
+def _linkable_medical_certificates(medical_id, sport_association, requester):
+    """The certificate a registration links, by id.
+
+    It is one of: a certificate of the association account or of the requester,
+    the certificate of a subscription of this association, or an upload without
+    an account that no other association's subscription uses. Any other id is
+    treated like an unknown one.
+    """
+    accounts = [sport_association.user_id]
+    if requester is not None and getattr(requester, 'is_authenticated', False):
+        accounts.append(requester.pk)
+    used = Subscription._base_manager.filter(medical_id=OuterRef('pk'))
+    return MedicalCertificate.objects.filter(medical_id=medical_id).filter(
+        Q(user_id__in=accounts)
+        | Exists(used.filter(sport_association=sport_association))
+        | (Q(user__isnull=True) & ~Exists(used.exclude(sport_association=sport_association)))
+    )
+
+
 def safe_int(value, default=0):
     """Convert any value to int safely, returning default if conversion fails."""
     if value is None:
@@ -903,7 +922,7 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
 
     medical = None
     if medical_certificate is not None:
-        medical = MedicalCertificate.objects.filter(medical_id=medical_certificate)
+        medical = _linkable_medical_certificates(medical_certificate, sport_association, requester)
 
         if medical.exists():
             medical = medical.latest('creation_date')
