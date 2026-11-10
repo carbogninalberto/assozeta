@@ -19131,14 +19131,15 @@
         "target": "payment_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/payment_writes.go",
         "BE_GO/internal/dto/payment_writes.go",
         "BE_GO/internal/repository/payment_writes.go",
         "BE_GO/internal/service/payment_writes.go",
         "BE_GO/internal/handler/payment_writes.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/invoice_sync_print.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, scoped-request guard, tenant scope and audit index",
@@ -19152,7 +19153,10 @@
         "application_instructor",
         "application_supplierandcustomers",
         "application_group",
-        "bakney_user"
+        "bakney_user",
+        "BE/application/printing_tasks.py",
+        "BE/instance/restore/task_base.py",
+        "BE/application/serializers/invoice_serializers.py"
       ],
       "contract": {
         "methods": [
@@ -19170,7 +19174,7 @@
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry bookeeping.payments.update.",
         "resource_scope": "The owner's live association (scoped_queryset(SportAssociation.objects).get(user=request.user)); payments through Payment.objects (live, X-Group-Id aware) and, in association-scoped sessions, the session's association.",
-        "side_effects": "Instructor, supplier and payment_intent_id cleared, the party set, validated fields applied with Payment.save() defaults; audited full-row save (changed fields) indexed directly.",
+        "side_effects": "Instructor, supplier and payment_intent_id cleared, the party set, validated fields applied with Payment.save() defaults; audited full-row save (changed fields) indexed directly. An invoiced payment prints its invoice after the save (print_document_invoice.apply: GET CURRENT_HOST/document/invoice/<id>).",
         "transaction": "Not atomic in Django (a single save before the attachment hook); one transaction in Go.",
         "execution_owner": "django"
       },
@@ -19181,21 +19185,28 @@
         "TESTS/adapters/django/payment_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/payment-writes.md",
         {
-          "command": "python tools/go-migration/family.py run payment-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/payment-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "d31680894be4981b856dc8c89b378733dfc0384bb9733496a3096bf61bc444bd",
-          "scope": "HTTP family payment-writes: 120/120 cases on native Django and native Go, 120/120 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 124/124; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-red-r2/results.json",
+          "receipt_sha256": "3bbd44e66b407ec8bd1b0723276cf607fcdf877b7aa5f4453d75e242f6630a1b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 124/124 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and outbound print requests.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-versioned-r2/results.json",
+          "receipt_sha256": "985e2aeffae7a33e2167bebf3cd07c3f58a83d892191202e5d29ef27a33687c5"
+        },
+        {
+          "revision": "committing change with the invoice print sent without the Authorization header",
+          "result": "Mutation control: fails Go on payment-writes-update-invoiced-prints-invoice (print headers).",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-mutation-r3/results.json",
+          "receipt_sha256": "7df04015ad3ee72e0e620517806dd53d8a165edcb743bfa7344abe318626c09c"
         }
       ],
       "notes": [
-        "Implementing: add (serializer create, Payment.save() defaults, the view's second audited save with user, association and party; failures after the create keep it), update (partial serializer, parties, save hook, audited full-row save) and bulk add (the view's checks and defaults, atomic bulk_create without audit) on four transports. Refused with a 500 before any write: add for users with auto_paid_payment (invoice and PDF), update of invoiced payments (PDF), attachments with document content (storage), payment_id or user in the body, update form bodies and add multipart bodies with files, non-ASCII digits in strptime dates and non-canonical X-Group-Id spellings on add.",
-        "Implementing evidence: docs/architecture/go-migration/payment-writes.md",
-        "Implementing evidence: RED: Django 120/120; Go 404 on the first case. (quality-reports/go-migration/payment-writes-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 120/120 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/payment-writes-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on payment-writes-update-empty-body-clears-parties. (quality-reports/go-migration/payment-writes-http-mutation-r1/results.json)"
+        "Implementing: add (serializer create, Payment.save() defaults, the view's second audited save with user, association and party; failures after the create keep it), update (partial serializer, parties, save hook, audited full-row save) and bulk add (the view's checks and defaults, atomic bulk_create without audit) on four transports. Refused with a 500 before any write: add for users with auto_paid_payment (invoice and PDF), update of invoiced payments (PDF), attachments with document content (storage), payment_id or user in the body, update form bodies and add multipart bodies with files, non-ASCII digits in strptime dates and non-canonical X-Group-Id spellings on add. API v2: the own payment_id on update and invoiced updates (eager invoice print) are ported."
       ]
     },
     {
@@ -19213,14 +19224,15 @@
         "target": "payment_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/payment_writes.go",
         "BE_GO/internal/dto/payment_writes.go",
         "BE_GO/internal/repository/payment_writes.go",
         "BE_GO/internal/service/payment_writes.go",
         "BE_GO/internal/handler/payment_writes.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/invoice_sync_print.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, scoped-request guard, tenant scope and audit index",
@@ -19234,7 +19246,10 @@
         "application_instructor",
         "application_supplierandcustomers",
         "application_group",
-        "bakney_user"
+        "bakney_user",
+        "BE/application/printing_tasks.py",
+        "BE/instance/restore/task_base.py",
+        "BE/application/serializers/invoice_serializers.py"
       ],
       "contract": {
         "methods": [
@@ -19263,21 +19278,28 @@
         "TESTS/adapters/django/payment_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/payment-writes.md",
         {
-          "command": "python tools/go-migration/family.py run payment-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/payment-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "d31680894be4981b856dc8c89b378733dfc0384bb9733496a3096bf61bc444bd",
-          "scope": "HTTP family payment-writes: 120/120 cases on native Django and native Go, 120/120 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 124/124; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-red-r2/results.json",
+          "receipt_sha256": "3bbd44e66b407ec8bd1b0723276cf607fcdf877b7aa5f4453d75e242f6630a1b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 124/124 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and outbound print requests.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-versioned-r2/results.json",
+          "receipt_sha256": "985e2aeffae7a33e2167bebf3cd07c3f58a83d892191202e5d29ef27a33687c5"
+        },
+        {
+          "revision": "committing change with the invoice print sent without the Authorization header",
+          "result": "Mutation control: fails Go on payment-writes-update-invoiced-prints-invoice (print headers).",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-mutation-r3/results.json",
+          "receipt_sha256": "7df04015ad3ee72e0e620517806dd53d8a165edcb743bfa7344abe318626c09c"
         }
       ],
       "notes": [
-        "Implementing: add (serializer create, Payment.save() defaults, the view's second audited save with user, association and party; failures after the create keep it), update (partial serializer, parties, save hook, audited full-row save) and bulk add (the view's checks and defaults, atomic bulk_create without audit) on four transports. Refused with a 500 before any write: add for users with auto_paid_payment (invoice and PDF), update of invoiced payments (PDF), attachments with document content (storage), payment_id or user in the body, update form bodies and add multipart bodies with files, non-ASCII digits in strptime dates and non-canonical X-Group-Id spellings on add.",
-        "Implementing evidence: docs/architecture/go-migration/payment-writes.md",
-        "Implementing evidence: RED: Django 120/120; Go 404 on the first case. (quality-reports/go-migration/payment-writes-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 120/120 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/payment-writes-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on payment-writes-update-empty-body-clears-parties. (quality-reports/go-migration/payment-writes-http-mutation-r1/results.json)"
+        "Implementing: add (serializer create, Payment.save() defaults, the view's second audited save with user, association and party; failures after the create keep it), update (partial serializer, parties, save hook, audited full-row save) and bulk add (the view's checks and defaults, atomic bulk_create without audit) on four transports. Refused with a 500 before any write: add for users with auto_paid_payment (invoice and PDF), update of invoiced payments (PDF), attachments with document content (storage), payment_id or user in the body, update form bodies and add multipart bodies with files, non-ASCII digits in strptime dates and non-canonical X-Group-Id spellings on add. API v2: the own payment_id on update and invoiced updates (eager invoice print) are ported."
       ]
     },
     {
@@ -19295,14 +19317,15 @@
         "target": "payment_bulk_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/payment_writes.go",
         "BE_GO/internal/dto/payment_writes.go",
         "BE_GO/internal/repository/payment_writes.go",
         "BE_GO/internal/service/payment_writes.go",
         "BE_GO/internal/handler/payment_writes.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/invoice_sync_print.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry, scoped-request guard, tenant scope and audit index",
@@ -19316,7 +19339,10 @@
         "application_instructor",
         "application_supplierandcustomers",
         "application_group",
-        "bakney_user"
+        "bakney_user",
+        "BE/application/printing_tasks.py",
+        "BE/instance/restore/task_base.py",
+        "BE/application/serializers/invoice_serializers.py"
       ],
       "contract": {
         "methods": [
@@ -19345,21 +19371,28 @@
         "TESTS/adapters/django/payment_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/payment-writes.md",
         {
-          "command": "python tools/go-migration/family.py run payment-writes --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/payment-writes-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "d31680894be4981b856dc8c89b378733dfc0384bb9733496a3096bf61bc444bd",
-          "scope": "HTTP family payment-writes: 120/120 cases on native Django and native Go, 120/120 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 124/124; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-red-r2/results.json",
+          "receipt_sha256": "3bbd44e66b407ec8bd1b0723276cf607fcdf877b7aa5f4453d75e242f6630a1b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 124/124 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and outbound print requests.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-versioned-r2/results.json",
+          "receipt_sha256": "985e2aeffae7a33e2167bebf3cd07c3f58a83d892191202e5d29ef27a33687c5"
+        },
+        {
+          "revision": "committing change with the invoice print sent without the Authorization header",
+          "result": "Mutation control: fails Go on payment-writes-update-invoiced-prints-invoice (print headers).",
+          "artifact": "quality-reports/go-migration/payment-writes-http-v2gaps-mutation-r3/results.json",
+          "receipt_sha256": "7df04015ad3ee72e0e620517806dd53d8a165edcb743bfa7344abe318626c09c"
         }
       ],
       "notes": [
-        "Implementing: add (serializer create, Payment.save() defaults, the view's second audited save with user, association and party; failures after the create keep it), update (partial serializer, parties, save hook, audited full-row save) and bulk add (the view's checks and defaults, atomic bulk_create without audit) on four transports. Refused with a 500 before any write: add for users with auto_paid_payment (invoice and PDF), update of invoiced payments (PDF), attachments with document content (storage), payment_id or user in the body, update form bodies and add multipart bodies with files, non-ASCII digits in strptime dates and non-canonical X-Group-Id spellings on add.",
-        "Implementing evidence: docs/architecture/go-migration/payment-writes.md",
-        "Implementing evidence: RED: Django 120/120; Go 404 on the first case. (quality-reports/go-migration/payment-writes-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 120/120 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/payment-writes-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on payment-writes-update-empty-body-clears-parties. (quality-reports/go-migration/payment-writes-http-mutation-r1/results.json)"
+        "Implementing: add (serializer create, Payment.save() defaults, the view's second audited save with user, association and party; failures after the create keep it), update (partial serializer, parties, save hook, audited full-row save) and bulk add (the view's checks and defaults, atomic bulk_create without audit) on four transports. Refused with a 500 before any write: add for users with auto_paid_payment (invoice and PDF), update of invoiced payments (PDF), attachments with document content (storage), payment_id or user in the body, update form bodies and add multipart bodies with files, non-ASCII digits in strptime dates and non-canonical X-Group-Id spellings on add. API v2: the own payment_id on update and invoiced updates (eager invoice print) are ported."
       ]
     },
     {
@@ -19850,7 +19883,7 @@
         "target": "payment_list",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/payment_reads.go",
         "BE_GO/internal/dto/payment_reads.go",
@@ -19858,7 +19891,8 @@
         "BE_GO/internal/repository/payment_reads.go",
         "BE_GO/internal/service/payment_reads.go",
         "BE_GO/internal/handler/payment_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/invoice_sync_print.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -19892,21 +19926,28 @@
         "TESTS/adapters/django/payment_reads_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/payment-reads.md",
         {
-          "command": "python tools/go-migration/family.py run payment-reads --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/payment-reads-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "0fb8507eb79730f7a931e9b36a4fea1add16306cbb06e64306faa4dda46ce216",
-          "scope": "HTTP family payment-reads: 239/239 cases on native Django and native Go, 239/239 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 242/242; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-red-r2/results.json",
+          "receipt_sha256": "6cef6606894965ecb142fce7e8ae4cad63971fa22fd4f83ed457db9b0715243d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 242/242 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-versioned-r2/results.json",
+          "receipt_sha256": "17ee6395a2215dd4895cb50e5881b7933ee42fd9a8b970f3ca17eaccf90bbe74"
+        },
+        {
+          "revision": "committing change without the compensation prints",
+          "result": "Mutation control: fails Go on payment-reads-list-owner (print request count).",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-mutation-r3/results.json",
+          "receipt_sha256": "0774d18fbb806dc21f2333910b4e61f68a25d9deb76df223cb2cba94fdcf571a"
         }
       ],
       "notes": [
-        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500).",
-        "Implementing evidence: docs/architecture/go-migration/payment-reads.md",
-        "Implementing evidence: RED: Django 239/239; Go 404 on the first case. (quality-reports/go-migration/payment-reads-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 239/239 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged. (quality-reports/go-migration/payment-reads-http-versioned-r3/results.json)",
-        "Implementing evidence: Mutation control: fails Go on payment-reads-stats-search-rossi (CAUGHT). (quality-reports/go-migration/payment-reads-http-mutation-r1/results.json)"
+        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500). API v2: sort[field]=user and instructor compensations (several hours, eager compensation print) are ported."
       ]
     },
     {
@@ -20265,7 +20306,7 @@
         "target": "payment_stats",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/payment_reads.go",
         "BE_GO/internal/dto/payment_reads.go",
@@ -20273,7 +20314,8 @@
         "BE_GO/internal/repository/payment_reads.go",
         "BE_GO/internal/service/payment_reads.go",
         "BE_GO/internal/handler/payment_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/invoice_sync_print.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -20307,21 +20349,28 @@
         "TESTS/adapters/django/payment_reads_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/payment-reads.md",
         {
-          "command": "python tools/go-migration/family.py run payment-reads --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/payment-reads-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "0fb8507eb79730f7a931e9b36a4fea1add16306cbb06e64306faa4dda46ce216",
-          "scope": "HTTP family payment-reads: 239/239 cases on native Django and native Go, 239/239 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 242/242; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-red-r2/results.json",
+          "receipt_sha256": "6cef6606894965ecb142fce7e8ae4cad63971fa22fd4f83ed457db9b0715243d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 242/242 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-versioned-r2/results.json",
+          "receipt_sha256": "17ee6395a2215dd4895cb50e5881b7933ee42fd9a8b970f3ca17eaccf90bbe74"
+        },
+        {
+          "revision": "committing change without the compensation prints",
+          "result": "Mutation control: fails Go on payment-reads-list-owner (print request count).",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-mutation-r3/results.json",
+          "receipt_sha256": "0774d18fbb806dc21f2333910b4e61f68a25d9deb76df223cb2cba94fdcf571a"
         }
       ],
       "notes": [
-        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500).",
-        "Implementing evidence: docs/architecture/go-migration/payment-reads.md",
-        "Implementing evidence: RED: Django 239/239; Go 404 on the first case. (quality-reports/go-migration/payment-reads-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 239/239 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged. (quality-reports/go-migration/payment-reads-http-versioned-r3/results.json)",
-        "Implementing evidence: Mutation control: fails Go on payment-reads-stats-search-rossi (CAUGHT). (quality-reports/go-migration/payment-reads-http-mutation-r1/results.json)"
+        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500). API v2: sort[field]=user and instructor compensations (several hours, eager compensation print) are ported."
       ]
     },
     {
@@ -22773,7 +22822,7 @@
         "target": "statistic_athlete_dashboard",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/statistic_reads.go",
         "BE_GO/internal/dto/statistic_reads.go",
@@ -22782,7 +22831,10 @@
         "BE_GO/internal/service/statistic_reads.go",
         "BE_GO/internal/service/statistic_reads_test.go",
         "BE_GO/internal/handler/statistic_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/statistic_today_lessons.go",
+        "BE_GO/internal/domain/course_attendance.go",
+        "BE_GO/internal/repository/course_attendance.go"
       ],
       "dependencies": [
         "BE/application/views/statistic_views.py",
@@ -22798,7 +22850,9 @@
         "BE/application/models/carnet_models.py",
         "BE/application/models/attendee_models.py",
         "BE/communications/models.py",
-        "BE/instance/models.py"
+        "BE/instance/models.py",
+        "BE/application/utils/attendance_utils.py",
+        "BE/application/impersonation.py"
       ],
       "contract": {
         "methods": [
@@ -22827,21 +22881,28 @@
         "TESTS/adapters/django/statistic_reads_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/statistic-reads.md",
         {
-          "command": "python tools/go-migration/family.py run statistic-reads --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "d2af0461c659f51fe0e95269dceb6a00acbee0c8a25997383a21ab29cbf65537",
-          "scope": "HTTP family statistic-reads: 77/77 cases on native Django and native Go, 77/77 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 86/86; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-red-r1/results.json",
+          "receipt_sha256": "aae34f8c4a0033a7759e07688e016291a9f42ae03a856017a7fedbd110c312a0"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-versioned-r1/results.json",
+          "receipt_sha256": "fa48de721917ca0730424df6d3a43ba7ee67cee1861ea4d0e63e48690d743399"
+        },
+        {
+          "revision": "committing change with the todaylessons registry match case-sensitive (~ instead of ~*)",
+          "result": "Mutation control: fails Go on statistic-reads-todaylessons-instructor-collaborator (lessons length).",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-mutation-r1/results.json",
+          "receipt_sha256": "56bbe66a5f23284f3d13293afe2b3545e2313cdb3859ebf45a3aa60dcf031c44"
         }
       ],
       "notes": [
-        "Implementing: statistic/dashboard (every widget except todaylessons and expiredPayments, refused with the stable 500 page), statistic/athlete-dashboard and statistic/report with HTTP parity on 77 authored cases; date windows anchored at seed time and request-time expectations for the current balance-sheet year and Europe/Rome windows.",
-        "Implementing evidence: docs/architecture/go-migration/statistic-reads.md",
-        "Implementing evidence: RED: Django 77/77; Go 404 on the first case. (quality-reports/go-migration/statistic-reads-http-native-r4/results.json)",
-        "Implementing evidence: GREEN: 77/77 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/statistic-reads-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on statistic-reads-bestcourses-owner (best_courses order). (quality-reports/go-migration/statistic-reads-http-mutation-r1/results.json)"
+        "Implementing: Every dashboard widget is ported; todaylessons and expiredPayments added for the API v2 UI (see v2-refusals.md)."
       ]
     },
     {
@@ -22859,7 +22920,7 @@
         "target": "statistic_dashboard",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/statistic_reads.go",
         "BE_GO/internal/dto/statistic_reads.go",
@@ -22868,7 +22929,10 @@
         "BE_GO/internal/service/statistic_reads.go",
         "BE_GO/internal/service/statistic_reads_test.go",
         "BE_GO/internal/handler/statistic_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/statistic_today_lessons.go",
+        "BE_GO/internal/domain/course_attendance.go",
+        "BE_GO/internal/repository/course_attendance.go"
       ],
       "dependencies": [
         "BE/application/views/statistic_views.py",
@@ -22884,7 +22948,9 @@
         "BE/application/models/carnet_models.py",
         "BE/application/models/attendee_models.py",
         "BE/communications/models.py",
-        "BE/instance/models.py"
+        "BE/instance/models.py",
+        "BE/application/utils/attendance_utils.py",
+        "BE/application/impersonation.py"
       ],
       "contract": {
         "methods": [
@@ -22896,14 +22962,14 @@
           "/api/v2/statistic/dashboard",
           "/api/statistic/dashboard"
         ],
-        "request": "Query widget (QueryDict last value): subscriptions, payments, associates, bestcourses, expiringcarnets, expiringmedicalcertificates, expiredmedicalcertificates, subscriptionstoapprove, incomeAndExpenses (todaylessons and expiredPayments are not ported). Optional X-Group-Id.",
+        "request": "Query widget (QueryDict last value): subscriptions, payments, associates, bestcourses, expiringcarnets, expiringmedicalcertificates, expiredmedicalcertificates, subscriptionstoapprove, incomeAndExpenses, todaylessons, expiredPayments. Optional X-Group-Id.",
         "response": "200 {\"data\": {...}} per widget (see doc); 400 [\"error: widget is required.\"]; 404 [\"error: widget not found.\"].",
-        "errors": "401 anonymous; 403 administrator without impersonation, registry \"Missing permission: association.dashboard.read\", owner session scoped to an athlete (association context); 405 for other methods (after permissions); 500 page for athletes, owners without or with a deleted association, a carnet without associate or carnet, and the refused widgets.",
+        "errors": "401 anonymous; 403 administrator without impersonation, registry \"Missing permission: association.dashboard.read\", owner session scoped to an athlete (association context); 405 for other methods (after permissions); 500 page for athletes, owners without or with a deleted association, a carnet without associate or carnet, and refused inputs (see doc).",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "DRF IsAuthenticated; registry association.dashboard.read.",
-        "resource_scope": "scoped_queryset(SportAssociation).get(user=request.user); group-aware managers; impersonation narrows course and carnet subscriptions.",
-        "side_effects": "None.",
-        "transaction": "Read only; no request transaction.",
+        "resource_scope": "scoped_queryset(SportAssociation).get(user=request.user); group-aware managers; impersonation narrows course and carnet subscriptions. todaylessons: instructor users see registries whose events mention them.",
+        "side_effects": "todaylessons links an unlinked attendance day to its event (AttendanceDay.save() and an auditlog update entry).",
+        "transaction": "No request transaction: todaylessons links saved before an exception stay.",
         "execution_owner": "django"
       },
       "tests": [
@@ -22913,21 +22979,28 @@
         "TESTS/adapters/django/statistic_reads_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/statistic-reads.md",
         {
-          "command": "python tools/go-migration/family.py run statistic-reads --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "d2af0461c659f51fe0e95269dceb6a00acbee0c8a25997383a21ab29cbf65537",
-          "scope": "HTTP family statistic-reads: 77/77 cases on native Django and native Go, 77/77 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 86/86; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-red-r1/results.json",
+          "receipt_sha256": "aae34f8c4a0033a7759e07688e016291a9f42ae03a856017a7fedbd110c312a0"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-versioned-r1/results.json",
+          "receipt_sha256": "fa48de721917ca0730424df6d3a43ba7ee67cee1861ea4d0e63e48690d743399"
+        },
+        {
+          "revision": "committing change with the todaylessons registry match case-sensitive (~ instead of ~*)",
+          "result": "Mutation control: fails Go on statistic-reads-todaylessons-instructor-collaborator (lessons length).",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-mutation-r1/results.json",
+          "receipt_sha256": "56bbe66a5f23284f3d13293afe2b3545e2313cdb3859ebf45a3aa60dcf031c44"
         }
       ],
       "notes": [
-        "Implementing: statistic/dashboard (every widget except todaylessons and expiredPayments, refused with the stable 500 page), statistic/athlete-dashboard and statistic/report with HTTP parity on 77 authored cases; date windows anchored at seed time and request-time expectations for the current balance-sheet year and Europe/Rome windows.",
-        "Implementing evidence: docs/architecture/go-migration/statistic-reads.md",
-        "Implementing evidence: RED: Django 77/77; Go 404 on the first case. (quality-reports/go-migration/statistic-reads-http-native-r4/results.json)",
-        "Implementing evidence: GREEN: 77/77 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/statistic-reads-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on statistic-reads-bestcourses-owner (best_courses order). (quality-reports/go-migration/statistic-reads-http-mutation-r1/results.json)"
+        "Implementing: Every dashboard widget is ported; todaylessons and expiredPayments added for the API v2 UI (see v2-refusals.md)."
       ]
     },
     {
@@ -23017,7 +23090,7 @@
         "target": "statistic_report",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/statistic_reads.go",
         "BE_GO/internal/dto/statistic_reads.go",
@@ -23026,7 +23099,10 @@
         "BE_GO/internal/service/statistic_reads.go",
         "BE_GO/internal/service/statistic_reads_test.go",
         "BE_GO/internal/handler/statistic_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/statistic_today_lessons.go",
+        "BE_GO/internal/domain/course_attendance.go",
+        "BE_GO/internal/repository/course_attendance.go"
       ],
       "dependencies": [
         "BE/application/views/statistic_views.py",
@@ -23042,7 +23118,9 @@
         "BE/application/models/carnet_models.py",
         "BE/application/models/attendee_models.py",
         "BE/communications/models.py",
-        "BE/instance/models.py"
+        "BE/instance/models.py",
+        "BE/application/utils/attendance_utils.py",
+        "BE/application/impersonation.py"
       ],
       "contract": {
         "methods": [
@@ -23071,21 +23149,28 @@
         "TESTS/adapters/django/statistic_reads_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/statistic-reads.md",
         {
-          "command": "python tools/go-migration/family.py run statistic-reads --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/statistic-reads-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "d2af0461c659f51fe0e95269dceb6a00acbee0c8a25997383a21ab29cbf65537",
-          "scope": "HTTP family statistic-reads: 77/77 cases on native Django and native Go, 77/77 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 86/86; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-red-r1/results.json",
+          "receipt_sha256": "aae34f8c4a0033a7759e07688e016291a9f42ae03a856017a7fedbd110c312a0"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-versioned-r1/results.json",
+          "receipt_sha256": "fa48de721917ca0730424df6d3a43ba7ee67cee1861ea4d0e63e48690d743399"
+        },
+        {
+          "revision": "committing change with the todaylessons registry match case-sensitive (~ instead of ~*)",
+          "result": "Mutation control: fails Go on statistic-reads-todaylessons-instructor-collaborator (lessons length).",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-v2gaps-mutation-r1/results.json",
+          "receipt_sha256": "56bbe66a5f23284f3d13293afe2b3545e2313cdb3859ebf45a3aa60dcf031c44"
         }
       ],
       "notes": [
-        "Implementing: statistic/dashboard (every widget except todaylessons and expiredPayments, refused with the stable 500 page), statistic/athlete-dashboard and statistic/report with HTTP parity on 77 authored cases; date windows anchored at seed time and request-time expectations for the current balance-sheet year and Europe/Rome windows.",
-        "Implementing evidence: docs/architecture/go-migration/statistic-reads.md",
-        "Implementing evidence: RED: Django 77/77; Go 404 on the first case. (quality-reports/go-migration/statistic-reads-http-native-r4/results.json)",
-        "Implementing evidence: GREEN: 77/77 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/statistic-reads-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on statistic-reads-bestcourses-owner (best_courses order). (quality-reports/go-migration/statistic-reads-http-mutation-r1/results.json)"
+        "Implementing: Every dashboard widget is ported; todaylessons and expiredPayments added for the API v2 UI (see v2-refusals.md)."
       ]
     },
     {
@@ -24950,7 +25035,7 @@
         "target": "subscription_payments",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/payment_reads.go",
         "BE_GO/internal/dto/payment_reads.go",
@@ -24958,7 +25043,8 @@
         "BE_GO/internal/repository/payment_reads.go",
         "BE_GO/internal/service/payment_reads.go",
         "BE_GO/internal/handler/payment_reads.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/invoice_sync_print.go"
       ],
       "dependencies": [
         "Existing identity resolution, scoped-request checks and permission registry",
@@ -24992,21 +25078,28 @@
         "TESTS/adapters/django/payment_reads_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/payment-reads.md",
         {
-          "command": "python tools/go-migration/family.py run payment-reads --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/payment-reads-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "0fb8507eb79730f7a931e9b36a4fea1add16306cbb06e64306faa4dda46ce216",
-          "scope": "HTTP family payment-reads: 239/239 cases on native Django and native Go, 239/239 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 242/242; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-red-r2/results.json",
+          "receipt_sha256": "6cef6606894965ecb142fce7e8ae4cad63971fa22fd4f83ed457db9b0715243d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 242/242 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-versioned-r2/results.json",
+          "receipt_sha256": "17ee6395a2215dd4895cb50e5881b7933ee42fd9a8b970f3ca17eaccf90bbe74"
+        },
+        {
+          "revision": "committing change without the compensation prints",
+          "result": "Mutation control: fails Go on payment-reads-list-owner (print request count).",
+          "artifact": "quality-reports/go-migration/payment-reads-http-v2gaps-mutation-r3/results.json",
+          "receipt_sha256": "0774d18fbb806dc21f2333910b4e61f68a25d9deb76df223cb2cba94fdcf571a"
         }
       ],
       "notes": [
-        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500).",
-        "Implementing evidence: docs/architecture/go-migration/payment-reads.md",
-        "Implementing evidence: RED: Django 239/239; Go 404 on the first case. (quality-reports/go-migration/payment-reads-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 239/239 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged. (quality-reports/go-migration/payment-reads-http-versioned-r3/results.json)",
-        "Implementing evidence: Mutation control: fails Go on payment-reads-stats-search-rossi (CAUGHT). (quality-reports/go-migration/payment-reads-http-mutation-r1/results.json)"
+        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500). API v2: sort[field]=user and instructor compensations (several hours, eager compensation print) are ported."
       ]
     },
     {
@@ -25353,7 +25446,7 @@
         "target": "subscription_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/subscription_create.go",
         "BE_GO/internal/dto/subscription_create.go",
@@ -25394,21 +25487,28 @@
         "TESTS/adapters/django/subscription_create_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/subscription-create.md",
         {
-          "command": "python tools/go-migration/family.py run subscription-create --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/subscription-create-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "2442714b319b533d1ca56bc6e5db653a349f866c198fda42b24b12a2e0e241cd",
-          "scope": "HTTP family subscription-create: 40/40 cases on native Django and native Go, 40/40 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 45/45; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-create-http-v2gaps-red-r1/results.json",
+          "receipt_sha256": "fba1f2825f728e14194803672f1117834dec02d662d1bb3cee6895115847038c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 45/45 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-create-http-v2gaps-versioned-r1/results.json",
+          "receipt_sha256": "757cf6d972e1c2934fc29c0cf803c35735202a23b42c989ed76965aa4b3bdfa4"
+        },
+        {
+          "revision": "committing change with the certificate expiration audited as str(date) instead of str(datetime)",
+          "result": "Mutation control: fails Go on subscription-create-wizard-uploaded-certificate-expiration (audit changes).",
+          "artifact": "quality-reports/go-migration/subscription-create-http-v2gaps-mutation-r1/results.json",
+          "receipt_sha256": "6ae991880638132ff0798042e00488b27c34c9d58dc9f71601fa7dc13a0b9b24"
         }
       ],
       "notes": [
-        "Implementing: subscription/add for authenticated owners and collaborators: create_subscription (associate get_or_create, minor tutor, certificate owner, fees and plans, payment reuse/create, numbering, subscription, membership) in one transaction, then check_workflows_trigger and print_document_subscription Celery messages and the notification (broadcast rows, Redis store, user_broadcasts cache, Channels group_send written by Go plus the mirrored envelope). Anonymous/athlete/sport_association bodies, quick and family modes, preregistration, new member accounts, signature uploads, certificate expirations, type_of_associate filters, associate_id updates, form bodies and X-Group-Id are refused with a 500 before anything is committed. See docs/architecture/go-migration/subscription-create.md.",
-        "Implementing evidence: docs/architecture/go-migration/subscription-create.md",
-        "Implementing evidence: RED: Django 38/38; Go 404 on the first case. (quality-reports/go-migration/subscription-create-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 38/38 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/subscription-create-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on subscription-create-zero-fee-no-payment (SubscriptionMembership start_date). (quality-reports/go-migration/subscription-create-http-mutation-r1/results.json)"
+        "Implementing: subscription/add for authenticated owners and collaborators: create_subscription (associate get_or_create, minor tutor, certificate owner, fees and plans, payment reuse/create, numbering, subscription, membership) in one transaction, then check_workflows_trigger and print_document_subscription Celery messages and the notification (broadcast rows, Redis store, user_broadcasts cache, Channels group_send written by Go plus the mirrored envelope). Anonymous/athlete/sport_association bodies, quick and family modes, preregistration, new member accounts, signature uploads, certificate expirations, type_of_associate filters, associate_id updates, form bodies and X-Group-Id are refused with a 500 before anything is committed. See docs/architecture/go-migration/subscription-create.md. API v2: the owner wizard's medical certificate date (today default, unparseable, uploaded certificate expiration) is ported."
       ]
     },
     {
