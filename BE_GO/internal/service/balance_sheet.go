@@ -18,7 +18,7 @@ var (
 	// ErrBalanceSheetMissing is the POST's {'msg': 'No balance sheet found.'} (404).
 	ErrBalanceSheetMissing = errors.New("balance sheet not found")
 	// ErrBalanceSheetExportNotPorted refuses, before the generation writes,
-	// format pdf (a rendered file) and excel inputs Go does not reproduce.
+	// the export inputs Go does not reproduce (xlsxexport's and pdfexport's).
 	ErrBalanceSheetExportNotPorted = refusal.New("balance sheet export is not ported")
 	// ErrBalanceAccountNotDeletable is {'msg': 'This account is not deletable.'} (403).
 	ErrBalanceAccountNotDeletable = errors.New("custom account is not deletable")
@@ -261,14 +261,9 @@ func (r *sheetRun) generated(ctx context.Context, format any) (any, error) {
 		return map[string]any{"data": map[string]any{"available_years": years,
 			"balance_sheet": sheetView(pyCompact(stored), sheet.CreationDate, sheet.Year, false), "sport_association": profile}}, nil
 	}
-	excel := false
-	if text, ok := format.(string); ok {
-		switch text {
-		case "pdf":
-			return nil, ErrBalanceSheetExportNotPorted
-		case "excel":
-			excel = true
-		}
+	exportFormat := ""
+	if text, ok := format.(string); ok && (text == "pdf" || text == "excel") {
+		exportFormat = text
 	}
 	var data any = balanceDefaultData()
 	if sheet != nil {
@@ -316,11 +311,11 @@ func (r *sheetRun) generated(ctx context.Context, format any) (any, error) {
 	}
 	dict.set("total", total)
 	// export_balance_sheet runs after the save on the same in-memory data:
-	// the workbook is built first so an input Go does not reproduce is
+	// the file is built first so an input Go does not reproduce is
 	// refused before any write; a Python error is raised after the save.
 	var export *balanceSheetExport
-	if excel {
-		if export, err = r.export(ctx, dict, from.Year()); err != nil {
+	if exportFormat != "" {
+		if export, err = r.export(ctx, dict, from.Year(), exportFormat); err != nil {
 			return nil, err
 		}
 	}

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfexport"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 )
 
@@ -20,17 +21,34 @@ type balanceSheetExport struct {
 	failed bool
 }
 
+// balanceSheetHeader is export_balance_sheet's custom_header: logo,
+// denomination, city, postal code and address (” for an empty one).
+const balanceSheetHeader = `
+        <div style="text-align: center;display:flex;justify-content: center;width: 200px;margin:auto; margin-bottom: 20px;">
+            <div style="text-align: center;">
+                <img src="%s" style="height: 1000px;"/>
+            </div>
+            <div style="text-align: center;">
+                <h1 style="font-size: 20px;">%s</h1>
+                <h2 style="font-size: 16px;">%s, %s, %s</h2>
+                <h3 style="font-size: 16px;">Approvato il ____/____/______</h3>
+            </div>
+        </div>
+        `
+
 // balanceSheetComma is f"{value:.2f}".replace(".", ",").
 func balanceSheetComma(value float64) string {
 	return strings.ReplaceAll(strconv.FormatFloat(value, 'f', 2, 64), ".", ",")
 }
 
-// export is export_balance_sheet(balance_sheet, 'excel') over the data the
+// export is export_balance_sheet(balance_sheet, format) over the data the
 // view is about to save: generate_xlsx_from_data of Descrizione,
 // Istituzionale (€), Commerciale (€), Totale (€) and the filename
-// '[<today>] Bilancio <year> - <denomination>.xlsx'. An error is a refusal
+// '[<today>] Bilancio <year> - <denomination>.xlsx', or for 'pdf'
+// generate_pdf_from_data of the same rows under the association's header,
+// named with .pdf. An error is a refusal
 // (an input Go does not reproduce); failed is a Python exception.
-func (r *sheetRun) export(ctx context.Context, data *pyDict, year int) (*balanceSheetExport, error) {
+func (r *sheetRun) export(ctx context.Context, data *pyDict, year int, format string) (*balanceSheetExport, error) {
 	failed := &balanceSheetExport{failed: true}
 	today := r.s.now().UTC()
 	rows := make([][]xlsxexport.Value, 4)
@@ -131,7 +149,35 @@ func (r *sheetRun) export(ctx context.Context, data *pyDict, year int) (*balance
 	if err != nil {
 		return nil, err
 	}
-	workbook, err := xlsxexport.PandasOpenpyxl(rows, []string{"Descrizione", "Istituzionale (€)", "Commerciale (€)", "Totale (€)"}, r.s.now())
+	columns := []string{"Descrizione", "Istituzionale (€)", "Commerciale (€)", "Totale (€)"}
+	if format == "pdf" {
+		// generate_pdf_from_data(rows, columns, title=..., align=...,
+		// header=custom_header, isA3=True, landscape=False,
+		// additional_data=...): the balances are dated the day before the
+		// next balance year starts.
+		text := func(value *string, none string) string {
+			if value == nil {
+				return none
+			}
+			return *value
+		}
+		closing := printingDate(time.Date(year+1, time.Month(month), int(day), 0, 0, 0, 0, time.UTC).AddDate(0, 0, -1))
+		header := fmt.Sprintf(balanceSheetHeader, text(profile.Logo, "None"), profile.Denomination, text(profile.AddressCity, ""),
+			text(profile.AddressCAP, ""), text(profile.Address, ""))
+		document, err := pdfexport.DataTable{Columns: columns, Rows: pdfexport.RowsOf(rows),
+			Title: fmt.Sprintf("Bilancio %d al %s", year, closing), Align: []string{"LEFT", "RIGHT", "RIGHT", "RIGHT"},
+			Header: &header, IsA3: true, Portrait: true,
+			Additional: []string{"I saldi sono riportati al " + closing + "."}}.Build(today)
+		switch {
+		case errors.Is(err, pdfexport.ErrNotPorted):
+			return nil, ErrBalanceSheetExportNotPorted
+		case err != nil:
+			return failed, nil // an exception of reportlab
+		}
+		return &balanceSheetExport{body: map[string]any{"file": base64.StdEncoding.EncodeToString(document),
+			"filename": fmt.Sprintf("[%s] Bilancio %d - %s.pdf", printingDate(today), year, profile.Denomination)}}, nil
+	}
+	workbook, err := xlsxexport.PandasOpenpyxl(rows, columns, r.s.now())
 	switch {
 	case errors.Is(err, xlsxexport.ErrNotPorted):
 		return nil, ErrBalanceSheetExportNotPorted
