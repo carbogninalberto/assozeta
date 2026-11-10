@@ -1927,6 +1927,135 @@
    }
   },
   {
+   "name": "subscription-memberships-add-with-documents",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription_membership_id": "$new",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": null,
+    "associate": null,
+    "creation_date": "$now",
+    "start_date": null,
+    "end_date": null,
+    "membership_type": "Con documenti",
+    "membership_number": "0",
+    "description": null,
+    "price": null,
+    "paid": null,
+    "payment": null,
+    "attached_membership_documents": [
+     {
+      "document_id": "$new_document",
+      "creation_date": "$new_document",
+      "filepath": null,
+      "filename": "tessera.pdf",
+      "file_size_bytes": null,
+      "token": "$new_document"
+     },
+     {
+      "document_id": "$new_document",
+      "creation_date": "$new_document",
+      "filepath": null,
+      "filename": "ricevuta è.png",
+      "file_size_bytes": null,
+      "token": "$new_document"
+     }
+    ]
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": null,
+     "creation_date": "$now",
+     "start_date": null,
+     "end_date": null,
+     "membership_type": "Con documenti",
+     "membership_number": "0",
+     "description": null,
+     "price": null
+    },
+    "documents": [
+     {
+      "filename": "tessera.pdf",
+      "content": "JVBERi0xLjQgdGVzc2VyYQ=="
+     },
+     {
+      "filename": "ricevuta è.png",
+      "content": "iVBORyByaWNldnV0YQ=="
+     }
+    ]
+   },
+   "body": {
+    "membership_type": "Con documenti",
+    "documents_data": [
+     {
+      "document": "JVBERi0xLjQgdGVzc2VyYQ==",
+      "filename": "tessera.pdf"
+     },
+     {
+      "document": "iVBORyByaWNldnV0YQ==",
+      "filename": "ricevuta è.png"
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-memberships-add-documents-later-item-missing-key",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/memberships/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "document key not present"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "full_collaborator",
+    "id": "$new",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": null,
+     "creation_date": "$now",
+     "start_date": null,
+     "end_date": null,
+     "membership_type": "Parziale",
+     "membership_number": "0",
+     "description": null,
+     "price": null
+    },
+    "documents": [
+     {
+      "filename": "tessera.pdf",
+      "content": "JVBERi0xLjQgdGVzc2VyYQ=="
+     }
+    ]
+   },
+   "body": {
+    "membership_type": "Parziale",
+    "documents_data": [
+     {
+      "document": "JVBERi0xLjQgdGVzc2VyYQ==",
+      "filename": "tessera.pdf"
+     },
+     {
+      "filename": "x"
+     }
+    ]
+   }
+  },
+  {
    "name": "subscription-memberships-update-anonymous",
    "actor": "anonymous",
    "method": "PATCH",
@@ -2449,6 +2578,78 @@
    "body": {
     "payment": "a1000000-0000-4000-8000-000000650013",
     "end_date": "31/01/2027"
+   }
+  },
+  {
+   "name": "subscription-memberships-update-with-document",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650018/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000650018",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": "a1000000-0000-4000-8000-000000650006",
+    "associate": "a1000000-0000-4000-8000-000000650006",
+    "creation_date": "2026-09-03T08:00:00Z",
+    "start_date": null,
+    "end_date": "2027-01-31",
+    "membership_type": null,
+    "membership_number": null,
+    "description": "Con allegato",
+    "price": null,
+    "paid": false,
+    "payment": "a1000000-0000-4000-8000-000000650013",
+    "attached_membership_documents": [
+     {
+      "document_id": "$new_document",
+      "creation_date": "$new_document",
+      "filepath": null,
+      "filename": "certificato.pdf",
+      "file_size_bytes": null,
+      "token": "$new_document"
+     }
+    ]
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "m3",
+    "changes": {
+     "description": [
+      "None",
+      "Con allegato"
+     ]
+    },
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": "a1000000-0000-4000-8000-000000650006",
+     "payment": "a1000000-0000-4000-8000-000000650013",
+     "creation_date": "2026-09-03T08:00:00Z",
+     "start_date": null,
+     "end_date": "2027-01-31",
+     "membership_type": null,
+     "membership_number": null,
+     "description": "Con allegato",
+     "price": null
+    },
+    "documents": [
+     {
+      "filename": "certificato.pdf",
+      "content": "JVBERiBjZXJ0aWZpY2F0bw=="
+     }
+    ]
+   },
+   "body": {
+    "description": "Con allegato",
+    "documents_data": [
+     {
+      "document": "JVBERiBjZXJ0aWZpY2F0bw==",
+      "filename": "certificato.pdf"
+     }
+    ]
    }
   },
   {

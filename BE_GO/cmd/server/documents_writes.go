@@ -36,3 +36,12 @@ func composeDocumentUploads(cfg config.Config, db *sqlx.DB, sessions *repository
 	return handler.NewDocumentUploadsHandler(uploads, service.NewArchiveWrites(repository.NewDocumentArchive(db), time.Now), actors, identities,
 		audit, operations)
 }
+
+// composeMembershipDocumentUploads is the document storage subscription/memberships' documents_data uses.
+func composeMembershipDocumentUploads(cfg config.Config, db *sqlx.DB) *service.DocumentUploads {
+	objects := documentUploadObjects{S3: composeDocumentObjects(cfg), cacheControl: cfg.Storage.CacheControl}
+	if cfg.Storage.DefaultACL != nil {
+		objects.acl = *cfg.Storage.DefaultACL
+	}
+	return service.NewDocumentUploads(repository.NewDocumentUploads(db), objects, nil, cfg.Storage.FileOverwrite, time.Now, uuid.NewString)
+}

@@ -30,6 +30,7 @@ are outside this sequence. auditlog records the create, the changed fields
 and the delete (document links removed, documents kept). Run with
 ``python3 -I``.
 """
+import base64
 import copy
 import json
 from pathlib import Path
@@ -91,6 +92,10 @@ def add(name, actor, path, status, response, *, method='POST', body=None, raw_bo
 
 
 def document(label):
+    if isinstance(label, dict):
+        # A document created by the request: id, token and creation date are generated.
+        return {'document_id': '$new_document', 'creation_date': '$new_document', 'filepath': None, 'filename': label['filename'],
+                'file_size_bytes': None, 'token': '$new_document'}
     row = DOCUMENTS[label]
     return {'document_id': row['id'], 'creation_date': row['created'], 'filepath': row['filepath'], 'filename': row['filename'],
             'file_size_bytes': row['size'], 'token': row['token']}
@@ -284,6 +289,22 @@ add('add-document-missing-key-keeps-membership', 'owner', ADD, 400, MISSING_KEY,
 response, effect = created('owner', {'membership_type': 'Base64'})
 add('add-document-bad-base64-keeps-membership', 'owner', ADD, 500, SERVER,
     body={'membership_type': 'Base64', 'documents_data': [{'document': 'abc', 'filename': 'a.pdf'}]}, effect=effect)
+# documents_data items with both keys: base64.b64decode (non-strict), Document.objects.create(filename=...) (create entry
+# indexed through the actor's association), default_storage.save('<timestamp>/<document id>/<filename>', bytes), then the
+# link; the response lists the attached documents. Requests are not atomic: a later item without its keys is the 400 and
+# the work before it stays.
+UPLOADS = [{'filename': 'tessera.pdf', 'content': base64.b64encode(b'%PDF-1.4 tessera').decode()},
+           {'filename': 'ricevuta è.png', 'content': base64.b64encode(b'\x89PNG ricevuta').decode()}]
+response, effect = created('owner', {'membership_type': 'Con documenti', 'documents': UPLOADS})
+effect['documents'] = UPLOADS
+add('add-with-documents', 'owner', ADD, 201, response,
+    body={'membership_type': 'Con documenti', 'documents_data': [{'document': d['content'], 'filename': d['filename']} for d in UPLOADS]},
+    effect=effect)
+response, effect = created('full_collaborator', {'membership_type': 'Parziale'})
+effect['documents'] = UPLOADS[:1]
+add('add-documents-later-item-missing-key', 'full_collaborator', ADD, 400, MISSING_KEY,
+    body={'membership_type': 'Parziale', 'documents_data': [{'document': UPLOADS[0]['content'], 'filename': 'tessera.pdf'}, {'filename': 'x'}]},
+    effect=effect)
 
 # update
 add('update-anonymous', 'anonymous', one('m1', 'update'), 401, ANONYMOUS, method='PATCH', body={})
@@ -331,6 +352,14 @@ add('update-form-blank-values', 'owner', one('m2', 'update'), 200, response, met
 response, effect = changed('owner', 'm3', payment=P('grouped_pay'), end_date='2027-01-31')
 add('update-group-payment', 'owner', one('m3', 'update'), 200, response, method='PATCH',
     body={'payment': P('grouped_pay'), 'end_date': '31/01/2027'}, headers=GROUP, effect=effect)
+# An update attaches the new document to the existing ones.
+_, effect = changed('owner', 'm3', description='Con allegato')
+STATE['m3']['documents'] = [{'filename': 'certificato.pdf'}]
+response = item(STATE['m3'])
+effect['documents'] = [{'filename': 'certificato.pdf', 'content': base64.b64encode(b'%PDF certificato').decode()}]
+add('update-with-document', 'owner', one('m3', 'update'), 200, response, method='PATCH',
+    body={'description': 'Con allegato', 'documents_data': [{'document': effect['documents'][0]['content'], 'filename': 'certificato.pdf'}]},
+    effect=effect)
 # DecimalField.validate_empty_values: a blank allow_null decimal is None.
 response, effect = changed('owner', 'm4', description='Nota', price=None)
 add('update-document-missing-key-keeps-change', 'owner', one('m4', 'update'), 400, MISSING_KEY, method='PATCH',

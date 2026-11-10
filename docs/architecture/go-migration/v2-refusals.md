@@ -62,6 +62,7 @@ Receipts are `quality-reports/go-migration/<family>-http-v2sub-*`; each family d
 | subscription-renew | `POST subscription/renew` | payment clean-up meets an unpaid invoiced payment | 55 cases; RED `v2sub-red-r1` Django 55/55, Go 500; GREEN `v2sub-versioned-r1` 4 transports; mutation `v2sub-mutation-r1` (invoiced payments excluded) CAUGHT |
 | subscription-create | `POST subscription/add?m=only_associate`, `POST subscription/add` with an owner's `sport_association` | quick re-subscription; the wizard in a modal (v2-sub-create) | 55 cases; RED `v2create-red-r5` Django 55/55, Go 500; GREEN `v2create-versioned-r1` 4 transports; mutation `v2create-mutation-r1` (fallback plan data) CAUGHT; subscription-renew re-run 62/62 |
 | subscription-create | `POST subscription/add` | owner wizard: signature upload; "new member" account and welcome e-mail (v2-sub-create) | 62 cases; RED `v2create-red-r12` Django 62/62, Go 500; GREEN `v2create-versioned-r2` 4 transports; mutation `v2create-mutation-r3` (signature user) CAUGHT; subscription-renew 62/62, subscription-sign 47/47 re-run |
+| subscription-memberships | `POST subscription/memberships/add`, `PATCH …/<pk>/update` | `documents_data` uploads (v2-sub-create) | 88 cases; RED `v2create-red-r2` Django 88/88, Go 500; GREEN `v2create-versioned-r1` 4 transports; mutation `v2create-mutation-r1` (document link skipped) CAUGHT |
 | subscription-renew | `POST subscription/renew` | athlete session (v2-sub-create) | 62 cases; RED `v2create-red-r2` Django 62/62, Go 500; GREEN `v2create-versioned-r1` 4 transports; mutation `v2create-mutation-r1` (athlete kept as request.user) CAUGHT |
 | subscription-transfer | `POST subscription/<uid>/transfer` (e-mail branch) | tutor/associate names starting with non-ASCII letters; non-ASCII e-mail domain | 31 cases; RED `v2sub-red-r1` Django 31/31, Go 500; GREEN `v2sub-versioned-r1` 4 transports 31/31; mutation `v2sub-mutation-r1` (no NFKC) CAUGHT |
 
@@ -88,7 +89,6 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 | POST subscription/add | public forms: anonymous, `sport_association`, preregistration, family wizard | `Subscribe.svelte:124,147,167`, `SubscribeMultiple.svelte:183`, `SubscribeFamily.svelte:136-181` | `service/subscription_create.go:91,102,132,141` | expensive |
 | POST subscription/import/upload | final mapping step (every import) | `routes/association/Members/import/ImportMembers.svelte:46-52` | `service/subscription_import_upload.go:200` | expensive |
 | POST subscription/import/upload | Excel file | `import/sections/Section1.svelte:33-37` | `service/subscription_import_upload.go:210` | expensive |
-| subscription/memberships add/update | with documents | `AddEditMembershipsModal.svelte:30-47` | `service/subscription_memberships.go:228,237` | medium |
 
 ### subscription-reads / subscription-lifecycle / subscription-renew / subscription-transfer / subscription-medical
 | Route | Condition | UI call | Go site | Cost |
@@ -806,7 +806,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### subscription-memberships.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/memberships/add, PATCH …/<pk>/update | `documents_data` that would upload | `service/subscription_memberships.go:228,237` (`ErrSubscriptionMembershipUploadUnsupported`) | **A** | `routes/association/Members/detail/sections/modals/AddEditMembershipsModal.svelte:30-47` builds `documents_data` `{document: base64, filename}` from attached files, then sends at `:61-74,97`. Cost: medium. |
+| POST subscription/memberships/add, PATCH …/<pk>/update | `documents_data` that would upload | ported (v2-sub-create) | **ported** | `routes/association/Members/detail/sections/modals/AddEditMembershipsModal.svelte:30-47` builds `documents_data` `{document: base64, filename}` from attached files, then sends at `:61-74,97`. Cost: medium. |
 | update | changed `subscription_membership_id` | | B | The hidden input carries the same id (`AddEditMembershipsModal.svelte:158`). Only a change is refused. |
 | add | multipart with files | | B | The UI sends JSON. |
 
