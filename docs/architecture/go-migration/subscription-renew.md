@@ -78,11 +78,20 @@
   - a crashing draft commits the work before it.
   - Unlike Django, the new APPROVING status and each approval are visible to other requests only at the end.
 
+## Renewal by an athlete
+
+The athlete area renews through the same modal. For a requester that is not an owner, `request.user` becomes
+`scoped_queryset(request, SportAssociation.objects).get(sport_association_id=data['sport_association']['sport_association_id']).user`
+before the `try` block: a non-dict body or association, a missing key, a malformed or unknown id are the 500 page.
+`create_subscription` and the post-processing then run for that owner (the associate's account becomes the owner with its own
+update entry, since the serializer's `user` is read-only); the audit actor stays the athlete (the notification broadcast rows are
+indexed through the athlete's association: none), and the notification goes to the owner.
+
 ## Not ported
 
 Refused with the 500 page before anything is committed:
-- renewals by athletes (the association of `data['sport_association']['sport_association_id']`), form bodies and a non-empty
-  `X-Group-Id` on both routes;
+- athlete renewals during an impersonation session with an association scope (`scoped_queryset`'s filter), an association whose
+  user is not an owner account, an integer `sport_association_id`; form bodies and a non-empty `X-Group-Id` on both routes;
 - `data['sport_association']` naming another association;
 - a renewal with `courses` items (`add_course_to_subscription` inside the renewal);
 - a `tags` string, tag ids that are not strings;
@@ -118,3 +127,9 @@ v2-subscriptions: the renewal's payment clean-up now deletes unpaid subscription
 - RED (`v2sub-red-r1`): Django 55/55; Go 500 on that case.
 - GREEN (`v2sub-versioned-r1`): 55/55 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`v2sub-mutation-r1`): excluding invoiced payments from the clean-up query fails that case (CAUGHT).
+
+v2-sub-create: renewals by athletes. Cases `subscription-renew-renew-athlete*` (62 in all).
+
+- RED (`v2create-red-r2`): Django 62/62; Go 500 on `subscription-renew-renew-athlete`.
+- GREEN (`v2create-versioned-r1`): 62/62 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`v2create-mutation-r1`): keeping the athlete as `request.user` fails `subscription-renew-renew-athlete` with 403 (CAUGHT).

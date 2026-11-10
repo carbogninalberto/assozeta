@@ -48,8 +48,8 @@ func renewError(err error) error {
 // Renew follows subscription_renew for owners and collaborators.
 func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.ResolvedIdentity, request SubscriptionCreateRequest) (*SubscriptionRenewResult, error) {
 	user := identity.ScopeUser
-	// Athletes (the owner of data['sport_association']), form bodies and X-Group-Id are not ported.
-	if user == nil || user.Role != domain.RoleAssociation || request.Form || strings.TrimSpace(request.Group) != "" {
+	// Form bodies and X-Group-Id are not ported.
+	if user == nil || request.Form || strings.TrimSpace(request.Group) != "" {
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
 	request.Audit = paymentCategoryAuditContext(identity, request.Audit)
@@ -58,6 +58,16 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 		return nil, err
 	}
 	defer tx.Rollback()
+	if user.Role != domain.RoleAssociation {
+		// request.user becomes the owner of data['sport_association']['sport_association_id'];
+		// the audit actor stays the requester.
+		owner, err := s.renewRequesterOwner(ctx, tx, identity, request.Body)
+		if err != nil {
+			return nil, err
+		}
+		identity.ScopeUser = owner
+		user = owner
+	}
 	// The log line reads request.user.sport_association first.
 	count, err := tx.AssociationCount(ctx, user.ID)
 	if err != nil {
@@ -101,6 +111,52 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 	}
 	s.creates.afterCommit(ctx, identity, created, request)
 	return &SubscriptionRenewResult{PaymentID: created.result.PaymentID}, nil
+}
+
+// renewRequesterOwner is scoped_queryset(request, SportAssociation.objects).get(
+// sport_association_id=data['sport_association']['sport_association_id']).user,
+// before the view's try block: every failure is the 500 page.
+func (s *SubscriptionRenewals) renewRequesterOwner(ctx context.Context, tx domain.SubscriptionRenewTransaction, identity domain.ResolvedIdentity,
+	body any) (*domain.Account, error) {
+	if identity.ImpersonationAssociationID != "" {
+		// The impersonation scope's association filter is not ported.
+		return nil, domain.ErrSubscriptionCreateNotPorted
+	}
+	data, ok := body.(domain.RequestObject)
+	if !ok {
+		return nil, domain.ErrSubscriptionCreateServer
+	}
+	value, _ := data.Lookup("sport_association")
+	association, ok := value.(domain.RequestObject)
+	if !ok {
+		return nil, domain.ErrSubscriptionCreateServer
+	}
+	raw, _ := association.Lookup("sport_association_id")
+	text, ok := raw.(string)
+	if !ok {
+		// A missing key, None (IS NULL) or another type: KeyError, DoesNotExist or ValidationError
+		// (an int is uuid.UUID(int=...), not ported).
+		if _, isNumber := raw.(json.Number); isNumber {
+			return nil, domain.ErrSubscriptionCreateNotPorted
+		}
+		return nil, domain.ErrSubscriptionCreateServer
+	}
+	id, err := paymentInfoParseUUID(text)
+	if err != nil {
+		return nil, domain.ErrSubscriptionCreateServer
+	}
+	owner, err := tx.RenewAssociationOwner(ctx, id.String())
+	if err != nil {
+		return nil, err
+	}
+	if owner == nil {
+		return nil, domain.ErrSubscriptionCreateServer
+	}
+	if owner.Role != domain.RoleAssociation {
+		// An association whose user is not an owner account is not ported.
+		return nil, domain.ErrSubscriptionCreateNotPorted
+	}
+	return owner, nil
 }
 
 // cleanPayments deletes the association's unpaid subscription payments of the
