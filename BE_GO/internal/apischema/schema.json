@@ -3392,9 +3392,6 @@
                 "tags": [
                     "document"
                 ],
-                "security": [
-                    {}
-                ],
                 "responses": {
                     "200": {
                         "description": "No response body"

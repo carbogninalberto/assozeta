@@ -37,6 +37,7 @@ type DocmanagerReads struct {
 	secret  string
 	now     func() time.Time
 	guess   func(string) (string, bool, error)
+	deleter domain.DocumentDeleteStore
 }
 
 func NewDocmanagerReads(store domain.DocmanagerReadsStore, objects DocumentObjects, actors *ActorAuthentication, secret string,
@@ -416,26 +417,36 @@ func cookieUnquote(value string) string {
 
 func isOctal(b byte) bool { return b >= '0' && b <= '7' }
 
-// DeleteAllowed follows delete_document up to document_belongs_to: a missing
-// document or a requester without an active association is 404; the ownership
-// walk over every referencing object and the deletion are not ported.
-func (s *DocmanagerReads) Delete(ctx context.Context, identity domain.ResolvedIdentity, uid string) (*DocmanagerReply, error) {
+// WithDocumentDelete installs the store that runs delete_document's ownership
+// walk and deletion.
+func (s *DocmanagerReads) WithDocumentDelete(deleter domain.DocumentDeleteStore) *DocmanagerReads {
+	s.deleter = deleter
+	return s
+}
+
+// Delete follows application.document_scope.delete_document: is_valid_uuid,
+// then a missing document, a requester (request.user, the owner for
+// collaborators) without an active association and a document that does not
+// belong to that association are all 404; otherwise Document.delete().
+func (s *DocmanagerReads) Delete(ctx context.Context, identity domain.ResolvedIdentity, uid string, audit domain.LoginAuditContext,
+	groupHeader string) (*DocmanagerReply, error) {
 	id, err := paymentInfoParseUUID(uid)
 	if err != nil {
 		return nil, err
 	}
-	document, err := s.store.Document(ctx, id.String())
-	if err != nil {
-		return nil, err
+	if s.deleter == nil {
+		return nil, domain.ErrDocmanagerNotPorted
 	}
-	owned := false
+	found := false
 	if identity.ScopeUser != nil {
-		if owned, err = s.store.HasActiveAssociation(ctx, identity.ScopeUser.ID); err != nil {
+		found, err = s.deleter.Delete(ctx, id.String(), identity.ScopeUser.ID, paymentCategoryAuditContext(identity, audit),
+			supplierGroup(groupHeader))
+		if err != nil {
 			return nil, err
 		}
 	}
-	if document == nil || !owned {
+	if !found {
 		return docmanagerJSON(404, map[string]string{"error": "Document not found."}), nil
 	}
-	return nil, domain.ErrDocmanagerNotPorted
+	return docmanagerJSON(200, map[string]string{"msg": "success!"}), nil
 }

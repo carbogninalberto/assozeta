@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
@@ -33,7 +34,7 @@ const (
 	NaN Kind = iota
 	// String is a str.
 	String
-	// Int is a Python int.
+	// Int is a Python int, or a numpy.int64 in a frame of int64 columns.
 	Int
 	// Float is a float (numpy.float64 in an all-numeric frame).
 	Float
@@ -191,7 +192,7 @@ const (
 )
 
 // build is the python parser on get_sheet_data's rows (trimmed and padded).
-func build(rows [][]cell) (*Frame, error) {
+func build(rows [][]cell, text func(column string) bool) (*Frame, error) {
 	last := -1
 	for index, row := range rows {
 		for len(row) > 0 && row[len(row)-1].blank() {
@@ -237,7 +238,13 @@ func build(rows [][]cell) (*Frame, error) {
 	}
 	kinds := make([]int, width)
 	for column := 0; column < width; column++ {
-		kind, err := inferColumn(rows[1:], column, frame.Rows)
+		var kind int
+		var err error
+		if text != nil && text(frame.Columns[column]) {
+			kind = textColumn(rows[1:], column, frame.Rows)
+		} else {
+			kind, err = inferColumn(rows[1:], column, frame.Rows)
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -246,16 +253,15 @@ func build(rows [][]cell) (*Frame, error) {
 	if len(frame.Rows) == 0 {
 		return frame, nil
 	}
-	// iterrows(): one dtype per row. Numeric columns only give float64 rows.
+	// iterrows(): one dtype per row. Numeric columns only give float64 rows,
+	// unless every column is int64 (numpy.int64 values, Int here: the import
+	// takes their Python number).
 	numericOnly, integerOnly := true, true
 	for _, kind := range kinds {
 		numericOnly = numericOnly && (kind == columnInt || kind == columnFloat)
 		integerOnly = integerOnly && kind == columnInt
 	}
-	if integerOnly {
-		return nil, ErrUnsupported // numpy.int64 values
-	}
-	if numericOnly {
+	if numericOnly && !integerOnly {
 		for _, row := range frame.Rows {
 			for index, value := range row {
 				if value.Kind == Int {
@@ -289,6 +295,46 @@ func build(rows [][]cell) (*Frame, error) {
 		}
 	}
 	return frame, nil
+}
+
+// textColumn is a column read through the text converter: numbers are their
+// str(), the NA texts are missing, and the column is an object column, or
+// datetime64 when every value is a datetime within Timestamp's range.
+func textColumn(rows [][]cell, column int, out [][]Value) int {
+	allTime, anyTime := true, false
+	for index, row := range rows {
+		value := row[column]
+		switch value.kind {
+		case cellEmpty:
+			out[index][column] = Value{Kind: NaN}
+			continue
+		case cellString:
+			if naValues[value.s] {
+				out[index][column] = Value{Kind: NaN}
+				continue
+			}
+			out[index][column] = Value{Kind: String, S: value.s}
+		case cellInt:
+			out[index][column] = Value{Kind: String, S: strconv.FormatInt(value.i, 10)}
+		case cellFloat:
+			out[index][column] = Value{Kind: String, S: dto.PythonFloatText(value.f)}
+		case cellTime:
+			out[index][column] = Value{Kind: Time, T: value.t}
+			anyTime = true
+			allTime = allTime && !value.t.After(timestampMax)
+			continue
+		}
+		allTime = false
+	}
+	if !allTime || !anyTime {
+		return columnObject
+	}
+	for index := range rows {
+		if out[index][column].Kind == NaN {
+			out[index][column] = Value{Kind: NaT}
+		}
+	}
+	return columnTime
 }
 
 // inferColumn is _infer_types and the DataFrame constructor for one column.

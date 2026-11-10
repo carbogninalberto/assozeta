@@ -34,9 +34,10 @@ var (
 	ErrDocumentViewNotPorted = refusal.New("document view: input not ported")
 )
 
-// PreviewRenderer is pdfrender.Client's call without request headers.
+// PreviewRenderer is pdfrender.Client's call with the request's
+// Authorization header.
 type PreviewRenderer interface {
-	RenderWithoutHeaders(ctx context.Context, url string) ([]byte, error)
+	Render(ctx context.Context, url string, authorization *string) ([]byte, error)
 }
 
 type DocumentViews struct {
@@ -56,6 +57,9 @@ type DocumentViewRequest struct {
 	Query           domain.RequestObject
 	Group           string
 	Language        string
+	// Authorization is request.headers.get('authorization'): the preview's
+	// PDF is rendered as the requester.
+	Authorization *string
 }
 
 // DocumentViewReply: an HTML page (with the language it was rendered in) or a DRF JSON body.
@@ -701,7 +705,7 @@ func (s *DocumentViews) preview(ctx context.Context, identity domain.ResolvedIde
 		if hasID {
 			shown = idText
 		}
-		pdf, err := s.renderer.RenderWithoutHeaders(ctx, request.Path+"?sport_association_id="+shown)
+		pdf, err := s.renderer.Render(ctx, request.Path+"?sport_association_id="+shown, request.Authorization)
 		if err != nil {
 			return &DocumentViewReply{Status: 500, JSON: map[string]string{"error": "PDF not rendered"}}, nil
 		}

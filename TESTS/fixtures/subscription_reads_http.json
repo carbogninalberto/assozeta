@@ -33809,6 +33809,1447 @@
    }
   },
   {
+   "name": "subscription-reads-list-pdf-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Tesserato",
+       "Email",
+       "Stato",
+       "Anno fiscale",
+       "Certificato",
+       "Data creazione",
+       "Utente",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Marco Russo",
+        "marco@example.test",
+        "in attesa",
+        "successivo",
+        "01/10/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Enea Zeri",
+        null,
+        "accettato",
+        "corrente",
+        "20/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Anna Atleta",
+        "anna@example.test",
+        "accettato",
+        "corrente",
+        "10/09/2025",
+        "-",
+        "message-reads-700004",
+        ""
+       ],
+       [
+        "Paolo Gallo",
+        null,
+        "accettato",
+        "corrente",
+        "09/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Lucia Bianchi",
+        "lucia@example.test",
+        "accettato",
+        "corrente",
+        "08/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Senza Data",
+        "senza@example.test",
+        "archiviato",
+        "corrente",
+        "07/09/2025",
+        "presente",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Bimbo Neri",
+        null,
+        "accettato",
+        "corrente",
+        "06/09/2025",
+        "presente",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Giulia Verdi",
+        "",
+        "non firmato",
+        "corrente",
+        "05/09/2025",
+        "-",
+        "message-reads-700001",
+        "Agonisti"
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "corrente",
+        "01/09/2025",
+        "presente",
+        "message-reads-700001",
+        "Agonisti, Master"
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "precedente",
+        "01/09/2023",
+        "-",
+        "message-reads-700001",
+        ""
+       ]
+      ],
+      "title": "Iscrizioni filtrate (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni filtrate - Message reads own.pdf"
+   },
+   "unordered": false,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "subscription-reads-list-pdf-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Tesserato",
+       "Email",
+       "Stato",
+       "Anno fiscale",
+       "Certificato",
+       "Data creazione",
+       "Utente",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Marco Russo",
+        "marco@example.test",
+        "in attesa",
+        "successivo",
+        "01/10/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Enea Zeri",
+        null,
+        "accettato",
+        "corrente",
+        "20/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Anna Atleta",
+        "anna@example.test",
+        "accettato",
+        "corrente",
+        "10/09/2025",
+        "-",
+        "message-reads-700004",
+        ""
+       ],
+       [
+        "Paolo Gallo",
+        null,
+        "accettato",
+        "corrente",
+        "09/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Lucia Bianchi",
+        "lucia@example.test",
+        "accettato",
+        "corrente",
+        "08/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Senza Data",
+        "senza@example.test",
+        "archiviato",
+        "corrente",
+        "07/09/2025",
+        "presente",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Bimbo Neri",
+        null,
+        "accettato",
+        "corrente",
+        "06/09/2025",
+        "presente",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Giulia Verdi",
+        "",
+        "non firmato",
+        "corrente",
+        "05/09/2025",
+        "-",
+        "message-reads-700001",
+        "Agonisti"
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "corrente",
+        "01/09/2025",
+        "presente",
+        "message-reads-700001",
+        "Agonisti, Master"
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "precedente",
+        "01/09/2023",
+        "-",
+        "message-reads-700001",
+        ""
+       ]
+      ],
+      "title": "Iscrizioni filtrate (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni filtrate - Message reads own.pdf"
+   },
+   "unordered": false,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "subscription-reads-list-pdf-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Tesserato",
+       "Email",
+       "Stato",
+       "Anno fiscale",
+       "Certificato",
+       "Data creazione",
+       "Utente",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Marco Russo",
+        "marco@example.test",
+        "in attesa",
+        "successivo",
+        "01/10/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Enea Zeri",
+        null,
+        "accettato",
+        "corrente",
+        "20/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Anna Atleta",
+        "anna@example.test",
+        "accettato",
+        "corrente",
+        "10/09/2025",
+        "-",
+        "message-reads-700004",
+        ""
+       ],
+       [
+        "Paolo Gallo",
+        null,
+        "accettato",
+        "corrente",
+        "09/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Lucia Bianchi",
+        "lucia@example.test",
+        "accettato",
+        "corrente",
+        "08/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Senza Data",
+        "senza@example.test",
+        "archiviato",
+        "corrente",
+        "07/09/2025",
+        "presente",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Bimbo Neri",
+        null,
+        "accettato",
+        "corrente",
+        "06/09/2025",
+        "presente",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Giulia Verdi",
+        "",
+        "non firmato",
+        "corrente",
+        "05/09/2025",
+        "-",
+        "message-reads-700001",
+        "Agonisti"
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "corrente",
+        "01/09/2025",
+        "presente",
+        "message-reads-700001",
+        "Agonisti, Master"
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "precedente",
+        "01/09/2023",
+        "-",
+        "message-reads-700001",
+        ""
+       ]
+      ],
+      "title": "Iscrizioni filtrate (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni filtrate - Message reads own.pdf"
+   },
+   "unordered": false,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "subscription-reads-list-pdf-form-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Tesserato",
+       "Email",
+       "Stato",
+       "Anno fiscale",
+       "Certificato",
+       "Data creazione",
+       "Utente",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Marco Russo",
+        "marco@example.test",
+        "in attesa",
+        "successivo",
+        "01/10/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Enea Zeri",
+        null,
+        "accettato",
+        "corrente",
+        "20/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Anna Atleta",
+        "anna@example.test",
+        "accettato",
+        "corrente",
+        "10/09/2025",
+        "-",
+        "message-reads-700004",
+        ""
+       ],
+       [
+        "Paolo Gallo",
+        null,
+        "accettato",
+        "corrente",
+        "09/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Lucia Bianchi",
+        "lucia@example.test",
+        "accettato",
+        "corrente",
+        "08/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Senza Data",
+        "senza@example.test",
+        "archiviato",
+        "corrente",
+        "07/09/2025",
+        "presente",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Bimbo Neri",
+        null,
+        "accettato",
+        "corrente",
+        "06/09/2025",
+        "presente",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Giulia Verdi",
+        "",
+        "non firmato",
+        "corrente",
+        "05/09/2025",
+        "-",
+        "message-reads-700001",
+        "Agonisti"
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "corrente",
+        "01/09/2025",
+        "presente",
+        "message-reads-700001",
+        "Agonisti, Master"
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "precedente",
+        "01/09/2023",
+        "-",
+        "message-reads-700001",
+        ""
+       ]
+      ],
+      "title": "Iscrizioni filtrate (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni filtrate - Message reads own.pdf"
+   },
+   "unordered": false,
+   "raw_body": "format=pdf",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "subscription-reads-list-pdf-form-last-format",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Tesserato",
+       "Email",
+       "Stato",
+       "Anno fiscale",
+       "Certificato",
+       "Data creazione",
+       "Utente",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Marco Russo",
+        "marco@example.test",
+        "in attesa",
+        "successivo",
+        "01/10/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Enea Zeri",
+        null,
+        "accettato",
+        "corrente",
+        "20/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Anna Atleta",
+        "anna@example.test",
+        "accettato",
+        "corrente",
+        "10/09/2025",
+        "-",
+        "message-reads-700004",
+        ""
+       ],
+       [
+        "Paolo Gallo",
+        null,
+        "accettato",
+        "corrente",
+        "09/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Lucia Bianchi",
+        "lucia@example.test",
+        "accettato",
+        "corrente",
+        "08/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Senza Data",
+        "senza@example.test",
+        "archiviato",
+        "corrente",
+        "07/09/2025",
+        "presente",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Bimbo Neri",
+        null,
+        "accettato",
+        "corrente",
+        "06/09/2025",
+        "presente",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Giulia Verdi",
+        "",
+        "non firmato",
+        "corrente",
+        "05/09/2025",
+        "-",
+        "message-reads-700001",
+        "Agonisti"
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "corrente",
+        "01/09/2025",
+        "presente",
+        "message-reads-700001",
+        "Agonisti, Master"
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "precedente",
+        "01/09/2023",
+        "-",
+        "message-reads-700001",
+        ""
+       ]
+      ],
+      "title": "Iscrizioni filtrate (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni filtrate - Message reads own.pdf"
+   },
+   "unordered": false,
+   "raw_body": "format=excel&format=pdf",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "subscription-reads-list-pdf-ignores-pagination",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/list?pagination[perpage]=1&pagination[page]=9",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Tesserato",
+       "Email",
+       "Stato",
+       "Anno fiscale",
+       "Certificato",
+       "Data creazione",
+       "Utente",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Marco Russo",
+        "marco@example.test",
+        "in attesa",
+        "successivo",
+        "01/10/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Enea Zeri",
+        null,
+        "accettato",
+        "corrente",
+        "20/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Anna Atleta",
+        "anna@example.test",
+        "accettato",
+        "corrente",
+        "10/09/2025",
+        "-",
+        "message-reads-700004",
+        ""
+       ],
+       [
+        "Paolo Gallo",
+        null,
+        "accettato",
+        "corrente",
+        "09/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Lucia Bianchi",
+        "lucia@example.test",
+        "accettato",
+        "corrente",
+        "08/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Senza Data",
+        "senza@example.test",
+        "archiviato",
+        "corrente",
+        "07/09/2025",
+        "presente",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Bimbo Neri",
+        null,
+        "accettato",
+        "corrente",
+        "06/09/2025",
+        "presente",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Giulia Verdi",
+        "",
+        "non firmato",
+        "corrente",
+        "05/09/2025",
+        "-",
+        "message-reads-700001",
+        "Agonisti"
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "corrente",
+        "01/09/2025",
+        "presente",
+        "message-reads-700001",
+        "Agonisti, Master"
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "precedente",
+        "01/09/2023",
+        "-",
+        "message-reads-700001",
+        ""
+       ]
+      ],
+      "title": "Iscrizioni filtrate (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni filtrate - Message reads own.pdf"
+   },
+   "unordered": false,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "subscription-reads-list-pdf-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/list",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Tesserato",
+       "Email",
+       "Stato",
+       "Anno fiscale",
+       "Certificato",
+       "Data creazione",
+       "Utente",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Paolo Gallo",
+        null,
+        "accettato",
+        "corrente",
+        "09/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ]
+      ],
+      "title": "Iscrizioni filtrate (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni filtrate - Message reads own.pdf"
+   },
+   "unordered": false,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "subscription-reads-list-pdf-group-foreign-empty",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/list",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Tesserato",
+       "Email",
+       "Stato",
+       "Anno fiscale",
+       "Certificato",
+       "Data creazione",
+       "Utente",
+       "Tag"
+      ],
+      "rows": [],
+      "title": "Iscrizioni filtrate (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni filtrate - Message reads own.pdf"
+   },
+   "unordered": false,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "subscription-reads-list-pdf-type-athletes-title",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/list?type=athletes",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Tesserato",
+       "Email",
+       "Stato",
+       "Anno fiscale",
+       "Certificato",
+       "Data creazione",
+       "Utente",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Marco Russo",
+        "marco@example.test",
+        "in attesa",
+        "successivo",
+        "01/10/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Enea Zeri",
+        null,
+        "accettato",
+        "corrente",
+        "20/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Anna Atleta",
+        "anna@example.test",
+        "accettato",
+        "corrente",
+        "10/09/2025",
+        "-",
+        "message-reads-700004",
+        ""
+       ],
+       [
+        "Paolo Gallo",
+        null,
+        "accettato",
+        "corrente",
+        "09/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Lucia Bianchi",
+        "lucia@example.test",
+        "accettato",
+        "corrente",
+        "08/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Senza Data",
+        "senza@example.test",
+        "archiviato",
+        "corrente",
+        "07/09/2025",
+        "presente",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Bimbo Neri",
+        null,
+        "accettato",
+        "corrente",
+        "06/09/2025",
+        "presente",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "corrente",
+        "01/09/2025",
+        "presente",
+        "message-reads-700001",
+        "Agonisti, Master"
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "precedente",
+        "01/09/2023",
+        "-",
+        "message-reads-700001",
+        ""
+       ]
+      ],
+      "title": "Tesserati (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni filtrate - Message reads own.pdf"
+   },
+   "unordered": false,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "subscription-reads-list-pdf-type-associates-title",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/list?type=associates",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Tesserato",
+       "Email",
+       "Stato",
+       "Anno fiscale",
+       "Certificato",
+       "Data creazione",
+       "Utente",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Enea Zeri",
+        null,
+        "accettato",
+        "corrente",
+        "20/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Anna Atleta",
+        "anna@example.test",
+        "accettato",
+        "corrente",
+        "10/09/2025",
+        "-",
+        "message-reads-700004",
+        ""
+       ],
+       [
+        "Paolo Gallo",
+        null,
+        "accettato",
+        "corrente",
+        "09/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Senza Data",
+        "senza@example.test",
+        "archiviato",
+        "corrente",
+        "07/09/2025",
+        "presente",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Bimbo Neri",
+        null,
+        "accettato",
+        "corrente",
+        "06/09/2025",
+        "presente",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Giulia Verdi",
+        "",
+        "non firmato",
+        "corrente",
+        "05/09/2025",
+        "-",
+        "message-reads-700001",
+        "Agonisti"
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "corrente",
+        "01/09/2025",
+        "presente",
+        "message-reads-700001",
+        "Agonisti, Master"
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "precedente",
+        "01/09/2023",
+        "-",
+        "message-reads-700001",
+        ""
+       ]
+      ],
+      "title": "Libro Soci (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni filtrate - Message reads own.pdf"
+   },
+   "unordered": false,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "subscription-reads-list-pdf-search",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/list?query[generalSearch]=rossi",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Tesserato",
+       "Email",
+       "Stato",
+       "Anno fiscale",
+       "Certificato",
+       "Data creazione",
+       "Utente",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "corrente",
+        "01/09/2025",
+        "presente",
+        "message-reads-700001",
+        "Agonisti, Master"
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "precedente",
+        "01/09/2023",
+        "-",
+        "message-reads-700001",
+        ""
+       ]
+      ],
+      "title": "Iscrizioni filtrate (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni filtrate - Message reads own.pdf"
+   },
+   "unordered": false,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "subscription-reads-list-pdf-tags-any",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/list?query[tags]=7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeade,7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeadd",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Tesserato",
+       "Email",
+       "Stato",
+       "Anno fiscale",
+       "Certificato",
+       "Data creazione",
+       "Utente",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Giulia Verdi",
+        "",
+        "non firmato",
+        "corrente",
+        "05/09/2025",
+        "-",
+        "message-reads-700001",
+        "Agonisti"
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "corrente",
+        "01/09/2025",
+        "presente",
+        "message-reads-700001",
+        "Agonisti, Master"
+       ]
+      ],
+      "title": "Iscrizioni filtrate (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni filtrate - Message reads own.pdf"
+   },
+   "unordered": false,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "subscription-reads-list-pdf-sort-lastname-asc",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/list?query[current_year]=1&query[sort_lastname_asc_flag]=1",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Tesserato",
+       "Email",
+       "Stato",
+       "Anno fiscale",
+       "Certificato",
+       "Data creazione",
+       "Utente",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Anna Atleta",
+        "anna@example.test",
+        "accettato",
+        "corrente",
+        "10/09/2025",
+        "-",
+        "message-reads-700004",
+        ""
+       ],
+       [
+        "Lucia Bianchi",
+        "lucia@example.test",
+        "accettato",
+        "corrente",
+        "08/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Paolo Gallo",
+        null,
+        "accettato",
+        "corrente",
+        "09/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Bimbo Neri",
+        null,
+        "accettato",
+        "corrente",
+        "06/09/2025",
+        "presente",
+        "message-reads-700001",
+        ""
+       ],
+       [
+        "Mario Rossi",
+        "mario@example.test",
+        "accettato",
+        "corrente",
+        "01/09/2025",
+        "presente",
+        "message-reads-700001",
+        "Agonisti, Master"
+       ],
+       [
+        "Giulia Verdi",
+        "",
+        "non firmato",
+        "corrente",
+        "05/09/2025",
+        "-",
+        "message-reads-700001",
+        "Agonisti"
+       ],
+       [
+        "Enea Zeri",
+        null,
+        "accettato",
+        "corrente",
+        "20/09/2025",
+        "-",
+        "message-reads-700001",
+        ""
+       ]
+      ],
+      "title": "Iscrizioni filtrate (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni filtrate - Message reads own.pdf"
+   },
+   "unordered": false,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "subscription-reads-list-pdf-sort-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/list?sort[field]=nope",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "subscription-reads-list-pdf-sort-relation-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/list?sort[field]=user__nope",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "subscription-reads-list-pdf-foreign-owner-row-without-associate",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/subscription/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "subscription-reads-list-pdf-foreign-owner-tag",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/subscription/list?query[tags]=7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeadf",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Tesserato",
+       "Email",
+       "Stato",
+       "Anno fiscale",
+       "Certificato",
+       "Data creazione",
+       "Utente",
+       "Tag"
+      ],
+      "rows": [
+       [
+        "Lara Listata",
+        "lara@example.test",
+        "accettato",
+        "corrente",
+        "14/09/2025",
+        "presente",
+        "subscription-reads-list-athlete",
+        "Estero"
+       ],
+       [
+        "Hugo Esterno",
+        null,
+        "accettato",
+        "corrente",
+        "11/09/2025",
+        "-",
+        "message-reads-700007",
+        "Estero"
+       ]
+      ],
+      "title": "Iscrizioni filtrate (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni filtrate - Message reads foreign.pdf"
+   },
+   "unordered": false,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "subscription-reads-list-pdf-format-case-sensitive",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false,
+   "body": {
+    "format": "PDF"
+   }
+  },
+  {
+   "name": "subscription-reads-list-pdf-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/subscription/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
    "name": "subscription-reads-list-field-email",
    "actor": "owner",
    "method": "GET",

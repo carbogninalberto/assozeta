@@ -81,18 +81,12 @@ func (r *SubscriptionImport) ImportRows(ctx context.Context, association, user s
 	defer owned.Rollback()
 	tx := owned.tx
 	// A MedicalCertificate resolves to the actor's own association, if any.
-	var actorAssociation, actorPath *string
-	if actor != nil {
-		var id string
-		err = tx.GetContext(ctx, &id, `SELECT sport_association_id FROM application_sportassociation WHERE user_id=$1 AND NOT deleted
- ORDER BY sport_association_id LIMIT 1`, *actor)
-		switch {
-		case err == nil:
-			path := "actor.sport_association"
-			actorAssociation, actorPath = &id, &path
-		case !errors.Is(err, sql.ErrNoRows):
-			return err
-		}
+	actorAssociation, actorPath, err := subscriptionImportActorAssociation(ctx, tx, actor)
+	if err != nil {
+		return err
+	}
+	if effects.Failed {
+		effects.Certificates, effects.Drafts = nil, nil
 	}
 	// manage_import_status('start').
 	var statuses []string
@@ -167,6 +161,68 @@ func (r *SubscriptionImport) ImportRows(ctx context.Context, association, user s
 	// manage_import_status('end').
 	if err = subscriptionImportDeleteStatus(ctx, tx, effects.StatusID, association, audit, at()); err != nil {
 		return err
+	}
+	if !effects.Failed {
+		// remove_upload: document.delete().
+		if err = subscriptionImportDeleteDocument(ctx, tx, effects.DocumentID, actorAssociation, audit, at()); err != nil {
+			return err
+		}
+	}
+	return owned.Commit()
+}
+
+// subscriptionImportActorAssociation is the association auditlog resolves
+// for a row without one of its own: the actor's, if any.
+func subscriptionImportActorAssociation(ctx context.Context, tx *sqlx.Tx, actor *string) (*string, *string, error) {
+	if actor == nil {
+		return nil, nil, nil
+	}
+	var id string
+	err := tx.GetContext(ctx, &id, `SELECT sport_association_id FROM application_sportassociation WHERE user_id=$1 AND NOT deleted
+ ORDER BY sport_association_id LIMIT 1`, *actor)
+	switch {
+	case err == nil:
+		path := "actor.sport_association"
+		return &id, &path, nil
+	case errors.Is(err, sql.ErrNoRows):
+		return nil, nil, nil
+	}
+	return nil, nil, err
+}
+
+// subscriptionImportDeleteDocument is Document.delete() of an import upload,
+// which nothing references; a missing row is no write.
+func subscriptionImportDeleteDocument(ctx context.Context, tx *sqlx.Tx, id string, actorAssociation *string, audit domain.LoginAuditContext,
+	at time.Time) error {
+	var found bool
+	if err := tx.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM docmanager_document WHERE document_id=$1 FOR UPDATE)`, id); err != nil {
+		return err
+	}
+	if !found {
+		return nil
+	}
+	changes, _, err := deleteModelWithAuditReverse(ctx, tx, "docmanager_document", "document_id", id, documentReverse)
+	if err != nil {
+		return err
+	}
+	return appendModelAuditForApp(ctx, tx, "docmanager", documentAudit(id, 2, changes, actorAssociation, audit, at))
+}
+
+func (r *SubscriptionImport) RemoveDocuments(ctx context.Context, ids []string, actor *string, audit domain.LoginAuditContext,
+	at func() time.Time) error {
+	owned, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	if err != nil {
+		return err
+	}
+	defer owned.Rollback()
+	actorAssociation, _, err := subscriptionImportActorAssociation(ctx, owned.tx, actor)
+	if err != nil {
+		return err
+	}
+	for _, id := range ids {
+		if err = subscriptionImportDeleteDocument(ctx, owned.tx, id, actorAssociation, audit, at()); err != nil {
+			return err
+		}
 	}
 	return owned.Commit()
 }

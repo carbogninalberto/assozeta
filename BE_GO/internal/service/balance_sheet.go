@@ -18,14 +18,10 @@ var (
 	// ErrBalanceSheetMissing is the POST's {'msg': 'No balance sheet found.'} (404).
 	ErrBalanceSheetMissing = errors.New("balance sheet not found")
 	// ErrBalanceSheetExportNotPorted refuses, before the generation writes,
-	// format pdf (a rendered file) and excel inputs Go does not reproduce.
+	// the export inputs Go does not reproduce (xlsxexport's and pdfexport's).
 	ErrBalanceSheetExportNotPorted = refusal.New("balance sheet export is not ported")
 	// ErrBalanceAccountNotDeletable is {'msg': 'This account is not deletable.'} (403).
 	ErrBalanceAccountNotDeletable = errors.New("custom account is not deletable")
-	// ErrBalanceAccountPaymentsNotPorted refuses deleting an account that
-	// payments reference: the cascade deletes them with their own signals
-	// (not ported).
-	ErrBalanceAccountPaymentsNotPorted = refusal.New("deleting an account with payments is not ported")
 	// errBalanceSheetExportFailed is export_balance_sheet raising after the
 	// sheet was saved (500; the request is not atomic).
 	errBalanceSheetExportFailed = errors.New("balance sheet export failed after the save")
@@ -261,14 +257,9 @@ func (r *sheetRun) generated(ctx context.Context, format any) (any, error) {
 		return map[string]any{"data": map[string]any{"available_years": years,
 			"balance_sheet": sheetView(pyCompact(stored), sheet.CreationDate, sheet.Year, false), "sport_association": profile}}, nil
 	}
-	excel := false
-	if text, ok := format.(string); ok {
-		switch text {
-		case "pdf":
-			return nil, ErrBalanceSheetExportNotPorted
-		case "excel":
-			excel = true
-		}
+	exportFormat := ""
+	if text, ok := format.(string); ok && (text == "pdf" || text == "excel") {
+		exportFormat = text
 	}
 	var data any = balanceDefaultData()
 	if sheet != nil {
@@ -316,11 +307,11 @@ func (r *sheetRun) generated(ctx context.Context, format any) (any, error) {
 	}
 	dict.set("total", total)
 	// export_balance_sheet runs after the save on the same in-memory data:
-	// the workbook is built first so an input Go does not reproduce is
+	// the file is built first so an input Go does not reproduce is
 	// refused before any write; a Python error is raised after the save.
 	var export *balanceSheetExport
-	if excel {
-		if export, err = r.export(ctx, dict, from.Year()); err != nil {
+	if exportFormat != "" {
+		if export, err = r.export(ctx, dict, from.Year(), exportFormat); err != nil {
 			return nil, err
 		}
 	}
@@ -455,8 +446,11 @@ func NewBalanceAccountDeletes(store domain.BalanceAccountDeleteStore, accounts *
 	return &BalanceAccountDeletes{store: store, accounts: accounts, now: now}
 }
 
-// Delete follows balance_sheet_accounts_delete.
-func (s *BalanceAccountDeletes) Delete(ctx context.Context, identity domain.ResolvedIdentity, raw string, audit domain.LoginAuditContext) error {
+// Delete follows balance_sheet_accounts_delete: custom_account.delete() is
+// Django's collector over the account, its transfers and every payment of the
+// account, with the payments' delete receivers.
+func (s *BalanceAccountDeletes) Delete(ctx context.Context, identity domain.ResolvedIdentity, raw string, audit domain.LoginAuditContext,
+	groupHeader string) error {
 	if _, err := s.accounts.association(ctx, identity); err != nil {
 		return err
 	}
@@ -483,14 +477,8 @@ func (s *BalanceAccountDeletes) Delete(ctx context.Context, identity domain.Reso
 	if !row.Editable {
 		return ErrBalanceAccountNotDeletable
 	}
-	paid, err := tx.AccountHasPayments(ctx, row.ID)
-	if err != nil {
-		return err
-	}
-	if paid {
-		return ErrBalanceAccountPaymentsNotPorted
-	}
-	if err = tx.DeleteAccount(ctx, row.ID, paymentCategoryAuditContext(identity, audit), s.now().UTC().Truncate(time.Microsecond)); err != nil {
+	if err = tx.DeleteAccount(ctx, row.ID, paymentCategoryAuditContext(identity, audit), s.now().UTC().Truncate(time.Microsecond),
+		supplierGroup(groupHeader)); err != nil {
 		return err
 	}
 	return tx.Commit()

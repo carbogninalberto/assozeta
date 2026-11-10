@@ -9,10 +9,10 @@ const reviewed = {
   "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644",
   "UI/src/routes/accounting/payment/modals/AddEditModal.svelte": "a10e4ff9329c1ef31e51e1d07bd5aa203d6d5f08bddd2ca96f300ea1eea3f406",
   "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
-  "BE/application/views/payment_views.py": "cc31d3e1d74244930b6929fd2bf9b2d2e6a90a7b915e0edf73000f468d58573d",
+  "BE/application/views/payment_views.py": "eb2a9bc1bbb5caf2a0fe8261aa898e85e046d96d47417f2c155e7b9c136f277c",
   "BE/application/serializers/payment_serializers.py": "6e6fab314f1e391ada81ed3c983bb146aad5bbc1bc2ec71750078dd10f76f2fa",
   "BE/application/models/user_models.py": "4800cd1f7a757e9e7d5203d1ea086d58e92ac4592e43c7fa7758103071336c96",
-  "BE/application/models/payment_models.py": "9dbcab8698adbde447a9c4f6eb52143409cf197fde3ce90d0aa8da56a1f8ebda",
+  "BE/application/models/payment_models.py": "30d4c9c5bf5b21d78a0fdda78edb45edc9266e9c0fc42e2ff83a3c9e3fcf0a4b",
   "BE/application/models/invoices_models.py": "5848c1bcdbafdd6d644f5dd70e82979095d1bdbe85c989075784e54418fc1af6",
   "BE/application/services/invoice_service.py": "98ba3acf0950b310fb5e47abbd8ba57cc9737b757fa461e5c2989ab18af95519",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
@@ -20,12 +20,14 @@ const reviewed = {
   "UI/src/routes/accounting/receipts/invoiceActionState.js": "6c1c7673e6dd2e227bdd8f50ea6bea439662b15ebd414b4bd011d39b22432289",
   "UI/src/components/modals/InvoicePreviewModal.svelte": "d65ee4f5163e304ff2f4a5de11fbca7f724c388e7c1e652e3d1b44d98fc21ed6",
   "UI/src/routes/accounting/receipts/modals/ShareModal.svelte": "0c86445d001a0d9141f26b673471a5b8b1ed1b9f15dc22264e125dc34d61bda3",
-  "BE/application/views/invoice_views.py": "500cf26719455a1a86aacb63e5c99bc9cbcc470a0bb1d275df926fbb884c8260",
+  "BE/application/views/invoice_views.py": "afddd7239fe7e2a23c6e997d27c0f5ad3b0b3501c7601438d112e318a46d8922",
   "BE/application/printing_tasks.py": "858df2f90a7788ca9c2a27ce43266b62d8ec9b1f86ab197570834975b6b2fde9",
-  "BE/docmanager/views/printing_views.py": "f9127869836c46408d9e5f48fc16733c6fce66efedb2e2fa7f96344095e01753",
-  "BE/docmanager/views/document_view.py": "990fa77d97d984ed0971b230ff8d20e36a8b4a65c2c21222f6b580cca5fb3b37",
+  "BE/docmanager/views/printing_views.py": "ad81f3188af72ec93d2bf010f75a99a4e0b579089e737ac0171a8a4fa3876420",
+  "BE/docmanager/views/document_view.py": "bd71a57ad2ab774caa7423d64d713884663a2fe3c770d8440c45b7527c8f8d20",
   "BE/application/utils/printing.py": "58461a8b9022432f807ba7d912821aaae4ab2e44608c58d43e4280556ee7c760",
   "BE/templates/document/application/invoice.html": "5a0b5f66655c8b7d288a42dba051e9a9ff2cc3e49e7f6227f442ddd2c926039d",
+  // Reviewed: documents are served to the association staff and to the member they belong to.
+  "BE/docmanager/access.py": "21a7322193649dc376d7980cb56f9a3dc5146fe3ef48394c45a0b0e40bb77916",
   "BE/docmanager/tasks.py": "ffd749d2177f27b1dff05dd9245f96ac21579782e39cb6882aa46fe79befbc87",
   "UI/src/components/filters/FilterSelect.svelte": "556100c1c9aecd36f7aad7a3de0ad389ecd908517a8e8934586474ff111c35e5",
   "UI/src/routes/accounting/receipts/modals/EditModal.svelte": "33f23e11f3b2d8e8abc3ec748c8190915d6114f5128cadc7664d8824304f5873",
@@ -78,7 +80,8 @@ const contracts = [
   ["BE/application/models/user_models.py","temporary_invoice_deletion =",11],
   ["BE/application/models/user_models.py","def get_invoice_template(",9],
   ["BE/application/models/payment_models.py","invoice = models.ForeignKey(Invoice",19],
-  ["BE/docmanager/views/printing_views.py","def document_invoice_view(request, uid):",217]
+  ["BE/docmanager/views/printing_views.py","def document_invoice_view(request, uid):",217],
+  ["BE/docmanager/access.py","def can_access_document(user, record):",25]
 ];
 const sections = [
   {
@@ -127,7 +130,7 @@ const sections = [
     "title": "Come posso scaricare una ricevuta?",
     "status": "pending",
     "reason": "Procedura in attesa di esecuzione e revisione delle fonti.",
-    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45]
+    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46]
   },
   {
     "path": "docs/ricevute.mdx",

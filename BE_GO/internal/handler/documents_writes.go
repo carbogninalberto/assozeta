@@ -5,11 +5,14 @@ import (
 	"context"
 	"errors"
 	"io"
+	"math"
 	"mime"
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
+	"time"
 	"unicode"
 	"unicode/utf8"
 
@@ -40,6 +43,65 @@ type DocumentUploadsHandler struct {
 	identities *service.IdentityResolver
 	audit      LoginAuditReader
 	operations *paymentcategorylifecycle.Lifecycle
+	// MedicalCertificateUploadThrottle: the DRF throttle cache, its hourly
+	// rate and the clock (nil cache: no throttle).
+	certificateThrottle BakneyThrottleStore
+	certificateRate     int
+	certificateNow      func() time.Time
+}
+
+// WithCertificateThrottle sets MedicalCertificateUploadThrottle's cache and
+// MEDICAL_CERTIFICATE_UPLOADS_PER_HOUR.
+func (h *DocumentUploadsHandler) WithCertificateThrottle(store BakneyThrottleStore, perHour int, now func() time.Time) *DocumentUploadsHandler {
+	h.certificateThrottle, h.certificateRate, h.certificateNow = store, perHour, now
+	return h
+}
+
+// certificateThrottleWindow is the duration of the '<n>/hour' rate.
+const certificateThrottleWindow = 3600
+
+// certificateAllow is MedicalCertificateUploadThrottle.allow_request
+// (AnonRateThrottle: only requests without an account, keyed by address)
+// plus DRF's Throttled response.
+func (h *DocumentUploadsHandler) certificateAllow(c echo.Context, identity *domain.ResolvedIdentity) (bool, error) {
+	if h.certificateThrottle == nil || identity.ScopeUser != nil {
+		return true, nil
+	}
+	request := c.Request()
+	key := "throttle_medical-certificate-upload_" + throttleIdent(request)
+	history, err := h.certificateThrottle.History(request.Context(), key)
+	if err != nil {
+		return false, messageReadsError(c, err)
+	}
+	now := float64(h.certificateNow().UnixNano()) / 1e9
+	for len(history) > 0 && history[len(history)-1] <= now-certificateThrottleWindow {
+		history = history[:len(history)-1]
+	}
+	if len(history) >= h.certificateRate {
+		detail := "Request was throttled."
+		if restLanguage(request) != "en" {
+			detail = "La richiesta è stata limitata (throttled)."
+		}
+		remaining := float64(certificateThrottleWindow)
+		if len(history) > 0 {
+			remaining = certificateThrottleWindow - (now - history[len(history)-1])
+		}
+		if available := h.certificateRate - len(history) + 1; available > 0 {
+			wait := int(math.Ceil(remaining / float64(available)))
+			unit := "seconds"
+			if wait == 1 {
+				unit = "second"
+			}
+			detail += " Expected available in " + strconv.Itoa(wait) + " " + unit + "."
+			c.Response().Header().Set("Retry-After", strconv.Itoa(wait))
+		}
+		return false, c.JSON(http.StatusTooManyRequests, map[string]string{"detail": detail})
+	}
+	history = append([]float64{now}, history...)
+	if err := h.certificateThrottle.Store(request.Context(), key, history, certificateThrottleWindow*time.Second); err != nil {
+		return false, messageReadsError(c, err)
+	}
+	return true, nil
 }
 
 func NewDocumentUploadsHandler(uploads DocumentUploadService, archive ArchiveWriteService, actors *service.ActorAuthentication,
@@ -250,6 +312,10 @@ func (h *DocumentUploadsHandler) CertificateDocument(c echo.Context) error {
 	}
 	identity, err := messageMutationsIdentityFor(c, h.actors, h.identities, http.MethodPost, "medical_certificate_document", true)
 	if identity == nil {
+		return err
+	}
+	// check_throttles runs before the method dispatch.
+	if allowed, err := h.certificateAllow(c, identity); !allowed {
 		return err
 	}
 	if done, err := dispatchMedical(c, http.MethodPost, "Medical Certificate Document"); done {

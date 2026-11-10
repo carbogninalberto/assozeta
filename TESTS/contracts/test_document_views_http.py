@@ -40,10 +40,10 @@ def fill(value):
     return value
 
 
-def renderer_payload(current_host, url):
-    """json.dumps(FastRender.get_pdf(url, {})'s payload)."""
+def renderer_payload(current_host, url, authorization):
+    """json.dumps(FastRender.get_pdf(url, {'Authorization': authorization})'s payload)."""
     payload = {
-        'type': 'pdf', 'url': f'{current_host}/{url}', 'async': False, 'headers': {},
+        'type': 'pdf', 'url': f'{current_host}/{url}', 'async': False, 'headers': {'Authorization': authorization},
         'device': {'userAgent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
                                 'Chrome/91.0.4472.124 Safari/537.36', 'scale': 1, 'width': 1920, 'height': 1080},
         'render': {'block': {'cookies': False, 'ads': False, 'trackers': False, 'banners': False}, 'waitTime': 0, 'timeout': 30000,

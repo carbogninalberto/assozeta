@@ -1,0 +1,3376 @@
+{
+ "matrix_version": 1,
+ "scope": "document delete: ownership walk, collector cascade and audit",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "keys": {
+  "docmanager.Document": "document_id",
+  "application.SportAssociationDocumentsArchive": "sport_association_documents_archive_id",
+  "application.Payment": "payment_id",
+  "application.Invoice": "invoice_id",
+  "application.InvoiceSuppliers": "invoice_supplier_id",
+  "application.CustomerInvoice": "customer_invoice_id",
+  "application.Subscription": "subscription_id",
+  "application.MedicalCertificate": "medical_id",
+  "application.MedicalAppointments": "medical_appointments_id",
+  "application.SubscriptionFile": "subscription_file_id",
+  "application.SubscriptionMembership": "subscription_membership_id",
+  "application.CourseLocation": "course_location_id",
+  "application.Module": "module_id",
+  "application.ModuleResponses": "module_response_id",
+  "application.Instructor": "instructor_id",
+  "application.InstructorHours": "instructor_hours_id"
+ },
+ "rows": [
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986001",
+    "token": "a1000000-0000-4000-8000-000000986002",
+    "filename": "archived.pdf",
+    "filepath": "archive/archived.pdf",
+    "file_size_bytes": 1234,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.SportAssociationDocumentsArchive",
+   "fields": {
+    "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000986003",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "document_id": "a1000000-0000-4000-8000-000000986001",
+    "date": "2026-03-02",
+    "folder_id": null
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986004",
+    "token": "a1000000-0000-4000-8000-000000986005",
+    "filename": "archived_twice.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.SportAssociationDocumentsArchive",
+   "fields": {
+    "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000986006",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "document_id": "a1000000-0000-4000-8000-000000986004",
+    "date": "2026-03-03",
+    "folder_id": null
+   }
+  },
+  {
+   "model": "application.SportAssociationDocumentsArchive",
+   "fields": {
+    "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000986007",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "document_id": "a1000000-0000-4000-8000-000000986004",
+    "date": "2026-03-03",
+    "folder_id": null
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986008",
+    "token": "a1000000-0000-4000-8000-000000986009",
+    "filename": "archived_foreign.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.SportAssociationDocumentsArchive",
+   "fields": {
+    "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000986010",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+    "document_id": "a1000000-0000-4000-8000-000000986008",
+    "date": "2026-03-04",
+    "folder_id": null
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986011",
+    "token": "a1000000-0000-4000-8000-000000986012",
+    "filename": "archived_shared.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.SportAssociationDocumentsArchive",
+   "fields": {
+    "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000986013",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "document_id": "a1000000-0000-4000-8000-000000986011",
+    "date": "2026-03-05",
+    "folder_id": null
+   }
+  },
+  {
+   "model": "application.SportAssociationDocumentsArchive",
+   "fields": {
+    "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000986014",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+    "document_id": "a1000000-0000-4000-8000-000000986011",
+    "date": "2026-03-05",
+    "folder_id": null
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986015",
+    "token": "a1000000-0000-4000-8000-000000986016",
+    "filename": "archived_collaborator.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.SportAssociationDocumentsArchive",
+   "fields": {
+    "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000986017",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "document_id": "a1000000-0000-4000-8000-000000986015",
+    "date": "2026-03-06",
+    "folder_id": null
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986018",
+    "token": "a1000000-0000-4000-8000-000000986019",
+    "filename": "archived_for_foreign_owner.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.SportAssociationDocumentsArchive",
+   "fields": {
+    "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000986020",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "document_id": "a1000000-0000-4000-8000-000000986018",
+    "date": "2026-03-07",
+    "folder_id": null
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986021",
+    "token": "a1000000-0000-4000-8000-000000986022",
+    "filename": "archived_methods.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.SportAssociationDocumentsArchive",
+   "fields": {
+    "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000986023",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "document_id": "a1000000-0000-4000-8000-000000986021",
+    "date": "2026-03-08",
+    "folder_id": null
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986024",
+    "token": "a1000000-0000-4000-8000-000000986025",
+    "filename": "loose_own.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986026",
+    "token": "a1000000-0000-4000-8000-000000986027",
+    "filename": "loose_none.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986028",
+    "token": "a1000000-0000-4000-8000-000000986029",
+    "filename": "loose_foreign.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986030",
+    "token": "a1000000-0000-4000-8000-000000986031",
+    "filename": "loose_both.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986032",
+    "token": "a1000000-0000-4000-8000-000000986033",
+    "filename": "loose_unindexed.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986034",
+    "token": "a1000000-0000-4000-8000-000000986035",
+    "filename": "loose_update_only.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986036",
+    "token": "a1000000-0000-4000-8000-000000986037",
+    "filename": "loose_twice_own.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986038",
+    "token": "a1000000-0000-4000-8000-000000986039",
+    "filename": "attachment.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.Payment",
+   "fields": {
+    "payment_id": "a1000000-0000-4000-8000-000000986040",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986041",
+    "token": "a1000000-0000-4000-8000-000000986042",
+    "filename": "attachment_deleted.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.Payment",
+   "fields": {
+    "payment_id": "a1000000-0000-4000-8000-000000986043",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "deleted": true
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986044",
+    "token": "a1000000-0000-4000-8000-000000986045",
+    "filename": "attachment_group.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.Payment",
+   "fields": {
+    "payment_id": "a1000000-0000-4000-8000-000000986046",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "group_id": "a1000000-0000-4000-8000-000000714001"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986047",
+    "token": "a1000000-0000-4000-8000-000000986048",
+    "filename": "attachment_foreign.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.Payment",
+   "fields": {
+    "payment_id": "a1000000-0000-4000-8000-000000986049",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986050",
+    "token": "a1000000-0000-4000-8000-000000986051",
+    "filename": "attachment_unowned.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.Payment",
+   "fields": {
+    "payment_id": "a1000000-0000-4000-8000-000000986052",
+    "sport_association_id": null
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986053",
+    "token": "a1000000-0000-4000-8000-000000986054",
+    "filename": "attachment_unowned_created.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.Payment",
+   "fields": {
+    "payment_id": "a1000000-0000-4000-8000-000000986055",
+    "sport_association_id": null
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986056",
+    "token": "a1000000-0000-4000-8000-000000986057",
+    "filename": "invoice_pdf.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.Invoice",
+   "fields": {
+    "invoice_id": "a1000000-0000-4000-8000-000000986058",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "membership_fee": "0.00",
+    "activity_fee": "10.00",
+    "document_pdf_id": "a1000000-0000-4000-8000-000000986056"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986059",
+    "token": "a1000000-0000-4000-8000-000000986060",
+    "filename": "invoice_pdf_foreign.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.Invoice",
+   "fields": {
+    "invoice_id": "a1000000-0000-4000-8000-000000986061",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+    "membership_fee": "0.00",
+    "activity_fee": "10.00",
+    "document_pdf_id": "a1000000-0000-4000-8000-000000986059"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986062",
+    "token": "a1000000-0000-4000-8000-000000986063",
+    "filename": "invoice_attached.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.Invoice",
+   "fields": {
+    "invoice_id": "a1000000-0000-4000-8000-000000986064",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "membership_fee": "0.00",
+    "activity_fee": "10.00",
+    "deleted": true
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986065",
+    "token": "a1000000-0000-4000-8000-000000986066",
+    "filename": "supplier_invoice.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.InvoiceSuppliers",
+   "fields": {
+    "invoice_supplier_id": "a1000000-0000-4000-8000-000000986067",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "invoice_identifier": "F-1",
+    "amount": "12.50",
+    "document_pdf_id": "a1000000-0000-4000-8000-000000986065"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986068",
+    "token": "a1000000-0000-4000-8000-000000986069",
+    "filename": "customer_invoice.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.CustomerInvoice",
+   "fields": {
+    "customer_invoice_id": "a1000000-0000-4000-8000-000000986070",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "pdf_id": "a1000000-0000-4000-8000-000000986068"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986071",
+    "token": "a1000000-0000-4000-8000-000000986072",
+    "filename": "subscription_pdf.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.Subscription",
+   "fields": {
+    "subscription_id": "a1000000-0000-4000-8000-000000986073",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "user_id": "a1000000-0000-4000-8000-000000700001",
+    "medical_id": null,
+    "document_pdf_id": "a1000000-0000-4000-8000-000000986071",
+    "group_id": "a1000000-0000-4000-8000-000000714001"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986074",
+    "token": "a1000000-0000-4000-8000-000000986075",
+    "filename": "subscription_pdf_foreign.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.Subscription",
+   "fields": {
+    "subscription_id": "a1000000-0000-4000-8000-000000986076",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+    "user_id": "a1000000-0000-4000-8000-000000700007",
+    "medical_id": null,
+    "document_pdf_id": "a1000000-0000-4000-8000-000000986074",
+    "group_id": null
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986077",
+    "token": "a1000000-0000-4000-8000-000000986078",
+    "filename": "certificate.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.MedicalCertificate",
+   "fields": {
+    "medical_id": "a1000000-0000-4000-8000-000000986079",
+    "document_id": "a1000000-0000-4000-8000-000000986077",
+    "user_id": null,
+    "creation_date": "2026-03-01T10:00:00+00:00",
+    "expiration_date": "2027-01-31",
+    "competitive_medical_certificate": false,
+    "notes": null
+   }
+  },
+  {
+   "model": "application.Subscription",
+   "fields": {
+    "subscription_id": "a1000000-0000-4000-8000-000000986080",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "user_id": "a1000000-0000-4000-8000-000000700001",
+    "medical_id": "a1000000-0000-4000-8000-000000986079",
+    "document_pdf_id": null,
+    "group_id": null
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986081",
+    "token": "a1000000-0000-4000-8000-000000986082",
+    "filename": "certificate_foreign.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.MedicalCertificate",
+   "fields": {
+    "medical_id": "a1000000-0000-4000-8000-000000986083",
+    "document_id": "a1000000-0000-4000-8000-000000986081",
+    "user_id": null,
+    "creation_date": "2026-03-01T10:00:00+00:00",
+    "expiration_date": null,
+    "competitive_medical_certificate": false,
+    "notes": null
+   }
+  },
+  {
+   "model": "application.Subscription",
+   "fields": {
+    "subscription_id": "a1000000-0000-4000-8000-000000986084",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+    "user_id": "a1000000-0000-4000-8000-000000700007",
+    "medical_id": "a1000000-0000-4000-8000-000000986083",
+    "document_pdf_id": null,
+    "group_id": null
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986085",
+    "token": "a1000000-0000-4000-8000-000000986086",
+    "filename": "certificate_loose.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.MedicalCertificate",
+   "fields": {
+    "medical_id": "a1000000-0000-4000-8000-000000986087",
+    "document_id": "a1000000-0000-4000-8000-000000986085",
+    "user_id": "a1000000-0000-4000-8000-000000700004",
+    "creation_date": "2026-03-01T10:00:00+00:00",
+    "expiration_date": null,
+    "competitive_medical_certificate": false,
+    "notes": null
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986088",
+    "token": "a1000000-0000-4000-8000-000000986089",
+    "filename": "certificate_loose_created.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.MedicalCertificate",
+   "fields": {
+    "medical_id": "a1000000-0000-4000-8000-000000986090",
+    "document_id": "a1000000-0000-4000-8000-000000986088",
+    "user_id": "a1000000-0000-4000-8000-000000700004",
+    "creation_date": "2026-03-01T10:00:00+00:00",
+    "expiration_date": null,
+    "competitive_medical_certificate": true,
+    "notes": "idoneo"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986091",
+    "token": "a1000000-0000-4000-8000-000000986092",
+    "filename": "appointment.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.Subscription",
+   "fields": {
+    "subscription_id": "a1000000-0000-4000-8000-000000986093",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "user_id": "a1000000-0000-4000-8000-000000700001",
+    "medical_id": null,
+    "document_pdf_id": null,
+    "group_id": null
+   }
+  },
+  {
+   "model": "application.MedicalAppointments",
+   "fields": {
+    "medical_appointments_id": "a1000000-0000-4000-8000-000000986094",
+    "subscription_id": "a1000000-0000-4000-8000-000000986093",
+    "region": "agonistica",
+    "document_id": "a1000000-0000-4000-8000-000000986091",
+    "date": "2026-04-01",
+    "notes": null,
+    "sport": "Nuoto",
+    "meta": null,
+    "address": "Via Roma 1",
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986095",
+    "token": "a1000000-0000-4000-8000-000000986096",
+    "filename": "file.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.Subscription",
+   "fields": {
+    "subscription_id": "a1000000-0000-4000-8000-000000986097",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "user_id": "a1000000-0000-4000-8000-000000700001",
+    "medical_id": null,
+    "document_pdf_id": null,
+    "group_id": null
+   }
+  },
+  {
+   "model": "application.SubscriptionFile",
+   "fields": {
+    "subscription_file_id": "a1000000-0000-4000-8000-000000986098",
+    "subscription_id": "a1000000-0000-4000-8000-000000986097",
+    "document_id": "a1000000-0000-4000-8000-000000986095",
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986099",
+    "token": "a1000000-0000-4000-8000-000000986100",
+    "filename": "file_foreign.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.Subscription",
+   "fields": {
+    "subscription_id": "a1000000-0000-4000-8000-000000986101",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+    "user_id": "a1000000-0000-4000-8000-000000700007",
+    "medical_id": null,
+    "document_pdf_id": null,
+    "group_id": null
+   }
+  },
+  {
+   "model": "application.SubscriptionFile",
+   "fields": {
+    "subscription_file_id": "a1000000-0000-4000-8000-000000986102",
+    "subscription_id": "a1000000-0000-4000-8000-000000986101",
+    "document_id": "a1000000-0000-4000-8000-000000986099",
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986103",
+    "token": "a1000000-0000-4000-8000-000000986104",
+    "filename": "file_and_archive.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.SubscriptionFile",
+   "fields": {
+    "subscription_file_id": "a1000000-0000-4000-8000-000000986105",
+    "subscription_id": "a1000000-0000-4000-8000-000000986097",
+    "document_id": "a1000000-0000-4000-8000-000000986103",
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.SportAssociationDocumentsArchive",
+   "fields": {
+    "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000986106",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "document_id": "a1000000-0000-4000-8000-000000986103",
+    "date": "2026-03-09",
+    "folder_id": null
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986107",
+    "token": "a1000000-0000-4000-8000-000000986108",
+    "filename": "membership.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.SubscriptionMembership",
+   "fields": {
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000986109",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986110",
+    "token": "a1000000-0000-4000-8000-000000986111",
+    "filename": "location.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.CourseLocation",
+   "fields": {
+    "course_location_id": "a1000000-0000-4000-8000-000000986112",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986113",
+    "token": "a1000000-0000-4000-8000-000000986114",
+    "filename": "response.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.Module",
+   "fields": {
+    "module_id": "a1000000-0000-4000-8000-000000986115",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "model": "application.ModuleResponses",
+   "fields": {
+    "module_response_id": "a1000000-0000-4000-8000-000000986116",
+    "module_id": "a1000000-0000-4000-8000-000000986115"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986117",
+    "token": "a1000000-0000-4000-8000-000000986118",
+    "filename": "response_foreign.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.Module",
+   "fields": {
+    "module_id": "a1000000-0000-4000-8000-000000986119",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "model": "application.ModuleResponses",
+   "fields": {
+    "module_response_id": "a1000000-0000-4000-8000-000000986120",
+    "module_id": "a1000000-0000-4000-8000-000000986119"
+   }
+  },
+  {
+   "model": "application.Instructor",
+   "fields": {
+    "instructor_id": "a1000000-0000-4000-8000-000000986121",
+    "user_id": "a1000000-0000-4000-8000-000000700001",
+    "first_name": "Ada",
+    "last_name": "Bianchi"
+   }
+  },
+  {
+   "model": "application.Instructor",
+   "fields": {
+    "instructor_id": "a1000000-0000-4000-8000-000000986122",
+    "user_id": "a1000000-0000-4000-8000-000000700007",
+    "first_name": "Ugo",
+    "last_name": "Neri"
+   }
+  },
+  {
+   "model": "application.Instructor",
+   "fields": {
+    "instructor_id": "a1000000-0000-4000-8000-000000986123",
+    "user_id": "a1000000-0000-4000-8000-000000700005",
+    "first_name": "Lia",
+    "last_name": "Verdi"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986124",
+    "token": "a1000000-0000-4000-8000-000000986125",
+    "filename": "instructor_document.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986126",
+    "token": "a1000000-0000-4000-8000-000000986127",
+    "filename": "instructor_document_foreign.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986128",
+    "token": "a1000000-0000-4000-8000-000000986129",
+    "filename": "hours.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.InstructorHours",
+   "fields": {
+    "instructor_hours_id": "a1000000-0000-4000-8000-000000986130",
+    "instructor_id": "a1000000-0000-4000-8000-000000986121",
+    "hours": "2.00",
+    "document_id": "a1000000-0000-4000-8000-000000986128"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986131",
+    "token": "a1000000-0000-4000-8000-000000986132",
+    "filename": "hours_unowned.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.InstructorHours",
+   "fields": {
+    "instructor_hours_id": "a1000000-0000-4000-8000-000000986133",
+    "instructor_id": "a1000000-0000-4000-8000-000000986123",
+    "hours": "1.00",
+    "document_id": "a1000000-0000-4000-8000-000000986131"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986134",
+    "token": "a1000000-0000-4000-8000-000000986135",
+    "filename": "hours_unowned_created.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  },
+  {
+   "model": "application.InstructorHours",
+   "fields": {
+    "instructor_hours_id": "a1000000-0000-4000-8000-000000986136",
+    "instructor_id": "a1000000-0000-4000-8000-000000986123",
+    "hours": "1.50",
+    "document_id": "a1000000-0000-4000-8000-000000986134"
+   }
+  },
+  {
+   "model": "docmanager.Document",
+   "fields": {
+    "document_id": "a1000000-0000-4000-8000-000000986137",
+    "token": "a1000000-0000-4000-8000-000000986138",
+    "filename": "instructor_unowned_document.pdf",
+    "filepath": null,
+    "file_size_bytes": null,
+    "creation_date": "2026-03-01T10:00:00+00:00"
+   }
+  }
+ ],
+ "links": [
+  {
+   "model": "application.Payment",
+   "key": "a1000000-0000-4000-8000-000000986040",
+   "field": "attachments",
+   "document": "a1000000-0000-4000-8000-000000986038"
+  },
+  {
+   "model": "application.Payment",
+   "key": "a1000000-0000-4000-8000-000000986043",
+   "field": "attachments",
+   "document": "a1000000-0000-4000-8000-000000986041"
+  },
+  {
+   "model": "application.Payment",
+   "key": "a1000000-0000-4000-8000-000000986046",
+   "field": "attachments",
+   "document": "a1000000-0000-4000-8000-000000986044"
+  },
+  {
+   "model": "application.Payment",
+   "key": "a1000000-0000-4000-8000-000000986049",
+   "field": "attachments",
+   "document": "a1000000-0000-4000-8000-000000986047"
+  },
+  {
+   "model": "application.Payment",
+   "key": "a1000000-0000-4000-8000-000000986052",
+   "field": "attachments",
+   "document": "a1000000-0000-4000-8000-000000986050"
+  },
+  {
+   "model": "application.Payment",
+   "key": "a1000000-0000-4000-8000-000000986055",
+   "field": "attachments",
+   "document": "a1000000-0000-4000-8000-000000986053"
+  },
+  {
+   "model": "application.Invoice",
+   "key": "a1000000-0000-4000-8000-000000986064",
+   "field": "attached_documents",
+   "document": "a1000000-0000-4000-8000-000000986062"
+  },
+  {
+   "model": "application.SubscriptionMembership",
+   "key": "a1000000-0000-4000-8000-000000986109",
+   "field": "attached_membership_documents",
+   "document": "a1000000-0000-4000-8000-000000986107"
+  },
+  {
+   "model": "application.CourseLocation",
+   "key": "a1000000-0000-4000-8000-000000986112",
+   "field": "documents",
+   "document": "a1000000-0000-4000-8000-000000986110"
+  },
+  {
+   "model": "application.ModuleResponses",
+   "key": "a1000000-0000-4000-8000-000000986116",
+   "field": "attachments",
+   "document": "a1000000-0000-4000-8000-000000986113"
+  },
+  {
+   "model": "application.ModuleResponses",
+   "key": "a1000000-0000-4000-8000-000000986120",
+   "field": "attachments",
+   "document": "a1000000-0000-4000-8000-000000986117"
+  },
+  {
+   "model": "application.Instructor",
+   "key": "a1000000-0000-4000-8000-000000986121",
+   "field": "documents",
+   "document": "a1000000-0000-4000-8000-000000986124"
+  },
+  {
+   "model": "application.Instructor",
+   "key": "a1000000-0000-4000-8000-000000986122",
+   "field": "documents",
+   "document": "a1000000-0000-4000-8000-000000986126"
+  },
+  {
+   "model": "application.Instructor",
+   "key": "a1000000-0000-4000-8000-000000986123",
+   "field": "documents",
+   "document": "a1000000-0000-4000-8000-000000986137"
+  }
+ ],
+ "entries": [
+  {
+   "document": "a1000000-0000-4000-8000-000000986024",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "action": 0
+  },
+  {
+   "document": "a1000000-0000-4000-8000-000000986028",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "action": 0
+  },
+  {
+   "document": "a1000000-0000-4000-8000-000000986030",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "action": 0
+  },
+  {
+   "document": "a1000000-0000-4000-8000-000000986030",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "action": 0
+  },
+  {
+   "document": "a1000000-0000-4000-8000-000000986032",
+   "association": null,
+   "action": 0
+  },
+  {
+   "document": "a1000000-0000-4000-8000-000000986034",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "action": 1
+  },
+  {
+   "document": "a1000000-0000-4000-8000-000000986036",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "action": 0
+  },
+  {
+   "document": "a1000000-0000-4000-8000-000000986036",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "action": 0
+  },
+  {
+   "document": "a1000000-0000-4000-8000-000000986053",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "action": 0
+  },
+  {
+   "document": "a1000000-0000-4000-8000-000000986088",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "action": 0
+  },
+  {
+   "document": "a1000000-0000-4000-8000-000000986134",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "action": 0
+  },
+  {
+   "document": "a1000000-0000-4000-8000-000000986137",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "action": 0
+  }
+ ],
+ "cases": [
+  {
+   "name": "document-delete-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986021/delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-admin-without-session",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986021/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986021/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'document/a1000000-0000-4000-8000-000000986021/delete'. Contact administrator to grant access."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-scoped-athlete",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986021/delete",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-get-not-allowed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/a1000000-0000-4000-8000-000000986021/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-post-not-allowed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/a1000000-0000-4000-8000-000000986021/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/document/a1000000-0000-4000-8000-000000986021/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Delete Document",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-invalid-uuid",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/not-a-uuid/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "document-delete-unknown",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986139/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-athlete",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986021/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986021/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-deleted-association-owner",
+   "actor": "deleted_association_owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986021/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-archive-of-another-association",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986008/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-archive-shared-with-another-association",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986011/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-own-archive-by-another-owner",
+   "actor": "foreign_owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986018/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-unreferenced-without-creation-entry",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986026/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-unreferenced-created-for-another-association",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986028/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-unreferenced-created-for-two-associations",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986030/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-unreferenced-creation-entry-without-association",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986032/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-unreferenced-update-entry-only",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986034/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-payment-of-another-association",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986047/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-payment-without-association",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986050/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-invoice-of-another-association",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986059/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-subscription-of-another-association",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986074/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-certificate-of-another-association-subscription",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986081/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-certificate-without-subscription",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986085/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-file-of-another-association-subscription",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986099/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-response-of-another-association-module",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986117/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-instructor-of-another-owner",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986126/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-hours-of-instructor-without-association",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986131/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-archive",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986001/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986001"
+      }
+     },
+     {
+      "model": "application.SportAssociationDocumentsArchive",
+      "match": {
+       "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000986003"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "application.SportAssociationDocumentsArchive",
+      "key": "a1000000-0000-4000-8000-000000986003",
+      "changes": {
+       "sport_association_documents_archive_id": [
+        "a1000000-0000-4000-8000-000000986003",
+        "None"
+       ],
+       "sport_association": [
+        "a1000000-0000-4000-8000-000000701001",
+        "None"
+       ],
+       "document": [
+        "a1000000-0000-4000-8000-000000986001",
+        "None"
+       ],
+       "date": [
+        "2026-03-02",
+        "None"
+       ],
+       "folder": [
+        "None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     },
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986001",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986001",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986002",
+        "None"
+       ],
+       "filename": [
+        "archived.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ],
+       "filepath": [
+        "archive/archived.pdf",
+        "None"
+       ],
+       "file_size_bytes": [
+        "1234",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-archive-again",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986001/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "document-delete-two-archive-rows",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986004/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986004"
+      }
+     },
+     {
+      "model": "application.SportAssociationDocumentsArchive",
+      "match": {
+       "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000986006"
+      }
+     },
+     {
+      "model": "application.SportAssociationDocumentsArchive",
+      "match": {
+       "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000986007"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "application.SportAssociationDocumentsArchive",
+      "key": "a1000000-0000-4000-8000-000000986007",
+      "changes": {
+       "sport_association_documents_archive_id": [
+        "a1000000-0000-4000-8000-000000986007",
+        "None"
+       ],
+       "sport_association": [
+        "a1000000-0000-4000-8000-000000701001",
+        "None"
+       ],
+       "document": [
+        "a1000000-0000-4000-8000-000000986004",
+        "None"
+       ],
+       "date": [
+        "2026-03-03",
+        "None"
+       ],
+       "folder": [
+        "None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     },
+     {
+      "model": "application.SportAssociationDocumentsArchive",
+      "key": "a1000000-0000-4000-8000-000000986006",
+      "changes": {
+       "sport_association_documents_archive_id": [
+        "a1000000-0000-4000-8000-000000986006",
+        "None"
+       ],
+       "sport_association": [
+        "a1000000-0000-4000-8000-000000701001",
+        "None"
+       ],
+       "document": [
+        "a1000000-0000-4000-8000-000000986004",
+        "None"
+       ],
+       "date": [
+        "2026-03-03",
+        "None"
+       ],
+       "folder": [
+        "None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     },
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986004",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986004",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986005",
+        "None"
+       ],
+       "filename": [
+        "archived_twice.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-archive-by-collaborator",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986015/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986015"
+      }
+     },
+     {
+      "model": "application.SportAssociationDocumentsArchive",
+      "match": {
+       "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000986017"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "application.SportAssociationDocumentsArchive",
+      "key": "a1000000-0000-4000-8000-000000986017",
+      "changes": {
+       "sport_association_documents_archive_id": [
+        "a1000000-0000-4000-8000-000000986017",
+        "None"
+       ],
+       "sport_association": [
+        "a1000000-0000-4000-8000-000000701001",
+        "None"
+       ],
+       "document": [
+        "a1000000-0000-4000-8000-000000986015",
+        "None"
+       ],
+       "date": [
+        "2026-03-06",
+        "None"
+       ],
+       "folder": [
+        "None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     },
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986015",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986015",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986016",
+        "None"
+       ],
+       "filename": [
+        "archived_collaborator.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": null,
+      "path": null
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-unreferenced-created-for-the-association",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986024/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986024"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986024",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986024",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986025",
+        "None"
+       ],
+       "filename": [
+        "loose_own.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-unreferenced-two-creation-entries",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986036/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986036"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986036",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986036",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986037",
+        "None"
+       ],
+       "filename": [
+        "loose_twice_own.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-payment-attachment",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986038/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986038"
+      }
+     },
+     {
+      "model": "application.Payment_attachments",
+      "match": {
+       "payment_id": "a1000000-0000-4000-8000-000000986040",
+       "document_id": "a1000000-0000-4000-8000-000000986038"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986038",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986038",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986039",
+        "None"
+       ],
+       "filename": [
+        "attachment.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-payment-attachment-deleted",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986041/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986041"
+      }
+     },
+     {
+      "model": "application.Payment_attachments",
+      "match": {
+       "payment_id": "a1000000-0000-4000-8000-000000986043",
+       "document_id": "a1000000-0000-4000-8000-000000986041"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986041",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986041",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986042",
+        "None"
+       ],
+       "filename": [
+        "attachment_deleted.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-payment-attachment-group",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986044/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986044"
+      }
+     },
+     {
+      "model": "application.Payment_attachments",
+      "match": {
+       "payment_id": "a1000000-0000-4000-8000-000000986046",
+       "document_id": "a1000000-0000-4000-8000-000000986044"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986044",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986044",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986045",
+        "None"
+       ],
+       "filename": [
+        "attachment_group.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-payment-attachment-unowned-created",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986053/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986053"
+      }
+     },
+     {
+      "model": "application.Payment_attachments",
+      "match": {
+       "payment_id": "a1000000-0000-4000-8000-000000986055",
+       "document_id": "a1000000-0000-4000-8000-000000986053"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986053",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986053",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986054",
+        "None"
+       ],
+       "filename": [
+        "attachment_unowned_created.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-invoice-pdf",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986056/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986056"
+      }
+     }
+    ],
+    "cleared": [
+     {
+      "model": "application.Invoice",
+      "key": "a1000000-0000-4000-8000-000000986058",
+      "field": "document_pdf_id"
+     }
+    ],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986056",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986056",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986057",
+        "None"
+       ],
+       "filename": [
+        "invoice_pdf.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-invoice-attached",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986062/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986062"
+      }
+     },
+     {
+      "model": "application.Invoice_attached_documents",
+      "match": {
+       "invoice_id": "a1000000-0000-4000-8000-000000986064",
+       "document_id": "a1000000-0000-4000-8000-000000986062"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986062",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986062",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986063",
+        "None"
+       ],
+       "filename": [
+        "invoice_attached.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-supplier-invoice-pdf",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986065/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986065"
+      }
+     }
+    ],
+    "cleared": [
+     {
+      "model": "application.InvoiceSuppliers",
+      "key": "a1000000-0000-4000-8000-000000986067",
+      "field": "document_pdf_id"
+     }
+    ],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986065",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986065",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986066",
+        "None"
+       ],
+       "filename": [
+        "supplier_invoice.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-customer-invoice-pdf",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986068/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986068"
+      }
+     }
+    ],
+    "cleared": [
+     {
+      "model": "application.CustomerInvoice",
+      "key": "a1000000-0000-4000-8000-000000986070",
+      "field": "pdf_id"
+     }
+    ],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986068",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986068",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986069",
+        "None"
+       ],
+       "filename": [
+        "customer_invoice.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-subscription-pdf",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986071/delete",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986071"
+      }
+     }
+    ],
+    "cleared": [
+     {
+      "model": "application.Subscription",
+      "key": "a1000000-0000-4000-8000-000000986073",
+      "field": "document_pdf_id"
+     }
+    ],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986071",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986071",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986072",
+        "None"
+       ],
+       "filename": [
+        "subscription_pdf.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-certificate-of-own-subscription",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986077/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986077"
+      }
+     },
+     {
+      "model": "application.MedicalCertificate",
+      "match": {
+       "medical_id": "a1000000-0000-4000-8000-000000986079"
+      }
+     }
+    ],
+    "cleared": [
+     {
+      "model": "application.Subscription",
+      "key": "a1000000-0000-4000-8000-000000986080",
+      "field": "medical_id"
+     }
+    ],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986077",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986077",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986078",
+        "None"
+       ],
+       "filename": [
+        "certificate.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "application.MedicalCertificate",
+      "key": "a1000000-0000-4000-8000-000000986079",
+      "changes": {
+       "medical_id": [
+        "a1000000-0000-4000-8000-000000986079",
+        "None"
+       ],
+       "document": [
+        "a1000000-0000-4000-8000-000000986077",
+        "None"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "competitive_medical_certificate": [
+        "False",
+        "None"
+       ],
+       "expiration_date": [
+        "2027-01-31",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-certificate-without-subscription-created-for-the-association",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986088/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986088"
+      }
+     },
+     {
+      "model": "application.MedicalCertificate",
+      "match": {
+       "medical_id": "a1000000-0000-4000-8000-000000986090"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986088",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986088",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986089",
+        "None"
+       ],
+       "filename": [
+        "certificate_loose_created.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "application.MedicalCertificate",
+      "key": "a1000000-0000-4000-8000-000000986090",
+      "changes": {
+       "medical_id": [
+        "a1000000-0000-4000-8000-000000986090",
+        "None"
+       ],
+       "document": [
+        "a1000000-0000-4000-8000-000000986088",
+        "None"
+       ],
+       "user": [
+        "a1000000-0000-4000-8000-000000700004",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "competitive_medical_certificate": [
+        "True",
+        "None"
+       ],
+       "notes": [
+        "idoneo",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-appointment",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986091/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986091"
+      }
+     },
+     {
+      "model": "application.MedicalAppointments",
+      "match": {
+       "medical_appointments_id": "a1000000-0000-4000-8000-000000986094"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986091",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986091",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986092",
+        "None"
+       ],
+       "filename": [
+        "appointment.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "application.MedicalAppointments",
+      "key": "a1000000-0000-4000-8000-000000986094",
+      "changes": {
+       "medical_appointments_id": [
+        "a1000000-0000-4000-8000-000000986094",
+        "None"
+       ],
+       "subscription": [
+        "a1000000-0000-4000-8000-000000986093",
+        "None"
+       ],
+       "region": [
+        "agonistica",
+        "None"
+       ],
+       "document": [
+        "a1000000-0000-4000-8000-000000986091",
+        "None"
+       ],
+       "date": [
+        "2026-04-01",
+        "None"
+       ],
+       "sport": [
+        "Nuoto",
+        "None"
+       ],
+       "meta": [
+        "null",
+        "None"
+       ],
+       "address": [
+        "Via Roma 1",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-subscription-file",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986095/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986095"
+      }
+     },
+     {
+      "model": "application.SubscriptionFile",
+      "match": {
+       "subscription_file_id": "a1000000-0000-4000-8000-000000986098"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "application.SubscriptionFile",
+      "key": "a1000000-0000-4000-8000-000000986098",
+      "changes": {
+       "subscription_file_id": [
+        "a1000000-0000-4000-8000-000000986098",
+        "None"
+       ],
+       "subscription": [
+        "a1000000-0000-4000-8000-000000986097",
+        "None"
+       ],
+       "document": [
+        "a1000000-0000-4000-8000-000000986095",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986095",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986095",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986096",
+        "None"
+       ],
+       "filename": [
+        "file.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-file-and-archive",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986103/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986103"
+      }
+     },
+     {
+      "model": "application.SubscriptionFile",
+      "match": {
+       "subscription_file_id": "a1000000-0000-4000-8000-000000986105"
+      }
+     },
+     {
+      "model": "application.SportAssociationDocumentsArchive",
+      "match": {
+       "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000986106"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "application.SportAssociationDocumentsArchive",
+      "key": "a1000000-0000-4000-8000-000000986106",
+      "changes": {
+       "sport_association_documents_archive_id": [
+        "a1000000-0000-4000-8000-000000986106",
+        "None"
+       ],
+       "sport_association": [
+        "a1000000-0000-4000-8000-000000701001",
+        "None"
+       ],
+       "document": [
+        "a1000000-0000-4000-8000-000000986103",
+        "None"
+       ],
+       "date": [
+        "2026-03-09",
+        "None"
+       ],
+       "folder": [
+        "None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     },
+     {
+      "model": "application.SubscriptionFile",
+      "key": "a1000000-0000-4000-8000-000000986105",
+      "changes": {
+       "subscription_file_id": [
+        "a1000000-0000-4000-8000-000000986105",
+        "None"
+       ],
+       "subscription": [
+        "a1000000-0000-4000-8000-000000986097",
+        "None"
+       ],
+       "document": [
+        "a1000000-0000-4000-8000-000000986103",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986103",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986103",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986104",
+        "None"
+       ],
+       "filename": [
+        "file_and_archive.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-membership",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986107/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986107"
+      }
+     },
+     {
+      "model": "application.SubscriptionMembership_attached_membership_documents",
+      "match": {
+       "subscriptionmembership_id": "a1000000-0000-4000-8000-000000986109",
+       "document_id": "a1000000-0000-4000-8000-000000986107"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986107",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986107",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986108",
+        "None"
+       ],
+       "filename": [
+        "membership.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-location",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986110/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986110"
+      }
+     },
+     {
+      "model": "application.CourseLocation_documents",
+      "match": {
+       "courselocation_id": "a1000000-0000-4000-8000-000000986112",
+       "document_id": "a1000000-0000-4000-8000-000000986110"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986110",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986110",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986111",
+        "None"
+       ],
+       "filename": [
+        "location.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-response",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986113/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986113"
+      }
+     },
+     {
+      "model": "application.ModuleResponses_attachments",
+      "match": {
+       "moduleresponses_id": "a1000000-0000-4000-8000-000000986116",
+       "document_id": "a1000000-0000-4000-8000-000000986113"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986113",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986113",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986114",
+        "None"
+       ],
+       "filename": [
+        "response.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-instructor-document",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986124/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986124"
+      }
+     },
+     {
+      "model": "application.Instructor_documents",
+      "match": {
+       "instructor_id": "a1000000-0000-4000-8000-000000986121",
+       "document_id": "a1000000-0000-4000-8000-000000986124"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986124",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986124",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986125",
+        "None"
+       ],
+       "filename": [
+        "instructor_document.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-instructor-unowned-document",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986137/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986137"
+      }
+     },
+     {
+      "model": "application.Instructor_documents",
+      "match": {
+       "instructor_id": "a1000000-0000-4000-8000-000000986123",
+       "document_id": "a1000000-0000-4000-8000-000000986137"
+      }
+     }
+    ],
+    "cleared": [],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986137",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986137",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986138",
+        "None"
+       ],
+       "filename": [
+        "instructor_unowned_document.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-instructor-hours",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986128/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986128"
+      }
+     }
+    ],
+    "cleared": [
+     {
+      "model": "application.InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000986130",
+      "field": "document_id"
+     }
+    ],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986128",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986128",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986129",
+        "None"
+       ],
+       "filename": [
+        "hours.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-delete-hours-of-instructor-without-association-created-for-the-association",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000986134/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!"
+   },
+   "effect": {
+    "deleted": [
+     {
+      "model": "docmanager.Document",
+      "match": {
+       "document_id": "a1000000-0000-4000-8000-000000986134"
+      }
+     }
+    ],
+    "cleared": [
+     {
+      "model": "application.InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000986136",
+      "field": "document_id"
+     }
+    ],
+    "audit": [
+     {
+      "model": "docmanager.Document",
+      "key": "a1000000-0000-4000-8000-000000986134",
+      "changes": {
+       "document_id": [
+        "a1000000-0000-4000-8000-000000986134",
+        "None"
+       ],
+       "token": [
+        "a1000000-0000-4000-8000-000000986135",
+        "None"
+       ],
+       "filename": [
+        "hours_unowned_created.pdf",
+        "None"
+       ],
+       "creation_date": [
+        "2026-03-01 10:00:00",
+        "None"
+       ],
+       "customer_invoice_pdf": [
+        "application.CustomerInvoice.None",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  }
+ ]
+}

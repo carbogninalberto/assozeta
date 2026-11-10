@@ -77,7 +77,7 @@ def document_subscription(request, uid):
 
 
 @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 @xframe_options_exempt
 def document_subscription_preview(request):
 
@@ -92,7 +92,9 @@ def document_subscription_preview(request):
         # # return the pdf
         # return HttpResponse(res, content_type='application/pdf')
         puppeteer = Puppeteer()
-        rendered_status, rendered_pdf = puppeteer.pdf_from_url(url=full_url, headers={})
+        # The renderer opens the page as the requester.
+        rendered_status, rendered_pdf = puppeteer.pdf_from_url(
+            url=full_url, headers={'Authorization': request.headers.get('authorization')})
         # make sure the pdf is rendered
         if not rendered_status:
             return Response(data={

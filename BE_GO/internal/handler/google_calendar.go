@@ -127,6 +127,7 @@ func (h *GoogleCalendarHandler) Config(c echo.Context) error {
 			if h.secureCookie {
 				cookie += "; Secure"
 			}
+			c.Set(domain.SessionSavedContextKey, true)
 			c.Response().Header().Add("Set-Cookie", cookie)
 			c.Response().Header().Add("Vary", "Cookie")
 			return c.JSON(http.StatusOK, answer.Body)

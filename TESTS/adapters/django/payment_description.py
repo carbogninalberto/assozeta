@@ -137,23 +137,26 @@ def run(work, log, tool_env):
                     assert str(audit_index.sport_association_id)==str(association.pk) and audit_index.resolution_path=='direct'
             go_cases.append({**{k:row[k] for k in ('Name','Subject','Description','CategoryName','Meta','Course','Expected','Error')},
                              'Related':[r if r is not None else {} for r in row['Related']]})
-        # Characterize rather than silently reproduce the unscoped category lookup.
+        # The default category comes from the payment's own association or the global ones:
+        # a lower-key category of another association with the same name is not taken.
         foreign_owner=User(user_id=uid(109007),username='foreign-payment-description-fixture',password='!fixture',role=1)
         User.original_objects.bulk_create([foreign_owner])
         foreign=SportAssociation(sport_association_id=uid(109004),user=foreign_owner,denomination='Foreign',tax_code='00000000001')
         SportAssociation.original_objects.bulk_create([foreign])
         default_name='entrate e proventi da attività tipiche'
         foreign_category=PaymentCategory(payment_category_id=uid(109005),sport_association=foreign,name=default_name,deleted=True,archived=True)
-        PaymentCategory.objects.bulk_create([foreign_category,PaymentCategory(payment_category_id=uid(109006),name=default_name)])
+        global_category=PaymentCategory(payment_category_id=uid(109006),name=default_name)
+        PaymentCategory.objects.bulk_create([foreign_category,global_category])
         legacy=Payment(payment_id=uid(119999),sport_association=association,subject=0,amount=Decimal('0.01'))
         Payment._base_manager.bulk_create([legacy]);legacy.save();legacy.refresh_from_db()
-        assert str(legacy.payment_category_id)==str(foreign_category.pk) and legacy.description==default_name
+        assert str(foreign_category.pk)<str(global_category.pk)
+        assert str(legacy.payment_category_id)==str(global_category.pk) and legacy.description==default_name
         fixture=work/'payment-description.json'
         fixture.write_text(json.dumps(dict(Cases=go_cases)))
-        evidence=dict(success=True,actual_save_cases=len(cases),legacy_foreign_category_selected=True,
+        evidence=dict(success=True,actual_save_cases=len(cases),default_category_from_own_or_global=True,
             scope='description calculation only; category authorization, batch relationship reads and full save/archive remain open')
         (output/'django-oracle.json').write_text(json.dumps(evidence,indent=2)+'\n')
-        print(f'Django payment description: {len(cases)} actual-save cases and unscoped category defect verified',flush=True)
+        print(f'Django payment description: {len(cases)} actual-save cases and the association-scoped default category verified',flush=True)
         completed=subprocess.run(['go','test','-race','-tags=paymentdescriptionintegration','./internal/service','-run','^TestPaymentDescriptionDjangoOracle$','-json'],
             cwd=ROOT/'BE_GO',env={**tool_env,'ASSOZETA_PAYMENT_DESCRIPTION_FIXTURE':str(fixture)},capture_output=True,text=True,timeout=120)
         (output/'go-test.jsonl').write_text(completed.stdout)

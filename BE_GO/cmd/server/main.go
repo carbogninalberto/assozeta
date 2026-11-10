@@ -292,8 +292,9 @@ func run() (runErr error) {
 	instanceLogoHandler := composeInstanceLogo(cfg)
 	instanceSetupHandler := composeInstanceSetup(cfg, db, instanceService, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
 	docmanagerReadsHandler := handler.NewDocmanagerReadsHandler(service.NewDocmanagerReads(repository.NewDocmanagerReads(db),
-		composeDocumentObjects(cfg), service.NewActorAuthentication(accounts, tokens), cfg.SessionSecret, time.Now),
-		service.NewActorAuthentication(accounts, tokens), identities)
+		composeDocumentObjects(cfg), service.NewActorAuthentication(accounts, tokens), cfg.SessionSecret, time.Now).
+		WithDocumentDelete(repository.NewDocumentDelete(db, time.Now)),
+		service.NewActorAuthentication(accounts, tokens), identities).WithWrites(middleware.SessionAuditContext, paymentCategoryOperations)
 
 	// document/<kind>/<uid> PDF routes: the Puppeteer FastRender service (PUPPETEER_HOST/PORT) prints
 	// CURRENT_HOST_PUPPETEER/<view>; DOCUMENT_BYPASS_TOKEN is HasBypassAuthorizationHeader's token.
@@ -312,8 +313,11 @@ func run() (runErr error) {
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 
 	apiSchemaHandler := handler.NewAPISchemaHandler(service.NewActorAuthentication(accounts, tokens), identities, cfg.CSRFCookieSecure)
-	documentUploadsHandler := composeDocumentUploads(cfg, db, sessions, service.NewActorAuthentication(accounts, tokens), identities,
+	documentUploadsHandler, err := composeDocumentUploads(cfg, db, cache, sessions, service.NewActorAuthentication(accounts, tokens), identities,
 		middleware.SessionAuditContext, paymentCategoryOperations)
+	if err != nil {
+		return err
+	}
 	healthService := service.NewHealthService(repository.NewDatabaseProbe(db), repository.NewRedisProbe(cache), 2*time.Second)
 	healthHandler := handler.NewHealthHandler(healthService, cfg.Version)
 	restoreAdmission := service.NewRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath), repository.NewRestoreStates(db), cfg.RestoreLockPath != "")

@@ -10,8 +10,8 @@ import (
 
 // ErrPrintingGenerateServer is an exception printing_generate does not catch
 // (the 500 page); ErrPrintingGenerateNotPorted is an output Go does not
-// reproduce (the in-process reportlab PDF, a workbook input xlsxexport
-// refuses), refused with the 500 page before any write.
+// reproduce (a workbook input xlsxexport refuses), refused with the 500 page
+// before any write.
 var (
 	ErrPrintingGenerateServer    = errors.New("printing generate: unhandled exception")
 	ErrPrintingGenerateNotPorted = refusal.New("printing generate: output not ported")

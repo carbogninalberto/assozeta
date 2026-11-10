@@ -687,6 +687,15 @@ STORE_ON_DISK = env.bool('STORE_ON_DISK', False)
 # STORAGE DIR
 STORAGE_DIR = os.path.join(BASE_DIR, env.str('STORAGE_DIR', 'storage'))
 
+# MEMBER IMPORT: largest accepted file and hours an upload that was not imported is kept
+SUBSCRIPTION_IMPORT_MAX_UPLOAD_BYTES = env.int('SUBSCRIPTION_IMPORT_MAX_UPLOAD_BYTES', 20 * 1024 * 1024)
+SUBSCRIPTION_IMPORT_RETENTION_HOURS = env.int('SUBSCRIPTION_IMPORT_RETENTION_HOURS', 24)
+
+# MEDICAL CERTIFICATE UPLOAD (document/medical/certificate/): largest accepted file, and how many
+# uploads one address may send without an account in an hour
+MEDICAL_CERTIFICATE_MAX_UPLOAD_BYTES = env.int('MEDICAL_CERTIFICATE_MAX_UPLOAD_BYTES', 10 * 1024 * 1024)
+MEDICAL_CERTIFICATE_UPLOADS_PER_HOUR = env.int('MEDICAL_CERTIFICATE_UPLOADS_PER_HOUR', 60)
+
 # AWS S3 CONFIGURATION
 AWS_ACCESS_KEY_ID = env.str('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = env.str('AWS_SECRET_ACCESS_KEY')
