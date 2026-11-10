@@ -286,18 +286,26 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 		reprint = view
 	}
 	filename := document.Filename
-	var disposition *string
 	if download {
 		filename = strings.ReplaceAll(filename, ",", " ")
-		value, ok := contentDisposition(downloadValue != "", filename)
-		if !ok {
-			return nil, domain.ErrDocmanagerNotPorted
-		}
-		disposition = value
 	}
 	guessed, known, err := s.guess(filename)
 	if err != nil {
 		return nil, domain.ErrDocmanagerNotPorted
+	}
+	// Documents are served with a fixed set of inline types; every other file
+	// is a download, whatever the request asks.
+	contentType, attachment, named := guessed, downloadValue != "", download
+	if !known || !docmanagerInlineTypes[guessed] {
+		contentType, attachment, named = "application/octet-stream", true, true
+	}
+	var disposition *string
+	if named {
+		value, ok := contentDisposition(attachment, filename)
+		if !ok {
+			return nil, domain.ErrDocmanagerNotPorted
+		}
+		disposition = value
 	}
 	if reprint != "" {
 		// After the refusals above, so a refused name prints nothing.
@@ -311,19 +319,16 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 	if err != nil {
 		return nil, domain.ErrDocmanagerNotPorted
 	}
-	contentType := guessed
-	if !known {
-		contentType = "application/octet-stream"
-		if object.ContentType != nil && *object.ContentType != "" {
-			contentType = *object.ContentType
-		}
-	}
 	reply := &DocumentStream{Object: object, ContentType: contentType, Disposition: disposition, ContentLength: object.ContentLength}
 	if object.ContentEncoding != nil {
 		reply.ContentEncoding = *object.ContentEncoding
 	}
 	return &DocmanagerReply{Status: 200, Stream: reply}, nil
 }
+
+// docmanagerInlineTypes is INLINE_DOCUMENT_TYPES (application/utils/printing.py).
+var docmanagerInlineTypes = map[string]bool{"application/pdf": true, "image/png": true, "image/jpeg": true, "image/gif": true,
+	"image/webp": true}
 
 // contentDisposition is django.utils.http.content_disposition_header. ok is
 // false for values Django's response headers reject (newlines) and for the

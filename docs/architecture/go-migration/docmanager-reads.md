@@ -57,8 +57,11 @@ The rendering routes of `BE/docmanager/urls.py` are not part of this family (see
     `DocmanagerReadsStore.RenderSource` returns the view, `DocumentRender.PrintAndStore` renders and publishes, and
     `documentobjects.NoSuchKeyError` carries the provider text. The names Go refuses (below) are refused before printing.
   - `Content-Type` is `mimetypes.guess_type(name)[0]` (`pkg/pymime`: Python 3.13's built-in table plus every existing
-    `mimetypes.knownfiles` file, read once per process, with suffix and encoding maps). Failing that, the object's type
-    is used, and then `application/octet-stream`.
+    `mimetypes.knownfiles` file, read once per process, with suffix and encoding maps) when it is one of the inline
+    types: `application/pdf`, `image/png`, `image/jpeg`, `image/gif`, `image/webp` (`INLINE_DOCUMENT_TYPES` in
+    `BE/application/utils/printing.py`, `docmanagerInlineTypes` in Go). Every other file is `application/octet-stream`
+    with an `attachment` `Content-Disposition`, on the view path too. The object's own type is not used.
+  - `X-Content-Type-Options: nosniff` is always sent.
   - `Content-Length` and `Content-Encoding` come from the object. Bytes are streamed unchanged, and there is no gzip.
 
 ## Delete behaviour (pre-checks)
@@ -163,3 +166,12 @@ holds 37 answers of CPython 3.13. Still refused: a network location with bracket
 outside printable ASCII. RED `v2doc2-red-r2`: Django 175/175, Go the 500 page on `retrieve-url-name`. GREEN
 `v2doc2-versioned-r2`: 175/175 on the four transports. Mutation `v2doc2-mutation-r2` (the query left in the path) fails
 `retrieve-url-name-parts`. documents-writes re-run green (`v2doc2-rerun-r3`).
+
+Inline types (`v2doc3-*`): documents are served with a fixed set of inline types. Django changed first
+(`application.tests.test_printing_service`, 5 new tests red, then green), then Go. 14 more cases (189) over nine
+documents (`.html`, `.svg`, `.js`, `.xml`, `.bmp`, `.GIF`, `.webp` and two `data:` names); the contract also checks
+`X-Content-Type-Options`. The UI opens documents as links and in the PDF preview frames
+(`DocumentPreviewModal.svelte`, `InvoicePreviewModal.svelte`): PDFs and images keep their inline answer. RED
+`v2doc3-red-r1`: Django 189/189, Go fails `retrieve-export-owner` (`stream.content-type`). GREEN `v2doc3-versioned-r1`:
+189/189 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `v2doc3-mutation-r1` (the type list not
+consulted) fails `retrieve-export-owner`.

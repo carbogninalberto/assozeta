@@ -38,8 +38,10 @@ in Django's order:
   object not linked to one subscription/invoice is 500 {'exception': 'File
   not found'}; a key outside the location is 500 {'exception': "Attempted
   access to '<name>' denied."}. Content-Type is mimetypes.guess_type of the
-  name, else the object's, else application/octet-stream; Content-Length and
-  Content-Encoding come from the object.
+  name when it is one of the inline types (PDF, PNG, JPEG, GIF, WebP); every
+  other file is application/octet-stream with an attachment
+  Content-Disposition, also on the view path. X-Content-Type-Options is
+  nosniff; Content-Length and Content-Encoding come from the object.
 
 document/<uid>/delete (application.document_scope.delete_document) is covered
 up to the owner lookup: IsAuthenticated, is_valid_uuid, a missing document
@@ -218,12 +220,22 @@ def disposition(as_attachment, filename):
     return kind + "; filename*=utf-8''" + quote(filename)
 
 
+INLINE_TYPES = ('application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/webp')
+
+
 def streamed(key, content_type, *, attachment=False, view=False):
-    """download_file (comma-free name, disposition) or view_file (no disposition)."""
+    """download_file (comma-free name, disposition) or view_file (no disposition) for the guessed type of the name
+    (None when mimetypes knows none). Documents are served with a fixed set of inline types; every other file is
+    application/octet-stream and an attachment, whatever the request asks."""
     name = DOCUMENTS[key]['filename']
     obj = OBJECTS[key]
-    return {'object': key, 'content_type': content_type, 'encoding': obj['encoding'],
-            'disposition': None if view else disposition(attachment, name.replace(',', ' '))}
+    if not view:
+        name = name.replace(',', ' ')
+    if content_type in INLINE_TYPES:
+        shown = None if view else disposition(attachment, name)
+    else:
+        content_type, shown = 'application/octet-stream', disposition(True, name)
+    return {'object': key, 'content_type': content_type, 'encoding': obj['encoding'], 'disposition': shown}
 
 
 def ok(name, actor, key, content_type, *, query='', path=None, headers=None, attachment=False, view=False):
@@ -500,7 +512,7 @@ add('delete-owner-without-association', 'owner_without_association', DELETE_PLAI
 
 # Names urllib.parse reads as a URL (a scheme of two or more characters): mimetypes.guess_type guesses from the URL's
 # path (after the scheme, before '#', '?' and, for a few schemes, ';'), and a data: name answers the text before its
-# first ';' or ','. download_file replaces the commas first, so its data: name has no type and the object's is used.
+# first ';' or ','. download_file replaces the commas first, so its data: name has no type.
 document('urlname', 'Nota:spese.pdf', created='2026-03-20T10:00:00+00:00', body='%PDF-url name', content_type='application/x-fixture-url')
 document('urlparts', 'ab:c.pdf;v.txt?x#y.png', created='2026-03-21T10:00:00+00:00', body='url parts',
          content_type='application/x-fixture-parts')
@@ -510,7 +522,34 @@ ok('retrieve-url-name', 'owner', 'urlname', 'application/pdf')
 ok('retrieve-url-name-view', 'owner', 'urlname', 'application/pdf', query='download=false', view=True)
 ok('retrieve-url-name-parts', 'owner', 'urlparts', 'text/plain', query='download=1', attachment=True)
 ok('retrieve-data-name-view', 'owner', 'dataname', 'text/css', query='download=false', view=True)
-ok('retrieve-data-name-download', 'owner', 'dataname', 'application/x-fixture-data')
+ok('retrieve-data-name-download', 'owner', 'dataname', None)
+
+# Types outside the inline list are downloads on both paths; the object's own type is not used.
+document('webpage', 'pagina.html', created='2026-03-23T10:00:00+00:00', body='<p>pagina</p>', content_type='text/html')
+document('drawing', 'disegno.svg', created='2026-03-24T10:00:00+00:00', body='<svg xmlns="http://www.w3.org/2000/svg"/>',
+         content_type='image/svg+xml')
+document('datapage', 'data:text/html,x', created='2026-03-25T10:00:00+00:00', body='<p>x</p>', content_type='text/html')
+document('datapng', 'data:image/png,x', created='2026-03-26T10:00:00+00:00', body='PNG-data name', content_type='text/html')
+document('gif', 'animazione.GIF', created='2026-03-27T10:00:00+00:00', body='GIF89a-fixture', content_type='image/gif')
+document('webp', 'foto.webp', created='2026-03-28T10:00:00+00:00', body='RIFF-fixture', content_type='image/webp')
+document('script', 'codice.js', created='2026-03-29T10:00:00+00:00', body='void 0', content_type='text/javascript')
+document('markup', 'dati.xml', created='2026-03-30T10:00:00+00:00', body='<a/>', content_type='application/xml')
+document('bitmap', 'foto.bmp', created='2026-03-31T10:00:00+00:00', body='BM-fixture', content_type='image/bmp')
+ok('retrieve-html-view', 'owner', 'webpage', 'text/html', query='download=false', view=True)
+ok('retrieve-html-download-empty', 'owner', 'webpage', 'text/html', query='download=')
+ok('retrieve-html-download', 'owner', 'webpage', 'text/html', query='download=true', attachment=True)
+ok('retrieve-html-document-token-view', 'anonymous', 'webpage', 'text/html',
+   query='download=false&token=' + DOCUMENTS['webpage']['token'], view=True)
+ok('retrieve-svg-view', 'owner', 'drawing', 'image/svg+xml', query='download=false', view=True)
+ok('retrieve-svg-default', 'owner', 'drawing', 'image/svg+xml')
+ok('retrieve-data-html-name-view', 'owner', 'datapage', 'text/html', query='download=false', view=True)
+ok('retrieve-data-png-name-view', 'owner', 'datapng', 'image/png', query='download=false', view=True)
+ok('retrieve-script-view', 'owner', 'script', 'text/javascript', query='download=false', view=True)
+ok('retrieve-xml-view', 'owner', 'markup', 'text/xml', query='download=false', view=True)
+ok('retrieve-bmp-view', 'owner', 'bitmap', 'image/bmp', query='download=false', view=True)
+ok('retrieve-gif-view', 'owner', 'gif', 'image/gif', query='download=false', view=True)
+ok('retrieve-webp-view', 'owner', 'webp', 'image/webp', query='download=false', view=True)
+ok('retrieve-webp-default', 'owner', 'webp', 'image/webp')
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

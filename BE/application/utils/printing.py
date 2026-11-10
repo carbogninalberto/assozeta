@@ -195,6 +195,10 @@ class FastRender:
         pass
 
 
+# The types a stored document is shown with in the browser (PDF and image previews).
+INLINE_DOCUMENT_TYPES = frozenset({'application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/webp'})
+
+
 class PrintingService:
     puppeteer = Puppeteer()
     fastrender = FastRender()
@@ -208,13 +212,14 @@ class PrintingService:
         )
         body = object_response['Body']
 
-        content_type = (
-            mimetypes.guess_type(filename)[0]
-            or object_response.get('ContentType')
-            or 'application/octet-stream'
-        )
+        # Documents are served with a fixed set of inline types; every other file is a download.
+        content_type = mimetypes.guess_type(filename)[0]
+        if content_type not in INLINE_DOCUMENT_TYPES:
+            content_type = 'application/octet-stream'
+            as_attachment = True
         response = StreamingHttpResponse(_AsyncStreamingBody(body), content_type=content_type)
         response.disable_gzip = True
+        response['X-Content-Type-Options'] = 'nosniff'
 
         content_length = object_response.get('ContentLength')
         if content_length is not None:
