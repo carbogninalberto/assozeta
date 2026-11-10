@@ -6,13 +6,16 @@ from django.conf import settings
 from django.http import HttpResponse
 from rest_framework.test import APIClient
 
-from application.models import Subscription, User
+from application.models import Payment, Subscription, User
 from application.models.subscriptions_models import MedicalCertificate, SubscriptionFile
+from application.models.user_models import Instructor, InstructorHours, SportAssociationModuleTemplates
 from application.services.jwt_token_service import JWTTokenService
 from application.tests.base import BaseAPITestCase
 from application.tests.fixtures.factories import (
     create_test_associate,
+    create_test_customer_invoice,
     create_test_invoice,
+    create_test_medical_appointment,
     create_test_payment,
     create_test_sport_association,
     create_test_subscription,
@@ -209,6 +212,8 @@ class GeneratedDocumentAccessTests(DocumentAccessTestCase):
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=settings.DOCUMENT_BYPASS_TOKEN)
         self.assertEqual(client.get(f'/document/invoice/{self.other.invoice.pk}').status_code, 200)
+        # Each generation replaces the receipt: the link carries the current document's token.
+        self.other.invoice.refresh_from_db()
         token = self.other.invoice.document_pdf.token
         self.assertEqual(APIClient().get(f'/document/invoice/{self.other.invoice.pk}?token={token}').status_code, 200)
 
@@ -262,3 +267,232 @@ class SubscriptionUploadAccessTests(DocumentAccessTestCase):
         for user in (self.user, self.collaborator):
             self.assertEqual(self.upload(user, self.other).status_code, 200)
         self.assertEqual(SubscriptionFile.objects.filter(subscription=self.other).count(), 2)
+
+
+class StaffDocumentsTestCase(DocumentAccessTestCase):
+    """Customer invoices, compensations, module templates and medical appointments of the association."""
+
+    def setUp(self):
+        super().setUp()
+        self.instructor = Instructor.objects.create(user=self.user, first_name='Ada', last_name='Neri')
+        self.compensation = self.compensated(self.instructor)
+        self.customer_invoice = create_test_customer_invoice(
+            sport_association=self.sport_association, pdf=Document.objects.create(filename='fattura.pdf'))
+        self.template = SportAssociationModuleTemplates.objects.create(
+            sport_association=self.sport_association, name='Liberatoria', template='<p>Liberatoria</p>')
+        self.own_visit = create_test_medical_appointment(
+            subscription=self.own, document=Document.objects.create(filename='visita.pdf'))
+        self.other_visit = create_test_medical_appointment(
+            subscription=self.other, document=Document.objects.create(filename='visita.pdf'))
+
+    def compensated(self, instructor):
+        payment = create_test_payment(sport_association=self.sport_association, associate=self.other.associate,
+                                      instructor=instructor, subject=Payment.OTHER)
+        InstructorHours.objects.create(instructor=instructor, hours=2, payment=payment,
+                                       document=Document.objects.create(filename='compenso.pdf'))
+        return payment
+
+    def tied_account(self, instructor):
+        account = create_test_user(role=User.ATHLETE)
+        Instructor.objects.filter(pk=instructor.pk).update(associated_user_id=account.pk)
+        return account
+
+    def renderer(self):
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=settings.DOCUMENT_BYPASS_TOKEN)
+        return client
+
+    def staff_pages(self):
+        return (f'/document/einvoice/{self.customer_invoice.pk}/view/', f'/document/compensation/{self.compensation.pk}/view/',
+                f'/document/template/{self.template.pk}/view/')
+
+    def staff_printed(self):
+        return (f'/document/einvoice/{self.customer_invoice.pk}', f'/document/compensation/{self.compensation.pk}')
+
+
+class StaffRecordsTests(StaffDocumentsTestCase):
+    def test_staff_records_and_compensations(self):
+        account = self.tied_account(self.instructor)
+        for record in (self.customer_invoice, self.template, self.compensation):
+            self.assertFalse(can_access_document(self.athlete, record))
+            for user in (self.user, self.collaborator, self.admin):
+                self.assertTrue(can_access_document(user, record))
+        self.assertTrue(can_access_document(account, self.compensation))
+        self.assertFalse(can_access_document(account, self.customer_invoice))
+        self.assertFalse(can_access_document(account, self.template))
+
+
+@patch('docmanager.views.printing_views.generate_invoice_html', return_value='<html></html>')
+class StaffPageAccessTests(StaffDocumentsTestCase):
+    def test_member_account_does_not_open_staff_pages(self, html):
+        for path in self.staff_pages():
+            self.assertNotAvailable(self.acting(self.athlete).get(path))
+        html.assert_not_called()
+
+    def test_staff_open_every_page(self, html):
+        for user in (self.user, self.collaborator):
+            for path in self.staff_pages():
+                self.assertEqual(self.acting(user).get(path).status_code, 200, path)
+
+    def test_template_page_with_a_subscription(self, html):
+        path = f'/document/template/{self.template.pk}/view/?subscription_id={self.own.pk}'
+        self.assertNotAvailable(self.acting(self.athlete).get(path))
+        self.assertEqual(self.acting(self.user).get(path).status_code, 200)
+
+    def test_renderer_header_pages(self, html):
+        for path in (f'/document/einvoice/{self.customer_invoice.pk}/view/', f'/document/template/{self.template.pk}/view/',
+                     f'/document/medical-appointment/{self.other_visit.pk}/view/'):
+            self.assertEqual(self.renderer().get(path).status_code, 200, path)
+
+    def test_account_tied_to_the_instructor_opens_its_compensation(self, html):
+        account = self.tied_account(self.instructor)
+        elsewhere = self.compensated(Instructor.objects.create(user=self.user, first_name='Ugo', last_name='Bini'))
+        self.assertEqual(self.acting(account).get(f'/document/compensation/{self.compensation.pk}/view/').status_code, 200)
+        self.assertNotAvailable(self.acting(account).get(f'/document/compensation/{elsewhere.pk}/view/'))
+        self.assertNotAvailable(self.acting(account).get(f'/document/einvoice/{self.customer_invoice.pk}/view/'))
+
+    def test_medical_appointment_page(self, html):
+        own, other = (f'/document/medical-appointment/{visit.pk}/view/' for visit in (self.own_visit, self.other_visit))
+        response = APIClient().get(other)
+        self.assertEqual(response.status_code, 401, response.content)
+        self.assertEqual(APIClient().get(f'{other}?token={self.other_visit.document.token}').status_code, 401)
+        self.assertNotAvailable(self.acting(self.athlete).get(other))
+        self.assertEqual(self.acting(self.athlete).get(own).status_code, 200)
+        for user in (self.user, self.collaborator):
+            self.assertEqual(self.acting(user).get(other).status_code, 200)
+
+    def test_medical_appointment_page_keeps_the_other_regions_answer(self, html):
+        visit = create_test_medical_appointment(subscription=self.other, region='agonistica-piemonte-biella')
+        response = self.acting(self.user).get(f'/document/medical-appointment/{visit.pk}/view/')
+        self.assertEqual(response.status_code, 303)
+
+
+@patch('docmanager.views.printing_views.PrintingService.print_and_store_pdf', side_effect=pdf_response)
+class StaffGeneratedAccessTests(StaffDocumentsTestCase):
+    def test_member_account_does_not_generate_staff_documents(self, printed):
+        documents = Document.objects.count()
+        for path in self.staff_printed():
+            self.assertNotAvailable(self.acting(self.athlete).get(path))
+            self.assertNotAvailable(self.acting(self.athlete).post(path))
+        printed.assert_not_called()
+        self.assertEqual(Document.objects.count(), documents)
+
+    def test_staff_generate_staff_documents(self, printed):
+        for user in (self.user, self.collaborator):
+            for path in self.staff_printed():
+                self.assertEqual(self.acting(user).get(path).status_code, 200, path)
+
+    def test_print_tasks_keep_generating_customer_invoices(self, printed):
+        self.assertEqual(self.renderer().get(f'/document/einvoice/{self.customer_invoice.pk}').status_code, 200)
+        self.customer_invoice.refresh_from_db()
+        self.assertEqual(self.customer_invoice.pdf.filename.split('] ')[1][:7], 'Fattura')
+
+    def test_account_tied_to_the_instructor_generates_its_compensation(self, printed):
+        account = self.tied_account(self.instructor)
+        elsewhere = self.compensated(Instructor.objects.create(user=self.user, first_name='Ugo', last_name='Bini'))
+        self.assertEqual(self.acting(account).get(f'/document/compensation/{self.compensation.pk}').status_code, 200)
+        self.assertNotAvailable(self.acting(account).get(f'/document/compensation/{elsewhere.pk}'))
+
+    def test_medical_appointment_documents(self, printed):
+        documents = Document.objects.count()
+        self.assertNotAvailable(self.acting(self.athlete).get(f'/document/medical-appointment/{self.other_visit.pk}'))
+        self.assertEqual(Document.objects.count(), documents)
+        self.assertEqual(self.acting(self.athlete).get(f'/document/medical-appointment/{self.own_visit.pk}').status_code, 200)
+        for user in (self.user, self.collaborator):
+            self.assertEqual(self.acting(user).get(f'/document/medical-appointment/{self.other_visit.pk}').status_code, 200)
+
+    def test_medical_appointment_list_generates_the_missing_documents(self, printed):
+        # The list prints through the task, with the caller's Authorization header.
+        visit = create_test_medical_appointment(subscription=self.other)
+        token = JWTTokenService.generate_tokens_for_user(self.user)['access_token']
+
+        def forward(url, headers):
+            client = APIClient()
+            client.credentials(HTTP_AUTHORIZATION=headers['Authorization'])
+            return client.get(url.replace(settings.CURRENT_HOST, ''))
+
+        with patch('application.printing_tasks.requests.get', side_effect=forward):
+            client = APIClient()
+            client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+            response = client.get(f'/subscription/{self.other.pk}/medical-appointments/list')
+        self.assertEqual(response.status_code, 200, response.content)
+        visit.refresh_from_db()
+        self.assertIsNotNone(visit.document_id)
+
+    def test_form_filled_medical_appointment(self, printed):
+        # The regional PDF forms are filled in place: no page is rendered.
+        visit = create_test_medical_appointment(subscription=self.other, region='agonistica-piemonte-biella')
+        with patch('docmanager.views.printing_views.get_pdf_fields', return_value=[{'associate-first_name': ''}]), \
+                patch('docmanager.views.printing_views.PrintingService.fill_pdf_and_store', side_effect=pdf_response) as filled:
+            self.assertNotAvailable(self.acting(self.athlete).get(f'/document/medical-appointment/{visit.pk}'))
+            filled.assert_not_called()
+            response = self.acting(self.user).get(f'/document/medical-appointment/{visit.pk}')
+        self.assertEqual(response.status_code, 200, response.content)
+        filled.assert_called_once()
+        printed.assert_not_called()
+        visit.refresh_from_db()
+        self.assertIsNotNone(visit.document_id)
+
+
+@patch('docmanager.views.printing_views.PrintingService.print_and_store_pdf', side_effect=pdf_response)
+class DocumentTokenTests(StaffDocumentsTestCase):
+    """?token admits the request when it is the token of the record's own document."""
+
+    def records(self):
+        hours = InstructorHours.objects.get(payment=self.compensation)
+        return ((f'/document/invoice/{self.other.invoice.pk}', self.other.invoice.document_pdf),
+                (f'/document/einvoice/{self.customer_invoice.pk}', self.customer_invoice.pdf),
+                (f'/document/compensation/{self.compensation.pk}', hours.document),
+                (f'/document/medical-appointment/{self.other_visit.pk}', self.other_visit.document))
+
+    def test_token_of_the_record_document(self, printed):
+        for path, document in self.records():
+            self.assertEqual(APIClient().get(f'{path}?token={document.token}').status_code, 200, path)
+
+    def test_token_of_another_document(self, printed):
+        documents = Document.objects.count()
+        for path, _ in self.records():
+            for token in (self.own.document_pdf.token, self.own.invoice.document_pdf.token, 'not-a-token', ''):
+                response = APIClient().get(f'{path}?token={token}')
+                self.assertEqual(response.status_code, 401, (path, token, response.content))
+        printed.assert_not_called()
+        self.assertEqual(Document.objects.count(), documents)
+
+    def test_record_without_a_document(self, printed):
+        token = self.own.document_pdf.token
+        type(self.other.invoice).objects.filter(pk=self.other.invoice.pk).update(document_pdf=None)
+        self.assertEqual(APIClient().get(f'/document/invoice/{self.other.invoice.pk}?token={token}').status_code, 401)
+        self.assertEqual(APIClient().get(f'/document/invoice/not-an-id?token={token}').status_code, 401)
+
+    def test_templates_are_generated_by_accounts(self, printed):
+        response = APIClient().post(f'/document/template/{self.template.pk}?token={self.own.document_pdf.token}')
+        self.assertEqual(response.status_code, 401, response.content)
+        self.assertEqual(self.acting(self.user).post(f'/document/template/{self.template.pk}').status_code, 200)
+
+    def test_member_account_with_a_token_keeps_its_own_records(self, printed):
+        token = self.other.invoice.document_pdf.token
+        self.assertNotAvailable(self.acting(self.athlete).get(f'/document/invoice/{self.other.invoice.pk}?token={token}'))
+
+
+@patch('docmanager.views.document_view.default_storage.save')
+class MedicalCertificateUploadTests(DocumentAccessTestCase):
+    """The registration form sends the certificate before an account exists."""
+
+    def upload(self, client):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        return client.post('/document/medical/certificate/',
+                           {'medical_certificate': SimpleUploadedFile('certificato.pdf', PDF, 'application/pdf')}, format='multipart')
+
+    def test_registration_form_upload(self, save):
+        response = self.upload(APIClient())
+        self.assertEqual(response.status_code, 200, response.content)
+        medical = MedicalCertificate.objects.get(pk=response.data['uid'])
+        self.assertIsNone(medical.user_id)
+        save.assert_called_once()
+
+    def test_account_upload_is_its_own(self, save):
+        response = self.upload(self.acting(self.athlete))
+        self.assertEqual(response.status_code, 200, response.content)
+        medical = MedicalCertificate.objects.get(pk=response.data['uid'])
+        self.assertEqual(medical.user_id, self.athlete.pk)
+        self.assertTrue(can_access_document(self.athlete, medical.document))
