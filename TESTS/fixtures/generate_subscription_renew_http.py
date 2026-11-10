@@ -75,6 +75,9 @@ PAYMENTS = {
 }
 # An unpaid subscription payment with an invoice (payment cancel and invoice generation leave them): the renewal's
 # QuerySet.delete() removes the payment; the invoice stays.
+# A member whose account is an athlete: the athlete renews from the athlete area.
+ASSOCIATES['athlete_member'] = {'id': next(ids), 'association': OWN, 'first': 'Aurora', 'last': 'Atleta', 'tax_code': 'TLTRRA95A41H501W',
+                                'born': '1995-01-01', 'user': 'athlete', 'email': None, 'deleted': False}
 ASSOCIATES['invoiced'] = {'id': next(ids), 'association': OWN, 'first': 'Ivo', 'last': 'Fatturato', 'tax_code': 'FTTVIO80A01H501E',
                           'born': '1980-01-01', 'user': 'owner', 'email': None, 'deleted': False}
 INVOICES = {'stale_invoice': {'id': next(ids)}}
@@ -525,6 +528,39 @@ add('renew-cleans-invoiced-payment', 'renew', 'owner', 200, {'status': 'success'
                          *notification_entries('owner')],
                   celery=tasks('$invoiced_subscription'),
                   notifications=[{'msg': 'Nuova Iscrizione aggiunta per Ivo Fatturato.', 'association': OWN}]))
+
+
+# --- subscription/renew by an athlete -------------------------------------------------------------------
+# A non-owner requester: request.user becomes the owner of
+# scoped_queryset(SportAssociation.objects).get(sport_association_id=data['sport_association']['sport_association_id'])
+# before the try block (a failed lookup is the 500 page); create_subscription then runs for that owner, the audit actor
+# stays the athlete and the notification goes to the owner. The serializer's user is read-only: the member's account
+# becomes the owner with the later associate.save() (its own entry).
+athlete_member = {'associate_id': ASSOCIATES['athlete_member']['id'], 'first_name': 'Aurora', 'last_name': 'Atleta',
+                  'tax_code': 'TLTRRA95A41H501W', 'born_date': '01/01/1995', 'sex': 'F', 'type': 1, 'role': 1}
+add('renew-athlete-association-text', 'renew', 'athlete', 500, SERVER, body=renewal(athlete_member, sport_association=OWN))
+add('renew-athlete-association-without-id', 'renew', 'athlete', 500, SERVER,
+    body=renewal(athlete_member, sport_association={'denomination': 'Associazione'}))
+add('renew-athlete-association-malformed-id', 'renew', 'athlete', 500, SERVER,
+    body=renewal(athlete_member, sport_association={'sport_association_id': 'non-un-id'}))
+add('renew-athlete-association-unknown', 'renew', 'athlete', 500, SERVER,
+    body=renewal(athlete_member, sport_association={'sport_association_id': NEW_ID}))
+add('renew-athlete-list-body', 'renew', 'athlete', 500, SERVER, body=[])
+rows = [new_payment('$athlete_payment', ASSOCIATES['athlete_member']['id']),
+        *subscription_rows('$athlete_subscription', ASSOCIATES['athlete_member']['id'], kind=1, payment='$athlete_payment')]
+add('renew-athlete', 'renew', 'athlete', 200, {'status': 'success', 'payment_id': '$new'},
+    body=renewal(athlete_member, sport_association={'sport_association_id': OWN, 'denomination': 'Associazione'}, user=IDS['athlete']),
+    effect=effect('athlete', new=rows, changed={'associate': {'athlete_member': {'sex': 'F', 'user_id': OWNER}}},
+                  audit=[entry('associate', 1, 'athlete_member', {'sex': ['A', 'F']}),
+                         entry('associate', 1, 'athlete_member', {'user': [IDS['athlete'], OWNER]}),
+                         entry('payment', 0, '$athlete_payment', {'amount': ['None', '25.0']}),
+                         entry('subscription', 0, '$athlete_subscription'),
+                         *notification_entries('athlete')],
+                  celery=tasks('$athlete_subscription'),
+                  notifications=[{'msg': 'Nuova Iscrizione aggiunta per Aurora Atleta.', 'association': OWN}]))
+# The renewal is refused as a duplicate once the athlete's member has a current subscription.
+add('renew-athlete-duplicate', 'renew', 'athlete', 409, {'msg': 'Questa iscrizione esiste già.', 'code': '409', 'ref': 'subscription_duplicate'},
+    body=renewal(athlete_member, sport_association={'sport_association_id': OWN}))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

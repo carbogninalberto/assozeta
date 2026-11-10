@@ -106,8 +106,19 @@
    "email": null,
    "deleted": false
   },
-  "invoiced": {
+  "athlete_member": {
    "id": "a1000000-0000-4000-8000-000000945015",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Aurora",
+   "last": "Atleta",
+   "tax_code": "TLTRRA95A41H501W",
+   "born": "1995-01-01",
+   "user": "athlete",
+   "email": null,
+   "deleted": false
+  },
+  "invoiced": {
+   "id": "a1000000-0000-4000-8000-000000945016",
    "association": "a1000000-0000-4000-8000-000000701001",
    "first": "Ivo",
    "last": "Fatturato",
@@ -180,7 +191,7 @@
    "date": "$today"
   },
   "invoiced_stale": {
-   "id": "a1000000-0000-4000-8000-000000945017",
+   "id": "a1000000-0000-4000-8000-000000945018",
    "associate": "invoiced",
    "amount": "40.00",
    "paid": false,
@@ -191,41 +202,41 @@
  },
  "tags": {
   "tag_a": {
-   "id": "a1000000-0000-4000-8000-000000945018",
+   "id": "a1000000-0000-4000-8000-000000945019",
    "association": "a1000000-0000-4000-8000-000000701001",
    "name": "Agonisti"
   },
   "tag_b": {
-   "id": "a1000000-0000-4000-8000-000000945019",
+   "id": "a1000000-0000-4000-8000-000000945020",
    "association": "a1000000-0000-4000-8000-000000701001",
    "name": "Bambini"
   },
   "tag_other": {
-   "id": "a1000000-0000-4000-8000-000000945020",
+   "id": "a1000000-0000-4000-8000-000000945021",
    "association": "a1000000-0000-4000-8000-000000701002",
    "name": "Altro"
   }
  },
  "certificates": {
   "draft_cert": {
-   "id": "a1000000-0000-4000-8000-000000945021",
+   "id": "a1000000-0000-4000-8000-000000945022",
    "user": null
   }
  },
  "invoices": {
   "stale_invoice": {
-   "id": "a1000000-0000-4000-8000-000000945016"
+   "id": "a1000000-0000-4000-8000-000000945017"
   }
  },
  "target_user": {
-  "id": "a1000000-0000-4000-8000-000000945022",
+  "id": "a1000000-0000-4000-8000-000000945023",
   "username": "renew-target-user",
   "email": "renew-target@example.test"
  },
- "account": "a1000000-0000-4000-8000-000000945023",
+ "account": "a1000000-0000-4000-8000-000000945024",
  "drafts": {
   "ok_first": {
-   "id": "a1000000-0000-4000-8000-000000945024",
+   "id": "a1000000-0000-4000-8000-000000945025",
    "association": "a1000000-0000-4000-8000-000000701001",
    "valid": true,
    "data": {
@@ -251,7 +262,7 @@
    }
   },
   "invalid": {
-   "id": "a1000000-0000-4000-8000-000000945025",
+   "id": "a1000000-0000-4000-8000-000000945026",
    "association": "a1000000-0000-4000-8000-000000701001",
    "valid": false,
    "data": {
@@ -277,7 +288,7 @@
    }
   },
   "duplicate": {
-   "id": "a1000000-0000-4000-8000-000000945026",
+   "id": "a1000000-0000-4000-8000-000000945027",
    "association": "a1000000-0000-4000-8000-000000701001",
    "valid": true,
    "data": {
@@ -303,7 +314,7 @@
    }
   },
   "bad_born": {
-   "id": "a1000000-0000-4000-8000-000000945027",
+   "id": "a1000000-0000-4000-8000-000000945028",
    "association": "a1000000-0000-4000-8000-000000701001",
    "valid": true,
    "data": {
@@ -329,7 +340,7 @@
    }
   },
   "abroad": {
-   "id": "a1000000-0000-4000-8000-000000945028",
+   "id": "a1000000-0000-4000-8000-000000945029",
    "association": "a1000000-0000-4000-8000-000000701002",
    "valid": true,
    "data": {
@@ -355,7 +366,7 @@
    }
   },
   "all_first": {
-   "id": "a1000000-0000-4000-8000-000000945029",
+   "id": "a1000000-0000-4000-8000-000000945030",
    "association": "a1000000-0000-4000-8000-000000701001",
    "valid": true,
    "data": {
@@ -382,7 +393,7 @@
    }
   },
   "all_medical": {
-   "id": "a1000000-0000-4000-8000-000000945030",
+   "id": "a1000000-0000-4000-8000-000000945031",
    "association": "a1000000-0000-4000-8000-000000701001",
    "valid": true,
    "data": {
@@ -403,14 +414,14 @@
      "data": ""
     },
     "medical_certificate": {
-     "medical_id": "a1000000-0000-4000-8000-000000945021",
+     "medical_id": "a1000000-0000-4000-8000-000000945022",
      "filename": "certificato.pdf",
      "certificate_expring_date": null
     }
    }
   },
   "ok_second": {
-   "id": "a1000000-0000-4000-8000-000000945031",
+   "id": "a1000000-0000-4000-8000-000000945032",
    "association": "a1000000-0000-4000-8000-000000701001",
    "valid": false,
    "data": {
@@ -436,7 +447,7 @@
    }
   },
   "crash": {
-   "id": "a1000000-0000-4000-8000-000000945032",
+   "id": "a1000000-0000-4000-8000-000000945033",
    "association": "a1000000-0000-4000-8000-000000701001",
    "valid": false,
    "data": {
@@ -449,13 +460,13 @@
  },
  "statuses": {
   "old_approving": {
-   "id": "a1000000-0000-4000-8000-000000945033",
+   "id": "a1000000-0000-4000-8000-000000945034",
    "association": "a1000000-0000-4000-8000-000000701001",
    "doing": true,
    "type": 2
   },
   "importing": {
-   "id": "a1000000-0000-4000-8000-000000945034",
+   "id": "a1000000-0000-4000-8000-000000945035",
    "association": "a1000000-0000-4000-8000-000000701001",
    "doing": false,
    "type": 1
@@ -1595,7 +1606,7 @@
     "courses": [],
     "tags": [
      {
-      "id": "a1000000-0000-4000-8000-000000945018"
+      "id": "a1000000-0000-4000-8000-000000945019"
      }
     ]
    },
@@ -1666,7 +1677,7 @@
        "payment_category_id": "$category",
        "user_id": "$owner",
        "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-       "custom_accounts_id": "a1000000-0000-4000-8000-000000945023",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
        "amount": "25.00",
        "payment_date": "$today_midnight",
        "meta_payment_categories": null,
@@ -1896,10 +1907,10 @@
     "user": "a1000000-0000-4000-8000-000000700001",
     "tags": [
      {
-      "tag_id": "a1000000-0000-4000-8000-000000945018"
+      "tag_id": "a1000000-0000-4000-8000-000000945019"
      },
      {
-      "tag_id": "a1000000-0000-4000-8000-000000945020"
+      "tag_id": "a1000000-0000-4000-8000-000000945021"
      }
     ]
    },
@@ -1948,7 +1959,7 @@
        "payment_category_id": "$category",
        "user_id": "$owner",
        "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-       "custom_accounts_id": "a1000000-0000-4000-8000-000000945023",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
        "amount": "25.00",
        "payment_date": "$today_midnight",
        "meta_payment_categories": null,
@@ -1963,7 +1974,7 @@
       },
       "columns": {
        "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-       "user_id": "a1000000-0000-4000-8000-000000945022",
+       "user_id": "a1000000-0000-4000-8000-000000945023",
        "payment_id": "$fresh_payment",
        "type": 2,
        "role": 1,
@@ -2092,7 +2103,7 @@
       "changes": {
        "user": [
         "a1000000-0000-4000-8000-000000700001",
-        "a1000000-0000-4000-8000-000000945022"
+        "a1000000-0000-4000-8000-000000945023"
        ]
       },
       "index": [
@@ -2169,7 +2180,7 @@
      "email": "renew-target@example.test"
     },
     "tags": [
-     "a1000000-0000-4000-8000-000000945019"
+     "a1000000-0000-4000-8000-000000945020"
     ]
    },
    "setup": null
@@ -2204,7 +2215,7 @@
        "payment_category_id": "$category",
        "user_id": "$owner",
        "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-       "custom_accounts_id": "a1000000-0000-4000-8000-000000945023",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
        "amount": "25.00",
        "payment_date": "$today_midnight",
        "meta_payment_categories": null,
@@ -2555,7 +2566,7 @@
        "payment_category_id": "$category",
        "user_id": "$owner",
        "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-       "custom_accounts_id": "a1000000-0000-4000-8000-000000945023",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
        "amount": "25.00",
        "payment_date": "$today_midnight",
        "meta_payment_categories": null,
@@ -2956,8 +2967,8 @@
     "associate_import_draft_ids": [
      "nessuno",
      7,
-     "a1000000-0000-4000-8000-000000945025",
-     "a1000000-0000-4000-8000-000000945028"
+     "a1000000-0000-4000-8000-000000945026",
+     "a1000000-0000-4000-8000-000000945029"
     ],
     "subscription_details": {
      "type": 1
@@ -2977,7 +2988,7 @@
    },
    "effect": null,
    "body": {
-    "associate_import_draft_ids": "a1000000-0000-4000-8000-000000945024",
+    "associate_import_draft_ids": "a1000000-0000-4000-8000-000000945025",
     "subscription_details": {
      "type": 1
     }
@@ -3029,7 +3040,7 @@
        "payment_category_id": "$category",
        "user_id": "$owner",
        "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-       "custom_accounts_id": "a1000000-0000-4000-8000-000000945023",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
        "amount": "25.00",
        "payment_date": "$today_midnight",
        "meta_payment_categories": null,
@@ -3230,13 +3241,13 @@
    },
    "body": {
     "associate_import_draft_ids": [
-     "a1000000-0000-4000-8000-000000945024",
      "a1000000-0000-4000-8000-000000945025",
      "a1000000-0000-4000-8000-000000945026",
      "a1000000-0000-4000-8000-000000945027",
      "a1000000-0000-4000-8000-000000945028",
+     "a1000000-0000-4000-8000-000000945029",
      "non-un-id",
-     "{A1000000-0000-4000-8000-000000945024}"
+     "{A1000000-0000-4000-8000-000000945025}"
     ],
     "subscription_details": {
      "type": 1
@@ -3290,7 +3301,7 @@
        "payment_category_id": "$category",
        "user_id": "$owner",
        "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-       "custom_accounts_id": "a1000000-0000-4000-8000-000000945023",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
        "amount": "25.00",
        "payment_date": "$today_midnight",
        "meta_payment_categories": null,
@@ -3373,7 +3384,7 @@
        "payment_category_id": "$category",
        "user_id": "$owner",
        "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-       "custom_accounts_id": "a1000000-0000-4000-8000-000000945023",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
        "amount": "25.00",
        "payment_date": "$today_midnight",
        "meta_payment_categories": null,
@@ -3401,7 +3412,7 @@
        },
        "subscription_type": "",
        "subscription_number": "49",
-       "medical_id": "a1000000-0000-4000-8000-000000945021",
+       "medical_id": "a1000000-0000-4000-8000-000000945022",
        "custom_data": null,
        "additional_fields": null,
        "start_date": "$season_start",
@@ -3629,7 +3640,7 @@
       "ref": "all_medical",
       "changes": {
        "data": [
-        "{'associate': {'sex': 'F', 'email': None, 'tax_code': 'MDCLNE90A41H501J', 'born_date': '01/01/1990', 'last_name': 'Medica', 'first_name': 'Elena', 'type': 2, 'role': 1, 'sport_association': UUID('a1000000-0000-4000-8000-000000701001'), 'user': UUID('a1000000-0000-4000-8000-000000700001')}, 'signature': {'there_is_signature': False, 'data': ''}, 'associate_tutor': None, 'new_user_account': {'new_member': False}, 'medical_certificate': {'filename': 'certificato.pdf', 'medical_id': 'a1000000-0000-4000-8000-000000945021', 'certificate_expring_date': None}, 'associate_data': {'sex': 'F', 'email': None, 'tax_code': 'MDCLNE90A41H501J', 'born_date': '01/01/1990', 'last_name': 'Medica', 'first_name': 'Elena', 'type': 2, 'role': 1, 'sport_association': UUID('a1000000-0000-4000-8000-000000701001'), 'user': UUID('a1000000-0000-4000-8000-000000700001')}, 'associate_tutor_data': None, 'membership_plan_id': None, 'plan_id': None}",
+        "{'associate': {'sex': 'F', 'email': None, 'tax_code': 'MDCLNE90A41H501J', 'born_date': '01/01/1990', 'last_name': 'Medica', 'first_name': 'Elena', 'type': 2, 'role': 1, 'sport_association': UUID('a1000000-0000-4000-8000-000000701001'), 'user': UUID('a1000000-0000-4000-8000-000000700001')}, 'signature': {'there_is_signature': False, 'data': ''}, 'associate_tutor': None, 'new_user_account': {'new_member': False}, 'medical_certificate': {'filename': 'certificato.pdf', 'medical_id': 'a1000000-0000-4000-8000-000000945022', 'certificate_expring_date': None}, 'associate_data': {'sex': 'F', 'email': None, 'tax_code': 'MDCLNE90A41H501J', 'born_date': '01/01/1990', 'last_name': 'Medica', 'first_name': 'Elena', 'type': 2, 'role': 1, 'sport_association': UUID('a1000000-0000-4000-8000-000000701001'), 'user': UUID('a1000000-0000-4000-8000-000000700001')}, 'associate_tutor_data': None, 'membership_plan_id': None, 'plan_id': None}",
         "None"
        ]
       },
@@ -3778,7 +3789,7 @@
        "payment_category_id": "$category",
        "user_id": "$owner",
        "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-       "custom_accounts_id": "a1000000-0000-4000-8000-000000945023",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
        "amount": "25.00",
        "payment_date": "$today_midnight",
        "meta_payment_categories": null,
@@ -3964,8 +3975,8 @@
    },
    "body": {
     "associate_import_draft_ids": [
-     "a1000000-0000-4000-8000-000000945032",
-     "a1000000-0000-4000-8000-000000945031"
+     "a1000000-0000-4000-8000-000000945033",
+     "a1000000-0000-4000-8000-000000945032"
     ],
     "subscription_details": {
      "type": 1
@@ -3996,7 +4007,7 @@
       "label": "payment",
       "bind": "$invoiced_payment",
       "match": {
-       "associate_id": "a1000000-0000-4000-8000-000000945015",
+       "associate_id": "a1000000-0000-4000-8000-000000945016",
        "amount": "25.00"
       },
       "columns": {
@@ -4005,7 +4016,7 @@
        "payment_category_id": "$category",
        "user_id": "$owner",
        "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-       "custom_accounts_id": "a1000000-0000-4000-8000-000000945023",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
        "amount": "25.00",
        "payment_date": "$today_midnight",
        "meta_payment_categories": null,
@@ -4016,7 +4027,7 @@
       "label": "subscription",
       "bind": "$invoiced_subscription",
       "match": {
-       "associate_id": "a1000000-0000-4000-8000-000000945015"
+       "associate_id": "a1000000-0000-4000-8000-000000945016"
       },
       "columns": {
        "sport_association_id": "a1000000-0000-4000-8000-000000701001",
@@ -4157,7 +4168,7 @@
     "plan_id": null,
     "membership_plan_id": null,
     "associate_data": {
-     "associate_id": "a1000000-0000-4000-8000-000000945015",
+     "associate_id": "a1000000-0000-4000-8000-000000945016",
      "first_name": "Ivo",
      "last_name": "Fatturato",
      "tax_code": "FTTVIO80A01H501E",
@@ -4175,6 +4186,432 @@
     "custom_data": {},
     "additional_fields": {},
     "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-association-text",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000945015",
+     "first_name": "Aurora",
+     "last_name": "Atleta",
+     "tax_code": "TLTRRA95A41H501W",
+     "born_date": "01/01/1995",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-association-without-id",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000945015",
+     "first_name": "Aurora",
+     "last_name": "Atleta",
+     "tax_code": "TLTRRA95A41H501W",
+     "born_date": "01/01/1995",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "denomination": "Associazione"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-association-malformed-id",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000945015",
+     "first_name": "Aurora",
+     "last_name": "Atleta",
+     "tax_code": "TLTRRA95A41H501W",
+     "born_date": "01/01/1995",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "non-un-id"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-association-unknown",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000945015",
+     "first_name": "Aurora",
+     "last_name": "Atleta",
+     "tax_code": "TLTRRA95A41H501W",
+     "born_date": "01/01/1995",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000945001"
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-list-body",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [],
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new"
+   },
+   "effect": {
+    "actor": "athlete",
+    "new": [
+     {
+      "label": "payment",
+      "bind": "$athlete_payment",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000945015",
+       "amount": "25.00"
+      },
+      "columns": {
+       "subject": 1,
+       "description": "Iscrizione",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
+       "amount": "25.00",
+       "payment_date": "$today_midnight",
+       "meta_payment_categories": null,
+       "meta": null
+      }
+     },
+     {
+      "label": "subscription",
+      "bind": "$athlete_subscription",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000945015"
+      },
+      "columns": {
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner",
+       "payment_id": "$athlete_payment",
+       "type": 1,
+       "role": 1,
+       "status_flag": 1,
+       "meta": {
+        "plan_id": null,
+        "plan_name": null,
+        "membership_plan_id": null,
+        "membership_plan_name": null
+       },
+       "subscription_type": "",
+       "subscription_number": "52",
+       "medical_id": null,
+       "custom_data": {},
+       "additional_fields": {},
+       "start_date": "$season_start",
+       "end_date": "$season_end"
+      }
+     }
+    ],
+    "changed": {
+     "associate": {
+      "athlete_member": {
+       "sex": "F",
+       "user_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    },
+    "deleted": {},
+    "tags": [],
+    "audit": [
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "athlete_member",
+      "changes": {
+       "sex": [
+        "A",
+        "F"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "athlete_member",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700004",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$athlete_payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "$athlete_subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "$athlete_subscription"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$athlete_subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notifications": [
+     {
+      "msg": "Nuova Iscrizione aggiunta per Aurora Atleta.",
+      "association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000945015",
+     "first_name": "Aurora",
+     "last_name": "Atleta",
+     "tax_code": "TLTRRA95A41H501W",
+     "born_date": "01/01/1995",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Associazione"
+    },
+    "user": "a1000000-0000-4000-8000-000000700004"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-duplicate",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "msg": "Questa iscrizione esiste già.",
+    "code": "409",
+    "ref": "subscription_duplicate"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000945015",
+     "first_name": "Aurora",
+     "last_name": "Atleta",
+     "tax_code": "TLTRRA95A41H501W",
+     "born_date": "01/01/1995",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+    }
    },
    "setup": null
   }

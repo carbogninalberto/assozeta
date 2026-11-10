@@ -65,7 +65,8 @@ func (h *SubscriptionCreateHandler) Add(c echo.Context) error {
 		return err
 	}
 	defer release()
-	input := service.SubscriptionCreateRequest{Body: write.Body, Form: write.Form, Group: request.Header.Get("X-Group-Id"), Audit: write.Audit}
+	input := service.SubscriptionCreateRequest{Body: write.Body, Form: write.Form, Group: request.Header.Get("X-Group-Id"), Audit: write.Audit,
+		Language: djangoReadRouteLocale{}.Language(request)}
 	if values := request.URL.Query()["m"]; len(values) > 0 {
 		input.Mode = &values[len(values)-1]
 	}
@@ -91,6 +92,10 @@ func (h *SubscriptionCreateHandler) Add(c echo.Context) error {
 			body[name] = messages
 		}
 		return c.JSON(400, body)
+	case errors.Is(err, service.ErrSubscriptionCreateSignatureInvalid):
+		return c.JSON(400, map[string]string{"msg": "Firma non valida.", "code": "400", "ref": "invalid_signature"})
+	case errors.Is(err, service.ErrSubscriptionCreateStorage):
+		return c.JSON(503, map[string]string{"msg": "Storage temporaneamente non disponibile.", "code": "503", "ref": "signature_storage"})
 	case errors.Is(err, domain.ErrSubscriptionCreateDuplicate):
 		return c.JSON(409, map[string]string{"msg": "Questa iscrizione esiste già.", "code": "409", "ref": "subscription_duplicate"})
 	case errors.As(err, &denied):
@@ -105,8 +110,11 @@ func (h *SubscriptionCreateHandler) Add(c echo.Context) error {
 	var body strings.Builder
 	body.WriteString(`{"status":"success","payment_id":`)
 	body.WriteString(payment)
-	body.WriteString(`,"amount":`)
-	body.WriteString(result.Amount)
+	if result.Amount != "" {
+		// The quick re-subscription answers without an amount.
+		body.WriteString(`,"amount":`)
+		body.WriteString(result.Amount)
+	}
 	body.WriteString(`}`)
 	return c.JSONBlob(200, []byte(body.String()))
 }

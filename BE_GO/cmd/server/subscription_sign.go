@@ -32,3 +32,14 @@ type subscriptionLifecycleSignatures struct {
 	*repository.SubscriptionSigns
 	*documentobjects.S3
 }
+
+// composeSubscriptionSignatureUploads is the signature upload subscription/add
+// shares with subscription/sign.
+func composeSubscriptionSignatureUploads(cfg config.Config, db *sqlx.DB, tasks celery.Publisher) *service.SubscriptionSigns {
+	objects := documentUploadObjects{S3: composeDocumentObjects(cfg), cacheControl: cfg.Storage.CacheControl}
+	if cfg.Storage.DefaultACL != nil {
+		objects.acl = *cfg.Storage.DefaultACL
+	}
+	return service.NewSubscriptionSigns(repository.NewSubscriptionSigns(db), objects,
+		service.SubscriptionSignSettings{UseObjectACL: cfg.Storage.UseObjectACL, PublicBaseURL: cfg.Storage.PublicBaseURL}, tasks, time.Now, nil)
+}

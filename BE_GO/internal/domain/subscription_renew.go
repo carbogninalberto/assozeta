@@ -51,6 +51,9 @@ type SubscriptionRenewTransaction interface {
 	SetSubscriptionUser(ctx context.Context, subscription, user string) error
 	// AddTags links the existing tags among ids to the subscription.
 	AddTags(ctx context.Context, subscription string, ids []string) error
+	// RenewAssociationOwner is SportAssociation.objects.get(sport_association_id=id).user
+	// (nil when no live association has the id).
+	RenewAssociationOwner(ctx context.Context, id string) (*Account, error)
 }
 
 type SubscriptionRenewStore interface {

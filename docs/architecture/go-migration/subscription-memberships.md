@@ -22,9 +22,18 @@
 - The viewset's own `delete()` answers DELETE on every mapped route: on `list` and `add` (no pk) it is a 500, and on `update` it deletes the membership. `Allow` lists the mapped method (plus HEAD for GET), DELETE and OPTIONS. A DELETE never reads its body.
 - Requests are not atomic. The serializer saves before handling `documents_data`, so a document without `document` and `filename` (400 `{'exception': 'document key not present'}`) or with undecodable base64 (500) leaves the saved row.
 
+## Documents (v2-sub-create)
+
+`_handle_documents` after the save, item by item: `base64.b64decode` (non-strict), `Document.objects.create(filename=...)` (create
+entry indexed through the actor's own association; a collaborator has none), `default_storage.save('<repr(creation
+timestamp)>/<document id>/<filename>', bytes)` through the documents-writes upload (`DocumentUploads.save`), then
+`attached_membership_documents.add` (no entry). The response lists the attached documents. A later item without its keys is the
+400 and the earlier documents stay.
+
 ## Not ported (refused before any write)
 
-- A document that would upload (Document creation plus the storage write) and form keys for `documents_data`: 500.
+- Form keys for `documents_data` (the UI sends JSON), a filename the Document column cannot store as sent (None, NUL), and a
+  storage key that already exists (`get_available_name`'s random alternative): 500.
 - A changed `subscription_membership_id` on update (Model.save() would insert a copy under the new key): 500.
 - A multipart `add` that carries files (DRF copies the data into a mutable dict): 500, like every other form body on `add`.
 
@@ -35,3 +44,9 @@
 - RED (`red-r3`): Django 85/85; Go 404 on the first case.
 - GREEN (`versioned-r1`): 85/85 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact membership, document link, audit and index effects.
 - Mutation (`mutation-r1`): rolling back the save on a `documents_data` failure fails the first add whose document lacks its keys (CAUGHT).
+
+v2-sub-create: documents_data uploads (88 cases; `add-with-documents`, `add-documents-later-item-missing-key`, `update-with-document`).
+
+- RED (`v2create-red-r2`): Django 88/88; Go 500 on `subscription-memberships-add-with-documents`.
+- GREEN (`v2create-versioned-r1`): 88/88 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with the stored objects.
+- Mutation (`v2create-mutation-r1`): skipping the document link (CAUGHT).

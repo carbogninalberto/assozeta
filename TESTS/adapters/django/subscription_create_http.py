@@ -49,7 +49,14 @@ SOURCES = ('TESTS/fixtures/subscription_create_http.json', 'TESTS/contracts/test
            'BE/application/utils/notification_utils.py', 'BE/notifications/services.py', 'BE/notifications/utils.py',
            'BE/notifications/models.py', 'BE/notifications/realtime_layer.py', 'BE/application/audit_resolvers.py',
            'BE/application/mixin.py', 'BE/application/permissions_registry.py', 'BE/application/impersonation_scope.py',
-           'BE/core/celery.py', 'BE/core/settings.py') + harness.SOURCES + default_payment_category.SOURCES
+           'BE/core/celery.py', 'BE/core/settings.py', 'BE/application/services/subscription_service.py',
+           'BE/application/views/auth_views.py', 'BE/templates/email/account/email_welcome_password_message.html',
+           'TESTS/adapters/django/instance_logo.py', 'TESTS/adapters/django/s3_objects.py') + harness.SOURCES + default_payment_category.SOURCES
+BUCKET = 'subscription-create-fixture'
+LOCATION = 'subscription-create'
+PUBLIC_BASE = 'https://cdn.example.test/firme'
+SENTINEL = ('subscription-create/sentinel/keep.txt', b'sentinel')
+STORAGE = {}
 TTL = 60 * 60 * 24 * 30
 REALTIME = 'assozeta:realtime:v1'
 CATEGORY_NAME = 'entrate e proventi da attività tipiche'
@@ -57,13 +64,14 @@ LABELS = {
     'associate': 'application.Associate', 'relation': 'application.AssociateTutorRelation', 'payment': 'application.Payment',
     'subscription': 'application.Subscription', 'membership': 'application.SubscriptionMembership',
     'medical': 'application.MedicalCertificate', 'broadcast': 'notifications.NotificationsBroadcast',
-    'user_broadcast': 'notifications.UserNotificationsBroadcast',
+    'user_broadcast': 'notifications.UserNotificationsBroadcast', 'signature': 'application.Signature',
 }
-MANAGED = (*LABELS.values(), harness.AUDIT, harness.INDEX)
+USER = 'application.User'
+MANAGED = (*LABELS.values(), USER, harness.AUDIT, harness.INDEX)
 KEYS = {'application.Associate': 'associate_id', 'application.AssociateTutorRelation': 'id', 'application.Payment': 'payment_id',
         'application.Subscription': 'subscription_id', 'application.SubscriptionMembership': 'subscription_membership_id',
         'application.MedicalCertificate': 'medical_id', 'notifications.NotificationsBroadcast': 'broadcast_id',
-        'notifications.UserNotificationsBroadcast': 'user_broadcast_id'}
+        'notifications.UserNotificationsBroadcast': 'user_broadcast_id', 'application.Signature': 'signature_id', 'application.User': 'user_id'}
 STATE = {}
 
 
@@ -72,7 +80,8 @@ def models():
     from application.models.subscriptions_models import MedicalCertificate, SubscriptionMembership
     from application.models.user_models import AssociateTutorRelation
     from notifications.models import NotificationsBroadcast, UserNotificationsBroadcast
-    return {'application.Associate': Associate, 'application.AssociateTutorRelation': AssociateTutorRelation,
+    from application.models.subscriptions_models import Signature
+    return {'application.Signature': Signature,'application.Associate': Associate, 'application.AssociateTutorRelation': AssociateTutorRelation,
             'application.Payment': Payment, 'application.Subscription': Subscription,
             'application.SubscriptionMembership': SubscriptionMembership, 'application.MedicalCertificate': MedicalCertificate,
             'notifications.NotificationsBroadcast': NotificationsBroadcast,
@@ -81,11 +90,43 @@ def models():
 
 @contextmanager
 def service_context(report, log):
+    """The channel layer on DB 0 and a private MinIO as the default storage for both servers (no object ACL,
+    AWS_S3_PUBLIC_BASE_URL set); the bucket keeps only the sentinel at the end."""
+    import boto3
+    from botocore.config import Config
     from django.test.utils import override_settings
+    from TESTS.adapters.django.instance_logo import minio
     layers = {'default': {'BACKEND': 'notifications.realtime_layer.GoMirroredRedisChannelLayer', 'CONFIG': {'hosts': [{
         'address': f'redis://127.0.0.1:{os.environ["REDIS_PORT"]}/0', 'password': os.environ['REDIS_PASSWORD']}]}}}
-    with override_settings(CHANNEL_LAYERS=layers):
-        yield
+    with minio(log, dict(os.environ), report) as (endpoint, access, secret):
+        client = boto3.client('s3', endpoint_url=endpoint, aws_access_key_id=access, aws_secret_access_key=secret, region_name='us-east-1',
+                              config=Config(signature_version='s3v4', retries={'max_attempts': 0}, s3={'addressing_style': 'path'}))
+        client.create_bucket(Bucket=BUCKET)
+        client.put_object(Bucket=BUCKET, Key=SENTINEL[0], Body=SENTINEL[1], ContentType='text/plain')
+        storages = {'default': {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'},
+                    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}}
+        STORAGE.update(client=client)
+        saved = os.environ.get('GO_FIXTURE_ENVIRONMENT')
+        environment = {**json.loads(saved or '{}'), 'AWS_S3_USE_OBJECT_ACL': 'False', 'AWS_S3_PUBLIC_BASE_URL': PUBLIC_BASE}
+        os.environ['GO_FIXTURE_ENVIRONMENT'] = json.dumps(environment)
+        try:
+            with override_settings(CHANNEL_LAYERS=layers, STORAGES=storages, AWS_ACCESS_KEY_ID=access, AWS_SECRET_ACCESS_KEY=secret,
+                                   AWS_STORAGE_BUCKET_NAME=BUCKET, AWS_S3_REGION_NAME='us-east-1', AWS_S3_ENDPOINT_URL=endpoint,
+                                   AWS_LOCATION=LOCATION, AWS_S3_ADDRESSING_STYLE='path', AWS_S3_USE_OBJECT_ACL=False,
+                                   AWS_S3_PUBLIC_BASE_URL=PUBLIC_BASE):
+                yield
+            contract.require(listing() == {SENTINEL[0]}, 'storage.objects-restored')
+        finally:
+            if saved is None:
+                os.environ.pop('GO_FIXTURE_ENVIRONMENT', None)
+            else:
+                os.environ['GO_FIXTURE_ENVIRONMENT'] = saved
+            STORAGE.clear()
+
+
+def listing():
+    pages = STORAGE['client'].get_paginator('list_objects_v2').paginate(Bucket=BUCKET)
+    return {item['Key'] for page in pages for item in page.get('Contents', [])}
 
 
 def today():
@@ -152,7 +193,8 @@ def seed_rows(source, created):
         insert(Subscription, Subscription(
             subscription_id=row['id'], sport_association_id=association, user_id=owner,
             associate_id=source['associates'][row['associate']]['id'], start_date=resolve_date(row['start']),
-            end_date=resolve_date(row['end']), archived=row['archived'], subscription_number=row['number'], status_flag=4))
+            end_date=resolve_date(row['end']), archived=row['archived'], subscription_number=row['number'], status_flag=4,
+            medical_id=source['certificates'][row['medical']]['id'] if row.get('medical') else None))
     for row in source['payments'].values():
         insert(Payment, Payment(payment_id=row['id'], associate_id=source['associates'][row['associate']]['id'],
                                 sport_association_id=ids['own_association'], user_id=ids['owner'], subject=Payment.SUBSCRIPTION,
@@ -167,16 +209,16 @@ def redis_db(raw, db):
                        decode_responses=False, socket_timeout=5, socket_connect_timeout=5)
 
 
-def store_key(ids):
-    return f"broadcast_{ids['owner']}"
+def store_key(ids, user=None):
+    return f"broadcast_{user or ids['owner']}"
 
 
-def cache_key(ids):
-    return f":1:user_broadcasts:{ids['owner']}".encode()
+def cache_key(ids, user=None):
+    return f":1:user_broadcasts:{user or ids['owner']}".encode()
 
 
-def group_name(ids):
-    return f"notifications_user_{ids['owner']}"
+def group_name(ids, user=None):
+    return f"notifications_user_{user or ids['owner']}"
 
 
 class Mirror:
@@ -220,9 +262,15 @@ def channel_receive(layer, channel, timeout):
     return async_to_sync(receive)()
 
 
+def user_model():
+    from application.models import User
+    return User
+
+
 # Tutor relations (integer keys) go with their associates.
 _identity_context = harness.with_celery_broker(harness.fixture_context_for(contract, seed_rows, purge=tuple(
-    (lambda label=label: models()[label]) for label in LABELS.values() if label != LABELS['relation'])))
+    (lambda label=label: models()[label]) for label in LABELS.values() if label != LABELS['relation']) + (user_model,)))
+
 
 
 @contextmanager
@@ -235,7 +283,11 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
     store = redis_db(raw, 0)
     key = store_key(ids)
     original = (store.dump(key), store.pttl(key))
+    athlete_key = store_key(ids, ids['athlete'])
+    athlete_original = (store.dump(athlete_key), store.pttl(athlete_key))
     raw.delete(cache_key(ids))
+    raw.delete(cache_key(ids, ids['athlete']))
+    STATE['new_users'] = []
     mirror = None
     try:
         with _identity_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
@@ -245,20 +297,31 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
             layer = get_channel_layer()
             # A plain (not process-specific) channel: received without the layer's per-loop queues.
             channel = 'subscription-create-probe'
+            store.delete(athlete_key)
             async_to_sync(layer.group_add)(group_name(ids), channel)
+            async_to_sync(layer.group_add)(group_name(ids, ids['athlete']), channel)
             mirror = Mirror(store)
             time.sleep(0.2)
             fixture.update(store=store, layer=layer, channel=channel, mirror=mirror)
             yield fixture
             async_to_sync(layer.group_discard)(group_name(ids), channel)
+            async_to_sync(layer.group_discard)(group_name(ids, ids['athlete']), channel)
     finally:
         if mirror is not None:
             mirror.close()
-        store.delete(key)
-        if original[0] is not None:
-            store.restore(key, max(original[1], 0), original[0], replace=True)
+        for name, saved in ((key, original), (athlete_key, athlete_original)):
+            store.delete(name)
+            if saved[0] is not None:
+                store.restore(name, max(saved[1], 0), saved[0], replace=True)
         raw.delete(cache_key(ids))
+        raw.delete(cache_key(ids, ids['athlete']))
+        for user in STATE.get('new_users', []):
+            store.delete(store_key(ids, user))
+            raw.delete(cache_key(ids, user))
         store.close()
+        # The workload's uploads go with it.
+        for item in listing() - {SENTINEL[0]}:
+            STORAGE['client'].delete_object(Bucket=BUCKET, Key=item)
 
 
 def plain(value):
@@ -319,12 +382,23 @@ def created_changes(instance, overrides):
         else:
             text = str(value)
         changes[field.name] = ['None', text]
+    if instance._meta.label == USER:
+        # auditlog.register(User, exclude_fields=['last_login', 'password']); reverse accessors with a related_name.
+        changes.pop('password', None)
+        changes.pop('last_login', None)
+        for name, manager in (('requester', 'application.SubscriptionTransfer.None'), ('recipient', 'application.SubscriptionTransfer.None'),
+                              ('saved_reports', 'application.SavedReport.None'), ('social_auth', 'social_django.UserSocialAuth.None')):
+            changes[name] = ['None', manager]
     if instance._meta.label == 'application.Associate':
         # auditlog renders the reverse tutor relation accessors of a new associate.
         changes['tutor_relations'] = ['None', 'application.AssociateTutorRelation.None']
         changes['tutored_relations'] = ['None', 'application.AssociateTutorRelation.None']
     for name, pair in overrides.items():
-        changes[name] = pair
+        if pair is None:
+            # A field set after the create entry (the signature's later save).
+            changes.pop(name, None)
+        else:
+            changes[name] = pair
     return changes
 
 
@@ -357,6 +431,11 @@ def check_rows(case, effect, before, after, ids, since, until, binding):
     associates_old, associates = rows(before, LABELS['associate']), rows(after, LABELS['associate'])
     defaults = {label: field_defaults(model) for label, model in models().items()}
     owner = ids['owner']
+    check_new_user(effect, before, after, since, until, binding)
+    member = resolve(effect.get('member', owner), binding)
+    if member in ids:
+        member = ids[member]
+    binding['$member'] = member
 
     def expect_new(label, columns, row):
         expected = {**defaults[label], **resolve(columns, binding)}
@@ -415,7 +494,7 @@ def check_rows(case, effect, before, after, ids, since, until, binding):
         contract.require(len(new[LABELS['payment']]) == 1, 'state.payment-count')
         row = new[LABELS['payment']][0]
         binding['$payment'] = row['payment_id']
-        columns = {'subject': 1, 'description': 'Iscrizione', 'payment_category_id': STATE['category'], 'user_id': owner,
+        columns = {'subject': 1, 'description': 'Iscrizione', 'payment_category_id': STATE['category'], 'user_id': member,
                    'associate_id': bound['$associate'], 'sport_association_id': ids['own_association'],
                    'custom_accounts_id': STATE['source']['account'],
                    'payment_date': datetime.combine(today(), day_time()).isoformat() + 'Z', **payment['columns']}
@@ -432,6 +511,8 @@ def check_rows(case, effect, before, after, ids, since, until, binding):
                      'state.subscription-changed')
     row = new[LABELS['subscription']][0]
     binding['$subscription'] = row['subscription_id']
+    check_storage(effect, row['subscription_id'], since, until, binding)
+    check_signature(effect, before, after, ids, binding)
     expect_new(LABELS['subscription'], {'sport_association_id': ids['own_association'], 'associate_id': bound['$associate'],
                                         'user_id': owner, 'payment_id': binding['$payment'], **effect['subscription']}, row)
     memberships = new[LABELS['membership']]
@@ -446,10 +527,11 @@ def check_rows(case, effect, before, after, ids, since, until, binding):
         expect_new(LABELS['membership'], columns, row)
     # Notification broadcast rows.
     broadcasts, subscriptions = new[LABELS['broadcast']], new[LABELS['user_broadcast']]
+    target = notification_user(effect, ids, binding)
     if effect['broadcast_created']:
-        contract.require(len(broadcasts) == 1 and broadcasts[0]['broadcast_name'] == store_key(ids)
+        contract.require(len(broadcasts) == 1 and broadcasts[0]['broadcast_name'] == store_key(ids, target)
                          and uuid4_text(broadcasts[0]['broadcast_id']), 'state.broadcast')
-        contract.require(len(subscriptions) == 1 and subscriptions[0]['user_id'] == owner
+        contract.require(len(subscriptions) == 1 and subscriptions[0]['user_id'] == target
                          and subscriptions[0]['broadcast_id'] == broadcasts[0]['broadcast_id']
                          and uuid4_text(subscriptions[0]['user_broadcast_id']), 'state.user-broadcast')
         binding['$notificationsbroadcast'] = broadcasts[0]['broadcast_id']
@@ -457,6 +539,73 @@ def check_rows(case, effect, before, after, ids, since, until, binding):
     else:
         contract.require(not broadcasts and not subscriptions, 'state.broadcast-created')
     return binding
+
+
+def notification_user(effect, ids, binding):
+    label = (effect.get('notification') or {}).get('user', 'owner')
+    return binding[label] if label.startswith('$') else ids[label]
+
+
+def check_new_user(effect, before, after, since, until, binding):
+    """No user changes, except the new member's account (its fields; the password is checked with the welcome e-mail)."""
+    import re
+    from application.models import User
+    old, current = rows(before, USER), rows(after, USER)
+    contract.require(set(old) <= set(current) and all(current[k] == v for k, v in old.items()), 'state.users-changed')
+    new = [k for k in current if k not in old]
+    spec = effect.get('new_user')
+    contract.require(len(new) == (1 if spec else 0), 'state.user-count')
+    if not spec:
+        return
+    key = new[0]
+    STATE['new_users'].append(key)
+    user = User._base_manager.get(pk=key)
+    binding.update({'$new_user': key, '$username': user.username})
+    contract.require(uuid4_text(key) and re.fullmatch(re.escape(spec['prefix']) + r'[A-Z0-9]{8}', user.username) is not None
+                     and user.email == spec['email'] and user.first_name == spec['first_name'] and user.last_name == spec['last_name']
+                     and user.phone == spec['phone'] and user.role == User.ATHLETE, 'state.user-fields')
+    contract.require(user.is_active is True and user.is_staff is False and user.is_superuser is False and user.last_login is None
+                     and since - 1 <= user.date_joined.timestamp() <= until + 1, 'state.user-flags')
+    for field in User._meta.concrete_fields:
+        if field.attname in {'user_id', 'password', 'date_joined', 'is_active', 'is_staff', 'is_superuser', 'last_login', 'username', 'email',
+                             'first_name', 'last_name', 'role', 'phone'}:
+            continue
+        contract.require(getattr(user, field.attname) == field.get_default(), 'state.user-default:' + field.attname)
+
+
+def check_signature(effect, before, after, ids, binding):
+    old, current = rows(before, LABELS['signature']), rows(after, LABELS['signature'])
+    added = [v for k, v in current.items() if k not in old]
+    spec = effect.get('signature')
+    contract.require(len(added) == (1 if spec else 0), 'state.signature-count')
+    if spec:
+        row = added[0]
+        user = binding[spec['user']] if spec['user'].startswith('$') else ids[spec['user']]
+        contract.require(uuid4_text(row['signature_id']) and row == {'signature_id': row['signature_id'], 'user_id': user,
+                                                                       'signature': spec['data']}, 'state.signature-row')
+        binding['$signature'] = row['signature_id']
+
+
+def check_storage(effect, subscription, since, until, binding):
+    """The bucket: the case's upload at <AWS_LOCATION>/subscriptions/<id>/signature_<repr(timestamp)>.png, nothing else."""
+    import base64
+    import re
+    objects = listing()
+    expected = set(STATE['objects'])
+    if effect and effect.get('stored'):
+        added = objects - expected
+        contract.require(len(added) == 1, 'storage.new-count')
+        key = added.pop()
+        match = re.fullmatch(re.escape(f'{LOCATION}/subscriptions/{subscription}/signature_') + r'(\d+\.\d+)\.png', key)
+        contract.require(match is not None and repr(float(match.group(1))) == match.group(1)
+                         and since - 1 <= float(match.group(1)) <= until + 1, 'storage.key')
+        stored = STORAGE['client'].get_object(Bucket=BUCKET, Key=key)
+        contract.require(stored['Body'].read() == base64.b64decode(effect['stored']), 'storage.bytes')
+        contract.require(stored['ContentType'] == 'image/png' and stored.get('ContentEncoding') is None, 'storage.metadata')
+        binding.update({'$signature_key': key[len(LOCATION) + 1:], '$signature_url': PUBLIC_BASE + '/' + key})
+        expected.add(key)
+    contract.require(objects == expected, 'storage.objects')
+    STATE['objects'] = expected
 
 
 def check_audit(case, effect, before, after, fixture, ids, context, binding):
@@ -477,7 +626,8 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
                'payment': 'application.Payment', 'subscription': 'application.Subscription',
                'subscriptionmembership': 'application.SubscriptionMembership', 'medicalcertificate': 'application.MedicalCertificate',
                'notificationsbroadcast': 'notifications.NotificationsBroadcast',
-               'usernotificationsbroadcast': 'notifications.UserNotificationsBroadcast'}
+               'usernotificationsbroadcast': 'notifications.UserNotificationsBroadcast', 'signature': 'application.Signature',
+               'user': USER}
     for position, (event, spec) in enumerate(zip(added, authored)):
         where = f':{position}:{spec["model"]}'
         app = spec.get('app', 'application')
@@ -486,14 +636,24 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
             pk = STATE['source']['certificates'][ref]['id']
         else:
             pk = binding['$' + ref]
-        model = models()[classes[spec['model']]]
+        model = user_model() if spec['model'] == 'user' else models()[classes[spec['model']]]
         instance = model._base_manager.get(pk=pk)
+        if spec['model'] == 'user' and spec['action'] == 0:
+            # create_user saved the token_hex(10) username first.
+            import re
+            token = (event['changes'].get('username') or [None, ''])[1]
+            contract.require(re.fullmatch(r'[0-9a-f]{20}', token) is not None, 'audit.token-username')
+            binding['$token_username'] = token
+        representation = str(instance)
         contract.require(event['content_type_id'] == types[(app, spec['model'])] and event['action'] == spec['action']
-                         and event['object_pk'] == str(pk) and event['object_repr'] == str(instance), 'audit.identity' + where + json.dumps(
+                         and event['object_pk'] == str(pk) and event['object_repr'] == representation, 'audit.identity' + where + json.dumps(
                              [event['content_type_id'], types[(app, spec['model'])], event['action'], event['object_pk'], str(pk),
                               event['object_repr'], str(instance)]))
         if spec['action'] == 0:
-            expected = created_changes(instance, resolve(spec['changes'], binding))
+            overrides = resolve(spec['changes'], binding)
+            if spec['model'] == 'user':
+                overrides = {**overrides, 'username': ['None', binding['$token_username']]}
+            expected = created_changes(instance, overrides)
         else:
             expected = resolve(spec['changes'], binding)
         contract.require(event['changes'] == expected, 'audit.changes' + where + json.dumps(
@@ -511,9 +671,12 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
                              and index['resolution_path'] == spec['index'][1], 'index.fields' + where)
 
 
-def check_notification(effect, fixture, ids, since, until, prepared):
+def check_notification(effect, fixture, ids, since, until, prepared, binding=None):
     store, layer = fixture['store'], fixture['layer']
-    raw_value = store.get(store_key(ids))
+    target = notification_user(effect, ids, binding or {}) if effect else ids['owner']
+    before = prepared['targets'].get(target, {'store': None, 'cache': None})
+    prepared = {**prepared, 'store': before['store'], 'cache': before['cache']}
+    raw_value = store.get(store_key(ids, target))
     received = []
     while True:
         message = channel_receive(layer, fixture['channel'], 3 if effect and not received else 0.3)
@@ -527,6 +690,7 @@ def check_notification(effect, fixture, ids, since, until, prepared):
         contract.require(not received and not envelopes, 'notification.no-push')
         contract.require(fixture['raw'].get(cache_key(ids)) == prepared['cache'], 'notification.cache-unchanged')
         return
+    probed = target in (ids['owner'], ids['athlete'])
     previous = [] if effect['broadcast_created'] or prepared['store'] is None else json.loads(prepared['store'])['messages']
     stored = json.loads(raw_value)
     contract.require(isinstance(stored, dict) and list(stored) == ['messages'] and isinstance(stored['messages'], list)
@@ -541,20 +705,22 @@ def check_notification(effect, fixture, ids, since, until, prepared):
     expected_item = {'id': identifier, 'type': 'subscription', 'msg': notification['msg'], 'association_id': notification['association'],
                      'users': [], 'expires': expires}
     contract.require(raw_value == json.dumps({'messages': previous + [expected_item]}).encode(), 'notification.store-bytes')
-    cached = fixture['raw'].get(cache_key(ids))
-    contract.require(cached is not None and pickle.loads(cached) == [store_key(ids), 'all_notifications']
-                     and 0 < fixture['raw'].ttl(cache_key(ids)) <= 300, 'notification.cache')
+    cached = fixture['raw'].get(cache_key(ids, target))
+    contract.require(cached is not None and pickle.loads(cached) == [store_key(ids, target), 'all_notifications']
+                     and 0 < fixture['raw'].ttl(cache_key(ids, target)) <= 300, 'notification.cache')
     if prepared['cache'] is not None:
         contract.require(cached == prepared['cache'], 'notification.cache-kept')
     issued = expires - TTL
     pushed = {'id': identifier, 'type': 'subscription', 'read': False, 'msg': notification['msg'],
               'association_id': notification['association'], 'issued': issued, 'date': time.ctime(issued)}
-    contract.require(len(received) == 1, f'notification.push-count:{len(received)}')
-    message = received[0]
-    contract.require(message == {'type': 'notification_push', 'notification': pushed, '__asgi_channel__': message.get('__asgi_channel__')}
-                     or message == {'type': 'notification_push', 'notification': pushed}, 'notification.push')
+    # A new account has no consumer in its group: only the mirrored envelope.
+    contract.require(len(received) == (1 if probed else 0), f'notification.push-count:{len(received)}')
+    if probed:
+        message = received[0]
+        contract.require(message == {'type': 'notification_push', 'notification': pushed, '__asgi_channel__': message.get('__asgi_channel__')}
+                         or message == {'type': 'notification_push', 'notification': pushed}, 'notification.push')
     contract.require(len(envelopes) == 1, f'notification.mirror-count:{len(envelopes)}')
-    contract.require(envelopes[0] == json.dumps({'version': 1, 'group': group_name(ids),
+    contract.require(envelopes[0] == json.dumps({'version': 1, 'group': group_name(ids, target),
                                                  'message': {'type': 'notification_push', 'notification': pushed}}).encode(),
                      'notification.mirror')
 
@@ -571,15 +737,65 @@ def assert_effect(case, before, after, source, context):
         if effect is None:
             harness.celery_published(contract, fixture, [], since=since, until=until)
             contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
+            contract.require(listing() == STATE['objects'], 'storage.no-effect')
         else:
             check_rows(case, effect, before, after, ids, since, until, binding)
             body = contract.LAST.get('body')
             contract.require(isinstance(body, dict) and body.get('payment_id') == binding['$payment'], 'response.payment-bound')
             binding['$subscription_uuid'] = {'uuid': binding['$subscription']}
-            harness.celery_published(contract, fixture, resolve(effect['celery'], binding), since=since, until=until)
+            harness.celery_published(contract, fixture, celery_specs(effect, fixture, binding), since=since, until=until)
             check_audit(case, effect, before, after, fixture, ids, context, binding)
     finally:
-        check_notification(effect, fixture, ids, since, until, prepared)
+        check_notification(effect, fixture, ids, since, until, prepared, binding)
+
+
+def celery_specs(effect, fixture, binding):
+    """The authored tasks with the settings' values; '$welcome' is the welcome e-mail rendered for the new account with the
+    password the queued message carries (checked against the stored hash)."""
+    import base64
+    import re
+    from django.conf import settings
+    from django.contrib.auth.hashers import check_password
+    from django.template.loader import render_to_string
+    from django.utils import translation
+    from kombu.utils.json import loads
+    from application.models import SportAssociation, User
+    association = SportAssociation._base_manager.get(pk=STATE['source']['ids']['own_association'])
+    texts = {'$denomination': str(association.denomination), '$app_url': settings.APP_URL, '$whitelabel_name': settings.WHITELABEL_NAME}
+
+    def fill(value):
+        if value == '$is_whitelabel':
+            return settings.IS_WHITELABEL
+        if isinstance(value, str):
+            for name, text in texts.items():
+                value = value.replace(name, text)
+            return value
+        if isinstance(value, dict):
+            return {k: fill(v) for k, v in value.items()} if set(value) != {'uuid'} else value
+        if isinstance(value, list):
+            return [fill(v) for v in value]
+        return value
+    specs = []
+    placeholders = {name: name for name in ('$welcome', '$app_url', '$whitelabel_name', '$is_whitelabel', '$denomination')}
+    for spec in resolve(effect['celery'], {**binding, **placeholders}):
+        if spec != '$welcome':
+            specs.append(fill(spec))
+            continue
+        queued = fixture['celery_broker'].lrange(harness.CELERY_QUEUE, -1, -1)
+        contract.require(len(queued) == 1, 'celery.welcome-queued')
+        message = loads(base64.b64decode(json.loads(queued[0])['body']))[1].get('message') or ''
+        match = re.search(r'password: <b>([A-Za-z0-9]{8})</b>', message)
+        user = User._base_manager.get(pk=binding['$new_user'])
+        contract.require(match is not None and check_password(match.group(1), user.password), 'state.user-password')
+        data = {'first_name': user.first_name, 'last_name': user.last_name, 'username': user.username, 'email': user.email,
+                'password': match.group(1), 'sport_association': association, 'app_host': settings.APP_URL,
+                'settings': {'WHITELABEL_NAME': settings.WHITELABEL_NAME, 'IS_WHITELABEL': settings.IS_WHITELABEL}}
+        with translation.override('en'):
+            rendered = render_to_string('email/account/email_welcome_password_message.html', data)
+        specs.append({'task': 'core.tasks.send_mail_async', 'args': [], 'kwargs': [
+            ['subject', f'{settings.WHITELABEL_NAME} | Benvenuto'], ['message', rendered], ['from_email', settings.DEFAULT_FROM_EMAIL],
+            ['recipient_list', [user.email]], ['html_message', rendered], ['fail_silently', False]]})
+    return specs
 
 
 def run_workload(label, backend, base_url, fixture, apps, raw, observer):
@@ -589,12 +805,15 @@ def run_workload(label, backend, base_url, fixture, apps, raw, observer):
     STATE['source'] = source
     ids = source['ids']
     fixture['raw'] = raw
+    STATE['objects'] = listing()
     results, context = [], {'remote': {}, 'fixture': fixture}
     for case in source['cases']:
         if case.get('setup'):
             apply_settings(ids, case['setup'])
         before = scopes.snapshot_state(apps)
-        context['prepared'] = {'started': time.time(), 'store': fixture['store'].get(store_key(ids)), 'cache': raw.get(cache_key(ids))}
+        context['prepared'] = {'started': time.time(), 'store': fixture['store'].get(store_key(ids)), 'cache': raw.get(cache_key(ids)),
+                               'targets': {user: {'store': fixture['store'].get(store_key(ids, user)), 'cache': raw.get(cache_key(ids, user))}
+                                           for user in (ids['owner'], ids['athlete'])}}
         cursor = observer.cursor()
         token = None if case['actor'] == 'anonymous' else fixture['tokens'][case['actor']]
         try:
@@ -606,7 +825,11 @@ def run_workload(label, backend, base_url, fixture, apps, raw, observer):
             error.case = f'{label}:{case["name"]}'
             raise
         results.append({'case': case['name'], 'status': status})
-    # The notifications' user_broadcasts entry was checked after every case; the rest of the cache must be untouched.
+    # The notifications' user_broadcasts entries were checked after every case; the rest of the cache must be untouched.
     raw.delete(cache_key(ids))
+    raw.delete(cache_key(ids, ids['athlete']))
+    for user in STATE.get('new_users', []):
+        raw.delete(cache_key(ids, user))
+
     shared.assert_cache_unchanged(fixture['baseline_cache'], snapshot_historical_read_cache(raw), fixture['contrasts'])
     return {'label': label, 'backend': backend, 'success': True, 'cases': results, 'authored_cases': len(source['cases'])}
