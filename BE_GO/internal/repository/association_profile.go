@@ -19,12 +19,6 @@ func (r *AssociationProfiles) AssociationProfile(ctx context.Context, owner stri
 	return r.associationProfile(ctx, `a.user_id=$1 AND NOT a.deleted`, owner)
 }
 
-// AssociationProfileByID reads the association a foreign key points to: the
-// related descriptor resolves the row by id.
-func (r *AssociationProfiles) AssociationProfileByID(ctx context.Context, association string) (domain.AssociationProfileSnapshot, error) {
-	return r.associationProfile(ctx, `a.sport_association_id=$1`, association)
-}
-
 func (r *AssociationProfiles) associationProfile(ctx context.Context, where, key string) (domain.AssociationProfileSnapshot, error) {
 	var row domain.AssociationProfileSnapshot
 	owned, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{ReadOnly: true, Isolation: sql.LevelRepeatableRead})

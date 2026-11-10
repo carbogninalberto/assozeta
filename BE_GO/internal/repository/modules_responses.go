@@ -32,14 +32,15 @@ func (r *ModulesResponses) ModuleByLink(ctx context.Context, link string) (*doma
 }
 
 // ResponseAttachments is attachments_docs of
-// ModuleResponses.objects.filter(module_response_id=...).first(): nil
+// ModuleResponses.objects.filter(module_response_id=..., module=module).first():
+// the public module page only reads responses of its own module; nil
 // without the row.
-func (r *ModulesResponses) ResponseAttachments(ctx context.Context, id string) (*string, error) {
+func (r *ModulesResponses) ResponseAttachments(ctx context.Context, id, module string) (*string, error) {
 	var docs string
 	err := r.db.GetContext(ctx, &docs, `SELECT COALESCE((SELECT json_agg(json_build_object('document_id', d.document_id, 'filename', d.filename))
    FROM application_moduleresponses_attachments t JOIN docmanager_document d ON d.document_id=t.document_id
    WHERE t.moduleresponses_id=r.module_response_id), '[]')::text
- FROM application_moduleresponses r WHERE r.module_response_id=$1`, id)
+ FROM application_moduleresponses r WHERE r.module_response_id=$1 AND r.module_id=$2`, id, module)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}

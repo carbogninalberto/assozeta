@@ -444,8 +444,11 @@ add('info-athlete', 'athlete', 'GET', info('risposte-aperto'), 200, INFO_OPEN)
 add('info-owner-without-association', 'owner_without_association', 'GET', info('risposte-aperto'), 200, INFO_OPEN)
 add('info-response', 'anonymous', 'GET', info('risposte-aperto', '?response_id=' + rid('open_r1')), 200,
     {'data': serialized('open'), 'response_data': response_data('open_r1')})
+# The public module page only reads responses of its own module.
 add('info-response-of-another-module', 'anonymous', 'GET', info('risposte-aperto', '?response_id=' + rid('foreign_r')), 200,
-    {'data': serialized('open'), 'response_data': response_data('foreign_r')})
+    {'data': serialized('open'), 'response_data': None})
+add('info-response-of-its-module', 'anonymous', 'GET', info('risposte-estero', '?response_id=' + rid('foreign_r')), 200,
+    {'data': serialized('foreign'), 'response_data': response_data('foreign_r')})
 add('info-response-hex-upper', 'athlete', 'GET', info('risposte-aperto', '?response_id=' + rid('att_r').replace('-', '').upper()), 200,
     {'data': serialized('open'), 'response_data': response_data('att_r')})
 add('info-response-unknown', 'anonymous', 'GET', info('risposte-aperto', '?response_id=' + UNKNOWN), 200,

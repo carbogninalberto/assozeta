@@ -403,6 +403,20 @@ class ModulesCustomLinkInfoPublicFieldsTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsNone(response.data['response_data'])
 
+    def test_response_of_another_module(self):
+        """The public module page only reads responses of its own module."""
+        from docmanager.models import Document
+        create_test_module(sport_association=self.sport_association, custom_link='public-own-module')
+        other = create_test_module(sport_association=self.sport_association, custom_link='public-other-module')
+        other_response = create_test_module_response(other)
+        other_response.attachments.add(Document.objects.create(filename='altro.pdf'))
+        response = self.client.get(f'/modules/public-own-module/info?response_id={other_response.module_response_id}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsNone(response.data['response_data'])
+        # The same id on its own module's page is read.
+        response = self.client.get(f'/modules/public-other-module/info?response_id={other_response.module_response_id}')
+        self.assertEqual(response.data['response_data']['attachments_docs'][0]['filename'], 'altro.pdf')
+
 
 class ModulesExportTests(BaseAPITestCase):
     """Tests for modules_response_export endpoint."""

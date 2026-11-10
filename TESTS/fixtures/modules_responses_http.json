@@ -2726,6 +2726,43 @@
       "denomination": "Message reads own"
      }
     },
+    "response_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-response-of-its-module",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/risposte-estero/info?response_id=a1000000-0000-4000-8000-000000643030",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643007",
+     "title": "Modulo",
+     "response_message": null,
+     "allow_attachments": false,
+     "only_users": false,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ],
+     "sport_association": {
+      "denomination": "Message reads foreign"
+     }
+    },
     "response_data": {
      "attachments_docs": []
     }

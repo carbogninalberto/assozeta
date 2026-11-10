@@ -18,7 +18,7 @@ import (
 
 type modulesResponsesReader interface {
 	ModuleByLink(ctx context.Context, link string) (*domain.ModuleRow, error)
-	ResponseAttachments(ctx context.Context, id string) (*string, error)
+	ResponseAttachments(ctx context.Context, id, module string) (*string, error)
 	PublicAssociation(ctx context.Context, association string) (domain.ModulePublicAssociation, error)
 	AssociationOwner(ctx context.Context, association string) (string, error)
 }
@@ -100,7 +100,7 @@ func (s *ModulesResponses) Info(ctx context.Context, link string, responseID *st
 		if err != nil {
 			return nil, err
 		}
-		docs, err := s.reader.ResponseAttachments(ctx, id.String())
+		docs, err := s.reader.ResponseAttachments(ctx, id.String(), row.ID)
 		if err != nil {
 			return nil, err
 		}
