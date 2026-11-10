@@ -5,8 +5,9 @@ primary association is the owner's (so 'owner' is the instance owner and
 'foreign_owner' is not), the authored users (athletes, an inactive and a
 deleted athlete, a collaborator of the foreign owner), a live Associate row
 linking one athlete to the foreign association, the foreign association's own
-Associate row (user = its owner) and the authored subscriptions that point at
-athletes. The routes only read: every case must leave the complete state
+Associate row (user = its owner), the authored subscriptions that point at
+athletes and the further member/subscription links (some deleted) of athletes
+linked to both associations. The routes only read: every case must leave the complete state
 unchanged.
 """
 from datetime import datetime, timezone
@@ -51,6 +52,17 @@ def seed_rows(source, created):
         insert(Subscription, Subscription(subscription_id=identifier, user_id=spec['id'], sport_association_id=ids[spec['link'][1]],
                                           associate_id=source['owner_member'], deleted=spec['link'][2], start_date=start,
                                           end_date=datetime(2027, 8, 31, 8, tzinfo=timezone.utc), creation_date=start))
+    links = source['more_links']
+    contract.require(bool(links), 'fixture.more-links')
+    for label, kind, association, deleted, identifier in links:
+        spec = source['users'][label]
+        if kind == 'member':
+            insert(Associate, Associate(associate_id=identifier, user_id=spec['id'], sport_association_id=ids[association],
+                                        first_name=spec['first_name'], last_name=spec['last_name'], deleted=deleted))
+        else:
+            insert(Subscription, Subscription(subscription_id=identifier, user_id=spec['id'], sport_association_id=ids[association],
+                                              associate_id=source['owner_member'], deleted=deleted, start_date=start,
+                                              end_date=datetime(2027, 8, 31, 8, tzinfo=timezone.utc), creation_date=start))
 
 
 fixture_context = harness.fixture_context_for(contract, seed_rows)

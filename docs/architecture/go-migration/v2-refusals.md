@@ -31,6 +31,8 @@ Cross-cutting facts used for the classes:
 |---|---|---|---|
 | statistic-reads | `GET statistic/dashboard?widget=todaylessons` | always (`statistic_reads.go`, `ErrStatisticNotPorted`) | fixture `statistic_reads_http.json` 86 cases; RED Django 86/86, Go 500; GREEN 4 transports 86/86; mutation (case-sensitive `events` match) CAUGHT |
 | statistic-reads | `GET statistic/dashboard?widget=expiredPayments` | always | same run |
+| payment-writes | `PATCH payment/<id>/update` with the row's own `payment_id` (edit form) | always from the UI | `payment_writes_http.json` 124 cases; GREEN `v2gaps-versioned-r2` 4 transports; mutation `v2gaps-mutation-r1` CAUGHT |
+| payment-writes | `PATCH payment/<id>/update` of an invoiced payment (eager invoice print) | payment has an invoice | same run; mutation `v2gaps-mutation-r3` CAUGHT |
 | association-transfer | `GET association/export/active` | export snapshot key in the cache | fixture `association_transfer_http.json` 210 cases; RED Django 210/210, Go 500; GREEN 4 transports 210/210 (`v2-admin-green`); mutation (snapshot of another user accepted) CAUGHT |
 | association-transfer | `DELETE association/export/delete` | an existing export | same run |
 | association-transfer | `POST association/export/start` | always | same run |
@@ -51,10 +53,8 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 ### payment-writes / payment-state / payment-reads / payment-misc
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| PATCH payment/<id>/update | body carries `payment_id` (hidden input: every UI edit) | `routes/accounting/payment/modals/AddEditModal.svelte:482,142` | `service/payment_writes.go:508` | cheap |
 | POST payment/add, PATCH update | `attachments_data` with document + filename | `AddEditModal.svelte:66-89` | `service/payment_writes.go:223` | medium |
 | POST payment/add | owner setting `auto_paid_payment` on | `routes/profile/sections/Settings.svelte:1013`, `AddEditModal.svelte:102` | `service/payment_writes.go:570` | medium-expensive |
-| PATCH payment/<id>/update | payment has an invoice | `AddEditModal.svelte:142` | `service/payment_writes.go:766` | medium |
 | payment cancel / delete | payment has an invoice | `PaymentList.svelte:575,689`, `partials/payment-overview.svelte:187` | `service/payment_state.go:322,363` | medium-expensive |
 | GET payment/list | athlete session (no `mode=compressed`) | `routes/activities/payment/PaymentList.svelte:36-38` | `service/payment_reads.go:349` | medium-expensive |
 | GET payment/list | instructor compensation payments in the page | `Instructor.svelte:358`, `PaymentList.svelte:1485` | `service/payment_reads.go:494,497` | medium |

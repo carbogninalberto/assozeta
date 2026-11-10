@@ -534,8 +534,11 @@ func run() (runErr error) {
 		middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment-bulk/archive", paymentStatesHandler.BulkArchive, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment-bulk/delete", paymentStatesHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
+	// payment update of an invoiced payment: print_document_invoice.apply (see invoice-sync-print).
+	paymentInvoicePrinter := service.NewInvoiceSyncPrint(service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
+		repository.NewRestoreStates(db), cfg.RestoreLockPath != ""), os.Getenv("CURRENT_HOST"))
 	paymentWritesHandler := handler.NewPaymentWritesHandler(service.NewPaymentWrites(repository.NewPaymentWrites(repository.NewPaymentStates(db)),
-		time.Now, uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
+		time.Now, uuid.NewString).WithInvoicePrint(paymentInvoicePrinter), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
 		paymentCategoryOperations)
 	e.Any("/payment/add", paymentWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/bulk-add", paymentWritesHandler.BulkAdd, middleware.DjangoSessionAudit(sessionAuthentication))

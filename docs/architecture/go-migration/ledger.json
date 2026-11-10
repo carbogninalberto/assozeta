@@ -3662,7 +3662,7 @@
         "target": "impersonation_session",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/impersonation_management.go",
@@ -3714,7 +3714,14 @@
         "BE_GO/internal/repository/impersonation_management_integration_test.go",
         "TESTS/adapters/django/impersonation_concurrency.py",
         "TESTS/adapters/django/impersonation_browser.py",
-        "TESTS/browser/impersonation.mjs"
+        "TESTS/browser/impersonation.mjs",
+        "TESTS/fixtures/impersonation_users_http.json",
+        "TESTS/fixtures/generate_impersonation_users_http.py",
+        "TESTS/contracts/test_impersonation_users_http.py",
+        "TESTS/adapters/django/impersonation_users_http.py",
+        "TESTS/adapters/django/identity.py",
+        "BE_GO/internal/service/identity_integration_test.go",
+        "BE/application/tests/test_association_impersonation.py"
       ],
       "evidence": [
         {
@@ -3724,6 +3731,41 @@
           "artifact": "quality-reports/go-migration/ledger-verified-r3/impersonation-management/1-results.json",
           "receipt_sha256": "71a68f982e010a3bd2beb0c658460b22d99f7602cbd13a7dfbcde8281c13e7f0",
           "scope": "impersonation-management harness: success=True."
+        },
+        "Owners, the self-hosted instance owner included, select the association's members and subscribers whose memberships are all within the actor's associations (Django eligible_users; Go impersonationLinksOwned in managementEligible and IdentityRelations.EligibleTarget). See docs/architecture/go-migration/impersonation-users.md.",
+        {
+          "command": "family.py run impersonation-users",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "red: Django 35/35, Go fails impersonation-users-instance-owner-association-athletes",
+          "artifact": "quality-reports/go-migration/sec-impersonation-users-red/results.json",
+          "receipt_sha256": "f94e072d031885d3d9c7863238de9d14be1897b9f6a34e7f769ad548d8c5f7bc"
+        },
+        {
+          "command": "family.py run impersonation-users --versioned",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "green: 35/35 django-native, go-native, caddy-v1, caddy-v2",
+          "artifact": "quality-reports/go-migration/sec-impersonation-users-green/results.json",
+          "receipt_sha256": "1cab47ed62c7120cb75ff9f2b6a2abc116235ac30e62594d1ee29fe6466aae44"
+        },
+        {
+          "command": "family.py mutation impersonation-users (drop the membership clause from managementEligible)",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "CAUGHT",
+          "artifact": "quality-reports/go-migration/sec-impersonation-users-mutation/results.json",
+          "receipt_sha256": "231ff7efa33643f1ed3064a0aa55ff4e0fa5d5d45024882692be27bb11050084"
+        },
+        {
+          "command": "TESTS_IMPERSONATION_MANAGEMENT_GO=1 TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 python TESTS/adapters/django/accounts.py --only impersonation-management",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "green: identity 53 cases + 10 transitions (Django, Go replay), scoped resources 67, scoped requests 132, impersonation-management 264 on django, go, v1, v2",
+          "artifact": "quality-reports/go-migration/sec-impersonation-identity-green/results.json",
+          "receipt_sha256": "f0e74e649d687673f66f769060c54ac371ba4b96cf98e216362b4a0c5160452c"
+        },
+        {
+          "command": "same, with the membership clause dropped from IdentityRelations.EligibleTarget",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "CAUGHT: owner-member-subscribed-elsewhere-not-eligible, owner-subscriber-member-elsewhere-not-eligible, membership-elsewhere-restored",
+          "artifact": "quality-reports/go-migration/sec-impersonation-identity-mutation.log"
         }
       ],
       "notes": [
@@ -3737,7 +3779,8 @@
         "Implementing evidence: Hosted 4c912c6 job 120779815977 in run 40062822323 passes 24 native races and the sequential packaged matrix. Independent artifact audit matches 1253 distinct source paths, including all 826 build-context files, to the published commit; cleanup passes. Image/Caddy races remain unclaimed.",
         "Implementing evidence: Independent parent replay of unchanged compiled UI passes Django/v1 and committed b225276 Go/v2: 17 required checkpoints, 12 ACCESS events, seven exact picker checks, foreign-athlete denial, unchanged actor credentials and real expiry recovery per version. All 128 managed models and DB1 values checked with documented login/audit/session/readiness exceptions; unrelated audit/index sentinel preserved. Selected Django observer 93/0, real 200 fallback rejected, source/build/UI stability and cleanup pass. Same final source has genuine picker 404 red on the preserved pre-management image. Explicit Django coexistence dependencies, current schema and private aliases are not installed/history/activation acceptance. See impersonation-management.md.",
         "Implementing evidence: RED: Django 49 identity cases and 10 eligibility/configuration transitions pass; Go identity replay fails instance-owner-unlinked-athlete and owner-impersonates-subscriber. (quality-reports/go-migration/payments-impersonation-reverify-identity-red/results.json)",
-        "Implementing evidence: GREEN: Django 50 identity cases and 10 transitions replayed by Go; impersonation management 264-case workloads on native Django, native Go, Caddy /api/v1 and /api/v2; repository integration tests pass. (quality-reports/go-migration/payments-impersonation-reverify-identity-impersonation-management-green/results.json)"
+        "Implementing evidence: GREEN: Django 50 identity cases and 10 transitions replayed by Go; impersonation management 264-case workloads on native Django, native Go, Caddy /api/v1 and /api/v2; repository integration tests pass. (quality-reports/go-migration/payments-impersonation-reverify-identity-impersonation-management-green/results.json)",
+        "Impersonation is limited to athletes whose memberships are all within the actor's associations (instance owner included)."
       ]
     },
     {
@@ -3755,7 +3798,7 @@
         "target": "impersonation_users",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/impersonation_management.go",
@@ -3813,7 +3856,8 @@
         "TESTS/contracts/test_impersonation_users_http.py",
         "TESTS/adapters/django/impersonation_users_http.py",
         "TESTS/adapters/django/identity.py",
-        "BE_GO/internal/service/identity_integration_test.go"
+        "BE_GO/internal/service/identity_integration_test.go",
+        "BE/application/tests/test_association_impersonation.py"
       ],
       "evidence": [
         {
@@ -3823,6 +3867,41 @@
           "artifact": "quality-reports/go-migration/impersonation-users-http-verified-aa6750c6/results.json",
           "receipt_sha256": "5a6c0869db81a4df4984d551761b5389d02628a143e54f67ce871ee7490b6597",
           "scope": "HTTP family impersonation-users: 28/28 cases on native Django and native Go, 28/28 on Caddy /api/v1 and /api/v2."
+        },
+        "Owners, the self-hosted instance owner included, select the association's members and subscribers whose memberships are all within the actor's associations (Django eligible_users; Go impersonationLinksOwned in managementEligible and IdentityRelations.EligibleTarget). See docs/architecture/go-migration/impersonation-users.md.",
+        {
+          "command": "family.py run impersonation-users",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "red: Django 35/35, Go fails impersonation-users-instance-owner-association-athletes",
+          "artifact": "quality-reports/go-migration/sec-impersonation-users-red/results.json",
+          "receipt_sha256": "f94e072d031885d3d9c7863238de9d14be1897b9f6a34e7f769ad548d8c5f7bc"
+        },
+        {
+          "command": "family.py run impersonation-users --versioned",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "green: 35/35 django-native, go-native, caddy-v1, caddy-v2",
+          "artifact": "quality-reports/go-migration/sec-impersonation-users-green/results.json",
+          "receipt_sha256": "1cab47ed62c7120cb75ff9f2b6a2abc116235ac30e62594d1ee29fe6466aae44"
+        },
+        {
+          "command": "family.py mutation impersonation-users (drop the membership clause from managementEligible)",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "CAUGHT",
+          "artifact": "quality-reports/go-migration/sec-impersonation-users-mutation/results.json",
+          "receipt_sha256": "231ff7efa33643f1ed3064a0aa55ff4e0fa5d5d45024882692be27bb11050084"
+        },
+        {
+          "command": "TESTS_IMPERSONATION_MANAGEMENT_GO=1 TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 python TESTS/adapters/django/accounts.py --only impersonation-management",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "green: identity 53 cases + 10 transitions (Django, Go replay), scoped resources 67, scoped requests 132, impersonation-management 264 on django, go, v1, v2",
+          "artifact": "quality-reports/go-migration/sec-impersonation-identity-green/results.json",
+          "receipt_sha256": "f0e74e649d687673f66f769060c54ac371ba4b96cf98e216362b4a0c5160452c"
+        },
+        {
+          "command": "same, with the membership clause dropped from IdentityRelations.EligibleTarget",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "CAUGHT: owner-member-subscribed-elsewhere-not-eligible, owner-subscriber-member-elsewhere-not-eligible, membership-elsewhere-restored",
+          "artifact": "quality-reports/go-migration/sec-impersonation-identity-mutation.log"
         }
       ],
       "notes": [
@@ -3839,7 +3918,8 @@
         "Implementing evidence: GREEN: 28/28 on native Django, native Go, Caddy /api/v1 and /api/v2 (instance owner, member and subscriber eligibility, ten-word search). (quality-reports/go-migration/payments-impersonation-reverify-impersonation-users-green/results.json)",
         "Implementing evidence: Mutation CAUGHT: Go fails impersonation-users-search-eleventh-word-ignored. (quality-reports/go-migration/payments-impersonation-reverify-impersonation-users-mutation/results.json)",
         "Implementing evidence: RED: Django 49 identity cases and 10 eligibility/configuration transitions pass; Go identity replay fails instance-owner-unlinked-athlete and owner-impersonates-subscriber. (quality-reports/go-migration/payments-impersonation-reverify-identity-red/results.json)",
-        "Implementing evidence: GREEN: Django 50 identity cases and 10 transitions replayed by Go; impersonation management 264-case workloads on native Django, native Go, Caddy /api/v1 and /api/v2; repository integration tests pass. (quality-reports/go-migration/payments-impersonation-reverify-identity-impersonation-management-green/results.json)"
+        "Implementing evidence: GREEN: Django 50 identity cases and 10 transitions replayed by Go; impersonation management 264-case workloads on native Django, native Go, Caddy /api/v1 and /api/v2; repository integration tests pass. (quality-reports/go-migration/payments-impersonation-reverify-identity-impersonation-management-green/results.json)",
+        "Impersonation is limited to athletes whose memberships are all within the actor's associations (instance owner included)."
       ]
     },
     {
@@ -4205,7 +4285,7 @@
         "target": "impersonation_session",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/impersonation_management.go",
@@ -4258,7 +4338,14 @@
         "TESTS/adapters/django/impersonation_concurrency.py",
         "TESTS/adapters/django/impersonation_browser.py",
         "TESTS/browser/impersonation.mjs",
-        "TESTS/test_impersonation_active_expiry.py: active old-session expiry during SQL-blocked DELETE/replacement; source-bound exact effects and TTL controls"
+        "TESTS/test_impersonation_active_expiry.py: active old-session expiry during SQL-blocked DELETE/replacement; source-bound exact effects and TTL controls",
+        "TESTS/fixtures/impersonation_users_http.json",
+        "TESTS/fixtures/generate_impersonation_users_http.py",
+        "TESTS/contracts/test_impersonation_users_http.py",
+        "TESTS/adapters/django/impersonation_users_http.py",
+        "TESTS/adapters/django/identity.py",
+        "BE_GO/internal/service/identity_integration_test.go",
+        "BE/application/tests/test_association_impersonation.py"
       ],
       "evidence": [
         {
@@ -4268,6 +4355,41 @@
           "artifact": "quality-reports/go-migration/ledger-verified-r3/impersonation-management/1-results.json",
           "receipt_sha256": "71a68f982e010a3bd2beb0c658460b22d99f7602cbd13a7dfbcde8281c13e7f0",
           "scope": "impersonation-management harness: success=True."
+        },
+        "Owners, the self-hosted instance owner included, select the association's members and subscribers whose memberships are all within the actor's associations (Django eligible_users; Go impersonationLinksOwned in managementEligible and IdentityRelations.EligibleTarget). See docs/architecture/go-migration/impersonation-users.md.",
+        {
+          "command": "family.py run impersonation-users",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "red: Django 35/35, Go fails impersonation-users-instance-owner-association-athletes",
+          "artifact": "quality-reports/go-migration/sec-impersonation-users-red/results.json",
+          "receipt_sha256": "f94e072d031885d3d9c7863238de9d14be1897b9f6a34e7f769ad548d8c5f7bc"
+        },
+        {
+          "command": "family.py run impersonation-users --versioned",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "green: 35/35 django-native, go-native, caddy-v1, caddy-v2",
+          "artifact": "quality-reports/go-migration/sec-impersonation-users-green/results.json",
+          "receipt_sha256": "1cab47ed62c7120cb75ff9f2b6a2abc116235ac30e62594d1ee29fe6466aae44"
+        },
+        {
+          "command": "family.py mutation impersonation-users (drop the membership clause from managementEligible)",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "CAUGHT",
+          "artifact": "quality-reports/go-migration/sec-impersonation-users-mutation/results.json",
+          "receipt_sha256": "231ff7efa33643f1ed3064a0aa55ff4e0fa5d5d45024882692be27bb11050084"
+        },
+        {
+          "command": "TESTS_IMPERSONATION_MANAGEMENT_GO=1 TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 python TESTS/adapters/django/accounts.py --only impersonation-management",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "green: identity 53 cases + 10 transitions (Django, Go replay), scoped resources 67, scoped requests 132, impersonation-management 264 on django, go, v1, v2",
+          "artifact": "quality-reports/go-migration/sec-impersonation-identity-green/results.json",
+          "receipt_sha256": "f0e74e649d687673f66f769060c54ac371ba4b96cf98e216362b4a0c5160452c"
+        },
+        {
+          "command": "same, with the membership clause dropped from IdentityRelations.EligibleTarget",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "CAUGHT: owner-member-subscribed-elsewhere-not-eligible, owner-subscriber-member-elsewhere-not-eligible, membership-elsewhere-restored",
+          "artifact": "quality-reports/go-migration/sec-impersonation-identity-mutation.log"
         }
       ],
       "notes": [
@@ -4282,7 +4404,8 @@
         "Implementing evidence: Independent parent replay of unchanged compiled UI passes Django/v1 and committed b225276 Go/v2: 17 required checkpoints, 12 ACCESS events, seven exact picker checks, foreign-athlete denial, unchanged actor credentials and real expiry recovery per version. All 128 managed models and DB1 values checked with documented login/audit/session/readiness exceptions; unrelated audit/index sentinel preserved. Selected Django observer 93/0, real 200 fallback rejected, source/build/UI stability and cleanup pass. Same final source has genuine picker 404 red on the preserved pre-management image. Explicit Django coexistence dependencies, current schema and private aliases are not installed/history/activation acceptance. See impersonation-management.md.",
         "Implementing evidence: passed (quality-reports/go-migration/parallel-delivery-20261025/active-expiry-parent-audit.json)",
         "Implementing evidence: RED: Django 49 identity cases and 10 eligibility/configuration transitions pass; Go identity replay fails instance-owner-unlinked-athlete and owner-impersonates-subscriber. (quality-reports/go-migration/payments-impersonation-reverify-identity-red/results.json)",
-        "Implementing evidence: GREEN: Django 50 identity cases and 10 transitions replayed by Go; impersonation management 264-case workloads on native Django, native Go, Caddy /api/v1 and /api/v2; repository integration tests pass. (quality-reports/go-migration/payments-impersonation-reverify-identity-impersonation-management-green/results.json)"
+        "Implementing evidence: GREEN: Django 50 identity cases and 10 transitions replayed by Go; impersonation management 264-case workloads on native Django, native Go, Caddy /api/v1 and /api/v2; repository integration tests pass. (quality-reports/go-migration/payments-impersonation-reverify-identity-impersonation-management-green/results.json)",
+        "Impersonation is limited to athletes whose memberships are all within the actor's associations (instance owner included)."
       ]
     },
     {
@@ -4300,7 +4423,7 @@
         "target": "impersonation_users",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/impersonation_management.go",
@@ -4358,7 +4481,8 @@
         "TESTS/contracts/test_impersonation_users_http.py",
         "TESTS/adapters/django/impersonation_users_http.py",
         "TESTS/adapters/django/identity.py",
-        "BE_GO/internal/service/identity_integration_test.go"
+        "BE_GO/internal/service/identity_integration_test.go",
+        "BE/application/tests/test_association_impersonation.py"
       ],
       "evidence": [
         {
@@ -4368,6 +4492,41 @@
           "artifact": "quality-reports/go-migration/impersonation-users-http-verified-aa6750c6/results.json",
           "receipt_sha256": "5a6c0869db81a4df4984d551761b5389d02628a143e54f67ce871ee7490b6597",
           "scope": "HTTP family impersonation-users: 28/28 cases on native Django and native Go, 28/28 on Caddy /api/v1 and /api/v2."
+        },
+        "Owners, the self-hosted instance owner included, select the association's members and subscribers whose memberships are all within the actor's associations (Django eligible_users; Go impersonationLinksOwned in managementEligible and IdentityRelations.EligibleTarget). See docs/architecture/go-migration/impersonation-users.md.",
+        {
+          "command": "family.py run impersonation-users",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "red: Django 35/35, Go fails impersonation-users-instance-owner-association-athletes",
+          "artifact": "quality-reports/go-migration/sec-impersonation-users-red/results.json",
+          "receipt_sha256": "f94e072d031885d3d9c7863238de9d14be1897b9f6a34e7f769ad548d8c5f7bc"
+        },
+        {
+          "command": "family.py run impersonation-users --versioned",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "green: 35/35 django-native, go-native, caddy-v1, caddy-v2",
+          "artifact": "quality-reports/go-migration/sec-impersonation-users-green/results.json",
+          "receipt_sha256": "1cab47ed62c7120cb75ff9f2b6a2abc116235ac30e62594d1ee29fe6466aae44"
+        },
+        {
+          "command": "family.py mutation impersonation-users (drop the membership clause from managementEligible)",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "CAUGHT",
+          "artifact": "quality-reports/go-migration/sec-impersonation-users-mutation/results.json",
+          "receipt_sha256": "231ff7efa33643f1ed3064a0aa55ff4e0fa5d5d45024882692be27bb11050084"
+        },
+        {
+          "command": "TESTS_IMPERSONATION_MANAGEMENT_GO=1 TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 python TESTS/adapters/django/accounts.py --only impersonation-management",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "green: identity 53 cases + 10 transitions (Django, Go replay), scoped resources 67, scoped requests 132, impersonation-management 264 on django, go, v1, v2",
+          "artifact": "quality-reports/go-migration/sec-impersonation-identity-green/results.json",
+          "receipt_sha256": "f0e74e649d687673f66f769060c54ac371ba4b96cf98e216362b4a0c5160452c"
+        },
+        {
+          "command": "same, with the membership clause dropped from IdentityRelations.EligibleTarget",
+          "revision": "go/sec-impersonation on e91e32ab",
+          "result": "CAUGHT: owner-member-subscribed-elsewhere-not-eligible, owner-subscriber-member-elsewhere-not-eligible, membership-elsewhere-restored",
+          "artifact": "quality-reports/go-migration/sec-impersonation-identity-mutation.log"
         }
       ],
       "notes": [
@@ -4384,7 +4543,8 @@
         "Implementing evidence: GREEN: 28/28 on native Django, native Go, Caddy /api/v1 and /api/v2 (instance owner, member and subscriber eligibility, ten-word search). (quality-reports/go-migration/payments-impersonation-reverify-impersonation-users-green/results.json)",
         "Implementing evidence: Mutation CAUGHT: Go fails impersonation-users-search-eleventh-word-ignored. (quality-reports/go-migration/payments-impersonation-reverify-impersonation-users-mutation/results.json)",
         "Implementing evidence: RED: Django 49 identity cases and 10 eligibility/configuration transitions pass; Go identity replay fails instance-owner-unlinked-athlete and owner-impersonates-subscriber. (quality-reports/go-migration/payments-impersonation-reverify-identity-red/results.json)",
-        "Implementing evidence: GREEN: Django 50 identity cases and 10 transitions replayed by Go; impersonation management 264-case workloads on native Django, native Go, Caddy /api/v1 and /api/v2; repository integration tests pass. (quality-reports/go-migration/payments-impersonation-reverify-identity-impersonation-management-green/results.json)"
+        "Implementing evidence: GREEN: Django 50 identity cases and 10 transitions replayed by Go; impersonation management 264-case workloads on native Django, native Go, Caddy /api/v1 and /api/v2; repository integration tests pass. (quality-reports/go-migration/payments-impersonation-reverify-identity-impersonation-management-green/results.json)",
+        "Impersonation is limited to athletes whose memberships are all within the actor's associations (instance owner included)."
       ]
     },
     {

@@ -52,21 +52,26 @@ ATHLETE_SEED = 'a1000000-0000-4000-8000-000000700101'  # base associate: athlete
 AVATAR = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAE='
 
 # --- seeded rows --------------------------------------------------------------------------------
+# An athlete linked to both associations (a3/s3 abroad, a8 here); the shared athlete only has own links.
+IDS['multi_athlete'] = uid(90)
+EXTRA_USERS = {'multi_athlete': {'id': IDS['multi_athlete'], 'username': 'profile-misc-multi-athlete',
+                                 'email': 'profile-misc-multi-athlete@example.test'}}
 ASSOCIATES = {
     'a1': dict(id=uid(1), user='athlete', association='own', first='Mario', last='Rossi', minor=False, tax='RSSMRA80A01H501U'),
     'a2': dict(id=uid(2), user='athlete', association='own', first=None, last='Bianchi', minor=True, tax=None),
-    'a3': dict(id=uid(3), user='athlete', association='foreign', first='Luca', last='Verdi', minor=False, tax='VRDLCU80A01H501U'),
+    'a3': dict(id=uid(3), user='multi_athlete', association='foreign', first='Luca', last='Verdi', minor=False, tax='VRDLCU80A01H501U'),
     'a4': dict(id=uid(4), user='athlete', association='own', first='Cancellato', last='Socio', minor=False, tax=None, deleted=True),
     'a5': dict(id=uid(5), user='owner', association='own', first='Paolo', last='Neri', minor=False, tax='NREPLA80A01H501U'),
     'a6': dict(id=uid(6), user='athlete', association='own', first='Anna', last='Gialli', minor=False, tax=None, group='own_group'),
     'a7': dict(id=uid(7), user='athlete', association='own', first='Disabilitato', last='Socio', minor=False, tax=None, disabled=True),
+    'a8': dict(id=uid(8), user='multi_athlete', association='own', first='Doppio', last='Socio', minor=False, tax=None),
 }
 # 'created': inside / before the requesting user's current balance year (default 1 January start).
 SUBSCRIPTIONS = {
     's1b': dict(id=uid(20), associate='a1', user='athlete', association='own', created='inside'),
     's1': dict(id=uid(21), associate='a1', user='athlete', association='own', created='inside'),
     's2': dict(id=uid(22), associate='a2', user='athlete', association='own', created='inside'),
-    's3': dict(id=uid(23), associate='a3', user='athlete', association='foreign', created='inside'),
+    's3': dict(id=uid(23), associate='a3', user='multi_athlete', association='foreign', created='inside'),
     's4': dict(id=uid(24), associate='a4', user='athlete', association='own', created='inside'),
     's5': dict(id=uid(25), associate='a5', user='owner', association='own', created='inside'),
     's6': dict(id=uid(26), associate='a6', user='athlete', association='own', created='before', group='own_group'),
@@ -156,7 +161,8 @@ ATHLETE_C1 = course_result([person('a1'), person('a5')], [person('a2', 's2'), pe
 add('course-athlete', 'athlete', course('c1'), 200, ATHLETE_C1)
 add('course-athlete-uppercase-uid', 'athlete', COURSE + COURSES['c1']['id'].upper(), 200, ATHLETE_C1)
 # A foreign course: associates of the athlete and of the foreign owner; subscriptions in the foreign association.
-add('course-athlete-foreign-course', 'athlete', course('c3'), 200, course_result([person('a3')], []))
+add('course-athlete-foreign-course', 'athlete', course('c3'), 200, course_result([], []))
+add('course-multi-club-athlete-foreign-course', 'multi_athlete', course('c3'), 200, course_result([person('a3')], []))
 add('course-athlete-group', 'athlete', course('c4'), 200, course_result([], [person('a6', 's6')]), headers=OWN_GROUP)
 OWNER_C1 = course_result([person('a5')], [])
 add('course-owner', 'owner', course('c1'), 200, OWNER_C1)
@@ -189,11 +195,13 @@ add('sport-options', 'athlete', SPORT + OWN, 200, options(
 add('sport-malformed-uid', 'athlete', SPORT + 'abc', 400, BAD_UUID)
 # Enabled, non-deleted associates of the athlete; a1 has two subscriptions (lowest id), s6 is last year.
 add('sport-athlete-own', 'athlete', SPORT + OWN, 200,
-    sport_result([person('a1', 's1b'), person('a2', 's2')], [person(None), person('a3'), person('a6')]))
+    sport_result([person('a1', 's1b'), person('a2', 's2')], [person(None), person('a6')]))
 add('sport-athlete-foreign', 'athlete', SPORT + FOREIGN, 200,
-    sport_result([person('a3', 's3')], [person(None), person('a1'), person('a2'), person('a6')]))
+    sport_result([], [person(None), person('a1'), person('a2'), person('a6')]))
+add('sport-multi-club-athlete-foreign', 'multi_athlete', SPORT + FOREIGN, 200, sport_result([person('a3', 's3')], [person('a8')]))
+add('sport-multi-club-athlete-own', 'multi_athlete', SPORT + OWN, 200, sport_result([], [person('a3'), person('a8')]))
 add('sport-athlete-unknown-association', 'athlete', SPORT + UNKNOWN, 200,
-    sport_result([], [person(None), person('a1'), person('a2'), person('a3'), person('a6')]))
+    sport_result([], [person(None), person('a1'), person('a2'), person('a6')]))
 add('sport-athlete-group', 'athlete', SPORT + OWN, 200, sport_result([], [person('a6')]), headers=OWN_GROUP)
 add('sport-owner', 'owner', SPORT + OWN, 200, sport_result([person('a5', 's5')], []))
 add('sport-full-collaborator-foreign', 'full_collaborator', SPORT + FOREIGN, 200, sport_result([], [person('a5')]))
@@ -428,7 +436,7 @@ add('onboarding-flags-missing-row', 'foreign_owner', ONBOARD, 500, {'error': 'Us
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'profile/associates/course, profile/associates/sport-association, profile/image and '
-    'onboarding/update authored sequence with audit effects', 'ids': IDS, 'associates': ASSOCIATES, 'subscriptions': SUBSCRIPTIONS,
+    'onboarding/update authored sequence with audit effects', 'ids': IDS, 'extra_users': EXTRA_USERS, 'associates': ASSOCIATES, 'subscriptions': SUBSCRIPTIONS,
     'courses': COURSES, 'course_subscriptions': COURSE_SUBSCRIPTIONS, 'onboarding_id': ONBOARDING, 'instance': INSTANCE,
     'avatar': AVATAR, 'no_association_balance': NO_ASSOCIATION_BALANCE, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

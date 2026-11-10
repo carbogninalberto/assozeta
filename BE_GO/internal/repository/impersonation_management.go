@@ -40,19 +40,26 @@ const managementPersonColumns = `u.user_id,u.username,u.email,u.first_name,u.las
 const managementPersonFrom = ` FROM bakney_user u LEFT JOIN application_sportassociation a ON a.user_id=u.user_id
  LEFT JOIN bakney_user owner ON owner.user_id=u.connected_user_id
  LEFT JOIN application_sportassociation ca ON ca.user_id=owner.user_id`
-const managementEligible = ` WHERE NOT u.deleted AND u.is_active AND NOT u.is_superuser AND (
+
+var managementEligible = ` WHERE NOT u.deleted AND u.is_active AND NOT u.is_superuser AND (
  ($2::uuid IS NULL AND (u.role=2 OR (u.role=1 AND a.sport_association_id IS NOT NULL AND NOT a.deleted)
   OR (u.role=3 AND owner.is_active AND NOT owner.deleted AND owner.role=1 AND ca.sport_association_id IS NOT NULL AND NOT ca.deleted)))
- OR ($2::uuid IS NOT NULL AND u.user_id<>$1::uuid AND ((u.role=2 AND (` + managementInstanceOwner + `
-  OR EXISTS(SELECT 1 FROM application_associate member WHERE member.user_id=u.user_id AND member.sport_association_id=$2::uuid AND NOT member.deleted)
-  OR EXISTS(SELECT 1 FROM application_subscription subscriber WHERE subscriber.user_id=u.user_id AND subscriber.sport_association_id=$2::uuid AND NOT subscriber.deleted)))
+ OR ($2::uuid IS NOT NULL AND u.user_id<>$1::uuid AND ((u.role=2 AND (
+  EXISTS(SELECT 1 FROM application_associate member WHERE member.user_id=u.user_id AND member.sport_association_id=$2::uuid AND NOT member.deleted)
+  OR EXISTS(SELECT 1 FROM application_subscription subscriber WHERE subscriber.user_id=u.user_id AND subscriber.sport_association_id=$2::uuid AND NOT subscriber.deleted))
+  AND ` + impersonationLinksOwned("u.user_id", "$1::uuid") + `)
   OR (u.role=3 AND u.connected_user_id=$1::uuid))))`
 
-// managementInstanceOwner is is_instance_owner(actor): the first
-// InstanceConfiguration (by pk) is self-hosted and its primary association
-// belongs to the actor. Such an owner selects every athlete.
-const managementInstanceOwner = `COALESCE((SELECT c.self_hosted AND pa.user_id=$1::uuid FROM instance_instanceconfiguration c
-  LEFT JOIN application_sportassociation pa ON pa.sport_association_id=c.primary_association_id ORDER BY c.id LIMIT 1), false)`
+// impersonationLinksOwned limits impersonation to athletes whose memberships
+// are all within the actor's associations: no live Associate row or
+// non-deleted Subscription of the user belongs to an association whose owner
+// is not the actor.
+func impersonationLinksOwned(user, actor string) string {
+	return `NOT EXISTS(SELECT 1 FROM application_associate elsewhere JOIN application_sportassociation ea ON ea.sport_association_id=elsewhere.sport_association_id
+   WHERE elsewhere.user_id=` + user + ` AND NOT elsewhere.deleted AND ea.user_id<>` + actor + `)
+  AND NOT EXISTS(SELECT 1 FROM application_subscription elsewhere JOIN application_sportassociation ea ON ea.sport_association_id=elsewhere.sport_association_id
+   WHERE elsewhere.user_id=` + user + ` AND NOT elsewhere.deleted AND ea.user_id<>` + actor + `)`
+}
 
 // managementSearchWords is search_users' query.split()[:10]: Python's
 // whitespace (str.isspace, which includes U+001C..U+001F) separates words.

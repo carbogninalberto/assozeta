@@ -85,6 +85,8 @@ def prepare(work):
         account(21, 3, connected_user=owner, collaborator_role=3, collaborator_permissions=False)
         subscriber = account(22)
         account(23)  # subscription deleted
+        account(24)  # own subscriber whose link to the foreign association is deleted
+        account(25)  # linked to both associations
         association = SportAssociation.objects.create(sport_association_id=uid(80), user=owner, denomination='Identity owner')
         other = SportAssociation.objects.create(sport_association_id=uid(90), user=foreign, denomination='Identity foreign')
         Associate.objects.create(associate_id=uid(81), sport_association=association, user=member, first_name='Member')
@@ -95,6 +97,12 @@ def prepare(work):
         for n, person, deleted in ((92, 22, False), (93, 23, True)):
             Subscription(subscription_id=uid(n), sport_association=other, associate_id=uid(91), user_id=uid(person), deleted=deleted,
                          start_date=start, end_date=datetime(2027, 8, 31, tzinfo=timezone.utc)).save()
+        Subscription(subscription_id=uid(94), sport_association=association, associate_id=uid(81), user_id=uid(24),
+                     start_date=start, end_date=datetime(2027, 8, 31, tzinfo=timezone.utc)).save()
+        Associate.objects.create(associate_id=uid(95), sport_association=other, user_id=uid(24), first_name='Former', deleted=True)
+        Associate.objects.create(associate_id=uid(96), sport_association=association, user_id=uid(25), first_name='Shared')
+        Subscription(subscription_id=uid(97), sport_association=other, associate_id=uid(91), user_id=uid(25),
+                     start_date=start, end_date=datetime(2027, 8, 31, tzinfo=timezone.utc)).save()
     admin = User.objects.get(pk=uid(1))
     owner_member, _ = begin(owner, member.pk)
     owner_staff, _ = begin(owner, staff.pk)
@@ -102,7 +110,8 @@ def prepare(work):
     admin_staff, _ = begin(admin, staff.pk)
     # Persisted records deliberately no longer eligible or incorrectly bound.
     for n, actor, target, tenant in [(200, 8, 15, 80), (201, 1, 3, None), (202, 8, 10, 90), (203, 1, 1, None), (204, 1, 13, None), (205, 1, 12, None), (206, 1, 16, None), (207, 8, 2, 80), (208, 8, 8, 80),
-                                     (209, 9, 10, 90), (210, 9, 22, 90), (211, 9, 23, 90), (212, 9, 15, 90)]:
+                                     (209, 9, 10, 90), (210, 9, 22, 90), (211, 9, 23, 90), (212, 9, 15, 90),
+                                     (213, 8, 24, 80), (214, 8, 25, 80), (215, 9, 25, 90)]:
         cache.set(session_key(uid(n)), {'actor_id': uid(actor), 'target_id': uid(target), 'association_id': uid(tenant) if tenant else None}, 3600)
     cases = []
     def case(name, actor, path='/profile/info', method='GET', session='', target='', detail='', invalid=False,
@@ -155,9 +164,12 @@ def prepare(work):
     case('foreign-actor-session', 9, session=owner_member, detail=missing, invalid=True)
     case('mismatched-target-header', 8, session=owner_member, target=uid(15), detail=missing, invalid=True)
     case('foreign-association-binding', 8, session=uid(202), detail=missing, invalid=True)
-    # The self-hosted instance owner (primary association 80) selects every athlete; another owner selects
-    # members and athletes with a non-deleted subscription of the association.
-    case('instance-owner-unlinked-athlete', 8, session=uid(200), effective=15, scope=15, association=80, impersonating=True)
+    # Owners, the self-hosted instance owner (primary association 80) included, select members and athletes with a
+    # non-deleted subscription of the association whose memberships are all within the actor's associations.
+    case('instance-owner-unlinked-athlete-not-eligible', 8, session=uid(200), detail=unavailable, invalid=True)
+    case('owner-subscriber-with-deleted-link-elsewhere', 8, session=uid(213), effective=24, scope=24, association=80, impersonating=True)
+    case('owner-member-subscribed-elsewhere-not-eligible', 8, session=uid(214), detail=unavailable, invalid=True)
+    case('owner-subscriber-member-elsewhere-not-eligible', 9, session=uid(215), detail=unavailable, invalid=True)
     case('owner-unlinked-athlete-not-eligible', 9, session=uid(209), detail=unavailable, invalid=True)
     case('owner-impersonates-subscriber', 9, session=uid(210), effective=22, scope=22, association=90, impersonating=True)
     case('owner-impersonates-own-member', 9, session=uid(212), effective=15, scope=15, association=90, impersonating=True)
@@ -206,7 +218,7 @@ def prepare(work):
         (SportAssociation.original_objects.filter(pk=association.pk), 'deleted', True, False, 'Associazione non disponibile.', owner, owner_member),
         (Associate.objects.all_objects().filter(pk=uid(91)), 'deleted', True, False, unavailable, foreign, uid(212)),
         (Subscription._base_manager.filter(pk=uid(92)), 'deleted', True, False, unavailable, foreign, uid(210)),
-        (InstanceConfiguration.objects.all(), 'self_hosted', False, True, unavailable, owner, uid(200)),
+        (Associate.objects.all_objects().filter(pk=uid(95)), 'deleted', False, True, unavailable, owner, uid(213)),
     ]
     for queryset, field, changed, original, expected, actor, session in transitions:
         try:

@@ -72,6 +72,10 @@ IDS = json.loads(Path(__file__).with_name('message_mutations.json').read_text())
 OWN, FOREIGN, OWNER, FOREIGN_OWNER, ATHLETE = (IDS['own_association'], IDS['foreign_association'], IDS['owner'],
                                                IDS['foreign_owner'], IDS['athlete'])
 OWN_GROUP, FOREIGN_GROUP = IDS['own_group'], IDS['foreign_group']
+# An athlete linked to both associations (a member row here, a subscription abroad).
+MULTI = IDS['multi_athlete'] = 'a1000000-0000-4000-8000-0000005ab599'
+EXTRA_USERS = {'multi_athlete': {'id': MULTI, 'username': 'subscription-reads-multi-athlete',
+                                 'email': 'subscription-reads-multi-athlete@example.test'}}
 SERVER = '<stable-server-error-page>'
 # Letters only after the fixed version and variant digits: numeric search words never match a seeded id.
 _letters = iter(f'{a}{b}{c}' for a in 'abcdef' for b in 'abcdef' for c in 'abcdef')
@@ -88,6 +92,8 @@ USERS = {
                     'username': 'message-reads-700007', 'role': 1},
     ATHLETE: {'first_name': 'Message', 'last_name': 'Fixture', 'email': 'message-reads-700004@example.test', 'phone': None,
               'username': 'message-reads-700004', 'role': 2},
+    MULTI: {'first_name': '', 'last_name': '', 'email': EXTRA_USERS['multi_athlete']['email'], 'phone': None,
+            'username': EXTRA_USERS['multi_athlete']['username'], 'role': 2},
 }
 
 DOCUMENTS = {label: {'id': uid('d0c0d0c0'), 'token': uid('70ce70ce'), 'filename': f'{label}.pdf', 'filepath': f'docs/{label}.pdf',
@@ -139,6 +145,7 @@ ASSOCIATES = {
                      born_date='1980-01-01', email='anna@example.test', phone='3470000000', user=ATHLETE),
     'abroad': person('2023-08-09T08:00:00Z', first_name='Hugo', last_name='Esterno', sex='M', tax_code='STRHGU80A01Z404X',
                      born_date='1980-01-01', association=FOREIGN),
+    'multi_home': person('2023-08-11T08:00:00Z', first_name='Doppio', last_name='Socio', sex='M', born_date='1985-05-05', user=MULTI),
 }
 # associate -> [(tutor, is_primary)]
 TUTORS = {'giulia': [('lucia', True)]}
@@ -198,7 +205,7 @@ SUBSCRIPTIONS = {
     'abroad': sub('2025-09-11T08:00:00Z', association=FOREIGN, user=FOREIGN_OWNER, associate='abroad', document='pdf_foreign',
                   tags=['estero']),
     'foreign_none': sub('2025-09-12T08:00:00Z', association=FOREIGN, user=FOREIGN_OWNER),
-    'athlete_foreign': sub('2025-09-13T08:00:00Z', association=FOREIGN, user=ATHLETE, associate='abroad', status=2,
+    'athlete_foreign': sub('2025-09-13T08:00:00Z', association=FOREIGN, user=MULTI, associate='abroad', status=2,
                            document='pdf_foreign'),
 }
 S = {label: row['id'] for label, row in SUBSCRIPTIONS.items()}
@@ -1017,7 +1024,7 @@ add('all-course-malformed', 'owner', ALL + '?course_id=nope', 500, SERVER)
 add('all-course-null-subscription-excludes-all', 'owner', ALL + f"?course_id={COURSES['broken']['id']}", 200, all_body([]))
 add('all-athlete-without-association', 'athlete', ALL, 403, {'msg': 'not allowed'})
 add('all-athlete', 'athlete', ALL + f'?sport_association={OWN}', 200, all_body(['athlete']))
-add('all-athlete-foreign', 'athlete', ALL + f'?sport_association={FOREIGN}&type=athletes', 200, all_body(['athlete_foreign']))
+add('all-athlete-foreign', 'multi_athlete', ALL + f'?sport_association={FOREIGN}&type=athletes', 200, all_body(['athlete_foreign']))
 add('all-athlete-malformed-association', 'athlete', ALL + '?sport_association=nope', 500, SERVER)
 add('all-athlete-empty-association', 'athlete', ALL + '?sport_association=', 500, SERVER)
 add('all-athlete-current-year', 'athlete', ALL + f'?sport_association={OWN}&current_year=1', 200, all_body(['athlete']))
@@ -1027,7 +1034,7 @@ add('all-preregistration-group', 'owner', PREREG, 200, preregistration(own_liste
 add('all-preregistration-other-value', 'owner', ALL + '?preregistration=2', 200, all_body(OWN_ALL), unordered=True)
 add('all-preregistration-ignores-filters', 'owner', PREREG + '&type=athletes&course_id=nope', 200, preregistration(OWN_ALL))
 add('all-preregistration-athlete', 'athlete', PREREG + f'&sport_association={OWN}', 200, preregistration(['athlete']))
-add('all-preregistration-athlete-status', 'athlete', PREREG + f'&sport_association={FOREIGN}', 200, preregistration(['athlete_foreign']))
+add('all-preregistration-athlete-status', 'multi_athlete', PREREG + f'&sport_association={FOREIGN}', 200, preregistration(['athlete_foreign']))
 add('all-preregistration-athlete-without-association', 'athlete', PREREG, 200, {'data': {}})
 add('all-preregistration-foreign-without-associate', 'foreign_owner', PREREG, 500, SERVER)
 
@@ -1083,8 +1090,8 @@ add('info-unknown', 'owner', f'/subscription/{UNKNOWN}/info', 404, {'msg': 'Subs
 add('info-foreign', 'owner', info_path('abroad'), 403, {'detail': 'User not allowed.'})
 add('info-foreign-owner', 'foreign_owner', info_path('abroad'), 200, info_body('abroad'))
 add('info-athlete-own', 'athlete', info_path('athlete'), 200, info_body('athlete'))
-add('info-athlete-other-association', 'athlete', info_path('athlete_foreign'), 200, info_body('athlete_foreign'))
-add('info-athlete-same-tax-code', 'athlete', info_path('abroad'), 200, info_body('abroad'))
+add('info-athlete-other-association', 'multi_athlete', info_path('athlete_foreign'), 200, info_body('athlete_foreign'))
+add('info-athlete-same-tax-code', 'multi_athlete', info_path('abroad'), 200, info_body('abroad'))
 add('info-athlete-not-own', 'athlete', info_path('cur_mario'), 403, {'detail': 'Subscription not found.'})
 add('info-athlete-uppercase', 'athlete', f"/subscription/{S['athlete'].upper()}/info", 403, {'detail': 'Subscription not found.'})
 add('info-athlete-unknown', 'athlete', f'/subscription/{UNKNOWN}/info', 403, {'detail': 'Subscription not found.'})
@@ -1109,7 +1116,7 @@ add('calendar-athlete-malformed', 'athlete', '/subscription/nope/calendar', 400,
 
 assert len({c['name'] for c in cases}) == len(cases)
 SOURCE = {'matrix_version': 1, 'scope': 'subscription list, list/all, list/archived, info and calendar reads', 'ids': IDS,
-          'users': USERS, 'documents': DOCUMENTS, 'medicals': MEDICALS, 'tags': TAGS, 'associates': ASSOCIATES, 'tutors': TUTORS,
+          'extra_users': EXTRA_USERS, 'users': USERS, 'documents': DOCUMENTS, 'medicals': MEDICALS, 'tags': TAGS, 'associates': ASSOCIATES, 'tutors': TUTORS,
           'payments': PAYMENTS, 'subscriptions': SUBSCRIPTIONS, 'courses': COURSES, 'course_subscriptions': COURSE_SUBS,
           'installments': INSTALLMENTS, 'registries': REGISTRIES, 'files': FILES, 'card': CARD, 'cases': cases}
 OUTPUT.write_text(json.dumps(SOURCE, ensure_ascii=False, indent=1) + '\n')

@@ -18,6 +18,22 @@ from pathlib import Path
 OUTPUT = Path(__file__).with_name('carnet_subscription_topup_http.json')
 SOURCE = json.loads(Path(__file__).with_name('carnet_list_http.json').read_text())
 IDS = SOURCE['ids']
+
+
+def carnet_multi_club(source):
+    """An athlete linked to both associations holds the foreign rows (the shared athlete only has own links)."""
+    source['ids']['multi_athlete'] = 'a1000000-0000-4000-8000-000000979901'
+    source['extra_users'] = {'multi_athlete': {'id': source['ids']['multi_athlete'], 'username': 'carnet-multi-athlete',
+                                               'email': 'carnet-multi-athlete@example.test'}}
+    home = dict(source['associates']['abroad'], id='a1000000-0000-4000-8000-000000979902',
+                association=source['ids']['own_association'], user='multi_athlete', first_name='Atleta', last_name='Casa')
+    source['associates']['multi_home'] = home
+    source['associates']['abroad']['user'] = 'multi_athlete'
+    source['subscriptions']['abroad_past']['user'] = 'multi_athlete'
+    source['carnet_subscriptions']['abroad']['user'] = 'multi_athlete'
+
+
+carnet_multi_club(SOURCE)
 OWN, FOREIGN = IDS['own_association'], IDS['foreign_association']
 ids = iter(f'a1000000-0000-4000-8000-{960001 + n:012d}' for n in range(10))
 # get_default_bank_account: sport_association, editable=False, enabled=True, BANK.
@@ -73,7 +89,7 @@ add('athlete-own', 'athlete', 'held', 200, OK, effect=topped('held', 'athlete', 
 add('full-collaborator-family', 'full_collaborator', 'family', 200, OK, effect=topped('family', 'full_collaborator', 'bank'))
 add('owner-free-carnet', 'owner', 'someone_else', 200, OK, effect=topped('someone_else', 'owner', 'bank'))
 # Only a disabled bank account exists abroad: no default account.
-add('athlete-foreign-association', 'athlete', 'abroad', 200, OK, effect=topped('abroad', 'athlete', None))
+add('athlete-foreign-association', 'multi_athlete', 'abroad', 200, OK, effect=topped('abroad', 'multi_athlete', None))
 add('owner-scoped-athlete', 'owner', 'held', 200, OK, headers=SCOPED, effect=topped('held', 'owner', 'bank', 'owner_athlete'))
 add('admin-impersonating-athlete', 'admin', 'held', 200, OK, headers={'X-Impersonation-Id': '$session:admin_athlete', 'User-Id': IDS['athlete']},
     effect=topped('held', 'admin', 'bank', 'admin_athlete'))

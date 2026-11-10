@@ -11,13 +11,20 @@ ones in order with their index rows. A '$now' column must be recent and, when
 the response renders it, equal to the stored value; the response's bound
 payment id is the created row. Payments the run creates are removed before
 the fixture cleanup compares the model state.
+
+A CURRENT_HOST print stub (invoice-sync-print's service_context) runs for the
+whole run: each case's outbound requests must be exactly its authored
+'prints' (the update of an invoiced payment prints the invoice).
 """
 from contextlib import contextmanager
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 import ipaddress
 
-from TESTS.contracts import test_payment_writes_http as contract
+import types
+
+from TESTS.contracts import test_payment_writes_http as base_contract
+from TESTS.adapters.django import invoice_sync_print_http as printer
 from TESTS.adapters.django import family_harness as harness
 from TESTS.adapters.django.camps_periods_http import plain
 from TESTS.adapters.django.carnet_subscription_topup_http import auditlog_moment
@@ -33,8 +40,28 @@ SOURCES = ('TESTS/fixtures/payment_writes_http.json', 'TESTS/contracts/test_paym
            'BE/application/models/subscriptions_models.py', 'BE/application/models/user_models.py', 'BE/application/models/carnet_models.py',
            'BE/application/models/balance_sheet_models.py', 'BE/application/signals.py', 'BE/application/mixin.py',
            'BE/application/impersonation_scope.py', 'BE/application/audit_resolvers.py', 'BE/application/tenant_scope.py',
-           'BE/application/permissions_registry.py', 'BE/application/utils/api_utils.py', 'BE/docmanager/models.py') + harness.SOURCES
+           'BE/application/permissions_registry.py', 'BE/application/utils/api_utils.py', 'BE/docmanager/models.py',
+           'TESTS/adapters/django/invoice_sync_print_http.py', 'BE/application/printing_tasks.py', 'BE/instance/restore/task_base.py',
+           'BE/application/serializers/invoice_serializers.py') + harness.SOURCES
 PAYMENT = 'application.Payment'
+service_context = printer.service_context
+
+
+def _assert_case(case, base_url, *, token, sessions):
+    """The authored request, with the print stub scripted for it and its outbound requests checked after."""
+    stub = printer.STUB
+    with stub['lock']:
+        stub['log'] = []
+        stub['script'] = [item['reply'] for item in case['prints']]
+    stub['token'] = token
+    status = base_contract.assert_case(case, base_url, token=token, sessions=sessions)
+    printer.check_prints(case, None)
+    return status
+
+
+contract = types.SimpleNamespace(load_source=base_contract.load_source, require=base_contract.require, assert_case=_assert_case,
+                                 BINDINGS=base_contract.BINDINGS,
+                                 NOW=base_contract.NOW)
 MANAGED = (PAYMENT, harness.AUDIT, harness.INDEX)
 TIMES = ('creation_date', 'payment_date')
 
@@ -77,6 +104,11 @@ def seed_rows(source, created):
     vendor = source['supplier']
     insert(SupplierAndCustomers, SupplierAndCustomers(supplier_id=vendor['id'], name=vendor['name'], vat_number=vendor['vat_number'],
                                                       email=vendor['email'], sport_association_id=own))
+    from application.models import Invoice
+    bill = source['invoice']
+    insert(Invoice, Invoice(invoice_id=bill['id'], sport_association_id=own, creation_date=moment(bill['created']),
+                            membership_fee=Decimal(bill['membership_fee']), activity_fee=Decimal(bill['activity_fee']),
+                            description=bill['description'], number=bill['number']))
     for row in source['payments'].values():
         values = {key: value for key, value in row.items() if key != 'id'}
         for column in TIMES:

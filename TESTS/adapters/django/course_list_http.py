@@ -59,7 +59,7 @@ def seed_rows(source, created):
             first_name=row['first_name'], last_name=row['last_name'], born_date=day(row['born_date']), sex=row['sex'])])
         created.append((Associate, row['id']))
     for row in source['subscriptions'].values():
-        Subscription._base_manager.bulk_create([Subscription(subscription_id=row['id'], sport_association_id=row['association'], user_id=ids['athlete'],
+        Subscription._base_manager.bulk_create([Subscription(subscription_id=row['id'], sport_association_id=row['association'], user_id=ids['foreign_owner'] if row['association'] == ids['foreign_association'] else ids['athlete'],
             associate_id=source['associates'][row['associate']]['id'] if row['associate'] else None,
             group_id=ids[row['group']] if row['group'] else None, deleted=row['deleted'], status_flag=Subscription.ACCEPTED)])
         created.append((Subscription, row['id']))

@@ -22,6 +22,22 @@ OUTPUT = Path(__file__).with_name('carnet_assign_http.json')
 SOURCE = copy.deepcopy(json.loads(Path(__file__).with_name('carnet_list_http.json').read_text()))
 TOPUP = json.loads(Path(__file__).with_name('carnet_subscription_topup_http.json').read_text())
 IDS = SOURCE['ids']
+
+
+def carnet_multi_club(source):
+    """An athlete linked to both associations holds the foreign rows (the shared athlete only has own links)."""
+    source['ids']['multi_athlete'] = 'a1000000-0000-4000-8000-000000979901'
+    source['extra_users'] = {'multi_athlete': {'id': source['ids']['multi_athlete'], 'username': 'carnet-multi-athlete',
+                                               'email': 'carnet-multi-athlete@example.test'}}
+    home = dict(source['associates']['abroad'], id='a1000000-0000-4000-8000-000000979902',
+                association=source['ids']['own_association'], user='multi_athlete', first_name='Atleta', last_name='Casa')
+    source['associates']['multi_home'] = home
+    source['associates']['abroad']['user'] = 'multi_athlete'
+    source['subscriptions']['abroad_past']['user'] = 'multi_athlete'
+    source['carnet_subscriptions']['abroad']['user'] = 'multi_athlete'
+
+
+carnet_multi_club(SOURCE)
 OWN, FOREIGN = IDS['own_association'], IDS['foreign_association']
 ids = iter(f'a1000000-0000-4000-8000-{970001 + n:012d}' for n in range(10))
 SOURCE['courses']['abroad_course'] = {'id': next(ids), 'association': FOREIGN, 'title': 'Corso estero'}
@@ -66,7 +82,7 @@ add('unknown-subscription', 'owner', 'c1', UNKNOWN, 404, NO_SUBSCRIPTION)
 add('foreign-subscription', 'owner', 'c1', 'abroad_past', 404, NO_SUBSCRIPTION)
 add('athlete-not-holder', 'athlete', 'c1', 'other_open', 403, {'msg': 'Not allowed.'})
 # An athlete's association is the subscription's: the own carnet is foreign there.
-add('athlete-foreign-association-carnet', 'athlete', 'c1', 'abroad_past', 404, NO_CARNET)
+add('athlete-foreign-association-carnet', 'multi_athlete', 'c1', 'abroad_past', 404, NO_CARNET)
 add('malformed-carnet-server-error', 'owner', 'abc', 'current', 500, SERVER)
 add('unknown-carnet', 'owner', UNKNOWN, 'current', 404, NO_CARNET)
 add('foreign-carnet', 'owner', 'cf', 'current', 404, NO_CARNET)
@@ -102,8 +118,8 @@ add('owner-deleted-course-ignored', 'owner', 'c1', 'current', 200, assigned(None
 add('owner-foreign-course-ignored', 'owner', 'c1', 'family_next', 200, assigned(None),
     body={'course_subscription_id': COURSES['abroad_cs']['id']}, effect=created('c1', 'family_next', 'owner', 'bank'))
 add('athlete-self-assign', 'athlete', 'c1', 'current', 200, assigned(None), effect=created('c1', 'current', 'athlete', 'bank'))
-add('athlete-foreign-association', 'athlete', 'cf', 'abroad_past', 200, assigned('abroad_cs'),
-    body={'course_subscription_id': COURSES['abroad_cs']['id']}, effect=created('cf', 'abroad_past', 'athlete', None, 'abroad_cs'))
+add('athlete-foreign-association', 'multi_athlete', 'cf', 'abroad_past', 200, assigned('abroad_cs'),
+    body={'course_subscription_id': COURSES['abroad_cs']['id']}, effect=created('cf', 'abroad_past', 'multi_athlete', None, 'abroad_cs'))
 add('full-collaborator-form', 'full_collaborator', 'c1', 'current', 200, assigned('second'),
     raw_body='course_subscription_id=' + COURSES['second']['id'], content_type='application/x-www-form-urlencoded',
     effect=created('c1', 'current', 'full_collaborator', 'bank', 'second'))
