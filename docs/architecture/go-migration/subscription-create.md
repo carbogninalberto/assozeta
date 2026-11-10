@@ -298,4 +298,4 @@ v2-wizard: the family wizard and the quick mode from a member account (113 cases
 - Mutation (`v2wiz-mutation-r1`): serializing a payment created by the request as stored (200 instead of the 500 page) fails
   `subscription-create-family-wizard` (CAUGHT).
 - Re-run green: `subscription-renew` 74/74 on four transports (`secsub2-versioned-r1`); `subscription-memberships`,
-  `subscription-sign` and `subscription-approve` (`secsub2-rerun-r1`).
+  `subscription-sign`, `subscription-approve` and `associates-draft` natively (`secsub2-rerun-r1`: 88/88, 47/47, 27/27, 128/128).
