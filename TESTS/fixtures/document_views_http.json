@@ -389,6 +389,38 @@
    "phone": null,
    "email": "d@example.test",
    "notes": null
+  },
+  "sara": {
+   "id": "a1000000-0000-4000-8000-000000985026",
+   "association": "alpha",
+   "first": "Sara",
+   "last": "Neri",
+   "tax_code": null,
+   "sex": "F",
+   "born": "2014-04-04",
+   "born_city": "Cuneo",
+   "address": null,
+   "city": null,
+   "cap": null,
+   "phone": null,
+   "email": null,
+   "notes": null
+  },
+  "tino": {
+   "id": "a1000000-0000-4000-8000-000000985027",
+   "association": "alpha",
+   "first": "Tino",
+   "last": "Gialli",
+   "tax_code": "GLLTNI13A01L219B",
+   "sex": "M",
+   "born": "2013-01-01",
+   "born_city": null,
+   "address": null,
+   "city": null,
+   "cap": null,
+   "phone": null,
+   "email": null,
+   "notes": null
   }
  },
  "tutors": [
@@ -396,6 +428,21 @@
    "giulia",
    "paolo",
    true
+  ],
+  [
+   "sara",
+   "paolo",
+   false
+  ],
+  [
+   "sara",
+   "mario",
+   false
+  ],
+  [
+   "tino",
+   "mario",
+   false
   ]
  ],
  "payments": {
@@ -565,6 +612,30 @@
      }
     }
    ],
+   "signature_url": null,
+   "group": null
+  },
+  "sara": {
+   "id": "a1000000-0000-4000-8000-000000985044",
+   "association": "alpha",
+   "associate": "sara",
+   "type": 1,
+   "role": 1,
+   "created": "2026-04-04T04:04:04+00:00",
+   "payment": null,
+   "additional_fields": null,
+   "signature_url": null,
+   "group": null
+  },
+  "tino": {
+   "id": "a1000000-0000-4000-8000-000000985045",
+   "association": "alpha",
+   "associate": "tino",
+   "type": 1,
+   "role": 1,
+   "created": "2026-04-05T04:04:04+00:00",
+   "payment": null,
+   "additional_fields": null,
    "signature_url": null,
    "group": null
   },
@@ -928,7 +999,8 @@
     "detail": "Authentication credentials were not provided."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-invalid-bearer",
@@ -951,7 +1023,8 @@
     ]
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-admin-without-session",
@@ -964,7 +1037,8 @@
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-restricted-collaborator",
@@ -977,7 +1051,8 @@
     "detail": "Access denied: No permission mapping for endpoint 'document/subscription/a1000000-0000-4000-8000-000000985030/view'. Contact administrator to grant access."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-put-not-allowed",
@@ -990,7 +1065,8 @@
     "detail": "Method \"PUT\" not allowed."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-post-not-allowed",
@@ -1003,7 +1079,8 @@
     "detail": "Method \"POST\" not allowed."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-options",
@@ -1025,7 +1102,8 @@
     ]
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-document-token",
@@ -1038,7 +1116,8 @@
     "detail": "Authentication credentials were not provided."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-bypass-header",
@@ -1053,7 +1132,8 @@
     "detail": "Authentication credentials were not provided."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-owner",
@@ -1065,6 +1145,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "en",
@@ -1544,6 +1625,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "en",
@@ -2093,6 +2175,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "en",
@@ -2513,6 +2596,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "en",
@@ -2930,6 +3014,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "en",
@@ -3247,6 +3332,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "en",
@@ -3728,6 +3814,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "en",
@@ -4155,6 +4242,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "en",
@@ -4580,6 +4668,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "en",
@@ -5050,6 +5139,1085 @@
    }
   },
   {
+   "name": "document-views-subscription-minor-promotes-tutor",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985044/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "renders": [],
+   "content_language": "en",
+   "promoted": [
+    [
+     "sara",
+     "owner"
+    ]
+   ],
+   "html": {
+    "template": "document/application/subscription.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000985044"
+     },
+     "subscription": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "01234567890"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via Roma 1"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "str",
+            "v": "10100"
+           }
+          ],
+          [
+           "federation",
+           {
+            "t": "str",
+            "v": "FIDAL"
+           }
+          ],
+          [
+           "enroll_number",
+           {
+            "t": "str",
+            "v": "ab-12"
+           }
+          ],
+          [
+           "regulation",
+           {
+            "t": "str",
+            "v": "<p>Regolamento <b>interno</b></p>"
+           }
+          ],
+          [
+           "demand",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "additional_sections",
+           {
+            "t": "list",
+            "v": [
+             {
+              "t": "dict",
+              "v": [
+               [
+                "name",
+                {
+                 "t": "str",
+                 "v": "Privacy & dati"
+                }
+               ],
+               [
+                "text",
+                {
+                 "t": "str",
+                 "v": "<p>Testo privacy</p>"
+                }
+               ],
+               [
+                "show_to_members",
+                {
+                 "t": "bool",
+                 "v": true
+                }
+               ],
+               [
+                "show_to_both",
+                {
+                 "t": "bool",
+                 "v": false
+                }
+               ],
+               [
+                "show_to_athletes",
+                {
+                 "t": "bool",
+                 "v": true
+                }
+               ],
+               [
+                "show_to",
+                {
+                 "t": "list",
+                 "v": [
+                  {
+                   "t": "int",
+                   "v": 1
+                  },
+                  {
+                   "t": "int",
+                   "v": 3
+                  }
+                 ]
+                }
+               ]
+              ]
+             },
+             {
+              "t": "dict",
+              "v": [
+               [
+                "show_to",
+                {
+                 "t": "list",
+                 "v": []
+                }
+               ],
+               [
+                "name",
+                {
+                 "t": "str",
+                 "v": "Foto"
+                }
+               ],
+               [
+                "text",
+                {
+                 "t": "str",
+                 "v": "Consenso <i>foto</i>"
+                }
+               ],
+               [
+                "show_to_members",
+                {
+                 "t": "bool",
+                 "v": false
+                }
+               ]
+              ]
+             },
+             {
+              "t": "dict",
+              "v": [
+               [
+                "name",
+                {
+                 "t": "str",
+                 "v": "Vuota"
+                }
+               ],
+               [
+                "text",
+                {
+                 "t": "none"
+                }
+               ],
+               [
+                "show_to_both",
+                {
+                 "t": "int",
+                 "v": 1
+                }
+               ],
+               [
+                "show_to",
+                {
+                 "t": "list",
+                 "v": [
+                  {
+                   "t": "int",
+                   "v": 2
+                  }
+                 ]
+                }
+               ]
+              ]
+             }
+            ]
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "creation_date",
+        {
+         "t": "datetime",
+         "v": "2026-04-04T04:04:04+00:00"
+        }
+       ],
+       [
+        "type",
+        {
+         "t": "int",
+         "v": 1
+        }
+       ],
+       [
+        "role",
+        {
+         "t": "int",
+         "v": 1
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Sara"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Neri"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "F"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "date",
+            "v": "2014-04-04"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "str",
+            "v": "Cuneo"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Sara Neri"
+            }
+           }
+          ],
+          [
+           "full_name",
+           {
+            "t": "str",
+            "v": "Sara Neri"
+           }
+          ],
+          [
+           "is_minor_now",
+           {
+            "t": "bool",
+            "v": true
+           }
+          ],
+          [
+           "main_tutor",
+           {
+            "t": "call",
+            "v": {
+             "t": "obj",
+             "v": [
+              [
+               "first_name",
+               {
+                "t": "str",
+                "v": "Paolo"
+               }
+              ],
+              [
+               "last_name",
+               {
+                "t": "str",
+                "v": "Bianchi"
+               }
+              ],
+              [
+               "tax_code",
+               {
+                "t": "str",
+                "v": "BNCPLA75C03L219Z"
+               }
+              ],
+              [
+               "sex",
+               {
+                "t": "str",
+                "v": "M"
+               }
+              ],
+              [
+               "born_date",
+               {
+                "t": "date",
+                "v": "1975-03-03"
+               }
+              ],
+              [
+               "born_city",
+               {
+                "t": "str",
+                "v": "Straße"
+               }
+              ],
+              [
+               "address",
+               {
+                "t": "str",
+                "v": "Corso Francia 9"
+               }
+              ],
+              [
+               "address_city",
+               {
+                "t": "str",
+                "v": "Torino"
+               }
+              ],
+              [
+               "address_cap",
+               {
+                "t": "str",
+                "v": "10138"
+               }
+              ],
+              [
+               "phone",
+               {
+                "t": "str",
+                "v": "011 123"
+               }
+              ],
+              [
+               "email",
+               {
+                "t": "none"
+               }
+              ],
+              [
+               "get_full_name",
+               {
+                "t": "call",
+                "v": {
+                 "t": "str",
+                 "v": "Paolo Bianchi"
+                }
+               }
+              ],
+              [
+               "full_name",
+               {
+                "t": "str",
+                "v": "Paolo Bianchi"
+               }
+              ],
+              [
+               "is_minor_now",
+               {
+                "t": "bool",
+                "v": false
+               }
+              ]
+             ]
+            }
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "additional_fields",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "has_signature",
+        {
+         "t": "bool",
+         "v": false
+        }
+       ]
+      ]
+     },
+     "payment_data": {
+      "t": "none"
+     },
+     "show_regulation_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 1
+       },
+       {
+        "t": "int",
+        "v": 3
+       }
+      ]
+     },
+     "show_demand_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 2
+       }
+      ]
+     },
+     "is_preview": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli &amp; soci - CF 01234567890<br/>Data: $today, contatto alfa@example.test, iscritto </p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Grazie da @Denominazione — </p>\n<p> </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "document-views-subscription-minor-promoted-tutor-again",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985044/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "renders": [],
+   "content_language": "en",
+   "promoted": [],
+   "html": {
+    "template": "document/application/subscription.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000985044"
+     },
+     "subscription": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "01234567890"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via Roma 1"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "str",
+            "v": "10100"
+           }
+          ],
+          [
+           "federation",
+           {
+            "t": "str",
+            "v": "FIDAL"
+           }
+          ],
+          [
+           "enroll_number",
+           {
+            "t": "str",
+            "v": "ab-12"
+           }
+          ],
+          [
+           "regulation",
+           {
+            "t": "str",
+            "v": "<p>Regolamento <b>interno</b></p>"
+           }
+          ],
+          [
+           "demand",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "additional_sections",
+           {
+            "t": "list",
+            "v": [
+             {
+              "t": "dict",
+              "v": [
+               [
+                "name",
+                {
+                 "t": "str",
+                 "v": "Privacy & dati"
+                }
+               ],
+               [
+                "text",
+                {
+                 "t": "str",
+                 "v": "<p>Testo privacy</p>"
+                }
+               ],
+               [
+                "show_to_members",
+                {
+                 "t": "bool",
+                 "v": true
+                }
+               ],
+               [
+                "show_to_both",
+                {
+                 "t": "bool",
+                 "v": false
+                }
+               ],
+               [
+                "show_to_athletes",
+                {
+                 "t": "bool",
+                 "v": true
+                }
+               ],
+               [
+                "show_to",
+                {
+                 "t": "list",
+                 "v": [
+                  {
+                   "t": "int",
+                   "v": 1
+                  },
+                  {
+                   "t": "int",
+                   "v": 3
+                  }
+                 ]
+                }
+               ]
+              ]
+             },
+             {
+              "t": "dict",
+              "v": [
+               [
+                "show_to",
+                {
+                 "t": "list",
+                 "v": []
+                }
+               ],
+               [
+                "name",
+                {
+                 "t": "str",
+                 "v": "Foto"
+                }
+               ],
+               [
+                "text",
+                {
+                 "t": "str",
+                 "v": "Consenso <i>foto</i>"
+                }
+               ],
+               [
+                "show_to_members",
+                {
+                 "t": "bool",
+                 "v": false
+                }
+               ]
+              ]
+             },
+             {
+              "t": "dict",
+              "v": [
+               [
+                "name",
+                {
+                 "t": "str",
+                 "v": "Vuota"
+                }
+               ],
+               [
+                "text",
+                {
+                 "t": "none"
+                }
+               ],
+               [
+                "show_to_both",
+                {
+                 "t": "int",
+                 "v": 1
+                }
+               ],
+               [
+                "show_to",
+                {
+                 "t": "list",
+                 "v": [
+                  {
+                   "t": "int",
+                   "v": 2
+                  }
+                 ]
+                }
+               ]
+              ]
+             }
+            ]
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "creation_date",
+        {
+         "t": "datetime",
+         "v": "2026-04-04T04:04:04+00:00"
+        }
+       ],
+       [
+        "type",
+        {
+         "t": "int",
+         "v": 1
+        }
+       ],
+       [
+        "role",
+        {
+         "t": "int",
+         "v": 1
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Sara"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Neri"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "F"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "date",
+            "v": "2014-04-04"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "str",
+            "v": "Cuneo"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Sara Neri"
+            }
+           }
+          ],
+          [
+           "full_name",
+           {
+            "t": "str",
+            "v": "Sara Neri"
+           }
+          ],
+          [
+           "is_minor_now",
+           {
+            "t": "bool",
+            "v": true
+           }
+          ],
+          [
+           "main_tutor",
+           {
+            "t": "call",
+            "v": {
+             "t": "obj",
+             "v": [
+              [
+               "first_name",
+               {
+                "t": "str",
+                "v": "Paolo"
+               }
+              ],
+              [
+               "last_name",
+               {
+                "t": "str",
+                "v": "Bianchi"
+               }
+              ],
+              [
+               "tax_code",
+               {
+                "t": "str",
+                "v": "BNCPLA75C03L219Z"
+               }
+              ],
+              [
+               "sex",
+               {
+                "t": "str",
+                "v": "M"
+               }
+              ],
+              [
+               "born_date",
+               {
+                "t": "date",
+                "v": "1975-03-03"
+               }
+              ],
+              [
+               "born_city",
+               {
+                "t": "str",
+                "v": "Straße"
+               }
+              ],
+              [
+               "address",
+               {
+                "t": "str",
+                "v": "Corso Francia 9"
+               }
+              ],
+              [
+               "address_city",
+               {
+                "t": "str",
+                "v": "Torino"
+               }
+              ],
+              [
+               "address_cap",
+               {
+                "t": "str",
+                "v": "10138"
+               }
+              ],
+              [
+               "phone",
+               {
+                "t": "str",
+                "v": "011 123"
+               }
+              ],
+              [
+               "email",
+               {
+                "t": "none"
+               }
+              ],
+              [
+               "get_full_name",
+               {
+                "t": "call",
+                "v": {
+                 "t": "str",
+                 "v": "Paolo Bianchi"
+                }
+               }
+              ],
+              [
+               "full_name",
+               {
+                "t": "str",
+                "v": "Paolo Bianchi"
+               }
+              ],
+              [
+               "is_minor_now",
+               {
+                "t": "bool",
+                "v": false
+               }
+              ]
+             ]
+            }
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "additional_fields",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "has_signature",
+        {
+         "t": "bool",
+         "v": false
+        }
+       ]
+      ]
+     },
+     "payment_data": {
+      "t": "none"
+     },
+     "show_regulation_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 1
+       },
+       {
+        "t": "int",
+        "v": 3
+       }
+      ]
+     },
+     "show_demand_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 2
+       }
+      ]
+     },
+     "is_preview": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli &amp; soci - CF 01234567890<br/>Data: $today, contatto alfa@example.test, iscritto </p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Grazie da @Denominazione — </p>\n<p> </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "document-views-subscription-head",
+   "actor": "owner",
+   "method": "HEAD",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985030/view/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"HEAD\" not allowed."
+   },
+   "renders": [],
+   "content_language": "en",
+   "promoted": []
+  },
+  {
+   "name": "document-views-subscription-head-anonymous",
+   "actor": "anonymous",
+   "method": "HEAD",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985030/view/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "content_language": "en",
+   "promoted": []
+  },
+  {
    "name": "document-views-subscription-classic-template",
    "actor": "owner",
    "method": "GET",
@@ -5059,6 +6227,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription_classic.html",
     "language": "en",
@@ -5351,6 +6520,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "en",
@@ -5671,6 +6841,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "en",
@@ -5966,6 +7137,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "en",
@@ -6261,6 +7433,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "en",
@@ -6557,7 +7730,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-athlete-without-associate",
@@ -6570,7 +7744,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-athlete-sections-not-a-list",
@@ -6583,7 +7758,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-athlete-unknown",
@@ -6594,7 +7770,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-member-of-athlete",
@@ -6607,7 +7784,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-member-of-associate",
@@ -6620,7 +7798,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-full-collaborator-of-athlete",
@@ -6632,6 +7811,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "en",
@@ -6927,6 +8107,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "en",
@@ -7226,7 +8407,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-group-other",
@@ -7239,7 +8421,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-unknown",
@@ -7250,7 +8433,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-invalid-uuid",
@@ -7261,7 +8445,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-sections-not-a-list",
@@ -7272,7 +8457,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-meta-list-format",
@@ -7283,7 +8469,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-restricted-collaborator",
@@ -7296,7 +8483,8 @@
     "detail": "Access denied: No permission mapping for endpoint 'document/subscription/preview'. Contact administrator to grant access."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-admin-without-session",
@@ -7309,7 +8497,8 @@
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-invalid-bearer",
@@ -7332,7 +8521,8 @@
     ]
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-put-not-allowed",
@@ -7345,7 +8535,8 @@
     "detail": "Method \"PUT\" not allowed."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-anonymous",
@@ -7358,7 +8549,8 @@
     "detail": "Authentication credentials were not provided."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-anonymous-without-association",
@@ -7371,7 +8563,8 @@
     "detail": "Authentication credentials were not provided."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-anonymous-print",
@@ -7384,7 +8577,8 @@
     "detail": "Authentication credentials were not provided."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-anonymous-put",
@@ -7397,7 +8591,8 @@
     "detail": "Authentication credentials were not provided."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-athlete",
@@ -7409,6 +8604,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription_classic.html",
     "language": "en",
@@ -7809,7 +9005,8 @@
     ]
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-owner-alpha",
@@ -7821,6 +9018,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "en",
@@ -8376,6 +9574,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription_classic.html",
     "language": "en",
@@ -8768,6 +9967,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "it",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "it",
@@ -9164,6 +10364,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/subscription.html",
     "language": "en",
@@ -9718,7 +10919,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-empty-association",
@@ -9729,7 +10931,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-invalid-association",
@@ -9740,7 +10943,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-unknown-association",
@@ -9751,7 +10955,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-deleted-association",
@@ -9762,7 +10967,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-athlete-user",
@@ -9775,7 +10981,8 @@
     "detail": "User is not a sport association"
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-scoped-foreign",
@@ -9791,7 +10998,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-print",
@@ -9814,7 +11022,8 @@
      }
     }
    ],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-print-without-association",
@@ -9837,7 +11046,8 @@
      }
     }
    ],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-print-renderer-error",
@@ -9860,7 +11070,8 @@
      }
     }
    ],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-preview-print-not-pdf",
@@ -9883,7 +11094,8 @@
      }
     }
    ],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-anonymous",
@@ -9896,7 +11108,8 @@
     "detail": "Authentication credentials were not provided."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-invalid-bearer",
@@ -9919,7 +11132,8 @@
     ]
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-admin-without-session",
@@ -9932,7 +11146,8 @@
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-restricted-collaborator",
@@ -9945,7 +11160,8 @@
     "detail": "Access denied: No permission mapping for endpoint 'document/compensation/a1000000-0000-4000-8000-000000985080/view'. Contact administrator to grant access."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-put-not-allowed",
@@ -9958,7 +11174,8 @@
     "detail": "Method \"PUT\" not allowed."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-post-not-allowed",
@@ -9971,7 +11188,8 @@
     "detail": "Method \"POST\" not allowed."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-options",
@@ -9993,7 +11211,8 @@
     ]
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-owner",
@@ -10005,6 +11224,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "it",
+   "promoted": [],
    "html": {
     "template": "document/application/compensation.html",
     "language": "it",
@@ -10261,6 +11481,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "it",
+   "promoted": [],
    "html": {
     "template": "document/application/compensation.html",
     "language": "it",
@@ -10492,6 +11713,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "it",
+   "promoted": [],
    "html": {
     "template": "document/application/compensation.html",
     "language": "it",
@@ -10561,6 +11783,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "it",
+   "promoted": [],
    "html": {
     "template": "document/application/compensation.html",
     "language": "it",
@@ -10794,7 +12017,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-instructor-account",
@@ -10806,6 +12030,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "it",
+   "promoted": [],
    "html": {
     "template": "document/application/compensation.html",
     "language": "it",
@@ -11063,7 +12288,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-instructor-account-without-instructor",
@@ -11076,7 +12302,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-instructor-account-unknown",
@@ -11087,7 +12314,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-athlete-direct",
@@ -11100,7 +12328,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-athlete-invalid-period",
@@ -11113,7 +12342,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-athlete-deleted",
@@ -11124,7 +12354,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-member",
@@ -11137,7 +12368,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-admin-impersonating-owner",
@@ -11152,6 +12384,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "it",
+   "promoted": [],
    "html": {
     "template": "document/application/compensation.html",
     "language": "it",
@@ -11387,7 +12620,8 @@
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-invalid-period",
@@ -11398,7 +12632,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-null-period",
@@ -11409,7 +12644,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-deleted",
@@ -11420,7 +12656,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-unknown",
@@ -11431,7 +12668,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-compensation-invalid-uuid",
@@ -11442,7 +12680,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-anonymous",
@@ -11455,7 +12694,8 @@
     "detail": "Authentication credentials were not provided."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-invalid-bearer",
@@ -11478,7 +12718,8 @@
     ]
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-admin-without-session",
@@ -11491,7 +12732,8 @@
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-restricted-collaborator",
@@ -11504,7 +12746,8 @@
     "detail": "Access denied: No permission mapping for endpoint 'document/template/a1000000-0000-4000-8000-000000985100/view'. Contact administrator to grant access."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-put-not-allowed",
@@ -11517,7 +12760,8 @@
     "detail": "Method \"PUT\" not allowed."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-post-not-allowed",
@@ -11530,7 +12774,8 @@
     "detail": "Method \"POST\" not allowed."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-options",
@@ -11552,7 +12797,8 @@
     ]
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-document-token",
@@ -11565,7 +12811,8 @@
     "detail": "Authentication credentials were not provided."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-bypass-invalid",
@@ -11580,7 +12827,8 @@
     "detail": "Authentication credentials were not provided."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-bypass-non-ascii",
@@ -11593,7 +12841,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-owner",
@@ -11605,6 +12854,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/model.html",
     "language": "en",
@@ -11636,6 +12886,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/model.html",
     "language": "en",
@@ -11665,6 +12916,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/model.html",
     "language": "en",
@@ -11694,6 +12946,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/model.html",
     "language": "en",
@@ -11723,6 +12976,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/model.html",
     "language": "en",
@@ -11752,6 +13006,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/model.html",
     "language": "en",
@@ -11781,6 +13036,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/model.html",
     "language": "en",
@@ -11810,6 +13066,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/model.html",
     "language": "en",
@@ -11839,6 +13096,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/model.html",
     "language": "en",
@@ -11859,6 +13117,55 @@
    }
   },
   {
+   "name": "document-views-template-subscription-promotes-tutor",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000985100/view/?subscription_id=a1000000-0000-4000-8000-000000985045",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "renders": [],
+   "content_language": "en",
+   "promoted": [
+    [
+     "tino",
+     "full_collaborator"
+    ]
+   ],
+   "html": {
+    "template": "document/application/model.html",
+    "language": "en",
+    "context": {
+     "template": {
+      "t": "str",
+      "v": "<h1>Modulo</h1><p>Io sottoscritto/a Tino Gialli (GLLTNI13A01L219B), nato il 01/01/2013, tutore Mario, corsi: , oggi $today.</p>"
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli &amp; soci - CF 01234567890<br/>Data: $today, contatto alfa@example.test, iscritto </p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Grazie da @Denominazione — </p>\n<p> </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "document-views-template-head",
+   "actor": "owner",
+   "method": "HEAD",
+   "path": "/document/template/a1000000-0000-4000-8000-000000985100/view/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"HEAD\" not allowed."
+   },
+   "renders": [],
+   "content_language": "en",
+   "promoted": []
+  },
+  {
    "name": "document-views-template-subscription-without-associate",
    "actor": "owner",
    "method": "GET",
@@ -11868,6 +13175,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/model.html",
     "language": "en",
@@ -11899,6 +13207,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/model.html",
     "language": "en",
@@ -11930,6 +13239,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/model.html",
     "language": "en",
@@ -11959,6 +13269,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/model.html",
     "language": "en",
@@ -11988,6 +13299,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/model.html",
     "language": "en",
@@ -12017,6 +13329,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "en",
+   "promoted": [],
    "html": {
     "template": "document/application/model.html",
     "language": "en",
@@ -12047,7 +13360,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-athlete-own-subscription",
@@ -12060,7 +13374,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-athlete-other-subscription",
@@ -12073,7 +13388,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-athlete-unknown",
@@ -12084,7 +13400,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-member",
@@ -12097,7 +13414,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-instructor-account",
@@ -12110,7 +13428,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-unknown",
@@ -12121,7 +13440,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-invalid-uuid",
@@ -12132,7 +13452,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-template-scoped-athlete-denied",
@@ -12148,7 +13469,8 @@
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-anonymous",
@@ -12161,7 +13483,8 @@
     "detail": "Authentication credentials were not provided."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-invalid-bearer",
@@ -12184,7 +13507,8 @@
     ]
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-admin-without-session",
@@ -12197,7 +13521,8 @@
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-restricted-collaborator",
@@ -12210,7 +13535,8 @@
     "detail": "Access denied: No permission mapping for endpoint 'document/medical-appointment/a1000000-0000-4000-8000-000000985110/view'. Contact administrator to grant access."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-put-not-allowed",
@@ -12223,7 +13549,8 @@
     "detail": "Method \"PUT\" not allowed."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-post-not-allowed",
@@ -12236,7 +13563,8 @@
     "detail": "Method \"POST\" not allowed."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-options",
@@ -12258,7 +13586,8 @@
     ]
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-document-token",
@@ -12271,7 +13600,8 @@
     "detail": "Authentication credentials were not provided."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-bypass-invalid",
@@ -12286,7 +13616,8 @@
     "detail": "Authentication credentials were not provided."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-bypass-non-ascii",
@@ -12299,7 +13630,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-anonymous-invalid-uuid",
@@ -12312,7 +13644,8 @@
     "detail": "Authentication credentials were not provided."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-owner",
@@ -12324,6 +13657,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "it",
+   "promoted": [],
    "html": {
     "template": "document/medical-appointments/agonistica.html",
     "language": "it",
@@ -12570,6 +13904,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "it",
+   "promoted": [],
    "html": {
     "template": "document/medical-appointments/agonistica.html",
     "language": "it",
@@ -12814,6 +14149,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "it",
+   "promoted": [],
    "html": {
     "template": "document/medical-appointments/non-agonistica.html",
     "language": "it",
@@ -13139,6 +14475,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "it",
+   "promoted": [],
    "html": {
     "template": "document/medical-appointments/non-agonistica.html",
     "language": "it",
@@ -13258,6 +14595,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "it",
+   "promoted": [],
    "html": {
     "template": "document/medical-appointments/non-agonistica.html",
     "language": "it",
@@ -13495,6 +14833,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "it",
+   "promoted": [],
    "html": {
     "template": "document/medical-appointments/agonistica.html",
     "language": "it",
@@ -13712,6 +15051,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "it",
+   "promoted": [],
    "html": {
     "template": "document/medical-appointments/agonistica.html",
     "language": "it",
@@ -13929,6 +15269,7 @@
    "response": "<html>",
    "renders": [],
    "content_language": "it",
+   "promoted": [],
    "html": {
     "template": "document/medical-appointments/agonistica.html",
     "language": "it",
@@ -14144,7 +15485,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-athlete-other-without-associate",
@@ -14157,7 +15499,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-athlete-other-unsupported-region",
@@ -14170,7 +15513,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-athlete-unknown",
@@ -14181,7 +15525,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-athlete-invalid-uuid",
@@ -14194,7 +15539,8 @@
     "badly formed hexadecimal UUID string"
    ],
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-member-of-athlete",
@@ -14207,7 +15553,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-instructor-account",
@@ -14220,7 +15567,8 @@
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-unsupported-region",
@@ -14233,7 +15581,8 @@
     "error": "This kind of medical appointment is not supported in this endpoint"
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-unsupported-region-bypass",
@@ -14248,7 +15597,8 @@
     "error": "This kind of medical appointment is not supported in this endpoint"
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-unknown",
@@ -14259,7 +15609,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-unknown-bypass",
@@ -14272,7 +15623,8 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-invalid-uuid",
@@ -14285,7 +15637,8 @@
     "badly formed hexadecimal UUID string"
    ],
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-invalid-uuid-digits",
@@ -14300,7 +15653,8 @@
     "invalid literal for int() with base 16: 'gggggggggggggggggggggggggggggggg'"
    ],
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-medical-scoped-athlete-denied",
@@ -14316,7 +15670,8 @@
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
    "renders": [],
-   "content_language": "en"
+   "content_language": "en",
+   "promoted": []
   }
  ]
 }

@@ -320,6 +320,11 @@ Receipts are `quality-reports/go-migration/<family>-http-v2doc4-*` (`instance-lo
 | Family | Route | Was refused | Evidence |
 |---|---|---|---|
 | instance-logo | `GET instance/logo.png` | not a refusal: logo responses carry a restrictive content policy (`Content-Security-Policy: sandbox; default-src 'none'; style-src 'unsafe-inline'`, `X-Content-Type-Options: nosniff`) for every logo type, in Django and Go | Django test first (`instance.tests.test_logo`); 76 cases GREEN on 4 transports (`instance-logo-v2doc4-versioned-r1`); mutation `instance-logo-v2doc4-mutation-r1` (header dropped) CAUGHT |
+| document-views | `GET document/{subscription,compensation,template,medical-appointment}/<uid>/view/` | `get_main_tutor()` promotion (B, legacy: yes): the first tutor relation is saved as primary with its audit entry, for signed-in requests | 162 cases; RED `v2doc4-red-r1` (refusal restored in Go); GREEN `v2doc4-final-r1` 4 transports; mutation `v2doc4-mutation-r1` (last relation promoted) CAUGHT |
+| document-views | same | `HEAD` (B): the views' 405 without a body. The slash-less paths already answered the `APPEND_SLASH` redirect (unknown-paths) | same receipts |
+| documents-writes | `POST documents/add`, `POST subscription/<uid>/upload-document` | filename with NUL or lone surrogates (B): the driver's text in `documents/add`, the 500 page without writes in upload-document | 147 cases; RED `v2doc4-red-r1` (refusal restored in Go); GREEN `v2doc4-final-r1` 4 transports; mutation `v2doc4-mutation-r1` (NUL check dropped) CAUGHT |
+| documents-writes | `PATCH documents/<pk>/update` | boolean primary key (B): `uuid.UUID(int=True)` | same receipts |
+| invoice-views | `GET document/invoice/<uid>/view/` | `get_main_tutor()` promotion (B, legacy: yes), for signed-in requests | 92 cases; RED `v2doc4-red-r1` (refusal restored); GREEN `v2doc4-final-r1` 4 transports; mutation `v2doc4-mutation-r1` (last relation promoted) CAUGHT |
 <!-- v2doc4-rows -->
 
 ### Ported in the v2-rest-a change
@@ -639,19 +644,19 @@ Coordination/status doc; no refusals. Nothing to classify.
 | GET document/subscription/preview/ | header/footer markup outside `mentions` subset — notably `<pre>` (code block) | `BE_GO/internal/mentions/tree.go:34-35` via `service/document_views.go:730-734`, `ErrDocumentViewNotPorted` | **A** (`<pre>` ported in v2-documents) | Preview iframe `routes/association/Members/subscription/partials/Preview.svelte:63`. Header/footer edited with TipTap (`routes/profile/sections/Account.svelte:757,777`); `components/inputs/TipTapEditor.svelte:104` loads StarterKit, whose CodeBlock (``` input rule or pasted `<pre>`) serializes `<pre><code>`. No toolbar button, so infrequent. Other refusals (comments, mismatched tags, unknown entities) are not produced by TipTap's serializer. |
 | GET document/subscription/preview/ | mention keys outside list / `subscription.*` | `service/document_views.go:207,250,259` | B | Editor list `components/inputs/suggestion.js:9-75` matches the resolvers; `invoice.*` keys resolve to '' (no `invoice` object in context). No `subscription.*` in the editor. legacy: yes (old mention keys); cheap. |
 | GET document/subscription/preview/ | association whose user is a collaborator | handler/service preview | C | Association users are owners by construction. |
-| GET document/{subscription,compensation,template,medical-appointment}/<uid>/view/ | `get_main_tutor()` promote write | `domain.ErrViewTutorWrite` via `service/document_views.go:84` | B | Renderer-only route. legacy: yes (associates whose primary tutor relation was removed); medium (write + audit). |
+| GET document/{subscription,compensation,template,medical-appointment}/<uid>/view/ | `get_main_tutor()` promote write | `domain.ErrViewTutorWrite` via `service/document_views.go:84` | B (**ported** in v2-documents-4 for signed-in requests) | Renderer-only route. legacy: yes (associates whose primary tutor relation was removed); medium (write + audit). |
 | same | `get_signature_base64()` | document_views service | B | Renderer-only; signatures are common UI data but the UI never calls `/view/`. medium. |
 | same | template inputs outside `djtemplate`, non-ASCII compensation periods | `service/document_views.go:468` | B | Renderer-only. legacy: no; medium. |
-| same | HEAD / slash-less paths | router | B | Renderer uses slash path GET. cheap. |
+| same | HEAD / slash-less paths | router | B (**ported**, v2-documents-4: served; cases added for HEAD) | Renderer uses slash path GET. cheap. |
 
 ### documents-writes.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/<uid>/medical-certificate/upload, POST document/medical/certificate/ | multipart filename containing `&` (Go refuses any `&`, Django `html.unescape`s) | `BE_GO/internal/handler/documents_writes.go:471-472` (called at :392-394), `ErrDocumentWritesNotPorted` | **ported** (v2-subscriptions, `pyhtml.Unescape`) | `routes/association/Members/detail/sections/modals/medicalCertificateUpload.js:13-15` appends the File with `file.name`; callers `AddMedicalCertificate.svelte:88`, `Members/add/sections/Section4.svelte:50`, `subscribe/wizard/Step3.svelte:16`, `subscribe-multiple/...`, `subscribefamily/...`. A file named e.g. `Rossi & Bianchi.pdf` is refused. |
 | same | invalid UTF-8 / RFC 2231 / `Content-Transfer-Encoding` / bodies > 250 MiB | `handler/documents_writes.go:328,376,384` | B | Browsers send UTF-8 names, no CTE, no RFC 2231; UI caps certificates at 5 MB (`medicalCertificateUpload.js:1,5`). legacy: no; medium. |
-| POST documents/add, POST subscription/<uid>/upload-document | filename None / NUL / lone surrogates | `service/documents_writes.go:182,488` | B | UI sends `file.name` in JSON (`archive/Archive.svelte:104-119`, `Members/detail/sections/modals/AddFileModal.svelte:36-41`). legacy: no; cheap. |
+| POST documents/add, POST subscription/<uid>/upload-document | filename None / NUL / lone surrogates | `service/documents_writes.go:182,488` | B (NUL and surrogates **ported** in v2-documents-4; None in `documents/add` stays: the error text carries the new row's id and timestamp) | UI sends `file.name` in JSON (`archive/Archive.svelte:104-119`, `Members/detail/sections/modals/AddFileModal.svelte:36-41`). legacy: no; cheap. |
 | upload-document, archive update | uploaded file as a text field | `service/documents_writes.go:213,481,646` | B | UI sends JSON. cheap. |
-| PATCH documents/<pk>/update | boolean UUID pk; any input | `BE_GO/internal/dto/documents_writes.go:30,36,68` | B | Route not called by UI (`DOCUMENTS.UPDATE` unused). cheap. |
+| PATCH documents/<pk>/update | boolean UUID pk; any input | `BE_GO/internal/dto/documents_writes.go:30,36,68` | B (boolean pk **ported** in v2-documents-4) | Route not called by UI (`DOCUMENTS.UPDATE` unused). cheap. |
 | documents/add, medical uploads | storage key already exists | `service/documents_writes.go:105` | C | Key embeds the new document UUID (`documentkey.UploadName`). |
 | same | storage provider failure | `service/documents_writes.go:286,553` | B | Infrastructure failure, not input. legacy: no; cheap. |
 | medical-certificate/upload | `Subscription.save()` season error | `service/documents_writes.go:688` | B | Needs an invalid season start/end combination (e.g. 29/02) in association settings. legacy: possible; cheap (error text). |
@@ -817,7 +822,7 @@ No refusals of its own (re-verification record). Nothing to classify.
 ### invoice-views.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET document/invoice/<uid>/view/, document/einvoice/<uid>/view/ | `get_main_tutor()` write; stored JSON outside handled shapes; mentions/template subset; FatturaPA outside subset; HEAD/slash-less | `BE_GO/internal/service/invoice_views.go:55-57,337`; `service/invoice_views_einvoice.go:26-27` | B | Renderer-only routes (no `einvoice`/`document/invoice` in `UI/src`). legacy: yes for tutor relations and old meta JSON; medium–expensive (FatturaPA). |
+| GET document/invoice/<uid>/view/, document/einvoice/<uid>/view/ | `get_main_tutor()` write; stored JSON outside handled shapes; mentions/template subset; FatturaPA outside subset; HEAD/slash-less | `BE_GO/internal/service/invoice_views.go:55-57,337`; `service/invoice_views_einvoice.go:26-27` | BB (the `get_main_tutor()` write **ported** in v2-documents-4 for signed-in requests; HEAD and slash-less are served) | Renderer-only routes (no `einvoice`/`document/invoice` in `UI/src`). legacy: yes for tutor relations and old meta JSON; medium–expensive (FatturaPA). |
 
 ### invoice-sync-print.md
 | route | refusal condition | Go site | class | evidence / notes |

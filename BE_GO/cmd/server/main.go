@@ -303,10 +303,11 @@ func run() (runErr error) {
 	documentViews := service.NewDocumentViews(repository.NewDocumentViews(db),
 		pdfrender.New(os.Getenv("PUPPETEER_HOST"), os.Getenv("PUPPETEER_PORT"), os.Getenv("CURRENT_HOST_PUPPETEER")),
 		os.Getenv("DOCUMENT_BYPASS_TOKEN"), time.Now)
-	documentViewsHandler := handler.NewDocumentViewsHandler(documentViews, service.NewActorAuthentication(accounts, tokens), identities)
+	documentViewsHandler := handler.NewDocumentViewsHandler(documentViews, service.NewActorAuthentication(accounts, tokens), identities).
+		WithTutorPromotion(middleware.SessionAuditContext, paymentCategoryOperations)
 	// document/invoice/<uid>/view/ and document/einvoice/<uid>/view/ (the FatturaPA page of internal/fatturapa).
 	invoiceViewsHandler := handler.NewInvoiceViewsHandler(service.NewInvoiceViews(repository.NewInvoiceViews(db), documentViews),
-		service.NewActorAuthentication(accounts, tokens), identities)
+		service.NewActorAuthentication(accounts, tokens), identities).WithTutorPromotion(middleware.SessionAuditContext, paymentCategoryOperations)
 	documentRenders := service.NewDocumentRender(repository.NewDocumentRender(db),
 		pdfrender.New(os.Getenv("PUPPETEER_HOST"), os.Getenv("PUPPETEER_PORT"), os.Getenv("CURRENT_HOST_PUPPETEER")), tasks,
 		documentRenderSettings(cfg), time.Now, uuid.NewString)

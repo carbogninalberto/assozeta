@@ -830,6 +830,54 @@
    }
   },
   {
+   "name": "documents-writes-add-filename-nul",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "A string literal cannot contain NUL (0x00) characters."
+   },
+   "effect": null,
+   "body": {
+    "files": [
+     {
+      "document": "eA==",
+      "filename": "a\u0000b.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-filename-lone-surrogate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "'utf-8' codec can't encode character '\\ud800' in position 2: surrogates not allowed"
+   },
+   "effect": null,
+   "raw_body": "{\"files\": [{\"document\": \"eA==\", \"filename\": \"\\ud83d\\ude00a\\ud800.pdf\"}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "documents-writes-add-filename-surrogate-run-before-nul",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "'utf-8' codec can't encode characters in position 1-2: surrogates not allowed"
+   },
+   "effect": null,
+   "raw_body": "{\"files\": [{\"document\": \"eA==\", \"filename\": \"è\\udfff\\ud800\\u0000.pdf\"}]}",
+   "content_type": "application/json"
+  },
+  {
    "name": "documents-writes-add-owner-one-root-file",
    "actor": "owner",
    "method": "POST",
@@ -1838,6 +1886,50 @@
    }
   },
   {
+   "name": "documents-writes-update-boolean-primary-key-inserts-row",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352017/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "documents": [],
+    "archives": [],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "SportAssociationDocumentsArchive",
+      "key": "00000000-0000-0000-0000-000000000001",
+      "action": 1,
+      "changes": "$inserted",
+      "index": "changes"
+     },
+     {
+      "model": "SportAssociationDocumentsArchive",
+      "key": "00000000-0000-0000-0000-000000000001",
+      "action": 0,
+      "changes": "$inserted",
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_inserted": {
+     "from": "upk",
+     "id": "00000000-0000-0000-0000-000000000001"
+    },
+    "archive_deleted": []
+   },
+   "body": {
+    "sport_association_documents_archive_id": true
+   }
+  },
+  {
    "name": "documents-writes-update-route-delete",
    "actor": "owner",
    "method": "DELETE",
@@ -2010,6 +2102,32 @@
    "response": "<stable-server-error-page>",
    "effect": null,
    "body": []
+  },
+  {
+   "name": "documents-writes-upload-filename-nul-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document": "eA==",
+    "filename": "a\u0000b.pdf"
+   }
+  },
+  {
+   "name": "documents-writes-upload-filename-lone-surrogate-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "{\"document\": \"eA==\", \"filename\": \"a\\udc00.pdf\"}",
+   "content_type": "application/json"
   },
   {
    "name": "documents-writes-upload-malformed-json",
