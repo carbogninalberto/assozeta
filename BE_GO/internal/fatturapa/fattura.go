@@ -23,11 +23,13 @@ import (
 	"strconv"
 	"time"
 	"unicode/utf8"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
 	// ErrUnsupported is an input outside the ported subset.
-	ErrUnsupported = errors.New("fatturapa: input not ported")
+	ErrUnsupported = refusal.New("fatturapa: input not ported")
 	// ErrInvalid is an input for which generate_einvoice raises.
 	ErrInvalid = errors.New("fatturapa: generate_einvoice raises")
 )

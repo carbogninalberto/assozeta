@@ -3,6 +3,8 @@ package domain
 import (
 	"context"
 	"errors"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrExportAllDataServer is an exception export_all_data does not catch (the
@@ -10,7 +12,7 @@ import (
 // refused with the 500 page.
 var (
 	ErrExportAllDataServer    = errors.New("export all data: unhandled exception")
-	ErrExportAllDataNotPorted = errors.New("export all data: output not ported")
+	ErrExportAllDataNotPorted = refusal.New("export all data: output not ported")
 )
 
 // ExportAllDataColumn is one exported model field: Kind tells how its value

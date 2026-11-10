@@ -8,6 +8,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/google/uuid"
 )
@@ -42,10 +43,10 @@ var (
 	// port does not reproduce (indexed form keys, filenames that are not plain
 	// storable text, names Storage.save rejects, no document storage) before
 	// any write.
-	ErrCourseLocationUploadUnsupported = errors.New("course location document upload is not ported")
+	ErrCourseLocationUploadUnsupported = refusal.New("course location document upload is not ported")
 	// ErrCourseLocationPrimaryKeyChange refuses a new course_location_id on
 	// update: Model.save() would insert a copy under the new key (not ported).
-	ErrCourseLocationPrimaryKeyChange = errors.New("course location primary key change is not ported")
+	ErrCourseLocationPrimaryKeyChange = refusal.New("course location primary key change is not ported")
 )
 
 // CourseLocationValidationError is DRF's 400 field map.

@@ -2,15 +2,16 @@ package domain
 
 import (
 	"encoding/json"
-	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrInstanceAdminRefused marks an instance administration request the Go
 // port does not serve (outbound probes, the update runner, unsupported stored
 // shapes or form bodies). Handlers answer with the server error page before
 // any write.
-var ErrInstanceAdminRefused = errors.New("instance administration request not ported")
+var ErrInstanceAdminRefused = refusal.New("instance administration request not ported")
 
 // InstanceAdminRow is the singleton InstanceConfiguration as the owner-only
 // administration views read it, including encrypted credentials.

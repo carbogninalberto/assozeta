@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -21,7 +23,7 @@ var (
 	// ErrInvalid is any other exception the library raises.
 	ErrInvalid = errors.New("codicefiscale: invalid input")
 	// ErrUnsupported marks input outside the ported subset.
-	ErrUnsupported = errors.New("codicefiscale: input outside the ported subset")
+	ErrUnsupported = refusal.New("codicefiscale: input outside the ported subset")
 )
 
 const (

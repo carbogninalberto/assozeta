@@ -25,6 +25,8 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/google/uuid"
 )
 
@@ -45,7 +47,7 @@ const (
 
 // ErrNotPorted refuses a parameter value the SDK would encode in a way this
 // port does not reproduce (floats, nested lists).
-var ErrNotPorted = errors.New("stripe parameter value not ported")
+var ErrNotPorted = refusal.New("stripe parameter value not ported")
 
 // Error is an SDK exception raised for a request. InvalidRequest is
 // stripe.error.InvalidRequestError (the only class the views catch); every
@@ -343,6 +345,7 @@ func (c *Client) send(ctx context.Context, method, target string, headers http.H
 	var reader io.Reader
 	if method == http.MethodPost {
 		reader = bytes.NewReader([]byte(body))
+		handoff.MarkEffect(ctx, "stripe request")
 	}
 	request, err := http.NewRequestWithContext(ctx, method, target, reader)
 	if err != nil {

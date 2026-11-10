@@ -12,6 +12,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 )
 
@@ -23,7 +24,7 @@ var (
 	// ErrCourseListUnported refuses an ordering Django accepts lazily but Go
 	// does not port (relations, reverse relations, transforms); it is raised
 	// where Django compiles the ordering, after the pagination checks.
-	ErrCourseListUnported = errors.New("course list ordering not ported")
+	ErrCourseListUnported = refusal.New("course list ordering not ported")
 	// ErrCourseListExport is current_view_course raising (a 500): a missing
 	// or unsupported format, a body that is not a dict, a workbook
 	// get_excel_base64 fails on. A POST without all=1 returns a
@@ -31,7 +32,7 @@ var (
 	ErrCourseListExport = errors.New("course list export")
 	// ErrCourseListExportUnported refuses the PDF file, an ordering Django
 	// resolves lazily and workbook inputs xlsxexport does not reproduce.
-	ErrCourseListExportUnported = errors.New("course list export file generation not ported")
+	ErrCourseListExportUnported = refusal.New("course list export file generation not ported")
 )
 
 // CourseListExport is a POST without all=1: the handler reads request.data

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -53,7 +54,7 @@ var supplierReferences = map[string]bool{
 	"application_subscription.supplier_id": true, "application_soldproducts.supplier_id": true,
 }
 
-var errSupplierReferenceUnknown = errors.New("unported supplier reference")
+var errSupplierReferenceUnknown = refusal.New("unported supplier reference")
 
 func (t *supplierWriteTransaction) DeleteSupplier(ctx context.Context, id string, audit domain.LoginAuditContext, at time.Time) error {
 	refs, err := modelReferences(ctx, t.tx, "application_supplierandcustomers", "supplier_id")

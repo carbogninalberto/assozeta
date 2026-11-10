@@ -7,6 +7,8 @@ import (
 	"math/big"
 	"regexp"
 	"strings"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // Result is diagnostic_probe.result(status, message, level).
@@ -27,7 +29,7 @@ var errProbe = errors.New("instanceprobe: probe raised")
 
 // ErrProbeNotPorted marks an integration probe input this port does not
 // send (an AI base URL requests would rewrite).
-var ErrProbeNotPorted = errors.New("instanceprobe: integration probe input not ported")
+var ErrProbeNotPorted = refusal.New("instanceprobe: integration probe input not ported")
 
 const maxProbeBody = 262144
 

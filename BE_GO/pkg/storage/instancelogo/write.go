@@ -9,6 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 )
 
 // WriteParameters are S3Storage._get_write_parameters for an upload:
@@ -36,6 +38,7 @@ func (s *S3) Delete(ctx context.Context, name string) error {
 	if err != nil {
 		return err
 	}
+	handoff.MarkEffect(ctx, "object storage write")
 	_, err = client.DeleteObject(ctx, &s3.DeleteObjectInput{Bucket: aws.String(s.options.Bucket), Key: aws.String(key)})
 	var response *smithyhttp.ResponseError
 	if err != nil && errors.As(err, &response) && response.HTTPStatusCode() == 404 {
@@ -71,6 +74,7 @@ func (s *S3) Save(ctx context.Context, name string, body []byte, parameters Writ
 	if parameters.ACL != nil {
 		input.ACL = types.ObjectCannedACL(*parameters.ACL)
 	}
+	handoff.MarkEffect(ctx, "object storage write")
 	_, err = client.PutObject(ctx, input)
 	return err
 }

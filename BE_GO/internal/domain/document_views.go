@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // Rows the HTML views of BE/docmanager/views/printing_views.py read. JSON
@@ -118,7 +120,7 @@ var (
 	// ErrViewNotFound is DoesNotExist (or .first() returning None).
 	ErrViewNotFound = errors.New("document view: row not found")
 	// ErrViewTutorWrite: get_main_tutor() would promote a tutor relation (a write).
-	ErrViewTutorWrite = errors.New("document view: main tutor promotion")
+	ErrViewTutorWrite = refusal.New("document view: main tutor promotion")
 	// ErrViewCourseTitle: a course without a title (", ".join raises TypeError).
 	ErrViewCourseTitle = errors.New("document view: course without title")
 )

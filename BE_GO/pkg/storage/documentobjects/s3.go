@@ -26,6 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go/logging"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/s3trust"
 )
 
@@ -179,6 +180,7 @@ func (s *S3) Put(ctx context.Context, key string, body []byte, upload Upload) er
 	if upload.ACL != "" {
 		input.ACL = types.ObjectCannedACL(upload.ACL)
 	}
+	handoff.MarkEffect(ctx, "object storage write")
 	_, err = client.PutObject(ctx, input)
 	return err
 }
@@ -189,6 +191,7 @@ func (s *S3) Delete(ctx context.Context, key string) error {
 	if err != nil {
 		return err
 	}
+	handoff.MarkEffect(ctx, "object storage write")
 	_, err = client.DeleteObject(ctx, &s3.DeleteObjectInput{Bucket: aws.String(s.options.Bucket), Key: aws.String(key)})
 	var response *smithyhttp.ResponseError
 	if err != nil && ctx.Err() == nil && errors.As(err, &response) && response.HTTPStatusCode() == 404 {

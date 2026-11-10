@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 )
 
 // djangoNotFoundPage is django.views.defaults.page_not_found without a
@@ -162,6 +164,9 @@ func DjangoHTTPErrorHandler(e *echo.Echo) echo.HTTPErrorHandler {
 			if renderErr := DjangoNotFound(c); renderErr != nil {
 				e.DefaultHTTPErrorHandler(renderErr, c)
 			}
+			return
+		}
+		if !c.Response().Committed && handoff.Serve(c, err) {
 			return
 		}
 		e.DefaultHTTPErrorHandler(err, c)

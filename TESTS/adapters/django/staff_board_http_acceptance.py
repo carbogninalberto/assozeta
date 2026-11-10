@@ -81,7 +81,14 @@ def execute(report, tools, private, log):
             with _owned(services(report, log) if services else contextlib.nullcontext()), \
                     _owned(reuse.django_application(report, versioned, None, liveness_observer=guards.append,
                                                     application=getattr(runner, 'asgi_application', lambda: None)())) as (url, observer, http_port):
-                with _owned(go_service(reuse, report, work, log, tools, port, versioned)) as native:
+                # A family that sets GO_DJANGO_HANDOFF runs Go with DJANGO_HANDOFF_URL pointing
+                # at this native Django (handoff.md); every other family keeps it unset.
+                handoff = bool(getattr(runner, 'GO_DJANGO_HANDOFF', False))
+                report['go_django_handoff'] = handoff
+                go_environment = {**json.loads(os.environ.get('GO_FIXTURE_ENVIRONMENT', '{}')), 'DJANGO_HANDOFF_URL': url}
+                with (patch.dict(os.environ, {'GO_FIXTURE_ENVIRONMENT': json.dumps(go_environment)}) if handoff
+                      else contextlib.nullcontext()), \
+                        _owned(go_service(reuse, report, work, log, tools, port, versioned)) as native:
                     endpoints = [('django-native', 'django', url, guards[0]),
                                  ('go-native', 'go', native['base_url'], native[LIFECYCLE_GUARD])]
 

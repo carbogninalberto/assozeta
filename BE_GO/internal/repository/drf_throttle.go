@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // DRFThrottleCache stores SimpleRateThrottle histories exactly as Django's
@@ -23,7 +25,7 @@ func NewDRFThrottleCache(client *redis.Client) (*DRFThrottleCache, error) {
 	return &DRFThrottleCache{client: client}, nil
 }
 
-var errThrottleHistory = errors.New("unsupported throttle history value")
+var errThrottleHistory = refusal.New("unsupported throttle history value")
 
 // History is cache.get(key, []).
 func (r *DRFThrottleCache) History(ctx context.Context, key string) ([]float64, error) {

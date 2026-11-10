@@ -26,6 +26,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/googleapi"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handler"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/middleware"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfrender"
@@ -40,6 +41,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/loginimage"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/multitracer"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/redis/go-redis/v9"
@@ -88,8 +90,19 @@ func run() (runErr error) {
 		return err
 	}
 	defer func() { runErr = errors.Join(runErr, closeQueryObservation(runErr == nil)) }()
-	if queryObserver != nil {
+	// Refused requests are replayed to Django when DJANGO_HANDOFF_URL is set
+	// (docs/architecture/go-migration/handoff.md); empty keeps the 500 page.
+	djangoHandoff, err := composeHandoff(os.Getenv)
+	if err != nil {
+		return err
+	}
+	switch {
+	case queryObserver != nil && djangoHandoff.Enabled():
+		dbConfig.Tracer = multitracer.New(queryObserver, handoff.QueryTracer{})
+	case queryObserver != nil:
 		dbConfig.Tracer = queryObserver
+	case djangoHandoff.Enabled():
+		dbConfig.Tracer = handoff.QueryTracer{}
 	}
 	var db *sqlx.DB
 	if queryObserver != nil {
@@ -123,12 +136,14 @@ func run() (runErr error) {
 	redisOptions.Dialer = redisclient.DialContext(redisOptions)
 	cache := redis.NewClient(redisOptions)
 	defer cache.Close()
+	handoffRedisEffects(djangoHandoff, cache)
 	// Django's CELERY_BROKER_URL is the same Redis without a database number (DB 0).
 	brokerOptions := *redisOptions
 	brokerOptions.DB = 0
 	brokerOptions.Dialer = redisclient.DialContext(&brokerOptions)
 	broker := redis.NewClient(&brokerOptions)
 	defer broker.Close()
+	handoffRedisEffects(djangoHandoff, broker)
 	tasks := celery.NewProducer(celery.RedisBroker{Client: broker}).WithRoutes(celery.ParseRoutes(cfg.GoTaskQueueTasks))
 	tokens, err := jwt.New([]byte(cfg.JWTSigningKey), []byte(cfg.JWTVerifyingKey), time.Now)
 	if err != nil {
@@ -306,7 +321,9 @@ func run() (runErr error) {
 	e.HideBanner = true
 	e.HidePort = true
 	// Django's CORS middleware admits preflight before URL resolution/session.
-	e.Pre(middleware.QueryObservation(queryObserver), handler.InstanceBootstrapLocale(), handler.DjangoUnmatchedLocale(e), middleware.DjangoCORS(cfg.CORSAllowAll, cfg.CORSAllowedOrigins), middleware.DjangoRestoreAdmission(restoreAdmission), middleware.DjangoSecurityHeaders())
+	// The handoff middleware comes first: it needs the request as received and
+	// the raw response writer.
+	e.Pre(djangoHandoff.Middleware(), middleware.QueryObservation(queryObserver), handler.InstanceBootstrapLocale(), handler.DjangoUnmatchedLocale(e), middleware.DjangoCORS(cfg.CORSAllowAll, cfg.CORSAllowedOrigins), middleware.DjangoRestoreAdmission(restoreAdmission), middleware.DjangoSecurityHeaders())
 	// URLs no Django pattern resolves: page_not_found or APPEND_SLASH (unknown-paths.md).
 	unmatched := middleware.DjangoSessionAudit(sessionAuthentication)(handler.DjangoNotFound)
 	e.HTTPErrorHandler = handler.DjangoHTTPErrorHandler(e)
@@ -391,6 +408,7 @@ func run() (runErr error) {
 	resetOptions.Dialer = redisclient.DialContext(&resetOptions)
 	resetTokens := redis.NewClient(&resetOptions)
 	defer resetTokens.Close()
+	handoffRedisEffects(djangoHandoff, resetTokens)
 	oauthAccountsHandler := handler.NewOAuthAccountsHandler(service.NewOAuthAccounts(repository.NewOAuthAccounts(db),
 		repository.NewOAuthResetTokens(resetTokens), tasks, passwordcrypto.NewPasswordVerifier(passwordcrypto.DefaultPasswordLimits()), tokens,
 		service.NewLoginResponses(service.NewLoginProfiles(repository.NewLoginProfiles(db), time.Now),
@@ -914,6 +932,7 @@ func run() (runErr error) {
 	storeOptions.Dialer = redisclient.DialContext(&storeOptions)
 	notificationRedis := redis.NewClient(&storeOptions)
 	defer notificationRedis.Close()
+	handoffRedisEffects(djangoHandoff, notificationRedis)
 	notificationStore, err := repository.NewNotificationStore(db, notificationRedis, cache)
 	if err != nil {
 		return err

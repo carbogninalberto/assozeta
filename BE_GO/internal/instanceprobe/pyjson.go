@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrJSON is the ValueError json.loads raises (JSONDecodeError,
@@ -14,7 +16,7 @@ var ErrJSON = errors.New("instanceprobe: invalid JSON document")
 
 // ErrJSONEncoding marks a document json.loads would decode as UTF-16 or
 // UTF-32 (detect_encoding); this port does not read those.
-var ErrJSONEncoding = errors.New("instanceprobe: JSON text encoding not ported")
+var ErrJSONEncoding = refusal.New("instanceprobe: JSON text encoding not ported")
 
 // Int is a Python int parsed from JSON (decimal digits, optional minus).
 type Int string

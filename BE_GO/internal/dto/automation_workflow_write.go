@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrAutomationWorkflowInvalid is the view's generic {"msg": "workflow not valid."}.
@@ -88,7 +89,7 @@ func ParseAutomationWorkflowWrite(body any, form bool) (AutomationWorkflowWrite,
 
 // ErrAutomationWorkflowFormTreeNotPorted refuses a form-encoded automation_tree
 // (DRF JSONField parses the HTML value with Python's json.loads; not ported).
-var ErrAutomationWorkflowFormTreeNotPorted = errors.New("form-encoded automation_tree is not ported")
+var ErrAutomationWorkflowFormTreeNotPorted = refusal.New("form-encoded automation_tree is not ported")
 
 // AutomationWorkflowPatch holds the present fields of a partial
 // AutomationWorkflowSerializer; nil pointers are absent.

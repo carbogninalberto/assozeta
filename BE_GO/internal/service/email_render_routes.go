@@ -16,6 +16,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/emailrender"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/google/uuid"
 )
 
@@ -25,7 +26,7 @@ var (
 	// ErrEmailRenderServer stands for the views' uncaught exceptions (500).
 	ErrEmailRenderServer = errors.New("email render route raised")
 	// ErrEmailRenderNotPorted refuses inputs outside the port (500 before any write).
-	ErrEmailRenderNotPorted = errors.New("email render route input not ported")
+	ErrEmailRenderNotPorted = refusal.New("email render route input not ported")
 	// ErrEmailAlreadyPaid is payment_request's 412.
 	ErrEmailAlreadyPaid = errors.New("email not sent, payment already paid.")
 	// ErrEmailNoRecipient is invoice_send's 412.

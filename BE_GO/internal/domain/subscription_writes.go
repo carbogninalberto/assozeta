@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -15,7 +17,7 @@ var (
 	ErrSubscriptionEditServer = errors.New("subscription edit server error")
 	// ErrSubscriptionEditNotPorted refuses input this port does not handle,
 	// before any write (the 500 page).
-	ErrSubscriptionEditNotPorted = errors.New("subscription edit input not ported")
+	ErrSubscriptionEditNotPorted = refusal.New("subscription edit input not ported")
 )
 
 // SubscriptionEditAssociate is the stored Associate row the edit reads and

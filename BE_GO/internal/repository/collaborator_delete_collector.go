@@ -14,6 +14,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -94,7 +95,7 @@ const (
 
 // ErrCollaboratorDeleteUnsupported refuses a deletion that reaches rows whose
 // Django behaviour this port does not reproduce (see collaborator-delete-go.md).
-var ErrCollaboratorDeleteUnsupported = errors.New("collaborator delete reaches an unsupported model")
+var ErrCollaboratorDeleteUnsupported = refusal.New("collaborator delete reaches an unsupported model")
 
 // ErrCollaboratorDeleteProtected is Django's ProtectedError (a 500).
 var ErrCollaboratorDeleteProtected = errors.New("cannot delete: referenced through a protected foreign key")

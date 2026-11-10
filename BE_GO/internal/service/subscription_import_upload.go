@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"strings"
-	"sync"
+	"time"
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandascsv"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandasxlsx"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/google/uuid"
 )
@@ -24,7 +25,7 @@ var (
 	// pandascsv's subset, columns whose str.lower() differs from Go's, the
 	// import of a stored CSV document, import values outside the ported
 	// dateutil and codicefiscale subsets and a file given as document_id.
-	ErrSubscriptionImportNotPorted = errors.New("subscription import path not ported")
+	ErrSubscriptionImportNotPorted = refusal.New("subscription import path not ported")
 )
 
 // subscriptionImportKeys is SubscriptionMaps.MAP's key order.
@@ -33,13 +34,21 @@ var subscriptionImportKeys = []string{"nome", "cognome", "sesso", "codice fiscal
 	"data di nascita tutore", "città di nascita tutore", "città di residenza tutore", "indirizzo tutore", "cap tutore", "email tutore",
 	"telefono tutore", "scadenza certificato medico", "data tesseramento", "data scadenza tesseramento", "numero tessera"}
 
-// subscriptionImportMap is the class-level SubscriptionMaps.MAP that
-// auto_map_columns updates in place: one per server process, kept across
-// requests, as in each Django worker process.
-var subscriptionImportMap = struct {
-	sync.Mutex
-	values map[string]string
-}{values: map[string]string{}}
+// subscriptionImportFolder is the storage folder of the association's import
+// uploads (SubscriptionImportService.import_file_path), with its final slash.
+func subscriptionImportFolder(association string) string {
+	return "subscription-import/" + association + "/"
+}
+
+// subscriptionImportName is import_file_path as default_storage cleans it:
+// the association's import folder, then the document's own upload name.
+func subscriptionImportName(association string, created time.Time, id, filename string) (string, error) {
+	name, err := documentkey.UploadName(created, uuid.MustParse(id), filename)
+	if err != nil {
+		return "", err
+	}
+	return subscriptionImportFolder(association) + name, nil
+}
 
 // subscriptionImportDistance is editdistance.eval over code points.
 func subscriptionImportDistance(left, right []rune) int {
@@ -71,11 +80,10 @@ func subscriptionImportLower(text string) ([]rune, bool) {
 	return []rune(strings.ToLower(text)), true
 }
 
-// subscriptionImportAutoMap is auto_map_columns(columns, MAP) followed by the
-// rendered MAP, under the process-wide lock.
+// subscriptionImportAutoMap is auto_map_columns(columns, map) on the
+// request's own copy of SubscriptionMaps.MAP, rendered.
 func subscriptionImportAutoMap(columns []string) domain.RequestObject {
-	subscriptionImportMap.Lock()
-	defer subscriptionImportMap.Unlock()
+	mapped := make(map[string]string, len(columns))
 	keys := append([]string(nil), subscriptionImportKeys...)
 	for _, column := range columns {
 		lowered, _ := subscriptionImportLower(column)
@@ -90,30 +98,25 @@ func subscriptionImportAutoMap(columns []string) domain.RequestObject {
 			}
 		}
 		if chosen >= 0 {
-			subscriptionImportMap.values[keys[chosen]] = column
+			mapped[keys[chosen]] = column
 			keys = append(keys[:chosen], keys[chosen+1:]...)
 		}
 	}
-	return subscriptionImportRendered()
+	return subscriptionImportRendered(mapped)
 }
 
-// subscriptionImportRendered is MAP as the response renders it (lock held).
-func subscriptionImportRendered() domain.RequestObject {
+// subscriptionImportRendered is the request's map as the response renders
+// it: every key of SubscriptionMaps.MAP in order, None unless mapped.
+func subscriptionImportRendered(mapped map[string]string) domain.RequestObject {
 	rendered := make(domain.RequestObject, 0, len(subscriptionImportKeys))
 	for _, key := range subscriptionImportKeys {
 		var value any
-		if column, ok := subscriptionImportMap.values[key]; ok {
+		if column, ok := mapped[key]; ok {
 			value = column
 		}
 		rendered = append(rendered, domain.RequestField{Name: key, Value: value})
 	}
 	return rendered
-}
-
-func subscriptionImportRenderedMap() domain.RequestObject {
-	subscriptionImportMap.Lock()
-	defer subscriptionImportMap.Unlock()
-	return subscriptionImportRendered()
 }
 
 // SubscriptionImportUpload ports subscription_import_upload: the upload
@@ -130,8 +133,9 @@ func NewSubscriptionImportUpload(store domain.SubscriptionImportStore, uploads *
 }
 
 // storeImportFile is upload_and_store_file: Document.objects.create (audited,
-// indexed to the actor's association), then default_storage.save.
-func (s *DocumentUploads) storeImportFile(ctx context.Context, identity domain.ResolvedIdentity, file domain.RequestFile,
+// indexed to the actor's association), then default_storage.save under the
+// association's import folder.
+func (s *DocumentUploads) storeImportFile(ctx context.Context, identity domain.ResolvedIdentity, association string, file domain.RequestFile,
 	audit domain.LoginAuditContext) (domain.NewDocument, error) {
 	tx, err := s.store.BeginDocumentUpload(ctx)
 	if err != nil {
@@ -151,7 +155,11 @@ func (s *DocumentUploads) storeImportFile(ctx context.Context, identity domain.R
 	if err = tx.Commit(); err != nil {
 		return document, err
 	}
-	return document, s.save(ctx, document, file.Content)
+	name, err := subscriptionImportName(association, document.Created, document.ID, document.Filename)
+	if err != nil {
+		return document, err
+	}
+	return document, s.saveNamed(ctx, name, file.Content)
 }
 
 // Upload follows the view: the association (401 without one), data.keys(),
@@ -185,7 +193,7 @@ func (s *SubscriptionImportUpload) Upload(ctx context.Context, identity domain.R
 		if err = tx.Rollback(); err != nil {
 			return nil, err
 		}
-		return s.upload(ctx, identity, file, audit)
+		return s.upload(ctx, identity, *association, file, audit)
 	}
 	_, hasDocument := data.Lookup("document_id")
 	_, hasMap := data.Lookup("map")
@@ -233,8 +241,10 @@ func subscriptionImportExcel(lower string) bool {
 }
 
 // importDocument is the mapping branch after the lookup: the stored file's
-// frame (a failure is the 500 page, before any write), then the import
-// between the two status changes; the answer names the columns and MAP.
+// frame, read from the association's import folder (a document with no
+// object there, or a failed read, is the 500 page before any write), then
+// the import between the two status changes; the answer names the columns
+// and the request's map, which no upload filled.
 func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity domain.ResolvedIdentity, association, id string,
 	document domain.SubscriptionImportDocument, data domain.RequestObject, audit domain.LoginAuditContext) (domain.RequestObject, error) {
 	lower := strings.ToLower(document.Filename)
@@ -244,7 +254,7 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 	case !subscriptionImportExcel(lower):
 		return nil, ErrSubscriptionImportServerError // TypeError: file extension not recognized
 	}
-	name, err := documentkey.UploadName(document.Created, uuid.MustParse(id), document.Filename)
+	name, err := subscriptionImportName(association, document.Created, id, document.Filename)
 	if err != nil {
 		return nil, errors.Join(ErrSubscriptionImportNotPorted, err)
 	}
@@ -254,7 +264,7 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 	}
 	content, err := s.objects.Read(ctx, key)
 	if err != nil {
-		return nil, errors.Join(ErrSubscriptionImportServerError, err) // default_storage.open(...).read()
+		return nil, errors.Join(ErrSubscriptionImportServerError, err) // ValueError('No document found') or the failed read
 	}
 	frame, err := pandasxlsx.Read(content)
 	switch {
@@ -278,10 +288,10 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 	for i, column := range frame.Columns {
 		list[i] = column
 	}
-	return domain.RequestObject{{Name: "columns", Value: list}, {Name: "map", Value: subscriptionImportRenderedMap()}}, nil
+	return domain.RequestObject{{Name: "columns", Value: list}, {Name: "map", Value: subscriptionImportRendered(nil)}}, nil
 }
 
-func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.ResolvedIdentity, file domain.RequestFile,
+func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.ResolvedIdentity, association string, file domain.RequestFile,
 	audit domain.LoginAuditContext) (domain.RequestObject, error) {
 	lower := strings.ToLower(file.Name)
 	csv := strings.HasSuffix(lower, ".csv")
@@ -311,7 +321,7 @@ func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.R
 			return nil, ErrSubscriptionImportNotPorted
 		}
 	}
-	document, err := s.uploads.storeImportFile(ctx, identity, file, audit)
+	document, err := s.uploads.storeImportFile(ctx, identity, association, file, audit)
 	if err != nil {
 		return nil, err
 	}

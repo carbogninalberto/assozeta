@@ -12,6 +12,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // CourseEnrolment ports CourseSubscriptionViewSet.add (atomic),
@@ -30,7 +31,7 @@ func NewCourseEnrolment(store domain.CourseEnrolmentStore, now func() time.Time,
 
 // ErrCourseEnrolmentNotPorted refuses inputs this port does not reproduce,
 // before any write (see course-enrolment.md).
-var ErrCourseEnrolmentNotPorted = errors.New("course enrolment input is not ported")
+var ErrCourseEnrolmentNotPorted = refusal.New("course enrolment input is not ported")
 
 // CourseEnrolmentInvalid is the serializer's 400: one field map, or one per
 // item for a list body.

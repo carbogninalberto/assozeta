@@ -2,9 +2,10 @@ package domain
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // JobClearDeletedSubscription is the Celery name of clear_deleted_subscription.
@@ -13,7 +14,7 @@ const JobClearDeletedSubscription = "clear_deleted_subscription"
 // ErrClearDeletedUnsupported ends the run when a subscription's deletion
 // reaches a model the Collector port does not reproduce; that block is
 // rolled back before its commit.
-var ErrClearDeletedUnsupported = errors.New("clear_deleted_subscription reaches behaviour Go does not reproduce")
+var ErrClearDeletedUnsupported = refusal.New("clear_deleted_subscription reaches behaviour Go does not reproduce")
 
 type ClearDeletedSubscriptionStore interface {
 	// BeginClearDeleted opens a READ COMMITTED transaction fenced by the job

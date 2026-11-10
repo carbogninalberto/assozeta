@@ -17,35 +17,43 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
 - **`associates_file`** (wins over the other keys): a value that is not an uploaded file is a 500 before any write.
   `upload_and_store_file`: `Document.objects.create(filename=file.name)` (auditlog create indexed to the actor's own
   association, `SportAssociation.objects.filter(user=actor).first()`; a collaborator has none) and `default_storage.save`
-  of the bytes under `<str(creation_date.timestamp())>/<id>/<name>` (see [documents-writes](documents-writes.md)). Then
+  of the bytes under `subscription-import/<association id>/<str(creation_date.timestamp())>/<id>/<name>`
+  (`SubscriptionImportService.import_file_path`: the import folder of the request's association; the name rules are those
+  of [documents-writes](documents-writes.md)). Then
   `get_pandas_df_from_file` on the lower-cased path: `.csv` is `pandas.read_csv(file, delimiter=';')`; Excel suffixes use
   `read_excel`; anything else raises `TypeError`. pandas errors (`EmptyDataError`, `ParserError`) and the `TypeError` are
   the 500 page after the writes.
 - `columns.tolist()` (pandas 2.2 C parser: BOM, quotes and doubled quotes, `\r\n`, blank and whitespace-only lines skipped,
   `Unnamed: <i>`, `.<n>` de-duplication named-first, the first data row exempt from the field-count check and setting the
-  expected count when longer than the header) and `auto_map_columns(columns, SubscriptionMaps.MAP)`: per column, the first
-  key whose edit distance (code points, lower-cased) is the smallest below `len(column) * 0.25`, each key once per
-  request. MAP is the class attribute, updated in place: its values persist across requests of the same server process.
-  Go keeps one process-wide map with the same updates (`subscriptionImportMap`).
-- Answer `200 {'columns': [...], 'map': MAP, 'document_id': <id>}`.
+  expected count when longer than the header) and `auto_map_columns(columns, map)` on the request's own copy of
+  `SubscriptionMaps.MAP`: per column, the first key whose edit distance (code points, lower-cased) is the smallest below
+  `len(column) * 0.25`, each key once per request. The class attribute is never written; Go builds the map per request
+  (`subscriptionImportAutoMap`).
+- Answer `200 {'columns': [...], 'map': <map>, 'document_id': <id>}`: every key, with the columns of this upload.
 - **Excel uploads** (a name ending in `xls`, `xlsx`, `xlsm`, `xlsb`, `odf`, `ods` or `odt`): `pandas.read_excel(file,
   engine="openpyxl")` reads the bytes whatever the suffix says. A failure falls back to the `xlrd` engine, which is not
   installed: the 500 page after the writes (a legacy `.xls`, an `.ods` archive, text named `.xlsx`). The frame is the first
   worksheet, read as openpyxl's read-only, data-only workbook gives it (see "Workbook reading").
 - **`document_id` and `map`**: `is_valid_uuid(document_id)` is 400 `[str(exception)]` (`badly formed hexadecimal UUID
   string`, `'<type>' object has no attribute 'replace'`, or the no-argument TypeError for None). The document is resolved by
-  id (`Document.objects.filter(document_id=...).first()`); none is a 500. The stored object is read the same way as an
-  upload; a failure is the 500 page before any write.
+  id (`Document.objects.filter(document_id=...).first()`); none is a 500. Its file is the one in the import folder of the
+  request's association (`import_file_path`, `default_storage.exists`): a document with no file there (an upload of another
+  association, a document stored by another feature) is the same `ValueError('No document found')`, a 500 before any
+  write. The stored object is read the same way as an upload; a failure is the 500 page before any write. Go reads the
+  object under the same key and answers the 500 page when it is absent.
 - The import runs inside `try/except/finally`:
   - `manage_import_status('start')` deletes the association's IMPORTING `AssociateImportDraftStatus` rows and creates one
     (audited, indexed to the association).
   - `process_import_rows`: for each row of `iterrows()` and each key of `map` in order, the field is
     `KEY_TO_FIELD_ASSOCIATE[key.replace('tutore', '').strip()]` and the value the cell of the mapped column (None without
-    a column). Text is stripped; `'nan'` is None. Birth and membership dates that are true go through
+    a column). Text is stripped; `'nan'` is None, and so is `NaT` (an empty cell of a date column). Birth and membership
+    dates that are true go through
     `dateutil.parser.parse(str(value))` to `%d/%m/%Y`, or None when it raises (`A/B/YYYY` reads the month first). A missing
     `sex` is `'A'`. A true `certificate_expiring_date` creates a `MedicalCertificate` for `request.user` (audited, indexed
     to the actor's own association) and saves its expiration, or deletes it when the text is no date; the row gets
-    `medical_certificate: {medical_id, filename: None, certificate_expring_date}`. A None value takes
+    `medical_certificate: {medical_id, filename: None, certificate_expring_date}`. A date cell of that column is then
+    stored as `%d/%m/%Y` (`stored_certificate_date`), the format of `certificate_expring_date` that the draft edit and the
+    approval read; text stays as written. A None value takes
     `data['default'][key]` when present. Keys containing `tutore` fill `associate_tutor`.
   - `born_city` missing with a `tax_code`: `codicefiscale.decode` (once more with the expected control character when only
     that one is wrong) gives the birthplace name; every exception leaves it missing.
@@ -53,11 +61,11 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
   - `valid`: every mandatory field present, not None and not `''`, and the tax code matching the pattern.
   - `AssociateImportDraft.objects.bulk_create` (no audit entries).
   - Any exception is logged and swallowed: a key outside `KEY_TO_FIELD_ASSOCIATE`, a `map` that is not an object, a tax
-    code that is not text in a complete row, or a row value `json.dumps` cannot encode (a date cell or an empty cell of a
-    date column mapped to a field that is not a birth or membership date). What was saved before it stays (certificates),
-    no draft is created.
+    code that is not text in a complete row, or a row value `json.dumps` cannot encode (a date cell mapped to a field
+    that is not a birth, membership or certificate date). What was saved before it stays (certificates), no draft is
+    created.
   - `manage_import_status('end')` deletes the status.
-- Answer `200 {'columns': [...], 'map': MAP}` either way.
+- Answer `200 {'columns': [...], 'map': <map>}` either way; no upload filled the map, so every key is None.
 - Otherwise `TypeError`: 500.
 
 ## Workbook reading (`BE_GO/internal/pandasxlsx`)
@@ -99,15 +107,27 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
 ## Evidence (TDD)
 
 - `go test ./internal/pandascsv`: 8,379 inputs parsed by pandas 2.2.3 (`TESTS/adapters/go/pandas_csv_golden.py`).
-- `TESTS/fixtures/subscription_import_upload_http.json` (44 cases, `generate_subscription_import_upload_http.py`) on
-  documents-writes' private MinIO, with seeded status rows. The first upload maps every key the sequence maps, so the Caddy
-  workload (same server processes) sees the same MAP. Upload cases check the response (the `document_id` bound to the
-  created Document), the complete model state, the Document's audit entry and index row, and the stored object. The
-  workbooks are real `.xlsx` archives the generator assembles; three stay in the bucket for the imports that name them.
+- `TESTS/fixtures/subscription_import_upload_http.json` (47 cases, `generate_subscription_import_upload_http.py`) on
+  documents-writes' private MinIO, with seeded status rows and one seeded Document whose workbook lies under
+  `<timestamp>/<id>/<name>`. Upload cases check the response (the `document_id` bound to the created Document, the map of
+  that upload's columns only), the complete model state, the Document's audit entry and index row, and the stored object
+  under the association's import folder. The workbooks are real `.xlsx` archives the generator assembles; four stay in
+  the bucket for the imports that name them (one uploaded by the other association's owner).
   Import cases check the statuses, the certificates kept and deleted, the stored drafts (data and `valid`) and the audit
   entries in order: the wizard's map, defaults with tutor and static values, the paths that stop the import (unknown key,
-  list and form `map`, a number as tax code, date cells in the certificate column), a header-only sheet and an unreadable
-  stored file.
+  list and form `map`, a number as tax code), date cells in the certificate column (a collaborator's upload imported by the
+  owner: one certificate, two drafts), a header-only sheet, an unreadable stored file, the other association's upload and
+  the seeded Document (both the 500 page with no write).
+- `BE/application/tests/test_subscription_import_upload.py`: the same three behaviours on the Django view (the map of each
+  upload, the import folder of the association, date cells of the certificate column).
+- Current evidence: RED (`secimp-red-r1`): Django 47/47; Go fails `storage.keys` on the first upload. GREEN
+  (`secimp-versioned-r1`): 47/47 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutations: reading a document
+  stored under `<timestamp>/<id>/<name>` when the import folder has none (`secimp-mutation-r1`) fails Go on
+  `subscription-import-upload-document-outside-import-folder-server-error` (`response.status`); keeping one map for the
+  process (`secimp-mutation-r2`) fails Go on `subscription-import-upload-csv-maps-its-own-columns`
+  (`response.body:map:sesso`); an import folder without the association id (`secimp-mutation-r3`) fails `storage.keys` on
+  the first upload. Re-run green (`secimp-rerun-r1`): associates-draft, documents-writes (`DocumentUploads.saveNamed`).
+- The receipts below predate the import folder, the per-request map and the stored certificate dates.
 - RED (`v2imp-red-r1`): Django 44/44; Go 500 on the first workbook.
 - GREEN (`v2imp-versioned-r1`, after merging the base): 44/44 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`v2imp-mutation-r1`): filling the birth city from the tax code even when one is set fails Go on

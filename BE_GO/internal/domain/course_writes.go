@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -18,7 +20,7 @@ var (
 	// ErrCourseWritesServer is a Django server error (500).
 	ErrCourseWritesServer = errors.New("course write server error")
 	// ErrCourseWritesNotPorted refuses an input whose Django behaviour is not ported (500, before any write).
-	ErrCourseWritesNotPorted = errors.New("course write not ported")
+	ErrCourseWritesNotPorted = refusal.New("course write not ported")
 	// ErrCourseWritesStalePayment is a course subscription save carrying a
 	// payment that was deleted meanwhile: the deferred foreign key fails.
 	ErrCourseWritesStalePayment = errors.New("course subscription payment deleted")

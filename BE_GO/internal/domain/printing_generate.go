@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrPrintingGenerateServer is an exception printing_generate does not catch
@@ -12,7 +14,7 @@ import (
 // refuses), refused with the 500 page before any write.
 var (
 	ErrPrintingGenerateServer    = errors.New("printing generate: unhandled exception")
-	ErrPrintingGenerateNotPorted = errors.New("printing generate: output not ported")
+	ErrPrintingGenerateNotPorted = refusal.New("printing generate: output not ported")
 )
 
 // PrintingAssociation is request.user.sport_association.

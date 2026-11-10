@@ -10,6 +10,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ProfileSettingsCards is the membership-card get-or-create shared with the
@@ -44,7 +45,7 @@ var (
 	ErrProfileSettingsServer = errors.New("profile settings server error")
 	// ErrProfileSettingsUpload refuses a multipart file in the request data
 	// before any write (not ported).
-	ErrProfileSettingsUpload = errors.New("profile settings upload is not ported")
+	ErrProfileSettingsUpload = refusal.New("profile settings upload is not ported")
 )
 
 // ProfileIntegrations is the PATCH response: the assigned request values.

@@ -24,6 +24,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 )
 
 const (
@@ -107,6 +109,9 @@ func (t *Transport) address(target string) string {
 
 // Do sends method target with the headers (after Host) and body.
 func (t *Transport) Do(ctx context.Context, method, target string, headers []Header, body []byte) (*Response, error) {
+	if method != "GET" && method != "HEAD" {
+		handoff.MarkEffect(ctx, "google request")
+	}
 	address := t.address(target)
 	scheme, rest, ok := strings.Cut(address, "://")
 	if !ok || (scheme != "http" && scheme != "https") {

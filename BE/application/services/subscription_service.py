@@ -13,6 +13,7 @@ import os
 import re
 import dateutil
 import editdistance
+import pandas
 
 from django.core.files.storage import default_storage
 from django.db import transaction
@@ -640,13 +641,38 @@ class SubscriptionImportService:
     Handles bulk import of subscriptions from files.
     """
 
+    # Storage folder of the files uploaded for an import, under which each association has its own folder.
+    IMPORT_DIR = 'subscription-import'
+
     @staticmethod
-    def upload_and_store_file(associates_file):
+    def import_file_path(document, sport_association):
+        """
+        Path of the file of an import upload: the association's import folder, then the document's own.
+
+        Args:
+            document: Document of the upload
+            sport_association: SportAssociation the upload belongs to
+
+        Returns:
+            str: File path
+        """
+        return os.path.join(
+            STORAGE_DIR,
+            SubscriptionImportService.IMPORT_DIR,
+            str(sport_association.sport_association_id),
+            str(document.creation_date.timestamp()),
+            str(document.document_id),
+            document.filename
+        )
+
+    @staticmethod
+    def upload_and_store_file(associates_file, sport_association):
         """
         Upload file and store it, returning document and file path.
 
         Args:
             associates_file: Uploaded file object
+            sport_association: SportAssociation the upload belongs to
 
         Returns:
             tuple: (Document, file_path)
@@ -654,12 +680,7 @@ class SubscriptionImportService:
         document = Document.objects.create(filename=associates_file.name)
         document.save()
 
-        storing_path = os.path.join(
-            STORAGE_DIR,
-            str(document.creation_date.timestamp()),
-            str(document.document_id)
-        )
-        file_path = os.path.join(storing_path, document.filename)
+        file_path = SubscriptionImportService.import_file_path(document, sport_association)
         default_storage.save(file_path, associates_file.file)
 
         return document, file_path
@@ -697,12 +718,13 @@ class SubscriptionImportService:
                 column_map[key_to_remove] = key_to_map
 
     @staticmethod
-    def retrieve_document_path(document_id):
+    def retrieve_document_path(document_id, sport_association):
         """
-        Retrieve the file path for an existing document.
+        Retrieve the file path of a document uploaded for an import of the association.
 
         Args:
             document_id: UUID of the document
+            sport_association: SportAssociation running the import
 
         Returns:
             str: File path
@@ -717,12 +739,9 @@ class SubscriptionImportService:
         if document is None:
             raise ValueError('No document found')
 
-        storing_path = os.path.join(
-            STORAGE_DIR,
-            str(document.creation_date.timestamp()),
-            str(document.document_id)
-        )
-        file_path = os.path.join(storing_path, document.filename)
+        file_path = SubscriptionImportService.import_file_path(document, sport_association)
+        if not default_storage.exists(file_path):
+            raise ValueError('No document found')
 
         return file_path
 
@@ -741,6 +760,9 @@ class SubscriptionImportService:
         if value is not None and isinstance(value, str):
             value = value.strip()
         if str(value) == 'nan':
+            value = None
+        # An empty cell of a date column
+        if value is pandas.NaT:
             value = None
 
         # Handle membership dates
@@ -794,6 +816,22 @@ class SubscriptionImportService:
             except Exception as e:
                 logger.info(f"Exception {e}")
                 medical_certificate.delete()
+
+    @staticmethod
+    def stored_certificate_date(value):
+        """
+        Value of certificate_expiring_date as the draft stores it: a date cell
+        becomes the day/month/year text the certificate data carries.
+
+        Args:
+            value: Processed value of the cell
+
+        Returns:
+            Value to store
+        """
+        if isinstance(value, datetime):
+            return value.strftime('%d/%m/%Y')
+        return value
 
     @staticmethod
     def enrich_with_tax_code_data(row_data):
@@ -904,6 +942,8 @@ class SubscriptionImportService:
                 SubscriptionImportService.create_medical_certificate_if_needed(
                     inverse_mapped_key, value, user, row_data
                 )
+                if inverse_mapped_key == 'certificate_expiring_date':
+                    value = SubscriptionImportService.stored_certificate_date(value)
 
                 # Assign value to appropriate target (tutor or associate)
                 target = row_data['associate_tutor'] if "tutore" in key else row_data['associate']

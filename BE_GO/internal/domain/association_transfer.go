@@ -2,14 +2,15 @@ package domain
 
 import (
 	"context"
-	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrAssociationTransferNotPorted refuses association export/import paths
 // whose Django behaviour needs storage, Celery or cache values this port does
 // not read (see docs/architecture/go-migration/association-transfer.md).
-var ErrAssociationTransferNotPorted = errors.New("association transfer path not ported")
+var ErrAssociationTransferNotPorted = refusal.New("association transfer path not ported")
 
 // AssociationExportRow is one SportAssociationDocumentsArchive row with its
 // Document, as export/list renders it.

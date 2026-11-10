@@ -1,6 +1,10 @@
 package domain
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
+)
 
 // ErrInstanceSetupRefused marks an instance setup request the Go port does
 // not serve (an import whose task has a ready result, values the database
@@ -8,7 +12,7 @@ import "errors"
 // Python's Unicode lowercasing, URL values that need the IDNA fallback, a
 // storage name collision after the old logos are deleted). Handlers answer
 // with the server error page before any write.
-var ErrInstanceSetupRefused = errors.New("instance setup request not ported")
+var ErrInstanceSetupRefused = refusal.New("instance setup request not ported")
 
 // ErrInstanceSetupExists is InstanceConfiguration.save's singleton check
 // failing inside the setup transaction (a configuration appeared after the

@@ -15,6 +15,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/emailrender"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/google/uuid"
 )
 
@@ -30,7 +31,7 @@ var (
 	ErrSubscriptionTransferFailed = errors.New("subscription transfer failed")
 	// ErrSubscriptionTransferNotPorted refuses, before any write, a transfer
 	// whose save the port does not reproduce (see subscription-transfer.md).
-	ErrSubscriptionTransferNotPorted = errors.New("subscription transfer path not ported")
+	ErrSubscriptionTransferNotPorted = refusal.New("subscription transfer path not ported")
 )
 
 // subscriptionTransferValidity is default_expires_at's 30 days.

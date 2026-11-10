@@ -15,17 +15,17 @@
 package mentions
 
 import (
-	"errors"
 	"fmt"
 	"sort"
 	"strings"
 	"unicode"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrUnsupported marks markup or a mention outside the port.
-var ErrUnsupported = errors.New("mentions: unsupported input")
+var ErrUnsupported = refusal.New("mentions: unsupported input")
 
 func unsupported(format string, args ...any) error {
 	return fmt.Errorf("%w: %s", ErrUnsupported, fmt.Sprintf(format, args...))

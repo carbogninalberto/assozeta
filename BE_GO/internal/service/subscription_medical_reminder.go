@@ -2,20 +2,20 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/google/uuid"
 )
 
 // ErrMedicalReminderNotPorted refuses an associate without an email whose
 // tutor relations are all non-primary: get_main_tutor would save the first
 // relation as primary (an audited write) before the e-mail is queued.
-var ErrMedicalReminderNotPorted = errors.New("medical reminder tutor promotion not ported")
+var ErrMedicalReminderNotPorted = refusal.New("medical reminder tutor promotion not ported")
 
 // MedicalReminderSettings are the core.settings values the reminder renders.
 type MedicalReminderSettings struct {

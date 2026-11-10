@@ -2,12 +2,12 @@ package dto
 
 import (
 	"encoding/json"
-	"errors"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // InstanceBackupsArchive is backups.ARCHIVE (fullmatch). Python's str \d is
@@ -16,7 +16,7 @@ var InstanceBackupsArchive = regexp.MustCompile(`^assozeta-\p{Nd}{8}T\p{Nd}{6}Z(
 
 // ErrInstanceBackupsNotPorted marks input whose DRF handling Go does not
 // carry (lone surrogate code points in a CharField).
-var ErrInstanceBackupsNotPorted = errors.New("instance backups input not ported")
+var ErrInstanceBackupsNotPorted = refusal.New("instance backups input not ported")
 
 // InstanceBackupsToken is a valid DownloadTokenSerializer.
 type InstanceBackupsToken struct{ Name, Password string }

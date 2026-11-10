@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/jwt"
 	"github.com/labstack/echo/v4"
@@ -127,6 +128,11 @@ func restError(c echo.Context, err error) error {
 	case errors.Is(err, service.ErrRefreshInvalid):
 		return c.JSON(401, map[string]string{"msg": "Invalid or expired refresh token"})
 	default:
+		// A refused (not ported) input is answered by Django when handoff is
+		// configured and the request is still replayable.
+		if handoff.Serve(c, err) {
+			return nil
+		}
 		// Never serialize provider errors or credentials into responses/logs.
 		c.Response().Header().Del("Allow")
 		return c.Blob(500, "text/html; charset=utf-8", []byte("\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n"))

@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -21,7 +23,7 @@ var (
 	ErrModuleDocumentNotFound = errors.New("document not found")
 	// ErrModuleResponsesNotPorted refuses an input whose Django path is not
 	// ported, before any write (the 500 page).
-	ErrModuleResponsesNotPorted = errors.New("module responses input not ported")
+	ErrModuleResponsesNotPorted = refusal.New("module responses input not ported")
 )
 
 // ModuleQueueRow is one response of update_queue's queryset.

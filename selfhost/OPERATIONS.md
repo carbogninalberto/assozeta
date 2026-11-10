@@ -285,6 +285,31 @@ is always served by Django, so a browser that cannot load the page can still be
 moved with `?api=v1`. A custom `HOST` baked into a frontend build keeps that
 host and ignores the setting.
 
+## Requests the Go API passes to Django
+
+The Go API does not serve some rare inputs yet. With `DJANGO_HANDOFF_URL` set,
+`api-go` replays such a request to the Django API (same method, path, query,
+headers and body) and returns Django's answer unchanged, so the web interface
+works the same on v2. `compose.yml` sets it to `http://api:8000`, the Django
+service on the internal network.
+
+- A passed request has the response header `X-Assozeta-Handoff: django` and one
+  `api-go` log line `handoff to django` with the method, route, status and
+  reason. Find them with `docker compose logs api-go | grep handoff`.
+- Go passes a request only when it has changed nothing: no database, cache or
+  storage write, nothing sent, no response started. Otherwise it answers 500 as
+  before and logs `handoff skipped` with the cause. The streamed backup upload
+  is never passed, and neither is a body over `DJANGO_HANDOFF_MAX_BODY_BYTES`
+  (default 10485760, 10 MiB).
+- If Django cannot be reached, Go answers 500 and logs `handoff skipped` with
+  `upstream error`.
+- To switch it off, set `DJANGO_HANDOFF_URL=` (empty) in `.env` and recreate
+  `api-go` (`docker compose up -d api-go`). Those requests then answer 500.
+
+The value must be an `http://` or `https://` URL without credentials or query.
+Keep it on the internal network: Go forwards the caller's headers, including
+the session token.
+
 # Run background tasks on Go
 
 The Go Celery consumer (`worker-go`, from the `assozeta-backend-go` image) is an

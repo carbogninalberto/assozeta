@@ -52,6 +52,17 @@ class GoComposeTests(unittest.TestCase):
             self.assertNotIn('worker-go', services)
             self.assertNotIn('beat-go', services)
 
+    def test_django_handoff_can_be_switched_off(self):
+        with TemporaryDirectory() as directory:
+            env_file = Path(directory) / '.env'
+            env_file.write_text((ROOT / 'selfhost/.env.example').read_text() + '\nDJANGO_HANDOFF_URL=\n')
+            result = subprocess.run(['docker', 'compose', '--env-file', str(env_file), '-f',
+                                     str(ROOT / 'selfhost/compose.yml'), 'config', '--format', 'json'],
+                                    env={**os.environ, 'ASSOZETA_ENV_FILE': str(env_file),
+                                         'ASSOZETA_SELFHOST_DIR': directory},
+                                    capture_output=True, text=True, check=True)
+            self.assertEqual(json.loads(result.stdout)['services']['api-go']['environment']['DJANGO_HANDOFF_URL'], '')
+
     def test_operational_migrator_reuses_go_image_configuration_without_http_health(self):
         with TemporaryDirectory() as directory:
             env_file = Path(directory) / '.env'
@@ -71,9 +82,12 @@ class GoComposeTests(unittest.TestCase):
                 'GO_LOGO_SPOOL_DIR': '/var/cache/assozeta-logo',
                 'GO_MESSAGE_LIST_SPOOL_DIR': '/var/cache/assozeta-message-list',
             }
+            # Only the HTTP API hands refused requests off to Django.
+            self.assertEqual(api['environment']['DJANGO_HANDOFF_URL'], 'http://api:8000')
+            self.assertNotIn('DJANGO_HANDOFF_URL', migration['environment'])
             self.assertEqual(migration['environment'], {
                 name: value for name, value in api['environment'].items()
-                if name not in http_spools})
+                if name not in http_spools and name != 'DJANGO_HANDOFF_URL'})
             self.assertEqual(migration['volumes'], [
                 volume for volume in api['volumes'] if volume['target'] not in http_spools.values()])
             for variable, target in http_spools.items():

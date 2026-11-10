@@ -9,6 +9,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // AssociateDrafts ports the subscription/associates-draft list, add, edit,
@@ -28,7 +29,7 @@ var (
 	ErrAssociateDraftFailed = errors.New("associate import draft request failed")
 	// ErrAssociateDraftNotPorted refuses inputs whose Django behaviour is not
 	// reproduced (dateutil formats outside the ported subset), before any write.
-	ErrAssociateDraftNotPorted = errors.New("associate import draft input not ported")
+	ErrAssociateDraftNotPorted = refusal.New("associate import draft input not ported")
 )
 
 // associateDraftMandatory is SubscriptionMaps.get_mandatory_fields().

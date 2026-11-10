@@ -13,6 +13,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -24,7 +25,7 @@ var (
 	// ErrPersonaUnhandled is an exception Django does not handle (the 500 page).
 	ErrPersonaUnhandled = errors.New("unhandled persona queryset error")
 	// ErrPersonaNotPorted refuses inputs whose Django semantics are not ported (the 500 page, never a guessed body).
-	ErrPersonaNotPorted = errors.New("persona input not ported")
+	ErrPersonaNotPorted = refusal.New("persona input not ported")
 )
 
 type Personas struct {

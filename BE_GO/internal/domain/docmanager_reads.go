@@ -2,14 +2,15 @@ package domain
 
 import (
 	"context"
-	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrDocmanagerNotPorted refuses a docmanager path that renders a PDF (Puppeteer
 // and the Celery storage task), deletes a document, or depends on behaviour this
 // port does not reproduce. It is answered with the 500 page before any write.
-var ErrDocmanagerNotPorted = errors.New("docmanager path not ported")
+var ErrDocmanagerNotPorted = refusal.New("docmanager path not ported")
 
 // StoredDocument is the docmanager.Document row a retrieval streams.
 type StoredDocument struct {
