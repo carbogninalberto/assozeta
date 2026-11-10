@@ -125,6 +125,22 @@ func (s *S3) Exists(ctx context.Context, key string) (bool, error) {
 	return false, err
 }
 
+// Size is S3Storage.size(name): the object's ContentLength (HeadObject).
+func (s *S3) Size(ctx context.Context, key string) (int64, error) {
+	client, err := s.client(ctx)
+	if err != nil {
+		return 0, err
+	}
+	output, err := client.HeadObject(ctx, &s3.HeadObjectInput{Bucket: aws.String(s.options.Bucket), Key: aws.String(key)})
+	if err != nil {
+		return 0, err
+	}
+	if output.ContentLength == nil {
+		return 0, errors.New("object without a content length")
+	}
+	return *output.ContentLength, nil
+}
+
 // Open is the GetObject of PrintingService._stream_file_response.
 func (s *S3) Open(ctx context.Context, key string) (*Object, error) {
 	client, err := s.client(ctx)

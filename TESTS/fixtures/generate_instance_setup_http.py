@@ -244,6 +244,67 @@ add('configure-import-pending-task', 'anonymous', CONFIGURE, 500,
     {'success': False, 'error': 'Import task is still in progress. Please wait for completion.'},
     body=setup_body(initialization={'type': 'import', 'importTaskId': 'b3000000-0000-4000-8000-000000000001'}), headers=TOKEN)
 
+# --- import setups (each linked configuration is removed by the runner) -----
+# InstanceSetupView._link_imported_instance reads the import task's stored
+# result inside the setup transaction: a failure raises and rolls back.
+IMPORT_TASKS = {}
+
+
+def import_task(key, status, result):
+    IMPORT_TASKS[key] = {'task_id': f'b3000000-0000-4000-8000-{100 + len(IMPORT_TASKS):012d}', 'status': status, 'result': result}
+    return IMPORT_TASKS[key]['task_id']
+
+
+def import_body(task):
+    return setup_body(oem={'name': ' Istanza Importata ', 'primaryColor': '#123ABC'},
+                      initialization={'type': 'import', 'importTaskId': task, 'associationName': 'ignored'})
+
+
+IMPORTED = {'domain': 'setup.example.test', 'name': 'Istanza Importata', 'abbreviation': '', 'primary_color': '#123ABC',
+            'support_email': '', 'logo_path': '', 'setup_provenance': 'import', 'onboarding_completed': True,
+            'display_settings': DISPLAY, 'google_client_id': '', 'apple_client_id': '', 'stripe_public_key': '',
+            'stripe_secret_key': '', 'stripe_webhook_secret': '', 'stripe_pricing_table': '', 'stripe_client_portal': '',
+            'self_hosted': True, 'support_multiple_associations': False, 'is_reseller': False, 'show_course_athletes': True,
+            'show_minor_exemption': True, 'show_tutorial': True, 'meta_title': '', 'meta_description': '', 'email_settings': {},
+            'email_password_encrypted': '', 'email_revision': 0, 'diagnostic_results': {}, 'integration_settings': {}}
+LINKED = {'success': True, 'message': 'Istanza configurata con successo', 'association_id': '$new', 'redirect': '/login'}
+failed = lambda message: {'success': False, 'error': message}
+own_task = import_task('own', 'SUCCESS', json.dumps({'success': True, 'sport_association_id': IDS['own_association'], 'counts': {}}))
+add('configure-import-linked', 'anonymous', CONFIGURE, 200, LINKED, body=import_body(own_task), headers=TOKEN,
+    effect={'kind': 'import', 'config': IMPORTED, 'association': IDS['own_association']})
+alias_task = import_task('alias', 'SUCCESS', json.dumps({'association_id': IDS['foreign_association']}))
+add('configure-import-association-id-key', 'anonymous', CONFIGURE, 200, LINKED, body=import_body(alias_task), headers=TOKEN,
+    effect={'kind': 'import', 'config': IMPORTED, 'association': IDS['foreign_association']})
+deleted_task = import_task('deleted', 'SUCCESS', json.dumps({'success': 1, 'sport_association_id': IDS['deleted_association'].upper()}))
+add('configure-import-deleted-association', 'anonymous', CONFIGURE, 200, LINKED, body=import_body(deleted_task), headers=TOKEN,
+    effect={'kind': 'import', 'config': IMPORTED, 'association': IDS['deleted_association']})
+fallback_task = import_task('fallback', 'SUCCESS', json.dumps({'success': True, 'sport_association_id': ''}))
+add('configure-import-latest-association', 'anonymous', CONFIGURE, 200, LINKED, body=import_body(fallback_task), headers=TOKEN,
+    effect={'kind': 'import', 'config': IMPORTED, 'association': '$latest'})
+text_task = import_task('text', 'SUCCESS', json.dumps('Import completato'))
+add('configure-import-text-result', 'anonymous', CONFIGURE, 200, LINKED, body=import_body(text_task), headers=TOKEN,
+    effect={'kind': 'import', 'config': IMPORTED, 'association': '$latest'})
+null_task = import_task('null', 'SUCCESS', None)
+add('configure-import-empty-result', 'anonymous', CONFIGURE, 200, LINKED, body=import_body(null_task), headers=TOKEN,
+    effect={'kind': 'import', 'config': IMPORTED, 'association': '$latest'})
+add('configure-import-failed-result', 'anonymous', CONFIGURE, 500, failed('Import failed: Archivio non valido'),
+    body=import_body(import_task('failed', 'SUCCESS', json.dumps({'success': False, 'error': 'Archivio non valido'}))), headers=TOKEN)
+add('configure-import-failed-without-error', 'anonymous', CONFIGURE, 500, failed('Import failed: Unknown error'),
+    body=import_body(import_task('failed_plain', 'SUCCESS', json.dumps({'success': 0}))), headers=TOKEN)
+add('configure-import-failed-null-error', 'anonymous', CONFIGURE, 500, failed('Import failed: None'),
+    body=import_body(import_task('failed_null', 'SUCCESS', json.dumps({'success': None, 'error': None}))), headers=TOKEN)
+missing = 'b3000000-0000-4000-8000-00000000ffff'
+add('configure-import-unknown-association', 'anonymous', CONFIGURE, 500, failed(f'Association {missing} not found after import.'),
+    body=import_body(import_task('unknown', 'SUCCESS', json.dumps({'success': True, 'sport_association_id': missing}))), headers=TOKEN)
+add('configure-import-running-task', 'anonymous', CONFIGURE, 500,
+    failed('Import task is still in progress. Please wait for completion.'),
+    body=import_body(import_task('running', 'STARTED', json.dumps({'pid': 1}))), headers=TOKEN)
+add('configure-import-progress-task', 'anonymous', CONFIGURE, 500,
+    failed('Import task is still in progress. Please wait for completion.'),
+    body=import_body(import_task('progress', 'PROGRESS', json.dumps({'percent': 50}))), headers=TOKEN)
+add('configure-import-owner-token', 'owner', CONFIGURE, 200, LINKED, body=import_body(own_task), headers=TOKEN,
+    effect={'kind': 'import', 'config': IMPORTED, 'association': IDS['own_association']})
+
 # --- the fresh setup -------------------------------------------------------
 OWNER_PASSWORD = 'setup-password-1'
 SETUP = {
@@ -355,5 +416,5 @@ add('owner-logo-admin', 'admin', ADMIN_LOGO, 200, {'success': True, 'logo_url': 
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'instance setup, reconfigure, setup-token validation and logo uploads',
-                              'ids': IDS, 'location': LOCATION, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+                              'ids': IDS, 'location': LOCATION, 'import_tasks': IMPORT_TASKS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

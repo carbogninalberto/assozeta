@@ -20,19 +20,28 @@ replace them). Around each request:
 - 'single' moves every other SportAssociation row aside for the request
   (session_replication_role=replica on this connection, so referencing rows
   are not touched) and puts them back unchanged afterwards.
+- 'archive' is built from Django's export layout
+  (AssociationExportService.EXPORT_ORDER: every section listed with its
+  file and count, rows as authored) and posted as the multipart 'file';
+  '$new' in objects_after is the created receipt's id.
 The effect check compares every receipt field with the authored state
 ('$now': updated_at advanced within the request window and equal to the
-response), the rest of the database, and the Celery messages
-(restore_instance_data with task_id equal to the receipt id).
+response; '$new': the one created receipt, equal to the response's id, with
+the posted archive's SHA-256), the rest of the database, and the Celery
+messages (restore_instance_data with task_id equal to the receipt id). A
+created receipt is removed after the check.
 """
 from contextlib import contextmanager
 import base64
 from datetime import datetime, timedelta, timezone
 import fcntl
+import hashlib
+import io
 import json
 import os
 import time
 import types
+import zipfile
 import zlib
 
 from TESTS.contracts import test_data_restore_http as base_contract
@@ -43,7 +52,9 @@ SOURCES = ('TESTS/fixtures/data_restore_http.json', 'TESTS/contracts/test_data_r
            'BE/instance/restore/views.py', 'BE/instance/restore/locking.py', 'BE/instance/restore/progress.py',
            'BE/instance/restore/downloads.py', 'BE/instance/restore/execution.py', 'BE/instance/restore/replacement.py',
            'BE/instance/restore/archive.py', 'BE/instance/tasks.py', 'BE/instance/models.py', 'BE/instance/permissions.py',
-           'BE/instance/urls.py', 'BE/application/utils/printing.py', 'BE/core/settings.py') + harness.SOURCES
+           'BE/instance/urls.py', 'BE/application/utils/printing.py', 'BE/core/settings.py',
+           'BE/application/services/export_service.py', 'BE/application/services/import_service.py',
+           'BE/application/services/legacy_backup.py') + harness.SOURCES
 BUCKET = 'data-restore-fixture'
 LOCATION = 'tenant-restore'
 RECEIPT = 'instance.DataRestore'
@@ -282,9 +293,47 @@ def verify_token(source):
     return verify
 
 
+def build_archive(spec):
+    """The ZIP an authored 'archive' describes, laid out as AssociationExportService writes it."""
+    if 'raw_b64' in spec:
+        return base64.b64decode(spec['raw_b64'])
+    from application.services.export_service import AssociationExportService
+    association = {'sport_association_id': spec['association'], 'user_id': spec['owner'], 'denomination': spec['denomination']}
+    rows = {'SportAssociation': [association] * (spec['associations'] or 1),
+            'User': [{'user_id': spec['owner'], 'email': 'titolare@archivio.example.test'}], **spec['rows']}
+    sections = [(item[0].__name__, ('system' if len(item) > 2 else 'data') + '/' + item[1] + '.json')
+                for item in AssociationExportService.EXPORT_ORDER]
+    sections = [(name, file) for name, file in sections if name not in spec['drop']]
+    manifest = {'export_format': 'bakney_sport_export_v1', 'version': '1.0.0', 'export_date': spec['export_date'],
+                'association': {'sport_association_id': spec['association'], 'denomination': spec['denomination']},
+                'models_exported': [{'name': name, 'file': file, 'count': len(rows.get(name, []))} for name, file in sections],
+                'statistics': {'files_exported': len(spec['members']), 'files_failed': 0}, 'errors': [], **spec['manifest']}
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr('manifest.json', json.dumps(manifest))
+        for name, file in sections:
+            archive.writestr(file, json.dumps(rows.get(name, [])))
+        for name, content in spec['members'].items():
+            archive.writestr(name, content)
+    return buffer.getvalue()
+
+
+def archive_body(data):
+    boundary = 'restore-archive-boundary'
+    body = (f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="backup.zip"\r\n'
+            f'Content-Type: application/zip\r\n\r\n').encode() + data + f'\r\n--{boundary}--\r\n'.encode()
+    return base64.b64encode(body).decode(), f'multipart/form-data; boundary={boundary}'
+
+
 def _assert_case(case, base_url, *, token, sessions):
     from django_redis import get_redis_connection
     source = base_contract.load_source()
+    STORAGE.pop('archive_sha256', None)
+    if 'archive' in case:
+        data = build_archive(case['archive'])
+        STORAGE['archive_sha256'] = hashlib.sha256(data).hexdigest()
+        raw_b64, content_type = archive_body(data)
+        case = {**case, 'raw_b64': raw_b64, 'content_type': content_type}
     raw = get_redis_connection('default')
     apply_setup(case, source)
     stored = apply_cache(case, source, raw)
@@ -296,7 +345,11 @@ def _assert_case(case, base_url, *, token, sessions):
         with held_lock(case['lock']), single_association(case['single'], source['ids'][source['instance']['primary_association']]):
             status = base_contract.assert_case(case, base_url, token=token, sessions=sessions, path=path,
                                                verify_token=verify_token(source))
-        require(listing() == {f'{LOCATION}/{key}' for key in case['objects_after']}, 'storage.objects-after')
+        body = base_contract.LAST.get('body')
+        created = body.get('id') if isinstance(body, dict) and case['status'] == 201 else None
+        require(all('$new' not in key or created for key in case['objects_after']), 'storage.created-id')
+        require(listing() == {f'{LOCATION}/{key.replace("$new", created or "$new")}' for key in case['objects_after']},
+                'storage.objects-after')
     finally:
         empty_bucket()
         check_cache(source, raw, stored)
@@ -322,13 +375,28 @@ def assert_effect(case, before, after, source, context):
     from instance.models import DataRestore
     harness.require_unmanaged_unchanged(base_contract, before, after, (RECEIPT,))
     started, finished = context['prepared']['started'], time.time()
-    expected = case['effect']['receipts']
+    expected = dict(case['effect']['receipts'])
     rows = {str(row['id']): row for row in DataRestore._base_manager.values()}
+    created = None
+    if '$new' in expected:
+        body = base_contract.LAST.get('body')
+        created = body.get('id') if isinstance(body, dict) else None
+        require(isinstance(created, str) and created in rows, 'state.created-receipt')
+        spec = expected.pop('$new')
+        expected['$new'] = {**spec, 'id': created, 'upload_path': spec['upload_path'].replace('$new', created),
+                            'sha256': STORAGE['archive_sha256']}
     require(set(rows) == {row['id'] for row in expected.values()}, 'state.receipt-rows')
     for key, spec in expected.items():
         row = rows[spec['id']]
+        if spec.get('created_at') == '$now':
+            require(started - 1 <= row['created_at'].timestamp() <= finished + 1, f'state.{key}.created-at-window')
+            body = base_contract.LAST.get('body')
+            require(body['created_at'] == drf_datetime(row['created_at']), f'state.{key}.created-at-response')
+            spec = {name: value for name, value in spec.items() if name != 'created_at'}
         values = columns({name: spec[name] for name in spec if name not in ('id', 'updated_at')}, source['ids'])
         for name in FIELDS:
+            if name not in values:
+                continue
             actual = row[name]
             if name in ('association_id', 'owner_id'):
                 actual = str(actual)
@@ -341,7 +409,15 @@ def assert_effect(case, before, after, source, context):
         else:
             require(row['updated_at'] == moment(spec['updated_at']), f'state.{key}.updated-at')
     harness.celery_published(base_contract, context['fixture'], case['effect']['celery'], since=started, until=finished)
+    if created:
+        DataRestore._base_manager.filter(pk=created).delete()
 
 
-fixture_context = harness.with_celery_broker(harness.fixture_context_for(contract, seed_rows))
+def _receipt_model():
+    from instance.models import DataRestore
+    return DataRestore
+
+
+# A receipt an upload created and a failed check left behind is removed at cleanup.
+fixture_context = harness.with_celery_broker(harness.fixture_context_for(contract, seed_rows, purge=(_receipt_model,)))
 run_workload = harness.run_workload_for(contract, assert_effect, prepare=lambda source: {'started': time.time()})

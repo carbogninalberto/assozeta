@@ -23,9 +23,10 @@ import (
 // points that need storage, Celery dispatch or cached export snapshots; those
 // are refused with domain.ErrAssociationTransferNotPorted before any write.
 type AssociationTransfer struct {
-	store  domain.AssociationTransferStore
-	secret string
-	now    func() time.Time
+	store   domain.AssociationTransferStore
+	secret  string
+	now     func() time.Time
+	options AssociationTransferOptions
 }
 
 func NewAssociationTransfer(store domain.AssociationTransferStore, secret string, now func() time.Time) *AssociationTransfer {
@@ -74,11 +75,14 @@ func (s *AssociationTransfer) exportOwner(ctx context.Context, identity domain.R
 	return association, nil, nil
 }
 
-// Active mirrors active_export; a cached active or last snapshot is not ported.
+// Active mirrors active_export.
 func (s *AssociationTransfer) Active(ctx context.Context, identity domain.ResolvedIdentity) (*AssociationTransferReply, error) {
 	association, reply, err := s.exportOwner(ctx, identity, exportViewDenied)
 	if reply != nil || err != nil {
 		return reply, err
+	}
+	if s.options.Writes != nil {
+		return s.activeExport(ctx, association, identity.ScopeUser.ID)
 	}
 	cached, err := s.store.CacheKeysExist(ctx, exportActivePrefix+association, exportLastPrefix+association)
 	if err != nil {
@@ -114,8 +118,9 @@ func (s *AssociationTransfer) Status(ctx context.Context, identity domain.Resolv
 	return transferError(404, exportNotFound), nil
 }
 
-// List mirrors list_exports with django.core.signing download tokens.
-func (s *AssociationTransfer) List(ctx context.Context, identity domain.ResolvedIdentity) (*AssociationTransferReply, error) {
+// List mirrors list_exports with django.core.signing download tokens; audit
+// is the request's auditlog context (a size saved on a legacy export).
+func (s *AssociationTransfer) List(ctx context.Context, identity domain.ResolvedIdentity, audit domain.LoginAuditContext) (*AssociationTransferReply, error) {
 	association, reply, err := s.exportOwner(ctx, identity, exportViewDenied)
 	if reply != nil || err != nil {
 		return reply, err
@@ -128,8 +133,12 @@ func (s *AssociationTransfer) List(ctx context.Context, identity domain.Resolved
 	exports := make([]map[string]any, 0, len(rows))
 	for _, row := range rows {
 		if row.FileSize == nil && row.Filepath != nil && *row.Filepath != "" {
-			// default_storage.size() and the file_size_bytes save are not ported.
-			return nil, domain.ErrAssociationTransferNotPorted
+			if s.options.Writes == nil {
+				return nil, domain.ErrAssociationTransferNotPorted
+			}
+			if row.FileSize, err = s.exportSize(ctx, row.DocumentID, *row.Filepath, paymentCategoryAuditContext(identity, audit)); err != nil {
+				return nil, err
+			}
 		}
 		var size any
 		if row.FileSize != nil {
@@ -196,9 +205,8 @@ func (s *AssociationTransfer) downloadToken(document, association string, timest
 	return value + ":" + base64.RawURLEncoding.EncodeToString(mac.Sum(nil)), nil
 }
 
-// Delete mirrors delete_export up to the archive lookup; removing the stored
-// file, the archive and the document is not ported.
-func (s *AssociationTransfer) Delete(ctx context.Context, identity domain.ResolvedIdentity, body any) (*AssociationTransferReply, error) {
+// Delete mirrors delete_export; audit is the request's auditlog context.
+func (s *AssociationTransfer) Delete(ctx context.Context, identity domain.ResolvedIdentity, body any, audit domain.LoginAuditContext) (*AssociationTransferReply, error) {
 	object, ok := body.(domain.RequestObject)
 	if !ok {
 		// request.data.get on a non-dict body: AttributeError.
@@ -220,6 +228,9 @@ func (s *AssociationTransfer) Delete(ctx context.Context, identity domain.Resolv
 	if err != nil {
 		return nil, err
 	}
+	if s.options.Writes != nil {
+		return s.deleteExport(ctx, association, id, paymentCategoryAuditContext(identity, audit))
+	}
 	found, err := s.store.ExportArchive(ctx, association, id)
 	if err != nil {
 		return nil, err
@@ -230,8 +241,7 @@ func (s *AssociationTransfer) Delete(ctx context.Context, identity domain.Resolv
 	return nil, domain.ErrAssociationTransferNotPorted
 }
 
-// Start mirrors start_export's checks before the Celery dispatch, which is
-// not ported.
+// Start mirrors start_export.
 func (s *AssociationTransfer) Start(ctx context.Context, identity domain.ResolvedIdentity) (*AssociationTransferReply, error) {
 	association, reply, err := s.exportOwner(ctx, identity, exportStartDenied)
 	if reply != nil || err != nil {
@@ -243,6 +253,9 @@ func (s *AssociationTransfer) Start(ctx context.Context, identity domain.Resolve
 	}
 	if count >= exportMaxCount {
 		return transferError(409, "Elimina un export prima di crearne uno nuovo"), nil
+	}
+	if s.options.Writes != nil {
+		return s.startExport(ctx, association, identity.ScopeUser.ID)
 	}
 	// cache.add on the active key fails when the key exists.
 	running, err := s.store.CacheKeysExist(ctx, exportActivePrefix+association)
@@ -256,14 +269,17 @@ func (s *AssociationTransfer) Start(ctx context.Context, identity domain.Resolve
 }
 
 // ImportAllowed is SetupTokenOrAuthenticated.has_permission. Without an
-// InstanceConfiguration the setup token decides; comparing a provided token
-// is not ported.
+// InstanceConfiguration the X-Setup-Token header must equal
+// INSTANCE_SETUP_TOKEN (an empty setting denies).
 func (s *AssociationTransfer) ImportAllowed(ctx context.Context, identity domain.ResolvedIdentity, setupToken string) (bool, error) {
 	configured, owner, err := s.store.PrimaryOwner(ctx)
 	if err != nil {
 		return false, err
 	}
 	if !configured {
+		if s.options.Writes != nil {
+			return setupTokenMatches(setupToken, s.options.SetupToken), nil
+		}
 		if setupToken != "" {
 			return false, domain.ErrAssociationTransferNotPorted
 		}

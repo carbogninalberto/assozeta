@@ -199,8 +199,7 @@ func run() (runErr error) {
 		service.NewLoginProfiles(repository.NewLoginProfiles(db), time.Now), service.NewAssociationProfiles(repository.NewAssociationProfiles(db), time.Now),
 		images, domain.RegistrationChoices{Family: cfg.FamilyRegistrationEnabled, Federation: cfg.FederationRegistrationEnabled, Multiple: cfg.MultipleRegistrationEnabled}, time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
-	associationTransferHandler := handler.NewAssociationTransferHandler(service.NewAssociationTransfer(repository.NewAssociationTransfer(db, cache),
-		cfg.SessionSecret, time.Now), service.NewActorAuthentication(accounts, tokens), identities)
+	associationTransferHandler := composeAssociationTransfer(cfg, db, cache, tasks, service.NewActorAuthentication(accounts, tokens), identities)
 	testimonialsHandler := handler.NewTestimonialsHandler(service.NewTestimonials(repository.NewTestimonials(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations, cfg.SenjaWebhookSecret)
 	moduleTemplatesHandler := handler.NewModuleTemplatesHandler(service.NewModuleTemplates(repository.NewModuleTemplates(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	dashboardLayoutHandler := handler.NewDashboardLayoutHandler(service.NewDashboardLayouts(repository.NewDashboardLayouts(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)

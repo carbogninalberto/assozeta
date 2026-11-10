@@ -161,7 +161,7 @@ type DataRestoreChange struct {
 }
 
 var dataRestoreWritable = map[string]string{"state": "", "stage": "", "upload_path": "", "backup_path": "", "backup_sha256": "",
-	"allow_missing_media": "", "preview": "::jsonb", "media": "::jsonb"}
+	"allow_missing_media": "", "preview": "::jsonb", "media": "::jsonb", "error": ""}
 
 func dataRestoreSave(ctx context.Context, q dataRestoreQuerier, id string, changes DataRestoreChanges, now time.Time) error {
 	assignments := make([]string, 0, len(changes)+1)
@@ -216,3 +216,24 @@ func (t *DataRestoreTx) Save(ctx context.Context, id string, changes DataRestore
 
 func (t *DataRestoreTx) Commit() error   { return t.owned.Commit() }
 func (t *DataRestoreTx) Rollback() error { return t.owned.Rollback() }
+
+// Reviews is DataRestore.objects.filter(owner=user, state='review') (unordered; by pk here).
+func (r *DataRestores) Reviews(ctx context.Context, owner string) ([]domain.DataRestoreReceipt, error) {
+	var rows []dataRestoreRow
+	err := r.db.SelectContext(ctx, &rows, `SELECT `+dataRestoreColumns+` FROM instance_datarestore
+ WHERE owner_id = $1::uuid AND state = 'review' ORDER BY id`, owner)
+	return dataRestoreReceipts(rows), err
+}
+
+// Create is DataRestore.objects.create(owner, association_id, sha256,
+// version, preview) with the model defaults; created_at and updated_at are now.
+func (r *DataRestores) Create(ctx context.Context, id, owner, association, sha256, version, preview string, now time.Time) (*domain.DataRestoreReceipt, error) {
+	if _, err := r.db.ExecContext(ctx, `INSERT INTO instance_datarestore
+ (id, owner_id, association_id, state, stage, completed_at, created_at, updated_at, upload_path, sha256, version, preview,
+  backup_path, backup_sha256, media, error, allow_missing_media, attempts)
+ VALUES ($1::uuid, $2::uuid, $3::uuid, 'review', 'validated', NULL, $4, $4, '', $5, $6, $7::jsonb, '', '', '{}'::jsonb, '', FALSE, 0)`,
+		id, owner, association, now, sha256, version, preview); err != nil {
+		return nil, err
+	}
+	return dataRestoreOne(ctx, r.db, `SELECT `+dataRestoreColumns+` FROM instance_datarestore WHERE id = $1::uuid`, id)
+}

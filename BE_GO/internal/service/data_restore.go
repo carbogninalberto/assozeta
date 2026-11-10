@@ -55,6 +55,8 @@ type DataRestore struct {
 	tasks    celery.Publisher
 	settings DataRestoreSettings
 	now      func() time.Time
+	// archives enables upload validation (nil: an admissible upload is refused).
+	archives *DataRestoreArchives
 }
 
 func NewDataRestore(store *repository.DataRestores, progress DataRestoreProgressReader, objects DataRestoreObjects,
@@ -367,12 +369,11 @@ func (s *DataRestore) Backups(ctx context.Context, user, before string) (*DataRe
 }
 
 // DataRestoreUpload is request.FILES.get('file') after the upload handlers:
-// whether a 'file' upload completed within the limit.
-type DataRestoreUpload func(limit int64) (bool, error)
+// the bytes of the 'file' upload completed within the limit (nil: none).
+type DataRestoreUpload func(limit int64) ([]byte, error)
 
-// Upload is DataRestoreView.post up to the archive validation, which stays
-// with Django: a request carrying an admissible file is refused.
-func (s *DataRestore) Upload(ctx context.Context, upload DataRestoreUpload) (*DataRestoreReply, error) {
+// Upload is DataRestoreView.post for request.user (user).
+func (s *DataRestore) Upload(ctx context.Context, user string, upload DataRestoreUpload) (*DataRestoreReply, error) {
 	lease, err := s.locks.Acquire(ctx, false, true)
 	if err != nil {
 		return dataRestoreBusy(err)
@@ -396,15 +397,17 @@ func (s *DataRestore) Upload(ctx context.Context, upload DataRestoreUpload) (*Da
 	if !single {
 		return dataRestoreError(400, dataRestoreSingleText), nil
 	}
-	present, err := upload(s.settings.MaxUploadBytes)
+	content, err := upload(s.settings.MaxUploadBytes)
 	if err != nil {
 		return nil, err
 	}
-	if !present {
+	if content == nil {
 		return dataRestoreError(400, dataRestoreUploadText), nil
 	}
-	// Archive(...).validate() inspects the ZIP against the export models.
-	return nil, domain.ErrDataRestoreNotPorted
+	if s.archives == nil {
+		return nil, domain.ErrDataRestoreNotPorted
+	}
+	return s.acceptUpload(ctx, user, config, content)
 }
 
 // Read is DataRestoreActionView.get.

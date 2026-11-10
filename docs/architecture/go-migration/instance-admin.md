@@ -10,8 +10,8 @@ The owner-only installation administration views of `BE/instance` are implemente
 | `instance/admin/email` | `EmailSettingsView` | GET, PUT, DELETE |
 | `instance/admin/integrations/<provider>` | `IntegrationSettingsView` | GET, PUT, DELETE |
 | `instance/admin/diagnostics` | `DiagnosticsView` | GET; POST only while a lease is active |
-| `instance/admin/updates` | `InstanceUpdatesView` | GET, POST in development mode |
-| `instance/admin/restarts` | `InstanceRestartsView` | POST in development mode |
+| `instance/admin/updates` | `InstanceUpdatesView` | GET, POST (production mode: instance-updates.md) |
+| `instance/admin/restarts` | `InstanceRestartsView` | POST (production mode: instance-updates.md) |
 
 The configuration body reuses the bootstrap service (`InstanceConfigSerializer`, see
 [instance-bootstrap](instance-bootstrap.md)), and so does the administrator check.
@@ -113,6 +113,9 @@ The configuration body reuses the bootstrap service (`InstanceConfigSerializer`,
   request_id UUID, where an int is `UUID(int=...)`) and then answers 409.
 - POST restarts requires `set(request.data) == {'request_id'}`, then validates the UUID and
   answers 409 in development.
+- Production mode (the update runner and the release catalog) is described in `instance-updates.md`
+  and covered by the instance-updates family; this family re-ran green with that change
+  (`v2-admin-rerun`, 164/164 native).
 
 ## Not ported (Django keeps these)
 
@@ -120,8 +123,6 @@ Go refuses these with the server error page before any write:
 
 - `admin/diagnostics` POST once a lease can be claimed. Django writes the lease and runs the
   outbound probes (database, storage, SMTP, worker, renderer, updater).
-- `admin/updates` and `admin/restarts` in production mode. They need the update runner's Unix
-  socket.
 - Form-encoded and multipart bodies on every write (the frontend sends JSON).
 - An AI `base_url` with non-ASCII characters (URLValidator's IDNA fallback).
 - Environment email when `EMAIL_PORT` is not an integer, or when `DEFAULT_FROM_EMAIL` is not a

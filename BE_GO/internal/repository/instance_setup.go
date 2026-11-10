@@ -36,19 +36,78 @@ func (r *InstanceSetup) First(ctx context.Context) (*domain.InstanceSetupConfigu
 	return &row, nil
 }
 
-// ImportTaskReady is AsyncResult(task_id).ready() on the django-db result
-// backend: a stored SUCCESS, FAILURE or REVOKED state. A task without a
-// stored result is PENDING.
-func (r *InstanceSetup) ImportTaskReady(ctx context.Context, task string) (bool, error) {
-	var status string
-	err := r.db.GetContext(ctx, &status, `SELECT status FROM django_celery_results_taskresult WHERE task_id=$1`, task)
+// ImportTask is the django-celery-results row AsyncResult(task_id) reads
+// (nil: no stored result, PENDING).
+func (r *InstanceSetup) ImportTask(ctx context.Context, task string) (*domain.AssociationTaskResult, error) {
+	var row domain.AssociationTaskResult
+	err := r.db.GetContext(ctx, &row, `SELECT status, result, meta, content_encoding FROM django_celery_results_taskresult WHERE task_id=$1`, task)
 	if errors.Is(err, sql.ErrNoRows) {
-		return false, nil
+		return nil, nil
 	}
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	return status == "SUCCESS" || status == "FAILURE" || status == "REVOKED", nil
+	return &row, nil
+}
+
+// ImportedAssociation is SportAssociation.original_objects.filter(pk=id).first() (deleted rows included).
+func (r *InstanceSetup) ImportedAssociation(ctx context.Context, id string) (bool, error) {
+	var found bool
+	err := r.db.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM application_sportassociation WHERE sport_association_id=$1::uuid)`, id)
+	return found, err
+}
+
+// LatestAssociation is SportAssociation.original_objects.order_by('-sport_association_id').first().
+func (r *InstanceSetup) LatestAssociation(ctx context.Context) (*string, error) {
+	var ids []string
+	if err := r.db.SelectContext(ctx, &ids, `SELECT sport_association_id::text FROM application_sportassociation
+ ORDER BY sport_association_id DESC LIMIT 1`); err != nil {
+		return nil, err
+	}
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	return &ids[0], nil
+}
+
+// CreateImported is the transaction.atomic block of InstanceSetupView.post
+// for an import setup: InstanceConfiguration.objects.create (save's
+// singleton check, setup_provenance 'import', onboarding completed now),
+// then config.save() with the imported association.
+func (r *InstanceSetup) CreateImported(ctx context.Context, input domain.InstanceSetupImported, now func() time.Time) error {
+	tx, err := r.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	var exists bool
+	if err = tx.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM instance_instanceconfiguration)`); err != nil {
+		return err
+	}
+	if exists {
+		return domain.ErrInstanceSetupExists
+	}
+	completed := now()
+	created := now()
+	var id int64
+	if err = tx.GetContext(ctx, &id, `INSERT INTO instance_instanceconfiguration
+ (domain,configured_at,updated_at,setup_provenance,onboarding_completed_at,name,abbreviation,primary_color,support_email,logo_path,
+  email_settings,email_password_encrypted,email_revision,diagnostic_results,integration_settings,display_settings,is_reseller,
+  self_hosted,support_multiple_associations,show_course_athletes,show_minor_exemption,show_tutorial,google_client_id,apple_client_id,
+  stripe_public_key,stripe_secret_key,stripe_webhook_secret,stripe_pricing_table,stripe_client_portal,meta_title,meta_description,
+  primary_association_id,ui_api_version)
+ VALUES ($1,$2,$2,'import',$3,$4,$5,$6,$7,$8,'{}'::jsonb,'',0,'{}'::jsonb,'{}'::jsonb,$9::jsonb,FALSE,TRUE,FALSE,TRUE,TRUE,TRUE,$10,$11,
+  '','','','','','','',NULL,'v1') RETURNING id`,
+		input.Domain, created, completed, input.Name, input.Abbreviation, input.PrimaryColor, input.SupportEmail, input.LogoPath,
+		instanceSetupDisplay, input.GoogleClientID, input.AppleClientID); err != nil {
+		return err
+	}
+	// config.save(): every field written again; only these differ.
+	if _, err = tx.ExecContext(ctx, `UPDATE instance_instanceconfiguration SET primary_association_id=$2, updated_at=$3 WHERE id=$1`,
+		id, input.AssociationID, now()); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 // instanceSetupDisplay is json.dumps(DEFAULT_DISPLAY_SETTINGS) (BE/instance/defaults.py).
