@@ -107,8 +107,8 @@ administrator session), a wrong password, no AUTH, no STARTTLS, a refused
 connection, a refused recipient, a refused sender and a server that never
 greets. Each case compares the response, the own row, the absence of audit
 entries and the client bytes each server recorded (none on the others).
-RED `v2misc2-red-r1`: Django 83/83, Go 500. GREEN `v2misc2-green-r1`: 83/83 on
+RED `v2misc2-red-r1`: Django 83/83, Go 500. GREEN `v2misc2-green-r2`: 83/83 on
 the four transports. Mutation `v2misc2-mutation-r1` (test email
 addressed to the SMTP user) fails `communications-smtp-verify-starttls-sends-test-email`
 on Go (`smtp.transcripts`). Re-run: communications-send-email 55/55 and
-instance-outbound 106/106 (`v2misc2-rerun-r1`).
+instance-outbound 106/106 and payment-misc 96/96 (`v2misc2-rerun-r2`).

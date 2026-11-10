@@ -145,9 +145,9 @@ Receipts are `quality-reports/go-migration/<family>-http-v2misc2-*` (profile-mis
 
 | Family | Route | Was refused | Evidence |
 |---|---|---|---|
-| communications-smtp | `GET communications/settings/smtp/verify` | a configuration with a connectable host (connect, STARTTLS or implicit TLS, login, test email, quit, and the smtplib failure texts) | 83 cases; RED `v2misc2-red-r1` Django 83/83, Go 500; GREEN `v2misc2-green-r1` 4 transports; mutation `v2misc2-mutation-r1` (test email addressed to the SMTP user) CAUGHT; communications-send-email 55/55 and instance-outbound 106/106 re-run |
+| communications-smtp | `GET communications/settings/smtp/verify` | a configuration with a connectable host (connect, STARTTLS or implicit TLS, login, test email, quit, and the smtplib failure texts) | 83 cases; RED `v2misc2-red-r1` Django 83/83, Go 500; GREEN `v2misc2-green-r2` 4 transports; mutation `v2misc2-mutation-r1` (test email addressed to the SMTP user) CAUGHT; communications-send-email 55/55 and instance-outbound 106/106 re-run |
 | camps-periods | `PATCH camps-and-retreats/periods/services/<uid>/update` | payment walk over a soft-deleted or other-group unpaid payment (saved, each save audited as an update of every field against None, indexed through `changes_json.sport_association`) | 110 cases; RED `v2misc2-red-r2` Django 110/110, Go 500; GREEN `v2misc2-green-r2` 4 transports; mutation `v2misc2-mutation-r1` (final amount rendered from the stored decimal) CAUGHT |
-| profile-misc | `PATCH onboarding/update` | `onboarding_data` with a `users_onboarding_id` or `user` other than the row's own (both are read-only serializer fields now) | 107 cases; RED `seconb-red-r1` Django 107/107, Go 500; GREEN `seconb-green-r1` 4 transports; mutation `seconb-mutation-r1` (row id taken from the body) CAUGHT |
+| profile-misc | `PATCH onboarding/update` | `onboarding_data` with a `users_onboarding_id` or `user` other than the row's own (both are read-only serializer fields now) | 107 cases; RED `seconb-red-r1` Django 107/107, Go 500; GREEN `seconb-green-r2` 4 transports; mutation `seconb-mutation-r1` (row id taken from the body) CAUGHT |
 
 ## Remaining A items, per family
 
@@ -420,7 +420,7 @@ Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples)
 ### communications-smtp.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| GET communications/settings/smtp/verify | configuration with a host that would connect | `service/communications_smtp.go` (`Verify`) | ported | Ported in v2-misc-2 (`communications-smtp.md`, `v2misc2-green-r1`). |
+| GET communications/settings/smtp/verify | configuration with a host that would connect | `service/communications_smtp.go` (`Verify`) | ported | Ported in v2-misc-2 (`communications-smtp.md`, `v2misc2-green-r2`). |
 | GET communications/settings/smtp/verify | TLS handshake error, name resolution failure, connect timeout, reset; falsy port with a plain host; missing user or password; sender name outside letters, digits, spaces and `. - _ &` | `service/communications_smtp.go` (`Verify`, `smtpVerifyPlan`) | A (failed connection) / B (the rest) | A wrong encryption or a mistyped host in `EmailSMTP.svelte` reaches the first group. Cost: medium (platform error texts). |
 | GET communications/settings/smtp/verify | host port suffix with non-ASCII/separator characters | service/communications_smtp.go:217 | B | Needs a host typed as `smtp:２５` or similar. Cost: cheap. |
 
@@ -746,7 +746,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### profile-misc.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH onboarding/update | `onboarding_data` with a `users_onboarding_id` or `user` other than the row's own | `dto/profile_misc.go` (`ParseOnboardingFlags`) | ported | Both keys are read-only serializer fields in Django; Go reads only the checklist flags (`profile-misc.md`, `seconb-green-r1`). |
+| PATCH onboarding/update | `onboarding_data` with a `users_onboarding_id` or `user` other than the row's own | `dto/profile_misc.go` (`ParseOnboardingFlags`) | ported | Both keys are read-only serializer fields in Django; Go reads only the checklist flags (`profile-misc.md`, `seconb-green-r2`). |
 | PATCH onboarding/update | multipart | `service/profile_misc.go:298` | B | The UI sends JSON. |
 | same | soft-deleted owner association | `service/profile_misc.go:350` | B | legacy: low. |
 | same | season/fiscal not int 0..32767; fee repr with exponent; lead containers/too long | `service/profile_misc.go:521,556,588,592` | B | The UI sends ints from selects and `parseFloat` fees (`routes/onboarding/partials/step1.svelte:59-75`). An exponent needs an extreme fee. Lead values are select strings. |
