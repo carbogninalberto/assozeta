@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 )
@@ -223,4 +224,25 @@ func (t *paymentWritesTransaction) InsertBulkPayments(ctx context.Context, rows 
 		}
 	}
 	return nil
+}
+
+func (t *paymentWritesTransaction) AttachPaymentDocument(ctx context.Context, payment string, document domain.NewDocument,
+	actorAssociation *string, audit domain.LoginAuditContext, at time.Time) error {
+	if _, err := t.tx.ExecContext(ctx, `INSERT INTO docmanager_document (document_id, creation_date, filepath, filename, file_size_bytes, token)
+ VALUES ($1, $2, NULL, $3, NULL, $4)`, document.ID, document.Created, document.Filename, document.Token); err != nil {
+		return err
+	}
+	changes, err := createdModelChanges(ctx, t.tx, "docmanager_document", "document_id", document.ID)
+	if err != nil {
+		return err
+	}
+	for name, rendered := range documentReverse {
+		changes[name] = [2]string{"None", rendered}
+	}
+	if err := appendModelAuditForApp(ctx, t.tx, "docmanager", documentAudit(document.ID, 0, changes, actorAssociation, audit, at)); err != nil {
+		return err
+	}
+	_, err = t.tx.ExecContext(ctx, `INSERT INTO application_payment_attachments (payment_id, document_id) VALUES ($1, $2)
+ ON CONFLICT DO NOTHING`, payment, document.ID)
+	return err
 }

@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 15 ported below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 16 ported below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -44,6 +44,7 @@ Cross-cutting facts used for the classes:
 | instance-updates | `GET/POST admin/updates`, `POST admin/restarts` | production mode | fixture `instance_updates_http.json` 40 cases; RED Django 40/40, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (version check) CAUGHT |
 | payment-reads | `GET payment/list?sort[field]=user` ("Informazioni" column) | always | `payment_reads_http.json` 242 cases; GREEN `v2gaps-versioned-r1` 4 transports; mutation CAUGHT |
 | payment-reads | `GET payment/list` with instructor compensations (several hours, or no document yet: eager compensation print) | after any compensation | GREEN `v2gaps-versioned-r2` 4 transports; mutation `v2gaps-mutation-r3` CAUGHT |
+| payment-writes | `POST payment/add`, `PATCH payment/<id>/update` with `attachments_data` files (Document, storage save, link) | whenever a file is attached | `payment_writes_http.json` 128 cases; RED `v2pay-red-r2` Django 128/128, Go 500; GREEN `v2pay-versioned-r2` 4 transports; mutation `v2pay-mutation-r4` CAUGHT |
 | payment-misc | `GET payment/simulation/partial-quotes-apply` with a quote for a member's own account (fee e-mail, no SMTP configuration) | always for such members | `payment_misc_http.json` 90 cases; RED `v2pay-red-r1` Django 90/90, Go 500; GREEN `v2pay-versioned-r1` 4 transports; mutation `v2pay-mutation-r1` CAUGHT |
 | payment-misc | `POST payment/sign` with a signature (Signature, payment save, eager compensation print) | always with a signature | same run |
 | subscription-create | `POST subscription/add` from the owner wizard: default certificate date (today), emptied date, uploaded certificate with its expiration | always (date always sent) | `subscription_create_http.json` 45 cases; RED `v2gaps-red-r1` Django 45/45, Go 500; GREEN `v2gaps-versioned-r1` 4 transports; mutation CAUGHT; subscription-renew 54/54 and associates-draft 128/128 re-run |
@@ -58,7 +59,6 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 ### payment-writes / payment-state / payment-reads / payment-misc
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST payment/add, PATCH update | `attachments_data` with document + filename | `AddEditModal.svelte:66-89` | `service/payment_writes.go:223` | medium |
 | POST payment/add | owner setting `auto_paid_payment` on | `routes/profile/sections/Settings.svelte:1013`, `AddEditModal.svelte:102` | `service/payment_writes.go:570` | medium-expensive |
 | payment cancel / delete | payment has an invoice | `PaymentList.svelte:575,689`, `partials/payment-overview.svelte:187` | `service/payment_state.go:322,363` | medium-expensive |
 | GET payment/list | athlete session (no `mode=compressed`) | `routes/activities/payment/PaymentList.svelte:36-38` | `service/payment_reads.go:349` | medium-expensive |
@@ -681,7 +681,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | PATCH payment/<id>/update | body contains `payment_id` (or `user`) | `service/payment_writes.go:508` | **A** | The edit form has `<input type="hidden" name="payment_id">` (`routes/accounting/payment/modals/AddEditModal.svelte:482`). `getDataFromForm` includes it, and `update()` sends it (`:142-150`). Every UI payment edit is refused. Cost: cheap (accept an unchanged pk). |
-| POST payment/add, PATCH update | `attachments_data[0]` has `document` + `filename` | `service/payment_writes.go:223` | **A** | `AddEditModal.svelte:66-89` builds `{document: base64, filename}` whenever a file is attached. Cost: medium (Document + storage save). |
+| POST payment/add, PATCH update | `attachments_data` filename over 255 characters, non-string values, a rejected storage name or an existing key without overwrite | `service/payment_writes.go` (`attachmentsStored`) | B | `AddEditModal.svelte:66-89` sends the browser's file name and a base64 string. legacy: no. Cost: cheap. |
 | POST payment/add | owner has `auto_paid_payment` | `service/payment_writes.go:570` | **A** | The toggle is in `routes/profile/sections/Settings.svelte:1013`. Django: `payment_views.py:78-79`. Cost: medium–expensive (invoice numbering + `print_document_invoice`). |
 | PATCH payment/<id>/update | payment has an invoice | `service/payment_writes.go:766` | **A** | Any edit of an invoiced (receipted) payment from `AddEditModal.svelte:142`. Cost: medium (invoice re-print dispatch). |
 | add/update | form/multipart bodies | `service/payment_writes.go:722` | B | The UI sends JSON. |

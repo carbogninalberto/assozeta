@@ -15,8 +15,19 @@ the fixture cleanup compares the model state.
 A CURRENT_HOST print stub (invoice-sync-print's service_context) runs for the
 whole run: each case's outbound requests must be exactly its authored
 'prints' (the update of an invoiced payment prints the invoice).
+
+A private MinIO (instance-logo's) backs Django's default storage (S3Boto3Storage)
+for the whole run; the Go server receives the same AWS_* settings. Each case's
+new Documents are bound to their create entries in write order and must match
+its authored 'documents' (filename, payment link, the stored object under
+django-storages' safe_join(AWS_LOCATION, clean_name(<timestamp>/<id>/<filename>))
+with the exact bytes and guessed ContentType); response '$bind:doc<n>' values are
+those rows. Verified objects are removed, so the bucket ends at its sentinel.
 """
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
+import base64
+import mimetypes
+import os
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 import ipaddress
@@ -42,9 +53,54 @@ SOURCES = ('TESTS/fixtures/payment_writes_http.json', 'TESTS/contracts/test_paym
            'BE/application/impersonation_scope.py', 'BE/application/audit_resolvers.py', 'BE/application/tenant_scope.py',
            'BE/application/permissions_registry.py', 'BE/application/utils/api_utils.py', 'BE/docmanager/models.py',
            'TESTS/adapters/django/invoice_sync_print_http.py', 'BE/application/printing_tasks.py', 'BE/instance/restore/task_base.py',
-           'BE/application/serializers/invoice_serializers.py') + harness.SOURCES
+           'BE/application/serializers/invoice_serializers.py', 'BE/docmanager/models.py', 'TESTS/adapters/django/instance_logo.py') + harness.SOURCES
 PAYMENT = 'application.Payment'
-service_context = printer.service_context
+DOCUMENT = 'docmanager.Document'
+BUCKET = 'payment-writes-fixture'
+SENTINEL = ('payment-writes/sentinel/keep.txt', b'sentinel')
+STORAGE = {}
+
+
+@contextmanager
+def service_context(report, log):
+    """The CURRENT_HOST print stub and the run's MinIO as Django's default storage."""
+    import boto3
+    from botocore.config import Config
+    from django.test.utils import override_settings
+    from TESTS.adapters.django.instance_logo import minio
+    location = base_contract.load_source()['location']
+    with ExitStack() as stack:
+        stack.enter_context(printer.service_context(report, log))
+        endpoint, access, secret = stack.enter_context(minio(log, dict(os.environ), report))
+        client = boto3.client('s3', endpoint_url=endpoint, aws_access_key_id=access, aws_secret_access_key=secret, region_name='us-east-1',
+                              config=Config(signature_version='s3v4', retries={'max_attempts': 0}, s3={'addressing_style': 'path'}))
+        client.create_bucket(Bucket=BUCKET)
+        client.put_object(Bucket=BUCKET, Key=SENTINEL[0], Body=SENTINEL[1], ContentType='text/plain')
+        storages = {'default': {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'},
+                    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}}
+        STORAGE.update(client=client, location=location)
+        try:
+            with override_settings(STORAGES=storages, AWS_ACCESS_KEY_ID=access, AWS_SECRET_ACCESS_KEY=secret,
+                                   AWS_STORAGE_BUCKET_NAME=BUCKET, AWS_S3_REGION_NAME='us-east-1', AWS_S3_ENDPOINT_URL=endpoint,
+                                   AWS_LOCATION=location, AWS_S3_ADDRESSING_STYLE='path'):
+                yield
+        finally:
+            # Each case removes the objects it verified ('storage.keys' fails on any other); a failed case may leave its own.
+            left = sorted(listing() - {SENTINEL[0]})
+            report['service_cleanup']['payment_writes_objects'] = 'clean' if not left else f'removed {len(left)} after a failure'
+            for key in left:
+                client.delete_object(Bucket=BUCKET, Key=key)
+            STORAGE.clear()
+
+
+def listing():
+    pages = STORAGE['client'].get_paginator('list_objects_v2').paginate(Bucket=BUCKET)
+    return {item['Key'] for page in pages for item in page.get('Contents', [])}
+
+
+def object_key(created, document_id, filename):
+    from storages.utils import clean_name, safe_join
+    return safe_join(STORAGE['location'], clean_name(os.path.join('', str(created.timestamp()), document_id, filename)))
 
 
 def _assert_case(case, base_url, *, token, sessions):
@@ -62,7 +118,8 @@ def _assert_case(case, base_url, *, token, sessions):
 contract = types.SimpleNamespace(load_source=base_contract.load_source, require=base_contract.require, assert_case=_assert_case,
                                  BINDINGS=base_contract.BINDINGS,
                                  NOW=base_contract.NOW)
-MANAGED = (PAYMENT, harness.AUDIT, harness.INDEX)
+THROUGH = 'application.Payment_attachments'
+MANAGED = (PAYMENT, DOCUMENT, THROUGH, harness.AUDIT, harness.INDEX)
 TIMES = ('creation_date', 'payment_date')
 
 
@@ -122,7 +179,16 @@ def payments():
     return Payment
 
 
-base_fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(payments,))
+def documents():
+    from docmanager.models import Document
+    return Document
+
+
+base_fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(payments, documents))
+
+
+def prepare(source):
+    return {'objects': listing()}
 
 
 @contextmanager
@@ -158,15 +224,61 @@ def check_row(stored, authored, fixture, where):
     contract.require(set(stored) - {'payment_id'} == set(authored), 'state.created-columns' + where)
 
 
+def check_documents(case, before, after, source, fresh, events, types):
+    """New Documents bound to their create entries in order; their payment links and stored objects. Returns the bindings."""
+    effect = case['effect']
+    authored = effect.get('documents', []) if effect else []
+    objects = listing() - STORAGE['prepared']
+    old_docs, new_docs = keyed(before[DOCUMENT], 'document_id'), keyed(after[DOCUMENT], 'document_id')
+    contract.require(all(new_docs.get(k) == v for k, v in old_docs.items()), 'state.documents-kept')
+    doc_type = next(ct['id'] for ct in before['contenttypes.ContentType'] if (ct['app_label'], ct['model']) == ('docmanager', 'document'))
+    doc_events = [e for e in events if e['content_type_id'] == doc_type and e['action'] == 0]
+    added = [k for k in new_docs if k not in old_docs]
+    contract.require(len(added) == len(authored) == len(doc_events), 'state.document-count')
+    link = lambda r: (str(plain(r)['payment_id']), str(plain(r)['document_id']))
+    links_before, links_after = {link(r) for r in before[THROUGH]}, {link(r) for r in after[THROUGH]}
+    contract.require(links_before <= links_after, 'state.links-kept')
+    refs, expected_links, expected_objects = {}, set(), {}
+    for index, (event, spec) in enumerate(zip(doc_events, authored)):
+        key = event['object_pk']
+        contract.require(key in new_docs, 'state.document-bound')
+        row = plain(new_docs[key])
+        stamp = moment(row['creation_date'])
+        contract.require(row['filename'] == spec['filename'] and row['filepath'] is None and row['file_size_bytes'] is None
+                         and recent(row['creation_date']), 'state.document:' + str(index))
+        refs.update({f'$doc{index}': key, f'$doc{index}_token': str(row['token']), f'$doc{index}_created': auditlog_moment(stamp),
+                     f'doc{index}': key, f'doc{index}_token': str(row['token'])})
+        payment = fresh[0] if spec['payment'] == '$id' else source['payments'][spec['payment']]['id']
+        expected_links.add((payment, key))
+        expected_objects[object_key(stamp, key, spec['filename'])] = spec
+    contract.require(links_after - links_before == expected_links, 'state.links')
+    client = STORAGE['client']
+    contract.require(objects == set(expected_objects), 'storage.keys')
+    for key, spec in expected_objects.items():
+        stored = client.get_object(Bucket=BUCKET, Key=key)
+        contract.require(stored['Body'].read() == base64.b64decode(spec['body_b64']), 'storage.bytes')
+        kind, encoding = mimetypes.guess_type(key)
+        contract.require(stored['ContentType'] == (kind or 'application/octet-stream') and stored.get('ContentEncoding') == encoding,
+                         'storage.metadata')
+    for key in expected_objects:
+        client.delete_object(Bucket=BUCKET, Key=key)
+    return refs
+
+
 def assert_effect(case, before, after, source, context):
     harness.require_unmanaged_unchanged(contract, before, after, MANAGED)
     effect = case['effect']
+    STORAGE['prepared'] = context['prepared']['objects']
     if effect is None:
+        contract.require(not (listing() - STORAGE['prepared']), 'storage.no-effect')
         contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
         return
     fixture, ids = context['fixture'], source['ids']
     old, new = rows_of(before), rows_of(after)
     fresh = sorted(set(new) - set(old))
+    all_events, _ = harness.audit_delta(contract, before, after)
+    all_types = {ct['model']: ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'application'}
+    refs = check_documents(case, before, after, source, fresh, all_events, all_types)
     authored = effect['created']
     contract.require(len(fresh) == len(authored) and set(old) <= set(new), 'state.created-count')
     created = {}
@@ -180,7 +292,10 @@ def assert_effect(case, before, after, source, context):
     for key, spec in created.items():
         check_row(new[key], spec, fixture, ':' + key)
     for name, value in contract.BINDINGS.items():
-        contract.require(len(fresh) == 1 and value == fresh[0], 'response.binding:' + name)
+        if name.startswith('doc'):
+            contract.require(refs.get(name) == value, 'response.binding:' + name)
+        else:
+            contract.require(len(fresh) == 1 and value == fresh[0], 'response.binding:' + name)
     labels = {row['id']: label for label, row in source['payments'].items()}
     bindings = {'$default_category': fixture['default_category'], '$default_category_name': fixture['default_category_name']}
     for key, row in old.items():
@@ -200,8 +315,13 @@ def assert_effect(case, before, after, source, context):
         label = session[9:]
         additional = {'impersonation_session': fixture['sessions'][label], 'actor_id': actor, 'target_user_id': case['headers']['User-Id'],
                       'association_id': None if label.startswith('admin_') else ids['own_association']}
+    doc_type = next(ct['id'] for ct in before['contenttypes.ContentType'] if (ct['app_label'], ct['model']) == ('docmanager', 'document'))
     for event, spec in zip(events, effect['audit']):
-        key = fresh[0] if spec['key'] == '$id' else source['payments'][spec['key']]['id']
+        model = spec.get('model', 'payment')
+        if model == 'document':
+            key = refs[spec['key']]
+        else:
+            key = fresh[0] if spec['key'] == '$id' else source['payments'][spec['key']]['id']
         stored = new.get(key, {})
 
         def value(item, column):
@@ -209,11 +329,14 @@ def assert_effect(case, before, after, source, context):
                 return key
             if item == '$now':
                 return auditlog_moment(moment(stored[column]))
+            if item in refs:
+                return refs[item]
             return bindings.get(item, item)
         changes = {column: [value(item, column) for item in pair] for column, pair in spec['changes'].items()}
         where = f":{spec['key']}:{spec['action']}"
-        contract.require(event['content_type_id'] == types['payment'] and event['action'] == spec['action'] and event['object_pk'] == key
-                         and event['object_repr'] == f'Payment object ({key})', 'audit.identity' + where)
+        content_type = doc_type if model == 'document' else types['payment']
+        contract.require(event['content_type_id'] == content_type and event['action'] == spec['action'] and event['object_pk'] == key
+                         and event['object_repr'] == f'{model.capitalize()} object ({key})', 'audit.identity' + where)
         contract.require(event['changes'] == changes, 'audit.changes' + where)
         contract.require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor' + where)
         contract.require(event['cid'] == case['name'] and event['additional_data'] == additional and event['changes_text'] == '',
@@ -228,4 +351,4 @@ def assert_effect(case, before, after, source, context):
                              and index['resolution_path'] == spec['index'][1], 'index.fields' + where)
 
 
-run_workload = harness.run_workload_for(contract, assert_effect)
+run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare)

@@ -113,6 +113,10 @@ type PaymentWritesTransaction interface {
 	// AssociateExists is scoped_queryset(request, Associate.objects) (live, group-aware).
 	AssociateExists(ctx context.Context, id string, group, scope *string) (bool, error)
 	InsertPaymentRow(ctx context.Context, row PaymentWriteRow) error
+	// AttachPaymentDocument is Document.objects.create(filename=...) with its audited create
+	// and obj.attachments.add(document) (no audit entry for the through row).
+	AttachPaymentDocument(ctx context.Context, payment string, document NewDocument, actorAssociation *string, audit LoginAuditContext,
+		at time.Time) error
 	SavePaymentRow(ctx context.Context, row PaymentWriteRow) error
 	// PaymentAuditValues renders the stored row as auditlog's get_field_value strings by field name.
 	PaymentAuditValues(ctx context.Context, id string) (map[string]string, error)
