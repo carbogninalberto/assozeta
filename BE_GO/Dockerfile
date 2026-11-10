@@ -13,7 +13,8 @@ RUN CGO_ENABLED=0 go build -trimpath -o /server ./cmd/server && \
     CGO_ENABLED=0 go build -trimpath -o /migrate-subscription-signatures-to-s3 ./cmd/migrate-subscription-signatures-to-s3 && \
     CGO_ENABLED=0 go build -trimpath -o /relay-go-realtime ./cmd/relay-go-realtime && \
     CGO_ENABLED=0 go build -trimpath -o /mcp-server ./cmd/mcp-server && \
-    CGO_ENABLED=0 go build -trimpath -o /run-agent ./cmd/run-agent
+    CGO_ENABLED=0 go build -trimpath -o /run-agent ./cmd/run-agent && \
+    CGO_ENABLED=0 go build -trimpath -o /celery-consumer ./cmd/celery-consumer
 
 # Keep the codec independent of Go's CGO toolchain and isolate codec faults in a
 # bounded child process. Static linking also avoids cross-stage musl ABI drift.
@@ -44,6 +45,10 @@ RUN mkdir -p /var/cache/assozeta-logo && \
 # these ownership/mode bits into a fresh anonymous volume at first mount.
 RUN mkdir -p /var/cache/assozeta-message-list && \
     chown 10001:10001 /var/cache/assozeta-message-list && chmod 0700 /var/cache/assozeta-message-list
+# The opt-in Celery consumer (worker-go) stages export/import/restore archives
+# here (TMPDIR) on its own disk volume; no authoritative data.
+RUN mkdir -p /var/cache/assozeta-go-tasks && \
+    chown 10001:10001 /var/cache/assozeta-go-tasks && chmod 0700 /var/cache/assozeta-go-tasks
 COPY --chown=0:0 release-manual/ /app/release-manual/
 RUN printf '%s\n' "$VERSION" > /app/VERSION && \
     printf '%s\n' "$CODE_REVISION" > /app/CODE_REVISION && \
@@ -61,6 +66,7 @@ COPY --from=builder /migrate-subscription-signatures-to-s3 /app/migrate-subscrip
 COPY --from=builder /relay-go-realtime /app/relay-go-realtime
 COPY --from=builder /mcp-server /app/mcp-server
 COPY --from=builder /run-agent /app/run-agent
+COPY --from=builder /celery-consumer /app/celery-consumer
 COPY --from=codec-builder /image-codec /app/image-codec
 COPY --from=codec-builder /codec-version /app/licenses/libjpeg-turbo-version.txt
 COPY --from=codec-builder /zlib-version /app/licenses/zlib-version.txt

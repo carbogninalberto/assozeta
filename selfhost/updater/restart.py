@@ -14,7 +14,7 @@ import time
 import traceback
 from uuid import UUID
 
-from common import compose_command, compose_environment, read_env
+from common import GO_TASKS_PROFILE, compose_command, compose_environment, read_env
 from journal import Journal, now
 
 RECOVERY = ('Verifica i container e i log del server, poi riprova il riavvio. '
@@ -74,8 +74,12 @@ def launch_restart(root, env_file, journal, operation):
 
 
 def service_order(services):
-    """Only long-running configured services; never rerun tools/migrations."""
-    selected = {name: value for name, value in services.items() if not value.get('profiles')}
+    """Only long-running configured services; never rerun tools/migrations.
+
+    The opt-in Go task consumer is long-running; it is configured only when
+    compose_command enabled its profile."""
+    selected = {name: value for name, value in services.items()
+                if value.get('profiles', []) in ([], [GO_TASKS_PROFILE])}
     ordered = []
     visiting = set()
 

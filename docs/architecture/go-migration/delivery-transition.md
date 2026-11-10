@@ -56,7 +56,11 @@ make a different image report the requested release.
 Lifecycle startup and public readiness cover `/api`, `/api/v1` and `/api/v2`.
 Backup, restore and shutdown include both APIs. Target CLI operations inspect the
 effective source Compose services so a historical source without Go remains
-operable. The existing Django worker and Beat retain sole execution ownership.
+operable. The existing Django worker and Beat retain execution ownership; the
+opt-in `worker-go` consumer (Compose profile `go-tasks`, enabled by
+`ASSOZETA_GO_TASKS=1`) runs only the task names routed by `GO_TASK_QUEUE_TASKS`
+and follows the Django worker through backup, restore, shutdown and restart.
+Recovery stops and removes it with `api-go`.
 
 Managed verification checks Go's image, explicit healthy state and embedded
 release before producing the operation receipt. Target manifest evidence prevents

@@ -29,7 +29,8 @@ service `migrate-go` after Django migrations under the existing exclusive
 operations lock. Missing lock support fails before schema migration; migration
 failure keeps maintenance active and services stopped. Historical distributions
 without the service remain recoverable. Compose does not start a Go worker or
-scheduler. These commands are not a backend-switch procedure; see
+scheduler by default; the Go Celery consumer `worker-go` is opt-in
+(`ASSOZETA_GO_TASKS=1`, see [OPERATIONS.md](OPERATIONS.md#run-background-tasks-on-go)). These commands are not a backend-switch procedure; see
 [migration lifecycle and recovery](../docs/architecture/go-migration/operational-migrations.md).
 
 The Go API prepares S3 logo responses in a private, disk-backed anonymous Docker

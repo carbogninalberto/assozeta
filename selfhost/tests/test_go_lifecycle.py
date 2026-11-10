@@ -397,11 +397,13 @@ class GoRecoveryTests(unittest.TestCase):
             calls = []
             def run(command, **kwargs):
                 calls.append(command)
-            with patch('recovery.subprocess.check_output', return_value='abc123\ndef456\n') as listing, \
+            def containers(command, **kwargs):
+                return 'abc123\ndef456\n' if 'label=com.docker.compose.service=api-go' in command else ''
+            with patch('recovery.subprocess.check_output', side_effect=containers) as listing, \
                  patch('recovery.subprocess.run', side_effect=run):
                 recovery.stop_go_api_for_restore(root, env)
-            self.assertIn('label=com.docker.compose.project=private-rehearsal', listing.call_args.args[0])
-            self.assertIn('label=com.docker.compose.service=api-go', listing.call_args.args[0])
+            self.assertIn('label=com.docker.compose.project=private-rehearsal', listing.call_args_list[0].args[0])
+            self.assertIn('label=com.docker.compose.service=api-go', listing.call_args_list[0].args[0])
             self.assertEqual(calls, [['docker', 'stop', '--time', '30', 'abc123', 'def456'],
                                      ['docker', 'rm', 'abc123', 'def456']])
 
