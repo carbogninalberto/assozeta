@@ -37,12 +37,19 @@ func paymentJSON(text *string) (any, error) {
 var errSecCategoryAssociation = errors.New("payment save defaults: payment association not loaded")
 
 func paymentSaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransaction, row *domain.PaymentSaveRow, changes map[string][2]string) error {
+	if row.CategoryID == nil && row.AssociationID == "" {
+		// The row's association must be loaded: the default is taken from it.
+		return errSecCategoryAssociation
+	}
+	return secCategorySaveDefaults(ctx, tx, row, &row.AssociationID, changes)
+}
+
+// secCategorySaveDefaults is paymentSaveDefaults for a payment whose association
+// may be NULL (nil: only the global categories).
+func secCategorySaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransaction, row *domain.PaymentSaveRow, association *string,
+	changes map[string][2]string) error {
 	if row.CategoryID == nil {
-		if row.AssociationID == "" {
-			// The row's association must be loaded: the default is taken from it.
-			return errSecCategoryAssociation
-		}
-		id, name, err := tx.DefaultPaymentCategory(ctx, &row.AssociationID)
+		id, name, err := tx.DefaultPaymentCategory(ctx, association)
 		if err != nil {
 			return err
 		}

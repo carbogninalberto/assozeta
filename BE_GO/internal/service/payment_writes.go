@@ -321,9 +321,6 @@ func (m *paymentMemory) apply(input dto.PaymentEntryInput, total *float64) {
 func (s *PaymentWrites) defaults(ctx context.Context, tx domain.PaymentWritesTransaction, m *paymentMemory) error {
 	save := domain.PaymentSaveRow{ID: m.row.ID, Subject: m.row.Subject, CategoryID: m.row.CategoryID, Description: m.row.Description,
 		Meta: m.row.Meta, Course: m.row.Course}
-	if m.row.AssociationID != nil {
-		save.AssociationID = *m.row.AssociationID
-	}
 	if save.CategoryID != nil {
 		name, err := tx.CategoryName(ctx, *save.CategoryID)
 		if err != nil {
@@ -331,7 +328,7 @@ func (s *PaymentWrites) defaults(ctx context.Context, tx domain.PaymentWritesTra
 		}
 		save.CategoryName = name
 	}
-	if err := paymentSaveDefaults(ctx, tx, &save, map[string][2]string{}); err != nil {
+	if err := secCategorySaveDefaults(ctx, tx, &save, m.row.AssociationID, map[string][2]string{}); err != nil {
 		if errors.Is(err, ErrPaymentSaveFailed) {
 			return domain.ErrPaymentWritesServer
 		}
