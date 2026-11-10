@@ -113,15 +113,27 @@ jobs:
           cache-dependency-path: |
             BE/requirements.txt
             TESTS/adapters/django/requirements-credentials.txt
+            TESTS/adapters/django/constraints-parity.txt
             TESTS/contracts/requirements-qr.txt
             docs/manuale/requirements-offline.txt
       - name: Install disposable parity dependencies
+        env:
+          # The requirement files pin direct dependencies only; this pins the rest to the recorded versions.
+          PIP_CONSTRAINT: ${{ github.workspace }}/TESTS/adapters/django/constraints-parity.txt
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
           sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
           sudo locale-gen
           python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
+          # Python and Go guess upload content types from the host's mime.types files: the runner's are set
+          # aside and the table the fixtures were recorded with is installed as the only one.
+          python - <<'PYMIME' | while read -r file; do if [ -n "$file" ]; then sudo mv "$file" "$file.host"; fi; done
+          import mimetypes, os
+          print('\n'.join(sorted({name for name in mimetypes.knownfiles if os.path.isfile(name)})))
+          PYMIME
+          sudo install -m 0644 TESTS/fixtures/mime.types /etc/mime.types
+          python -c "import mimetypes, os; assert [name for name in mimetypes.knownfiles if os.path.isfile(name)] == ['/etc/mime.types']"
           echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
           python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
           python -m pip install -r docs/manuale/requirements-offline.txt
@@ -150,8 +162,9 @@ jobs:
           SWEEP_LABEL: ${{ needs.plan.outputs.label }}
           SWEEP_FAMILIES: ${{ needs.plan.outputs.families }}
           SWEEP_SHARD: ${{ matrix.shard }}/${{ needs.plan.outputs.shards }}
+        # model_hooks_process runs fifteen families in a row, so a job gets 90 minutes.
         run: |
-          set -- --label "$SWEEP_LABEL" --shard "$SWEEP_SHARD" --jobs 2 --timeout 2400
+          set -- --label "$SWEEP_LABEL" --shard "$SWEEP_SHARD" --jobs 2 --timeout 5400
           if [ -n "$SWEEP_FAMILIES" ]; then set -- "$@" --families "$SWEEP_FAMILIES"; fi
           python tools/go-migration/sweep.py "$@"
       - uses: actions/upload-artifact@v4

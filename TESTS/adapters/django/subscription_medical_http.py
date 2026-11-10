@@ -25,6 +25,7 @@ from TESTS.contracts import test_subscription_medical_http as contract
 from TESTS.adapters.django import carnet_replace_http as replace
 from TESTS.adapters.django import carnet_subscription_topup_http as topup
 from TESTS.adapters.django import family_harness as harness
+from TESTS.adapters.django import invoice_sync_print_http as printing
 from TESTS.adapters.django.workflow_writes_http import keyed
 
 SOURCES = ('TESTS/fixtures/subscription_medical_http.json', 'TESTS/contracts/test_subscription_medical_http.py',
@@ -35,7 +36,7 @@ SOURCES = ('TESTS/fixtures/subscription_medical_http.json', 'TESTS/contracts/tes
            'BE/application/mixin.py', 'BE/application/utils/api_utils.py', 'BE/application/impersonation_scope.py',
            'BE/application/impersonation.py', 'BE/application/audit_resolvers.py', 'BE/application/signals.py',
            'BE/application/printing_tasks.py', 'BE/application/utils/api_utils.py', 'TESTS/adapters/django/instance_logo.py',
-           'TESTS/adapters/django/s3_objects.py') + harness.SOURCES
+           'TESTS/adapters/django/s3_objects.py', 'TESTS/adapters/django/invoice_sync_print_http.py') + harness.SOURCES
 APPOINTMENT, CERTIFICATE, SUBSCRIPTION = 'application.MedicalAppointments', 'application.MedicalCertificate', 'application.Subscription'
 DRAFT, DOCUMENT = 'application.AssociateImportDraft', 'docmanager.Document'
 MANAGED = (APPOINTMENT, CERTIFICATE, SUBSCRIPTION, DRAFT, DOCUMENT, harness.AUDIT, harness.INDEX)
@@ -61,7 +62,7 @@ def service_context(report, log):
     from django.test.utils import override_settings
     from PIL import features
     from TESTS.adapters.django.instance_logo import minio
-    with minio(log, dict(os.environ), report) as (endpoint, access, secret):
+    with printing.service_context(report, log), minio(log, dict(os.environ), report) as (endpoint, access, secret):
         client = boto3.client('s3', endpoint_url=endpoint, aws_access_key_id=access, aws_secret_access_key=secret, region_name='us-east-1',
                               config=Config(signature_version='s3v4', retries={'max_attempts': 0}, s3={'addressing_style': 'path'}))
         client.create_bucket(Bucket=BUCKET)
@@ -140,7 +141,8 @@ def seed_rows(source, created):
                                           status_flag=subscription.ACCEPTED))
     for row in source['appointments'].values():
         insert(appointment, appointment(medical_appointments_id=row['id'], subscription_id=source['subscriptions'][row['subscription']]['id'],
-                                        region=row['region'], document_id=source['documents'][row['document']]['id'], date=day(row['date']),
+                                        region=row['region'], document_id=source['documents'][row['document']]['id'] if row['document'] else None,
+                                        date=day(row['date']),
                                         notes=row['notes'], sport=row['sport'], meta=row['meta'], address=row['address'],
                                         creation_date=moment(row['created'])))
     for row in source['drafts'].values():
@@ -201,7 +203,23 @@ def check_entries(case, added, indexes, expected, *, before, ids, actor, context
                              'index.fields')
 
 
+def check_prints(case, token):
+    """The exact outbound print requests of the case (none unless authored): GET <path> with requests' default
+    headers and the request's Authorization, no body."""
+    with printing.STUB['lock']:
+        log = list(printing.STUB['log'])
+    expected = case.get('prints', [])
+    contract.require(len(log) == len(expected), 'print.request-count')
+    headers = sorted([('host', printing.STUB['host']), ('user-agent', printing.USER_AGENT), ('accept-encoding', 'gzip, deflate'),
+                      ('accept', '*/*'), ('connection', 'keep-alive'), ('authorization', 'Bearer ' + str(token))])
+    for index, (sent, path) in enumerate(zip(log, expected)):
+        contract.require(sent['method'] == 'GET' and sent['path'] == path, f'print.request-line:{index}')
+        contract.require(sorted((name.lower(), value) for name, value in sent['headers']) == headers, f'print.headers:{index}')
+        contract.require(sent['body'] == b'', f'print.body:{index}')
+
+
 def assert_effect(case, before, after, source, context):
+    check_prints(case, context['fixture']['tokens'].get(case['actor']))
     harness.require_unmanaged_unchanged(contract, before, after, MANAGED)
     effect = case['effect']
     if effect is None:
@@ -392,6 +410,8 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
 
 
 def prepared(source):
+    with printing.STUB['lock']:
+        printing.STUB['log'], printing.STUB['script'] = [], []
     STATE['started'] = time.time()
     return deleted_rows(source)
 

@@ -15,6 +15,18 @@ type SubscriptionTransferRow struct {
 	Denomination  *string `db:"denomination"`
 }
 
+// SubscriptionTransferDateState is what Subscription.save() reads to fill empty dates.
+type SubscriptionTransferDateState struct {
+	Start    *time.Time `db:"start_date"`
+	End      *time.Time `db:"end_date"`
+	Duration int        `db:"subscription_duration"`
+}
+
+// SubscriptionTransferDates are a subscription's dates before and after a save (YYYY-MM-DD, nil: empty).
+type SubscriptionTransferDates struct {
+	OldStart, OldEnd, Start, End *string
+}
+
 // SubscriptionTransferPerson is an associate (the subscription's or its tutor).
 type SubscriptionTransferPerson struct {
 	ID            string  `db:"associate_id"`
@@ -60,7 +72,12 @@ type SubscriptionTransferStore interface {
 	InstanceConfig(ctx context.Context) (EmailRenderInstanceConfig, error)
 	CreateUser(ctx context.Context, user OAuthNewUser, audit LoginAuditContext) error
 	CreateTransfer(ctx context.Context, transfer SubscriptionTransferCreated, audit LoginAuditContext) error
-	SaveSubscriptionUser(ctx context.Context, row SubscriptionTransferRow, user string, audit LoginAuditContext, at time.Time) error
+	// SaveSubscriptionUser is subscription.user = recipient; subscription.save();
+	// dates (when not nil) are the start and end dates save() leaves on the row.
+	SaveSubscriptionUser(ctx context.Context, row SubscriptionTransferRow, user string, dates *SubscriptionTransferDates, audit LoginAuditContext,
+		at time.Time) error
+	// SubscriptionDateState reads the stored dates and the owner's duration setting.
+	SubscriptionDateState(ctx context.Context, subscription string) (SubscriptionTransferDateState, error)
 	// SubscriptionSaveSeason reads what Subscription.save() computes before it writes.
 	SubscriptionSaveSeason(ctx context.Context, subscription string) (SubscriptionSaveSeason, error)
 	SaveAssociateUser(ctx context.Context, person SubscriptionTransferPerson, user string, audit LoginAuditContext, at time.Time) error

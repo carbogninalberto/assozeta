@@ -401,6 +401,18 @@ order: nothing to compare); supplier list orderings through relations (open-ende
 from tables outside the supplier flows; `invoice/<uid>/send` with a payment date before year 1000 (`strftime('%Y')` pads
 the year differently on glibc and macOS, so the text is the platform's).
 
+### Ported in the v2-rest-subs change
+
+Stored data and rare inputs (class B rows). Receipts are `quality-reports/go-migration/<family>-http-restsubs-*`; each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| subscription-lifecycle | `POST subscription/<uid>/archive`, `POST subscription/<uid>/delete` (B) | payments without an association; a payment whose save fails; one payment on two links; subscriptions with empty dates | 71 cases; GREEN `restsubs-2` on CI; mutation (`rsmut2`, payment already deleted not raised) CAUGHT |
+| subscription-transfer | `POST subscription/<uid>/transfer` (B) | subscription with empty dates (filled on save) | 33 cases; mutation `rsmut` (end date audit value) CAUGHT |
+| subscription-medical | `GET subscription/<uid>/medical-appointments/list` (B) | appointments stored without a document (printed synchronously) | 135 cases; mutation `rsmut` (print without Authorization) CAUGHT |
+
+Left refused: see "Not ported" in `subscription-lifecycle.md` (unreadable or group-hidden unpaid payments).
+
 ### Ported in the v2-rest-c change
 
 Old data and rare inputs (class B rows; the first row of each family is `legacy: yes`). Receipts are `quality-reports/go-migration/<family>-http-v2restc-*`; each

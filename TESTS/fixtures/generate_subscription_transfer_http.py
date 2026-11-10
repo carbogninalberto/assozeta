@@ -95,6 +95,9 @@ ASSOCIATES['accented'] = {'id': next(ids), 'first': 'Émile', 'last': 'Çelik', 
 ASSOCIATES['casefold'] = {'id': next(ids), 'first': 'ßöra', 'last': 'ǆukić', 'user': 'owner'}
 SUBSCRIPTIONS['accented'] = {'id': next(ids), 'associate': 'accented', 'user': 'owner'}
 SUBSCRIPTIONS['casefold'] = {'id': next(ids), 'associate': 'casefold', 'user': 'owner'}
+# Stored without dates: subscription.save() fills them from the owner's season (1 January, a season year).
+ASSOCIATES['undated'] = {'id': next(ids), 'first': 'Dora', 'last': 'Senzadate', 'user': 'owner'}
+SUBSCRIPTIONS['undated'] = {'id': next(ids), 'associate': 'undated', 'user': 'owner', 'undated': True, 'created': '2022-05-05T10:00:00Z'}
 
 cases = []
 NOTIFIED = set()
@@ -253,6 +256,14 @@ add('invalid-season-settings-after-transfer-server-error', 'season_owner', SUBSC
             'associates': [], 'relation': None, 'new_user': None, 'welcome': False, 'audit': season_audit,
             'notification': {'user': 'athlete', 'association': SEASON['association'],
                              'msg': f"l'associazione {SEASON['denomination']} ha trasferito l'iscrizione Sara Stagione al tuo account"}})
+# The save that assigns the recipient also fills the empty dates (one update entry).
+undated = transferred('owner', 'undated', 'athlete', associate_from='owner')
+for entry in undated['audit']:
+    if entry['model'] == 'subscription':
+        entry['changes'].update(start_date=['None', '2022-01-01'], end_date=['None', '2022-12-31'])
+undated['dates'] = {'start_date': '2022-01-01', 'end_date': '2022-12-31'}
+add('undated-subscription-dates-filled', 'owner', SUBSCRIPTIONS['undated']['id'], 201, created('undated', 'athlete'),
+    body={'recipient': ATHLETE}, effect=undated)
 # The subscription now belongs to the athlete: the owner is no longer its owner.
 add('transferred-no-longer-owned', 'owner', ADULT, 403, NOT_OWNER, body={'recipient': ATHLETE})
 

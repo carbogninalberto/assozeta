@@ -120,6 +120,12 @@
    "first": "ßöra",
    "last": "ǆukić",
    "user": "owner"
+  },
+  "undated": {
+   "id": "a1000000-0000-4000-8000-000000997032",
+   "first": "Dora",
+   "last": "Senzadate",
+   "user": "owner"
   }
  },
  "relations": {
@@ -196,6 +202,13 @@
    "id": "a1000000-0000-4000-8000-000000997031",
    "associate": "casefold",
    "user": "owner"
+  },
+  "undated": {
+   "id": "a1000000-0000-4000-8000-000000997033",
+   "associate": "undated",
+   "user": "owner",
+   "undated": true,
+   "created": "2022-05-05T10:00:00Z"
   }
  },
  "transfers": {
@@ -1590,6 +1603,109 @@
      "user": "athlete",
      "association": "a1000000-0000-4000-8000-000000997025",
      "msg": "l'associazione Subscription transfer season ha trasferito l'iscrizione Sara Stagione al tuo account"
+    }
+   },
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700004"
+   }
+  },
+  {
+   "name": "subscription-transfer-undated-subscription-dates-filled",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997033/transfer",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription": "a1000000-0000-4000-8000-000000997033",
+    "expires_at": "$now",
+    "requester": "a1000000-0000-4000-8000-000000700001",
+    "recipient": "a1000000-0000-4000-8000-000000700004",
+    "token": "$new",
+    "status": 2
+   },
+   "effect": {
+    "expire": true,
+    "transfer": {
+     "subscription": "undated",
+     "recipient": "athlete",
+     "requester": "owner"
+    },
+    "subscription": "undated",
+    "associates": [
+     "undated"
+    ],
+    "relation": null,
+    "new_user": null,
+    "welcome": false,
+    "audit": [
+     {
+      "model": "subscriptiontransfer",
+      "action": 0,
+      "ref": "$transfer",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 1,
+      "ref": "undated",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ],
+       "start_date": [
+        "None",
+        "2022-01-01"
+       ],
+       "end_date": [
+        "None",
+        "2022-12-31"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "undated",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 1,
+      "ref": "$transfer",
+      "changes": "$accepted",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     }
+    ],
+    "notification": {
+     "user": "athlete",
+     "msg": "l'associazione Message reads own ha trasferito l'iscrizione Dora Senzadate al tuo account",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "dates": {
+     "start_date": "2022-01-01",
+     "end_date": "2022-12-31"
     }
    },
    "body": {

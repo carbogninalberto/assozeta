@@ -106,6 +106,9 @@ type SubscriptionLifecycleTransaction interface {
 	// AppendHiddenPaymentUpdate is auditlog's update entry for a payment
 	// Payment.objects does not find: the diff against None of the stored row.
 	AppendHiddenPaymentUpdate(ctx context.Context, payment, association string, audit CourseSubscriptionAudit) error
+	// AppendUnownedPaymentUpdate is auditlog's update entry for a payment
+	// without an association (indexed through the actor).
+	AppendUnownedPaymentUpdate(ctx context.Context, payment string, changes map[string][2]string, audit CourseSubscriptionAudit) error
 	DeleteInstallmentsOf(ctx context.Context, row string, audit CourseSubscriptionAudit) error
 	// DeleteSubscription is subscription.delete(): the collector with its cascades.
 	DeleteSubscription(ctx context.Context, id string, audit CourseSubscriptionAudit) error
