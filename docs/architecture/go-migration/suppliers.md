@@ -107,9 +107,16 @@ generic 403, which escapes before the other field errors).
   key with the validated values, and the row the path names stays as it was;
   auditlog writes two entries for the copy: the pre-save update against nothing
   (indexed from its changes) and the create (indexed directly). A key another row
-  has is the serializer's unique error (400). Ported in v2-rest-b; only a body that
-  also clears `sport_association` stays refused (500).
+  has is the serializer's unique error (400). Ported in v2-rest-b. A body that also
+  clears `sport_association` inserts the copy without an association; its two
+  entries are then indexed through the actor's own association (an owner) or not
+  at all (a collaborator). Ported in rest-b1.
 
 `TESTS/fixtures/supplier_writes_http.json` authors 34 cases. v2-rest-b: RED is the documented refusal (v2-refusals.md,
 suppliers row); GREEN `v2restb-green-r3` 34/34 on the four transports; mutation `v2restb-mutation-r1` (the create entry
 indexed from its changes) CAUGHT.
+
+rest-b1: two more cases (36 in all) for the copy that clears `sport_association`; RED is the documented refusal
+(v2-refusals.md, suppliers row). GREEN `restb1-1` on the four transports (CI run in the ledger notes); mutation
+`restb1-mutation-r1` (the copy indexed as if it kept its association) CAUGHT. Deletes still refuse a database reference
+other than the four Django declares: a migrated schema has no other, so there is nothing to reproduce.

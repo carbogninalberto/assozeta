@@ -1117,6 +1117,82 @@
     "supplier_id": "a1000000-0000-4000-8000-000000900002",
     "city": "Lecce"
    }
+  },
+  {
+   "name": "supplier-writes-update-new-id-clears-association-owner",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900002/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "supplier_id": "a1000000-0000-4000-8000-00000064a902",
+    "name": "Beta è Figli",
+    "address": null,
+    "tax_code": null,
+    "sport_association": null,
+    "vat_number": null,
+    "type": "customer",
+    "email": null,
+    "phone_number": null,
+    "city": "Lecce",
+    "cap": null,
+    "state": null,
+    "country": "Italia",
+    "nationality": "Italiana",
+    "note": "Nuova",
+    "group": null,
+    "deleted": false
+   },
+   "effect": {
+    "kind": "copy",
+    "actor": "owner",
+    "supplier": "beta",
+    "id": "a1000000-0000-4000-8000-00000064a902",
+    "cleared": true
+   },
+   "body": {
+    "supplier_id": "a1000000-0000-4000-8000-00000064a902",
+    "sport_association": null
+   }
+  },
+  {
+   "name": "supplier-writes-update-new-id-clears-association-full_collaborator",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900002/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "supplier_id": "a1000000-0000-4000-8000-00000064a903",
+    "name": "Beta è Figli",
+    "address": null,
+    "tax_code": null,
+    "sport_association": null,
+    "vat_number": null,
+    "type": "customer",
+    "email": null,
+    "phone_number": null,
+    "city": "Lecce",
+    "cap": null,
+    "state": null,
+    "country": "Italia",
+    "nationality": "Italiana",
+    "note": "Nuova",
+    "group": null,
+    "deleted": false
+   },
+   "effect": {
+    "kind": "copy",
+    "actor": "full_collaborator",
+    "supplier": "beta",
+    "id": "a1000000-0000-4000-8000-00000064a903",
+    "cleared": true
+   },
+   "body": {
+    "supplier_id": "a1000000-0000-4000-8000-00000064a903",
+    "sport_association": null
+   }
   }
  ]
 }

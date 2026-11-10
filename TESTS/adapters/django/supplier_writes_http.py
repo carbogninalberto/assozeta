@@ -137,6 +137,9 @@ def assert_effect(case, before, after, source, remote, fixture):
         contract.require(key not in old_s and set(new_s) == set(old_s) | {key} and all(new_s[k] == old_s[k] for k in old_s),
                          'state.kept')
         expected = dict(old_s[origin], supplier_id=key)
+        cleared = effect.get('cleared', False)
+        if cleared:
+            expected['sport_association_id'] = None
         for field in FIELDS:
             expected[field] = case['response'][field]
         contract.require(stored(new_s[key]) == stored(expected) and case['response']['supplier_id'] == key, 'state.supplier')
@@ -144,8 +147,11 @@ def assert_effect(case, before, after, source, remote, fixture):
         # auditlog's pre_save finds no row under the new key (an update against nothing), then post_save logs the create.
         created = topup.created_changes(SupplierAndCustomers, row, {})
         contract.require(len(added) == 2, 'audit.count')
+        # A copy without an association is indexed through the actor's own association, when it has one.
+        fallback = (own, 'actor.sport_association') if effect['actor'] == 'owner' else None
         for event, action, path in zip(added, (1, 0), ('changes_json.sport_association', 'direct')):
-            assert_audit(event, case, actor, users, remote, types['supplierandcustomers'], key, action, created, (own, path), indexes)
+            assert_audit(event, case, actor, users, remote, types['supplierandcustomers'], key, action, created,
+                         fallback if cleared else (own, path), indexes)
         contract.require(not indexes, 'index.extra')
         return
     new_keys = set(new_s) - set(old_s)

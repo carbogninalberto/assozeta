@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"math/big"
 	"regexp"
 	"strconv"
 	"strings"
@@ -54,15 +55,46 @@ func (s *PaymentStates) WithPaidFlow(store domain.PaymentPaidFlowStore, notifier
 }
 
 // paymentStateReceiptArg is send_receipt_email as a task argument: the raw
-// request value (None, bool, str or int); other values are not ported.
+// request value as kombu's JSON and Celery's saferepr write it (None, bool,
+// str, int, float, list or dict). An uploaded file is not ported.
 func paymentStateReceiptArg(value any) (any, error) {
 	switch v := value.(type) {
 	case nil, bool, string:
 		return v, nil
 	case json.Number:
-		if number, err := strconv.ParseInt(string(v), 10, 64); err == nil {
-			return number, nil
+		text := string(v)
+		if strings.ContainsAny(text, ".eE") {
+			return celery.Number(text), nil
 		}
+		// str(int) of more than 4300 digits raises in Python.
+		if integer, ok := new(big.Int).SetString(text, 10); ok && len(text) <= 4300 {
+			return celery.Number(integer.String()), nil
+		}
+	case []any:
+		items := make([]any, len(v))
+		for i, item := range v {
+			var err error
+			if items[i], err = paymentStateReceiptArg(item); err != nil {
+				return nil, err
+			}
+		}
+		return items, nil
+	case domain.RequestObject:
+		// A repeated key keeps its first position and its last value.
+		items, index := celery.Dict{}, map[string]int{}
+		for _, field := range v {
+			item, err := paymentStateReceiptArg(field.Value)
+			if err != nil {
+				return nil, err
+			}
+			if at, seen := index[field.Name]; seen {
+				items[at].Value = item
+				continue
+			}
+			index[field.Name] = len(items)
+			items = append(items, celery.Item{Key: field.Name, Value: item})
+		}
+		return items, nil
 	}
 	return nil, domain.ErrPaymentStateNotPorted
 }

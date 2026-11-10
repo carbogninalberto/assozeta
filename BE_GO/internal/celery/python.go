@@ -213,11 +213,18 @@ func (s *reprStream) value(value any) error {
 	case int64:
 		s.tokens = append(s.tokens, reprToken{kind: reprPlain, text: strconv.FormatInt(v, 10)})
 	case Number:
-		// Integers only: a decoded float's repr is not reproduced here.
-		if strings.ContainsAny(string(v), ".eE") {
-			return fmt.Errorf("%w: float", ErrUnsupportedValue)
+		text := string(v)
+		if strings.ContainsAny(text, ".eE") {
+			// str(float): the shortest repr, or inf.
+			number, err := jsonNumberFloat(v)
+			if err != nil {
+				return err
+			}
+			if text = pythonFloat(number); math.IsInf(number, 0) {
+				text = strings.Replace(strings.ToLower(text), "+", "", 1)
+			}
 		}
-		s.tokens = append(s.tokens, reprToken{kind: reprPlain, text: string(v)})
+		s.tokens = append(s.tokens, reprToken{kind: reprPlain, text: text})
 	case string:
 		if !utf8.ValidString(v) {
 			return fmt.Errorf("%w: invalid UTF-8 text", ErrUnsupportedValue)
