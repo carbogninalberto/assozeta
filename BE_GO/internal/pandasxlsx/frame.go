@@ -1,21 +1,23 @@
 // Package pandasxlsx reproduces pandas 2.2's
 // read_excel(file, engine="openpyxl") (openpyxl 3.1 read-only, data-only
 // workbook, first worksheet, header row 0, default NA values) for the
-// workbooks spreadsheet applications write: the cell values openpyxl yields,
-// pandas' row trimming, the python parser's column names and per-column type
-// inference, and the values DataFrame.iterrows() hands out. Anything outside
-// the modelled subset is ErrUnsupported, never a guess. Golden cases:
-// testdata/pandas_frames.json (TESTS/adapters/go/pandas_xlsx_golden.py).
+// workbooks spreadsheet applications write: the cell values openpyxl yields
+// (text, numbers, booleans, errors, dates, times and durations in the 1900
+// and 1904 date systems, ISO 8601 date cells), pandas' row trimming, the
+// python parser's column names and per-column type inference, and the values
+// DataFrame.iterrows() hands out. Anything outside the modelled subset is
+// ErrUnsupported, never a guess. Golden cases: testdata/pandas_frames.json.gz,
+// testdata/pandas_text_frames.json.gz and testdata/numeric_texts.json.gz,
+// written by TESTS/adapters/go/pandas_xlsx_golden.py from pandas itself.
 package pandasxlsx
 
 import (
 	"errors"
 	"math"
+	"math/big"
 	"strconv"
-	"strings"
 	"time"
 
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
@@ -26,51 +28,56 @@ var ErrInvalid = errors.New("pandasxlsx: not a workbook")
 // ErrUnsupported marks a workbook outside the modelled subset.
 var ErrUnsupported = refusal.New("pandasxlsx: workbook outside the supported subset")
 
-// Kind is the Python type of a value iterrows() yields.
-type Kind int
-
-const (
-	// NaN is float('nan'): an empty cell or an NA text.
-	NaN Kind = iota
-	// String is a str.
-	String
-	// Int is a Python int, or a numpy.int64 in a frame of int64 columns.
-	Int
-	// Float is a float (numpy.float64 in an all-numeric frame).
-	Float
-	// Time is a pandas Timestamp or a datetime.datetime: both print as
-	// 'YYYY-MM-DD HH:MM:SS[.ffffff]', are true and are not JSON serializable.
-	Time
-	// NaT is pandas.NaT: an empty cell of a datetime64 column.
-	NaT
-)
-
-// Value is one cell of a row.
-type Value struct {
-	Kind Kind
-	S    string
-	I    int64
-	F    float64
-	T    time.Time
-}
-
-// TimeText is str() of a Time value.
-func (v Value) TimeText() string {
-	text := v.T.Format("2006-01-02 15:04:05")
-	if micro := v.T.Nanosecond() / 1000; micro != 0 {
-		text += "." + leftPad(strconv.Itoa(micro), 6)
-	}
-	return text
-}
-
-func leftPad(text string, width int) string {
-	return strings.Repeat("0", max(width-len(text), 0)) + text
-}
-
-// Frame is the DataFrame: its columns and the rows of iterrows().
+// Frame is the DataFrame: its column labels and the rows of iterrows().
 type Frame struct {
+	// Columns is str() of each label; a text label is the label itself.
 	Columns []string
-	Rows    [][]Value
+	// Labels is columns.tolist().
+	Labels []Value
+	Rows   [][]Value
+}
+
+// TextLabels reports whether every column label is a str.
+func (f *Frame) TextLabels() bool {
+	for _, label := range f.Labels {
+		if label.Kind != String {
+			return false
+		}
+	}
+	return true
+}
+
+// Read is ReadText without text columns.
+func Read(data []byte) (*Frame, error) { return ReadText(data, nil) }
+
+// ReadText is ReadAll for the frames made of text labels and of str, int,
+// finite float, datetime, nan and NaT values (the kinds NaN, String, Int,
+// Float, Time and NaT; a numpy.int64 is the Int the import takes with
+// item()); any other frame is ErrUnsupported.
+func ReadText(data []byte, textual func(column string) bool) (*Frame, error) {
+	frame, err := ReadAll(data, textual)
+	if err != nil {
+		return nil, err
+	}
+	if !frame.TextLabels() {
+		return nil, ErrUnsupported
+	}
+	for _, row := range frame.Rows {
+		for index, value := range row {
+			switch value.Kind {
+			case NaN, String, Int, Time, NaT:
+			case Int64:
+				row[index].Kind = Int
+			case Float:
+				if math.IsInf(value.F, 0) {
+					return nil, ErrUnsupported
+				}
+			default:
+				return nil, ErrUnsupported
+			}
+		}
+	}
+	return frame, nil
 }
 
 // naValues is pandas' STR_NA_VALUES.
@@ -78,120 +85,105 @@ var naValues = map[string]bool{"": true, "#N/A": true, "#N/A N/A": true, "#NA": 
 	"-NaN": true, "-nan": true, "1.#IND": true, "1.#QNAN": true, "<NA>": true, "N/A": true, "NA": true, "NULL": true,
 	"NaN": true, "None": true, "n/a": true, "nan": true, "null": true}
 
-var boolTexts = map[string]bool{"True": true, "TRUE": true, "true": true, "False": true, "FALSE": true, "false": true}
+// boolTexts are maybe_convert_bool's default true and false values.
+var boolTexts = map[string]bool{"True": true, "TRUE": true, "true": true, "False": false, "FALSE": false, "false": false}
 
 type cellKind int
 
 const (
-	cellEmpty cellKind = iota
+	cellEmpty cellKind = iota // '' (no value)
 	cellString
 	cellInt
 	cellFloat
-	cellTime
+	cellTime     // datetime.datetime
+	cellBool     // bool
+	cellNaN      // numpy.nan: an error cell
+	cellClock    // datetime.time
+	cellDelta    // datetime.timedelta
+	cellCalendar // datetime.date
 )
 
+// cell is a value pandas' _convert_cell returns.
 type cell struct {
 	kind cellKind
 	s    string
 	i    int64
+	n    *big.Int // a cellInt outside int64
 	f    float64
+	b    bool
 	t    time.Time
+	d    time.Duration
 }
 
 func (c cell) blank() bool { return c.kind == cellEmpty || c.kind == cellString && c.s == "" }
 
-// isASCIISpace is the C tokenizer's isspace_ascii.
-func isASCIISpace(c byte) bool { return c == ' ' || c >= '\t' && c <= '\r' }
-
-type numeric struct {
-	integer bool
-	i       int64
-	f       float64
+func intCell(value *big.Int) cell {
+	if value.IsInt64() {
+		return cell{kind: cellInt, i: value.Int64()}
+	}
+	return cell{kind: cellInt, n: value}
 }
 
-// numericText is maybe_convert_numeric for one str: whitespace, a sign,
-// digits with an optional fraction. Forms whose value the conversion does not
-// round as strconv does (exponents, more than 15 digits with a fraction),
-// integers beyond int64 and the inf/nan words are unsupported.
-func numericText(text string) (numeric, bool, error) {
-	start, end := 0, len(text)
-	for start < end && isASCIISpace(text[start]) {
-		start++
-	}
-	for end > start && isASCIISpace(text[end-1]) {
-		end--
-	}
-	body := text[start:end]
-	unsigned := strings.TrimLeft(body, "+-")
-	switch strings.ToLower(unsigned) {
-	case "inf", "infinity", "nan":
-		if len(body)-len(unsigned) <= 1 {
-			return numeric{}, false, ErrUnsupported
+// str is Python's str() of the cell.
+func (c cell) str() string { return c.value().Str() }
+
+// value is the cell as a Python object.
+func (c cell) value() Value {
+	switch c.kind {
+	case cellString:
+		return Value{Kind: String, S: c.s}
+	case cellInt:
+		if c.n != nil {
+			return Value{Kind: BigInt, S: c.n.String()}
 		}
+		return Value{Kind: Int, I: c.i}
+	case cellFloat:
+		return Value{Kind: Float, F: c.f}
+	case cellTime:
+		return Value{Kind: Time, T: c.t}
+	case cellBool:
+		return Value{Kind: Bool, B: c.b}
+	case cellNaN:
+		return Value{Kind: NaN}
+	case cellClock:
+		return Value{Kind: TimeOfDay, D: c.d}
+	case cellDelta:
+		return Value{Kind: PyTimedelta, D: c.d}
+	case cellCalendar:
+		return Value{Kind: Date, T: c.t}
 	}
-	rest := body
-	if rest != "" && (rest[0] == '+' || rest[0] == '-') {
-		rest = rest[1:]
-	}
-	digits, dots, exponent := 0, 0, false
-	for i := 0; i < len(rest); i++ {
-		c := rest[i]
-		switch {
-		case c >= '0' && c <= '9':
-			digits++
-		case c == '.':
-			dots++
-		case c == 'e' || c == 'E':
-			exponent = true
-			tail := rest[i+1:]
-			if tail != "" && (tail[0] == '+' || tail[0] == '-') {
-				tail = tail[1:]
-			}
-			if tail == "" || strings.Trim(tail, "0123456789") != "" {
-				return numeric{}, false, nil
-			}
-			i = len(rest)
-		default:
-			return numeric{}, false, nil
-		}
-	}
-	if digits == 0 || dots > 1 {
-		return numeric{}, false, nil
-	}
-	if exponent {
-		if mantissa, _, _ := strings.Cut(strings.ToLower(rest), "e"); strings.Trim(mantissa, "0123456789.") != "" || strings.Trim(mantissa, ".") == "" {
-			return numeric{}, false, nil
-		}
-		return numeric{}, false, ErrUnsupported
-	}
-	if dots == 0 {
-		value, err := strconv.ParseInt(body, 10, 64)
-		if err != nil {
-			return numeric{}, false, ErrUnsupported
-		}
-		return numeric{integer: true, i: value}, true, nil
-	}
-	if digits > 15 {
-		return numeric{}, false, ErrUnsupported
-	}
-	value, err := strconv.ParseFloat(body, 64)
-	if err != nil {
-		return numeric{}, false, ErrUnsupported
-	}
-	return numeric{f: value}, true, nil
+	return Value{Kind: String}
 }
 
-// Timestamp.max: later datetimes keep their column an object column.
-var timestampMax = time.Date(2262, 4, 11, 23, 47, 16, 854775807, time.UTC)
-
-const (
-	columnObject = iota
-	columnInt
-	columnFloat
-	columnTime
+// Timestamp.min and Timestamp.max: datetimes outside them keep their column
+// an object column.
+var (
+	timestampMin = time.Date(1677, 9, 21, 0, 12, 43, 145224193, time.UTC)
+	timestampMax = time.Date(2262, 4, 11, 23, 47, 16, 854775807, time.UTC)
 )
 
-// build is the python parser on get_sheet_data's rows (trimmed and padded).
+func inTimestampBounds(moment time.Time) bool {
+	return !moment.Before(timestampMin) && !moment.After(timestampMax)
+}
+
+// The dtype of a column.
+const (
+	typeObject = iota
+	typeInt64
+	typeUint64
+	typeFloat
+	typeBool
+	typeDatetime
+	typeTimedelta
+)
+
+type column struct {
+	dtype  int
+	values []Value
+}
+
+// build is the python parser on get_sheet_data's rows (trimmed and padded),
+// the DataFrame constructor and iterrows().
 func build(rows [][]cell, text func(column string) bool) (*Frame, error) {
 	last := -1
 	for index, row := range rows {
@@ -205,7 +197,7 @@ func build(rows [][]cell, text func(column string) bool) (*Frame, error) {
 	}
 	rows = rows[:last+1]
 	if len(rows) == 0 {
-		return &Frame{Columns: []string{}}, nil
+		return &Frame{Columns: []string{}, Labels: []Value{}}, nil
 	}
 	width := 0
 	for _, row := range rows {
@@ -217,246 +209,414 @@ func build(rows [][]cell, text func(column string) bool) (*Frame, error) {
 		}
 		rows[index] = row
 	}
-	if width == 1 {
-		// The parser drops single-cell lines that are blank text.
-		for _, row := range rows {
-			if row[0].kind == cellEmpty || row[0].kind == cellString && strings.TrimSpace(row[0].s) == "" {
-				return nil, ErrUnsupported
-			}
-		}
+	labels, err := columnLabels(rows[0])
+	if err != nil {
+		return nil, err
 	}
-	header := make([]string, width)
-	for index, value := range rows[0] {
-		if value.kind != cellEmpty && value.kind != cellString {
-			return nil, ErrUnsupported
-		}
-		header[index] = value.s
-	}
-	frame := &Frame{Columns: columnNames(header), Rows: make([][]Value, len(rows)-1)}
-	for index := range frame.Rows {
-		frame.Rows[index] = make([]Value, width)
-	}
-	kinds := make([]int, width)
-	for column := 0; column < width; column++ {
-		var kind int
-		var err error
-		if text != nil && text(frame.Columns[column]) {
-			kind = textColumn(rows[1:], column, frame.Rows)
-		} else {
-			kind, err = inferColumn(rows[1:], column, frame.Rows)
-		}
-		if err != nil {
-			return nil, err
-		}
-		kinds[column] = kind
+	frame := &Frame{Labels: labels, Columns: make([]string, width), Rows: make([][]Value, len(rows)-1)}
+	for index, label := range labels {
+		frame.Columns[index] = label.Str()
 	}
 	if len(frame.Rows) == 0 {
 		return frame, nil
 	}
-	// iterrows(): one dtype per row. Numeric columns only give float64 rows,
-	// unless every column is int64 (numpy.int64 values, Int here: the import
-	// takes their Python number).
-	numericOnly, integerOnly := true, true
-	for _, kind := range kinds {
-		numericOnly = numericOnly && (kind == columnInt || kind == columnFloat)
-		integerOnly = integerOnly && kind == columnInt
-	}
-	if numericOnly && !integerOnly {
-		for _, row := range frame.Rows {
-			for index, value := range row {
-				if value.Kind == Int {
-					row[index] = Value{Kind: Float, F: float64(value.I)}
-				}
-			}
+	columns := make([]column, width)
+	for index := range columns {
+		// A converter is found by its name: a label that is a str.
+		if text != nil && labels[index].Kind == String && text(labels[index].S) {
+			columns[index] = textColumn(rows[1:], index)
+		} else if columns[index], err = inferColumn(rows[1:], index); err != nil {
+			return nil, err
 		}
 	}
-	// A row of datetimes and missing values only is a datetime64 Series:
-	// its NaN are NaT (unless a datetime is beyond Timestamp.max).
-	for _, row := range frame.Rows {
-		datetimes, convertible := false, true
-		for _, value := range row {
-			switch value.Kind {
-			case NaT:
-				datetimes = true
-			case Time:
-				datetimes = true
-				convertible = convertible && !value.T.After(timestampMax)
-			case NaN:
-			default:
-				convertible = false
-			}
+	// DataFrame.values: one dtype for the frame. Equal dtypes keep theirs,
+	// int64, uint64 and float64 give float64, anything else object.
+	common, numbers := columns[0].dtype, true
+	for _, item := range columns {
+		if item.dtype != common {
+			common = typeObject
 		}
-		if datetimes && convertible {
-			for index, value := range row {
-				if value.Kind == NaN {
-					row[index] = Value{Kind: NaT}
-				}
-			}
+		numbers = numbers && (item.dtype == typeInt64 || item.dtype == typeUint64 || item.dtype == typeFloat)
+	}
+	if common == typeObject && numbers {
+		common = typeFloat
+	}
+	for index := range frame.Rows {
+		row := make([]Value, width)
+		for position, item := range columns {
+			row[position] = scalar(item.values[index], item.dtype, common)
 		}
+		if common == typeObject {
+			inferRow(row)
+		}
+		frame.Rows[index] = row
 	}
 	return frame, nil
 }
 
-// textColumn is a column read through the text converter: numbers are their
-// str(), the NA texts are missing, and the column is an object column, or
-// datetime64 when every value is a datetime within Timestamp's range.
-func textColumn(rows [][]cell, column int, out [][]Value) int {
-	allTime, anyTime := true, false
-	for index, row := range rows {
-		value := row[column]
-		switch value.kind {
-		case cellEmpty:
-			out[index][column] = Value{Kind: NaN}
-			continue
-		case cellString:
-			if naValues[value.s] {
-				out[index][column] = Value{Kind: NaN}
-				continue
+// scalar is the element of a column in the frame's array.
+func scalar(value Value, dtype, common int) Value {
+	switch common {
+	case typeInt64:
+		return Value{Kind: Int64, I: value.I}
+	case typeBool:
+		return Value{Kind: NumpyBool, B: value.B}
+	case typeFloat:
+		switch value.Kind {
+		case Int:
+			return Value{Kind: Float, F: float64(value.I)}
+		case Uint64:
+			return Value{Kind: Float, F: float64(value.U)}
+		}
+	case typeObject:
+		if value.Kind == Uint64 {
+			if value.U > math.MaxInt64 {
+				return Value{Kind: BigInt, S: strconv.FormatUint(value.U, 10)}
 			}
-			out[index][column] = Value{Kind: String, S: value.s}
-		case cellInt:
-			out[index][column] = Value{Kind: String, S: strconv.FormatInt(value.i, 10)}
-		case cellFloat:
-			out[index][column] = Value{Kind: String, S: dto.PythonFloatText(value.f)}
-		case cellTime:
-			out[index][column] = Value{Kind: Time, T: value.t}
-			anyTime = true
-			allTime = allTime && !value.t.After(timestampMax)
-			continue
-		}
-		allTime = false
-	}
-	if !allTime || !anyTime {
-		return columnObject
-	}
-	for index := range rows {
-		if out[index][column].Kind == NaN {
-			out[index][column] = Value{Kind: NaT}
+			return Value{Kind: Int, I: int64(value.U)}
 		}
 	}
-	return columnTime
+	return value
 }
 
-// inferColumn is _infer_types and the DataFrame constructor for one column.
-func inferColumn(rows [][]cell, column int, out [][]Value) (int, error) {
+// inferRow is the Series constructor on a row of objects
+// (maybe_infer_to_datetimelike): datetimes and missing values only are a
+// datetime64 Series, timedeltas and missing values only a timedelta64 one,
+// NaT and nan only are all NaT.
+func inferRow(row []Value) {
+	present, anyNaT, datetimes, timedeltas := 0, false, true, true
+	for _, value := range row {
+		switch value.Kind {
+		case NaN:
+		case NaT:
+			anyNaT = true
+		case Time:
+			present++
+			timedeltas = false
+			datetimes = datetimes && inTimestampBounds(value.T)
+		case Timedelta, PyTimedelta:
+			present++
+			datetimes = false
+		default:
+			present++
+			datetimes, timedeltas = false, false
+		}
+	}
+	if present == 0 && !anyNaT || present > 0 && !datetimes && !timedeltas {
+		return
+	}
+	for index, value := range row {
+		switch value.Kind {
+		case NaN:
+			row[index] = Value{Kind: NaT}
+		case PyTimedelta:
+			row[index].Kind = Timedelta
+		}
+	}
+}
+
+// textColumn is a column read through the text converter (map_infer, then
+// _infer_types without the numeric and boolean readings): an int or a float
+// is its str() (an error cell 'nan', which is an NA text), every other cell
+// stays as it is. Booleans only are a bool column; otherwise the NA texts
+// are nan and the column holds objects, datetime64 when every value is a
+// datetime within Timestamp's range, timedelta64 when every value is a
+// timedelta.
+func textColumn(rows [][]cell, index int) column {
+	out := column{values: make([]Value, len(rows))}
+	booleans, datetimes, timedeltas, present := len(rows) > 0, true, true, 0
+	for position, row := range rows {
+		value := row[index]
+		switch {
+		case value.kind == cellEmpty || value.kind == cellNaN || value.kind == cellString && naValues[value.s]:
+			out.values[position] = Value{Kind: NaN}
+			booleans = false
+			continue
+		case value.kind == cellInt || value.kind == cellFloat:
+			out.values[position] = Value{Kind: String, S: value.str()}
+		default:
+			out.values[position] = value.value()
+		}
+		present++
+		booleans = booleans && value.kind == cellBool
+		datetimes = datetimes && value.kind == cellTime && inTimestampBounds(value.t)
+		timedeltas = timedeltas && value.kind == cellDelta
+	}
+	switch {
+	case booleans:
+		out.dtype = typeBool
+	case present > 0 && datetimes:
+		out.dtype = typeDatetime
+	case present > 0 && timedeltas:
+		out.dtype = typeTimedelta
+	}
+	if out.dtype == typeDatetime || out.dtype == typeTimedelta {
+		for position := range out.values {
+			switch out.values[position].Kind {
+			case NaN:
+				out.values[position].Kind = NaT
+			case PyTimedelta:
+				out.values[position].Kind = Timedelta
+			}
+		}
+	}
+	return out
+}
+
+// inferColumn is _infer_types (maybe_convert_numeric, then
+// maybe_convert_bool) and the DataFrame constructor's datetime inference for
+// one column. The values are those of the column's own dtype.
+func inferColumn(rows [][]cell, index int) (column, error) {
+	out := column{values: make([]Value, len(rows))}
 	numbers := make([]numeric, len(rows))
-	allNumeric, anyFloat, anyNA, anyValue := true, false, false, false
-	allTime, anyTime, timesInBounds := true, false, true
-	allBoolText := true
-	var numericErr error
-	for index, row := range rows {
-		value := row[column]
+	var null, float, integer, unsigned, signed bool
+	numericColumn := true
+	var uncertain error
+	sawInt := func(value *big.Int) {
+		integer = true
+		switch {
+		case value.Cmp(minInt64) < 0 || value.Cmp(maxUint64) > 0:
+			float = true
+		case value.Sign() < 0:
+			signed = true
+		case value.Cmp(maxInt64) > 0:
+			unsigned = true
+		}
+	}
+	for position, row := range rows {
+		value := row[index]
 		switch value.kind {
-		case cellEmpty:
-			anyNA = true
-			continue
+		case cellEmpty, cellNaN:
+			null, float = true, true
 		case cellString:
 			if naValues[value.s] {
-				anyNA = true
+				null, float = true, true
 				continue
 			}
-			allTime = false
-			allBoolText = allBoolText && boolTexts[value.s]
-			if allNumeric {
-				number, ok, err := numericText(value.s)
-				if err != nil && numericErr == nil {
-					numericErr = err
-				}
-				if err == nil && !ok {
-					allNumeric = false
-				}
-				numbers[index] = number
-				anyFloat = anyFloat || ok && !number.integer
-			}
-		case cellInt:
-			allTime, allBoolText = false, false
-			numbers[index] = numeric{integer: true, i: value.i}
-		case cellFloat:
-			allTime, allBoolText = false, false
-			numbers[index] = numeric{f: value.f}
-			anyFloat = true
-		case cellTime:
-			allNumeric, allBoolText = false, false
-			anyTime = true
-			timesInBounds = timesInBounds && !value.t.After(timestampMax)
-		}
-		anyValue = true
-	}
-	if !anyValue {
-		for _, row := range out {
-			row[column] = Value{Kind: NaN}
-		}
-		return columnFloat, nil
-	}
-	if allNumeric {
-		if numericErr != nil {
-			return 0, numericErr
-		}
-		float := anyFloat || anyNA
-		for index, row := range rows {
-			value := row[column]
+			number, ok, err := numericText(value.s)
 			switch {
-			case value.kind == cellEmpty || value.kind == cellString && naValues[value.s]:
-				out[index][column] = Value{Kind: NaN}
-			case !float:
-				out[index][column] = Value{Kind: Int, I: numbers[index].i}
-			case numbers[index].integer:
-				out[index][column] = Value{Kind: Float, F: float64(numbers[index].i)}
+			case err != nil:
+				uncertain = err
+			case !ok:
+				numericColumn = false
+			case number.integer:
+				sawInt(number.i)
 			default:
-				if math.IsInf(numbers[index].f, 0) || math.IsNaN(numbers[index].f) {
-					return 0, ErrUnsupported
-				}
-				out[index][column] = Value{Kind: Float, F: numbers[index].f}
+				float = true
 			}
-		}
-		if float {
-			return columnFloat, nil
-		}
-		return columnInt, nil
-	}
-	if allBoolText {
-		return 0, ErrUnsupported // maybe_convert_bool
-	}
-	datetime := allTime && anyTime && timesInBounds
-	for index, row := range rows {
-		value := row[column]
-		switch value.kind {
-		case cellEmpty:
-			out[index][column] = Value{Kind: NaN}
-			if datetime {
-				out[index][column] = Value{Kind: NaT}
-			}
-		case cellString:
-			out[index][column] = Value{Kind: String, S: value.s}
-			if naValues[value.s] {
-				out[index][column] = Value{Kind: NaN}
-				if datetime {
-					out[index][column] = Value{Kind: NaT}
-				}
-			}
+			numbers[position] = number
 		case cellInt:
-			out[index][column] = Value{Kind: Int, I: value.i}
+			if value.n != nil {
+				sawInt(value.n)
+			} else {
+				integer = true
+				signed = signed || value.i < 0
+			}
 		case cellFloat:
-			out[index][column] = Value{Kind: Float, F: value.f}
-		case cellTime:
-			out[index][column] = Value{Kind: Time, T: value.t}
+			float = true
+		case cellBool:
+		default:
+			numericColumn = false
 		}
 	}
-	if datetime {
-		return columnTime, nil
+	if !numericColumn {
+		return objectColumn(rows, index, out), nil
 	}
-	return columnObject, nil
+	if uncertain != nil {
+		return column{}, uncertain
+	}
+	if unsigned && (null || signed) {
+		// A uint64 next to a missing or negative value: the values stay as
+		// read, the empty cells as ''.
+		for position, row := range rows {
+			out.values[position] = row[index].value()
+		}
+		return out, nil
+	}
+	for position, row := range rows {
+		value := row[index]
+		var result Value
+		switch {
+		case value.kind == cellEmpty || value.kind == cellNaN || value.kind == cellString && naValues[value.s]:
+			result = Value{Kind: NaN}
+		case float:
+			switch value.kind {
+			case cellString:
+				if numbers[position].uncertain {
+					return column{}, ErrUnsupported
+				}
+				result = Value{Kind: Float, F: numbers[position].f}
+			case cellInt:
+				result = Value{Kind: Float, F: float64(value.i)}
+				if value.n != nil {
+					if value.n.BitLen() > 1024 {
+						return column{}, ErrUnsupported // beyond a float: OverflowError
+					}
+					result.F, _ = new(big.Float).SetInt(value.n).Float64()
+				}
+			case cellBool:
+				if value.b {
+					result = Value{Kind: Float, F: 1}
+				} else {
+					result = Value{Kind: Float}
+				}
+			default:
+				result = Value{Kind: Float, F: value.f}
+			}
+		case integer:
+			whole := new(big.Int)
+			switch value.kind {
+			case cellString:
+				whole = numbers[position].i
+			case cellInt:
+				whole.SetInt64(value.i)
+				if value.n != nil {
+					whole = value.n
+				}
+			case cellBool:
+				if value.b {
+					whole.SetInt64(1)
+				}
+			}
+			if unsigned {
+				result = Value{Kind: Uint64, U: whole.Uint64()}
+			} else {
+				result = Value{Kind: Int, I: whole.Int64()}
+			}
+		default:
+			result = Value{Kind: Bool, B: value.b}
+		}
+		out.values[position] = result
+	}
+	switch {
+	case float:
+		out.dtype = typeFloat
+	case integer && unsigned:
+		out.dtype = typeUint64
+	case integer:
+		out.dtype = typeInt64
+	default:
+		out.dtype = typeBool
+	}
+	return out, nil
 }
 
-// columnNames is the parser's header naming: an empty name is
-// 'Unnamed: <i>'; duplicates get '.<n>', named columns first.
-func columnNames(header []string) []string {
-	columns := append([]string(nil), header...)
+// objectColumn is a column maybe_convert_numeric raises on: the NA texts are
+// nan and a value equal to an earlier one is that earlier object
+// (sanitize_objects: 0 after False is False, True after 1 is 1); booleans and
+// boolean words are a bool column
+// (objects when a value is missing); datetimes only are datetime64 and
+// timedeltas only timedelta64, their missing values NaT.
+func objectColumn(rows [][]cell, index int, out column) column {
+	missing, booleans, datetimes, timedeltas, present := false, true, true, true, 0
+	memo := map[string]cell{}
+	interned := make([]cell, len(rows))
+	for position, row := range rows {
+		value := row[index]
+		if value.kind == cellInt && value.n == nil || value.kind == cellBool {
+			key := labelKey(value)
+			if first, seen := memo[key]; seen {
+				value = first
+			} else {
+				memo[key] = value
+			}
+		}
+		interned[position] = value
+		if value.kind == cellEmpty || value.kind == cellNaN || value.kind == cellString && naValues[value.s] {
+			out.values[position] = Value{Kind: NaN}
+			missing = true
+			continue
+		}
+		present++
+		out.values[position] = value.value()
+		word, isWord := boolTexts[value.s]
+		switch {
+		case value.kind == cellBool:
+			datetimes, timedeltas = false, false
+		case value.kind == cellString && isWord:
+			datetimes, timedeltas = false, false
+			if booleans {
+				out.values[position] = Value{Kind: Bool, B: word}
+			}
+		case value.kind == cellTime:
+			booleans, timedeltas = false, false
+			datetimes = datetimes && inTimestampBounds(value.t)
+		case value.kind == cellDelta:
+			booleans, datetimes = false, false
+		default:
+			booleans, datetimes, timedeltas = false, false, false
+		}
+	}
+	switch {
+	case present == 0:
+	case booleans:
+		if !missing {
+			out.dtype = typeBool
+		}
+		return out
+	case datetimes:
+		out.dtype = typeDatetime
+	case timedeltas:
+		out.dtype = typeTimedelta
+	}
+	for position := range rows {
+		value := &out.values[position]
+		switch {
+		case value.Kind == Bool && interned[position].kind == cellString:
+			*value = Value{Kind: String, S: interned[position].s} // not a boolean column after all
+		case value.Kind == NaN && out.dtype != typeObject:
+			value.Kind = NaT
+		case value.Kind == PyTimedelta && out.dtype == typeTimedelta:
+			value.Kind = Timedelta
+		}
+	}
+	return out
+}
+
+// labelKey identifies a header value the way Python compares and hashes it:
+// 1, 1.0 and True are one key, every nan is numpy.nan itself.
+func labelKey(value cell) string {
+	switch value.kind {
+	case cellString:
+		return "s" + value.s
+	case cellInt:
+		return "n" + strconv.FormatInt(value.i, 10)
+	case cellBool:
+		if value.b {
+			return "n1"
+		}
+		return "n0"
+	case cellFloat:
+		return "n" + strconv.FormatFloat(value.f, 'g', -1, 64)
+	case cellNaN:
+		return "nan"
+	case cellTime:
+		return "t" + strconv.FormatInt(value.t.UnixMicro(), 10)
+	case cellCalendar:
+		return "d" + strconv.FormatInt(value.t.Unix(), 10)
+	case cellClock:
+		return "c" + strconv.FormatInt(int64(value.d), 10)
+	default:
+		return "e" + strconv.FormatInt(int64(value.d), 10)
+	}
+}
+
+// columnLabels is the parser's header naming and the Index the DataFrame
+// builds from it: an empty name is 'Unnamed: <i>'; duplicates get '.<n>'
+// after their str(), named columns first; then numbers only are one numeric
+// Index (float64 when one is a float or nan), booleans only a bool one,
+// datetimes (or timedeltas) and nan only a DatetimeIndex (TimedeltaIndex)
+// with NaT, anything else keeps its objects.
+func columnLabels(header []cell) ([]Value, error) {
+	columns := append([]cell(nil), header...)
 	unnamed := map[int]bool{}
 	for index, name := range columns {
-		if name == "" {
-			columns[index] = "Unnamed: " + strconv.Itoa(index)
+		switch {
+		case name.blank():
+			columns[index] = cell{kind: cellString, s: "Unnamed: " + strconv.Itoa(index)}
 			unnamed[index] = true
+		case name.kind == cellInt && name.n != nil:
+			return nil, ErrUnsupported // a label outside int64
 		}
 	}
 	order := make([]int, 0, len(columns))
@@ -472,7 +632,7 @@ func columnNames(header []string) []string {
 	}
 	contains := func(name string) bool {
 		for _, column := range columns {
-			if column == name {
+			if column.kind == cellString && column.s == name {
 				return true
 			}
 		}
@@ -482,18 +642,58 @@ func columnNames(header []string) []string {
 	for _, index := range order {
 		column := columns[index]
 		original := column
-		count := counts[column]
+		count := counts[labelKey(column)]
 		for count > 0 {
-			counts[original] = count + 1
-			column = original + "." + strconv.Itoa(count)
-			if contains(column) {
+			counts[labelKey(original)] = count + 1
+			column = cell{kind: cellString, s: original.str() + "." + strconv.Itoa(count)}
+			if contains(column.s) {
 				count++
 			} else {
-				count = counts[column]
+				count = counts[labelKey(column)]
 			}
 		}
 		columns[index] = column
-		counts[column] = count + 1
+		counts[labelKey(column)] = count + 1
 	}
-	return columns
+	labels := make([]Value, len(columns))
+	numbers, booleans, fractional := true, true, false
+	datetimes, timedeltas, present := true, true, 0
+	for index, column := range columns {
+		labels[index] = column.value()
+		numbers = numbers && (column.kind == cellInt || column.kind == cellFloat || column.kind == cellBool || column.kind == cellNaN)
+		booleans = booleans && column.kind == cellBool
+		fractional = fractional || column.kind == cellFloat || column.kind == cellNaN
+		if column.kind != cellNaN {
+			present++
+			datetimes = datetimes && column.kind == cellTime && inTimestampBounds(column.t)
+			timedeltas = timedeltas && column.kind == cellDelta
+		}
+	}
+	for index, column := range columns {
+		switch {
+		case numbers && !booleans && fractional && column.kind == cellInt:
+			anyBool := false
+			for _, other := range columns {
+				anyBool = anyBool || other.kind == cellBool
+			}
+			if !anyBool {
+				labels[index] = Value{Kind: Float, F: float64(column.i)}
+			}
+		case present > 0 && (datetimes || timedeltas) && column.kind == cellNaN:
+			labels[index] = Value{Kind: NaT}
+		case present > 0 && timedeltas && column.kind == cellDelta:
+			labels[index].Kind = Timedelta
+		}
+	}
+	// Integers that are one float64 would be one label.
+	floats := map[float64]bool{}
+	for _, label := range labels {
+		if label.Kind == Float {
+			if floats[label.F] {
+				return nil, ErrUnsupported
+			}
+			floats[label.F] = true
+		}
+	}
+	return labels, nil
 }
