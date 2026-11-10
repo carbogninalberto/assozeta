@@ -1701,6 +1701,16 @@
    "disabled": false,
    "meta": {},
    "created": "2026-09-18T08:00:00Z"
+  },
+  "h_deleted": {
+   "id": "a1000000-0000-4000-8000-000000669904",
+   "carnet": "zero",
+   "cs": [
+    "cs_deleted"
+   ],
+   "disabled": false,
+   "meta": null,
+   "created": "2026-09-19T08:00:00Z"
   }
  },
  "instructor": {

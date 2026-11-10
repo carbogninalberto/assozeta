@@ -170,11 +170,40 @@ association: another association's username is DRF's 403 `User not allowed.`, be
   (`['None', '2027-01-01 00:00:00+00:00']`); the membership's dates and default type (`Tesseramento <from>/<to>`) are the next
   season's; the payment keeps today's date.
 
+## A preregistration that renews a subscription
+
+`preregistration: true` with a `subscription_id` that is not null runs `fill_data_preregisration` first:
+
+- `_renewal_source`: without an authenticated requester there is none. The association is the one of the account
+  `data['sport_association']` names (a truthy value; no such association: none), else `user.sport_association` (an athlete is
+  403 `User is not a sport association`). The subscription is read by id in that association (an id the UUID field rejects
+  matches nothing) and is renewable when the requester is the association's account or the subscription's account. Otherwise
+  the answer is 400 `{"msg": "Iscrizione da rinnovare non trovata.", "code": "400"}`;
+- the request keeps only `associate_data.type` (a missing key is the 500 page), `plan_id`, `membership_plan_id` and
+  `sport_association`. `associate_data` becomes `AssociateSerializer` of the stored associate (with its `associate_id`, so the
+  associate is updated by key; `born_date` as `DD/MM/YYYY`) plus the renewed `role` and `subscription_number`;
+  `medical_certificate` is the renewed certificate's id with its expiration date as `DD/MM/YYYY` (so the linked certificate's
+  date is assigned again as a datetime and its entry renders `['2026-12-31', '2026-12-31 00:00:00']`); `custom_data` and
+  `additional_fields` are the stored ones; the signature is absent and no account is created;
+- the registration then runs as a next-season preregistration. The new subscription belongs to the renewed subscription's
+  account (possibly none), keeps its number (an integer text; anything else is the 500 page after the earlier writes, which roll
+  back) and role; the associate and the payment belong to `create_subscription`'s user, who also receives the notification.
+
+Go: `fillPreregistration` and `renewalSource` (`subscription_create_renewal.go`) build the same request object before anything is
+written; the inputs refused for a registration are checked on the filled data, not on the request's.
+
 ## The family wizard
 
 `data['is_family_wizard'] is True` (with the four required keys present on the body) runs `_handle_family_subscription`:
 
 - the family type is `data.get('type', 'family')`, replaced by `family` unless it names a known type;
+- with `type: grouped_subscriptions`, before the transaction, `_get_asd_custom_data_for_grouped_subscriptions(request.user)` reads
+  the account's latest subscription (`-creation_date`) whose `custom_data` text contains `asd-o-ssd` or `scuola-asc` in any case
+  (`UPPER("custom_data"::text) LIKE UPPER('%asd-o-ssd%')`). Its `denomination`, `city`, `province`, `address`, `zip` (as `cap`),
+  `country` (`Italia` without the key), `tax_code` and `email` (`''` without the key) are merged over every valid entry's
+  `custom_data`; without such a subscription nothing is merged, and a matching value that is not an object is the 500 page. The
+  Family is stored with that type. Go: `groupedCustomData`. The web UI's grouped wizard (`SubscribeMultiple.svelte`) sends one
+  ordinary registration per entry and never this body;
 - one transaction: `Family.objects.create(type=...)` (create entry, indexed through the actor's association: none for the public
   form), then for every entry of `data['multiple_entry_form_data']` whose `valid` is exactly `true`: the entry gets
   `data['sport_association']`, the family on its `associate_data` and its own `custom_data`, and goes through
@@ -184,12 +213,18 @@ association: another association's username is DRF's 403 `User not allowed.`, be
   that is not an object are the 500 page; an entry's own errors (400 fields, 409 duplicate, 403) are the answer. In every case the
   whole transaction is rolled back, the Family included;
 - the answer is built after the commit: `{"status": "success", "subs": [], "payments": [...]}` with `PaymentSerializer` of each
-  entry's payment in entry order. A payment the registration reuses (an unpaid one of the same day and amount) was loaded from
-  its row and is serialized as stored, and entries without a fee have none. A payment created by the request still holds the
-  plain date assigned to `payment_date`, which the serializer's `DateTimeField` does not render: the answer is then the 500 page
-  while the Family, every subscription, the tasks and the notifications stay. Go answers the same way (`family`,
-  `subscription_create_family.go`), serializing reused payments with the payment-state rendering (`RenderPayment`,
-  `dto.PaymentStateItem`).
+  entry's payment in entry order; entries without a fee have none. Every payment is read again from its row first
+  (`refresh_from_db`), so a payment created by the request and one the registration reuses (an unpaid one of the same day and
+  amount) have the same shape: `payment_date` is the first instant of the day, `amount` the stored decimal. Go does the same
+  (`family`, `subscription_create_family.go`) with the payment-state rendering (`RenderPayment`, `dto.PaymentStateItem`).
+
+Before this change Django answered the 500 page for a request that created a payment, after committing everything: the new
+payment still held the plain date assigned to `payment_date`, which the serializer's `DateTimeField` does not render
+(`BE/application/tests/test_family_wizard_response.py`).
+
+The web wizard (`UI/src/routes/subscribefamily/SubscribeFamily.svelte`) only tests the answer for an error; it reads
+`response.payment_id`, which the family answer never carried, so with online payments it reloads the page instead of opening
+the payment page.
 
 The fixture's family cases list their rows by label (several subscriptions per case) and are checked with the renewal runner's
 row, audit and notification checks; the response's payments are compared with `PaymentSerializer` of the stored rows.
@@ -208,13 +243,13 @@ Refused with the 500 page before anything is committed:
 - form bodies, a non-empty `X-Group-Id` (the managers' group filter and stored group); an athlete request from an account that
   is neither an athlete nor an association; the quick mode from a member account during an impersonation session with an
   association scope, or with an id that is a number or a boolean; a `sport_association` that is a list or an object;
-- the family wizard with `type: grouped_subscriptions` (the custom data read from the account's earlier grouped
-  subscriptions), and in its entries every input refused for a single registration; in the quick subscription an impersonation session with an association scope, an
+- in the family wizard's entries every input refused for a single registration, and with `type: grouped_subscriptions` two
+  matching earlier subscriptions with the same newest creation date; in the quick subscription an impersonation session with an association scope, an
   owner with several associations, plan ids or fees of other shapes (booleans, containers, more than two decimals) and a
   certificate choice that depends on the unordered subscriptions;
-- `preregistration: true` with a `subscription_id` (the preregistration that renews a subscription:
-  `fill_data_preregisration` re-reads the associate, tutor, certificate and membership from it); preregistration in renewals and
-  draft approvals;
+- in a preregistration that renews a subscription: a renewed member that has a tutor (`get_main_tutor` and its serialized
+  data), a `sport_association` that is not a string, a `subscription_id` that is not a string, an account name matching several
+  associations, a renewed subscription without an associate; preregistration in renewals and draft approvals;
 - new member info with a `username` (create_user's TypeError, 500), a `role` other than athlete, a non-string e-mail, a numeric
   `new_member` flag; a signature upload whose generated key already exists;
 - a `medical_certificate` without `medical_id` whose `certificate_expring_date` parses to a date other than today (the placeholder
@@ -299,3 +334,31 @@ v2-wizard: the family wizard and the quick mode from a member account (113 cases
   `subscription-create-family-wizard` (CAUGHT).
 - Re-run green: `subscription-renew` 74/74 on four transports (`secsub2-versioned-r1`); `subscription-memberships`,
   `subscription-sign`, `subscription-approve` and `associates-draft` natively (`secsub2-rerun-r1`: 88/88, 47/47, 27/27, 128/128).
+
+The family wizard's answer (113 cases).
+
+- Django first: `application.tests.test_family_wizard_response` (2 tests) failed on the 500 page and passes with the fix.
+- RED (`famwiz-red-r1`, the Go code of the previous commit): Django 113/113; Go 500 on `subscription-create-family-wizard`.
+- GREEN (`famwiz-versioned-r1`): 113/113 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`famwiz-mutation-r1`): the payments listed in reverse entry order fails `subscription-create-family-wizard`
+  (CAUGHT).
+
+A preregistration that renews a subscription (125 cases).
+
+- RED (`famwiz-red-r4`, the Go code of the previous commit): Django 125/125; Go 500 on
+  `subscription-create-preregistration-renewal-anonymous-not-found`.
+- GREEN natively (`famwiz-native-r1`): 125/125 on native Django and native Go.
+- Mutation (`famwiz-mutation-r2`): the renewed subscription's accounts not compared with the requester fails
+  `subscription-create-preregistration-renewal-of-another-account-not-found` (CAUGHT).
+
+The family wizard with `type: grouped_subscriptions` (127 cases).
+
+- RED (`famwiz-red-r5`, the Go code of the previous commit): Django 127/127; Go 500 on `subscription-create-family-wizard-grouped`.
+- GREEN natively (`famwiz-native-r2`): 127/127 on native Django and native Go.
+- Mutation (`famwiz-mutation-r3`): the merged `cap` read from the stored `cap` key instead of `zip` fails
+  `subscription-create-family-wizard-grouped` (CAUGHT).
+
+After merging `codex/go-backend-parity`: GREEN (`famwiz-versioned-r2`) 127/127 on native Django, native Go, Caddy `/api/v1` and
+`/api/v2`, covering the family wizard's answer, the renewing preregistration and the grouped wizard.
+Re-run green natively (`famwiz-rerun-r1`): `subscription-renew` 75/75, `subscription-memberships` 88/88, `subscription-sign`
+47/47, `subscription-approve` 27/27, `associates-draft` 128/128.
