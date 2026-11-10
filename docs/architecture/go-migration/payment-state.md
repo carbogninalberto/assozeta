@@ -83,6 +83,16 @@ serialized **before** the save, so the response still shows the paid state and t
 `400 {'error': 'Payment not paid.'}`. Paid: `paid=False`, `Payment.save()` defaults, audited update;
 `{'data': {'msg': 'payment cancelled.', 'payment': ...}}`.
 
+A paid payment with an invoice is serialized again **after** the save, with the in-memory invoice already
+`cancelled` and its stored `meta` unchanged (that is the response). Then the invoice is saved with `cancelled=True` and
+`meta` = the view's `payment_obj`: `payment_id`, `str()` of the nested `user` (UserSerializer dict, `role` an int) and
+`associate` (AssociateSerializer dict: `sport_association` and `family` are `UUID('...')`, `associate_id` and `user`
+strings; `'None'` without one), `subscription` None (PaymentSerializer has no such field), `subject`, `amount`,
+`creation_date` and `payment_date` as rendered. The invoice update entry carries `cancelled` and `meta`
+(`json.dumps(sort_keys=True)`, old `'null'`), indexed directly. Then `print_document_invoice.apply_async` publishes
+`[invoice, Authorization]`. Go: `dto.PaymentStateInvoiceMeta` builds the ordered value from the PaymentSerializer port and
+`dto.PythonStr` renders the nested reprs.
+
 ## Delete
 
 `is_valid_uuid` (400), the association, then the live group-aware payment of `request.user.sport_association` (missing,
@@ -93,6 +103,12 @@ payment. SET_NULL references (installments, course subscriptions, carnet holding
 attachment and membership through rows deleted. Payment entries are indexed through `changes_json.sport_association`,
 installment entries through the actor's own association (none for a collaborator). Response
 `{'data': {'msg': 'payment deleted.'}}`.
+
+A payment with an invoice (paid or not) first gets its invoice saved cancelled with the same `payment_obj` meta (one
+audited update), then `print_document_invoice.apply(...)` runs eagerly: one `GET CURRENT_HOST/document/invoice/<id>?send_receipt_email=False`
+with the request's `Authorization` (invoice-sync-print's `InvoiceSyncPrint`, with the CoordinatedTask gate). The request
+is not atomic, so Go commits the invoice save before the print and deletes the payment in a second transaction; the
+invoice row stays.
 
 ## Bulk archive and bulk delete
 
@@ -107,8 +123,8 @@ untouched. Responses `{'message': 'All payments archived'}` / `{'message': 'All 
 - Paid flow inputs outside the ported conversions: a non-canonical `X-Group-Id` spelling when an invoice is created,
   float fees whose two-place rounding is an exact tie, `meta.subscription_data.name` values other than strings, booleans
   and integers (invoice-generate's limits), a request.user that is not an owner or collaborator (no association id).
-- Paid cancel or delete of a payment with an invoice (invoice cancellation and the PDF task, synchronous for delete).
-  Approve of paid invoiced payments renders the invoice and dispatches the task (payment-misc.md, invoice-generate.md).
+- Delete of an invoiced payment while the print task is deferred for maintenance (a pending restore or a busy operation
+  lock: Django re-applies the task synchronously); the invoice save is already committed, as in Django.
 - A `payment_date` containing non-ASCII decimal digits (accepted by `strptime`).
 
 ## Evidence
@@ -129,5 +145,17 @@ with `payment_date_equal_invoice_date` (and a token) is seeded for the invoice d
   before it) fails `payment-state-approve-paid-flow-old-date-no-print` (CAUGHT). Earlier (`mutation-r1`): dropping the
   `X-Group-Id` filter from the bulk update fails `payment-state-bulk-archive-group`.
 - `go test ./internal/service` covers the notification text, Stripe's fee arithmetic and the invoice group header.
+- Invoiced cancel and delete (v2-payments-3): see below.
 - Re-run green natively: `payment-misc` (85) and `invoice-generate` (50) (shared approve), `subscription-transfer` (29)
   (`SubscriptionNotifier` gained `DeliverValidated`); `stripe-routes` shares the paid flow (98 on four transports).
+
+## Invoiced cancel and delete (v2-payments-3)
+
+Fixture 153 cases: seeded invoices linked to their payments, the cancel of a paid invoiced payment (response with the
+in-memory cancelled invoice, the stored meta, the published `print_document_invoice`) and the delete of invoiced payments
+(meta, eager print through the CURRENT_HOST stub, cascade). RED `v2pay3-state-red-r2`: Django 153/153, Go 500 on
+`cancel-invoiced-publishes-print`. GREEN `v2pay3-state-final-r1` (after merging `codex/go-backend-parity` `074a5dba`):
+153/153 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `v2pay3-state-mutation-r2` (the response
+rendering the stored invoice instead of the cancelled in-memory one) CAUGHT; an earlier control
+(`v2pay3-state-mutation-r1`) was caught on the stored invoice columns. Re-run after the merge: `invoice-generate`,
+`stripe-routes` (`v2pay3-rerun-r2`, shared `PaymentStates`) and `payment-misc` (`v2pay3-misc-versioned-r1`).

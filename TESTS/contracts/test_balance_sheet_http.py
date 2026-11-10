@@ -6,7 +6,10 @@ generated UTC timestamp, '$current_year' today's year, '$available_years' the
 six balance years ending with today's (the fixture owner's year starts on
 1 January) and {'$profile': id} SportAssociationSerializer, characterized by the
 profile families (its keys and ID are checked here; the runner requires it to
-be identical across backends).
+be identical across backends). '$today' in a string is the %d/%m/%Y date of
+date.today() (UTC), read before and after the request, and '{"$xlsx": spec}'
+is a workbook checked part by part with the opt-in XLSX standard of
+TESTS/contracts/xlsx.py within the request window.
 """
 from datetime import datetime, timezone
 import json
@@ -14,6 +17,7 @@ from pathlib import Path
 
 from TESTS.http_client import Client
 from TESTS.contracts import http_family as family
+from TESTS.contracts import xlsx
 from TESTS.contracts.http_family import require  # noqa: F401  (runner interface)
 from TESTS.contracts.test_balance_archived_http import source_keys
 from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, ResponseFailure, difference, substitute
@@ -32,6 +36,16 @@ def current_year():
 
 def available_years(year):
     return [{'year': y, 'start_date': f'{y}-01-01T00:00:00Z'} for y in range(year - 5, year + 1)]
+
+
+def dated(value, today):
+    if isinstance(value, dict):
+        return {key: dated(item, today) for key, item in value.items()}
+    if isinstance(value, list):
+        return [dated(item, today) for item in value]
+    if isinstance(value, str):
+        return value.replace('$today', today.strftime('%d/%m/%Y'))
+    return value
 
 
 def resolve(expected, actual, case_name, check):
@@ -62,7 +76,9 @@ def assert_case(case, base_url, *, token, sessions):
     if 'raw_body' in case:
         body = case['raw_body'].encode()
         headers['Content-Type'] = case['content_type']
+    before, started = datetime.now(timezone.utc).date(), datetime.now(timezone.utc)
     status, raw, received = Client(base_url, token).request(case['method'], case['path'], body, headers, raw=True, include_headers=True)
+    finished, after = datetime.now(timezone.utc), datetime.now(timezone.utc).date()
 
     def check(condition, code):
         if not condition:
@@ -81,7 +97,14 @@ def assert_case(case, base_url, *, token, sessions):
         actual = json.loads(raw)
     except (ValueError, UnicodeDecodeError):
         raise ResponseFailure('response.json', status) from None
-    expected = resolve(case['response'], actual, case['name'], check)
-    check(actual == expected, 'response.body' + difference(expected, actual))
+    reasons = []
+    for day in dict.fromkeys((before, after)):
+        expected = resolve(dated(case['response'], day), actual, case['name'], check)
+        expected, reason = xlsx.resolve(expected, actual, started, finished)
+        if reason is None and actual == expected:
+            break
+        reasons.append(f'response.xlsx: {reason}'[:600] if reason else 'response.body' + difference(expected, actual))
+    else:
+        check(False, reasons[-1])
     check(received.get('Content-Type', '').split(';')[0] == 'application/json', 'response.type')
     return status

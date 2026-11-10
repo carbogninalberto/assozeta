@@ -731,6 +731,138 @@
    "payment_condition": "TP02",
    "payment_modality": "MP05",
    "xml": null
+  },
+  "pending_own": {
+   "customer_invoice_id": "a1000000-0000-4000-8000-000000846135",
+   "prefix": "FPR",
+   "number": 5,
+   "fiscal_year": 2026,
+   "assignor_prefix_vat_number": "IT",
+   "assignor_fiscal_regime": "RF01",
+   "assignor_country": "IT",
+   "assignor_fax": null,
+   "transferor_prefix_vat_number": "IT",
+   "transferor_fiscal_regime": "RF01",
+   "transferor_country": "IT",
+   "transferor_contact_phone": "",
+   "transferor_fax": null,
+   "e_invoice": true,
+   "country_transmitter_prefix": "IT",
+   "id_transmitter": "ABC1234",
+   "transmitting_format": "FPR12",
+   "document_type": "TD01",
+   "currency": "EUR",
+   "transmitting_date": "2026-10-02",
+   "lines": [
+    {
+     "description": "Quota annuale",
+     "quantity": 1,
+     "unit_of_measure": "unita",
+     "unit_price": 100.0,
+     "vat": 22.0
+    }
+   ],
+   "payment_total_amount": "122.61",
+   "payment_expiry_date": "2026-12-31",
+   "pdf": null,
+   "json": {
+    "b": [
+     true
+    ],
+    "a": "x"
+   },
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "payment": null,
+   "creation_date": "2026-10-09T08:00:00Z",
+   "paid": false,
+   "transmitted": false,
+   "assignor_vat_number": "01234567890",
+   "assignor_tax_code": "01234567890",
+   "assignor_denomination": "ASD Casa & Co",
+   "assignor_address": "Via Roma 1",
+   "assignor_postal_code": "10100",
+   "assignor_city": "Torino",
+   "assignor_province": "TO",
+   "assignor_contact_email": "estero@example.test",
+   "assignor_contact_phone": "0111234567",
+   "transferor_vat_number": null,
+   "transferor_tax_code": "RSSMRA80A01L219X",
+   "transferor_denomination": "Mario Rossi",
+   "transferor_address": "Via Po 2",
+   "transferor_postal_code": "10123",
+   "transferor_city": "Torino",
+   "transferor_province": "TO",
+   "transferor_contact_email": "mario.pec@example.test",
+   "causal": "Quota & servizi",
+   "payment_condition": "TP02",
+   "payment_modality": "MP05",
+   "xml": null
+  },
+  "pending_own_old": {
+   "customer_invoice_id": "a1000000-0000-4000-8000-000000846136",
+   "prefix": "FPR",
+   "number": 6,
+   "fiscal_year": 2026,
+   "assignor_prefix_vat_number": "IT",
+   "assignor_fiscal_regime": "RF01",
+   "assignor_country": "IT",
+   "assignor_fax": null,
+   "transferor_prefix_vat_number": "IT",
+   "transferor_fiscal_regime": "RF01",
+   "transferor_country": "IT",
+   "transferor_contact_phone": "",
+   "transferor_fax": null,
+   "e_invoice": true,
+   "country_transmitter_prefix": "IT",
+   "id_transmitter": "ABC1234",
+   "transmitting_format": "FPR12",
+   "document_type": "TD01",
+   "currency": "EUR",
+   "transmitting_date": "2026-10-02",
+   "lines": [
+    {
+     "description": "Quota annuale",
+     "quantity": 1,
+     "unit_of_measure": "unita",
+     "unit_price": 100.0,
+     "vat": 22.0
+    }
+   ],
+   "payment_total_amount": "122.61",
+   "payment_expiry_date": "2026-12-31",
+   "pdf": null,
+   "json": {
+    "b": [
+     true
+    ],
+    "a": "x"
+   },
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "payment": null,
+   "creation_date": "2026-10-01T08:00:00Z",
+   "paid": false,
+   "transmitted": false,
+   "assignor_vat_number": "01234567890",
+   "assignor_tax_code": "01234567890",
+   "assignor_denomination": "ASD Casa & Co",
+   "assignor_address": "Via Roma 1",
+   "assignor_postal_code": "10100",
+   "assignor_city": "Torino",
+   "assignor_province": "TO",
+   "assignor_contact_email": "estero@example.test",
+   "assignor_contact_phone": "0111234567",
+   "transferor_vat_number": null,
+   "transferor_tax_code": "RSSMRA80A01L219X",
+   "transferor_denomination": "Mario Rossi",
+   "transferor_address": "Via Po 2",
+   "transferor_postal_code": "10123",
+   "transferor_city": "Torino",
+   "transferor_province": "TO",
+   "transferor_contact_email": "mario.pec@example.test",
+   "causal": "Quota & servizi",
+   "payment_condition": "TP02",
+   "payment_modality": "MP05",
+   "xml": null
   }
  },
  "cases": [
@@ -836,39 +968,11 @@
    },
    "effect": {
     "actor": "athlete",
-    "rows": {
-     "customerinvoice": {
-      "a1000000-0000-4000-8000-000000846134": {
-       "xml": "$xml"
-      }
-     }
-    },
+    "rows": {},
     "new": {},
-    "audits": [
-     {
-      "model": "customerinvoice",
-      "key": "a1000000-0000-4000-8000-000000846134",
-      "action": 1,
-      "changes": {
-       "xml": [
-        "$before-text",
-        "$xml"
-       ]
-      },
-      "association": "a1000000-0000-4000-8000-000000701002",
-      "path": "direct"
-     }
-    ]
+    "audits": []
    },
-   "prints": [
-    {
-     "path": "/document/einvoice/a1000000-0000-4000-8000-000000846134",
-     "reply": {
-      "status": 200,
-      "body": "printed"
-     }
-    }
-   ]
+   "prints": []
   },
   {
    "name": "invoice-parties-customer-list-owner-without-association-server-error",
@@ -880,39 +984,11 @@
    "response": "<stable-server-error-page>",
    "effect": {
     "actor": "owner_without_association",
-    "rows": {
-     "customerinvoice": {
-      "a1000000-0000-4000-8000-000000846134": {
-       "xml": "$xml"
-      }
-     }
-    },
+    "rows": {},
     "new": {},
-    "audits": [
-     {
-      "model": "customerinvoice",
-      "key": "a1000000-0000-4000-8000-000000846134",
-      "action": 1,
-      "changes": {
-       "xml": [
-        "$before-text",
-        "$xml"
-       ]
-      },
-      "association": "a1000000-0000-4000-8000-000000701002",
-      "path": "direct"
-     }
-    ]
+    "audits": []
    },
-   "prints": [
-    {
-     "path": "/document/einvoice/a1000000-0000-4000-8000-000000846134",
-     "reply": {
-      "status": 200,
-      "body": "printed"
-     }
-    }
-   ]
+   "prints": []
   },
   {
    "name": "invoice-parties-customer-list-owner",
@@ -923,6 +999,73 @@
    "status": 200,
    "response": {
     "data": [
+     {
+      "customer_invoice_id": "a1000000-0000-4000-8000-000000846135",
+      "prefix": "FPR",
+      "number": 5,
+      "fiscal_year": 2026,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_country": "IT",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_country": "IT",
+      "transferor_contact_phone": "",
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": "ABC1234",
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "2026-10-02",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_total_amount": "122.61",
+      "payment_expiry_date": "2026-12-31",
+      "pdf": null,
+      "json": {
+       "b": [
+        true
+       ],
+       "a": "x"
+      },
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "2026-10-09T08:00:00Z",
+      "paid": false,
+      "transmitted": false,
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Casa & Co",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_contact_email": "estero@example.test",
+      "assignor_contact_phone": "0111234567",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_contact_email": "mario.pec@example.test",
+      "causal": "Quota & servizi",
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "xml": "$xml",
+      "pdf_token": null
+     },
      {
       "customer_invoice_id": "a1000000-0000-4000-8000-000000846132",
       "prefix": "FPR",
@@ -1054,6 +1197,73 @@
       "payment_modality": "MP05",
       "xml": "xm20",
       "pdf_token": "a1000000-0000-4000-8000-000000846101"
+     },
+     {
+      "customer_invoice_id": "a1000000-0000-4000-8000-000000846136",
+      "prefix": "FPR",
+      "number": 6,
+      "fiscal_year": 2026,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_country": "IT",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_country": "IT",
+      "transferor_contact_phone": "",
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": "ABC1234",
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "2026-10-02",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_total_amount": "122.61",
+      "payment_expiry_date": "2026-12-31",
+      "pdf": null,
+      "json": {
+       "b": [
+        true
+       ],
+       "a": "x"
+      },
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "2026-10-01T08:00:00Z",
+      "paid": false,
+      "transmitted": false,
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Casa & Co",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_contact_email": "estero@example.test",
+      "assignor_contact_phone": "0111234567",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_contact_email": "mario.pec@example.test",
+      "causal": "Quota & servizi",
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "xml": "$xml",
+      "pdf_token": null
      }
     ]
    },
@@ -1061,7 +1271,10 @@
     "actor": "owner",
     "rows": {
      "customerinvoice": {
-      "a1000000-0000-4000-8000-000000846134": {
+      "a1000000-0000-4000-8000-000000846135": {
+       "xml": "$xml"
+      },
+      "a1000000-0000-4000-8000-000000846136": {
        "xml": "$xml"
       }
      }
@@ -1070,7 +1283,7 @@
     "audits": [
      {
       "model": "customerinvoice",
-      "key": "a1000000-0000-4000-8000-000000846134",
+      "key": "a1000000-0000-4000-8000-000000846135",
       "action": 1,
       "changes": {
        "xml": [
@@ -1078,14 +1291,34 @@
         "$xml"
        ]
       },
-      "association": "a1000000-0000-4000-8000-000000701002",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     },
+     {
+      "model": "customerinvoice",
+      "key": "a1000000-0000-4000-8000-000000846136",
+      "action": 1,
+      "changes": {
+       "xml": [
+        "$before-text",
+        "$xml"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
       "path": "direct"
      }
     ]
    },
    "prints": [
     {
-     "path": "/document/einvoice/a1000000-0000-4000-8000-000000846134",
+     "path": "/document/einvoice/a1000000-0000-4000-8000-000000846135",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    },
+    {
+     "path": "/document/einvoice/a1000000-0000-4000-8000-000000846136",
      "reply": {
       "status": 200,
       "body": "printed"
@@ -1103,6 +1336,73 @@
    "response": {
     "data": [
      {
+      "customer_invoice_id": "a1000000-0000-4000-8000-000000846135",
+      "prefix": "FPR",
+      "number": 5,
+      "fiscal_year": 2026,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_country": "IT",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_country": "IT",
+      "transferor_contact_phone": "",
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": "ABC1234",
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "2026-10-02",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_total_amount": "122.61",
+      "payment_expiry_date": "2026-12-31",
+      "pdf": null,
+      "json": {
+       "b": [
+        true
+       ],
+       "a": "x"
+      },
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "2026-10-09T08:00:00Z",
+      "paid": false,
+      "transmitted": false,
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Casa & Co",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_contact_email": "estero@example.test",
+      "assignor_contact_phone": "0111234567",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_contact_email": "mario.pec@example.test",
+      "causal": "Quota & servizi",
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "xml": "$xml",
+      "pdf_token": null
+     },
+     {
       "customer_invoice_id": "a1000000-0000-4000-8000-000000846132",
       "prefix": "FPR",
       "number": 2,
@@ -1233,6 +1533,73 @@
       "payment_modality": "MP05",
       "xml": "xm20",
       "pdf_token": "a1000000-0000-4000-8000-000000846101"
+     },
+     {
+      "customer_invoice_id": "a1000000-0000-4000-8000-000000846136",
+      "prefix": "FPR",
+      "number": 6,
+      "fiscal_year": 2026,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_country": "IT",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_country": "IT",
+      "transferor_contact_phone": "",
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": "ABC1234",
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "2026-10-02",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_total_amount": "122.61",
+      "payment_expiry_date": "2026-12-31",
+      "pdf": null,
+      "json": {
+       "b": [
+        true
+       ],
+       "a": "x"
+      },
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "2026-10-01T08:00:00Z",
+      "paid": false,
+      "transmitted": false,
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Casa & Co",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_contact_email": "estero@example.test",
+      "assignor_contact_phone": "0111234567",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_contact_email": "mario.pec@example.test",
+      "causal": "Quota & servizi",
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "xml": "$xml",
+      "pdf_token": null
      }
     ]
    },
@@ -1240,7 +1607,10 @@
     "actor": "full_collaborator",
     "rows": {
      "customerinvoice": {
-      "a1000000-0000-4000-8000-000000846134": {
+      "a1000000-0000-4000-8000-000000846135": {
+       "xml": "$xml"
+      },
+      "a1000000-0000-4000-8000-000000846136": {
        "xml": "$xml"
       }
      }
@@ -1249,7 +1619,7 @@
     "audits": [
      {
       "model": "customerinvoice",
-      "key": "a1000000-0000-4000-8000-000000846134",
+      "key": "a1000000-0000-4000-8000-000000846135",
       "action": 1,
       "changes": {
        "xml": [
@@ -1257,14 +1627,34 @@
         "$xml"
        ]
       },
-      "association": "a1000000-0000-4000-8000-000000701002",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     },
+     {
+      "model": "customerinvoice",
+      "key": "a1000000-0000-4000-8000-000000846136",
+      "action": 1,
+      "changes": {
+       "xml": [
+        "$before-text",
+        "$xml"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
       "path": "direct"
      }
     ]
    },
    "prints": [
     {
-     "path": "/document/einvoice/a1000000-0000-4000-8000-000000846134",
+     "path": "/document/einvoice/a1000000-0000-4000-8000-000000846135",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    },
+    {
+     "path": "/document/einvoice/a1000000-0000-4000-8000-000000846136",
      "reply": {
       "status": 200,
       "body": "printed"

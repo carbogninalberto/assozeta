@@ -24,13 +24,13 @@ func (s *InvoiceParties) WithPendingCustomerInvoices(store domain.CustomerInvoic
 	return s
 }
 
-// customerListPending is invoice_customers_list's first loop: for every
-// customer invoice without a PDF, generate_invoice_xml of the stored row and
+// customerListPending is invoice_customers_list's first loop: for each of the
+// association's customer invoices without a PDF, generate_invoice_xml of the stored row and
 // invoice.save() (an exception there is only logged), then
 // print_document_customer_invoice.apply. Inputs outside the FatturaPA port
 // are refused before any write.
-func (s *InvoiceParties) customerListPending(ctx context.Context, request InvoicePartyRequest) error {
-	pending, err := s.pendingCustomers.PendingCustomerInvoices(ctx)
+func (s *InvoiceParties) customerListPending(ctx context.Context, request InvoicePartyRequest, association string) error {
+	pending, err := s.pendingCustomers.PendingCustomerInvoices(ctx, association)
 	if err != nil {
 		return err
 	}

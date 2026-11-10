@@ -1669,6 +1669,1087 @@
    }
   },
   {
+   "name": "balance-sheet-excel-draft",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2025-01-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Descrizione",
+       "Istituzionale (€)",
+       "Commerciale (€)",
+       "Totale (€)"
+      ],
+      "data": [
+       [
+        "A) ENTRATE",
+        "Entrate Generali",
+        "Quote è",
+        "Manuale",
+        "Senza causale",
+        "Bar",
+        "Estera",
+        "Totale entrate",
+        "",
+        "B) USCITE",
+        "Spese generali",
+        "Bar",
+        "Totale uscite",
+        "",
+        "",
+        "C) RENDICONTO DELLA GESTIONE",
+        "",
+        "D) LIQUIDITÀ",
+        "Banca",
+        "Cassa",
+        "Altro",
+        "Totale"
+       ],
+       [
+        "",
+        "",
+        "57,75",
+        "5,00",
+        "12,50",
+        "0,00",
+        "4,00",
+        "79,25",
+        "",
+        "",
+        "",
+        "0,00",
+        "0,00",
+        "",
+        "ENTRATE",
+        "91,25",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "",
+        "",
+        "1,50",
+        "0,00",
+        "0,00",
+        "10,50",
+        "0,00",
+        "12,00",
+        "",
+        "",
+        "",
+        "7,25",
+        "7,25",
+        "",
+        "USCITE",
+        "-7,25",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "",
+        "",
+        "59,25",
+        "5,00",
+        "12,50",
+        "10,50",
+        "4,00",
+        "91,25",
+        "",
+        "",
+        "",
+        "7,25",
+        "7,25",
+        "",
+        "BILANCIO FINALE",
+        "84,00",
+        "",
+        "",
+        "163,25",
+        "31,50",
+        "0,00",
+        "194,75"
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Bilancio 2025 - Message reads own.xlsx"
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2025",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": [
+        {
+         "description": "Quote è",
+         "institutional": 57.75,
+         "commercial": 1.5,
+         "id": "a1000000-0000-4000-8000-000001300001",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Manuale",
+         "institutional": 5,
+         "commercial": 0,
+         "id": "manuale-1",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": "Senza causale",
+         "institutional": 12.5,
+         "commercial": 0,
+         "id": "senza_causale",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 10.5,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Estera",
+         "institutional": 4.0,
+         "commercial": 0,
+         "id": "a1000000-0000-4000-8000-000001300003",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "outgoing": {
+       "generalExpenses": [
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 7.25,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "cash": 31.5,
+      "bank": 163.25,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 194.75
+     },
+     "year": 2025,
+     "status": 1
+    },
+    "changes": {}
+   },
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "balance-sheet-excel-draft-group-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2025-06-15",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Descrizione",
+       "Istituzionale (€)",
+       "Commerciale (€)",
+       "Totale (€)"
+      ],
+      "data": [
+       [
+        "A) ENTRATE",
+        "Entrate Generali",
+        "Quote è",
+        "Manuale",
+        "Senza causale",
+        "Bar",
+        "Estera",
+        "Totale entrate",
+        "",
+        "B) USCITE",
+        "Spese generali",
+        "Bar",
+        "Totale uscite",
+        "",
+        "",
+        "C) RENDICONTO DELLA GESTIONE",
+        "",
+        "D) LIQUIDITÀ",
+        "Banca",
+        "Cassa",
+        "Altro",
+        "Totale"
+       ],
+       [
+        "",
+        "",
+        "2,00",
+        "5,00",
+        "12,50",
+        "0,00",
+        "4,00",
+        "23,50",
+        "",
+        "",
+        "",
+        "0,00",
+        "0,00",
+        "",
+        "ENTRATE",
+        "35,50",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "",
+        "",
+        "1,50",
+        "0,00",
+        "0,00",
+        "10,50",
+        "0,00",
+        "12,00",
+        "",
+        "",
+        "",
+        "7,25",
+        "7,25",
+        "",
+        "USCITE",
+        "-7,25",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "",
+        "",
+        "3,50",
+        "5,00",
+        "12,50",
+        "10,50",
+        "4,00",
+        "35,50",
+        "",
+        "",
+        "",
+        "7,25",
+        "7,25",
+        "",
+        "BILANCIO FINALE",
+        "28,25",
+        "",
+        "",
+        "82,50",
+        "31,50",
+        "0,00",
+        "114,00"
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Bilancio 2025 - Message reads own.xlsx"
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2025",
+    "actor": "full_collaborator",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": [
+        {
+         "description": "Quote è",
+         "institutional": 2.0,
+         "commercial": 1.5,
+         "id": "a1000000-0000-4000-8000-000001300001",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Manuale",
+         "institutional": 5,
+         "commercial": 0,
+         "id": "manuale-1",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": "Senza causale",
+         "institutional": 12.5,
+         "commercial": 0,
+         "id": "senza_causale",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 10.5,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Estera",
+         "institutional": 4.0,
+         "commercial": 0,
+         "id": "a1000000-0000-4000-8000-000001300003",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "outgoing": {
+       "generalExpenses": [
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 7.25,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "cash": 31.5,
+      "bank": 82.5,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 114.0
+     },
+     "year": 2025,
+     "status": 1
+    },
+    "changes": {
+     "data": [
+      "{\"bank\": 163.25, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 57.75}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 194.75, \"version\": 1}",
+      "{\"bank\": 82.5, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 2.0}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 114.0, \"version\": 1}"
+     ]
+    }
+   },
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "balance-sheet-excel-draft-form-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2025-06-15",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Descrizione",
+       "Istituzionale (€)",
+       "Commerciale (€)",
+       "Totale (€)"
+      ],
+      "data": [
+       [
+        "A) ENTRATE",
+        "Entrate Generali",
+        "Quote è",
+        "Manuale",
+        "Senza causale",
+        "Bar",
+        "Estera",
+        "Totale entrate",
+        "",
+        "B) USCITE",
+        "Spese generali",
+        "Bar",
+        "Totale uscite",
+        "",
+        "",
+        "C) RENDICONTO DELLA GESTIONE",
+        "",
+        "D) LIQUIDITÀ",
+        "Banca",
+        "Cassa",
+        "Altro",
+        "Totale"
+       ],
+       [
+        "",
+        "",
+        "57,75",
+        "5,00",
+        "12,50",
+        "0,00",
+        "4,00",
+        "79,25",
+        "",
+        "",
+        "",
+        "0,00",
+        "0,00",
+        "",
+        "ENTRATE",
+        "91,25",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "",
+        "",
+        "1,50",
+        "0,00",
+        "0,00",
+        "10,50",
+        "0,00",
+        "12,00",
+        "",
+        "",
+        "",
+        "7,25",
+        "7,25",
+        "",
+        "USCITE",
+        "-7,25",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "",
+        "",
+        "59,25",
+        "5,00",
+        "12,50",
+        "10,50",
+        "4,00",
+        "91,25",
+        "",
+        "",
+        "",
+        "7,25",
+        "7,25",
+        "",
+        "BILANCIO FINALE",
+        "84,00",
+        "",
+        "",
+        "163,25",
+        "31,50",
+        "0,00",
+        "194,75"
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Bilancio 2025 - Message reads own.xlsx"
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2025",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": [
+        {
+         "description": "Quote è",
+         "institutional": 57.75,
+         "commercial": 1.5,
+         "id": "a1000000-0000-4000-8000-000001300001",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Manuale",
+         "institutional": 5,
+         "commercial": 0,
+         "id": "manuale-1",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": "Senza causale",
+         "institutional": 12.5,
+         "commercial": 0,
+         "id": "senza_causale",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 10.5,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Estera",
+         "institutional": 4.0,
+         "commercial": 0,
+         "id": "a1000000-0000-4000-8000-000001300003",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "outgoing": {
+       "generalExpenses": [
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 7.25,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "cash": 31.5,
+      "bank": 163.25,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 194.75
+     },
+     "year": 2025,
+     "status": 1
+    },
+    "changes": {
+     "data": [
+      "{\"bank\": 82.5, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 2.0}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 114.0, \"version\": 1}",
+      "{\"bank\": 163.25, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 57.75}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 194.75, \"version\": 1}"
+     ]
+    }
+   },
+   "raw_body": "format=excel",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "balance-sheet-excel-extra-keys-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2025-06-15",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Descrizione",
+       "Istituzionale (€)",
+       "Commerciale (€)",
+       "Totale (€)"
+      ],
+      "data": [
+       [
+        "A) ENTRATE",
+        "Entrate Generali",
+        "Quote è",
+        "Manuale",
+        "Senza causale",
+        "Bar",
+        "Estera",
+        "Totale entrate",
+        "",
+        "B) USCITE",
+        "Spese generali",
+        "Bar",
+        "Totale uscite",
+        "",
+        "",
+        "C) RENDICONTO DELLA GESTIONE",
+        "",
+        "D) LIQUIDITÀ",
+        "Banca",
+        "Cassa",
+        "Altro",
+        "Totale"
+       ],
+       [
+        "",
+        "",
+        "57,75",
+        "5,00",
+        "12,50",
+        "0,00",
+        "4,00",
+        "79,25",
+        "",
+        "",
+        "",
+        "0,00",
+        "0,00",
+        "",
+        "ENTRATE",
+        "91,25",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "",
+        "",
+        "1,50",
+        "0,00",
+        "0,00",
+        "10,50",
+        "0,00",
+        "12,00",
+        "",
+        "",
+        "",
+        "7,25",
+        "7,25",
+        "",
+        "USCITE",
+        "-7,25",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "",
+        "",
+        "59,25",
+        "5,00",
+        "12,50",
+        "10,50",
+        "4,00",
+        "91,25",
+        "",
+        "",
+        "",
+        "7,25",
+        "7,25",
+        "",
+        "BILANCIO FINALE",
+        "84,00",
+        "",
+        "",
+        "163,25",
+        "31,50",
+        "0,00",
+        "194,75"
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Bilancio 2025 - Message reads own.xlsx"
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2025",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": [
+        {
+         "description": "Quote è",
+         "institutional": 57.75,
+         "commercial": 1.5,
+         "id": "a1000000-0000-4000-8000-000001300001",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Manuale",
+         "institutional": 5,
+         "commercial": 0,
+         "id": "manuale-1",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": "Senza causale",
+         "institutional": 12.5,
+         "commercial": 0,
+         "id": "senza_causale",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 10.5,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Estera",
+         "institutional": 4.0,
+         "commercial": 0,
+         "id": "a1000000-0000-4000-8000-000001300003",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "outgoing": {
+       "generalExpenses": [
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 7.25,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "cash": 31.5,
+      "bank": 163.25,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 194.75
+     },
+     "year": 2025,
+     "status": 1
+    },
+    "changes": {}
+   },
+   "body": {
+    "format": "excel",
+    "balance_sheet": {
+     "draft": false,
+     "year": 1
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-excel-approved-returns-stored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2024-05-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": []
+       },
+       "outgoing": {
+        "generalExpenses": []
+       },
+       "cash": 3,
+       "bank": 4,
+       "other": 0,
+       "total": 7,
+       "draft": false,
+       "version": 1
+      },
+      "creation_date": "2025-01-10T09:00:00.250000Z",
+      "year": 2024,
+      "draft": false
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": null,
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "balance-sheet-excel-format-case-sensitive-regenerates",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2025-01-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": [
+         {
+          "description": "Quote è",
+          "institutional": 57.75,
+          "commercial": 1.5,
+          "id": "a1000000-0000-4000-8000-000001300001",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Manuale",
+          "institutional": 5,
+          "commercial": 0,
+          "id": "manuale-1",
+          "editable": true,
+          "default": false
+         },
+         {
+          "description": "Senza causale",
+          "institutional": 12.5,
+          "commercial": 0,
+          "id": "senza_causale",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Bar",
+          "institutional": 0,
+          "commercial": 10.5,
+          "id": "a1000000-0000-4000-8000-000001300002",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Estera",
+          "institutional": 4.0,
+          "commercial": 0,
+          "id": "a1000000-0000-4000-8000-000001300003",
+          "editable": false,
+          "default": true
+         }
+        ]
+       },
+       "outgoing": {
+        "generalExpenses": [
+         {
+          "description": "Bar",
+          "institutional": 0,
+          "commercial": 7.25,
+          "id": "a1000000-0000-4000-8000-000001300002",
+          "editable": false,
+          "default": true
+         }
+        ]
+       },
+       "cash": 31.5,
+       "bank": 163.25,
+       "other": 0,
+       "draft": true,
+       "version": 1,
+       "total": 194.75
+      },
+      "creation_date": "2025-02-01T09:00:00Z",
+      "year": 2025,
+      "draft": true
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2025",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": [
+        {
+         "description": "Quote è",
+         "institutional": 57.75,
+         "commercial": 1.5,
+         "id": "a1000000-0000-4000-8000-000001300001",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Manuale",
+         "institutional": 5,
+         "commercial": 0,
+         "id": "manuale-1",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": "Senza causale",
+         "institutional": 12.5,
+         "commercial": 0,
+         "id": "senza_causale",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 10.5,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Estera",
+         "institutional": 4.0,
+         "commercial": 0,
+         "id": "a1000000-0000-4000-8000-000001300003",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "outgoing": {
+       "generalExpenses": [
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 7.25,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "cash": 31.5,
+      "bank": 163.25,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 194.75
+     },
+     "year": 2025,
+     "status": 1
+    },
+    "changes": {}
+   },
+   "body": {
+    "format": "EXCEL"
+   }
+  },
+  {
+   "name": "balance-sheet-excel-export-error-after-save",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2021-06-01",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "update",
+    "sheet": "y2021",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "note": "x",
+      "bank": 101.5,
+      "cash": 10.25,
+      "other": 0,
+      "total": 111.75
+     },
+     "year": 2021,
+     "status": 1
+    },
+    "changes": {
+     "data": [
+      "{\"note\": \"x\"}",
+      "{\"bank\": 101.5, \"cash\": 10.25, \"note\": \"x\", \"other\": 0, \"total\": 111.75}"
+     ]
+    }
+   },
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "balance-sheet-excel-invalid-date-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2025-02-30",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "balance-sheet-excel-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2025-01-01",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.management.balancesheet.update"
+   },
+   "effect": null,
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "balance-sheet-excel-athlete-forbidden",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2025-01-01",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
    "name": "balance-sheet-draft-generation-error-keeps-data",
    "actor": "owner",
    "method": "GET",
@@ -1710,12 +2791,7 @@
      "year": 2021,
      "status": 1
     },
-    "changes": {
-     "data": [
-      "{\"note\": \"x\"}",
-      "{\"bank\": 101.5, \"cash\": 10.25, \"note\": \"x\", \"other\": 0, \"total\": 111.75}"
-     ]
-    }
+    "changes": {}
    }
   },
   {
@@ -1857,6 +2933,129 @@
      "year": "$current_year",
      "status": 1
     }
+   }
+  },
+  {
+   "name": "balance-sheet-excel-missing-year-creates-sheet",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2017-05-05",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Descrizione",
+       "Istituzionale (€)",
+       "Commerciale (€)",
+       "Totale (€)"
+      ],
+      "data": [
+       [
+        "A) ENTRATE",
+        "Entrate Generali",
+        "Totale entrate",
+        "",
+        "B) USCITE",
+        "Spese generali",
+        "Totale uscite",
+        "",
+        "",
+        "C) RENDICONTO DELLA GESTIONE",
+        "",
+        "D) LIQUIDITÀ",
+        "Banca",
+        "Cassa",
+        "Altro",
+        "Totale"
+       ],
+       [
+        "",
+        "",
+        "0,00",
+        "",
+        "",
+        "",
+        "0,00",
+        "",
+        "ENTRATE",
+        "0,00",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "",
+        "",
+        "0,00",
+        "",
+        "",
+        "",
+        "0,00",
+        "",
+        "USCITE",
+        "-0,00",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "",
+        "",
+        "0,00",
+        "",
+        "",
+        "",
+        "0,00",
+        "",
+        "BILANCIO FINALE",
+        "0,00",
+        "",
+        "",
+        "100,50",
+        "10,25",
+        "0,00",
+        "110,75"
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Bilancio 2017 - Message reads own.xlsx"
+   },
+   "effect": {
+    "kind": "create",
+    "sheet": "y2017",
+    "actor": "owner",
+    "association": "own_association",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": []
+      },
+      "outgoing": {
+       "generalExpenses": []
+      },
+      "cash": 10.25,
+      "bank": 100.5,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 110.75
+     },
+     "year": 2017,
+     "status": 1
+    }
+   },
+   "body": {
+    "format": "excel"
    }
   },
   {

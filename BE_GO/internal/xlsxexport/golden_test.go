@@ -39,7 +39,6 @@ type golden struct {
 // goldenNotPorted are the golden inputs Go refuses (ErrNotPorted) instead of
 // reproducing; every other case must match.
 var goldenNotPorted = map[string]bool{
-	"eu-dup-columns": true, // df[col] is a DataFrame: unreachable from the views' fixed columns
 	"eu-long-digits": true, // 17+ significant digits: platform-dependent parse
 	"ir-strings":     true, // a '=' formula
 	"ir-mailto":      true, // internal: and {=...} tokens

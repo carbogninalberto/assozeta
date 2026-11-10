@@ -53,6 +53,12 @@ so far and answers 200:
   assegnata`, the message, `DEFAULT_FROM_EMAIL`, `[user.email]`, `html_message`, `fail_silently=False`, the association
   UUID, `reply_to=[owner email]`). Go publishes after the commit, in quote order; a failed publish is swallowed like
   `send_email_html`'s own try/except.
+  With a `CommunicationConfiguration` of the association `send_email_html` loads it and starts a `Timer` thread that
+  calls `configuration.send_email` after `random.randint(1, 30)` seconds: `verify_smtp(send_email=False)`, one
+  `multipart/alternative` message with the base64 html part through the configured SMTP server, then
+  `daily_email_balance + 1` saved outside the request (audit entry without actor or cid). Nothing is published. Go plans
+  each send before the commit (`SendMailAsync.PlanEmailHTMLInProcess`, the consumer's `planConfigSend`) and starts its
+  timer in the web process after it (`configSend`); `SEND_EMAIL_HTML_DELAY_SECONDS` pins the delay for fixture runs only.
 
 ## Sign
 
@@ -86,9 +92,9 @@ their invoice is rendered whatever `generate_invoice` says.
 
 ## Not ported (refused with a 500 before any write)
 
-- Apply quotes that e-mail a member when the association has a `CommunicationConfiguration`: Django sends through the
-  configured SMTP on a `Timer` thread after a random 1-30 s delay; the whole request is rolled back. Template values the
-  renderer does not take (plan name/fee that are lists or dicts) are refused the same way.
+- Apply quotes that e-mail a member with template values the renderer does not take (plan name/fee that are lists or
+  dicts), or, with a `CommunicationConfiguration`, send values the consumer's planner hands off: the whole request is
+  rolled back.
 - Approve of unpaid income payments with a party is now ported by payment-state's paid flow
   ([payment-state](payment-state.md)). A paid invoiced payment with a truthy `generate_invoice` is now ported (the
   `print_document_invoice` dispatch, see [invoice-generate](invoice-generate.md)); a `send_receipt_email` other than
@@ -139,3 +145,14 @@ without an association the 500 page; the collaborator's stored signature now use
 Django: `PaymentAssociationScopeTests` in `BE/application/tests/test_payment_views.py`. RED `v2pay2-scope-red-r1`: Django
 94/94, Go 200 on `sign-foreign-payment`. GREEN `v2pay2-scope-versioned-r1`: 94/94 on the four transports. Mutation
 `v2pay2-scope-mutation-r1` (skipping the association comparison) CAUGHT on `sign-foreign-payment`.
+
+## Configured SMTP send on apply (v2-payments-3)
+
+Fixture 96 cases: the second association gets a July plan and a member with her own account; around
+`apply-july-member-account-configured-smtp` the runner creates a `CommunicationConfiguration` (no encryption) pointing at
+a per-run fake SMTP server, waits (40 s at most) for the delivery and the stored balance, checks the session, envelope,
+headers and the html part against Django's `render_to_string`, then removes the configuration. The oracle pins the delay
+by patching `application.tasks.random.randint` to 1; Go gets `SEND_EMAIL_HTML_DELAY_SECONDS=1`. The balance save's audit
+entry is part of the case's effect. RED `v2pay3-misc-red-r1`: Django 96/96, Go 500 on that case. GREEN
+`v2pay3-misc-versioned-r1`: 96/96 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation
+`v2pay3-misc-mutation-r1` (message sent to the owner instead of the member) CAUGHT on `smtp.rcpt`.

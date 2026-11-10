@@ -9,7 +9,11 @@ Two kinds of values are resolved before the comparison:
   TIME_ZONE='UTC': 1 January to 31 December of now's year), else 0;
 - unordered collections are compared as multisets: each course's tags and
   locations (unordered M2M reads), and each course's athletes, a dict keyed
-  '0'..'n-1' over an unordered query whose keys must be exactly that range.
+  '0'..'n-1' over an unordered query whose keys must be exactly that range;
+- '$today' in a string is the %d/%m/%Y date of date.today() (UTC), read before and
+  after the request (a run across midnight accepts either day), and
+  '{"$xlsx": spec}' is a workbook checked part by part with the opt-in XLSX
+  standard of TESTS/contracts/xlsx.py within the request window.
 """
 import copy
 import json
@@ -18,6 +22,7 @@ from pathlib import Path
 
 from TESTS.http_client import Client
 from TESTS.contracts import http_family as family
+from TESTS.contracts import xlsx
 from TESTS.contracts.http_family import require  # noqa: F401  (runner interface)
 from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, ResponseFailure, difference, substitute
 
@@ -42,6 +47,20 @@ def _resolve(value):
         return {key: _resolve(item) for key, item in value.items()}
     if isinstance(value, list):
         return [_resolve(item) for item in value]
+    return value
+
+
+def _today():
+    return datetime.now(timezone.utc).date()
+
+
+def _dated(value, today):
+    if isinstance(value, dict):
+        return {key: _dated(item, today) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_dated(item, today) for item in value]
+    if isinstance(value, str):
+        return value.replace('$today', today.strftime('%d/%m/%Y'))
     return value
 
 
@@ -81,7 +100,9 @@ def assert_case(case, base_url, *, token, sessions):
     if 'raw_body' in case:
         body = case['raw_body'].encode()
         headers['Content-Type'] = case['content_type']
+    before, started = _today(), datetime.now(timezone.utc)
     status, raw, received = Client(base_url, token).request(case['method'], case['path'], body, headers, raw=True, include_headers=True)
+    finished, after = datetime.now(timezone.utc), _today()
 
     def check(condition, code):
         if not condition:
@@ -100,8 +121,15 @@ def assert_case(case, base_url, *, token, sessions):
         actual = json.loads(raw)
     except (ValueError, UnicodeDecodeError):
         raise ResponseFailure('response.json', status) from None
-    expected = _normalize(_resolve(copy.deepcopy(case['response'])), check)
     actual = _normalize(actual, check)
-    check(actual == expected, 'response.body' + difference(expected, actual))
+    reasons = []
+    for day in dict.fromkeys((before, after)):
+        expected = _normalize(_resolve(_dated(copy.deepcopy(case['response']), day)), check)
+        expected, reason = xlsx.resolve(expected, actual, started, finished)
+        if reason is None and actual == expected:
+            break
+        reasons.append(f'response.xlsx: {reason}'[:600] if reason else 'response.body' + difference(expected, actual))
+    else:
+        check(False, reasons[-1])
     check(received.get('Content-Type', '').split(';')[0] == 'application/json', 'response.type')
     return status

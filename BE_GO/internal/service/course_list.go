@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
+	"fmt"
 	"math/big"
 	"strconv"
 	"strings"
@@ -10,6 +12,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 )
 
 var (
@@ -21,15 +24,35 @@ var (
 	// does not port (relations, reverse relations, transforms); it is raised
 	// where Django compiles the ordering, after the pagination checks.
 	ErrCourseListUnported = errors.New("course list ordering not ported")
-	// ErrCourseListExport is a POST without all=1: the handler reads
-	// request.data and refuses current_view_course (see course-list.md).
+	// ErrCourseListExport is current_view_course raising (a 500): a missing
+	// or unsupported format, a body that is not a dict, a workbook
+	// get_excel_base64 fails on. A POST without all=1 returns a
+	// *CourseListExport wrapping it.
 	ErrCourseListExport = errors.New("course list export")
-	// ErrCourseListExportUnported refuses generating the PDF or XLSX file.
+	// ErrCourseListExportUnported refuses the PDF file, an ordering Django
+	// resolves lazily and workbook inputs xlsxexport does not reproduce.
 	ErrCourseListExportUnported = errors.New("course list export file generation not ported")
 )
 
+// CourseListExport is a POST without all=1: the handler reads request.data
+// and calls Export with it (current_view_course).
+type CourseListExport struct {
+	query       domain.CourseListQuery
+	association string
+	unported    bool
+}
+
+func (e *CourseListExport) Error() string { return ErrCourseListExport.Error() }
+func (e *CourseListExport) Unwrap() error { return ErrCourseListExport }
+
 type courseListStore interface {
 	OwnerAssociation(ctx context.Context, owner string, scope *string) (string, error)
+	ExportCourses(ctx context.Context, query domain.CourseListQuery) ([]domain.CourseListExportRow, error)
+	ExportEnrolled(ctx context.Context, course string) (int64, error)
+	ExportCourseTags(ctx context.Context, ids []string) ([]domain.CourseListExportTag, error)
+	ExportCourseLocations(ctx context.Context, course string) ([]*string, error)
+	ExportAssociationTags(ctx context.Context, association string) ([]domain.CourseListExportTag, error)
+	AssociationDenomination(ctx context.Context, association string) (*string, error)
 	SubscriptionExists(ctx context.Context, id string, group, scope *string) (bool, error)
 	BalanceStart(ctx context.Context, user string) (int64, int64, error)
 	CountCourses(ctx context.Context, query domain.CourseListQuery) (int64, error)
@@ -209,7 +232,7 @@ func (s *CourseLists) List(ctx context.Context, identity domain.ResolvedIdentity
 		return map[string]any{"data": courseListSerialized(rows)}, nil
 	}
 	if request.Method == "POST" {
-		return nil, ErrCourseListExport
+		return nil, &CourseListExport{query: query, association: association, unported: unported}
 	}
 	return s.page(ctx, identity, query, request.Query, unported)
 }
@@ -296,4 +319,149 @@ func courseListSerialized(rows []domain.CourseOverviewRow) []map[string]any {
 		data = append(data, courseSerializerData(row))
 	}
 	return data
+}
+
+// courseListTypeLabels and courseListStatusLabels are get_course_type_label
+// and get_status_label; any other value is 'Sconosciuto'.
+var (
+	courseListTypeLabels   = map[int64]string{1: "Default", 2: "Quote multiple", 3: "Abbonamento"}
+	courseListStatusLabels = map[int64]string{1: "Non visibile", 2: "Visibile"}
+)
+
+func courseListLabel(labels map[int64]string, value int64) string {
+	if label, ok := labels[value]; ok {
+		return label
+	}
+	return "Sconosciuto"
+}
+
+func courseListExportDate(value *time.Time) string {
+	if value == nil {
+		return "-"
+	}
+	return printingDate(value.UTC())
+}
+
+// Export is current_view_course(sport_association, request.data, courses,
+// title="Corsi filtrati"): data['format'] must be 'pdf' or 'excel' (the
+// PDF is not ported); 'excel' is generate_xlsx_from_data of the fixed
+// columns plus one column per CourseTags of the association, and the
+// response is {'file': <base64>, 'filename': '[<today>] Corsi filtrati -
+// <denomination>.xlsx'}.
+func (s *CourseLists) Export(ctx context.Context, export *CourseListExport, data any) (map[string]any, error) {
+	format, err := dto.PythonIndex(data, "format")
+	if err != nil {
+		return nil, ErrCourseListExport // KeyError or TypeError
+	}
+	switch format {
+	case "excel":
+	case "pdf":
+		return nil, ErrCourseListExportUnported
+	default:
+		return nil, ErrCourseListExport // Exception('Format not valid')
+	}
+	today := s.now().UTC()
+	if export.unported {
+		// The ordering is compiled when the rows are iterated (here).
+		return nil, ErrCourseListExportUnported
+	}
+	courses, err := s.store.ExportCourses(ctx, export.query)
+	if err != nil {
+		return nil, err
+	}
+	ids, seen := []string{}, map[string]bool{}
+	for _, course := range courses {
+		if !seen[course.ID] {
+			seen[course.ID] = true
+			ids = append(ids, course.ID)
+		}
+	}
+	prefetched, err := s.store.ExportCourseTags(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+	courseTags := map[string][]domain.CourseListExportTag{}
+	for _, tag := range prefetched {
+		courseTags[tag.CourseID] = append(courseTags[tag.CourseID], tag)
+	}
+	enrolled := make([]int64, 0, len(courses))
+	for _, course := range courses {
+		count, err := s.store.ExportEnrolled(ctx, course.ID)
+		if err != nil {
+			return nil, err
+		}
+		enrolled = append(enrolled, count)
+	}
+	tags, err := s.store.ExportAssociationTags(ctx, export.association)
+	if err != nil {
+		return nil, err
+	}
+	columns := []string{"Nome", "Tipologia", "Visibilità", "Data inizio", "Data fine", "Data creazione", "In evidenza", "Strutture",
+		"Iscritti", "Tag"}
+	rows := make([][]xlsxexport.Value, len(columns))
+	for index, course := range courses {
+		locations, err := s.store.ExportCourseLocations(ctx, course.ID)
+		if err != nil {
+			return nil, err
+		}
+		titles := make([]string, 0, len(locations))
+		for _, title := range locations {
+			titles = append(titles, courseListPythonStr(title))
+		}
+		names := make([]string, 0, len(courseTags[course.ID]))
+		for _, tag := range courseTags[course.ID] {
+			names = append(names, tag.Name)
+		}
+		pinned := "-"
+		if course.Pinned {
+			pinned = "In evidenza"
+		}
+		for column, value := range []xlsxexport.Value{xlsxexport.OptionalStr(course.Title),
+			xlsxexport.StrValue(courseListLabel(courseListTypeLabels, course.CourseType)),
+			xlsxexport.StrValue(courseListLabel(courseListStatusLabels, course.StatusFlag)),
+			xlsxexport.StrValue(courseListExportDate(course.StartDate)), xlsxexport.StrValue(courseListExportDate(course.EndDate)),
+			xlsxexport.StrValue(courseListExportDate(&course.CreationDate)), xlsxexport.StrValue(pinned),
+			xlsxexport.StrValue(strings.Join(titles, ", ")), xlsxexport.IntValue(enrolled[index]),
+			xlsxexport.StrValue(strings.Join(names, ", "))} {
+			rows[column] = append(rows[column], value)
+		}
+	}
+	for _, tag := range tags {
+		columns = append(columns, tag.Name)
+		column := make([]xlsxexport.Value, 0, len(courses))
+		for _, course := range courses {
+			assigned := ""
+			for _, own := range courseTags[course.ID] {
+				if own.ID == tag.ID {
+					assigned = "assegnato"
+					break
+				}
+			}
+			column = append(column, xlsxexport.StrValue(assigned))
+		}
+		rows = append(rows, column)
+	}
+	workbook, err := xlsxexport.PandasOpenpyxl(rows, columns, s.now())
+	switch {
+	case errors.Is(err, xlsxexport.ErrNotPorted):
+		return nil, ErrCourseListExportUnported
+	case errors.Is(err, xlsxexport.ErrDjango):
+		return nil, ErrCourseListExport // get_excel_base64 returned None: generate_xlsx_from_data raises
+	case err != nil:
+		return nil, err
+	}
+	denomination, err := s.store.AssociationDenomination(ctx, export.association)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{"file": base64.StdEncoding.EncodeToString(workbook),
+		"filename": fmt.Sprintf("[%s] %s - %s.xlsx", printingDate(today), "Corsi filtrati", courseListPythonStr(denomination))}, nil
+}
+
+// courseListPythonStr is str() of a nullable text column.
+func courseListPythonStr(value *string) string {
+	if value == nil {
+		return "None"
+	}
+	return *value
 }

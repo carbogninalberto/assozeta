@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 5 in v2-misc (one v2-misc row duplicated a v2-documents port) and 2 in v2-misc-2, below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port) and 2 in v2-misc-2, below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -79,6 +79,16 @@ Receipts are `quality-reports/go-migration/<family>-http-v2sub-*`; each family d
 | subscription-renew | `POST subscription/renew` | athlete session (v2-sub-create) | 62 cases; RED `v2create-red-r2` Django 62/62, Go 500; GREEN `v2create-versioned-r1` 4 transports; mutation `v2create-mutation-r1` (athlete kept as request.user) CAUGHT |
 | subscription-transfer | `POST subscription/<uid>/transfer` (e-mail branch) | tutor/associate names starting with non-ASCII letters; non-ASCII e-mail domain | 31 cases; RED `v2sub-red-r1` Django 31/31, Go 500; GREEN `v2sub-versioned-r1` 4 transports 31/31; mutation `v2sub-mutation-r1` (no NFKC) CAUGHT |
 
+### Ported in the v2-public-forms change
+
+Receipts are `quality-reports/go-migration/subscription-create-http-v2forms-*`; details in `subscription-create.md`.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| subscription-create | `POST subscription/add` | the anonymous form (`sport_association` names the association; new member account included) | 84 cases; RED `v2forms-red-r2` Django 84/84, Go 500; GREEN `v2forms-versioned-r1` 4 transports; mutation `v2forms-mutation-r1` (preregistration created today) CAUGHT; subscription-renew, subscription-memberships, subscription-sign and subscription-approve re-run (`v2forms-rerun-r1`) |
+| subscription-create | `POST subscription/add` | a logged-in athlete with `sport_association` | same run |
+| subscription-create | `POST subscription/add` | `preregistration: true` without a subscription to renew | same run |
+
 ### Ported in the v2-payments-2 change
 
 Receipts are `quality-reports/go-migration/<family>-http-v2pay2-*`.
@@ -104,7 +114,7 @@ Receipts are `quality-reports/go-migration/<family>-http-v2doc-*`; each family d
 | invoice-core | `GET invoice/list` | an invoice on the page without a PDF (now publishes `print_document_invoice` once per listed row) | 106 cases; RED `v2doc-red-r1` Django 106/106, Go 500; GREEN `v2doc-versioned-r2` 4 transports; mutation `v2doc-mutation-r1` (once per distinct invoice) CAUGHT |
 | subscription-reads | `GET subscription/<uid>/info` | a course subscription's membership payment with an invoice or an instructor | 261 cases; RED `v2doc-red-r1` Django 261/261, Go 500; GREEN `v2doc-versioned-r1` 4 transports; mutation `v2doc-mutation-r1` (nested invoice null) CAUGHT |
 | document-views | `GET document/subscription/preview/`, `document/subscription/<uid>/view/` | header or footer with a `<pre>` block (TipTap code block) | 114 cases + 516 mentions golden inputs; RED `v2doc-red-r1` Django 114/114, Go 500; GREEN `v2doc-versioned-r1` 4 transports; mutation `v2doc-mutation-r1` (direct children only) CAUGHT; invoice-views re-run 76/76 |
-| invoice-parties | `GET invoice-customers/list` | any customer invoice without a PDF (now regenerates its XML, saves it and runs the eager `print_document_customer_invoice`) | 138 cases; RED `v2doc-red-r1` Django 138/138, Go 500; GREEN `v2doc-versioned-r1` 4 transports; mutation `v2doc-mutation-r1` (no auditlog entry) CAUGHT; invoice-sync-print re-run 70/70 |
+| invoice-parties | `GET invoice-customers/list` | an invoice of the caller's association without a PDF (now regenerates its XML, saves it and runs the eager `print_document_customer_invoice`) | 138 cases; RED `v2doc-red-r1` Django 138/138, Go 500; GREEN `v2doc-versioned-r1` 4 transports; mutation `v2doc-mutation-r1` (no auditlog entry) CAUGHT; invoice-sync-print re-run 70/70. Scoped to the caller's association: RED `secinv-red-r1`, GREEN `secinv-green-r1`, mutation `secinv-mutation-r1` CAUGHT, invoice-sync-print `secinv-rerun-r1` 70/70 |
 | instructor-hours | `GET instructor/<uid>/hours/list` | a page row with a payment and no document (now runs the eager `print_document_compensation`) | 135 cases; RED `v2doc-red-r1` Django 135/135, Go 500; GREEN `v2doc-versioned-r2` 4 transports; mutation `v2doc-mutation-r1` (paid rows only) CAUGHT |
 
 ### Ported in the v2-misc change
@@ -118,6 +128,16 @@ Receipts are `quality-reports/go-migration/<family>-http-v2misc-*`; each family 
 | modules-responses | `POST modules/response/<id>/add-attachment` | filename with a compression suffix (`archive.tar.gz`, ...) | 145 cases; RED `v2misc-red-r1` Django 145/145, Go 500; GREEN `v2misc-green-r3` 4 transports; mutation `v2misc-mutation-r1` (encoding guessed on the lower-cased name) CAUGHT |
 | workflow-update | `PATCH communications/workflows/<id>/update` | `enabled: true` with a future cron time (`check_workflows_trigger_cron` with a countdown) | 63 cases; RED `v2misc-red-r3` Django 63/63, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r1` (ambiguous wall time on the summer offset) CAUGHT |
 | subscription-reads | `GET subscription/<uid>/info` | course subscription with a membership payment that has an invoice (or an instructor, B) | 261 cases; RED `v2misc-red-r1` Django 261/261, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r1` (nested invoice not loaded) CAUGHT |
+
+### Ported in the v2-payments-3 change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2pay3-*`; each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| payment-state | `POST payment/<id>/cancel`, `DELETE payment/<id>/delete` | payment with an invoice (invoice meta, cancel's published print, delete's eager print) | 153 cases; RED `v2pay3-state-red-r2` Django 153/153, Go 500; GREEN `v2pay3-state-final-r1` 4 transports; mutation `v2pay3-state-mutation-r1` CAUGHT |
+| payment-writes | `POST payment/add` | owner setting `auto_paid_payment` on (paid payment, invoice numbering, invoice, eager print) | 152 cases; RED `v2pay3-add-red-r1` Django 152/152, Go 500; GREEN `v2pay3-add-versioned-r1` 4 transports; mutation `v2pay3-add-mutation-r1` (no invoice without an associate) CAUGHT |
+| payment-misc | `GET payment/simulation/partial-quotes-apply` | a member's own account while the association has an SMTP `CommunicationConfiguration` (delayed send in the web process) | 96 cases; RED `v2pay3-misc-red-r1` Django 96/96, Go 500; GREEN `v2pay3-misc-versioned-r1` 4 transports; mutation `v2pay3-misc-mutation-r1` (message sent to the owner) CAUGHT |
 
 ### Ported in the v2-misc-2 change
 
@@ -137,42 +157,34 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 ### payment-writes / payment-state / payment-reads / payment-misc
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST payment/add | owner setting `auto_paid_payment` on | `routes/profile/sections/Settings.svelte:1013`, `AddEditModal.svelte:102` | `service/payment_writes.go:570` | medium-expensive |
-| payment cancel / delete | payment has an invoice | `PaymentList.svelte:575,689`, `partials/payment-overview.svelte:187` | `service/payment_state.go:322,363` | medium-expensive |
 | GET payment/list | athlete session (no `mode=compressed`) | `routes/activities/payment/PaymentList.svelte:36-38` | `service/payment_reads.go:349` | medium-expensive |
-| GET partial-quotes-apply | a member's own account and the association has an SMTP `CommunicationConfiguration` (Timer-thread send) | `components/modals/SubscriptionFeesPlanModal.svelte:46` | `service/payment_misc.go` (`Apply`, `CommunicationConfigured`) | medium |
 
-Notes for the remaining payment items:
-- Cancel/delete of an invoiced payment: `invoice.meta` holds `str()` of the nested `user` (UserSerializer: a plain dict in
-  DRF 3.17, `role` an int) and `associate` (AssociateSerializer: `sport_association` and `family` primary key
-  relations render `UUID('...')`, `associate_id` and `user` are str). `dto.PythonRepr` covers dicts, lists, str, numbers, None, bool and
-  `dto.PythonUUID`, so the meta needs an ordered nested value built from the PaymentSerializer port, not new repr code.
-  Cancel then publishes `print_document_invoice` (`apply_async`, portable with `internal/celery`); delete prints it eagerly
-  (`InvoiceSyncPrint`, as payment update does) before the payment delete cascade.
-- partial-quotes-apply with SMTP: deterministic in the oracle by patching `application.tasks.random.randint` (the Timer
-  delay) for the run and waiting, with a timeout, for the message on a per-run fake SMTP server, as the celery
-  consumer-email harness does for `send_email_html` (`TESTS/adapters/go/celery_consumer_email_process.py`). Go needs the
-  configuration send of `service/consumer_email.go` (`configSend`) in the web process with a fixture-controlled delay.
+Notes for the remaining payment item:
+- Athlete `payment/list`: its own query (the athlete's and the athlete's associates' income payments, the course
+  subscription variant, the installment and zero-amount exclusions), `PaymentCompressedSerializer` with `get_meta`, the
+  online payment flags, a response keyed by index, and `document_invoice` called in-process for each paid invoiced payment
+  without a PDF (Document, renderer request, `save_to_storage`, the invoice link: `DocumentRender.Render` with the
+  `invoice` route covers it). The fixture needs athlete-owned rows and document-render's renderer stub and Celery broker.
 
 ### subscription-create / subscription-import-upload / subscription-memberships
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | POST subscription/add | owner wizard: a typed certificate date without an upload (placeholder PNG drawn with PIL: image rendering, refused by the porting rules) | `routes/association/Members/add/AddMember.svelte:104-139` | `service/subscription_create.go` (`subscriptionCreateRefuse`) | expensive (image) |
-| POST subscription/add | public forms: anonymous, `sport_association`, preregistration, family wizard | `Subscribe.svelte:124,147,167`, `SubscribeMultiple.svelte:183`, `SubscribeFamily.svelte:136-181` | `service/subscription_create.go:91,102,132,141` | expensive |
+| POST subscription/add | family wizard (`is_family_wizard`, one request with `multiple_entry_form_data`; the response renders `PaymentSerializer` for every payment); a preregistration that renews a subscription (`subscription_id`) | `SubscribeFamily.svelte:136-181`, `Subscribe.svelte:136` (`subscription_id`) | `service/subscription_create.go` (`Add`, `createSubscription`) | expensive |
 | POST subscription/import/upload | final mapping step (every import) | `routes/association/Members/import/ImportMembers.svelte:46-52` | `service/subscription_import_upload.go:200` | expensive |
 | POST subscription/import/upload | Excel file | `import/sections/Section1.svelte:33-37` | `service/subscription_import_upload.go:210` | expensive |
 
 ### subscription-reads / subscription-lifecycle / subscription-renew / subscription-transfer / subscription-medical
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST subscription/list | current-view print `format` pdf/excel | `components/modals/CurrentViewPrintingModal.svelte:31,41` | `service/subscription_reads.go:345` | excel medium, pdf expensive |
+| POST subscription/list | current-view print `format` pdf (excel is ported) | `components/modals/CurrentViewPrintingModal.svelte:31,41` | `service/subscription_reads_export.go:45` | expensive |
 | list, list/all, info, calendar | staff impersonating an athlete with an association scope | athlete pages while impersonating | `service/subscription_reads.go:252,547,800,1054` | medium |
 | POST .../medical-certificate/set-certificate-expiration | member without a certificate | `Members/detail/sections/modals/AddMedicalCertificate.svelte:51` | `service/subscription_medical.go:389` | medium |
 | POST subscription/renew | member with courses (pre-filled) | `Members/modals/RenewalModal.svelte:58` | `service/subscription_renew.go:96` | medium-expensive |
 | GET subscription card, validate-token-link | unknown token while a Bakney pairing is active | `Tessera.svelte:54`, `SubscribeMultiple.svelte:222` | `service/subscription_card.go:61`, `service/subscription_misc.go:318` | medium |
 
 Why these stay (v2-subscriptions):
-- POST subscription/list export: the PDF is a synchronous render and the Excel a pandas layout; neither was in scope here.
+- POST subscription/list export: the PDF is a synchronous render and stays refused; the Excel export is ported (subscription-reads.md, "Excel export").
 - association-scoped athlete sessions: needs scoped_queryset's family boundary on every related read (subscriptions, course
   subscriptions, installments, files, registries); impersonation-only.
 - set-certificate-expiration without a certificate: Django draws a PNG with PIL/FreeType; not byte-reproducible, refused before any write.
@@ -184,11 +196,15 @@ Why these stay (v2-subscriptions):
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | POST course-subscriptions/list | export pdf/excel | `course-subscriptions-list.svelte:575-588` | `service/course_subscriptions.go:177` | medium |
-| POST course/list | print pdf/excel | `course/CourseList.svelte:806-812` | `handler/course_list.go:69` | expensive |
+| POST course/list | print pdf (excel is ported) | `course/CourseList.svelte:806-812` | `service/course_list.go:359` | expensive |
 
-Still refused: both "Stampa vista corrente" exports. The `pdf` format (the modal's default) is reportlab's in-process
-`generate_pdf_from_data` (time-stamped, not byte-reproducible); `excel` is portable with `xlsxexport.PandasOpenpyxl` but
-the rows follow the querysets' unordered database order, which needs a deterministic order proof against Django first.
+Still refused: the `pdf` format of both "Stampa vista corrente" exports (the modal's default; reportlab's in-process
+`generate_pdf_from_data`, time-stamped, not byte-reproducible) and the `excel` format of course-subscriptions/list.
+course/list `excel` is ported (course-list.md, "Excel export"). For course-subscriptions/list the rows follow the
+database's order of an unordered four-table statement: a Go port sending the same statement (tables, joins, predicates
+and selected columns) returned one authored three-row listing in another order than Django in the harness, so the order
+is not proven and Go keeps refusing. The port and its 19 authored cases are parked outside the repository until the
+order is characterized.
 
 ### documents / docmanager / document-views
 | Route | Condition | UI call | Go site | Cost |
@@ -205,7 +221,7 @@ the rows follow the querysets' unordered database order, which needs a determini
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | POST printing/generate | `format: 'pdf'` (modal default) | `components/modals/PrintingModal.svelte:80,110` | `service/printing_generate.go:218` | expensive |
-| POST balance-sheet | export pdf/excel of a draft | `BalanceSheetEditor.svelte:464-504` | `service/balance_sheet.go:261` | expensive |
+| POST balance-sheet | export pdf of a draft (excel is ported) | `BalanceSheetEditor.svelte:464-504` | `service/balance_sheet.go:267` | expensive |
 | DELETE balance-sheet/accounts/<uid>/delete | only soft-deleted/other-group payments | `routes/accounting/accounts/Accounts.svelte:166,192` | `service/balance_sheet.go:466` | medium |
 | POST saved-reports/<pk>/run | tools `export_data`, `export_multi_sheet`, `get_attendance_matrix` | `reports/SavedReports.svelte:177-190` | `dto/report_tools.go:71` | expensive |
 
@@ -283,7 +299,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### balance-sheet.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST balance-sheet | `format` `excel`/`pdf` on a non-approved (draft) sheet | service/balance_sheet.go:261 (`ErrBalanceSheetExportNotPorted`) | A | The always-visible "Esporta PDF/Excel" button (`src/routes/accounting/balanceSheet/BalanceSheetEditor.svelte:504`, `printBalanceSheet` :464-471) opens `src/components/modals/CurrentViewPrintingModal.svelte`, which POSTs `{"format": "pdf"|"excel"}` (:30-43) to `balance-sheet?currentDate=...`. For an approved sheet both backends return the stored data without a file. |
+| POST balance-sheet | `format` `pdf` on a non-approved (draft) sheet (`excel` is ported: balance-sheet.md, "Excel export") | service/balance_sheet.go:267 (`ErrBalanceSheetExportNotPorted`) | A | The always-visible "Esporta PDF/Excel" button (`src/routes/accounting/balanceSheet/BalanceSheetEditor.svelte:504`, `printBalanceSheet` :464-471) opens `src/components/modals/CurrentViewPrintingModal.svelte`, which POSTs `{"format": "pdf"|"excel"}` (:30-43) to `balance-sheet?currentDate=...`. For an approved sheet both backends return the stored data without a file. |
 | DELETE balance-sheet/accounts/<uid>/delete | any `application_payment` row references the account (soft-deleted or other-group included) | service/balance_sheet.go:466 (`ErrBalanceAccountPaymentsNotPorted`); query repository/balance_sheet.go:180 | A | UI enables delete when `row.deletable` (`src/routes/accounting/accounts/Accounts.svelte:166`, call at :192). `deletable` only counts live, group-filtered payments, so an account whose payments were all deleted from the payment list (soft delete, `views/payment_views.py:506`) or belong to another group shows as deletable and Go refuses. |
 
 ### balance-accounts.md
@@ -429,7 +445,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### course-list.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST course/list | `format` `pdf`/`excel` | handler/course_list.go:69 (`ErrCourseListExportUnported`) | A | "Stampa vista corrente" in `association/course/CourseList.svelte:806-812` and `CourseListArchive.svelte:790-797` opens `components/modals/CurrentViewPrintingModal.svelte`, which POSTs `{"format": "pdf"|"excel"}` (:30-43). |
+| POST course/list | `format` `pdf` (`excel` is ported: course-list.md, "Excel export") | service/course_list.go:359 (`ErrCourseListExportUnported`) | A | "Stampa vista corrente" in `association/course/CourseList.svelte:806-812` and `CourseListArchive.svelte:790-797` opens `components/modals/CurrentViewPrintingModal.svelte`, which POSTs `{"format": "pdf"|"excel"}` (:30-43). |
 | GET/POST course/list | lazy orderings (`title__lower`, M2M, relation paths) | service/course_list.go:192,231 (`ErrCourseListUnported`) | B | UI sorts only by plain fields (`CourseList.svelte` columns: `title` sortable :295; `sort[field]` passes the column field). Cost: medium. |
 
 ### document-render.md
@@ -628,7 +644,7 @@ No refusals of its own (re-verification record). Nothing to classify.
 ### invoice-parties.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET invoice-customers/list | any customer invoice without a PDF (global check) | `BE_GO/internal/service/invoice_parties.go:89-94`, `ErrInvoicePartyNotPorted` | **A** (ported in v2-documents) | `accounting/customersInvoice/CustomersInvoiceList.svelte:513`. A customer invoice added from the UI (`:309`) whose eager print made no PDF (renderer error swallowed, or any completed data restore making the eager task raise `StaleDataTask`, per invoice-views.md) leaves `pdf_id` NULL; Django prints it on list (`invoice_views.py:832`). |
+| GET invoice-customers/list | an invoice of the caller's association without a PDF | `BE_GO/internal/service/invoice_parties.go:97-104`, `ErrInvoicePartyNotPorted` | **A** (ported in v2-documents) | `accounting/customersInvoice/CustomersInvoiceList.svelte:513`. A customer invoice added from the UI (`:309`) whose eager print made no PDF (renderer error swallowed, or any completed data restore making the eager task raise `StaleDataTask`, per invoice-views.md) leaves `pdf_id` NULL; Django prints it on its association's list (`invoice_views.py:836`). |
 | POST invoice-suppliers/add, PATCH …/update | nested `payment`/`supplier` objects, non-null `payment_id`, new `invoice_supplier_id` | `service/invoice_parties.go:510-511,589-592`; `dto/invoice_parties.go:425,439,463` | B | UI sends `supplier_id`, deletes `payment`/`supplier` (`suppliersInvoice/SuppliersInvoiceList.svelte:312-313`, `suppliersInvoice/modals/EditModal.svelte:74-76`). |
 | PATCH invoice-suppliers/<uid>/update | linked payment not loadable or description None/"quota corso" | `service/invoice_parties.go:640-649` | B | Supplier add sets a description (`invoice_views.py:695`); needs a later edit blanking it. legacy: yes; medium. |
 | GET invoice-suppliers/list | payment linking an associate/instructor/invoice or with a subscription/course subject | `service/invoice_parties.go:370-371` | B | Auto-created supplier payment is `Payment.OTHER` with a supplier; needs a manual edit in the payment editor. legacy: yes; medium. |
@@ -705,7 +721,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### payment-misc.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET payment/simulation/partial-quotes-apply | a member's own account to e-mail while the association has a `CommunicationConfiguration` | `service/payment_misc.go` (`Apply`, `ErrPaymentMiscNotPorted`) | A | Same UI call (`SubscriptionFeesPlanModal.svelte:46`). Without an SMTP configuration the e-mail is ported (published `send_mail_async`); with one Django sends on a `Timer` thread after a random delay. |
+| GET payment/simulation/partial-quotes-apply | a member's own account to e-mail while the association has a `CommunicationConfiguration` | `service/payment_misc.go` (`Apply`, `ErrPaymentMiscNotPorted`) | A (ported in v2-payments-3) | Same UI call (`SubscriptionFeesPlanModal.svelte:46`). Without an SMTP configuration the e-mail is ported (published `send_mail_async`); with one Django sends on a `Timer` thread after a random delay. |
 | partial-quotes(-apply) | non-ASCII-digit dates, odd fee/plan types, non-canonical X-Group-Id | `service/payment_misc.go:103,115,250-284,345,489`; `service/quote_assign.go:301-309` | B | The UI sends `?date=YYYY-MM-DD`. Plans come from template data. legacy: yes (old plan JSON). Cost: cheap. |
 | POST payment/<id>/approve (via payment-state) | `send_receipt_email` not None/bool/str/int64 | payment-state | B | Exotic. |
 
@@ -757,7 +773,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 |---|---|---|---|---|
 | PATCH payment/<id>/update | body contains `payment_id` (or `user`) | `service/payment_writes.go:508` | **A** | The edit form has `<input type="hidden" name="payment_id">` (`routes/accounting/payment/modals/AddEditModal.svelte:482`). `getDataFromForm` includes it, and `update()` sends it (`:142-150`). Every UI payment edit is refused. Cost: cheap (accept an unchanged pk). |
 | POST payment/add, PATCH update | `attachments_data` filename over 255 characters, non-string values, a rejected storage name or an existing key without overwrite | `service/payment_writes.go` (`attachmentsStored`) | B | `AddEditModal.svelte:66-89` sends the browser's file name and a base64 string. legacy: no. Cost: cheap. |
-| POST payment/add | owner has `auto_paid_payment` | `service/payment_writes.go:570` | **A** | The toggle is in `routes/profile/sections/Settings.svelte:1013`. Django: `payment_views.py:78-79`. Cost: medium–expensive (invoice numbering + `print_document_invoice`). |
+| POST payment/add | owner has `auto_paid_payment` | `service/payment_writes.go:570` | **A** (ported in v2-payments-3) | The toggle is in `routes/profile/sections/Settings.svelte:1013`. Django: `payment_views.py:78-79`. Cost: medium–expensive (invoice numbering + `print_document_invoice`). |
 | PATCH payment/<id>/update | payment has an invoice | `service/payment_writes.go:766` | **A** | Any edit of an invoiced (receipted) payment from `AddEditModal.svelte:142`. Cost: medium (invoice re-print dispatch). |
 | add/update | form/multipart bodies | `service/payment_writes.go:722` | B | The UI sends JSON. |
 | add | non-canonical X-Group-Id; non-ASCII-digit dates | `service/payment_writes.go:534,59` | B | See the X-Group-ID note. The UI sends `DD/MM/YYYY` ASCII. |
@@ -771,8 +787,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### payment-state.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST payment/<id>/cancel | paid payment with an invoice | `service/payment_state.go:322` | **A** | `routes/accounting/payment/PaymentList.svelte:575`, `partials/payment-overview.svelte:187`. Receipted payments are normal. Cost: medium (invoice cancellation + PDF task). |
-| DELETE payment/<id>/delete | payment with an invoice | `service/payment_state.go:363` | **A** | `PaymentList.svelte:689`. Cost: medium–expensive (synchronous PDF). |
+| POST payment/<id>/cancel | paid payment with an invoice | `service/payment_state.go:322` | **A** (ported in v2-payments-3) | `routes/accounting/payment/PaymentList.svelte:575`, `partials/payment-overview.svelte:187`. Receipted payments are normal. Cost: medium (invoice cancellation + PDF task). |
+| DELETE payment/<id>/delete | payment with an invoice | `service/payment_state.go:363` | **A** (ported in v2-payments-3) | `PaymentList.svelte:689`. Cost: medium–expensive (synchronous PDF). |
 | approve paid flow | non-canonical X-Group-Id; float fee tie; odd `meta.subscription_data.name`; user without association id | `service/payment_state.go:52-60` and paid flow | B | Exotic or legacy data. Fee ties are rare. legacy: yes (old meta). Cost: cheap. |
 | approve/date | non-ASCII-digit `payment_date` | `service/payment_state.go:133` | B | |
 | approve | task dispatcher missing / tx type | `service/payment_state.go:227,254` | C | Wiring only. |
@@ -923,7 +939,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | GET subscription/list (athlete, no `field`) | every athlete request (`get_optimized_subscriptions` not ported) | `service/subscription_reads.go:290`, `ErrSubscriptionReadsNotPorted` | **ported** (v2-subscriptions) | Athlete pages call it: `routes/activities/subscription/SubscriptionList.svelte:40` (route `/subscription/list/:tab?`, athlete-only, `routes.js:472-478`), `routes/search/modals/BuyCarnetFor.svelte:58`, `routes/search/profile/sections/AvailableCarnets.svelte:17`. Django `subscriptions_views.py:1071` |
-| POST subscription/list (current-view export, `format` pdf/excel) | any POST | `:345` | **A** | The "Vista corrente" button (`MembersList.svelte:2335`, `MembersBook.svelte:1801`) opens `components/modals/CurrentViewPrintingModal.svelte:41-42` and POSTs with `format` `pdf` (default, `:31`) or `excel`. Django `subscriptions_views.py:1087` |
+| POST subscription/list (current-view export, `format` pdf; `excel` is ported) | POST with `format` `pdf` | `service/subscription_reads_export.go:45` | **A** | The "Vista corrente" button (`MembersList.svelte:2335`, `MembersBook.svelte:1801`) opens `components/modals/CurrentViewPrintingModal.svelte:41-42` and POSTs with `format` `pdf` (default, `:31`) or `excel`. Django `subscriptions_views.py:1087` |
 | GET subscription/<uid>/info | subscription without `document_pdf` | `:855` | **ported** (v2-subscriptions, Celery producer) | Member detail calls info (`Members/detail/Detail.svelte:95`, `EditSubscription.svelte:23`, `course-selection.svelte:17`, used by renewal). `document_pdf` is filled asynchronously by the `print_document_subscription` worker after create/renew, so it is empty until the print finishes or if it failed. Django prints it on demand at `:1787` |
 | same | course-subscription membership payments with an instructor or an invoice | `:994` | **A** (invoice) / B (instructor) (both ported in v2-documents) | Paying a membership installment with invoice generation (default `generate_invoice` True, `payment_views.py:1761`), or cancelling it, leaves an invoice on the payment. Instructor on a membership payment: legacy: yes, medium |
 | same | course-subscription membership payments with an instructor or an invoice | — | ported | Ported in v2-misc (nested invoice and instructor rendered). |

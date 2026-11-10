@@ -154,7 +154,8 @@ func (t *subscriptionRenewTransaction) AddTags(ctx context.Context, subscription
 		return nil
 	}
 	_, err := t.tx.ExecContext(ctx, `INSERT INTO application_subscription_tags (subscription_id, tags_id)
- SELECT $1, tag_id FROM application_tags WHERE tag_id=ANY($2::uuid[]) ORDER BY tag_id`, subscription, ids)
+ SELECT $1, tag_id FROM application_tags WHERE tag_id=ANY($2::uuid[])
+ AND sport_association_id=(SELECT sport_association_id FROM application_subscription WHERE subscription_id=$1) ORDER BY tag_id`, subscription, ids)
 	return err
 }
 

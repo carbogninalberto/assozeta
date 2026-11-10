@@ -18,13 +18,21 @@ marked paid, the broadcast rows, the owner's notification (Redis list, cache,
 Channels push, mirror) and the print_document_invoice messages on the run's
 private Celery broker. A second association owner whose invoice date follows
 the payment date (with a token) is seeded for it.
+
+Seeded invoices (linked to their payments) change only as authored
+('invoices_changed': cancelled and meta). A CURRENT_HOST print stub
+(invoice-sync-print's service_context) runs for the whole run: each case's
+outbound requests must be exactly its authored 'prints' (payment delete prints
+an invoiced payment's invoice eagerly).
 """
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 import ipaddress
+import types
 
-from TESTS.contracts import test_payment_state_http as contract
+from TESTS.contracts import test_payment_state_http as base_contract
+from TESTS.adapters.django import invoice_sync_print_http as printer
 from TESTS.adapters.django import carnet_replace_http as replace
 from TESTS.adapters.django import family_harness as harness
 from TESTS.adapters.django import payment_paid_flow as paid
@@ -38,7 +46,8 @@ SOURCES = ('TESTS/fixtures/payment_state_http.json', 'TESTS/contracts/test_payme
            'BE/application/models/subscriptions_models.py', 'BE/application/models/user_models.py', 'BE/application/models/carnet_models.py',
            'BE/application/signals.py', 'BE/application/mixin.py', 'BE/application/impersonation_scope.py', 'BE/application/audit_resolvers.py',
            'BE/application/utils/api_utils.py', 'BE/application/utils/printing.py', 'BE/docmanager/models.py',
-           'BE/application/serializers/invoice_serializers.py') + paid.SOURCES + harness.SOURCES
+           'BE/application/serializers/invoice_serializers.py', 'TESTS/adapters/django/invoice_sync_print_http.py',
+           'BE/application/printing_tasks.py', 'BE/instance/restore/task_base.py') + paid.SOURCES + harness.SOURCES
 PAYMENT, INSTALLMENT = 'application.Payment', 'application.CourseSubscriptionInstallment'
 SUPPLIER_INVOICE = 'application.InvoiceSuppliers'
 REFERENCES = ('application.CourseSubscription', 'application.CarnetSubscription')
@@ -47,10 +56,26 @@ MANAGED = (PAYMENT, INSTALLMENT, SUPPLIER_INVOICE, *REFERENCES, *THROUGH, *paid.
 PAYMENT_COLUMNS = {'paid': 'paid', 'payment_date': 'payment_date', 'category': 'payment_category_id', 'description': 'description',
                    'archived': 'archived', 'deleted': 'deleted', 'invoice': 'invoice_id'}
 MODELS = {'payment': ('Payment', 'payments'), 'coursesubscriptioninstallment': ('CourseSubscriptionInstallment', 'installments'),
-          'invoicesuppliers': ('InvoiceSuppliers', 'supplier_invoices'), 'invoice': ('Invoice', None),
+          'invoicesuppliers': ('InvoiceSuppliers', 'supplier_invoices'), 'invoice': ('Invoice', 'invoices'),
           'coursesubscription': ('CourseSubscription', 'course_subscriptions'),
           'notificationsbroadcast': ('NotificationsBroadcast', None), 'usernotificationsbroadcast': ('UserNotificationsBroadcast', None)}
 STATE = {}
+
+
+def _assert_case(case, base_url, *, token, sessions):
+    """The authored request, with the print stub scripted for it and its outbound requests checked after."""
+    stub = printer.STUB
+    with stub['lock']:
+        stub['log'] = []
+        stub['script'] = [item['reply'] for item in case['prints']]
+    stub['token'] = token
+    status = base_contract.assert_case(case, base_url, token=token, sessions=sessions)
+    printer.check_prints(case, None)
+    return status
+
+
+contract = types.SimpleNamespace(load_source=base_contract.load_source, require=base_contract.require, assert_case=_assert_case,
+                                 LAST=base_contract.LAST, ResponseFailure=base_contract.ResponseFailure)
 
 
 def moment(text):
@@ -65,8 +90,8 @@ def default_category():
 
 
 def seed_rows(source, created):
-    from application.models import (Associate, Course, CourseSubscription, CourseSubscriptionInstallment, Instructor, InvoiceSuppliers,
-                                    Payment, PaymentCategory, SportAssociation, SupplierAndCustomers, Subscription, User)
+    from application.models import (Associate, Course, CourseSubscription, CourseSubscriptionInstallment, Instructor, Invoice,
+                                    InvoiceSuppliers, Payment, PaymentCategory, SportAssociation, SupplierAndCustomers, Subscription, User)
     from application.models.carnet_models import Carnet, CarnetSubscription
     from docmanager.models import Document
     ids = source['ids']
@@ -107,8 +132,14 @@ def seed_rows(source, created):
                           fee=Decimal('50.00')))
     insert(Carnet, Carnet(carnet_id=source['carnet']['id'], title=source['carnet']['title'], sport_association_id=own, fee=Decimal('1.00')))
     payments = source['payments']
+    bills = source['invoices']
+    for row in bills.values():
+        insert(Invoice, Invoice(invoice_id=row['id'], sport_association_id=own, creation_date=moment(row['created']),
+                                membership_fee=Decimal(row['membership_fee']), activity_fee=Decimal(row['activity_fee']),
+                                description=row['description'], number=row['number'], archived=True))
     for row in payments.values():
         insert(Payment, Payment(
+            invoice_id=bills[row['invoice']]['id'] if row['invoice'] else None,
             payment_id=row['id'], sport_association_id=row['association'], subject=row['subject'], amount=Decimal(row['amount']),
             paid=row['paid'], expense=row['expense'], meta=row['meta'],
             associate_id=(other['id'] if row['associate'] == 'flag' else person['id']) if row['associate'] else None,
@@ -165,7 +196,15 @@ def recipients(fixture):
 
 base_fixture_context = paid.with_notifications(harness.with_celery_broker(harness.fixture_context_for(
     contract, seed_rows, purge=(invoices, user_broadcasts, broadcasts))), recipients)
-service_context = lambda report, log: paid.channel_layers()
+
+
+@contextmanager
+def service_context(report, log):
+    """The Channels layer on the run's Redis and the CURRENT_HOST print stub."""
+    with ExitStack() as stack:
+        stack.enter_context(paid.channel_layers())
+        stack.enter_context(printer.service_context(report, log))
+        yield
 
 
 @contextmanager
@@ -255,6 +294,25 @@ def assert_effect(case, before, after, source, context):
     side_channels(case, effect, fixture, context, binding, created_broadcast, until)
 
 
+def check_invoices(before, after, changed, source):
+    """The seeded invoices change only in the authored columns; returns `before` with them applied."""
+    old = {str(transfer_plain(row['invoice_id'])): row for row in before[paid.INVOICE]}
+    new = {str(transfer_plain(row['invoice_id'])): row for row in after[paid.INVOICE]}
+    rows = []
+    expected_keys = {source['invoices'][label]['id'] for label in changed}
+    contract.require(expected_keys <= set(old) and expected_keys <= set(new), 'state.invoice-seeded')
+    for label, columns in changed.items():
+        key = source['invoices'][label]['id']
+        contract.require(transfer_plain(new[key]) == {**transfer_plain(old[key]), **columns}, 'state.invoice-changed:' + label)
+    for key, row in old.items():
+        rows.append(new[key] if key in expected_keys else row)
+    return {**before, paid.INVOICE: rows}
+
+
+def transfer_plain(value):
+    return paid._plain(value)
+
+
 def check_state(case, effect, before, after, source, context, binding):
     if effect is None:
         contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
@@ -266,7 +324,8 @@ def check_state(case, effect, before, after, source, context, binding):
         notification = {**notification, 'user_id': ids[notification['user']]}
     created_broadcast = any(e['model'] == 'notificationsbroadcast' for e in effect['audit'])
     paid.check_broadcasts(contract, before, after, notification, created_broadcast, binding)
-    invoice_now = paid.check_invoice(contract, before, after, effect.get('invoice'), contract.LAST.get('invoices', []), binding)
+    seeded = check_invoices(before, after, effect.get('invoices_changed', {}), source)
+    invoice_now = paid.check_invoice(contract, seeded, after, effect.get('invoice'), contract.LAST.get('invoices', []), binding)
     pay_id = lambda label: source['payments'][label]['id']
     gone_payments = {pay_id(label) for label in effect['payments_deleted']}
     gone_installments = {source['installments'][label]['id'] for label in effect['installments_deleted']}
@@ -343,7 +402,7 @@ def check_state(case, effect, before, after, source, context, binding):
     for event, entry in zip(added, effect['audit']):
         name, table = MODELS[entry['model']]
         app = 'notifications' if entry['model'] in ('notificationsbroadcast', 'usernotificationsbroadcast') else 'application'
-        if table is None:
+        if table is None or entry['label'].startswith('$'):
             key = binding['$' + entry['model']]
         else:
             key = source[table][entry['label']]['id']
