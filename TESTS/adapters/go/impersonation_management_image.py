@@ -69,8 +69,8 @@ def assert_workloads(result, image_id):
     assert len(indexed) == len(rows) and set(indexed) == full | rounds | {'misrouted-v2'}
     baseline = indexed['django']
     names = [row['name'] for row in baseline['case_results']]
-    assert len(names) == len(set(names)) == baseline['cases'] and baseline['cases'] == 264
-    assert baseline['audits'] == 64
+    assert len(names) == len(set(names)) == baseline['cases'] and baseline['cases'] == 280
+    assert baseline['audits'] == 68
     for label in full:
         row = indexed[label]
         assert row['cases'] == baseline['cases'] and row['audits'] == baseline['audits']
