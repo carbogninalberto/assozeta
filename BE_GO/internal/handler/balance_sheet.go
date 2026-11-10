@@ -16,7 +16,7 @@ type BalanceSheetWriteService interface {
 }
 
 type BalanceAccountDeleteService interface {
-	Delete(ctx context.Context, identity domain.ResolvedIdentity, raw string, audit domain.LoginAuditContext) error
+	Delete(ctx context.Context, identity domain.ResolvedIdentity, raw string, audit domain.LoginAuditContext, groupHeader string) error
 }
 
 type BalanceSheetHandler struct {
@@ -104,10 +104,10 @@ func (h *BalanceSheetHandler) Sheet(c echo.Context) error {
 
 // AccountDelete is balance_sheet_accounts_delete.
 func (h *BalanceSheetHandler) AccountDelete(c echo.Context) error {
-	uid := c.Param("uid")
+	uid, group := c.Param("uid"), c.Request().Header.Get("X-Group-Id")
 	return h.serve(c, map[string]bool{http.MethodDelete: true}, "balance_sheet_accounts_delete", "Balance Sheet Accounts Delete",
 		func(ctx context.Context, identity domain.ResolvedIdentity, body any, audit domain.LoginAuditContext) (any, error) {
-			if err := h.deletes.Delete(ctx, identity, uid, audit); err != nil {
+			if err := h.deletes.Delete(ctx, identity, uid, audit, group); err != nil {
 				return nil, err
 			}
 			return map[string]string{"msg": "bank accounts deleted"}, nil

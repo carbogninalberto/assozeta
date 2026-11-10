@@ -50,7 +50,10 @@ def account(name, initial, kind, *, editable=True, association=OWN, code='C'):
 
 ACCOUNTS = {'main': account('Banca', '100.00', 2, code='IT01'), 'alt': account('Banca 2', '0.50', 2, editable=False),
             'cash': account('Cassa', '10.25', 1), 'spare': account('Vuoto', '0.00', 1),
-            'abroad': account('Estero', '1.00', 2, association=FOREIGN)}
+            'abroad': account('Estero', '1.00', 2, association=FOREIGN),
+            # Accounts whose payments no longer count: deleted with them (see the account delete cases).
+            'ledger': account('Storico', '0.00', 1), 'ledger_transfers': account('Storico giri', '0.00', 1),
+            'ledger_installment': account('Storico rate', '0.00', 1)}
 TRANSFERS = {'t1': {'id': next(ids), 'from': 'main', 'to': 'cash', 'amount': '20.00', 'date': '2025-06-01T10:00:00Z'},
              't2': {'id': next(ids), 'from': 'cash', 'to': 'main', 'amount': '5.50', 'date': '2025-12-31T12:00:00Z'},
              't3': {'id': next(ids), 'from': None, 'to': 'cash', 'amount': '1.25', 'date': '2025-12-31T00:00:00Z'}}
@@ -82,7 +85,19 @@ PAYMENTS = {
     # A meta entry without a category key looks up 'senza_causale' as a UUID:
     # the ValidationError stops the generation with the partial data.
     'p22': payment('6.00', 'a', '2022-04-01T10:00:00Z', meta=[{'amount': 1}]),
+    # Payments of the accounts deleted at the end: removed from the payment list, of a group, never paid.
+    'l1': payment('15.00', None, '2015-03-01T10:00:00Z', account='ledger', deleted=True),
+    'l2': payment('16.00', None, '2015-03-02T10:00:00Z', account='ledger', paid=False, group='own_group'),
+    'l3': payment('17.00', None, '2015-03-03T10:00:00Z', account='ledger', paid=False),
+    'l4': payment('18.00', None, '2015-03-04T10:00:00Z', account='ledger_transfers', deleted=True),
+    'l5': payment('19.00', None, '2015-03-05T10:00:00Z', account='ledger_installment', paid=False),
+    'l6': payment('20.00', None, '2015-03-06T10:00:00Z', account='ledger_installment', deleted=True, paid=False),
 }
+TRANSFERS['t4'] = {'id': next(ids), 'from': 'ledger_transfers', 'to': None, 'amount': '2.00', 'date': '2015-06-01T10:00:00Z'}
+# An unpaid payment with its course instalment: deleting the payment deletes the instalment, whose own
+# delete removes the unpaid payment first.
+COURSE = {'course': next(ids), 'subscription': next(ids)}
+INSTALLMENTS = {'i1': {'id': next(ids), 'payment': 'l5', 'amount': '19.00', 'date': '2015-03-05T10:00:00Z'}}
 
 
 def default_data():
@@ -409,9 +424,26 @@ add('account-deleted', 'full_collaborator', remove('spare'), 200, DELETED, metho
 add('account-deleted-with-transfers', 'owner', remove('cash'), 200, DELETED, method='DELETE',
     effect={'kind': 'delete-account', 'account': 'cash', 'transfers': ['t1', 't2', 't3'], 'actor': 'owner'})
 add('account-already-deleted-not-found', 'owner', remove('spare'), 404, MISSING, method='DELETE')
+# Account.delete() cascades to every payment of the account (base manager). 'audit' is the order of the
+# entries: the account, its transfers, then its payments in descending key order.
+by_id = lambda *labels: sorted(labels, key=lambda label: PAYMENTS[label]['id'], reverse=True)
+add('account-deleted-with-payments', 'owner', remove('ledger'), 200, DELETED, method='DELETE',
+    effect={'kind': 'delete-account-cascade', 'account': 'ledger', 'transfers': [], 'payments': ['l1', 'l2', 'l3'], 'installments': [],
+            'audit': [['account', 'ledger'], *(['payment', label] for label in by_id('l1', 'l2', 'l3'))], 'actor': 'owner'})
+add('account-deleted-with-payments-and-transfers', 'full_collaborator', remove('ledger_transfers'), 200, DELETED, method='DELETE',
+    effect={'kind': 'delete-account-cascade', 'account': 'ledger_transfers', 'transfers': ['t4'], 'payments': ['l4'], 'installments': [],
+            'audit': [['account', 'ledger_transfers'], ['transfer', 't4'], ['payment', 'l4']], 'actor': 'full_collaborator'})
+# The payment's delete receiver runs before anything is deleted: it deletes the instalment, whose receiver
+# deletes the unpaid payment (audited), then the instalment is audited; the account's own pass audits the
+# payment again.
+add('account-deleted-with-instalment-payment', 'owner', remove('ledger_installment'), 200, DELETED, method='DELETE',
+    effect={'kind': 'delete-account-cascade', 'account': 'ledger_installment', 'transfers': [], 'payments': ['l5', 'l6'],
+            'installments': ['i1'],
+            'audit': [['payment', 'l5'], ['installment', 'i1'], ['account', 'ledger_installment'],
+                      *(['payment', label] for label in by_id('l5', 'l6'))], 'actor': 'owner'})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Balance sheet and account delete authored sequence with audit effects',
-                              'ids': IDS, 'categories': CATEGORIES, 'accounts': ACCOUNTS, 'transfers': TRANSFERS, 'payments': PAYMENTS,
+                              'ids': IDS, 'categories': CATEGORIES, 'accounts': ACCOUNTS, 'transfers': TRANSFERS, 'payments': PAYMENTS, 'course': COURSE, 'installments': INSTALLMENTS,
                               'sheets': SHEETS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')
