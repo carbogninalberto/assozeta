@@ -1763,6 +1763,152 @@
         "writes": 0,
         "secret_free": true
       }
+    },
+    "carried-sections": {
+      "setup": {
+        "mode": "carried"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "carried-self-hosted": {
+      "setup": {
+        "mode": "carried",
+        "self_hosted": true
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public",
+          "guide#host"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "carried-asset": {
+      "setup": {
+        "mode": "carried"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/assets/images/public.png",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "asset",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true,
+        "asset": "fixture_png",
+        "headers": {
+          "Content-Type": "image/png",
+          "Cache-Control": "private, no-store",
+          "X-Content-Type-Options": "nosniff"
+        }
+      }
+    },
+    "carried-asset-private": {
+      "setup": {
+        "mode": "carried"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/assets/images/private.png",
+        "headers": {}
+      },
+      "expected": {
+        "status": 404,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "carried-other-origin": {
+      "setup": {
+        "mode": "carried-other-origin"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "no_evidence",
+        "ids": [],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "carried-malformed-origin": {
+      "setup": {
+        "mode": "carried-malformed"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "no_evidence",
+        "ids": [],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "carried-malformed-origin-asset": {
+      "setup": {
+        "mode": "carried-malformed"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/assets/images/public.png",
+        "headers": {}
+      },
+      "expected": {
+        "status": 404,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
     }
   },
   "notes": [
@@ -1801,6 +1947,13 @@
     "remote-failure-old",
     "remote-failure-empty",
     "remote-readonly-old",
-    "remote-readonly-empty"
+    "remote-readonly-empty",
+    "carried-sections",
+    "carried-self-hosted",
+    "carried-asset",
+    "carried-asset-private",
+    "carried-other-origin",
+    "carried-malformed-origin",
+    "carried-malformed-origin-asset"
   ]
 }

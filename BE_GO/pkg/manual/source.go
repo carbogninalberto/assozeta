@@ -172,9 +172,10 @@ func (l *Loader) loadKnowledge(ctx context.Context, features []string, maintaine
 			revision = text(meta["application_revision"])
 		}
 	}
+	carried := false
 	if result.index == nil {
 		var err error
-		result.index, err = l.loadBundle(ctx)
+		result.index, carried, err = l.loadBundleOrigin(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -214,7 +215,9 @@ func (l *Loader) loadKnowledge(ctx context.Context, features []string, maintaine
 	check := s
 	check.ApplicationRevision = revision
 	result.revision = revision
-	if validate && !version(meta, check) {
+	// A carried bundle was validated for its declared origin and is accepted
+	// for the running revision/release (ManualIndex.carried_for).
+	if validate && !carried && !version(meta, check) {
 		return nil, errEvidence
 	}
 	if validate {

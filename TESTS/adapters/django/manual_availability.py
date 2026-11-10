@@ -36,7 +36,12 @@ CASES = {
     'development-deleted-reappeared': False, 'development-deleted-absent': True,
     'development-invalid-pointer': False, 'development-invalid-provenance': False,
     'development-mismatched-package': False, 'bundle-path-escape': False,
+    'carried-bundle-valid': True, 'carried-bundle-other-origin': False,
+    'carried-bundle-invalid-origin': False, 'carried-invalid-origin-precedes-remote': False,
+    'carried-placeholder-permits-remote': True, 'carried-blank-origin-current-bundle': True,
 }
+# Bundle verified for an earlier release, declared next to the bundle directory.
+CARRIED_ORIGIN = ('release-origin', 'e'*40)
 
 
 def main():
@@ -83,6 +88,23 @@ def main():
                 Path(config['BundlePath']).mkdir(); (Path(config['BundlePath'])/'.gitkeep').touch()
             if name=='invalid-bundle-precedes-remote':
                 write(Path(config['BundlePath'])/'bundle.json',{})
+            if name.startswith('carried-'):
+                marker = Path(config['BundlePath']).parent/'MANUAL_CARRIED_FROM'
+                origin = ' '.join(CARRIED_ORIGIN)
+                marker.write_text({'carried-bundle-other-origin': 'release-other '+CARRIED_ORIGIN[1],
+                    'carried-bundle-invalid-origin': 'malformed', 'carried-invalid-origin-precedes-remote': 'malformed',
+                    'carried-blank-origin-current-bundle': ' \n'}.get(name, origin)+'\n')
+                if name in ('carried-invalid-origin-precedes-remote', 'carried-placeholder-permits-remote'):
+                    config['CorpusBaseURL']='https://private.invalid/manual'
+                    Path(config['BundlePath']).mkdir(); (Path(config['BundlePath'])/'.gitkeep').touch()
+                else:
+                    verified = (config['ApplicationRevision'], config['Release']) if name=='carried-blank-origin-current-bundle' else CARRIED_ORIGIN[::-1]
+                    value['metadata'].update(publication_status='release-bundled', application_revision=verified[0], release=verified[1])
+                    value=seal(value); path=Path(config['BundlePath'])/'index.json';write(path,value)
+                    write(Path(config['BundlePath'])/'bundle.json',dict(format=1,distribution='immutable-backend-image',
+                        index_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),corpus_identity=value['identity'],
+                        application_revision=verified[0],release=verified[1],manual_revision=value['metadata']['manual_revision'],
+                        verified_corpus_identity='d'*64))
             if name.startswith('bundle-') and name not in ('bundle-path-escape',):
                 value['metadata']['publication_status']='release-bundled'
                 if name=='bundle-empty-chunks': value['chunks']=[]

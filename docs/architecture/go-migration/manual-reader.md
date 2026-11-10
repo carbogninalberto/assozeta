@@ -29,9 +29,9 @@ corpus and deduplicated images before atomic promotion, and retains the previous
 corpus after failure. Downloads have byte limits, timeouts and redirect validation;
 inactive content-addressed assets retain the existing retirement grace period.
 
-`TESTS/adapters/django/manual_reader_http.py --go-source` observes 69 real Django
+`TESTS/adapters/django/manual_reader_http.py --go-source` observes 76 real Django
 HTTP cases on private PostgreSQL and an ASGI server, including identity, methods,
-headers, restore admission and bounded SQL. It separately runs 32 Go library
+headers, restore admission and bounded SQL. It separately runs 39 Go library
 source comparisons with independent fixture directories. The local HTTP publisher
 checks download requests, installed-bundle precedence, failure retention and
 verified asset promotion. Go tests also exercise concurrent refresh, cancellation,
@@ -67,7 +67,7 @@ maintainer privileges. Preview selection precedes the instance lookup. Preview
 queries preserve Unicode case folding, whitespace splitting, title-hit ranking,
 stable ties and the ten-result limit. Responses copy nested source data.
 
-The same 69 contracts pass against the actual Go server with PostgreSQL and Redis,
+The same 76 contracts pass against the actual Go server with PostgreSQL and Redis,
 and against both APIs through the shipped Caddy configuration using `--versioned`
 with `--backend django` or `--backend go`. The portable suite compares full JSON,
 selected headers, exact publisher requests, verified asset bytes and unchanged
@@ -112,7 +112,7 @@ remain open. Historical manual artifacts retain their original revision and
 verification scope.
 
 The manual-tool function oracle is separate from reader HTTP and browser tests.
-`manual_reader_http.py --tools` runs 67 authored cases through the actual Django
+`manual_reader_http.py --tools` runs 74 authored cases through the actual Django
 functions, live PostgreSQL context resolution and real source loaders. It covers
 all four tools: search, section reads, technical evidence and gap diagnostics.
 No context resolver, loader or permission decision is replaced. Portable contracts
@@ -134,13 +134,14 @@ when ordinary retrieval rejects them. These differences are explicit contracts.
 The oracle treats `user_id` and association as trusted call context; MCP/agent
 argument filtering and their transports still need their own tests.
 
-Adding `--go-source` compares all 67 complete results with `pkg/manual.ExecuteTool`
+Adding `--go-source` compares all 74 complete results with `pkg/manual.ExecuteTool`
 using the same sealed files and fixture-supplied trusted context. The Go library
 implements all four knowledge operations, preserves the original external citation
 URL alongside the embedded reader URL, and does not accept authority or source
 configuration from tool arguments. Diagnostic loading can inspect incompatible
 runtime versions and reappeared development sources, while installed bundles
-retain strict version validation. Ordinary HTTP selection remains public-only.
+retain strict version validation except for a declared carried origin
+(`manual-carried.md`). Ordinary HTTP selection remains public-only.
 The four extra cases establish that stopword-only queries bypass limit conversion
 and model access, empty models bypass limit conversion, and a normal query with
 no matches still rejects an invalid limit. The missing-model case failed before
@@ -151,7 +152,7 @@ records the exact Go source hashes and checks that Go leaves fixture files intac
 This library evidence does not establish transport or service authority.
 
 The separate `--tools --backend go` adapter composes the Go service, repository
-and loader against the same private PostgreSQL rows as Django. All 67 complete
+and loader against the same private PostgreSQL rows as Django. All 74 complete
 results match, with one SQL statement for each valid call and no SQL for invalid
 search queries. This includes increasing the public corpus from 2 to 16 and 128
 sections. The statement selects only instance, primary-association and active
