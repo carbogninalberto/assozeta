@@ -20,6 +20,8 @@ type InvoiceParties struct {
 	ids   func() string
 	// customerSync carries the valid customer add (invoice-sync-print); nil refuses it.
 	customerSync *invoiceSyncCustomer
+	// pendingCustomers backs the customer list's loop over invoices without a PDF; nil refuses them.
+	pendingCustomers domain.CustomerInvoicePendingStore
 }
 
 func NewInvoiceParties(store domain.InvoicePartyStore, now func() time.Time, ids func() string) *InvoiceParties {
@@ -83,16 +85,20 @@ func (s *InvoiceParties) scopedAssociation(ctx context.Context, identity domain.
 	return *association, nil
 }
 
-// CustomerList follows invoice_customers_list. Its first loop generates XML
-// and runs the print task for every invoice without a PDF: not ported, so any
-// such invoice refuses the request before anything else.
+// CustomerList follows invoice_customers_list. Its first loop generates the
+// XML and runs the print task for every invoice without a PDF
+// (customerListPending; refused when not configured).
 func (s *InvoiceParties) CustomerList(ctx context.Context, request InvoicePartyRequest) (map[string]any, error) {
-	pending, err := s.store.CustomerInvoicesWithoutPDF(ctx)
-	if err != nil {
+	if s.pendingCustomers == nil {
+		pending, err := s.store.CustomerInvoicesWithoutPDF(ctx)
+		if err != nil {
+			return nil, err
+		}
+		if pending {
+			return nil, domain.ErrInvoicePartyNotPorted
+		}
+	} else if err := s.customerListPending(ctx, request); err != nil {
 		return nil, err
-	}
-	if pending {
-		return nil, domain.ErrInvoicePartyNotPorted
 	}
 	association, err := s.userAssociation(ctx, request.Identity)
 	if err != nil {

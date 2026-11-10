@@ -737,7 +737,7 @@ func run() (runErr error) {
 	invoiceSyncPrinter := service.NewInvoiceSyncPrint(service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
 		repository.NewRestoreStates(db), cfg.RestoreLockPath != ""), os.Getenv("CURRENT_HOST"))
 	invoicePartiesHandler := handler.NewInvoicePartiesHandler(service.NewInvoiceParties(repository.NewInvoiceParties(db), time.Now, uuid.NewString).
-		WithCustomerInvoiceSync(invoiceSyncStore, invoiceSyncPrinter),
+		WithCustomerInvoiceSync(invoiceSyncStore, invoiceSyncPrinter).WithPendingCustomerInvoices(invoiceSyncStore),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	invoiceSyncHandler := handler.NewInvoiceSyncPrintHandler(paymentStatesHandler,
 		service.NewInvoiceSyncUpdates(invoiceSyncStore, invoiceSyncPrinter, time.Now))
