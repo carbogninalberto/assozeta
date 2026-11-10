@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 19 ported below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 20 ported below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -46,10 +46,11 @@ Cross-cutting facts used for the classes:
 | course-enrolment | quote payments (add, overview add) | quote amount not `\d{1,7}([.,]\d{1,2})?` (`1.000`, ` 50 `, `2,675`, ...) | same run |
 | course-subscriptions | `PATCH course-subscriptions/<pk>/update` | body has `events` (the edit form always sends it) | fixture `course_subscriptions_http.json` 114 cases; RED Django 114/114, Go 500 (`v2c-red`); GREEN 4 transports 114/114 (`v2c-green`); mutation (instalment label numbered from 0) CAUGHT |
 | course-subscriptions | `GET course-subscriptions/list` (and update responses) | membership payment with an invoice or an instructor (the latter B, legacy: yes) | same run |
+| course-location-writes | `POST course/locations/add`, `PATCH course/locations/<pk>/update` | `documents_data` files (Document, storage write, link) | fixture `course_location_writes_http.json` 51 cases with a private MinIO; RED Django 51/51, Go 500 (`v2c-red`); GREEN 4 transports 51/51 (`v2c-green`); mutation (document not linked) CAUGHT |
 | course-calendar | `GET calendar/events?get_lesson=true` (opening an event) | event matches an attendance day | fixture `course_calendar_http.json` 164 cases; RED Django 164/164, Go 500 (`v2c-red`); GREEN 4 transports 164/164 (`v2c-green`); mutation (lesson without the registry events) CAUGHT |
 | course-writes | course add/update/delete, overview update/delete | association-scoped impersonation session | fixture `course_writes_http.json` 119 cases; RED Django 119/119, Go 500 (`v2c-red`); GREEN 4 transports 119/119 (`v2c-green`); mutation (session filter inverted) CAUGHT |
 
-Details in `course-calendar.md`, `course-subscriptions.md`, `course-enrolment.md`, `course-writes.md`, `statistic-reads.md`, `payment-writes.md`, `association-transfer.md`, `instance-setup.md`, `data-restore.md` and `instance-updates.md`.
+Details in `course-locations.md`, `course-calendar.md`, `course-subscriptions.md`, `course-enrolment.md`, `course-writes.md`, `statistic-reads.md`, `payment-writes.md`, `association-transfer.md`, `instance-setup.md`, `data-restore.md` and `instance-updates.md`.
 
 ## Remaining A items, per family
 
@@ -103,7 +104,10 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 |---|---|---|---|---|
 | POST course-subscriptions/list | export pdf/excel | `course-subscriptions-list.svelte:575-588` | `service/course_subscriptions.go:177` | medium |
 | POST course/list | print pdf/excel | `course/CourseList.svelte:806-812` | `handler/course_list.go:69` | expensive |
-| course/locations add/update | with `documents_data` | `course/modals/AddModal.svelte:30-50` | `service/course_location_writes.go:111,120` | medium-expensive |
+
+Still refused: both "Stampa vista corrente" exports. The `pdf` format (the modal's default) is reportlab's in-process
+`generate_pdf_from_data` (time-stamped, not byte-reproducible); `excel` is portable with `xlsxexport.PandasOpenpyxl` but
+the rows follow the querysets' unordered database order, which needs a deterministic order proof against Django first.
 
 ### documents / docmanager / document-views
 | Route | Condition | UI call | Go site | Cost |
@@ -310,7 +314,7 @@ Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples)
 ### course-locations.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST course/locations/add, PATCH course/locations/<pk>/update | a `documents_data` item that would upload (has `document` + `filename` and decodes), or indexed form keys `documents_data[n]` | service/course_location_writes.go:111,120 (`ErrCourseLocationUploadUnsupported`) | A | `association/course/modals/AddModal.svelte:30-50` (add) and :101-115 (update) convert attached files to `{document: <base64>, filename}` and send them as JSON. Indexed form keys: B (UI sends JSON). |
+| POST course/locations/add, PATCH course/locations/<pk>/update | a `documents_data` item that would upload (has `document` + `filename` and decodes), or indexed form keys `documents_data[n]` | service/course_location_writes.go:111,120 (`ErrCourseLocationUploadUnsupported`) | ported | Ported (`course-locations.md`, `v2c-green`); indexed form keys stay refused (B). |
 | PATCH course/locations/<pk>/update | changed `course_location_id` | service/course_location_writes.go:183 (`ErrCourseLocationPrimaryKeyChange`) | B | UI targets `data.course_location_id` and does not change it. Cost: medium. |
 
 ### course-enrolment.md
