@@ -812,6 +812,80 @@
    "family": null,
    "id": "decafbad-ffff-4fff-8fff-ffffffffffab",
    "created": "2023-08-16T08:00:00Z"
+  },
+  "v_gone": {
+   "picture_path": null,
+   "first_name": "Livio",
+   "last_name": "Rimosso",
+   "sex": "M",
+   "tax_code": "LSTLNI15A01Z404M",
+   "born_date": "1970-03-03",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": true,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null,
+   "family": null,
+   "id": "decafbad-ffff-4fff-8fff-ffffffffffac",
+   "created": "2023-08-17T08:00:00Z"
+  },
+  "v_away": {
+   "picture_path": null,
+   "first_name": "Lia",
+   "last_name": "Altrove",
+   "sex": "F",
+   "tax_code": "LSTLRA85A41Z404K",
+   "born_date": "1971-04-04",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "decafbad-ffff-4fff-8fff-ffffffffffad",
+   "created": "2023-08-18T08:00:00Z"
   }
  },
  "tutors": {
@@ -1713,6 +1787,166 @@
    "group": null,
    "id": "5ab5c0de-ffff-4fff-8fff-ffffffffffab",
    "created": "2025-09-20T08:00:00Z"
+  },
+  "v_gone": {
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "a1000000-0000-4000-8000-000000700007",
+   "associate": "v_gone",
+   "start": "2019-01-01",
+   "end": "2019-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "payment": null,
+   "medical": null,
+   "document": null,
+   "tags": [],
+   "custom_data": null,
+   "additional_fields": null,
+   "meta": null,
+   "signature_url": null,
+   "signature_storage_key": null,
+   "number": "0",
+   "subscription_type": null,
+   "competitive": false,
+   "notes": null,
+   "acceptance_date": null,
+   "resignation_date": null,
+   "draft": true,
+   "trial": false,
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "id": "5ab5c0de-ffff-4fff-8fff-ffffffffffac",
+   "created": "2025-09-21T08:00:00Z"
+  },
+  "v_away": {
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "a1000000-0000-4000-8000-000000700007",
+   "associate": "v_away",
+   "start": "2018-01-01",
+   "end": "2018-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "payment": null,
+   "medical": null,
+   "document": null,
+   "tags": [],
+   "custom_data": null,
+   "additional_fields": null,
+   "meta": null,
+   "signature_url": null,
+   "signature_storage_key": null,
+   "number": "0",
+   "subscription_type": null,
+   "competitive": false,
+   "notes": null,
+   "acceptance_date": null,
+   "resignation_date": null,
+   "draft": true,
+   "trial": false,
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "id": "5ab5c0de-ffff-4fff-8fff-ffffffffffad",
+   "created": "2025-09-22T08:00:00Z"
+  },
+  "v_group_own": {
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "a1000000-0000-4000-8000-0000005ab598",
+   "associate": "l_self",
+   "start": "2017-01-01",
+   "end": "2017-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "payment": null,
+   "medical": null,
+   "document": null,
+   "tags": [],
+   "custom_data": null,
+   "additional_fields": null,
+   "meta": null,
+   "signature_url": null,
+   "signature_storage_key": null,
+   "number": "0",
+   "subscription_type": null,
+   "competitive": false,
+   "notes": null,
+   "acceptance_date": null,
+   "resignation_date": null,
+   "draft": true,
+   "trial": false,
+   "archived": false,
+   "deleted": false,
+   "group": "a1000000-0000-4000-8000-000000714002",
+   "id": "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+   "created": "2025-09-23T08:00:00Z"
+  },
+  "v_group_kin": {
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "a1000000-0000-4000-8000-000000700007",
+   "associate": "l_self",
+   "start": "2016-01-01",
+   "end": "2016-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "payment": null,
+   "medical": null,
+   "document": null,
+   "tags": [],
+   "custom_data": null,
+   "additional_fields": null,
+   "meta": null,
+   "signature_url": null,
+   "signature_storage_key": null,
+   "number": "0",
+   "subscription_type": null,
+   "competitive": false,
+   "notes": null,
+   "acceptance_date": null,
+   "resignation_date": null,
+   "draft": true,
+   "trial": false,
+   "archived": false,
+   "deleted": false,
+   "group": "a1000000-0000-4000-8000-000000714002",
+   "id": "5ab5c0de-ffff-4fff-8fff-ffffffffffaf",
+   "created": "2025-09-24T08:00:00Z"
+  },
+  "v_member": {
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "a1000000-0000-4000-8000-000000700007",
+   "associate": "l_notax",
+   "start": "2015-01-01",
+   "end": "2015-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "payment": null,
+   "medical": null,
+   "document": null,
+   "tags": [],
+   "custom_data": null,
+   "additional_fields": null,
+   "meta": null,
+   "signature_url": null,
+   "signature_storage_key": null,
+   "number": "0",
+   "subscription_type": null,
+   "competitive": false,
+   "notes": null,
+   "acceptance_date": null,
+   "resignation_date": null,
+   "draft": true,
+   "trial": false,
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "id": "5ab5c0de-ffff-4fff-8fff-ffffffffffba",
+   "created": "2025-09-25T08:00:00Z"
   }
  },
  "courses": {
@@ -1755,6 +1989,16 @@
    "fee": "10.00",
    "deleted": false,
    "events": null
+  },
+  "f_yoga": {
+   "id": "c0a5ec0a-ffff-4fff-8fff-ffffffffffaa",
+   "title": "Corso yoga",
+   "created": "2024-05-10T09:00:00Z",
+   "multi": false,
+   "fee": "30.00",
+   "deleted": false,
+   "events": null,
+   "association": "a1000000-0000-4000-8000-000000701002"
   }
  },
  "course_subscriptions": {
@@ -1837,6 +2081,15 @@
    "paid": false,
    "multi": false,
    "created": "2025-09-15T09:00:00Z",
+   "deleted": false
+  },
+  "v_yoga": {
+   "id": "c5c5c5c5-ffff-4fff-8fff-ffffffffffaa",
+   "course": "f_yoga",
+   "subscription": "l_current",
+   "paid": false,
+   "multi": false,
+   "created": "2025-09-14T11:00:00Z",
    "deleted": false
   }
  },
@@ -1938,6 +2191,19 @@
      "end": "y"
     }
    ]
+  },
+  "f_yoga": {
+   "id": "7e617e61-ffff-4fff-8fff-ffffffffffaa",
+   "course": "f_yoga",
+   "events": [
+    {
+     "event_id": "e0e0e0e0-ffff-4fff-8fff-ffffffffffaa",
+     "title": "Pratica",
+     "start": "2025-10-02T18:00:00",
+     "end": "2025-10-02T19:00:00",
+     "allDay": false
+    }
+   ]
   }
  },
  "files": {
@@ -1961,6 +2227,13 @@
   "l_current": {
    "id": "ca1eca1e-eeee-4eee-8eee-eeeeeeeeecdc",
    "subscription": "l_current"
+  }
+ },
+ "sessions": {
+  "foreign_lister": {
+   "actor": "foreign_owner",
+   "target": "list_athlete",
+   "association": "a1000000-0000-4000-8000-000000701002"
   }
  },
  "membership_instructor": {
@@ -5789,6 +6062,376 @@
    "response": {
     "data": {
      "0": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffba",
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "creation_date": "2025-09-25T08:00:00Z",
+      "start_date": "2015-01-01",
+      "end_date": "2015-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": {
+       "user_id": "a1000000-0000-4000-8000-000000700007",
+       "username": "message-reads-700007",
+       "email": "message-reads-700007@example.test",
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbf",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-02-02",
+       "email": null,
+       "first_name": "Nina",
+       "last_name": "Nontassata",
+       "is_minor": false,
+       "sex": "F",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "payment": null,
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0.0,
+       "to_be_paid": 0.0
+      },
+      "age": "{age:1990-02-02}",
+      "current_year": false,
+      "next_years": false,
+      "renewal_available": true,
+      "medical": null,
+      "medical_document": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "plain_medical_label": "Mancante da {missing:2025-09-25T08:00:00Z}",
+      "signature_present": false
+     },
+     "1": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffaf",
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "creation_date": "2025-09-24T08:00:00Z",
+      "start_date": "2016-01-01",
+      "end_date": "2016-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": {
+       "user_id": "a1000000-0000-4000-8000-000000700007",
+       "username": "message-reads-700007",
+       "email": "message-reads-700007@example.test",
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "sex": "F",
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "payment": null,
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0.0,
+       "to_be_paid": 0.0
+      },
+      "age": "{age:1985-01-01}",
+      "current_year": false,
+      "next_years": false,
+      "renewal_available": false,
+      "medical": null,
+      "medical_document": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "plain_medical_label": "Mancante da {missing:2025-09-24T08:00:00Z}",
+      "signature_present": false
+     },
+     "2": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "creation_date": "2025-09-23T08:00:00Z",
+      "start_date": "2017-01-01",
+      "end_date": "2017-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": {
+       "user_id": "a1000000-0000-4000-8000-0000005ab598",
+       "username": "subscription-reads-list-athlete",
+       "email": "subscription-reads-list-athlete@example.test",
+       "first_name": "",
+       "last_name": "",
+       "role": 2
+      },
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "sex": "F",
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "payment": null,
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0.0,
+       "to_be_paid": 0.0
+      },
+      "age": "{age:1985-01-01}",
+      "current_year": false,
+      "next_years": false,
+      "renewal_available": false,
+      "medical": null,
+      "medical_document": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "plain_medical_label": "Mancante da {missing:2025-09-23T08:00:00Z}",
+      "signature_present": false
+     },
+     "3": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffad",
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "creation_date": "2025-09-22T08:00:00Z",
+      "start_date": "2018-01-01",
+      "end_date": "2018-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": {
+       "user_id": "a1000000-0000-4000-8000-000000700007",
+       "username": "message-reads-700007",
+       "email": "message-reads-700007@example.test",
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "decafbad-ffff-4fff-8fff-ffffffffffad",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1971-04-04",
+       "email": null,
+       "first_name": "Lia",
+       "last_name": "Altrove",
+       "is_minor": false,
+       "sex": "F",
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "payment": null,
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0.0,
+       "to_be_paid": 0.0
+      },
+      "age": "{age:1971-04-04}",
+      "current_year": false,
+      "next_years": false,
+      "renewal_available": false,
+      "medical": null,
+      "medical_document": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "plain_medical_label": "Mancante da {missing:2025-09-22T08:00:00Z}",
+      "signature_present": false
+     },
+     "4": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffac",
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "creation_date": "2025-09-21T08:00:00Z",
+      "start_date": "2019-01-01",
+      "end_date": "2019-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": {
+       "user_id": "a1000000-0000-4000-8000-000000700007",
+       "username": "message-reads-700007",
+       "email": "message-reads-700007@example.test",
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "decafbad-ffff-4fff-8fff-ffffffffffac",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1970-03-03",
+       "email": null,
+       "first_name": "Livio",
+       "last_name": "Rimosso",
+       "is_minor": false,
+       "sex": "M",
+       "tax_code": "LSTLNI15A01Z404M",
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "payment": null,
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0.0,
+       "to_be_paid": 0.0
+      },
+      "age": "{age:1970-03-03}",
+      "current_year": false,
+      "next_years": false,
+      "renewal_available": false,
+      "medical": null,
+      "medical_document": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "plain_medical_label": "Mancante da {missing:2025-09-21T08:00:00Z}",
+      "signature_present": false
+     },
+     "5": {
       "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffaa",
       "sport_association": "a1000000-0000-4000-8000-000000701002",
       "creation_date": "2025-09-19T08:00:00Z",
@@ -5862,7 +6505,7 @@
       "plain_medical_label": "Mancante da {missing:2025-09-19T08:00:00Z}",
       "signature_present": false
      },
-     "1": {
+     "6": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecce",
       "sport_association": "a1000000-0000-4000-8000-000000701002",
       "creation_date": "2025-09-18T08:00:00Z",
@@ -5936,7 +6579,7 @@
       "plain_medical_label": "Mancante da {missing:2025-09-18T08:00:00Z}",
       "signature_present": false
      },
-     "2": {
+     "7": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccd",
       "sport_association": "a1000000-0000-4000-8000-000000701002",
       "creation_date": "2025-09-17T08:00:00Z",
@@ -6010,7 +6653,7 @@
       "plain_medical_label": "Mancante da {missing:2025-09-17T08:00:00Z}",
       "signature_present": false
      },
-     "3": {
+     "8": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccc",
       "sport_association": "a1000000-0000-4000-8000-000000701002",
       "creation_date": "2025-09-16T08:00:00Z",
@@ -6084,7 +6727,7 @@
       "plain_medical_label": "Scaduto da {since:2024-01-31}",
       "signature_present": false
      },
-     "4": {
+     "9": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccb",
       "sport_association": "a1000000-0000-4000-8000-000000701002",
       "creation_date": "2025-09-15T08:00:00Z",
@@ -6157,309 +6800,24 @@
       "document_token": null,
       "plain_medical_label": "Mancante da {missing:2025-09-15T08:00:00Z}",
       "signature_present": true
-     },
-     "5": {
-      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca",
-      "sport_association": "a1000000-0000-4000-8000-000000701002",
-      "creation_date": "2025-09-14T08:00:00Z",
-      "start_date": "2025-09-01",
-      "end_date": "2030-08-31",
-      "status_flag": 4,
-      "type": 2,
-      "role": 1,
-      "acceptance_date": null,
-      "resignation_date": null,
-      "signature_url": null,
-      "deleted": false,
-      "archived": false,
-      "draft": true,
-      "trial": false,
-      "meta": null,
-      "custom_data": {
-       "tipo": "socio"
-      },
-      "additional_fields": null,
-      "subscription_number": "7",
-      "subscription_type": null,
-      "competitive": false,
-      "notes": "prima iscrizione",
-      "user": {
-       "user_id": "a1000000-0000-4000-8000-0000005ab598",
-       "username": "subscription-reads-list-athlete",
-       "email": "subscription-reads-list-athlete@example.test",
-       "first_name": "",
-       "last_name": "",
-       "role": 2
-      },
-      "associate": {
-       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
-       "address": "Via Roma 1",
-       "address_cap": "39100",
-       "address_city": "Bolzano",
-       "born_city": "Bolzano",
-       "born_date": "1985-01-01",
-       "email": "lara@example.test",
-       "first_name": "Lara",
-       "last_name": "Listata",
-       "is_minor": false,
-       "sex": "F",
-       "tax_code": "LSTLRA85A41Z404K",
-       "phone": "3401112233",
-       "phone_2": null,
-       "phone_3": null,
-       "phone_4": null,
-       "phone_label": null,
-       "phone_2_label": null,
-       "phone_3_label": null,
-       "phone_4_label": null,
-       "picture_path": null
-      },
-      "payment": null,
-      "tags": [
-       {
-        "tag_id": "7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeadf",
-        "tag_name": "Estero"
-       }
-      ],
-      "all_payments_paid": true,
-      "payments_info": {
-       "total": 0.0,
-       "to_be_paid": 0.0
-      },
-      "age": "{age:1985-01-01}",
-      "current_year": true,
-      "next_years": false,
-      "renewal_available": false,
-      "medical": "3ed1ca1e-eeee-4eee-8eee-eeeeeeeeeada",
-      "medical_document": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeaca",
-      "medical_token": "70ce70ce-eeee-4eee-8eee-eeeeeeeeeacb",
-      "medical_expiration_date": "2031-06-30",
-      "document": null,
-      "document_token": null,
-      "plain_medical_label": "{until:2031-06-30} rimanenti",
-      "signature_present": false
-     },
-     "6": {
-      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebde",
-      "sport_association": "a1000000-0000-4000-8000-000000701002",
-      "creation_date": "2025-09-13T08:00:00Z",
-      "start_date": "2025-09-01",
-      "end_date": "2030-08-31",
-      "status_flag": 2,
-      "type": 2,
-      "role": 1,
-      "acceptance_date": null,
-      "resignation_date": null,
-      "signature_url": null,
-      "deleted": false,
-      "archived": false,
-      "draft": true,
-      "trial": false,
-      "meta": null,
-      "custom_data": null,
-      "additional_fields": null,
-      "subscription_number": "0",
-      "subscription_type": null,
-      "competitive": false,
-      "notes": null,
-      "user": {
-       "user_id": "a1000000-0000-4000-8000-0000005ab599",
-       "username": "subscription-reads-multi-athlete",
-       "email": "subscription-reads-multi-athlete@example.test",
-       "first_name": "",
-       "last_name": "",
-       "role": 2
-      },
-      "associate": {
-       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeafd",
-       "address": null,
-       "address_cap": null,
-       "address_city": null,
-       "born_city": null,
-       "born_date": "1980-01-01",
-       "email": null,
-       "first_name": "Hugo",
-       "last_name": "Esterno",
-       "is_minor": false,
-       "sex": "M",
-       "tax_code": "STRHGU80A01Z404X",
-       "phone": null,
-       "phone_2": null,
-       "phone_3": null,
-       "phone_4": null,
-       "phone_label": null,
-       "phone_2_label": null,
-       "phone_3_label": null,
-       "phone_4_label": null,
-       "picture_path": null
-      },
-      "payment": null,
-      "tags": [],
-      "all_payments_paid": true,
-      "payments_info": {
-       "total": 0.0,
-       "to_be_paid": 0.0
-      },
-      "age": "{age:1980-01-01}",
-      "current_year": true,
-      "next_years": false,
-      "renewal_available": false,
-      "medical": null,
-      "medical_document": null,
-      "medical_token": null,
-      "medical_expiration_date": null,
-      "document": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeabc",
-      "document_token": "70ce70ce-eeee-4eee-8eee-eeeeeeeeeabd",
-      "plain_medical_label": "Mancante da {missing:2025-09-13T08:00:00Z}",
-      "signature_present": false
-     },
-     "7": {
-      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebdd",
-      "sport_association": "a1000000-0000-4000-8000-000000701002",
-      "creation_date": "2025-09-12T08:00:00Z",
-      "start_date": "2025-09-01",
-      "end_date": "2030-08-31",
-      "status_flag": 4,
-      "type": 2,
-      "role": 1,
-      "acceptance_date": null,
-      "resignation_date": null,
-      "signature_url": null,
-      "deleted": false,
-      "archived": false,
-      "draft": true,
-      "trial": false,
-      "meta": null,
-      "custom_data": null,
-      "additional_fields": null,
-      "subscription_number": "0",
-      "subscription_type": null,
-      "competitive": false,
-      "notes": null,
-      "user": {
-       "user_id": "a1000000-0000-4000-8000-000000700007",
-       "username": "message-reads-700007",
-       "email": "message-reads-700007@example.test",
-       "first_name": "Message",
-       "last_name": "Fixture",
-       "role": 1
-      },
-      "associate": null,
-      "payment": null,
-      "tags": [],
-      "all_payments_paid": true,
-      "payments_info": {
-       "total": 0.0,
-       "to_be_paid": 0.0
-      },
-      "age": null,
-      "current_year": true,
-      "next_years": false,
-      "renewal_available": false,
-      "medical": null,
-      "medical_document": null,
-      "medical_token": null,
-      "medical_expiration_date": null,
-      "document": null,
-      "document_token": null,
-      "plain_medical_label": null,
-      "signature_present": false
-     },
-     "8": {
-      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebdc",
-      "sport_association": "a1000000-0000-4000-8000-000000701002",
-      "creation_date": "2025-09-11T08:00:00Z",
-      "start_date": "2025-09-01",
-      "end_date": "2030-08-31",
-      "status_flag": 4,
-      "type": 2,
-      "role": 1,
-      "acceptance_date": null,
-      "resignation_date": null,
-      "signature_url": null,
-      "deleted": false,
-      "archived": false,
-      "draft": true,
-      "trial": false,
-      "meta": null,
-      "custom_data": null,
-      "additional_fields": null,
-      "subscription_number": "0",
-      "subscription_type": null,
-      "competitive": false,
-      "notes": null,
-      "user": {
-       "user_id": "a1000000-0000-4000-8000-000000700007",
-       "username": "message-reads-700007",
-       "email": "message-reads-700007@example.test",
-       "first_name": "Message",
-       "last_name": "Fixture",
-       "role": 1
-      },
-      "associate": {
-       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeafd",
-       "address": null,
-       "address_cap": null,
-       "address_city": null,
-       "born_city": null,
-       "born_date": "1980-01-01",
-       "email": null,
-       "first_name": "Hugo",
-       "last_name": "Esterno",
-       "is_minor": false,
-       "sex": "M",
-       "tax_code": "STRHGU80A01Z404X",
-       "phone": null,
-       "phone_2": null,
-       "phone_3": null,
-       "phone_4": null,
-       "phone_label": null,
-       "phone_2_label": null,
-       "phone_3_label": null,
-       "phone_4_label": null,
-       "picture_path": null
-      },
-      "payment": null,
-      "tags": [
-       {
-        "tag_id": "7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeadf",
-        "tag_name": "Estero"
-       }
-      ],
-      "all_payments_paid": true,
-      "payments_info": {
-       "total": 0.0,
-       "to_be_paid": 0.0
-      },
-      "age": "{age:1980-01-01}",
-      "current_year": true,
-      "next_years": false,
-      "renewal_available": false,
-      "medical": null,
-      "medical_document": null,
-      "medical_token": null,
-      "medical_expiration_date": null,
-      "document": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeabc",
-      "document_token": "70ce70ce-eeee-4eee-8eee-eeeeeeeeeabd",
-      "plain_medical_label": "Mancante da {missing:2025-09-11T08:00:00Z}",
-      "signature_present": false
      }
     },
     "meta": {
-     "total": 9,
+     "total": 14,
      "page": 1,
-     "pages": 1,
+     "pages": 2,
      "perpage": 10,
      "rowIds": [
+      "5ab5c0de-ffff-4fff-8fff-ffffffffffba",
+      "5ab5c0de-ffff-4fff-8fff-ffffffffffaf",
+      "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+      "5ab5c0de-ffff-4fff-8fff-ffffffffffad",
+      "5ab5c0de-ffff-4fff-8fff-ffffffffffac",
       "5ab5c0de-ffff-4fff-8fff-ffffffffffaa",
       "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecce",
       "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccd",
       "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccc",
-      "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccb",
-      "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca",
-      "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebde",
-      "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebdd",
-      "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebdc"
+      "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccb"
      ]
     }
    },
@@ -30774,6 +31132,66 @@
    "response": {
     "data": {
      "0": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffba",
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbf",
+       "first_name": "Nina",
+       "last_name": "Nontassata",
+       "tax_code": null,
+       "family": null,
+       "family_role": null
+      },
+      "current_year": false
+     },
+     "1": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffaf",
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "tax_code": "LSTLRA85A41Z404K",
+       "family": null,
+       "family_role": "madre"
+      },
+      "current_year": false
+     },
+     "2": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "tax_code": "LSTLRA85A41Z404K",
+       "family": null,
+       "family_role": "madre"
+      },
+      "current_year": false
+     },
+     "3": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffad",
+      "associate": {
+       "associate_id": "decafbad-ffff-4fff-8fff-ffffffffffad",
+       "first_name": "Lia",
+       "last_name": "Altrove",
+       "tax_code": "LSTLRA85A41Z404K",
+       "family": null,
+       "family_role": null
+      },
+      "current_year": false
+     },
+     "4": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffac",
+      "associate": {
+       "associate_id": "decafbad-ffff-4fff-8fff-ffffffffffac",
+       "first_name": "Livio",
+       "last_name": "Rimosso",
+       "tax_code": "LSTLNI15A01Z404M",
+       "family": null,
+       "family_role": null
+      },
+      "current_year": false
+     },
+     "5": {
       "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffaa",
       "associate": {
        "associate_id": "decafbad-ffff-4fff-8fff-ffffffffffaa",
@@ -30785,7 +31203,7 @@
       },
       "current_year": true
      },
-     "1": {
+     "6": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecce",
       "associate": {
        "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbf",
@@ -30797,7 +31215,7 @@
       },
       "current_year": false
      },
-     "2": {
+     "7": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccd",
       "associate": {
        "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbe",
@@ -30809,7 +31227,7 @@
       },
       "current_year": false
      },
-     "3": {
+     "8": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccc",
       "associate": {
        "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbe",
@@ -30821,7 +31239,7 @@
       },
       "current_year": false
      },
-     "4": {
+     "9": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccb",
       "associate": {
        "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
@@ -30833,7 +31251,7 @@
       },
       "current_year": false
      },
-     "5": {
+     "10": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca",
       "associate": {
        "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
@@ -30845,7 +31263,7 @@
       },
       "current_year": true
      },
-     "6": {
+     "11": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebde",
       "associate": {
        "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeafd",
@@ -30857,12 +31275,12 @@
       },
       "current_year": true
      },
-     "7": {
+     "12": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebdd",
       "associate": null,
       "current_year": true
      },
-     "8": {
+     "13": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebdc",
       "associate": {
        "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeafd",
@@ -44442,6 +44860,334 @@
    "response": {
     "data": {
      "0": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffaf",
+      "creation_date": "2025-09-24T08:00:00Z",
+      "start_date": "2016-01-01",
+      "end_date": "2016-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "1": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+      "creation_date": "2025-09-23T08:00:00Z",
+      "start_date": "2017-01-01",
+      "end_date": "2017-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "2": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffad",
+      "creation_date": "2025-09-22T08:00:00Z",
+      "start_date": "2018-01-01",
+      "end_date": "2018-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-ffff-4fff-8fff-ffffffffffad",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1971-04-04",
+       "email": null,
+       "sex": "F",
+       "first_name": "Lia",
+       "last_name": "Altrove",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "3": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffac",
+      "creation_date": "2025-09-21T08:00:00Z",
+      "start_date": "2019-01-01",
+      "end_date": "2019-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-ffff-4fff-8fff-ffffffffffac",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1970-03-03",
+       "email": null,
+       "sex": "M",
+       "first_name": "Livio",
+       "last_name": "Rimosso",
+       "is_minor": false,
+       "tax_code": "LSTLNI15A01Z404M",
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "4": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecce",
       "creation_date": "2025-09-18T08:00:00Z",
       "start_date": "2023-01-01",
@@ -44523,7 +45269,7 @@
       "renewal_available": false,
       "signature_present": false
      },
-     "1": {
+     "5": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccd",
       "creation_date": "2025-09-17T08:00:00Z",
       "start_date": "2021-01-01",
@@ -44605,7 +45351,7 @@
       "renewal_available": false,
       "signature_present": false
      },
-     "2": {
+     "6": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccc",
       "creation_date": "2025-09-16T08:00:00Z",
       "start_date": "2022-09-01",
@@ -44687,7 +45433,7 @@
       "renewal_available": true,
       "signature_present": false
      },
-     "3": {
+     "7": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccb",
       "creation_date": "2025-09-15T08:00:00Z",
       "start_date": "2023-09-01",
@@ -44780,7 +45526,7 @@
       "renewal_available": false,
       "signature_present": true
      },
-     "4": {
+     "8": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca",
       "creation_date": "2025-09-14T08:00:00Z",
       "start_date": "2025-09-01",
@@ -44869,6 +45615,16 @@
         "creation_date": "2025-09-14T09:00:00.125000Z",
         "course__title": "Corso nuoto",
         "course__course_id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeebdf",
+        "course__one_fee_payment": false,
+        "course__one_fee": 0.0,
+        "one_fee_payment": false
+       },
+       {
+        "course_subscription_id": "c5c5c5c5-ffff-4fff-8fff-ffffffffffaa",
+        "paid": false,
+        "creation_date": "2025-09-14T11:00:00Z",
+        "course__title": "Corso yoga",
+        "course__course_id": "c0a5ec0a-ffff-4fff-8fff-ffffffffffaa",
         "course__one_fee_payment": false,
         "course__one_fee": 0.0,
         "one_fee_payment": false
@@ -44892,6 +45648,334 @@
    "response": {
     "data": {
      "0": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffaf",
+      "creation_date": "2025-09-24T08:00:00Z",
+      "start_date": "2016-01-01",
+      "end_date": "2016-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "1": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+      "creation_date": "2025-09-23T08:00:00Z",
+      "start_date": "2017-01-01",
+      "end_date": "2017-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "2": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffad",
+      "creation_date": "2025-09-22T08:00:00Z",
+      "start_date": "2018-01-01",
+      "end_date": "2018-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-ffff-4fff-8fff-ffffffffffad",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1971-04-04",
+       "email": null,
+       "sex": "F",
+       "first_name": "Lia",
+       "last_name": "Altrove",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "3": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffac",
+      "creation_date": "2025-09-21T08:00:00Z",
+      "start_date": "2019-01-01",
+      "end_date": "2019-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-ffff-4fff-8fff-ffffffffffac",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1970-03-03",
+       "email": null,
+       "sex": "M",
+       "first_name": "Livio",
+       "last_name": "Rimosso",
+       "is_minor": false,
+       "tax_code": "LSTLNI15A01Z404M",
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "4": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecce",
       "creation_date": "2025-09-18T08:00:00Z",
       "start_date": "2023-01-01",
@@ -44973,7 +46057,7 @@
       "renewal_available": false,
       "signature_present": false
      },
-     "1": {
+     "5": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccd",
       "creation_date": "2025-09-17T08:00:00Z",
       "start_date": "2021-01-01",
@@ -45055,7 +46139,7 @@
       "renewal_available": false,
       "signature_present": false
      },
-     "2": {
+     "6": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccc",
       "creation_date": "2025-09-16T08:00:00Z",
       "start_date": "2022-09-01",
@@ -45137,7 +46221,7 @@
       "renewal_available": true,
       "signature_present": false
      },
-     "3": {
+     "7": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccb",
       "creation_date": "2025-09-15T08:00:00Z",
       "start_date": "2023-09-01",
@@ -45230,7 +46314,7 @@
       "renewal_available": false,
       "signature_present": true
      },
-     "4": {
+     "8": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca",
       "creation_date": "2025-09-14T08:00:00Z",
       "start_date": "2025-09-01",
@@ -45319,6 +46403,16 @@
         "creation_date": "2025-09-14T09:00:00.125000Z",
         "course__title": "Corso nuoto",
         "course__course_id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeebdf",
+        "course__one_fee_payment": false,
+        "course__one_fee": 0.0,
+        "one_fee_payment": false
+       },
+       {
+        "course_subscription_id": "c5c5c5c5-ffff-4fff-8fff-ffffffffffaa",
+        "paid": false,
+        "creation_date": "2025-09-14T11:00:00Z",
+        "course__title": "Corso yoga",
+        "course__course_id": "c0a5ec0a-ffff-4fff-8fff-ffffffffffaa",
         "course__one_fee_payment": false,
         "course__one_fee": 0.0,
         "one_fee_payment": false
@@ -45345,6 +46439,334 @@
    "response": {
     "data": {
      "0": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffaf",
+      "creation_date": "2025-09-24T08:00:00Z",
+      "start_date": "2016-01-01",
+      "end_date": "2016-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "1": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+      "creation_date": "2025-09-23T08:00:00Z",
+      "start_date": "2017-01-01",
+      "end_date": "2017-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "2": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffad",
+      "creation_date": "2025-09-22T08:00:00Z",
+      "start_date": "2018-01-01",
+      "end_date": "2018-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-ffff-4fff-8fff-ffffffffffad",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1971-04-04",
+       "email": null,
+       "sex": "F",
+       "first_name": "Lia",
+       "last_name": "Altrove",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "3": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffac",
+      "creation_date": "2025-09-21T08:00:00Z",
+      "start_date": "2019-01-01",
+      "end_date": "2019-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-ffff-4fff-8fff-ffffffffffac",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1970-03-03",
+       "email": null,
+       "sex": "M",
+       "first_name": "Livio",
+       "last_name": "Rimosso",
+       "is_minor": false,
+       "tax_code": "LSTLNI15A01Z404M",
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "4": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecce",
       "creation_date": "2025-09-18T08:00:00Z",
       "start_date": "2023-01-01",
@@ -45426,7 +46848,7 @@
       "renewal_available": false,
       "signature_present": false
      },
-     "1": {
+     "5": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccd",
       "creation_date": "2025-09-17T08:00:00Z",
       "start_date": "2021-01-01",
@@ -45508,7 +46930,7 @@
       "renewal_available": false,
       "signature_present": false
      },
-     "2": {
+     "6": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccc",
       "creation_date": "2025-09-16T08:00:00Z",
       "start_date": "2022-09-01",
@@ -45590,7 +47012,7 @@
       "renewal_available": true,
       "signature_present": false
      },
-     "3": {
+     "7": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccb",
       "creation_date": "2025-09-15T08:00:00Z",
       "start_date": "2023-09-01",
@@ -45683,7 +47105,7 @@
       "renewal_available": false,
       "signature_present": true
      },
-     "4": {
+     "8": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca",
       "creation_date": "2025-09-14T08:00:00Z",
       "start_date": "2025-09-01",
@@ -45772,6 +47194,16 @@
         "creation_date": "2025-09-14T09:00:00.125000Z",
         "course__title": "Corso nuoto",
         "course__course_id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeebdf",
+        "course__one_fee_payment": false,
+        "course__one_fee": 0.0,
+        "one_fee_payment": false
+       },
+       {
+        "course_subscription_id": "c5c5c5c5-ffff-4fff-8fff-ffffffffffaa",
+        "paid": false,
+        "creation_date": "2025-09-14T11:00:00Z",
+        "course__title": "Corso yoga",
+        "course__course_id": "c0a5ec0a-ffff-4fff-8fff-ffffffffffaa",
         "course__one_fee_payment": false,
         "course__one_fee": 0.0,
         "one_fee_payment": false
@@ -45798,6 +47230,334 @@
    "response": {
     "data": {
      "0": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffaf",
+      "creation_date": "2025-09-24T08:00:00Z",
+      "start_date": "2016-01-01",
+      "end_date": "2016-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "1": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+      "creation_date": "2025-09-23T08:00:00Z",
+      "start_date": "2017-01-01",
+      "end_date": "2017-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "2": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffad",
+      "creation_date": "2025-09-22T08:00:00Z",
+      "start_date": "2018-01-01",
+      "end_date": "2018-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-ffff-4fff-8fff-ffffffffffad",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1971-04-04",
+       "email": null,
+       "sex": "F",
+       "first_name": "Lia",
+       "last_name": "Altrove",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "3": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffac",
+      "creation_date": "2025-09-21T08:00:00Z",
+      "start_date": "2019-01-01",
+      "end_date": "2019-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-ffff-4fff-8fff-ffffffffffac",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1970-03-03",
+       "email": null,
+       "sex": "M",
+       "first_name": "Livio",
+       "last_name": "Rimosso",
+       "is_minor": false,
+       "tax_code": "LSTLNI15A01Z404M",
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "4": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecce",
       "creation_date": "2025-09-18T08:00:00Z",
       "start_date": "2023-01-01",
@@ -45879,7 +47639,7 @@
       "renewal_available": false,
       "signature_present": false
      },
-     "1": {
+     "5": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccd",
       "creation_date": "2025-09-17T08:00:00Z",
       "start_date": "2021-01-01",
@@ -45961,7 +47721,7 @@
       "renewal_available": false,
       "signature_present": false
      },
-     "2": {
+     "6": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccc",
       "creation_date": "2025-09-16T08:00:00Z",
       "start_date": "2022-09-01",
@@ -46043,7 +47803,7 @@
       "renewal_available": true,
       "signature_present": false
      },
-     "3": {
+     "7": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccb",
       "creation_date": "2025-09-15T08:00:00Z",
       "start_date": "2023-09-01",
@@ -46136,7 +47896,7 @@
       "renewal_available": false,
       "signature_present": true
      },
-     "4": {
+     "8": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca",
       "creation_date": "2025-09-14T08:00:00Z",
       "start_date": "2025-09-01",
@@ -46228,6 +47988,16 @@
         "course__one_fee_payment": false,
         "course__one_fee": 0.0,
         "one_fee_payment": false
+       },
+       {
+        "course_subscription_id": "c5c5c5c5-ffff-4fff-8fff-ffffffffffaa",
+        "paid": false,
+        "creation_date": "2025-09-14T11:00:00Z",
+        "course__title": "Corso yoga",
+        "course__course_id": "c0a5ec0a-ffff-4fff-8fff-ffffffffffaa",
+        "course__one_fee_payment": false,
+        "course__one_fee": 0.0,
+        "one_fee_payment": false
        }
       ],
       "renewal_available": false,
@@ -46250,6 +48020,170 @@
    "response": {
     "data": {
      "0": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffaf",
+      "creation_date": "2025-09-24T08:00:00Z",
+      "start_date": "2016-01-01",
+      "end_date": "2016-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "1": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+      "creation_date": "2025-09-23T08:00:00Z",
+      "start_date": "2017-01-01",
+      "end_date": "2017-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": true,
+      "signature_present": false
+     },
+     "2": {
       "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecce",
       "creation_date": "2025-09-18T08:00:00Z",
       "start_date": "2023-01-01",
@@ -46944,6 +48878,79 @@
      },
      "courses": [
       {
+       "course_id": "c0a5ec0a-ffff-4fff-8fff-ffffffffffaa",
+       "status_flag": 2,
+       "course_type": 1,
+       "creation_date": "2024-05-10T09:00:00Z",
+       "title": "Corso yoga",
+       "description": null,
+       "multi_payments": false,
+       "fee": "30.00",
+       "events": null,
+       "one_fee_payment": false,
+       "one_fee": "0.00",
+       "google_calendar_id": null,
+       "google_background_color": "#3a87ad",
+       "multiple_quotes": null,
+       "start_date": null,
+       "end_date": null,
+       "pinned": false,
+       "billed_duration_is_sport_season": false,
+       "billed_frequency": 1,
+       "billed_from_subscription_date": false,
+       "billed_from_day_of_month": 1,
+       "auto_renewal": false,
+       "deleted": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "group": null,
+       "tags": [],
+       "locations": [],
+       "course_subscription": {
+        "course_subscription_id": "c5c5c5c5-ffff-4fff-8fff-ffffffffffaa",
+        "creation_date": "2025-09-14T11:00:00Z",
+        "paid": false,
+        "subscription": {
+         "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca",
+         "associate": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+          "address": "Via Roma 1",
+          "address_cap": "39100",
+          "address_city": "Bolzano",
+          "born_city": "Bolzano",
+          "born_date": "1985-01-01",
+          "email": "lara@example.test",
+          "sex": "F",
+          "first_name": "Lara",
+          "last_name": "Listata",
+          "is_minor": false,
+          "sport_association": "a1000000-0000-4000-8000-000000701002",
+          "tax_code": "LSTLRA85A41Z404K",
+          "user": "a1000000-0000-4000-8000-0000005ab598",
+          "phone": "3401112233",
+          "family": null,
+          "family_role": "madre"
+         },
+         "current_year": "corrente"
+        },
+        "multi_payments": false,
+        "multiple_quote": null,
+        "one_fee_payment": false,
+        "installments": [],
+        "course": "c0a5ec0a-ffff-4fff-8fff-ffffffffffaa",
+        "type": 1,
+        "billed_frequency": 1,
+        "billed_from": null,
+        "billed_until": null,
+        "billed_from_day_of_month": 1,
+        "membership_active": true,
+        "membership_fee": "0.00",
+        "auto_renewal": false,
+        "membership_payments": [],
+        "medical_label": "<span class=\"text-success font-weight-boldest\"><i class=\"ph-bold ph-first-aid-kit\"></i>{until:2031-06-30} rimanenti</span><span class=\"badge badge-info ml-1\" title=\"Certificato Medico Agonistico\">AG</span>",
+        "carnets": []
+       }
+      },
+      {
        "course_id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeebdf",
        "status_flag": 2,
        "course_type": 1,
@@ -47031,6 +49038,3409 @@
      "kwargs": []
     }
    ]
+  },
+  {
+   "name": "subscription-reads-list-session-athlete",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffaf",
+      "creation_date": "2025-09-24T08:00:00Z",
+      "start_date": "2016-01-01",
+      "end_date": "2016-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "1": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+      "creation_date": "2025-09-23T08:00:00Z",
+      "start_date": "2017-01-01",
+      "end_date": "2017-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "2": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecce",
+      "creation_date": "2025-09-18T08:00:00Z",
+      "start_date": "2023-01-01",
+      "end_date": "2023-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbf",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-02-02",
+       "email": null,
+       "sex": "F",
+       "first_name": "Nina",
+       "last_name": "Nontassata",
+       "is_minor": false,
+       "tax_code": null,
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "3": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccd",
+      "creation_date": "2025-09-17T08:00:00Z",
+      "start_date": "2021-01-01",
+      "end_date": "2021-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbe",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "2015-01-01",
+       "email": null,
+       "sex": "M",
+       "first_name": "Lino",
+       "last_name": "Listino",
+       "is_minor": true,
+       "tax_code": "LSTLNI15A01Z404M",
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": "3ed1ca1e-eeee-4eee-8eee-eeeeeeeeeadc",
+      "medical_token": "70ce70ce-eeee-4eee-8eee-eeeeeeeeeacd",
+      "medical_expiration_date": null,
+      "medical_document": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeacc",
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "4": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccc",
+      "creation_date": "2025-09-16T08:00:00Z",
+      "start_date": "2022-09-01",
+      "end_date": "2023-08-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": true,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbe",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "2015-01-01",
+       "email": null,
+       "sex": "M",
+       "first_name": "Lino",
+       "last_name": "Listino",
+       "is_minor": true,
+       "tax_code": "LSTLNI15A01Z404M",
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": "3ed1ca1e-eeee-4eee-8eee-eeeeeeeeeadb",
+      "medical_token": null,
+      "medical_expiration_date": "2024-01-31",
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": true,
+      "signature_present": false
+     },
+     "5": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccb",
+      "creation_date": "2025-09-15T08:00:00Z",
+      "start_date": "2023-09-01",
+      "end_date": "2024-08-31",
+      "status_flag": 3,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [
+       {
+        "course_subscription_id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecdb",
+        "paid": false,
+        "creation_date": "2025-09-15T09:00:00Z",
+        "course__title": null,
+        "course__course_id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeebeb",
+        "course__one_fee_payment": false,
+        "course__one_fee": 0.0,
+        "one_fee_payment": false
+       }
+      ],
+      "renewal_available": false,
+      "signature_present": true
+     },
+     "6": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca",
+      "creation_date": "2025-09-14T08:00:00Z",
+      "start_date": "2025-09-01",
+      "end_date": "2030-08-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": {
+       "tipo": "socio"
+      },
+      "additional_fields": null,
+      "subscription_number": "7",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": "prima iscrizione",
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [
+       "7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeadf"
+      ],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": true,
+      "carnets": true,
+      "medical": "3ed1ca1e-eeee-4eee-8eee-eeeeeeeeeada",
+      "medical_token": "70ce70ce-eeee-4eee-8eee-eeeeeeeeeacb",
+      "medical_expiration_date": "2031-06-30",
+      "medical_document": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeaca",
+      "courses": [
+       {
+        "course_subscription_id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeeccf",
+        "paid": true,
+        "creation_date": "2025-09-14T09:00:00.125000Z",
+        "course__title": "Corso nuoto",
+        "course__course_id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeebdf",
+        "course__one_fee_payment": false,
+        "course__one_fee": 0.0,
+        "one_fee_payment": false
+       },
+       {
+        "course_subscription_id": "c5c5c5c5-ffff-4fff-8fff-ffffffffffaa",
+        "paid": false,
+        "creation_date": "2025-09-14T11:00:00Z",
+        "course__title": "Corso yoga",
+        "course__course_id": "c0a5ec0a-ffff-4fff-8fff-ffffffffffaa",
+        "course__one_fee_payment": false,
+        "course__one_fee": 0.0,
+        "one_fee_payment": false
+       }
+      ],
+      "renewal_available": false,
+      "signature_present": false
+     }
+    },
+    "meta": {}
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-list-session-athlete-post",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/subscription/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffaf",
+      "creation_date": "2025-09-24T08:00:00Z",
+      "start_date": "2016-01-01",
+      "end_date": "2016-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "1": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+      "creation_date": "2025-09-23T08:00:00Z",
+      "start_date": "2017-01-01",
+      "end_date": "2017-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "2": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecce",
+      "creation_date": "2025-09-18T08:00:00Z",
+      "start_date": "2023-01-01",
+      "end_date": "2023-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbf",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-02-02",
+       "email": null,
+       "sex": "F",
+       "first_name": "Nina",
+       "last_name": "Nontassata",
+       "is_minor": false,
+       "tax_code": null,
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "3": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccd",
+      "creation_date": "2025-09-17T08:00:00Z",
+      "start_date": "2021-01-01",
+      "end_date": "2021-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbe",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "2015-01-01",
+       "email": null,
+       "sex": "M",
+       "first_name": "Lino",
+       "last_name": "Listino",
+       "is_minor": true,
+       "tax_code": "LSTLNI15A01Z404M",
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": "3ed1ca1e-eeee-4eee-8eee-eeeeeeeeeadc",
+      "medical_token": "70ce70ce-eeee-4eee-8eee-eeeeeeeeeacd",
+      "medical_expiration_date": null,
+      "medical_document": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeacc",
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "4": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccc",
+      "creation_date": "2025-09-16T08:00:00Z",
+      "start_date": "2022-09-01",
+      "end_date": "2023-08-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": true,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbe",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "2015-01-01",
+       "email": null,
+       "sex": "M",
+       "first_name": "Lino",
+       "last_name": "Listino",
+       "is_minor": true,
+       "tax_code": "LSTLNI15A01Z404M",
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": "3ed1ca1e-eeee-4eee-8eee-eeeeeeeeeadb",
+      "medical_token": null,
+      "medical_expiration_date": "2024-01-31",
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": true,
+      "signature_present": false
+     },
+     "5": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccb",
+      "creation_date": "2025-09-15T08:00:00Z",
+      "start_date": "2023-09-01",
+      "end_date": "2024-08-31",
+      "status_flag": 3,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [
+       {
+        "course_subscription_id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecdb",
+        "paid": false,
+        "creation_date": "2025-09-15T09:00:00Z",
+        "course__title": null,
+        "course__course_id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeebeb",
+        "course__one_fee_payment": false,
+        "course__one_fee": 0.0,
+        "one_fee_payment": false
+       }
+      ],
+      "renewal_available": false,
+      "signature_present": true
+     },
+     "6": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca",
+      "creation_date": "2025-09-14T08:00:00Z",
+      "start_date": "2025-09-01",
+      "end_date": "2030-08-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": {
+       "tipo": "socio"
+      },
+      "additional_fields": null,
+      "subscription_number": "7",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": "prima iscrizione",
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [
+       "7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeadf"
+      ],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": true,
+      "carnets": true,
+      "medical": "3ed1ca1e-eeee-4eee-8eee-eeeeeeeeeada",
+      "medical_token": "70ce70ce-eeee-4eee-8eee-eeeeeeeeeacb",
+      "medical_expiration_date": "2031-06-30",
+      "medical_document": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeaca",
+      "courses": [
+       {
+        "course_subscription_id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeeccf",
+        "paid": true,
+        "creation_date": "2025-09-14T09:00:00.125000Z",
+        "course__title": "Corso nuoto",
+        "course__course_id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeebdf",
+        "course__one_fee_payment": false,
+        "course__one_fee": 0.0,
+        "one_fee_payment": false
+       },
+       {
+        "course_subscription_id": "c5c5c5c5-ffff-4fff-8fff-ffffffffffaa",
+        "paid": false,
+        "creation_date": "2025-09-14T11:00:00Z",
+        "course__title": "Corso yoga",
+        "course__course_id": "c0a5ec0a-ffff-4fff-8fff-ffffffffffaa",
+        "course__one_fee_payment": false,
+        "course__one_fee": 0.0,
+        "one_fee_payment": false
+       }
+      ],
+      "renewal_available": false,
+      "signature_present": false
+     }
+    },
+    "meta": {}
+   },
+   "unordered": false,
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "subscription-reads-list-session-athlete-ignores-filters",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/list?query[status_flag]=3&pagination[perpage]=1",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffaf",
+      "creation_date": "2025-09-24T08:00:00Z",
+      "start_date": "2016-01-01",
+      "end_date": "2016-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "1": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+      "creation_date": "2025-09-23T08:00:00Z",
+      "start_date": "2017-01-01",
+      "end_date": "2017-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "2": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecce",
+      "creation_date": "2025-09-18T08:00:00Z",
+      "start_date": "2023-01-01",
+      "end_date": "2023-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbf",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-02-02",
+       "email": null,
+       "sex": "F",
+       "first_name": "Nina",
+       "last_name": "Nontassata",
+       "is_minor": false,
+       "tax_code": null,
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "3": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccd",
+      "creation_date": "2025-09-17T08:00:00Z",
+      "start_date": "2021-01-01",
+      "end_date": "2021-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700007",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbe",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "2015-01-01",
+       "email": null,
+       "sex": "M",
+       "first_name": "Lino",
+       "last_name": "Listino",
+       "is_minor": true,
+       "tax_code": "LSTLNI15A01Z404M",
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": "3ed1ca1e-eeee-4eee-8eee-eeeeeeeeeadc",
+      "medical_token": "70ce70ce-eeee-4eee-8eee-eeeeeeeeeacd",
+      "medical_expiration_date": null,
+      "medical_document": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeacc",
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     },
+     "4": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccc",
+      "creation_date": "2025-09-16T08:00:00Z",
+      "start_date": "2022-09-01",
+      "end_date": "2023-08-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": true,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbe",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "2015-01-01",
+       "email": null,
+       "sex": "M",
+       "first_name": "Lino",
+       "last_name": "Listino",
+       "is_minor": true,
+       "tax_code": "LSTLNI15A01Z404M",
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": "3ed1ca1e-eeee-4eee-8eee-eeeeeeeeeadb",
+      "medical_token": null,
+      "medical_expiration_date": "2024-01-31",
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": true,
+      "signature_present": false
+     },
+     "5": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccb",
+      "creation_date": "2025-09-15T08:00:00Z",
+      "start_date": "2023-09-01",
+      "end_date": "2024-08-31",
+      "status_flag": 3,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [
+       {
+        "course_subscription_id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeecdb",
+        "paid": false,
+        "creation_date": "2025-09-15T09:00:00Z",
+        "course__title": null,
+        "course__course_id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeebeb",
+        "course__one_fee_payment": false,
+        "course__one_fee": 0.0,
+        "one_fee_payment": false
+       }
+      ],
+      "renewal_available": false,
+      "signature_present": true
+     },
+     "6": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca",
+      "creation_date": "2025-09-14T08:00:00Z",
+      "start_date": "2025-09-01",
+      "end_date": "2030-08-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": {
+       "tipo": "socio"
+      },
+      "additional_fields": null,
+      "subscription_number": "7",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": "prima iscrizione",
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [
+       "7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeadf"
+      ],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": true,
+      "carnets": true,
+      "medical": "3ed1ca1e-eeee-4eee-8eee-eeeeeeeeeada",
+      "medical_token": "70ce70ce-eeee-4eee-8eee-eeeeeeeeeacb",
+      "medical_expiration_date": "2031-06-30",
+      "medical_document": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeaca",
+      "courses": [
+       {
+        "course_subscription_id": "c5c5c5c5-eeee-4eee-8eee-eeeeeeeeeccf",
+        "paid": true,
+        "creation_date": "2025-09-14T09:00:00.125000Z",
+        "course__title": "Corso nuoto",
+        "course__course_id": "c0a5ec0a-eeee-4eee-8eee-eeeeeeeeebdf",
+        "course__one_fee_payment": false,
+        "course__one_fee": 0.0,
+        "one_fee_payment": false
+       },
+       {
+        "course_subscription_id": "c5c5c5c5-ffff-4fff-8fff-ffffffffffaa",
+        "paid": false,
+        "creation_date": "2025-09-14T11:00:00Z",
+        "course__title": "Corso yoga",
+        "course__course_id": "c0a5ec0a-ffff-4fff-8fff-ffffffffffaa",
+        "course__one_fee_payment": false,
+        "course__one_fee": 0.0,
+        "one_fee_payment": false
+       }
+      ],
+      "renewal_available": false,
+      "signature_present": false
+     }
+    },
+    "meta": {}
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-list-session-athlete-group",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598",
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+      "creation_date": "2025-09-23T08:00:00Z",
+      "start_date": "2017-01-01",
+      "end_date": "2017-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "address_city": "Bolzano",
+       "born_city": "Bolzano",
+       "born_date": "1985-01-01",
+       "email": "lara@example.test",
+       "sex": "F",
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "is_minor": false,
+       "tax_code": "LSTLRA85A41Z404K",
+       "phone": "3401112233",
+       "family_role": "madre",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": true,
+      "signature_present": false
+     },
+     "1": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecce",
+      "creation_date": "2025-09-18T08:00:00Z",
+      "start_date": "2023-01-01",
+      "end_date": "2023-12-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-0000005ab598",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbf",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-02-02",
+       "email": null,
+       "sex": "F",
+       "first_name": "Nina",
+       "last_name": "Nontassata",
+       "is_minor": false,
+       "tax_code": null,
+       "phone": null,
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads foreign",
+       "tax_code": "70000000002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+       "membership_card_configuration": {
+        "emit_only_on_approval": false,
+        "customized_template": {}
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700007",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": false,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": true,
+      "signature_present": false
+     }
+    },
+    "meta": {}
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-list-session-athlete-own-association",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebcc",
+      "creation_date": "2025-09-10T08:00:00Z",
+      "start_date": "2025-09-01",
+      "end_date": "2030-08-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": null,
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700004",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeaba",
+      "payment": null,
+      "group": null,
+      "tags": [],
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeafc",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1980-01-01",
+       "email": "anna@example.test",
+       "sex": "F",
+       "first_name": "Anna",
+       "last_name": "Atleta",
+       "is_minor": false,
+       "tax_code": "TLTNNA80A41L781A",
+       "phone": "3470000000",
+       "family_role": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "user": "a1000000-0000-4000-8000-000000700004",
+       "family": null
+      },
+      "sport_association": {
+       "denomination": "Message reads own",
+       "tax_code": "70000000001",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "membership_card_configuration": {
+        "emit_only_on_approval": true,
+        "customized_template": {
+         "colore": "blu",
+         "n": 2
+        }
+       },
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "username": "message-reads-700001",
+        "avatar_image": null,
+        "preview_and_custom_features": [
+         "Iscrizione per famiglia"
+        ],
+        "disable_account_creation": false,
+        "force_account_creation": false,
+        "online_payments": false
+       }
+      },
+      "is_current": true,
+      "carnets": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "courses": [],
+      "renewal_available": false,
+      "signature_present": false
+     }
+    },
+    "meta": {}
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-list-session-athlete-field",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/list?field=email",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 200,
+   "response": {
+    "data": []
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-all-session-athlete",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/list/all?sport_association=a1000000-0000-4000-8000-000000701002",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "associate": {
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd"
+      },
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+      "current_year": false,
+      "season": "2017"
+     },
+     "1": {
+      "associate": {
+       "first_name": "Nina",
+       "last_name": "Nontassata",
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbf"
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecce",
+      "current_year": false,
+      "season": "2023"
+     },
+     "2": {
+      "associate": {
+       "first_name": "Lino",
+       "last_name": "Listino",
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbe"
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccc",
+      "current_year": false,
+      "season": "2022/2023"
+     },
+     "3": {
+      "associate": {
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd"
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccb",
+      "current_year": false,
+      "season": "2023/2024"
+     },
+     "4": {
+      "associate": {
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd"
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca",
+      "current_year": true,
+      "season": "2025/2030"
+     }
+    },
+    "meta": {}
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-all-session-athlete-without-association",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/list/all",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 403,
+   "response": {
+    "msg": "not allowed"
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-all-session-athlete-other-association",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/list/all?sport_association=a1000000-0000-4000-8000-000000701001",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-all-session-athlete-malformed-association",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/list/all?sport_association=nope",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-all-session-athlete-association-username",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/list/all?sport_association=message-reads-700007",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-all-session-athlete-current-year",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/list/all?sport_association=a1000000-0000-4000-8000-000000701002&current_year=1",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "associate": {
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd"
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca",
+      "current_year": true,
+      "season": "2025/2030"
+     }
+    },
+    "meta": {}
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-all-session-athlete-course",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/list/all?sport_association=a1000000-0000-4000-8000-000000701002&course_id=c0a5ec0a-ffff-4fff-8fff-ffffffffffaa",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "associate": {
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd"
+      },
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+      "current_year": false,
+      "season": "2017"
+     },
+     "1": {
+      "associate": {
+       "first_name": "Nina",
+       "last_name": "Nontassata",
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbf"
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecce",
+      "current_year": false,
+      "season": "2023"
+     },
+     "2": {
+      "associate": {
+       "first_name": "Lino",
+       "last_name": "Listino",
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbe"
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccc",
+      "current_year": false,
+      "season": "2022/2023"
+     },
+     "3": {
+      "associate": {
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd"
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccb",
+      "current_year": false,
+      "season": "2023/2024"
+     }
+    },
+    "meta": {}
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-all-session-athlete-course-other-association",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/list/all?sport_association=a1000000-0000-4000-8000-000000701002&course_id=c0a5ec0a-eeee-4eee-8eee-eeeeeeeeebdf",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-all-session-athlete-preregistration",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/list/all?preregistration=1&sport_association=a1000000-0000-4000-8000-000000701002",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "associate": {
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd"
+      },
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+      "current_year": false
+     },
+     "2": {
+      "associate": {
+       "first_name": "Lino",
+       "last_name": "Listino",
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbe"
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccc",
+      "current_year": false
+     },
+     "3": {
+      "associate": {
+       "first_name": "Nina",
+       "last_name": "Nontassata",
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbf"
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecce",
+      "current_year": false
+     }
+    }
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-all-session-athlete-own-association",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list/all?sport_association=a1000000-0000-4000-8000-000000701001",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "associate": {
+       "first_name": "Anna",
+       "last_name": "Atleta",
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeafc"
+      },
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebcc",
+      "current_year": true,
+      "season": "2025/2030"
+     }
+    },
+    "meta": {}
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-info-session-athlete-own",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca/info",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "info": {
+      "membership_card_configuration": {
+       "emit_only_on_approval": false,
+       "customized_template": {}
+      },
+      "user": {
+       "first_name": "",
+       "last_name": "",
+       "email": "subscription-reads-list-athlete@example.test",
+       "phone": null,
+       "username": "subscription-reads-list-athlete",
+       "role": 2
+      },
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "full_name": "Lara Listata",
+       "is_minor_now": "{minor:1985-01-01}",
+       "is_tutor": false,
+       "age": "{age:1985-01-01}",
+       "family_members": [],
+       "tutors": [],
+       "picture_path": null,
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "sex": "F",
+       "tax_code": "LSTLRA85A41Z404K",
+       "born_date": "1985-01-01",
+       "born_city": "Bolzano",
+       "address_city": "Bolzano",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "nationality": "Italiana",
+       "nationality_residence": "Italia",
+       "email": "lara@example.test",
+       "phone": "3401112233",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "is_minor": false,
+       "disabled": false,
+       "draft": false,
+       "deleted": false,
+       "family_role": "madre",
+       "id_number": null,
+       "creation_date": "2023-08-12T08:00:00Z",
+       "migrated": false,
+       "notes": null,
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "group": null,
+       "family": null
+      },
+      "medical_expiration_date": "2031-06-30",
+      "medical_document": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeaca",
+      "medical_token": "70ce70ce-eeee-4eee-8eee-eeeeeeeeeacb",
+      "subscription_files": [],
+      "is_current": true,
+      "is_next_year": false,
+      "plain_medical_label": "{until:2031-06-30} rimanenti",
+      "signature_present": false,
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca",
+      "custom_data": {
+       "tipo": "socio"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2025-09-14T08:00:00Z",
+      "start_date": "2025-09-01",
+      "end_date": "2030-08-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "7",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": "prima iscrizione",
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "supplier": null,
+      "instructor": null,
+      "medical": "3ed1ca1e-eeee-4eee-8eee-eeeeeeeeeada",
+      "document_pdf": null,
+      "payment": null,
+      "group": null,
+      "tags": [
+       "7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeadf"
+      ],
+      "competitive_medical_certificate": true
+     },
+     "courses": [
+      {
+       "course_id": "c0a5ec0a-ffff-4fff-8fff-ffffffffffaa",
+       "status_flag": 2,
+       "course_type": 1,
+       "creation_date": "2024-05-10T09:00:00Z",
+       "title": "Corso yoga",
+       "description": null,
+       "multi_payments": false,
+       "fee": "30.00",
+       "events": null,
+       "one_fee_payment": false,
+       "one_fee": "0.00",
+       "google_calendar_id": null,
+       "google_background_color": "#3a87ad",
+       "multiple_quotes": null,
+       "start_date": null,
+       "end_date": null,
+       "pinned": false,
+       "billed_duration_is_sport_season": false,
+       "billed_frequency": 1,
+       "billed_from_subscription_date": false,
+       "billed_from_day_of_month": 1,
+       "auto_renewal": false,
+       "deleted": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "group": null,
+       "tags": [],
+       "locations": [],
+       "course_subscription": {
+        "course_subscription_id": "c5c5c5c5-ffff-4fff-8fff-ffffffffffaa",
+        "creation_date": "2025-09-14T11:00:00Z",
+        "paid": false,
+        "subscription": {
+         "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca",
+         "associate": {
+          "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+          "address": "Via Roma 1",
+          "address_cap": "39100",
+          "address_city": "Bolzano",
+          "born_city": "Bolzano",
+          "born_date": "1985-01-01",
+          "email": "lara@example.test",
+          "sex": "F",
+          "first_name": "Lara",
+          "last_name": "Listata",
+          "is_minor": false,
+          "sport_association": "a1000000-0000-4000-8000-000000701002",
+          "tax_code": "LSTLRA85A41Z404K",
+          "user": "a1000000-0000-4000-8000-0000005ab598",
+          "phone": "3401112233",
+          "family": null,
+          "family_role": "madre"
+         },
+         "current_year": "corrente"
+        },
+        "multi_payments": false,
+        "multiple_quote": null,
+        "one_fee_payment": false,
+        "installments": [],
+        "course": "c0a5ec0a-ffff-4fff-8fff-ffffffffffaa",
+        "type": 1,
+        "billed_frequency": 1,
+        "billed_from": null,
+        "billed_until": null,
+        "billed_from_day_of_month": 1,
+        "membership_active": true,
+        "membership_fee": "0.00",
+        "auto_renewal": false,
+        "membership_payments": [],
+        "medical_label": "<span class=\"text-success font-weight-boldest\"><i class=\"ph-bold ph-first-aid-kit\"></i>{until:2031-06-30} rimanenti</span><span class=\"badge badge-info ml-1\" title=\"Certificato Medico Agonistico\">AG</span>",
+        "carnets": []
+       }
+      }
+     ],
+     "payments": []
+    }
+   },
+   "unordered": false,
+   "celery": [
+    {
+     "task": "print_document_subscription",
+     "args": [
+      "5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca",
+      "$authorization"
+     ],
+     "kwargs": []
+    }
+   ]
+  },
+  {
+   "name": "subscription-reads-info-session-athlete-family",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccd/info",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "info": {
+      "membership_card_configuration": {
+       "emit_only_on_approval": false,
+       "customized_template": {}
+      },
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700007@example.test",
+       "phone": null,
+       "username": "message-reads-700007",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbe",
+       "full_name": "Lino Listino",
+       "is_minor_now": "{minor:2015-01-01}",
+       "is_tutor": false,
+       "age": "{age:2015-01-01}",
+       "family_members": [],
+       "tutors": [],
+       "picture_path": null,
+       "first_name": "Lino",
+       "last_name": "Listino",
+       "sex": "M",
+       "tax_code": "LSTLNI15A01Z404M",
+       "born_date": "2015-01-01",
+       "born_city": null,
+       "address_city": null,
+       "address": null,
+       "address_cap": null,
+       "nationality": "Italiana",
+       "nationality_residence": "Italia",
+       "email": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "is_minor": true,
+       "disabled": false,
+       "draft": false,
+       "deleted": false,
+       "family_role": null,
+       "id_number": null,
+       "creation_date": "2023-08-13T08:00:00Z",
+       "migrated": false,
+       "notes": null,
+       "user": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "group": null,
+       "family": null
+      },
+      "medical_expiration_date": null,
+      "medical_document": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeacc",
+      "medical_token": "70ce70ce-eeee-4eee-8eee-eeeeeeeeeacd",
+      "subscription_files": [],
+      "is_current": false,
+      "is_next_year": false,
+      "plain_medical_label": "Mancante da {missing:2025-09-17T08:00:00Z}",
+      "signature_present": false,
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccd",
+      "custom_data": null,
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2025-09-17T08:00:00Z",
+      "start_date": "2021-01-01",
+      "end_date": "2021-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "supplier": null,
+      "instructor": null,
+      "medical": "3ed1ca1e-eeee-4eee-8eee-eeeeeeeeeadc",
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": [],
+      "competitive_medical_certificate": false
+     },
+     "courses": [],
+     "payments": []
+    }
+   },
+   "unordered": false,
+   "celery": [
+    {
+     "task": "print_document_subscription",
+     "args": [
+      "5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccd",
+      "$authorization"
+     ],
+     "kwargs": []
+    }
+   ]
+  },
+  {
+   "name": "subscription-reads-info-session-athlete-group",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/5ab5c0de-ffff-4fff-8fff-ffffffffffae/info",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598",
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "info": {
+      "membership_card_configuration": {
+       "emit_only_on_approval": false,
+       "customized_template": {}
+      },
+      "user": {
+       "first_name": "",
+       "last_name": "",
+       "email": "subscription-reads-list-athlete@example.test",
+       "phone": null,
+       "username": "subscription-reads-list-athlete",
+       "role": 2
+      },
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "full_name": "Lara Listata",
+       "is_minor_now": "{minor:1985-01-01}",
+       "is_tutor": false,
+       "age": "{age:1985-01-01}",
+       "family_members": [],
+       "tutors": [],
+       "picture_path": null,
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "sex": "F",
+       "tax_code": "LSTLRA85A41Z404K",
+       "born_date": "1985-01-01",
+       "born_city": "Bolzano",
+       "address_city": "Bolzano",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "nationality": "Italiana",
+       "nationality_residence": "Italia",
+       "email": "lara@example.test",
+       "phone": "3401112233",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "is_minor": false,
+       "disabled": false,
+       "draft": false,
+       "deleted": false,
+       "family_role": "madre",
+       "id_number": null,
+       "creation_date": "2023-08-12T08:00:00Z",
+       "migrated": false,
+       "notes": null,
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "group": null,
+       "family": null
+      },
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "medical_token": null,
+      "subscription_files": [],
+      "is_current": false,
+      "is_next_year": false,
+      "plain_medical_label": "Mancante da {missing:2025-09-23T08:00:00Z}",
+      "signature_present": false,
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+      "custom_data": null,
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2025-09-23T08:00:00Z",
+      "start_date": "2017-01-01",
+      "end_date": "2017-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "supplier": null,
+      "instructor": null,
+      "medical": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": []
+     },
+     "courses": [],
+     "payments": []
+    }
+   },
+   "unordered": false,
+   "celery": [
+    {
+     "task": "print_document_subscription",
+     "args": [
+      "5ab5c0de-ffff-4fff-8fff-ffffffffffae",
+      "$authorization"
+     ],
+     "kwargs": []
+    }
+   ]
+  },
+  {
+   "name": "subscription-reads-info-session-athlete-kin",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/5ab5c0de-ffff-4fff-8fff-ffffffffffaf/info",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "info": {
+      "membership_card_configuration": {
+       "emit_only_on_approval": false,
+       "customized_template": {}
+      },
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700007@example.test",
+       "phone": null,
+       "username": "message-reads-700007",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeecbd",
+       "full_name": "Lara Listata",
+       "is_minor_now": "{minor:1985-01-01}",
+       "is_tutor": false,
+       "age": "{age:1985-01-01}",
+       "family_members": [],
+       "tutors": [],
+       "picture_path": null,
+       "first_name": "Lara",
+       "last_name": "Listata",
+       "sex": "F",
+       "tax_code": "LSTLRA85A41Z404K",
+       "born_date": "1985-01-01",
+       "born_city": "Bolzano",
+       "address_city": "Bolzano",
+       "address": "Via Roma 1",
+       "address_cap": "39100",
+       "nationality": "Italiana",
+       "nationality_residence": "Italia",
+       "email": "lara@example.test",
+       "phone": "3401112233",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "is_minor": false,
+       "disabled": false,
+       "draft": false,
+       "deleted": false,
+       "family_role": "madre",
+       "id_number": null,
+       "creation_date": "2023-08-12T08:00:00Z",
+       "migrated": false,
+       "notes": null,
+       "user": "a1000000-0000-4000-8000-0000005ab598",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "group": null,
+       "family": null
+      },
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "medical_token": null,
+      "subscription_files": [],
+      "is_current": false,
+      "is_next_year": false,
+      "plain_medical_label": "Mancante da {missing:2025-09-24T08:00:00Z}",
+      "signature_present": false,
+      "subscription_id": "5ab5c0de-ffff-4fff-8fff-ffffffffffaf",
+      "custom_data": null,
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2025-09-24T08:00:00Z",
+      "start_date": "2016-01-01",
+      "end_date": "2016-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "supplier": null,
+      "instructor": null,
+      "medical": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714002",
+      "tags": []
+     },
+     "courses": [],
+     "payments": []
+    }
+   },
+   "unordered": false,
+   "celery": [
+    {
+     "task": "print_document_subscription",
+     "args": [
+      "5ab5c0de-ffff-4fff-8fff-ffffffffffaf",
+      "$authorization"
+     ],
+     "kwargs": []
+    }
+   ]
+  },
+  {
+   "name": "subscription-reads-info-session-athlete-kin-outside-group",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/5ab5c0de-ffff-4fff-8fff-ffffffffffaf/info",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598",
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-info-session-athlete-deleted-member",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/5ab5c0de-ffff-4fff-8fff-ffffffffffac/info",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-info-session-athlete-member-elsewhere",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/5ab5c0de-ffff-4fff-8fff-ffffffffffad/info",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-info-session-athlete-member-row",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/5ab5c0de-ffff-4fff-8fff-ffffffffffba/info",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Subscription not found."
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-info-session-athlete-uppercase",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/5AB5C0DE-EEEE-4EEE-8EEE-EEEEEEEEECCA/info",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Subscription not found."
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-info-session-athlete-other-association",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeebba/info",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-info-session-athlete-unknown",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeecea/info",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-info-session-athlete-malformed",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/nope/info",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-info-session-athlete-own-association",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeebcc/info",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "info": {
+      "membership_card_configuration": {
+       "emit_only_on_approval": true,
+       "customized_template": {
+        "colore": "blu",
+        "n": 2
+       }
+      },
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700004@example.test",
+       "phone": null,
+       "username": "message-reads-700004",
+       "role": 2
+      },
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeafc",
+       "full_name": "Anna Atleta",
+       "is_minor_now": "{minor:1980-01-01}",
+       "is_tutor": false,
+       "age": "{age:1980-01-01}",
+       "family_members": [],
+       "tutors": [],
+       "picture_path": null,
+       "first_name": "Anna",
+       "last_name": "Atleta",
+       "sex": "F",
+       "tax_code": "TLTNNA80A41L781A",
+       "born_date": "1980-01-01",
+       "born_city": null,
+       "address_city": null,
+       "address": null,
+       "address_cap": null,
+       "nationality": "Italiana",
+       "nationality_residence": "Italia",
+       "email": "anna@example.test",
+       "phone": "3470000000",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "is_minor": false,
+       "disabled": false,
+       "draft": false,
+       "deleted": false,
+       "family_role": null,
+       "id_number": null,
+       "creation_date": "2023-08-08T08:00:00Z",
+       "migrated": false,
+       "notes": null,
+       "user": "a1000000-0000-4000-8000-000000700004",
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "group": null,
+       "family": null
+      },
+      "medical_expiration_date": null,
+      "medical_document": null,
+      "medical_token": null,
+      "subscription_files": [],
+      "is_current": true,
+      "is_next_year": false,
+      "plain_medical_label": "Mancante da {missing:2025-09-10T08:00:00Z}",
+      "signature_present": false,
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebcc",
+      "custom_data": null,
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2025-09-10T08:00:00Z",
+      "start_date": "2025-09-01",
+      "end_date": "2030-08-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "medical": null,
+      "document_pdf": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeaba",
+      "payment": null,
+      "group": null,
+      "tags": []
+     },
+     "courses": [],
+     "payments": []
+    }
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-calendar-session-athlete-own",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca/calendar",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "title": "Pratica (Corso yoga)",
+       "start": "2025-10-02T18:00:00",
+       "end": "2025-10-02T19:00:00",
+       "allDay": false
+      }
+     ]
+    }
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-calendar-athlete-courses-of-two-associations",
+   "actor": "list_athlete",
+   "method": "GET",
+   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeecca/calendar",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "title": "Lezione (Corso nuoto)",
+       "start": "2025-10-01T18:00:00",
+       "end": "2025-10-01T19:00:00",
+       "allDay": false
+      },
+      {
+       "title": "Recupero (Corso nuoto)",
+       "start": "2025-10-08",
+       "end": null,
+       "allDay": true
+      },
+      {
+       "title": "Pratica (Corso yoga)",
+       "start": "2025-10-02T18:00:00",
+       "end": "2025-10-02T19:00:00",
+       "allDay": false
+      }
+     ]
+    }
+   },
+   "unordered": true
+  },
+  {
+   "name": "subscription-reads-calendar-session-athlete-family",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeeccd/calendar",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "events": []
+    }
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-calendar-session-athlete-deleted-member",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/5ab5c0de-ffff-4fff-8fff-ffffffffffac/calendar",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-calendar-session-athlete-malformed",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/nope/calendar",
+   "headers": {
+    "X-Impersonation-Id": "$session:foreign_lister",
+    "User-Id": "a1000000-0000-4000-8000-0000005ab598"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-calendar-session-athlete-own-association",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeebcc/calendar",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "events": []
+    }
+   },
+   "unordered": false
   }
  ]
 }

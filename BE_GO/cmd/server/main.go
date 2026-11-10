@@ -540,7 +540,7 @@ func run() (runErr error) {
 		WithAthleteList(repository.NewSubscriptionReads(db),
 			service.NewStripeAvailability(repository.NewSocialConfiguration(db), service.StripeEnvironment{PublicKey: cfg.StripePublicKey != "", Secret: cfg.StripeSecretConfigured, Webhook: cfg.StripeEnabled}, cfg.SessionSecret),
 			domain.RegistrationChoices{Family: cfg.FamilyRegistrationEnabled, Federation: cfg.FederationRegistrationEnabled, Multiple: cfg.MultipleRegistrationEnabled}).
-		WithTasks(tasks), service.NewActorAuthentication(accounts, tokens), identities)
+		WithTasks(tasks).WithSessionVisibility(repository.NewScopedResources(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/subscription/list", subscriptionReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/list/all", subscriptionReadsHandler.ListAll, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/list/archived", subscriptionReadsHandler.Archived, middleware.DjangoSessionAudit(sessionAuthentication))

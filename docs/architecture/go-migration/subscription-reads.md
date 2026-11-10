@@ -130,9 +130,27 @@ subscription without associate is a 500), `signature_present` and the model fiel
 registries of the courses of its live course subscriptions; each truthy events list item as
 `{title: "<str(title)> (<course title>)", start, end, allDay}` (a missing key or a non-list value is a 500).
 
+## Association-scoped athlete sessions
+
+An owner viewing as one of the association's athletes (`X-Impersonation-Id` of a session with an association) reaches
+subscription/list, list/all, info and calendar; `scoped_queryset` then keeps every `Subscription` read to the session:
+the association's group-aware subscriptions of the athlete, and of the association's live, group-aware members that
+are the athlete's (`user`) or carry a filled-in tax code of the athlete's subscriptions there. Go asks the shared scoped
+resources reader (`repository.ScopedResources.Available`, kind `subscription`; `SubscriptionReads.sessionVisible`).
+
+- list: `get_optimized_subscriptions` inside that boundary (own or same tax code, among the session's rows); the courses,
+  carnets and renewal fields are read as outside a session. The field mode holds no row (the session's association is
+  the acting owner's, the filter asks for the athlete's).
+- list/all and calendar read the athlete's own rows (`user=`), which the session holds whenever they are in its
+  association; the calendar's course subscriptions and registries keep to the association's courses.
+- info: the allowed ids are taken inside the boundary; course subscriptions, installments and files keep to the
+  association (a course of another association is left out).
+- The session's reference check runs before the view: a subscription, association or course outside the session (path
+  or query) is `403 Risorsa non disponibile per questo utente e associazione.`, a malformed id included; the owner's
+  username as `sport_association` passes it and the view then answers the 500 page.
+
 ## Not ported (refused with the 500 page)
 
-- Association-scoped athlete sessions on subscription/list, list/all, info and calendar (scoped_queryset's family boundary).
 - The POST export of subscription/list with `format` `pdf` (a time-stamped PDF render). The Excel export is ported,
   except workbook inputs `xlsxexport` does not reproduce (`xlsx-exports.md`) and exports sorted by an ordering compiled
   with the rows.
@@ -197,3 +215,13 @@ athlete and one of the own association):
 - GREEN (`secaw-green`): 296/296 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`secaw-mutation`): `familyTaxCodeFilled` without the blank filter fails `info-athlete-blank-tax-code-other-user`
   (CAUGHT).
+
+Association-scoped athlete sessions (331 cases; the seed adds a session of the foreign owner for the list athlete, a
+removed member with a family tax code, a member row of the other association, grouped rows of the athlete's ungrouped
+member, a member row subscribed by the owner and a course with a registry in the foreign association):
+
+- RED (`famvis-red-r1`): Django 331/331; Go answers 500 on `list-session-athlete`.
+- GREEN (`famvis-green-r1`): 331/331 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`famvis-mutation-r1`): the athlete list without the session's boundary fails `list-session-athlete` (CAUGHT).
+- Shared code: none changed (the reads call the existing scoped resources reader); subscription-lifecycle,
+  subscription-renew, payment-reads and statistic-reads re-run natively (`famvis-rerun-r1`: 63/63, 75/75, 276/276, 87/87).
