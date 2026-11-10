@@ -138,3 +138,6 @@ Django 135/135 and 4 sessions, Go missing. GREEN: 135/135 (132 identical,
 (native and versioned; the run first caught a non-string `model_name`
 override and an impossible SUM, now Django's generic 500), the business MCP
 tool adapter of ledger-structural (25/25) and the manual MCP Go transport.
+
+`get_attendance_matrix` lists an enrolment without a subscription under its own id, as Django's outer join does (found by
+the saved-report run cases, templates-reports.md); the XLSX and PDF results stay refused here.

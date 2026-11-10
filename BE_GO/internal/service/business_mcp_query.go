@@ -46,10 +46,15 @@ func mcpToolOutcome(ctx context.Context, err error) (any, error) {
 		markMCPRaised(ctx)
 		return mcpErrorResult(raised.Message), nil
 	}
+	var query *domain.ReportQueryError
+	if raised, ok := ctx.Value(mcpRaisedKey{}).(*bool); ok && raised != nil && ctx.Value(reportRunKey{}) != nil &&
+		(errors.Is(err, dto.ErrReportFailed) || errors.As(err, &query)) {
+		*raised = true // a saved-report run answers every exception alike
+		return mcpErrorResult(""), nil
+	}
 	if errors.Is(err, dto.ErrReportNotPorted) || errors.Is(err, dto.ErrReportFailed) {
 		return nil, ErrBusinessMCPNotPorted
 	}
-	var query *domain.ReportQueryError
 	if errors.As(err, &query) {
 		return nil, ErrBusinessMCPNotPorted // database error text (SQL in the message)
 	}
@@ -286,8 +291,8 @@ func (t *BusinessMCPTools) exportData(ctx context.Context, arguments domain.Requ
 	if len(data) == 0 {
 		return mcpObj("error", "No data to export", "count", json.Number("0")), nil
 	}
-	if formatText != "csv" {
-		return nil, ErrBusinessMCPNotPorted // XLSX and PDF files are not built in Go
+	if formatText != "csv" && !t.files {
+		return nil, ErrBusinessMCPNotPorted // XLSX and PDF files are built for a saved-report run only
 	}
 	modelName, _ := arguments.Lookup("model_name")
 	title := mcpLookupOr(arguments, "title", "")
@@ -311,9 +316,20 @@ func (t *BusinessMCPTools) exportData(ctx context.Context, arguments domain.Requ
 		}
 		labels = dto.PythonDict(object)
 	}
-	file, err := mcpExportCSV(data, labels)
-	if err != nil {
-		return nil, err
+	var file []byte
+	contentType := "text/csv; charset=utf-8"
+	switch formatText {
+	case "csv":
+		file, err = mcpExportCSV(data, labels)
+	case "xlsx":
+		contentType = reportXLSXType
+		file, err = t.exportXLSX(ctx, data, labels, titleText)
+	default:
+		contentType = "application/pdf"
+		file, err = t.exportPDF(ctx, data, labels, titleText, arguments)
+	}
+	if err != nil || file == nil {
+		return mcpErrorResult(""), err // a nil file is an exception of the exporter (marked raised)
 	}
 	params := mcpObj("model_name", modelName, "format", formatText)
 	for _, name := range []string{"title", "fields", "filters", "exclude", "or_filters", "joins", "order_by", "limit", "column_labels",
@@ -349,8 +365,8 @@ func (t *BusinessMCPTools) exportData(ctx context.Context, arguments domain.Requ
 		fields = append(fields, mcpObj("key", "filters", "type", "json", "label", "Filtri"))
 	}
 	return mcpObj("type", "export_ready",
-		"filename", filename+".csv",
-		"content_type", "text/csv; charset=utf-8",
+		"filename", filename+"."+formatText,
+		"content_type", contentType,
 		"data_base64", base64.StdEncoding.EncodeToString(file),
 		"row_count", json.Number(strconv.Itoa(len(data))),
 		"total_count", total,
@@ -379,7 +395,7 @@ func (t *BusinessMCPTools) exportMultiSheet(ctx context.Context, arguments domai
 	if _, err := loadReportSettings(ctx, t.store); err != nil {
 		return mcpToolOutcome(ctx, err)
 	}
-	prepared := 0
+	var prepared []reportSheetData
 	for i, item := range items {
 		spec, ok := item.(domain.RequestObject)
 		if !ok {
@@ -403,13 +419,16 @@ func (t *BusinessMCPTools) exportMultiSheet(ctx context.Context, arguments domai
 		}
 		data, _ := object.Lookup("data")
 		if len(data.([]any)) > 0 {
-			prepared++
+			prepared = append(prepared, reportSheetData{data: data.([]any), spec: spec, model: modelName})
 		}
 	}
-	if prepared == 0 {
+	if len(prepared) == 0 {
 		return mcpObj("error", "No data to export from any sheet", "count", json.Number("0")), nil
 	}
-	return nil, ErrBusinessMCPNotPorted // the XLSX workbook is not built in Go
+	if !t.files {
+		return nil, ErrBusinessMCPNotPorted // the XLSX workbook is built for a saved-report run only
+	}
+	return t.exportSheets(ctx, prepared, arguments)
 }
 
 // ---------------------------------------------------------------------------
@@ -430,6 +449,7 @@ type attendanceRow struct {
 	name           string
 	id             string
 	present, total int
+	marks          []string
 }
 
 func (t *BusinessMCPTools) rows(ctx context.Context, sql string, args []any, columns int) ([][]*string, error) {
@@ -447,7 +467,7 @@ func mcpAttendanceDate(value any) (string, bool, error) {
 	}
 	text, ok := value.(string)
 	if !ok {
-		return "", false, ErrBusinessMCPNotPorted
+		return "", false, nil // strptime raises TypeError: no date
 	}
 	parsed, ok, uncertain := dto.MCPStrptimeDate(text)
 	if uncertain {
@@ -481,7 +501,7 @@ func (t *BusinessMCPTools) attendanceCourses(ctx context.Context, arguments doma
 			return nil, nil, err
 		}
 		rows, err := t.rows(ctx, `SELECT `+attendanceCourseColumns+` FROM "application_course" WHERE (NOT "application_course"."deleted" AND `+
-			`"application_course"."course_id" = $1::uuid AND "application_course"."sport_association_id" = $2::uuid) LIMIT 21`,
+			`"application_course"."course_id" = $1::uuid AND "application_course"."sport_association_id" = $2::uuid`+t.courseGroup()+`) LIMIT 21`,
 			[]any{id, association}, 2)
 		if err != nil {
 			return nil, nil, err
@@ -502,7 +522,7 @@ func (t *BusinessMCPTools) attendanceCourses(ctx context.Context, arguments doma
 		}
 		escaped := "%" + strings.NewReplacer(`\`, `\\`, "%", `\%`, "_", `\_`).Replace(text) + "%"
 		where := ` FROM "application_course" WHERE (NOT "application_course"."deleted" AND "application_course"."sport_association_id" = $1::uuid` +
-			` AND UPPER("application_course"."title"::text) LIKE UPPER($2) AND NOT "application_course"."deleted")`
+			` AND UPPER("application_course"."title"::text) LIKE UPPER($2) AND NOT "application_course"."deleted"` + t.courseGroup() + `)`
 		count, err := t.rows(ctx, `SELECT COUNT(*)::text`+where, []any{association, escaped}, 1)
 		if err != nil {
 			return nil, nil, err
@@ -531,7 +551,7 @@ func (t *BusinessMCPTools) attendanceCourses(ctx context.Context, arguments doma
 	rows, err := t.rows(ctx, `SELECT `+attendanceCourseColumns+` FROM "application_course" WHERE (NOT "application_course"."deleted" AND `+
 		`"application_course"."course_id" IN (SELECT DISTINCT U0."course_id" FROM "application_attendanceregistry" U0 `+
 		`INNER JOIN "application_course" U1 ON (U0."course_id" = U1."course_id") WHERE (U1."sport_association_id" = $1::uuid AND NOT U1."deleted")) `+
-		`AND NOT "application_course"."deleted") ORDER BY "application_course"."title" ASC`, []any{association}, 2)
+		`AND NOT "application_course"."deleted"`+t.courseGroup()+`) ORDER BY "application_course"."title" ASC`, []any{association}, 2)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -631,7 +651,7 @@ func (t *BusinessMCPTools) attendanceCourseMatrix(ctx context.Context, course at
 	}
 	subscriptions, err := t.rows(ctx, `SELECT "application_coursesubscription"."course_subscription_id"::text, `+
 		`"application_associate"."first_name"::text, "application_associate"."last_name"::text FROM "application_coursesubscription" `+
-		`INNER JOIN "application_subscription" ON ("application_coursesubscription"."subscription_id" = "application_subscription"."subscription_id") `+
+		`LEFT OUTER JOIN "application_subscription" ON ("application_coursesubscription"."subscription_id" = "application_subscription"."subscription_id") `+
 		`LEFT OUTER JOIN "application_associate" ON ("application_subscription"."associate_id" = "application_associate"."associate_id") `+
 		`WHERE (NOT "application_coursesubscription"."deleted" AND "application_coursesubscription"."course_id" = $1::uuid AND `+
 		`NOT "application_coursesubscription"."deleted")`, []any{*course.id}, 3)
@@ -679,9 +699,12 @@ func (t *BusinessMCPTools) attendanceCourseMatrix(ctx context.Context, course at
 	for _, id := range order {
 		row := attendanceRow{name: names[id], id: id, total: len(days)}
 		for _, ids := range present {
+			mark := ""
 			if ids[id] {
 				row.present++
+				mark = "P"
 			}
+			row.marks = append(row.marks, mark)
 		}
 		matrix.rows = append(matrix.rows, row)
 	}
@@ -718,7 +741,7 @@ func (t *BusinessMCPTools) attendance(ctx context.Context, arguments domain.Requ
 				"course", mcpOptional(courses[0].title)), nil
 		}
 		if exporting {
-			return nil, ErrBusinessMCPNotPorted // XLSX/PDF file
+			return t.attendanceFile(ctx, []*attendanceMatrix{matrix}, false, arguments)
 		}
 		preview := []any{}
 		for i, row := range matrix.rows {
@@ -754,7 +777,7 @@ func (t *BusinessMCPTools) attendance(ctx context.Context, arguments domain.Requ
 		return mcpErrorResult("Nessun dato di presenza trovato per nessun corso nel periodo indicato."), nil
 	}
 	if exporting {
-		return nil, ErrBusinessMCPNotPorted // XLSX/PDF file
+		return t.attendanceFile(ctx, matrices, true, arguments)
 	}
 	previews := []any{}
 	for _, matrix := range matrices {

@@ -114,6 +114,66 @@ CASES += [
 ]
 
 
+def report(name, headers, rows, title='Tags', **extra):
+    return {'name': name, 'spec': {'engine': 'report_table', 'headers': headers, 'rows': rows, 'title': title, **extra}}
+
+
+def attendance(name, *courses):
+    return {'name': name, 'spec': {'engine': 'attendance', 'courses': [
+        {'course': title, 'dates': dates, 'rows': [{'name': person, 'attendance': marks, 'present_count': marks.count('P')}
+                                                   for person, marks in rows]} for title, dates, rows in courses]}}
+
+
+def days(count, start=1):
+    return ['%02d/%02d/2026' % ((start + i) % 28 + 1, (start + i) // 28 % 12 + 1) for i in range(count)]
+
+
+def people(count, dates, long=False):
+    return [('Cognome%d Nome%d' % (i, i) + (' di Sant\'Angelo dei Lombardi e Montefiascone' if long and i % 5 == 0 else ''),
+             ['P' if (i + j) % 3 else '' for j in range(len(dates))]) for i in range(count)]
+
+
+WORDS = 'il corso di nuoto agonistico per adulti si tiene nella piscina comunale ogni settimana'
+CASES += [
+    report('rt-small', ['tag_name', 'creation_date'], [['Nuoto', '15/09/2026 08:30'], ['nuoto agonistico', '01/10/2026 00:00']]),
+    report('rt-one-cell', ['Nome'], [['x']], 'Uno'),
+    report('rt-empty-cells', ['A', 'B', 'C'], [['', 'x', ''], ['', '', '']], 'Vuote'),
+    report('rt-empty-header', ['', 'B'], [['a', 'b']], ''),
+    report('rt-texts', ['Nome', 'Tipo', 'Importo'], [['Quote', 'Istituzionale', '80.0'], ['Affitto', 'Commerciale', '45.5']], 'Categorie',
+           footer_text='ASD Aurora', text_before='Elenco delle categorie al 10/11/2026.', text_after='Fine elenco.'),
+    report('rt-text-before-long', ['Nome'], [['x']], 'Lungo', text_before=' '.join([WORDS] * 12), text_after=' '.join([WORDS] * 9)),
+    report('rt-wrap', ['Descrizione lunga della colonna', 'N', 'Nota'],
+           [[' '.join([WORDS] * 4), str(i), WORDS if i % 2 else 'x'] for i in range(6)], 'A capo'),
+    report('rt-pages', ['N', 'Nome', 'Nota'], [[str(i), 'Persona %d' % i, WORDS if i % 9 == 0 else 'x'] for i in range(120)], 'Pagine',
+           footer_text='piede'),
+    report('rt-pages-wrap', ['N', 'Testo'], [[str(i), ' '.join([WORDS] * (1 + i % 7))] for i in range(60)], 'Pagine a capo',
+           text_before='Prima.', text_after='Dopo.'),
+    report('rt-a3', ['Colonna %d' % i for i in range(8)], [['valore %d %d' % (i, j) for i in range(8)] for j in range(5)], 'A3'),
+    report('rt-a2', ['Colonna %d' % i for i in range(14)], [['valore %d %d' % (i, j) for i in range(14)] for j in range(5)], 'A2'),
+    report('rt-squeezed', ['Colonna numero %d' % i for i in range(5)],
+           [['Supercalifragilistichespiralidoso%d' % i * 3 for i in range(5)] for _ in range(3)], 'Stretta'),
+    report('rt-squeezed-wide', ['Intestazione molto lunga numero %d' % i for i in range(60)],
+           [['valore abbastanza lungo %d' % i for i in range(60)] for _ in range(3)], 'Sessanta colonne'),
+    report('rt-mixed-min', ['A', 'Colonna larga con parole', 'C'], [['1', 'unaparolamoltolungasenzaspazi e altre', ''],
+                                                                     ['22', 'x', 'yy']], 'Minimi'),
+    report('rt-long-word', ['Codice'], [['X' * 400], ['y']], 'Parola lunga'),
+    report('rt-symbols', ['Nome'], [['città è "x" (y) \\ € – “q” … ½'], ['αβγ Ω → ✔ ❤ 日本'], ['a\nb\tc  d']], 'Caratteri'),
+    report('rt-tall-row', ['A', 'B'], [['x', ' '.join([WORDS] * 400)]], 'Riga più alta della pagina'),
+    attendance('at-single', ('Nuoto', days(4), people(3, days(4)))),
+    attendance('at-no-dates-rows', ('Vuoto', days(1), [])),
+    attendance('at-long-names', ('Nuoto adulti', days(12), people(12, days(12), long=True))),
+    attendance('at-pages', ('Nuoto', days(10), people(70, days(10)))),
+    attendance('at-a3', ('Nuoto', days(13), people(4, days(13)))),
+    attendance('at-a3-full', ('Nuoto', days(22), people(4, days(22)))),
+    attendance('at-a2', ('Nuoto', days(23), people(45, days(23)))),
+    attendance('at-wider-than-page', ('Nuoto', days(70), people(3, days(70)))),
+    attendance('at-multi', ('Calcio', days(3), people(2, days(3))), ('Nuoto', days(5, 40), people(4, days(5))),
+               ('Yoga della risata per principianti assoluti', days(2, 90), people(1, days(2)))),
+    attendance('at-multi-pages', ('Calcio', days(6), people(60, days(6))), ('Nuoto', days(14, 40), people(3, days(14)))),
+    attendance('at-symbols', ('Ω Club ✔', ['01/01/2026', 'lunedì', ''], [('Città è', ['P', '', 'P'])])),
+]
+
+
 def main():
     cases = []
     for case in CASES:

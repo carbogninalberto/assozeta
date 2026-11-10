@@ -85,3 +85,15 @@ four-transport GREEN `xlsx-versioned-r1` and mutations per family:
 
 `payment-export`'s `xlsx-mutation-r1` (no `Int64` conversion) was not caught by the family (its integer columns have long
 headers); the golden test catches it.
+
+## Saved-report workbooks
+
+`xlsxexport.ReportWorkbook` / `ReportSheetsWorkbook` are `XLSXExporter.export` / `export_multi_sheet` after
+`format_export_data` (pandas + openpyxl: the numeric conversion of `get_excel_base64`, columns holding a list or dict left as
+they are, widths for any number of columns, sheet names cut and numbered), and `xlsxexport.AttendanceWorkbook` is
+`export_attendance_matrix_xlsx` in its three layouts (fixed widths, the rotated alignment as a third cell style on the first
+row of as many columns as there are dates: a repeated date label moves it onto the `Presenze` header and onto empty cells
+past the data, as openpyxl writes them). openpyxl's sheet-title rules apply: an invalid or empty title and one that differs
+from an earlier title only by case fail as in Django. Contract engines `report_sheets` and `attendance`
+(`TESTS/contracts/xlsx.py`); the golden generator builds 40 more workbooks with Django's own code and checks that the
+contract's builders give the same parts. Evidence: templates-reports 124/124 on four transports (`v2rep-versioned-r1`).

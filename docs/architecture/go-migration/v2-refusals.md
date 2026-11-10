@@ -16,7 +16,7 @@ below describe what Go itself does not serve; with the handoff on, an A or B ite
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 69** (about 63 distinct after duplicates; 5 ported in v2-pdf (the reportlab documents); 2 ported in v2-deletes; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard, 3 in v2-misc-3 (which also narrows the smtp/verify row to connect timeouts) and 1 in the famwiz change (the preregistration that renews a subscription; also the excel half of the course-subscriptions export row), below), **B 218** (54 with
+Counts (table rows, appendix): **A 69** (about 63 distinct after duplicates; 1 ported in v2-reports (the saved-report file tools); 5 ported in v2-pdf (the reportlab documents); 2 ported in v2-deletes; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard, 3 in v2-misc-3 (which also narrows the smtp/verify row to connect timeouts) and 1 in the famwiz change (the preregistration that renews a subscription; also the excel half of the course-subscriptions export row), below), **B 218** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -105,6 +105,15 @@ Receipts are `quality-reports/go-migration/<family>-http-v2pay2-*`.
 
 Go reads and writes the Django cache entry in django-redis format (the adapter writes it with `cache.set` and reads
 Go's back with `cache.get`) and calls the balance transactions list through a per-run Stripe stub.
+
+### Ported in the v2-reports change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2rep-*`; templates-reports.md ("File tools"), pdf-exports.md and
+xlsx-exports.md have the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| templates-reports | `POST saved-reports/<pk>/run` | tools `export_data` (CSV, XLSX, PDF), `export_multi_sheet` and `get_attendance_matrix` (preview, XLSX, PDF) | 124 cases; RED `v2rep-red-r1` Django 124/124, Go 500; GREEN `v2rep-versioned-r1` 4 transports; mutation `v2rep-mutation-r1` (one sheet per course swapped with the single sheet) CAUGHT |
 
 ### Ported in the v2-pdf change
 
@@ -294,7 +303,7 @@ attempt saw came from the harness storing the re-seeded rows in another physical
 ### printing / balance sheet / saved reports (file outputs)
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST saved-reports/<pk>/run | tools `export_data`, `export_multi_sheet`, `get_attendance_matrix` | `reports/SavedReports.svelte:177-190` | `dto/report_tools.go:71` | expensive |
+| — | none left: the three file tools of `saved-reports/<pk>/run` are ported (v2-reports, below) | | | |
 
 ### association transfer, data restore, instance setup and administration
 | Route | Condition | UI call | Go site | Cost |
@@ -1084,7 +1093,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### templates-reports.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST saved-reports/<pk>/run | saved report whose tool is `export_data`, `export_multi_sheet` or `get_attendance_matrix` | `dto/report_tools.go:70-71`, `ErrReportNotPorted` | **A** | `routes/association/reports/SavedReports.svelte:177-190` POSTs `{overrides}` to RUN for any listed report. `TOOL_LABELS` (`:31-37`) shows the UI expects these three file tools. Reports come from the in-app assistant (`save_report`). Django `report_views.py:171` |
+| POST saved-reports/<pk>/run | saved report whose tool is `export_data`, `export_multi_sheet` or `get_attendance_matrix` | `dto/report_tools.go:70-71`, `ErrReportNotPorted` | **A** (ported in v2-reports) | `routes/association/reports/SavedReports.svelte:177-190` POSTs `{overrides}` to RUN for any listed report. `TOOL_LABELS` (`:31-37`) shows the UI expects these three file tools. Reports come from the in-app assistant (`save_report`). Django `report_views.py:171` |
 | same | `get_schema`, other whitelisted models, relation traversal, joins, transforms, JSON filters, `?` ordering, odd limits/UUID/decimal/integer values, aggregate alias shapes, uncommon HTML entities | `dto/report_tools.go:99,177,198,382,403`, `service/saved_reports.go:267-307` | B | These params are written by the AI assistant, not typed in the UI. The Go agent refuses the same inputs, but a Django-era assistant could have saved them. legacy: yes. expensive |
 | PATCH templates/<pk>/update | none listed | — | — | — |
 

@@ -241,7 +241,7 @@
   },
   "reports": {
    "count": {
-    "id": "a1000000-0000-4000-8000-000000930021",
+    "id": "a1000000-0000-4000-8000-000000930060",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report count",
@@ -255,7 +255,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "collaborator": {
-    "id": "a1000000-0000-4000-8000-000000930022",
+    "id": "a1000000-0000-4000-8000-000000930061",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "full_collaborator",
     "name": "Report collaborator",
@@ -269,7 +269,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "foreign": {
-    "id": "a1000000-0000-4000-8000-000000930023",
+    "id": "a1000000-0000-4000-8000-000000930062",
     "association": "a1000000-0000-4000-8000-000000701002",
     "creator": "foreign_owner",
     "name": "Report foreign",
@@ -283,7 +283,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "unknown": {
-    "id": "a1000000-0000-4000-8000-000000930024",
+    "id": "a1000000-0000-4000-8000-000000930063",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report unknown",
@@ -297,7 +297,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "list_params": {
-    "id": "a1000000-0000-4000-8000-000000930025",
+    "id": "a1000000-0000-4000-8000-000000930064",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report list_params",
@@ -311,7 +311,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "remove": {
-    "id": "a1000000-0000-4000-8000-000000930026",
+    "id": "a1000000-0000-4000-8000-000000930065",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report remove",
@@ -325,7 +325,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_missing_model_error": {
-    "id": "a1000000-0000-4000-8000-000000930027",
+    "id": "a1000000-0000-4000-8000-000000930066",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_missing_model_error",
@@ -341,7 +341,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_tags_default_fields": {
-    "id": "a1000000-0000-4000-8000-000000930028",
+    "id": "a1000000-0000-4000-8000-000000930067",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_tags_default_fields",
@@ -358,7 +358,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_categories_limit_offset": {
-    "id": "a1000000-0000-4000-8000-000000930029",
+    "id": "a1000000-0000-4000-8000-000000930068",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_categories_limit_offset",
@@ -382,7 +382,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_carnets_exclude_nullable": {
-    "id": "a1000000-0000-4000-8000-000000930030",
+    "id": "a1000000-0000-4000-8000-000000930069",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_carnets_exclude_nullable",
@@ -410,7 +410,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_carnets_all_columns": {
-    "id": "a1000000-0000-4000-8000-000000930031",
+    "id": "a1000000-0000-4000-8000-000000930070",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_carnets_all_columns",
@@ -430,7 +430,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_carnets_json_column": {
-    "id": "a1000000-0000-4000-8000-000000930032",
+    "id": "a1000000-0000-4000-8000-000000930071",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_carnets_json_column",
@@ -451,7 +451,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_categories_or_filters": {
-    "id": "a1000000-0000-4000-8000-000000930033",
+    "id": "a1000000-0000-4000-8000-000000930072",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_categories_or_filters",
@@ -481,7 +481,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_categories_distinct_type": {
-    "id": "a1000000-0000-4000-8000-000000930034",
+    "id": "a1000000-0000-4000-8000-000000930073",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_categories_distinct_type",
@@ -501,7 +501,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_categories_distinct_with_order": {
-    "id": "a1000000-0000-4000-8000-000000930035",
+    "id": "a1000000-0000-4000-8000-000000930074",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_categories_distinct_with_order",
@@ -521,7 +521,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_tags_overrides": {
-    "id": "a1000000-0000-4000-8000-000000930036",
+    "id": "a1000000-0000-4000-8000-000000930075",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_tags_overrides",
@@ -542,7 +542,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_tags_datetime_filters": {
-    "id": "a1000000-0000-4000-8000-000000930037",
+    "id": "a1000000-0000-4000-8000-000000930076",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_tags_datetime_filters",
@@ -563,7 +563,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_tags_empty_in": {
-    "id": "a1000000-0000-4000-8000-000000930038",
+    "id": "a1000000-0000-4000-8000-000000930077",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_tags_empty_in",
@@ -580,7 +580,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_carnets_isnull_range_decimal": {
-    "id": "a1000000-0000-4000-8000-000000930039",
+    "id": "a1000000-0000-4000-8000-000000930078",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_carnets_isnull_range_decimal",
@@ -608,7 +608,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_tags_blacklisted_filter_dropped": {
-    "id": "a1000000-0000-4000-8000-000000930040",
+    "id": "a1000000-0000-4000-8000-000000930079",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_tags_blacklisted_filter_dropped",
@@ -631,7 +631,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_tags_in_uuid": {
-    "id": "a1000000-0000-4000-8000-000000930041",
+    "id": "a1000000-0000-4000-8000-000000930080",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_tags_in_uuid",
@@ -657,7 +657,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_unknown_filter_error": {
-    "id": "a1000000-0000-4000-8000-000000930042",
+    "id": "a1000000-0000-4000-8000-000000930081",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_unknown_filter_error",
@@ -674,7 +674,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_invalid_uuid_error": {
-    "id": "a1000000-0000-4000-8000-000000930043",
+    "id": "a1000000-0000-4000-8000-000000930082",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_invalid_uuid_error",
@@ -691,7 +691,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_negative_limit_error": {
-    "id": "a1000000-0000-4000-8000-000000930044",
+    "id": "a1000000-0000-4000-8000-000000930083",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_negative_limit_error",
@@ -706,7 +706,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_unknown_order_error": {
-    "id": "a1000000-0000-4000-8000-000000930045",
+    "id": "a1000000-0000-4000-8000-000000930084",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_unknown_order_error",
@@ -723,7 +723,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "query_filters_list_error": {
-    "id": "a1000000-0000-4000-8000-000000930046",
+    "id": "a1000000-0000-4000-8000-000000930085",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report query_filters_list_error",
@@ -740,7 +740,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "count_filters_exclude": {
-    "id": "a1000000-0000-4000-8000-000000930047",
+    "id": "a1000000-0000-4000-8000-000000930086",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report count_filters_exclude",
@@ -760,7 +760,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "count_include_archived": {
-    "id": "a1000000-0000-4000-8000-000000930048",
+    "id": "a1000000-0000-4000-8000-000000930087",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report count_include_archived",
@@ -775,7 +775,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "values_category_type_labels": {
-    "id": "a1000000-0000-4000-8000-000000930049",
+    "id": "a1000000-0000-4000-8000-000000930088",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report values_category_type_labels",
@@ -790,7 +790,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "values_carnet_title_limit": {
-    "id": "a1000000-0000-4000-8000-000000930050",
+    "id": "a1000000-0000-4000-8000-000000930089",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report values_carnet_title_limit",
@@ -806,7 +806,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "values_carnet_title_nulls_last": {
-    "id": "a1000000-0000-4000-8000-000000930051",
+    "id": "a1000000-0000-4000-8000-000000930090",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report values_carnet_title_nulls_last",
@@ -822,7 +822,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "values_tags_unescape": {
-    "id": "a1000000-0000-4000-8000-000000930052",
+    "id": "a1000000-0000-4000-8000-000000930091",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report values_tags_unescape",
@@ -840,7 +840,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "values_blacklisted_error": {
-    "id": "a1000000-0000-4000-8000-000000930053",
+    "id": "a1000000-0000-4000-8000-000000930092",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report values_blacklisted_error",
@@ -855,7 +855,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "values_missing_field_error": {
-    "id": "a1000000-0000-4000-8000-000000930054",
+    "id": "a1000000-0000-4000-8000-000000930093",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report values_missing_field_error",
@@ -869,7 +869,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "aggregate_none": {
-    "id": "a1000000-0000-4000-8000-000000930055",
+    "id": "a1000000-0000-4000-8000-000000930094",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report aggregate_none",
@@ -883,7 +883,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "aggregate_invalid": {
-    "id": "a1000000-0000-4000-8000-000000930056",
+    "id": "a1000000-0000-4000-8000-000000930095",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report aggregate_invalid",
@@ -907,7 +907,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "aggregate_flat": {
-    "id": "a1000000-0000-4000-8000-000000930057",
+    "id": "a1000000-0000-4000-8000-000000930096",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report aggregate_flat",
@@ -949,7 +949,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "aggregate_group_type": {
-    "id": "a1000000-0000-4000-8000-000000930058",
+    "id": "a1000000-0000-4000-8000-000000930097",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report aggregate_group_type",
@@ -977,7 +977,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "aggregate_group_invalid": {
-    "id": "a1000000-0000-4000-8000-000000930059",
+    "id": "a1000000-0000-4000-8000-000000930098",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report aggregate_group_invalid",
@@ -1001,7 +1001,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "aggregate_sum_text_error": {
-    "id": "a1000000-0000-4000-8000-000000930060",
+    "id": "a1000000-0000-4000-8000-000000930099",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report aggregate_sum_text_error",
@@ -1021,7 +1021,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "aggregate_empty_set": {
-    "id": "a1000000-0000-4000-8000-000000930061",
+    "id": "a1000000-0000-4000-8000-000000930100",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report aggregate_empty_set",
@@ -1048,7 +1048,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "aggregate_group_boolean_filtered": {
-    "id": "a1000000-0000-4000-8000-000000930062",
+    "id": "a1000000-0000-4000-8000-000000930101",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report aggregate_group_boolean_filtered",
@@ -1075,7 +1075,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "schema_unknown_model": {
-    "id": "a1000000-0000-4000-8000-000000930063",
+    "id": "a1000000-0000-4000-8000-000000930102",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report schema_unknown_model",
@@ -1087,6 +1087,978 @@
     "ui": {},
     "created": "2026-10-01T08:00:00+00:00",
     "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_missing_model_error": {
+    "id": "a1000000-0000-4000-8000-000000930103",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_missing_model_error",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "format": "csv"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_unsupported_format": {
+    "id": "a1000000-0000-4000-8000-000000930104",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_unsupported_format",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "format": "doc"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_no_data": {
+    "id": "a1000000-0000-4000-8000-000000930105",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_no_data",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "filters": {
+      "tag_name": "zzz"
+     },
+     "format": "pdf"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_unknown_filter_error": {
+    "id": "a1000000-0000-4000-8000-000000930106",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_unknown_filter_error",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "filters": {
+      "colour": "x"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_csv_tags": {
+    "id": "a1000000-0000-4000-8000-000000930107",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_csv_tags",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "order_by": [
+      "tag_name"
+     ],
+     "offset": 1
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_csv_title_labels": {
+    "id": "a1000000-0000-4000-8000-000000930108",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_csv_title_labels",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "title": "Elenco: \"tag\" <1>",
+     "filters": {
+      "tag_name__icontains": "nuoto"
+     },
+     "order_by": [
+      "-tag_name"
+     ],
+     "column_labels": {
+      "tag_name": "Nome, tag",
+      "creation_date": "Creato \"il\"",
+      "altro": "x"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_csv_numbers_booleans": {
+    "id": "a1000000-0000-4000-8000-000000930109",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_csv_numbers_booleans",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title",
+      "lessons_number",
+      "fee",
+      "public",
+      "description"
+     ],
+     "order_by": [
+      "lessons_number"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_xlsx_carnets": {
+    "id": "a1000000-0000-4000-8000-000000930110",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_xlsx_carnets",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Carnet",
+     "format": "xlsx",
+     "fields": [
+      "title",
+      "lessons_number",
+      "fee",
+      "public",
+      "description"
+     ],
+     "order_by": [
+      "lessons_number"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_xlsx_override_title_json": {
+    "id": "a1000000-0000-4000-8000-000000930111",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_xlsx_override_title_json",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Carnet",
+     "title": "Carnet attivi 2026 con un titolo più lungo di trentuno",
+     "fields": [
+      "title",
+      "meta"
+     ],
+     "filters": {
+      "lessons_number": 10
+     },
+     "column_labels": {
+      "title": "Titolo"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_xlsx_sheet_name_error": {
+    "id": "a1000000-0000-4000-8000-000000930112",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_xlsx_sheet_name_error",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "format": "xlsx",
+     "title": "a/b"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_tags": {
+    "id": "a1000000-0000-4000-8000-000000930113",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_tags",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "format": "pdf",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name__icontains": "nuoto"
+     },
+     "order_by": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_categories_texts": {
+    "id": "a1000000-0000-4000-8000-000000930114",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_categories_texts",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "PaymentCategory",
+     "format": "pdf",
+     "title": "Categorie €",
+     "fields": [
+      "name",
+      "type",
+      "expense",
+      "creation_date"
+     ],
+     "order_by": [
+      "name"
+     ],
+     "column_labels": {
+      "name": "Nome",
+      "type": "Tipo"
+     },
+     "header_text": "Intestazione",
+     "footer_text": "ASD Aurora",
+     "text_before": "Elenco delle categorie.",
+     "text_after": "Fine."
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_numbers": {
+    "id": "a1000000-0000-4000-8000-000000930115",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_numbers",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Carnet",
+     "format": "pdf",
+     "fields": [
+      "title",
+      "lessons_number",
+      "fee",
+      "public",
+      "description"
+     ],
+     "order_by": [
+      "lessons_number"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "sheets_missing_error": {
+    "id": "a1000000-0000-4000-8000-000000930116",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report sheets_missing_error",
+    "description": "",
+    "tool": "export_multi_sheet",
+    "params": {
+     "filename": "x"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "sheets_none": {
+    "id": "a1000000-0000-4000-8000-000000930117",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report sheets_none",
+    "description": "",
+    "tool": "export_multi_sheet",
+    "params": {
+     "sheets": []
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "sheets_model_required": {
+    "id": "a1000000-0000-4000-8000-000000930118",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report sheets_model_required",
+    "description": "",
+    "tool": "export_multi_sheet",
+    "params": {
+     "sheets": [
+      {
+       "model_name": "Tags"
+      },
+      {
+       "title": "x"
+      }
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "sheets_no_data": {
+    "id": "a1000000-0000-4000-8000-000000930119",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report sheets_no_data",
+    "description": "",
+    "tool": "export_multi_sheet",
+    "params": {
+     "sheets": [
+      {
+       "model_name": "Tags",
+       "filters": {
+        "tag_name": "zzz"
+       }
+      }
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "sheets_unknown_model_error": {
+    "id": "a1000000-0000-4000-8000-000000930120",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report sheets_unknown_model_error",
+    "description": "",
+    "tool": "export_multi_sheet",
+    "params": {
+     "sheets": [
+      {
+       "model_name": "Tags"
+      },
+      {
+       "model_name": "Nope"
+      }
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "sheets_two": {
+    "id": "a1000000-0000-4000-8000-000000930121",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report sheets_two",
+    "description": "",
+    "tool": "export_multi_sheet",
+    "params": {
+     "sheets": [
+      {
+       "model_name": "Tags",
+       "fields": [
+        "tag_name"
+       ],
+       "order_by": [
+        "tag_name"
+       ],
+       "filters": {
+        "tag_name__icontains": "nuoto"
+       }
+      },
+      {
+       "model_name": "Carnet",
+       "title": "Carnet attivi",
+       "fields": [
+        "title",
+        "lessons_number"
+       ],
+       "order_by": [
+        "lessons_number"
+       ],
+       "column_labels": {
+        "lessons_number": "Lezioni"
+       }
+      },
+      {
+       "model_name": "Tags",
+       "filters": {
+        "tag_name": "zzz"
+       }
+      }
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "sheets_repeated_titles_filename": {
+    "id": "a1000000-0000-4000-8000-000000930122",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report sheets_repeated_titles_filename",
+    "description": "",
+    "tool": "export_multi_sheet",
+    "params": {
+     "filename": "Report: tag/2026",
+     "sheets": [
+      {
+       "model_name": "Tags",
+       "fields": [
+        "tag_name"
+       ],
+       "order_by": [
+        "tag_name"
+       ],
+       "limit": 1
+      },
+      {
+       "model_name": "Tags",
+       "fields": [
+        "tag_name"
+       ],
+       "order_by": [
+        "-tag_name"
+       ],
+       "limit": 1
+      }
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_preview_course": {
+    "id": "a1000000-0000-4000-8000-000000930123",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_preview_course",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "course_id": "a1000000-0000-4000-8000-000000930030"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_preview_dates_ignored": {
+    "id": "a1000000-0000-4000-8000-000000930124",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_preview_dates_ignored",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "course_id": "a1000000-0000-4000-8000-000000930030",
+     "date_from": "ieri",
+     "date_to": 20260915
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_preview_period": {
+    "id": "a1000000-0000-4000-8000-000000930125",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_preview_period",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "course_name": "CALC",
+     "date_from": "2026-09-02",
+     "date_to": "2026-12-31"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_preview_all": {
+    "id": "a1000000-0000-4000-8000-000000930126",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_preview_all",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {},
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_course_missing": {
+    "id": "a1000000-0000-4000-8000-000000930127",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_course_missing",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "course_id": "a1000000-0000-4000-8000-000000720009"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_course_deleted": {
+    "id": "a1000000-0000-4000-8000-000000930128",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_course_deleted",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "course_id": "a1000000-0000-4000-8000-000000930034",
+     "export": true
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_course_foreign": {
+    "id": "a1000000-0000-4000-8000-000000930129",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_course_foreign",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "course_id": "a1000000-0000-4000-8000-000000930035"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_course_invalid_error": {
+    "id": "a1000000-0000-4000-8000-000000930130",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_course_invalid_error",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "course_id": "nope"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_name_none": {
+    "id": "a1000000-0000-4000-8000-000000930131",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_name_none",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "course_name": "zzz"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_no_registry": {
+    "id": "a1000000-0000-4000-8000-000000930132",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_no_registry",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "course_id": "a1000000-0000-4000-8000-000000930033",
+     "export": true
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_no_days": {
+    "id": "a1000000-0000-4000-8000-000000930133",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_no_days",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "course_id": "a1000000-0000-4000-8000-000000930032"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_no_days_in_period": {
+    "id": "a1000000-0000-4000-8000-000000930134",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_no_days_in_period",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "course_id": "a1000000-0000-4000-8000-000000930030",
+     "date_from": "2027-01-01"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_none_in_period": {
+    "id": "a1000000-0000-4000-8000-000000930135",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_none_in_period",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "date_to": "2020-01-01",
+     "export": true
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_export_xlsx_course": {
+    "id": "a1000000-0000-4000-8000-000000930136",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_export_xlsx_course",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "course_name": "calc",
+     "export": true
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_export_pdf_course_period": {
+    "id": "a1000000-0000-4000-8000-000000930137",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_export_pdf_course_period",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "course_id": "a1000000-0000-4000-8000-000000930030",
+     "export": 1,
+     "format": "pdf",
+     "date_from": "2026-09-02",
+     "date_to": "2026-09-15"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_export_xlsx_all": {
+    "id": "a1000000-0000-4000-8000-000000930138",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_export_xlsx_all",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "export": true,
+     "format": "csv"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_export_xlsx_sheets": {
+    "id": "a1000000-0000-4000-8000-000000930139",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_export_xlsx_sheets",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "export": true,
+     "multi_sheet": true
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_export_pdf_all": {
+    "id": "a1000000-0000-4000-8000-000000930140",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_export_pdf_all",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "export": true,
+     "format": "pdf",
+     "multi_sheet": true
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_group": {
+    "id": "a1000000-0000-4000-8000-000000930141",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_group",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {},
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   }
+  },
+  "people": {
+   "rossi": {
+    "id": "a1000000-0000-4000-8000-000000930020",
+    "subscription": "a1000000-0000-4000-8000-000000930021",
+    "first": "Mario",
+    "last": "Rossi"
+   },
+   "bianchi": {
+    "id": "a1000000-0000-4000-8000-000000930022",
+    "subscription": "a1000000-0000-4000-8000-000000930023",
+    "first": "Anna",
+    "last": "Bianchi"
+   },
+   "verdi": {
+    "id": "a1000000-0000-4000-8000-000000930024",
+    "subscription": "a1000000-0000-4000-8000-000000930025",
+    "first": "Luca",
+    "last": "verdi"
+   },
+   "deluca": {
+    "id": "a1000000-0000-4000-8000-000000930026",
+    "subscription": "a1000000-0000-4000-8000-000000930027",
+    "first": "Ugo",
+    "last": "de Luca"
+   },
+   "acca": {
+    "id": "a1000000-0000-4000-8000-000000930028",
+    "subscription": "a1000000-0000-4000-8000-000000930029",
+    "first": "Zoe",
+    "last": "ÀCCA"
+   }
+  },
+  "courses": {
+   "nuoto": {
+    "id": "a1000000-0000-4000-8000-000000930030",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "title": "Nuoto",
+    "deleted": false,
+    "group": null
+   },
+   "calcio": {
+    "id": "a1000000-0000-4000-8000-000000930031",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "title": "Calcio a 5",
+    "deleted": false,
+    "group": "a1000000-0000-4000-8000-000000714001"
+   },
+   "baby": {
+    "id": "a1000000-0000-4000-8000-000000930032",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "title": "Nuoto baby",
+    "deleted": false,
+    "group": null
+   },
+   "tennis": {
+    "id": "a1000000-0000-4000-8000-000000930033",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "title": "Tennis",
+    "deleted": false,
+    "group": null
+   },
+   "old": {
+    "id": "a1000000-0000-4000-8000-000000930034",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "title": "Vecchio corso",
+    "deleted": true,
+    "group": null
+   },
+   "foreign": {
+    "id": "a1000000-0000-4000-8000-000000930035",
+    "association": "a1000000-0000-4000-8000-000000701002",
+    "title": "Nuoto estero",
+    "deleted": false,
+    "group": null
+   }
+  },
+  "enrolled": {
+   "n_rossi": {
+    "id": "a1000000-0000-4000-8000-000000930036",
+    "course": "nuoto",
+    "person": "rossi",
+    "deleted": false
+   },
+   "n_bianchi": {
+    "id": "a1000000-0000-4000-8000-000000930037",
+    "course": "nuoto",
+    "person": "bianchi",
+    "deleted": false
+   },
+   "n_verdi": {
+    "id": "a1000000-0000-4000-8000-000000930038",
+    "course": "nuoto",
+    "person": "verdi",
+    "deleted": false
+   },
+   "n_acca": {
+    "id": "a1000000-0000-4000-8000-000000930039",
+    "course": "nuoto",
+    "person": "acca",
+    "deleted": true
+   },
+   "n_none": {
+    "id": "a1000000-0000-4000-8000-000000930040",
+    "course": "nuoto",
+    "person": null,
+    "deleted": false
+   },
+   "c_rossi": {
+    "id": "a1000000-0000-4000-8000-000000930041",
+    "course": "calcio",
+    "person": "rossi",
+    "deleted": false
+   },
+   "c_deluca": {
+    "id": "a1000000-0000-4000-8000-000000930042",
+    "course": "calcio",
+    "person": "deluca",
+    "deleted": false
+   },
+   "c_acca": {
+    "id": "a1000000-0000-4000-8000-000000930043",
+    "course": "calcio",
+    "person": "acca",
+    "deleted": false
+   },
+   "b_rossi": {
+    "id": "a1000000-0000-4000-8000-000000930044",
+    "course": "baby",
+    "person": "rossi",
+    "deleted": false
+   },
+   "o_rossi": {
+    "id": "a1000000-0000-4000-8000-000000930045",
+    "course": "old",
+    "person": "rossi",
+    "deleted": false
+   },
+   "f_rossi": {
+    "id": "a1000000-0000-4000-8000-000000930046",
+    "course": "foreign",
+    "person": "rossi",
+    "deleted": false
+   }
+  },
+  "registries": {
+   "nuoto": {
+    "id": "a1000000-0000-4000-8000-000000930047",
+    "course": "nuoto"
+   },
+   "calcio": {
+    "id": "a1000000-0000-4000-8000-000000930048",
+    "course": "calcio"
+   },
+   "baby": {
+    "id": "a1000000-0000-4000-8000-000000930049",
+    "course": "baby"
+   },
+   "old": {
+    "id": "a1000000-0000-4000-8000-000000930050",
+    "course": "old"
+   },
+   "foreign": {
+    "id": "a1000000-0000-4000-8000-000000930051",
+    "course": "foreign"
+   }
+  },
+  "days": {
+   "n1": {
+    "id": "a1000000-0000-4000-8000-000000930052",
+    "registry": "nuoto",
+    "date": "2026-09-01T18:00:00+00:00",
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000930036"
+     },
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000930038"
+     }
+    ]
+   },
+   "n2": {
+    "id": "a1000000-0000-4000-8000-000000930053",
+    "registry": "nuoto",
+    "date": "2026-09-08T23:30:00+00:00",
+    "attendees": [
+     "a1000000-0000-4000-8000-000000930037",
+     "a1000000-0000-4000-8000-000000930039"
+    ]
+   },
+   "n3": {
+    "id": "a1000000-0000-4000-8000-000000930054",
+    "registry": "nuoto",
+    "date": "2026-09-15T18:00:00+00:00",
+    "attendees": null
+   },
+   "c1": {
+    "id": "a1000000-0000-4000-8000-000000930055",
+    "registry": "calcio",
+    "date": "2026-09-01T17:00:00+00:00",
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000930041"
+     },
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000930042"
+     }
+    ]
+   },
+   "c2": {
+    "id": "a1000000-0000-4000-8000-000000930056",
+    "registry": "calcio",
+    "date": "2026-10-06T17:00:00+00:00",
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000930043"
+     },
+     {
+      "other": 1
+     }
+    ]
+   },
+   "o1": {
+    "id": "a1000000-0000-4000-8000-000000930057",
+    "registry": "old",
+    "date": "2026-09-01T18:00:00+00:00",
+    "attendees": []
+   },
+   "f1": {
+    "id": "a1000000-0000-4000-8000-000000930058",
+    "registry": "foreign",
+    "date": "2026-09-01T18:00:00+00:00",
+    "attendees": []
    }
   }
  },
@@ -1259,7 +2231,7 @@
    "headers": {},
    "status": 200,
    "response": {
-    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000930020",
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000930059",
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "name": "Origine",
     "template": "<p>o</p>",
@@ -1271,9 +2243,9 @@
    },
    "effect": {
     "kind": "template-copy",
-    "id": "a1000000-0000-4000-8000-000000930020",
+    "id": "a1000000-0000-4000-8000-000000930059",
     "row": {
-     "id": "a1000000-0000-4000-8000-000000930020",
+     "id": "a1000000-0000-4000-8000-000000930059",
      "association": "a1000000-0000-4000-8000-000000701001",
      "name": "Origine",
      "template": "<p>o</p>",
@@ -1286,7 +2258,7 @@
     "actor": "owner"
    },
    "body": {
-    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000930020",
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000930059",
     "header": false
    }
   },
@@ -1639,7 +2611,7 @@
    "name": "templates-reports-run-owner-count",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -1656,7 +2628,7 @@
    "name": "templates-reports-run-full-collaborator-owner-scope",
    "actor": "full_collaborator",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -1673,7 +2645,7 @@
    "name": "templates-reports-run-admin-impersonating-owner",
    "actor": "admin",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
    "headers": {
     "X-Impersonation-Id": "$session:admin_owner",
     "User-Id": "a1000000-0000-4000-8000-000000700001"
@@ -1693,7 +2665,7 @@
    "name": "templates-reports-run-foreign-owner-own-tags",
    "actor": "foreign_owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930023/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930062/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -1710,7 +2682,7 @@
    "name": "templates-reports-run-foreign-not-found",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930023/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930062/run",
    "headers": {},
    "status": 404,
    "response": {
@@ -1725,7 +2697,7 @@
    "name": "templates-reports-run-collaborator-created-not-found",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930022/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930061/run",
    "headers": {},
    "status": 404,
    "response": {
@@ -1768,11 +2740,11 @@
    "name": "templates-reports-run-restricted-unmapped",
    "actor": "restricted_collaborator",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
    "headers": {},
    "status": 403,
    "response": {
-    "detail": "Access denied: No permission mapping for endpoint 'saved-reports/a1000000-0000-4000-8000-000000930021/run'. Contact administrator to grant access."
+    "detail": "Access denied: No permission mapping for endpoint 'saved-reports/a1000000-0000-4000-8000-000000930060/run'. Contact administrator to grant access."
    },
    "effect": {
     "kind": "none"
@@ -1783,7 +2755,7 @@
    "name": "templates-reports-run-athlete-server-error",
    "actor": "athlete",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1796,7 +2768,7 @@
    "name": "templates-reports-run-anonymous",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
    "headers": {},
    "status": 401,
    "response": {
@@ -1811,7 +2783,7 @@
    "name": "templates-reports-run-admin-without-session",
    "actor": "admin",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
    "headers": {},
    "status": 403,
    "response": {
@@ -1826,7 +2798,7 @@
    "name": "templates-reports-run-wrong-method",
    "actor": "owner",
    "method": "GET",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
    "headers": {},
    "status": 405,
    "response": {
@@ -1840,7 +2812,7 @@
    "name": "templates-reports-run-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -1863,7 +2835,7 @@
    "name": "templates-reports-run-unknown-tool",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930024/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930063/run",
    "headers": {},
    "status": 400,
    "response": {
@@ -1878,7 +2850,7 @@
    "name": "templates-reports-run-list-body-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1891,7 +2863,7 @@
    "name": "templates-reports-run-list-overrides-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1908,7 +2880,7 @@
    "name": "templates-reports-run-null-overrides-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1923,7 +2895,7 @@
    "name": "templates-reports-run-stored-list-params-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930025/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930064/run",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1936,7 +2908,7 @@
    "name": "templates-reports-run-form-overrides-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1950,7 +2922,7 @@
    "name": "templates-reports-run-form-without-overrides",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -1968,7 +2940,7 @@
    "name": "templates-reports-run-override-association-id-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -1987,7 +2959,7 @@
    "name": "templates-reports-run-override-model-not-whitelisted-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -2006,7 +2978,7 @@
    "name": "templates-reports-run-override-model-number-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -2025,7 +2997,7 @@
    "name": "templates-reports-run-query-missing-model-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930027/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930066/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -2040,7 +3012,7 @@
    "name": "templates-reports-run-query-tags-default-fields",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930028/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930067/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2075,7 +3047,7 @@
    "name": "templates-reports-run-query-categories-limit-offset",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930029/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930068/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2103,7 +3075,7 @@
    "name": "templates-reports-run-query-carnets-exclude-nullable",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930030/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930069/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2133,7 +3105,7 @@
    "name": "templates-reports-run-query-carnets-all-columns",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930031/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930070/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2165,7 +3137,7 @@
    "name": "templates-reports-run-query-carnets-json-column",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930032/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930071/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2191,7 +3163,7 @@
    "name": "templates-reports-run-query-categories-or-filters",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930033/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930072/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2217,7 +3189,7 @@
    "name": "templates-reports-run-query-categories-distinct-type",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930034/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930073/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2240,7 +3212,7 @@
    "name": "templates-reports-run-query-categories-distinct-with-order",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930035/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930074/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2272,7 +3244,7 @@
    "name": "templates-reports-run-query-tags-overrides",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930036/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930075/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2302,7 +3274,7 @@
    "name": "templates-reports-run-query-tags-datetime-filters",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930037/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930076/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2325,7 +3297,7 @@
    "name": "templates-reports-run-query-tags-empty-in",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930038/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930077/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2344,7 +3316,7 @@
    "name": "templates-reports-run-query-carnets-isnull-range-decimal",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930039/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930078/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2367,7 +3339,7 @@
    "name": "templates-reports-run-query-tags-blacklisted-filter-dropped",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930040/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930079/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2396,7 +3368,7 @@
    "name": "templates-reports-run-query-tags-in-uuid",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930041/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930080/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2419,7 +3391,7 @@
    "name": "templates-reports-run-query-unknown-filter-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930042/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930081/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -2434,7 +3406,7 @@
    "name": "templates-reports-run-query-invalid-uuid-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930043/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930082/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -2449,7 +3421,7 @@
    "name": "templates-reports-run-query-negative-limit-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930044/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930083/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -2464,7 +3436,7 @@
    "name": "templates-reports-run-query-unknown-order-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930045/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930084/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -2479,7 +3451,7 @@
    "name": "templates-reports-run-query-filters-list-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930046/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930085/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -2494,7 +3466,7 @@
    "name": "templates-reports-run-count-filters-exclude",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930047/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930086/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2511,7 +3483,7 @@
    "name": "templates-reports-run-count-include-archived",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930048/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930087/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2528,7 +3500,7 @@
    "name": "templates-reports-run-values-category-type-labels",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930049/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930088/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2550,7 +3522,7 @@
    "name": "templates-reports-run-values-carnet-title-limit",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930050/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930089/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2571,7 +3543,7 @@
    "name": "templates-reports-run-values-carnet-title-nulls-last",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930051/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930090/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2593,7 +3565,7 @@
    "name": "templates-reports-run-values-tags-unescape",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930052/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930091/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2613,7 +3585,7 @@
    "name": "templates-reports-run-values-blacklisted-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930053/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930092/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -2628,7 +3600,7 @@
    "name": "templates-reports-run-values-missing-field-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930054/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930093/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -2643,7 +3615,7 @@
    "name": "templates-reports-run-aggregate-none",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930055/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930094/run",
    "headers": {},
    "status": 400,
    "response": {
@@ -2658,7 +3630,7 @@
    "name": "templates-reports-run-aggregate-invalid",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930056/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930095/run",
    "headers": {},
    "status": 400,
    "response": {
@@ -2673,7 +3645,7 @@
    "name": "templates-reports-run-aggregate-flat",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930057/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930096/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2695,7 +3667,7 @@
    "name": "templates-reports-run-aggregate-group-type",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930058/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930097/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2729,7 +3701,7 @@
    "name": "templates-reports-run-aggregate-group-invalid",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930059/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930098/run",
    "headers": {},
    "status": 400,
    "response": {
@@ -2744,7 +3716,7 @@
    "name": "templates-reports-run-aggregate-sum-text-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930099/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -2759,7 +3731,7 @@
    "name": "templates-reports-run-aggregate-empty-set",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930061/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930100/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2777,7 +3749,7 @@
    "name": "templates-reports-run-aggregate-group-boolean-filtered",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930062/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930101/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -2804,7 +3776,7 @@
    "name": "templates-reports-run-schema-unknown-model",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930063/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930102/run",
    "headers": {},
    "status": 400,
    "response": {
@@ -2816,10 +3788,1430 @@
    "body": {}
   },
   {
+   "name": "templates-reports-run-export-missing-model-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930103/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-unsupported-format",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930104/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Unsupported format: doc. Use: csv, xlsx, pdf"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-no-data",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930105/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "No data to export",
+    "count": 0
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-unknown-filter-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930106/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-csv-tags",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930107/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "text/csv; charset=utf-8",
+     "disposition": "attachment; filename=\"Tags.csv\"",
+     "csv": "tag_name,creation_date\r\nCalcio & Basket,01/09/2026 10:00\r\nNuoto,15/09/2026 08:30\r\nnuoto agonistico,01/10/2026 00:00\r\n"
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-csv-title-labels",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930108/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "text/csv; charset=utf-8",
+     "disposition": "attachment; filename=\"Elenco- -tag- -1.csv\"",
+     "csv": "\"Nome, tag\",\"Creato \"\"il\"\"\"\r\nnuoto agonistico,01/10/2026 00:00\r\nNuoto,15/09/2026 08:30\r\n"
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-csv-numbers-booleans",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930109/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "text/csv; charset=utf-8",
+     "disposition": "attachment; filename=\"Carnet.csv\"",
+     "csv": "title,lessons_number,fee,public,description\r\n,0,0.0,Vero,\r\nCinque,5,45.5,Falso,\r\nDieci ingressi,10,80.0,Vero,Pacchetto\r\n"
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-xlsx-carnets",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930110/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+     "disposition": "attachment; filename=\"Carnet.xlsx\"",
+     "xlsx": {
+      "engine": "report_sheets",
+      "sheets": [
+       {
+        "title": "Carnet",
+        "columns": [
+         "title",
+         "lessons_number",
+         "fee",
+         "public",
+         "description"
+        ],
+        "rows": [
+         [
+          "",
+          {
+           "int": "0"
+          },
+          {
+           "float": "0.0"
+          },
+          "Vero",
+          ""
+         ],
+         [
+          "Cinque",
+          {
+           "int": "5"
+          },
+          {
+           "float": "45.5"
+          },
+          "Falso",
+          ""
+         ],
+         [
+          "Dieci ingressi",
+          {
+           "int": "10"
+          },
+          {
+           "float": "80.0"
+          },
+          "Vero",
+          "Pacchetto"
+         ]
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-xlsx-override-title-json",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930111/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+     "disposition": "attachment; filename=\"Carnet attivi 2026 con un titolo più lungo di trentuno.xlsx\"",
+     "xlsx": {
+      "engine": "report_sheets",
+      "sheets": [
+       {
+        "title": "Carnet attivi 2026 con un titol",
+        "columns": [
+         "Titolo",
+         "meta"
+        ],
+        "rows": [
+         [
+          "Dieci ingressi",
+          {
+           "dict": [
+            [
+             "colore",
+             "blu"
+            ]
+           ]
+          }
+         ]
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "overrides": {
+     "format": "xlsx"
+    }
+   }
+  },
+  {
+   "name": "templates-reports-run-export-xlsx-sheet-name-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930112/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-tags",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930113/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Tags.pdf\"",
+     "pdf": {
+      "engine": "report_table",
+      "headers": [
+       "tag_name",
+       "creation_date"
+      ],
+      "title": "Tags",
+      "rows": [
+       [
+        "Nuoto",
+        "15/09/2026 08:30"
+       ],
+       [
+        "nuoto agonistico",
+        "01/10/2026 00:00"
+       ]
+      ]
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-categories-texts",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930114/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "=?utf-8?q?attachment=3B_filename=3D=22Categorie_=E2=82=AC=2Epdf=22?=",
+     "pdf": {
+      "engine": "report_table",
+      "headers": [
+       "Nome",
+       "Tipo",
+       "expense",
+       "creation_date"
+      ],
+      "title": "Intestazione",
+      "footer_text": "ASD Aurora",
+      "text_before": "Elenco delle categorie.",
+      "text_after": "Fine.",
+      "rows": [
+       [
+        "Affitto",
+        "Commerciale",
+        "Vero",
+        "01/02/2026 09:00"
+       ],
+       [
+        "Eventi",
+        "Istituzionale",
+        "Vero",
+        "01/04/2026 09:00"
+       ],
+       [
+        "Quote",
+        "Istituzionale",
+        "Falso",
+        "10/01/2026 09:00"
+       ],
+       [
+        "Sponsor",
+        "3",
+        "Falso",
+        "01/03/2026 09:00"
+       ]
+      ]
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-numbers",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930115/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Carnet.pdf\"",
+     "pdf": {
+      "engine": "report_table",
+      "headers": [
+       "title",
+       "lessons_number",
+       "fee",
+       "public",
+       "description"
+      ],
+      "title": "Carnet",
+      "rows": [
+       [
+        "",
+        "0",
+        "0.0",
+        "Vero",
+        ""
+       ],
+       [
+        "Cinque",
+        "5",
+        "45.5",
+        "Falso",
+        ""
+       ],
+       [
+        "Dieci ingressi",
+        "10",
+        "80.0",
+        "Vero",
+        "Pacchetto"
+       ]
+      ]
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-sheets-missing-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930116/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-sheets-none",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930117/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "No sheets specified"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-sheets-model-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930118/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Sheet 2: model_name is required"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-sheets-no-data",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930119/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "No data to export from any sheet",
+    "count": 0
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-sheets-unknown-model-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930120/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-sheets-two",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930121/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+     "disposition": "attachment; filename=\"Export.xlsx\"",
+     "xlsx": {
+      "engine": "report_sheets",
+      "sheets": [
+       {
+        "title": "Tags",
+        "columns": [
+         "tag_name"
+        ],
+        "rows": [
+         [
+          "Nuoto"
+         ],
+         [
+          "nuoto agonistico"
+         ]
+        ]
+       },
+       {
+        "title": "Carnet attivi",
+        "columns": [
+         "title",
+         "Lezioni"
+        ],
+        "rows": [
+         [
+          "",
+          {
+           "int": "0"
+          }
+         ],
+         [
+          "Cinque",
+          {
+           "int": "5"
+          }
+         ],
+         [
+          "Dieci ingressi",
+          {
+           "int": "10"
+          }
+         ]
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-sheets-repeated-titles-filename",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930122/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+     "disposition": "attachment; filename=\"Report- tag-2026.xlsx\"",
+     "xlsx": {
+      "engine": "report_sheets",
+      "sheets": [
+       {
+        "title": "Tags",
+        "columns": [
+         "tag_name"
+        ],
+        "rows": [
+         [
+          "Calcio & Basket"
+         ]
+        ]
+       },
+       {
+        "title": "Tags (2)",
+        "columns": [
+         "tag_name"
+        ],
+        "rows": [
+         [
+          "nuoto agonistico"
+         ]
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-preview-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930123/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "course": "Nuoto",
+     "dates": [
+      "01/09/2026",
+      "08/09/2026",
+      "15/09/2026"
+     ],
+     "total_enrolled": 4,
+     "total_dates": 3,
+     "preview": [
+      {
+       "name": "a1000000-0000-4000-8000-000000930040",
+       "present_count": 0,
+       "total_days": 3
+      },
+      {
+       "name": "Bianchi Anna",
+       "present_count": 1,
+       "total_days": 3
+      },
+      {
+       "name": "Rossi Mario",
+       "present_count": 1,
+       "total_days": 3
+      },
+      {
+       "name": "verdi Luca",
+       "present_count": 1,
+       "total_days": 3
+      }
+     ],
+     "note": "Anteprima dei primi 10 iscritti. Usa export=true per generare il file Excel completo."
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-preview-dates-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930124/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "course": "Nuoto",
+     "dates": [
+      "01/09/2026",
+      "08/09/2026",
+      "15/09/2026"
+     ],
+     "total_enrolled": 4,
+     "total_dates": 3,
+     "preview": [
+      {
+       "name": "a1000000-0000-4000-8000-000000930040",
+       "present_count": 0,
+       "total_days": 3
+      },
+      {
+       "name": "Bianchi Anna",
+       "present_count": 1,
+       "total_days": 3
+      },
+      {
+       "name": "Rossi Mario",
+       "present_count": 1,
+       "total_days": 3
+      },
+      {
+       "name": "verdi Luca",
+       "present_count": 1,
+       "total_days": 3
+      }
+     ],
+     "note": "Anteprima dei primi 10 iscritti. Usa export=true per generare il file Excel completo."
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-preview-period",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930125/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "course": "Calcio a 5",
+     "dates": [
+      "06/10/2026"
+     ],
+     "total_enrolled": 3,
+     "total_dates": 1,
+     "preview": [
+      {
+       "name": "de Luca Ugo",
+       "present_count": 0,
+       "total_days": 1
+      },
+      {
+       "name": "Rossi Mario",
+       "present_count": 0,
+       "total_days": 1
+      },
+      {
+       "name": "ÀCCA Zoe",
+       "present_count": 1,
+       "total_days": 1
+      }
+     ],
+     "note": "Anteprima dei primi 10 iscritti. Usa export=true per generare il file Excel completo."
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-preview-all",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930126/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "multi": true,
+     "courses": [
+      {
+       "course": "Calcio a 5",
+       "total_enrolled": 3,
+       "total_dates": 2
+      },
+      {
+       "course": "Nuoto",
+       "total_enrolled": 4,
+       "total_dates": 3
+      }
+     ],
+     "summary": {
+      "total_courses": 2,
+      "total_enrolled": 7,
+      "total_dates": 5
+     },
+     "note": "Usa export=true per generare un unico file Excel con tutti i corsi (include colonna Corso)."
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-course-missing",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930127/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Corso non trovato con ID: a1000000-0000-4000-8000-000000720009"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-course-deleted",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930128/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Corso non trovato con ID: a1000000-0000-4000-8000-000000930034"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-course-foreign",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930129/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Corso non trovato con ID: a1000000-0000-4000-8000-000000930035"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-course-invalid-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930130/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-name-none",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930131/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Nessun corso trovato con nome: zzz"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-no-registry",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930132/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Nessuna giornata di presenza trovata per questo corso nel periodo indicato.",
+    "course": "Tennis"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-no-days",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930133/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Nessuna giornata di presenza trovata per questo corso nel periodo indicato.",
+    "course": "Nuoto baby"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-no-days-in-period",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930134/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Nessuna giornata di presenza trovata per questo corso nel periodo indicato.",
+    "course": "Nuoto"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-none-in-period",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930135/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Nessun dato di presenza trovato per nessun corso nel periodo indicato."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-export-xlsx-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930136/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+     "disposition": "attachment; filename=\"Presenze - Calcio a 5.xlsx\"",
+     "xlsx": {
+      "engine": "attendance",
+      "mode": "single",
+      "courses": [
+       {
+        "course": "Calcio a 5",
+        "dates": [
+         "01/09/2026",
+         "06/10/2026"
+        ],
+        "rows": [
+         {
+          "name": "de Luca Ugo",
+          "attendance": [
+           "P",
+           ""
+          ],
+          "present_count": 1
+         },
+         {
+          "name": "Rossi Mario",
+          "attendance": [
+           "P",
+           ""
+          ],
+          "present_count": 1
+         },
+         {
+          "name": "ÀCCA Zoe",
+          "attendance": [
+           "",
+           "P"
+          ],
+          "present_count": 1
+         }
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-export-pdf-course-period",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930137/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Presenze - Nuoto.pdf\"",
+     "pdf": {
+      "engine": "attendance",
+      "courses": [
+       {
+        "course": "Nuoto",
+        "dates": [
+         "08/09/2026",
+         "15/09/2026"
+        ],
+        "rows": [
+         {
+          "name": "a1000000-0000-4000-8000-000000930040",
+          "attendance": [
+           "",
+           ""
+          ],
+          "present_count": 0
+         },
+         {
+          "name": "Bianchi Anna",
+          "attendance": [
+           "P",
+           ""
+          ],
+          "present_count": 1
+         },
+         {
+          "name": "Rossi Mario",
+          "attendance": [
+           "",
+           ""
+          ],
+          "present_count": 0
+         },
+         {
+          "name": "verdi Luca",
+          "attendance": [
+           "",
+           ""
+          ],
+          "present_count": 0
+         }
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-export-xlsx-all",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930138/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+     "disposition": "attachment; filename=\"Presenze - tutti i corsi.xlsx\"",
+     "xlsx": {
+      "engine": "attendance",
+      "mode": "flat",
+      "courses": [
+       {
+        "course": "Calcio a 5",
+        "dates": [
+         "01/09/2026",
+         "06/10/2026"
+        ],
+        "rows": [
+         {
+          "name": "de Luca Ugo",
+          "attendance": [
+           "P",
+           ""
+          ],
+          "present_count": 1
+         },
+         {
+          "name": "Rossi Mario",
+          "attendance": [
+           "P",
+           ""
+          ],
+          "present_count": 1
+         },
+         {
+          "name": "ÀCCA Zoe",
+          "attendance": [
+           "",
+           "P"
+          ],
+          "present_count": 1
+         }
+        ]
+       },
+       {
+        "course": "Nuoto",
+        "dates": [
+         "01/09/2026",
+         "08/09/2026",
+         "15/09/2026"
+        ],
+        "rows": [
+         {
+          "name": "a1000000-0000-4000-8000-000000930040",
+          "attendance": [
+           "",
+           "",
+           ""
+          ],
+          "present_count": 0
+         },
+         {
+          "name": "Bianchi Anna",
+          "attendance": [
+           "",
+           "P",
+           ""
+          ],
+          "present_count": 1
+         },
+         {
+          "name": "Rossi Mario",
+          "attendance": [
+           "P",
+           "",
+           ""
+          ],
+          "present_count": 1
+         },
+         {
+          "name": "verdi Luca",
+          "attendance": [
+           "P",
+           "",
+           ""
+          ],
+          "present_count": 1
+         }
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-export-xlsx-sheets",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930139/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+     "disposition": "attachment; filename=\"Presenze - tutti i corsi.xlsx\"",
+     "xlsx": {
+      "engine": "attendance",
+      "mode": "sheets",
+      "courses": [
+       {
+        "course": "Calcio a 5",
+        "dates": [
+         "01/09/2026",
+         "06/10/2026"
+        ],
+        "rows": [
+         {
+          "name": "de Luca Ugo",
+          "attendance": [
+           "P",
+           ""
+          ],
+          "present_count": 1
+         },
+         {
+          "name": "Rossi Mario",
+          "attendance": [
+           "P",
+           ""
+          ],
+          "present_count": 1
+         },
+         {
+          "name": "ÀCCA Zoe",
+          "attendance": [
+           "",
+           "P"
+          ],
+          "present_count": 1
+         }
+        ]
+       },
+       {
+        "course": "Nuoto",
+        "dates": [
+         "01/09/2026",
+         "08/09/2026",
+         "15/09/2026"
+        ],
+        "rows": [
+         {
+          "name": "a1000000-0000-4000-8000-000000930040",
+          "attendance": [
+           "",
+           "",
+           ""
+          ],
+          "present_count": 0
+         },
+         {
+          "name": "Bianchi Anna",
+          "attendance": [
+           "",
+           "P",
+           ""
+          ],
+          "present_count": 1
+         },
+         {
+          "name": "Rossi Mario",
+          "attendance": [
+           "P",
+           "",
+           ""
+          ],
+          "present_count": 1
+         },
+         {
+          "name": "verdi Luca",
+          "attendance": [
+           "P",
+           "",
+           ""
+          ],
+          "present_count": 1
+         }
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-export-pdf-all",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930140/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Presenze - tutti i corsi.pdf\"",
+     "pdf": {
+      "engine": "attendance",
+      "courses": [
+       {
+        "course": "Calcio a 5",
+        "dates": [
+         "01/09/2026",
+         "06/10/2026"
+        ],
+        "rows": [
+         {
+          "name": "de Luca Ugo",
+          "attendance": [
+           "P",
+           ""
+          ],
+          "present_count": 1
+         },
+         {
+          "name": "Rossi Mario",
+          "attendance": [
+           "P",
+           ""
+          ],
+          "present_count": 1
+         },
+         {
+          "name": "ÀCCA Zoe",
+          "attendance": [
+           "",
+           "P"
+          ],
+          "present_count": 1
+         }
+        ]
+       },
+       {
+        "course": "Nuoto",
+        "dates": [
+         "01/09/2026",
+         "08/09/2026",
+         "15/09/2026"
+        ],
+        "rows": [
+         {
+          "name": "a1000000-0000-4000-8000-000000930040",
+          "attendance": [
+           "",
+           "",
+           ""
+          ],
+          "present_count": 0
+         },
+         {
+          "name": "Bianchi Anna",
+          "attendance": [
+           "",
+           "P",
+           ""
+          ],
+          "present_count": 1
+         },
+         {
+          "name": "Rossi Mario",
+          "attendance": [
+           "P",
+           "",
+           ""
+          ],
+          "present_count": 1
+         },
+         {
+          "name": "verdi Luca",
+          "attendance": [
+           "P",
+           "",
+           ""
+          ],
+          "present_count": 1
+         }
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-group-header",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930141/run",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "course": "Calcio a 5",
+     "dates": [
+      "01/09/2026",
+      "06/10/2026"
+     ],
+     "total_enrolled": 3,
+     "total_dates": 2,
+     "preview": [
+      {
+       "name": "de Luca Ugo",
+       "present_count": 1,
+       "total_days": 2
+      },
+      {
+       "name": "Rossi Mario",
+       "present_count": 1,
+       "total_days": 2
+      },
+      {
+       "name": "ÀCCA Zoe",
+       "present_count": 1,
+       "total_days": 2
+      }
+     ],
+     "note": "Anteprima dei primi 10 iscritti. Usa export=true per generare il file Excel completo."
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-group-header-export",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930141/run",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Presenze - Calcio a 5.pdf\"",
+     "pdf": {
+      "engine": "attendance",
+      "courses": [
+       {
+        "course": "Calcio a 5",
+        "dates": [
+         "01/09/2026",
+         "06/10/2026"
+        ],
+        "rows": [
+         {
+          "name": "de Luca Ugo",
+          "attendance": [
+           "P",
+           ""
+          ],
+          "present_count": 1
+         },
+         {
+          "name": "Rossi Mario",
+          "attendance": [
+           "P",
+           ""
+          ],
+          "present_count": 1
+         },
+         {
+          "name": "ÀCCA Zoe",
+          "attendance": [
+           "",
+           "P"
+          ],
+          "present_count": 1
+         }
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "overrides": {
+     "export": true,
+     "format": "pdf"
+    }
+   }
+  },
+  {
    "name": "templates-reports-run-delete-method-deletes",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930026/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930065/run",
    "headers": {},
    "status": 204,
    "response": "<empty>",
