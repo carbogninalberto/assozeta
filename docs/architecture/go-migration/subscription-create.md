@@ -18,7 +18,7 @@ share this code ([subscription-renew](subscription-renew.md)); `subscription/<ui
   `{"msg": "validation errors."}`. Outside it, a body missing `new_user_account`, `associate_data`, `associate_tutor_data` or
   `signature` is the same 400.
 - `create_subscription` runs in one `transaction.atomic()`; any exception rolls everything back. In Django's order:
-  1. dateutil's `parse(str(associate_data['born_date']))` (missing or unparseable: 500) and the age (`relativedelta` from today, UTC);
+  1. `person_date(str(associate_data['born_date']))` (dateutil with the day first unless the text starts with the year) (missing or unparseable: 500) and the age (`relativedelta` from today, UTC);
   2. with a tutor dict: address city/cap copied between associate and tutor (to the tutor only under 18), a blank tutor cap becomes
      None, e-mails cleaned (`strip`, spaces removed, `..` -> `.`; an address `check_email` rejects is dropped; a non-string is a
      500), `sex` upper-cased on both (a missing key or non-string: 500);
@@ -241,16 +241,14 @@ the 400 validation message. Go: `quickMember`.
 
 Refused with the 500 page before anything is committed:
 - form bodies, a non-empty `X-Group-Id` (the managers' group filter and stored group); an athlete request from an account that
-  is neither an athlete nor an association; the quick mode from a member account during an impersonation session with an
-  association scope, or with an id that is a number or a boolean; a `sport_association` that is a list or an object;
+  is neither an athlete nor an association; the quick mode from a member account with an id that is a number or a boolean; a `sport_association` that is a list or an object;
 - in the family wizard's entries every input refused for a single registration, and with `type: grouped_subscriptions` two
-  matching earlier subscriptions with the same newest creation date; in the quick subscription an impersonation session with an association scope, an
+  matching earlier subscriptions with the same newest creation date; in the quick subscription an
   owner with several associations, plan ids or fees of other shapes (booleans, containers, more than two decimals) and a
   certificate choice that depends on the unordered subscriptions;
-- in a preregistration that renews a subscription: a renewed member that has a tutor (`get_main_tutor` and its serialized
-  data), a `sport_association` that is not a string, a `subscription_id` that is not a string, an account name matching several
+- in a preregistration that renews a subscription: an account name matching several
   associations, a renewed subscription without an associate; preregistration in renewals and draft approvals;
-- new member info with a `username` (create_user's TypeError, 500), a `role` other than athlete, a non-string e-mail, a numeric
+- new member info with a non-string e-mail, a numeric
   `new_member` flag; a signature upload whose generated key already exists;
 - a `medical_certificate` without `medical_id` whose `certificate_expring_date` parses to a date other than today (the placeholder
   certificate image drawn with PIL and stored), and expiration dates with non-ASCII digits (accepted by `strptime`);
@@ -264,6 +262,22 @@ Refused with the 500 page before anything is committed:
 
 Routes (not routed in Go): `subscription/<uid>/transfer`, `subscription/sign` (signature upload) and `subscription/import/upload` (spreadsheet
 parsing). The workers' tasks (`print_document_subscription`, `check_workflows_trigger`) stay in Django.
+
+## v2subs: sessions, tutors, roles and day-first dates
+
+- The quick re-subscription in an impersonation session with an association scope keeps both lookups to the session's
+  association (`scoped_queryset`).
+- A renewing preregistration whose member has a tutor sends the member's main tutor (`get_main_tutor`, serialized with the
+  birth date as `DD/MM/YYYY`); a minor that already has a tutor is not linked to another one (the new tutor is saved).
+- `sport_association` and `subscription_id` that are not strings follow the field conversions of the lookups.
+- A new member account takes the `role` sent (validated against the account roles; only an athlete account gets the
+  approval reminder); a `username` in `new_member_info` is the TypeError Django raises (500).
+- The age reads the birth date with the day first (`person_date`; Go `dto.PersonDate`): `subscription-create-minor-day-first-birth-date`
+  uses a date computed on the day of the run whose month-first reading would be an adult.
+- Evidence: 149 cases. RED (`v2subs-red-r1` for the session, tutor and role cases; `v2subs-red-r2` for the day-first
+  case: Django 149/149, Go fails the tutor's `address_city`). GREEN (`v2subs-versioned-r1`, after merging the base):
+  149/149 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation (`v2subs-mutation-r2`): reading `A/B/YYYY`
+  month first fails Go on `subscription-create-minor-day-first-birth-date` (the tutor's `address_city`).
 
 ## Evidence
 

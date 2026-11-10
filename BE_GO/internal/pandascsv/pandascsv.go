@@ -5,6 +5,21 @@
 // ('Unnamed: <i>', '.<n>' de-duplication). Only the outcome needed by
 // subscription_import_upload is modelled: the columns, or whether pandas
 // raises. Golden cases: testdata/pandas_headers.json.
+//
+// Read and ReadDecoded reproduce the whole DataFrame of the same call and the
+// values DataFrame.iterrows() hands out. They port the C parser instead of
+// describing its results: tokenizer.c's state machine and line bookkeeping
+// (tokenizer.go), its integer and float conversions (numeric.go: the float
+// parser is precise_xstrtod, which is not correctly rounded), and
+// TextReader's low_memory reading (frame.go): rows are converted in chunks of
+// 2**20 // width rows, each column of a chunk becomes the first of int64
+// (uint64 on overflow), float64, bool and object that takes all its fields,
+// NA fields upcast it, and chunks of different dtypes are concatenated.
+// Anything not proven identical is ErrUnsupported: a whitespace-led line
+// after a bare carriage return (the tokenizer reads earlier lines again) and
+// float texts whose value depends on how pandas was compiled.
+// Golden cases: testdata/pandas_frames.json.gz, written from pandas 2.2.3 by
+// TESTS/adapters/go/pandas_csv_frames_golden.py.
 package pandascsv
 
 import (
@@ -24,10 +39,11 @@ var ErrEmpty = errors.New("pandas: no columns to parse from file")
 // more fields than expected).
 var ErrParser = errors.New("pandas: error tokenizing data")
 
-// ErrUnsupported marks input outside the modelled subset: invalid UTF-8
-// (pandas raises UnicodeDecodeError), NUL bytes and a carriage return not
-// followed by a line feed (after one, the tokenizer drops a following
-// delimiter and its blank-line backtrack runs back to the previous '\n').
+// ErrUnsupported marks input outside the modelled subset. For Columns:
+// invalid UTF-8 (pandas raises UnicodeDecodeError), NUL bytes and a carriage
+// return not followed by a line feed (after one, the tokenizer drops a
+// following delimiter and its blank-line backtrack runs back to the previous
+// '\n'). Read and ReadDecoded document their own, smaller set.
 var ErrUnsupported = refusal.New("pandascsv: input outside the supported subset")
 
 const (

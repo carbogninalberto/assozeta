@@ -403,7 +403,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		// str() of numbers and containers through dateutil is not ported.
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
-	born, result := dto.DateutilDate(bornValue)
+	born, result := dto.PersonDate(bornValue)
 	if result == dto.DateutilUnsupported {
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
@@ -592,19 +592,29 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			if err != nil {
 				return nil, err
 			}
-			if len(relations) > 0 {
-				// An associate that already has tutors is not ported.
-				return nil, domain.ErrSubscriptionCreateNotPorted
+			linked := false
+			for _, relation := range relations {
+				linked = linked || relation.TutorID == savedTutor.ID
 			}
-			relation, err := tx.InsertRelation(ctx, saved.ID, savedTutor.ID)
-			if err != nil {
-				return nil, err
-			}
-			key := fmt.Sprint(relation)
-			if err = tx.AuditEntry(ctx, domain.SubscriptionCreateAudit{App: "application", Model: "associatetutorrelation",
-				Representation: "AssociateTutorRelation", Table: "application_associatetutorrelation", Column: "id", Key: key, Created: true,
-				Association: ownAssociation, Path: "associate.sport_association", Context: request.Audit, At: s.now().UTC()}); err != nil {
-				return nil, err
+			switch {
+			case linked:
+				// associate_tutor in associate.tutors.all(): nothing to add.
+			case len(relations) > 0:
+				// get_main_tutor(), then tutors.add(primary_tutor) adds nothing: the new tutor is not linked.
+				if _, err = s.mainTutor(ctx, tx, saved.ID); err != nil {
+					return nil, err
+				}
+			default:
+				relation, err := tx.InsertRelation(ctx, saved.ID, savedTutor.ID)
+				if err != nil {
+					return nil, err
+				}
+				key := fmt.Sprint(relation)
+				if err = tx.AuditEntry(ctx, domain.SubscriptionCreateAudit{App: "application", Model: "associatetutorrelation",
+					Representation: "AssociateTutorRelation", Table: "application_associatetutorrelation", Column: "id", Key: key, Created: true,
+					Association: ownAssociation, Path: "associate.sport_association", Context: request.Audit, At: s.now().UTC()}); err != nil {
+					return nil, err
+				}
 			}
 		}
 	}

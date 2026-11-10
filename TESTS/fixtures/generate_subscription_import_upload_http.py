@@ -240,8 +240,9 @@ STYLES = (f'{DECLARATION}<styleSheet xmlns="{MAIN}"><fonts count="1"><font><sz v
           '<fills count="1"><fill><patternFill patternType="none"/></fill></fills>'
           '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'
           '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
-          '<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
-          '<xf numFmtId="14" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs>'
+          '<cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
+          '<xf numFmtId="14" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'
+          '<xf numFmtId="21" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs>'
           '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>')
 
 
@@ -263,7 +264,8 @@ def archive(parts):
 
 def workbook(rows):
     """A one-sheet .xlsx. A cell is None (absent), a str (shared string), an int or float (number) or
-    ('date', serial): a number with the date style (days since 1899-12-30)."""
+    ('date', serial): a number with the date style (days since 1899-12-30), ('time', fraction): a number with the
+    h:mm:ss style, True/False (a boolean cell)."""
     strings, body = [], []
     for number, row in enumerate(rows, 1):
         cells = ''
@@ -275,8 +277,10 @@ def workbook(rows):
                 if value not in strings:
                     strings.append(value)
                 cells += f'<c r="{reference}" t="s"><v>{strings.index(value)}</v></c>'
+            elif isinstance(value, bool):
+                cells += f'<c r="{reference}" t="b"><v>{int(value)}</v></c>'
             elif isinstance(value, tuple):
-                cells += f'<c r="{reference}" s="1"><v>{value[1]}</v></c>'
+                cells += f'<c r="{reference}" s="{2 if value[0] == "time" else 1}"><v>{value[1]}</v></c>'
             else:
                 cells += f'<c r="{reference}"><v>{value!r}</v></c>'
         body.append(f'<row r="{number}">{cells}</row>')
@@ -346,6 +350,24 @@ TYPED = workbook([
     ['Ugo', 5, '00100', 'True', 'NA', '31/02/1990', None, None, 'abc', None],
 ])
 upload('xlsx-typed-cells', 'owner', 'tipi.xlsx', TYPED, columns=TYPED_COLUMNS, kind=XLSX, content_type=XLSX, keep='typed')
+# Boolean cells and a time-of-day cell.
+KINDS_COLUMNS = ['Nome', 'Attivo', 'Orario', 'Numero']
+upload('xlsx-booleans-times', 'owner', 'altri-tipi.xlsx', workbook([
+    KINDS_COLUMNS, ['Mario', True, None, 7], ['Anna', False, None, 5]]),
+    columns=KINDS_COLUMNS, kind=XLSX, content_type=XLSX, keep='kinds')
+upload('xlsx-time-of-day', 'owner', 'orari.xlsx', workbook([
+    KINDS_COLUMNS, ['Mario', True, ('time', 0.4375), 1], ['Anna', False, None, 5]]),
+    columns=KINDS_COLUMNS, kind=XLSX, content_type=XLSX, keep='times')
+# A CSV for the import: text, whole numbers, decimals, booleans, missing values and codes with leading zeros.
+CSV_COLUMNS = ['Nome', 'Cognome', 'Codice', 'CAP', 'Telefono', 'Tessera', 'Nascita', 'Sesso', 'Attivo', 'Quota', 'Note', 'Anno']
+CSV_MEMBERS = ('Nome;Cognome;Codice;CAP;Telefono;Tessera;Nascita;Sesso;Attivo;Quota;Note;Anno\n'
+               'Mario;Rossi;RSSMRA80A01H501U;00100;3331234567;7;03/02/1990;M;True;12.5;x;1990\n'
+               f'Anna;Bianchi;{ANNA};20100;;0042;1975-12-25;F;False;3;;1975\n'
+               ' Luca ;Verdi;XXX;;02 1234567;;31/02/1990;;True;;nan;1980\n').encode()
+upload('csv-members', 'owner', 'soci-import.csv', CSV_MEMBERS, columns=CSV_COLUMNS, keep='csv')
+upload('csv-infinite-number', 'owner', 'infinito.csv', b'Nome;Quota\nMario;inf\nAnna;1.5\n', columns=['Nome', 'Quota'], keep='infinite')
+upload('csv-whole-numbers', 'owner', 'interi.csv', b'Nome;CAP;Attivo\n1;00100;True\n2;20100;False\n', columns=['Nome', 'CAP', 'Attivo'],
+       keep='csvnumbers')
 upload('xlsx-whole-numbers', 'owner', 'numeri.xlsx', workbook([['Nome', 'CAP'], [1, 100], [2, 20100]]), columns=['Nome', 'CAP'], kind=XLSX,
        content_type=XLSX, keep='numbers')
 
@@ -480,6 +502,46 @@ imported('typed-cells', 'owner', 'typed', {'map': {
 imported('whole-numbers', 'owner', 'numbers', {'map': {'nome': 'Nome', 'cap': 'CAP'}}, columns=['Nome', 'CAP'],
          drafts=[({'associate': {'first_name': 1, 'address_cap': '100'}, 'associate_tutor': {}}, False),
                  ({'associate': {'first_name': 2, 'address_cap': '20100'}, 'associate_tutor': {}}, False)])
+# A stored CSV. The columns of codes are text as written; the others are read_csv's values: whole numbers, decimals and
+# booleans; a missing value is no value; date text has the day first.
+imported('csv-import-members', 'owner', 'csv', {'map': {
+    'nome': 'Nome', 'cognome': 'Cognome', 'codice fiscale': 'Codice', 'cap': 'CAP', 'telefono': 'Telefono', 'numero tessera': 'Tessera',
+    'data di nascita': 'Nascita', 'sesso': 'Sesso', 'indirizzo': 'Attivo', 'città di residenza': 'Quota', 'email': 'Note',
+    'città di nascita': 'Anno', 'data tesseramento': 'Attivo'}}, columns=CSV_COLUMNS,
+    drafts=[
+        ({'associate': {'first_name': 'Mario', 'last_name': 'Rossi', 'tax_code': 'RSSMRA80A01H501U', 'address_cap': '00100',
+                        'phone': '3331234567', 'subscription_number': '7', 'born_date': '03/02/1990', 'sex': 'M', 'address': True,
+                        'address_city': 12.5, 'email': 'x', 'born_city': 1990}, 'associate_tutor': {}}, True),
+        # False is a value: the membership date keeps it.
+        ({'associate': {'first_name': 'Anna', 'last_name': 'Bianchi', 'tax_code': ANNA, 'address_cap': '20100', 'subscription_number': '0042',
+                        'born_date': '25/12/1975', 'sex': 'F', 'address': False, 'address_city': 3.0, 'born_city': 1975,
+                        'membership_start_date': False}, 'associate_tutor': {}}, True),
+        ({'associate': {'first_name': 'Luca', 'last_name': 'Verdi', 'tax_code': 'XXX', 'phone': '02 1234567', 'sex': 'A', 'address': True,
+                        'born_city': 1980}, 'associate_tutor': {}}, False),
+    ])
+# A frame of numbers and booleans only: the CAP stays text.
+imported('csv-import-whole-numbers', 'owner', 'csvnumbers', {'map': {'nome': 'Nome', 'cap': 'CAP', 'indirizzo': 'Attivo'}},
+         columns=['Nome', 'CAP', 'Attivo'],
+         drafts=[({'associate': {'first_name': 1, 'address_cap': '00100', 'address': True}, 'associate_tutor': {}}, False),
+                 ({'associate': {'first_name': 2, 'address_cap': '20100', 'address': False}, 'associate_tutor': {}}, False)])
+# An infinite number cannot be stored: the import fails.
+imported('csv-infinite-number-fails', 'owner', 'infinite', {'map': {'nome': 'Nome', 'indirizzo': 'Quota'}}, columns=['Nome', 'Quota'],
+         failed=True)
+# The same upload without that column is imported.
+imported('csv-import-after-a-failure', 'owner', 'infinite', {'map': {'nome': 'Nome'}}, columns=['Nome', 'Quota'],
+         drafts=[({'associate': {'first_name': 'Mario'}, 'associate_tutor': {}}, False),
+                 ({'associate': {'first_name': 'Anna'}, 'associate_tutor': {}}, False)])
+# Booleans of a workbook are stored as they are.
+imported('xlsx-booleans', 'owner', 'kinds', {'map': {'nome': 'Nome', 'indirizzo': 'Attivo', 'email': 'Numero'}},
+         columns=KINDS_COLUMNS,
+         drafts=[({'associate': {'first_name': 'Mario', 'address': True, 'email': 7}, 'associate_tutor': {}}, False),
+                 ({'associate': {'first_name': 'Anna', 'address': False, 'email': 5}, 'associate_tutor': {}}, False)])
+# A time-of-day cell cannot be stored: the import fails.
+imported('xlsx-time-of-day-fails', 'owner', 'times', {'map': {'nome': 'Nome', 'indirizzo': 'Orario'}}, columns=KINDS_COLUMNS, failed=True)
+imported('xlsx-time-of-day-column-left-out', 'owner', 'times', {'map': {'nome': 'Nome', 'indirizzo': 'Attivo', 'email': 'Orario tutore'}},
+         columns=KINDS_COLUMNS,
+         drafts=[({'associate': {'first_name': 'Mario', 'address': True}, 'associate_tutor': {}}, False),
+                 ({'associate': {'first_name': 'Anna', 'address': False}, 'associate_tutor': {}}, False)])
 # The import reads the association's own import uploads: another association's upload and a Document stored outside
 # the import folder answer like an unknown document, before any write.
 add('upload-of-another-association-server-error', 'owner', 500, SERVER,

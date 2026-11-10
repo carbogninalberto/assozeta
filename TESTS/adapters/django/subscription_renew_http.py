@@ -28,6 +28,7 @@ from datetime import date, datetime, time as day_time, timedelta, timezone
 import json
 import os
 import pickle
+import re
 import time
 import uuid
 
@@ -48,7 +49,8 @@ SOURCES = ('TESTS/fixtures/subscription_renew_http.json', 'TESTS/contracts/test_
            'BE/application/utils/notification_utils.py', 'BE/notifications/services.py', 'BE/notifications/utils.py',
            'BE/notifications/models.py', 'BE/notifications/realtime_layer.py', 'BE/application/audit_resolvers.py',
            'BE/application/mixin.py', 'BE/application/permissions_registry.py', 'BE/application/impersonation_scope.py',
-           'BE/core/celery.py', 'BE/core/settings.py', 'BE/application/models/invoices_models.py') + harness.SOURCES
+           'BE/core/celery.py', 'BE/core/settings.py', 'BE/application/models/invoices_models.py',
+           'BE/application/models/courses_models.py', 'BE/application/serializers/courses_serializers.py') + harness.SOURCES
 TTL = create.TTL
 LABELS = {
     'associate': 'application.Associate', 'payment': 'application.Payment', 'subscription': 'application.Subscription',
@@ -56,6 +58,7 @@ LABELS = {
     'broadcast': 'notifications.NotificationsBroadcast', 'user_broadcast': 'notifications.UserNotificationsBroadcast',
     'draft': 'application.AssociateImportDraft', 'status': 'application.AssociateImportDraftStatus', 'link': 'application.Subscription_tags',
     'family': 'application.Family',
+    'course_subscription': 'application.CourseSubscription', 'installment': 'application.CourseSubscriptionInstallment',
 }
 MANAGED = (*LABELS.values(), harness.AUDIT, harness.INDEX)
 KEYS = {'application.Associate': 'associate_id', 'application.Payment': 'payment_id', 'application.Subscription': 'subscription_id',
@@ -63,13 +66,15 @@ KEYS = {'application.Associate': 'associate_id', 'application.Payment': 'payment
         'notifications.NotificationsBroadcast': 'broadcast_id', 'notifications.UserNotificationsBroadcast': 'user_broadcast_id',
         'application.AssociateImportDraft': 'associate_import_draft_id',
         'application.AssociateImportDraftStatus': 'associate_import_draft_status_id', 'application.Subscription_tags': 'id',
-        'application.Family': 'family_id'}
+        'application.Family': 'family_id', 'application.CourseSubscription': 'course_subscription_id',
+        'application.CourseSubscriptionInstallment': 'course_subscription_installment_id'}
 # Seed sections by row label (for references by name).
 SECTIONS = {'associate': 'associates', 'payment': 'payments', 'subscription': 'subscriptions', 'medical': 'certificates',
             'draft': 'drafts', 'status': 'statuses', 'tag': 'tags'}
 AUDIT_MODELS = {'associate': 'associate', 'payment': 'payment', 'subscription': 'subscription', 'subscriptionmembership': 'membership',
                 'medicalcertificate': 'medical', 'associateimportdraft': 'draft', 'associateimportdraftstatus': 'status',
-                'notificationsbroadcast': 'broadcast', 'usernotificationsbroadcast': 'user_broadcast', 'family': 'family'}
+                'notificationsbroadcast': 'broadcast', 'usernotificationsbroadcast': 'user_broadcast', 'family': 'family',
+                'coursesubscription': 'course_subscription', 'coursesubscriptioninstallment': 'installment'}
 STATE = {}
 
 
@@ -105,6 +110,13 @@ def apply_settings(ids, settings):
     with disable_auditlog():
         for label, valid in (settings.get('drafts') or {}).items():
             AssociateImportDraft._base_manager.filter(pk=STATE['source']['drafts'][label]['id']).update(valid=valid)
+        # Rows handed to another account (a case's setup).
+        from application.models import Associate, Subscription
+        accounts = settings.get('accounts') or {}
+        for label, account in (accounts.get('associates') or {}).items():
+            Associate._base_manager.filter(pk=STATE['source']['associates'][label]['id']).update(user_id=ids[account])
+        for label, account in (accounts.get('subscriptions') or {}).items():
+            Subscription._base_manager.filter(pk=STATE['source']['subscriptions'][label]['id']).update(user_id=ids[account])
 
 
 def seed_rows(source, created):
@@ -154,6 +166,12 @@ def seed_rows(source, created):
             associate_id=source['associates'][row['associate']]['id'], start_date=resolve_date(row['start']),
             end_date=resolve_date(row['end']), archived=row['archived'], subscription_number=row['number'], status_flag=4,
             payment_id=source['payments'][row['payment']]['id'] if row['payment'] else None))
+    from application.models import Course
+    for row in source['courses'].values():
+        insert(Course, Course(course_id=row['id'], sport_association_id=row['association'], title=row['title'],
+                              description='Descrizione ' + row['title'], fee=row['fee'], multi_payments=row['multi_payments'],
+                              events=row['events'], course_type=row['course_type'], multiple_quotes=row['multiple_quotes'],
+                              deleted=row['deleted'], status_flag=2))
     for row in source['tags'].values():
         insert(Tags, Tags(tag_id=row['id'], tag_name=row['name'], sport_association_id=row['association']))
     for row in source['drafts'].values():
@@ -168,7 +186,8 @@ def seed_rows(source, created):
 _identity_context = harness.with_celery_broker(harness.fixture_context_for(contract, seed_rows, purge=tuple(
     (lambda label=label: models()[label]) for label in (
         'application.Associate', 'application.Payment', 'application.Subscription', 'application.SubscriptionMembership',
-        'notifications.NotificationsBroadcast', 'notifications.UserNotificationsBroadcast', 'application.AssociateImportDraftStatus'))))
+        'notifications.NotificationsBroadcast', 'notifications.UserNotificationsBroadcast', 'application.AssociateImportDraftStatus',
+        'application.CourseSubscriptionInstallment', 'application.CourseSubscription'))))
 
 
 @contextmanager
@@ -263,7 +282,7 @@ def check_rows(effect, before, after, ids, since, until, binding):
         expected = {**defaults[model], **match, **resolve(spec['columns'], binding)}
         contract.require(create.uuid4_text(key) or key == spec['match'].get(KEYS[model]), 'state.key:' + label)
         expected[KEYS[model]] = row[KEYS[model]]
-        if 'creation_date' in expected:
+        if 'creation_date' in expected and 'creation_date' not in spec['columns']:
             contract.require(create.in_window(row['creation_date'], since, until), 'state.created:' + label)
             expected['creation_date'] = row['creation_date']
         contract.require(row == expected, 'state.row:' + label + json.dumps(
@@ -359,6 +378,13 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
                 pk = ref_id(label, spec['ref'], binding) if spec['ref'].startswith('$') or label in SECTIONS else binding['$' + spec['ref']]
                 instance = model._base_manager.get(pk=pk)
                 representation = str(instance)
+                if spec.get('repr'):
+                    # An authored str(instance.__dict__) of the instance as it was when the entry was written.
+                    representation = spec['repr'].replace('{created}', repr(instance.creation_date))
+                    for name in sorted(binding, key=len, reverse=True):
+                        if isinstance(binding[name], str):
+                            representation = representation.replace(name, binding[name])
+                    event = {**event, 'object_repr': re.sub(r' object at 0x[0-9a-f]+>', ' object at 0x?>', event['object_repr'])}
                 if spec['action'] == 0 or spec.get('created_style'):
                     expected = create.created_changes(instance, resolve(spec['changes'], binding))
                 else:

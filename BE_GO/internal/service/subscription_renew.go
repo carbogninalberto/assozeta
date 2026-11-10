@@ -23,8 +23,15 @@ type SubscriptionRenewResult struct{ PaymentID *string }
 
 // SubscriptionRenewals ports subscription_renew (subscription-renew.md).
 type SubscriptionRenewals struct {
-	store   domain.SubscriptionRenewStore
-	creates *SubscriptionCreates
+	store     domain.SubscriptionRenewStore
+	creates   *SubscriptionCreates
+	enrolment *CourseEnrolment
+}
+
+// WithEnrolment sets the course-enrolment port the renewal's courses run through.
+func (s *SubscriptionRenewals) WithEnrolment(enrolment *CourseEnrolment) *SubscriptionRenewals {
+	s.enrolment = enrolment
+	return s
 }
 
 func NewSubscriptionRenewals(store domain.SubscriptionRenewStore, creates *SubscriptionCreates) *SubscriptionRenewals {
@@ -109,15 +116,8 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 	if err = s.tags(ctx, tx, data, created); err != nil {
 		return nil, renewError(err)
 	}
-	if courses, present := data.Lookup("courses"); present {
-		size, err := pythonLen(courses)
-		if err != nil {
-			return nil, renewError(err)
-		}
-		if size > 0 {
-			// add_course_to_subscription inside the renewal is not ported.
-			return nil, domain.ErrSubscriptionCreateNotPorted
-		}
+	if err = s.courses(ctx, tx, identity, data, created, request); err != nil {
+		return nil, renewError(err)
 	}
 	if err = tx.Commit(); err != nil {
 		return nil, err
@@ -132,10 +132,6 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 // before the view's try block: every failure is the 500 page.
 func (s *SubscriptionRenewals) renewRequesterOwner(ctx context.Context, tx domain.SubscriptionRenewTransaction, identity domain.ResolvedIdentity,
 	body any) (*domain.Account, error) {
-	if identity.ImpersonationAssociationID != "" {
-		// The impersonation scope's association filter is not ported.
-		return nil, domain.ErrSubscriptionCreateNotPorted
-	}
 	data, ok := body.(domain.RequestObject)
 	if !ok {
 		return nil, domain.ErrSubscriptionCreateServer
@@ -162,6 +158,10 @@ func (s *SubscriptionRenewals) renewRequesterOwner(ctx context.Context, tx domai
 	owner, err := tx.RenewAssociationOwner(ctx, id.String())
 	if err != nil {
 		return nil, err
+	}
+	if scope := identity.ImpersonationAssociationID; scope != "" && scope != id.String() {
+		// An association-scoped session only finds its own association.
+		owner = nil
 	}
 	if owner == nil {
 		return nil, domain.ErrSubscriptionCreateServer
@@ -224,6 +224,14 @@ func (s *SubscriptionRenewals) cleanPayments(ctx context.Context, tx domain.Subs
 		calendarTime(*created.end), created.result.PaymentID, paymentStateScope(identity))
 	if err != nil {
 		return err
+	}
+	if scope := identity.ImpersonationAssociationID; scope != "" && len(ids) > 0 && identity.Effective != nil &&
+		identity.Effective.Role == domain.RoleAthlete {
+		// The session's person is an athlete: its own payments and those of the members it sees.
+		if ids, err = tx.VisiblePayments(ctx, domain.ResourceScope{AssociationID: scope, EffectiveID: identity.Effective.ID,
+			Role: identity.Effective.Role}, ids); err != nil {
+			return err
+		}
 	}
 	if len(ids) == 0 {
 		return nil
@@ -327,6 +335,93 @@ func (s *SubscriptionRenewals) tags(ctx context.Context, tx domain.SubscriptionR
 		}
 	}
 	return tx.AddTags(ctx, created.id, ids)
+}
+
+// courses is the renewal's course loop: for each item of data['courses'] the
+// association's course c['value'] (scoped_queryset(request, Course.objects), first())
+// goes through add_course_to_subscription(course, fresh_sub, request.user.sport_association,
+// data=None, is_athlete=False) inside the renewal's transaction. A course the
+// subscription is already in is skipped. Exceptions are the view's 400 body;
+// a stored event the serializer rejects is its APIException.
+func (s *SubscriptionRenewals) courses(ctx context.Context, tx domain.SubscriptionRenewTransaction, identity domain.ResolvedIdentity,
+	data domain.RequestObject, created *subscriptionCreated, request SubscriptionCreateRequest) error {
+	value, present := data.Lookup("courses")
+	if !present {
+		return nil
+	}
+	size, err := pythonLen(value)
+	if err != nil || size == 0 {
+		return err
+	}
+	list, ok := value.([]any)
+	if !ok {
+		// Iterating a str or a dict gives str items: c['value'] is a TypeError.
+		return pythonSubscriptError("")
+	}
+	if s.enrolment == nil {
+		return domain.ErrSubscriptionCreateNotPorted
+	}
+	enrolment := tx.Enrolment()
+	actor, err := s.creates.actorAssociation(ctx, tx, request.Audit)
+	if err != nil {
+		return err
+	}
+	audit := domain.CourseSubscriptionAudit{Context: request.Audit, ActorAssociation: actor, At: s.enrolment.moment()}
+	for _, item := range list {
+		object, ok := item.(domain.RequestObject)
+		if !ok {
+			return pythonSubscriptError(item)
+		}
+		raw, present := object.Lookup("value")
+		if !present {
+			return pythonKeyError("value")
+		}
+		var course *domain.CourseWriteRow
+		switch v := raw.(type) {
+		case nil:
+		case string:
+			id, err := paymentInfoParseUUID(v)
+			if err != nil {
+				return djangoInvalidUUID(v)
+			}
+			if course, err = enrolment.Course(ctx, id.String(), nil); err != nil {
+				return err
+			}
+		default:
+			// Numbers (uuid.UUID(int=...)), booleans and containers are not ported.
+			return domain.ErrSubscriptionCreateNotPorted
+		}
+		if course != nil && (!courseEnrolmentScoped(identity, course.AssociationID) || course.AssociationID == nil ||
+			*course.AssociationID != created.association) {
+			course = nil
+		}
+		if course == nil {
+			return pythonAttributeError(nil, "course_type")
+		}
+		if !course.MultiPayments && course.Fee == nil {
+			return pythonFailure("'>' not supported between instances of 'NoneType' and 'int'")
+		}
+		subscription, err := enrolment.Subscription(ctx, created.id, nil)
+		if err != nil {
+			return err
+		}
+		if subscription == nil {
+			return domain.ErrSubscriptionCreateNotPorted
+		}
+		_, err = s.enrolment.addCourseToSubscription(ctx, enrolment, *course, *subscription, created.association, domain.RequestObject{}, false,
+			CourseEnrolmentRequest{Audit: request.Audit}, audit, true)
+		var invalid *CourseWritesEventInvalid
+		switch {
+		case errors.As(err, &invalid):
+			return err
+		case errors.Is(err, courseEnrolmentServer), errors.Is(err, ErrCourseEnrolmentNotPorted):
+			// A Python exception whose text is not reproduced.
+			return domain.ErrSubscriptionCreateNotPorted
+		case err != nil:
+			return err
+		}
+	}
+	return nil
 }
 
 // pythonIn is `key in value` for a parsed JSON value.

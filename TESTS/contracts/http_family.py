@@ -11,6 +11,7 @@ below applies to every case:
   `unordered` lists by their identity field.
 """
 import json
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from TESTS.http_client import Client
@@ -19,8 +20,47 @@ from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, Response
 __all__ = ('require', 'load_source', 'assert_case', 'ResponseFailure')
 
 
+def day_first_dates(today):
+    """Birth dates whose two readings fall on either side of the 18th birthday, both numbers at most 12.
+
+    '$day_first_minor': D/M/YYYY of a person under 18 today who would be 18 with the numbers read month first;
+    '$day_first_adult': the reverse. The '_iso' forms are the day-first reading as YYYY-MM-DD. On 1 January no such
+    pair exists for a minor: the date is then the day after the 18th birthday (under 18 in the day-first reading only).
+    """
+    try:
+        limit = today.replace(year=today.year - 18)
+    except ValueError:  # 29 February
+        limit = today.replace(year=today.year - 18, day=28)
+    values = {}
+    for name, forward in (('minor', True), ('adult', False)):
+        found = None
+        for offset in range(1, 400):
+            born = limit + timedelta(days=offset) if forward else limit - timedelta(days=offset - 1)
+            if born.day > 12 or born.day == born.month:
+                continue
+            other = date(born.year, born.day, born.month)
+            if (other <= limit) if forward else (other > limit):
+                found = born
+                break
+        if found is None:
+            found = limit + timedelta(days=1) if forward else limit
+        values[f'$day_first_{name}'] = found.strftime('%d/%m/%Y')
+        values[f'$day_first_{name}_iso'] = found.isoformat()
+    return values
+
+
+def _resolve_dates(value, values):
+    if isinstance(value, str):
+        return values.get(value, value)
+    if isinstance(value, dict):
+        return {key: _resolve_dates(item, values) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_resolve_dates(item, values) for item in value]
+    return value
+
+
 def load_source(path, *, minimum=10):
-    source = json.loads(Path(path).read_text())
+    source = _resolve_dates(json.loads(Path(path).read_text()), day_first_dates(datetime.now(timezone.utc).date()))
     require(source['matrix_version'] == 1 and len(source['cases']) >= minimum, 'source.version-count')
     require(len({case['name'] for case in source['cases']}) == len(source['cases']), 'source.names')
     return source

@@ -215,10 +215,9 @@ func subscriptionQuickCertificate(certificates []domain.SubscriptionQuickCertifi
 // malformed id is the 500 page), then the answer is 403, since the quick
 // re-subscription is for the association's own owner.
 func (s *SubscriptionCreates) quickMember(ctx context.Context, identity domain.ResolvedIdentity, data domain.RequestObject) error {
-	if identity.ImpersonationAssociationID != "" {
-		// scoped_queryset's association filter is not ported.
-		return domain.ErrSubscriptionCreateNotPorted
-	}
+	// In an association-scoped session scoped_queryset keeps both lookups to
+	// the session's association (the request guard has checked the ids).
+	scope := identity.ImpersonationAssociationID
 	named, _ := data.Lookup("sport_association")
 	association, err := subscriptionQuickID(named)
 	if err != nil {
@@ -233,7 +232,7 @@ func (s *SubscriptionCreates) quickMember(ctx context.Context, identity domain.R
 	if err != nil {
 		return err
 	}
-	if !found {
+	if !found || (scope != "" && association != scope) {
 		return domain.ErrSubscriptionCreateServer // DoesNotExist
 	}
 	value, _ := data.Lookup("associate")
@@ -245,7 +244,7 @@ func (s *SubscriptionCreates) quickMember(ctx context.Context, identity domain.R
 	if err != nil {
 		return err
 	}
-	if associate == nil {
+	if associate == nil || (scope != "" && (associate.AssociationID == nil || *associate.AssociationID != scope)) {
 		return domain.ErrSubscriptionCreateServer // DoesNotExist
 	}
 	return &domain.PermissionDenied{Detail: "User not allowed."}
@@ -254,10 +253,7 @@ func (s *SubscriptionCreates) quickMember(ctx context.Context, identity domain.R
 // quick follows _handle_quick_subscription for an owner (or a collaborator acting as one).
 func (s *SubscriptionCreates) quick(ctx context.Context, identity domain.ResolvedIdentity, data domain.RequestObject,
 	request SubscriptionCreateRequest) (*SubscriptionCreateResult, error) {
-	if identity.ImpersonationAssociationID != "" {
-		// scoped_queryset's association filter on the associate is not ported.
-		return nil, domain.ErrSubscriptionCreateNotPorted
-	}
+	scope := identity.ImpersonationAssociationID
 	value, _ := data.Lookup("associate")
 	id, err := subscriptionQuickID(value)
 	if err != nil {
@@ -278,11 +274,15 @@ func (s *SubscriptionCreates) quick(ctx context.Context, identity domain.Resolve
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
 	association := settings.AssociationID
+	if scope != "" && association != scope {
+		// The session does not find the owner's association: .first() is None.
+		return nil, domain.ErrSubscriptionCreateServer
+	}
 	associate, err := tx.QuickAssociate(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	if associate == nil {
+	if associate == nil || (scope != "" && (associate.AssociationID == nil || *associate.AssociationID != scope)) {
 		return nil, domain.ErrSubscriptionCreateServer // DoesNotExist
 	}
 	// The quick re-subscription only uses the association's own members, for

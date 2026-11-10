@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,6 +12,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/codicefiscale"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandascsv"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandasxlsx"
 )
 
@@ -123,9 +125,20 @@ func subscriptionImportDate(text string) (date time.Time, parsed bool, err error
 	return time.Time{}, false, nil
 }
 
-// subscriptionImportCell is the Python value of a cell after
-// process_row_value's strip, 'nan' check and NaT check (an empty cell of a
-// date column is None).
+// subscriptionImportUnstorable is a value json.dumps does not encode (a
+// time of day, a timedelta) or PostgreSQL does not store (an infinite
+// float): a row that keeps one fails the import. text is str(value).
+type subscriptionImportUnstorable struct {
+	text   string
+	truthy bool
+}
+
+// subscriptionImportRefused is a cell whose Python text is not reproduced.
+type subscriptionImportRefused struct{}
+
+// subscriptionImportCell is the Python value of a workbook cell after
+// process_row_value's strip, 'nan' check, NaT check (an empty cell of a
+// date column is None) and item() of a NumPy scalar.
 func subscriptionImportCell(value pandasxlsx.Value) any {
 	switch value.Kind {
 	case pandasxlsx.String:
@@ -134,16 +147,53 @@ func subscriptionImportCell(value pandasxlsx.Value) any {
 			return nil
 		}
 		return text
-	case pandasxlsx.Int:
+	case pandasxlsx.Int, pandasxlsx.Int64:
 		return json.Number(strconv.FormatInt(value.I, 10))
+	case pandasxlsx.Uint64, pandasxlsx.BigInt:
+		return json.Number(value.Str())
 	case pandasxlsx.Float:
+		if math.IsInf(value.F, 0) {
+			return subscriptionImportUnstorable{text: value.Str(), truthy: true}
+		}
 		return value.F
+	case pandasxlsx.Bool, pandasxlsx.NumpyBool:
+		return value.B
 	case pandasxlsx.Time:
+		if value.T.Year() < 1000 {
+			return subscriptionImportRefused{} // strftime's year width
+		}
 		return subscriptionImportMoment{text: value.TimeText(), at: value.T}
-	case pandasxlsx.NaT:
-		return nil
+	case pandasxlsx.Date:
+		if value.T.Year() < 1000 {
+			return subscriptionImportRefused{}
+		}
+		return subscriptionImportMoment{text: value.Str(), at: value.T}
+	case pandasxlsx.TimeOfDay, pandasxlsx.Timedelta, pandasxlsx.PyTimedelta:
+		return subscriptionImportUnstorable{text: value.Str(), truthy: value.Truthy()}
 	}
-	return nil
+	return nil // NaN, NaT
+}
+
+// subscriptionImportCSVCell is subscriptionImportCell for a cell of read_csv.
+func subscriptionImportCSVCell(value pandascsv.Value) any {
+	switch value.Kind {
+	case pandascsv.String:
+		text := dto.PythonStrip(value.S)
+		if text == "nan" {
+			return nil
+		}
+		return text
+	case pandascsv.Int, pandascsv.Uint:
+		return json.Number(value.Text())
+	case pandascsv.Float:
+		if math.IsInf(value.F, 0) {
+			return subscriptionImportUnstorable{text: value.Text(), truthy: true}
+		}
+		return value.F
+	case pandascsv.Bool:
+		return value.B
+	}
+	return nil // NaN
 }
 
 // subscriptionImportTruthy is bool(value); text is str(value) for dateutil,
@@ -154,6 +204,13 @@ func subscriptionImportTruthy(value any) (truthy bool, text string, err error) {
 		return false, "", nil
 	case string:
 		return typed != "", typed, nil
+	case bool:
+		if typed {
+			return true, "True", nil
+		}
+		return false, "", nil
+	case subscriptionImportUnstorable:
+		return typed.truthy, typed.text, nil
 	case subscriptionImportMoment:
 		return true, typed.text, nil
 	case json.Number:
@@ -196,10 +253,10 @@ func subscriptionImportUnique(object domain.RequestObject) domain.RequestObject 
 // subscriptionImportPlan is process_import_rows over the frame: the
 // certificates in the order they are created and the drafts bulk_create
 // stores. An exception rolls the rows back: the effects are Failed.
-func (s *SubscriptionImportUpload) subscriptionImportPlan(frame *pandasxlsx.Frame, data domain.RequestObject) (domain.SubscriptionImportEffects, error) {
+func (s *SubscriptionImportUpload) subscriptionImportPlan(names []string, rows [][]any, data domain.RequestObject) (domain.SubscriptionImportEffects, error) {
 	effects := domain.SubscriptionImportEffects{StatusID: s.uploads.ids()}
-	columns := make(map[string]int, len(frame.Columns))
-	for index, name := range frame.Columns {
+	columns := make(map[string]int, len(names))
+	for index, name := range names {
 		columns[name] = index
 	}
 	mapping, _ := data.Lookup("map")
@@ -211,7 +268,7 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(frame *pandasxlsx.Fram
 		effects.Failed, effects.Certificates, effects.Drafts = true, nil, nil
 		return effects, nil
 	}
-	for _, cells := range frame.Rows {
+	for _, cells := range rows {
 		keys, isObject := mapping.(domain.RequestObject)
 		if !isObject {
 			return failed() // data['map'].keys()
@@ -227,7 +284,10 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(frame *pandasxlsx.Fram
 			case nil:
 			case string:
 				if index, found := columns[column]; found {
-					value = subscriptionImportCell(cells[index])
+					value = cells[index]
+					if _, refused := value.(subscriptionImportRefused); refused {
+						return effects, ErrSubscriptionImportNotPorted
+					}
 				}
 			case domain.RequestObject, []any:
 				return failed() // unhashable in row.keys()
@@ -357,8 +417,27 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(frame *pandasxlsx.Fram
 		effects.Drafts = append(effects.Drafts, domain.SubscriptionImportDraft{ID: s.uploads.ids(), Data: stored, Valid: valid})
 	}
 	for index := range effects.Drafts {
+		if object, isObject := effects.Drafts[index].Data.(domain.RequestObject); isObject && !subscriptionImportStorable(object) {
+			return failed() // json.dumps or the jsonb column refuses the value at bulk_create
+		}
 		effects.Drafts[index].JSON = dto.PythonJSONDumps(effects.Drafts[index].Data)
 		effects.Drafts[index].Data = nil
 	}
 	return effects, nil
+}
+
+// subscriptionImportStorable reports whether no value of the draft is a
+// subscriptionImportUnstorable cell (request values are JSON already).
+func subscriptionImportStorable(object domain.RequestObject) bool {
+	for _, field := range object {
+		switch typed := field.Value.(type) {
+		case subscriptionImportUnstorable:
+			return false
+		case domain.RequestObject:
+			if !subscriptionImportStorable(typed) {
+				return false
+			}
+		}
+	}
+	return true
 }

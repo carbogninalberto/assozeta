@@ -140,82 +140,20 @@ func (s *CourseEnrolment) OverviewAdd(ctx context.Context, identity domain.Resol
 	if subscription == nil || subscription.AssociationID == nil || course == nil {
 		return nil, courseEnrolmentServer
 	}
-	association := *subscription.AssociationID
-	var quote any
-	if course.CourseType == 2 {
-		if selected, present := data.Lookup("multiple_quote"); present {
-			if quote, err = overviewQuote(course.MultipleQuotes, selected); err != nil {
-				return nil, err
-			}
-		}
-	}
-	exists, err := tx.LiveRow(ctx, course.ID, subscription.ID)
-	if err != nil {
-		return nil, err
-	}
-	if exists {
-		// The view returns {'data': <Response>}, which the renderer cannot encode.
-		return nil, courseEnrolmentServer
-	}
-	if identity.ScopeUser.Role == domain.RoleAthlete && course.CourseType == courseMembershipType {
-		// The athlete membership prefill (naive strptime dates) is not ported.
-		return nil, ErrCourseEnrolmentNotPorted
-	}
-	oneFeeFlag, _ := data.Lookup("one_fee_payment")
-	oneFeePositive, _ := decimalPositive(&course.OneFee)
-	oneFee := dto.PythonTruthy(oneFeeFlag) && oneFeePositive
-	quoteBranch := !oneFee && course.CourseType == 2 && quote != nil
-	var quoteObject domain.RequestObject
-	var quoteStored, quoteMemory string
-	var quoteErr error
-	if quoteBranch {
-		var ok bool
-		if quoteObject, ok = quote.(domain.RequestObject); ok {
-			if selected, present := quoteObject.Lookup("payment_category"); present {
-				if _, ok := selected.(domain.RequestObject); !ok {
-					return nil, ErrCourseEnrolmentNotPorted
-				}
-			}
-			if raw, present := quoteObject.Lookup("amount"); present {
-				quoteStored, quoteMemory, quoteErr = quoteAmount(raw)
-				if errors.Is(quoteErr, ErrCourseEnrolmentNotPorted) {
-					return nil, quoteErr
-				}
-			} else {
-				quoteErr = courseEnrolmentServer
-			}
-		} else {
-			quoteErr = courseEnrolmentServer
-		}
-	}
 	audit, err := s.auditContext(ctx, tx, identity, request)
 	if err != nil {
 		return nil, err
 	}
-	zero := "0.00"
-	created := &enrolmentRow{row: domain.CourseSubscriptionRow{ID: s.newID(), CourseID: course.ID, CreationDate: s.moment(),
-		SubscriptionID: &subscription.ID, Type: 1, MultipleQuote: enrolmentJSON(quote), BilledFrequency: 1, BilledFromDayOfMonth: 1,
-		MembershipActive: true, MembershipFee: &zero, CourseAssociationID: course.AssociationID, CourseTitle: course.Title,
-		CourseType: course.CourseType}, memory: dto.CourseSubscriptionMemory{Times: map[string]bool{}, QuoteSet: true, Quote: quote},
-		floatFee: true, subscription: *subscription}
-	if err = tx.CreateRow(ctx, created.row, map[string][2]string{"membership_fee": {"None", "0.0"}},
-		enrolmentRepr(created.row, created.memory, true), audit); err != nil {
+	enrolled, err := s.addCourseToSubscription(ctx, tx, *course, *subscription, *subscription.AssociationID, data,
+		identity.ScopeUser.Role == domain.RoleAthlete, request, audit, false)
+	if err != nil {
 		return nil, err
 	}
-	payment, dated, err := s.overviewPayments(ctx, tx, created, *course, data, association, quoteObject, quoteBranch, oneFee, quoteStored,
-		quoteMemory, quoteErr, request, audit)
-	if err != nil {
-		return nil, enrolmentLate(tx, err)
+	if enrolled == nil {
+		// The view returns {'data': <Response>}, which the renderer cannot encode.
+		return nil, courseEnrolmentServer
 	}
-	if payment != nil {
-		// payment.amount > 0 compares the in-memory value (a quote's float).
-		if positive, _ := decimalPositive(&payment.MemoryAmount); positive {
-			created.row.PaymentID = &payment.ID
-			if err = tx.SaveRow(ctx, created.save(), audit); err != nil {
-				return nil, err
-			}
-		}
-	}
+	created, payment, dated := enrolled.created, enrolled.payment, enrolled.dated
 	render, err := tx.CourseRender(ctx, course.ID)
 	if err != nil {
 		return nil, err
@@ -246,6 +184,100 @@ func (s *CourseEnrolment) OverviewAdd(ctx context.Context, identity domain.Resol
 		return nil, err
 	}
 	return map[string]any{"data": map[string]any{"msg": "associate added.", "payment": paymentJSON, "course_subscription": item}}, nil
+}
+
+// courseEnrolled is one add_course_to_subscription call: the created course
+// subscription and its last payment (dated: created on an event date).
+type courseEnrolled struct {
+	created *enrolmentRow
+	payment *domain.CourseEnrolmentPayment
+	dated   bool
+}
+
+// addCourseToSubscription is add_course_to_subscription after the callers'
+// lookups, on the caller's transaction: the quote of a quote course, the
+// course subscription, its payments and installments. nil without an error
+// means the subscription is already in the course (nothing is written). An
+// error after the first write is wrapped by enrolmentLate (the work so far is
+// committed) unless the caller is atomic and rolls back.
+func (s *CourseEnrolment) addCourseToSubscription(ctx context.Context, tx domain.CourseEnrolmentTransaction, course domain.CourseWriteRow,
+	subscription domain.CourseWriteSubscription, association string, data domain.RequestObject, athlete bool, request CourseEnrolmentRequest,
+	audit domain.CourseSubscriptionAudit, atomic bool) (*courseEnrolled, error) {
+	var err error
+	var quote any
+	if course.CourseType == 2 {
+		if selected, present := data.Lookup("multiple_quote"); present {
+			if quote, err = overviewQuote(course.MultipleQuotes, selected); err != nil {
+				return nil, err
+			}
+		}
+	}
+	exists, err := tx.LiveRow(ctx, course.ID, subscription.ID)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		return nil, nil
+	}
+	if athlete && course.CourseType == courseMembershipType {
+		// The athlete membership prefill (naive strptime dates) is not ported.
+		return nil, ErrCourseEnrolmentNotPorted
+	}
+	oneFeeFlag, _ := data.Lookup("one_fee_payment")
+	oneFeePositive, _ := decimalPositive(&course.OneFee)
+	oneFee := dto.PythonTruthy(oneFeeFlag) && oneFeePositive
+	quoteBranch := !oneFee && course.CourseType == 2 && quote != nil
+	var quoteObject domain.RequestObject
+	var quoteStored, quoteMemory string
+	var quoteErr error
+	if quoteBranch {
+		var ok bool
+		if quoteObject, ok = quote.(domain.RequestObject); ok {
+			if selected, present := quoteObject.Lookup("payment_category"); present {
+				if _, ok := selected.(domain.RequestObject); !ok {
+					return nil, ErrCourseEnrolmentNotPorted
+				}
+			}
+			if raw, present := quoteObject.Lookup("amount"); present {
+				quoteStored, quoteMemory, quoteErr = quoteAmount(raw)
+				if errors.Is(quoteErr, ErrCourseEnrolmentNotPorted) {
+					return nil, quoteErr
+				}
+			} else {
+				quoteErr = courseEnrolmentServer
+			}
+		} else {
+			quoteErr = courseEnrolmentServer
+		}
+	}
+	zero, subscriptionID := "0.00", subscription.ID
+	created := &enrolmentRow{row: domain.CourseSubscriptionRow{ID: s.newID(), CourseID: course.ID, CreationDate: s.moment(),
+		SubscriptionID: &subscriptionID, Type: 1, MultipleQuote: enrolmentJSON(quote), BilledFrequency: 1, BilledFromDayOfMonth: 1,
+		MembershipActive: true, MembershipFee: &zero, CourseAssociationID: course.AssociationID, CourseTitle: course.Title,
+		CourseType: course.CourseType}, memory: dto.CourseSubscriptionMemory{Times: map[string]bool{}, QuoteSet: true, Quote: quote},
+		floatFee: true, subscription: subscription}
+	if err = tx.CreateRow(ctx, created.row, map[string][2]string{"membership_fee": {"None", "0.0"}},
+		enrolmentRepr(created.row, created.memory, true), audit); err != nil {
+		return nil, err
+	}
+	payment, dated, err := s.overviewPayments(ctx, tx, created, course, data, association, quoteObject, quoteBranch, oneFee, quoteStored,
+		quoteMemory, quoteErr, request, audit)
+	if err != nil {
+		if atomic {
+			return nil, err
+		}
+		return nil, enrolmentLate(tx, err)
+	}
+	if payment != nil {
+		// payment.amount > 0 compares the in-memory value (a quote's float).
+		if positive, _ := decimalPositive(&payment.MemoryAmount); positive {
+			created.row.PaymentID = &payment.ID
+			if err = tx.SaveRow(ctx, created.save(), audit); err != nil {
+				return nil, err
+			}
+		}
+	}
+	return &courseEnrolled{created: created, payment: payment, dated: dated}, nil
 }
 
 // overviewPayments creates add_course_to_subscription's payments; the last
