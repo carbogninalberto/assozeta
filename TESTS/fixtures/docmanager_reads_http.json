@@ -320,6 +320,27 @@
    "filename": "annullata bis.pdf",
    "filepath": null,
    "created": "2026-04-08T10:00:00.250000+00:00"
+  },
+  "urlname": {
+   "id": "a1000000-0000-4000-8000-000000983041",
+   "token": "a1000000-0000-4000-8000-000000983141",
+   "filename": "Nota:spese.pdf",
+   "filepath": null,
+   "created": "2026-03-20T10:00:00+00:00"
+  },
+  "urlparts": {
+   "id": "a1000000-0000-4000-8000-000000983042",
+   "token": "a1000000-0000-4000-8000-000000983142",
+   "filename": "ab:c.pdf;v.txt?x#y.png",
+   "filepath": null,
+   "created": "2026-03-21T10:00:00+00:00"
+  },
+  "dataname": {
+   "id": "a1000000-0000-4000-8000-000000983043",
+   "token": "a1000000-0000-4000-8000-000000983143",
+   "filename": "data:text/css,body.pdf",
+   "filepath": null,
+   "created": "2026-03-22T10:00:00+00:00"
   }
  },
  "objects": {
@@ -501,6 +522,24 @@
    "key": "docs-fixture/1773136800.0/a1000000-0000-4000-8000-000000983032/other-tax.pdf",
    "body_b64": "JVBERi1vdGhlcl90YXg=",
    "content_type": "application/pdf",
+   "encoding": null
+  },
+  "urlname": {
+   "key": "docs-fixture/1774000800.0/a1000000-0000-4000-8000-000000983041/Nota:spese.pdf",
+   "body_b64": "JVBERi11cmwgbmFtZQ==",
+   "content_type": "application/x-fixture-url",
+   "encoding": null
+  },
+  "urlparts": {
+   "key": "docs-fixture/1774087200.0/a1000000-0000-4000-8000-000000983042/ab:c.pdf;v.txt?x#y.png",
+   "body_b64": "dXJsIHBhcnRz",
+   "content_type": "application/x-fixture-parts",
+   "encoding": null
+  },
+  "dataname": {
+   "key": "docs-fixture/1774173600.0/a1000000-0000-4000-8000-000000983043/data:text/css,body.pdf",
+   "body_b64": "Ym9keSB7fQ==",
+   "content_type": "application/x-fixture-data",
    "encoding": null
   }
  },
@@ -3719,6 +3758,96 @@
    "challenge": false,
    "renders": [],
    "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-url-name",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983041",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "urlname",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"Nota:spese.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-url-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983041?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "urlname",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-url-name-parts",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983042?download=1",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "urlparts",
+    "content_type": "text/plain",
+    "encoding": null,
+    "disposition": "attachment; filename=\"ab:c.pdf;v.txt?x#y.png\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-data-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983043?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "dataname",
+    "content_type": "text/css",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-data-name-download",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983043",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "dataname",
+    "content_type": "application/x-fixture-data",
+    "encoding": null,
+    "disposition": "inline; filename=\"data:text/css body.pdf\""
+   }
   }
  ]
 }

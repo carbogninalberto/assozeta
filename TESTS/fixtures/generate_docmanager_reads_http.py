@@ -498,6 +498,20 @@ add('delete-unknown', 'owner', f'/document/{UNKNOWN}/delete', 404, NOT_FOUND, me
 add('delete-athlete', 'athlete', DELETE_PLAIN, 404, NOT_FOUND, method='DELETE')
 add('delete-owner-without-association', 'owner_without_association', DELETE_PLAIN, 404, NOT_FOUND, method='DELETE')
 
+# Names urllib.parse reads as a URL (a scheme of two or more characters): mimetypes.guess_type guesses from the URL's
+# path (after the scheme, before '#', '?' and, for a few schemes, ';'), and a data: name answers the text before its
+# first ';' or ','. download_file replaces the commas first, so its data: name has no type and the object's is used.
+document('urlname', 'Nota:spese.pdf', created='2026-03-20T10:00:00+00:00', body='%PDF-url name', content_type='application/x-fixture-url')
+document('urlparts', 'ab:c.pdf;v.txt?x#y.png', created='2026-03-21T10:00:00+00:00', body='url parts',
+         content_type='application/x-fixture-parts')
+document('dataname', 'data:text/css,body.pdf', created='2026-03-22T10:00:00+00:00', body='body {}',
+         content_type='application/x-fixture-data')
+ok('retrieve-url-name', 'owner', 'urlname', 'application/pdf')
+ok('retrieve-url-name-view', 'owner', 'urlname', 'application/pdf', query='download=false', view=True)
+ok('retrieve-url-name-parts', 'owner', 'urlparts', 'text/plain', query='download=1', attachment=True)
+ok('retrieve-data-name-view', 'owner', 'dataname', 'text/css', query='download=false', view=True)
+ok('retrieve-data-name-download', 'owner', 'dataname', 'application/x-fixture-data')
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'document retrieve streaming and document delete pre-checks',

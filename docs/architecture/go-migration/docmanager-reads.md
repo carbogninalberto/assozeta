@@ -74,7 +74,8 @@ active `SportAssociation`, gets `404 {"error": "Document not found."}`. The owne
 - **Retrieve** provider errors: a HEAD failing with a status other than 404, or a `GetObject` failure other than a
   missing key. Django answers `500 {"exception": "<botocore text>"}`.
 - **Retrieve** names outside the modelled grammar:
-  - filenames `urllib.parse` reads as a URL with a scheme of two or more characters (Python guesses from the URL path);
+  - filenames `urllib.parse` reads as a URL whose network location has brackets or non-ASCII text, and `data:` names
+    whose type is not printable ASCII (the other URL-like names are served, see the evidence);
   - a quotable filename ending in a newline (Django's header check raises);
   - an inline download of an empty filename (Django sets the header to `None`);
   - invalid UTF-8 or NUL in names;
@@ -153,3 +154,12 @@ Django 170/170, Go the 500 page on `reprint-subscription-first-try`. GREEN `v2do
 Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `v2doc2-mutation-r1`: storing under the document's
 `filepath` fails `reprint-filepath-first-try` (`celery.headers:0`). Re-run green (`v2doc2-rerun-r1`): document-render
 and documents-writes. Final run on the current base (`v2doc2-final-r1`): 170/170 on the four transports.
+
+URL-like names (`v2doc2-*`): 5 more cases (175) over three documents (`Nota:spese.pdf`, `ab:c.pdf;v.txt?x#y.png`,
+`data:text/css,body.pdf`). `pkg/pymime` now follows `guess_type`'s URL branch: the path after the scheme and the network
+location, cut at `#`, `?` and, for `urllib.parse.uses_params` schemes, the `;` of the last segment; a `data:` name answers
+the text before its first `;` or `,` (`text/plain` when that has an `=` or no `/`, nothing without a comma). Its unit test
+holds 37 answers of CPython 3.13. Still refused: a network location with brackets or non-ASCII text, and a `data:` type
+outside printable ASCII. RED `v2doc2-red-r2`: Django 175/175, Go the 500 page on `retrieve-url-name`. GREEN
+`v2doc2-versioned-r2`: 175/175 on the four transports. Mutation `v2doc2-mutation-r2` (the query left in the path) fails
+`retrieve-url-name-parts`. documents-writes re-run green (`v2doc2-rerun-r3`).

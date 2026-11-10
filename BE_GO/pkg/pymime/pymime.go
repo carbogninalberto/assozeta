@@ -122,7 +122,15 @@ func GuessType(name string) (string, bool, string, error) {
 // the type (ok false for None) and the case-sensitive encoding ("" for None).
 func (t *Table) GuessType(name string) (string, bool, string, error) {
 	if urlScheme(name) {
-		return "", false, "", ErrURLName
+		scheme, path, err := urlPath(name)
+		if err != nil {
+			return "", false, "", err
+		}
+		if scheme == "data" {
+			kind, ok, err := dataType(path)
+			return kind, ok, "", err
+		}
+		name = path
 	}
 	base, ext := splitext(name)
 	for {
@@ -160,6 +168,73 @@ func urlScheme(name string) bool {
 		}
 	}
 	return true
+}
+
+// usesParams is urllib.parse.uses_params.
+var usesParams = map[string]bool{"ftp": true, "hdl": true, "prospero": true, "http": true, "imap": true, "https": true, "shttp": true,
+	"rtsp": true, "rtsps": true, "rtspu": true, "sip": true, "sips": true, "mms": true, "sftp": true, "tel": true}
+
+// urlPath is urllib.parse.urlparse(name) for a name urlScheme accepts: the
+// lower-cased scheme and the path (after the network location, before the
+// fragment, the query and, for the schemes that take them, the parameters of
+// the last segment). Network locations urlsplit validates further (brackets,
+// non-ASCII text) are not modelled: ErrURLName.
+func urlPath(name string) (string, string, error) {
+	name = strings.TrimLeftFunc(name, func(r rune) bool { return r <= ' ' })
+	name = strings.NewReplacer("\t", "", "\r", "", "\n", "").Replace(name)
+	colon := strings.IndexByte(name, ':')
+	scheme, rest := strings.ToLower(name[:colon]), name[colon+1:]
+	if strings.HasPrefix(rest, "//") {
+		end := len(rest)
+		if at := strings.IndexAny(rest[2:], "/?#"); at >= 0 {
+			end = at + 2
+		}
+		for _, r := range rest[2:end] {
+			if r == '[' || r == ']' || r > 0x7f {
+				return "", "", ErrURLName
+			}
+		}
+		rest = rest[end:]
+	}
+	if at := strings.IndexByte(rest, '#'); at >= 0 {
+		rest = rest[:at]
+	}
+	if at := strings.IndexByte(rest, '?'); at >= 0 {
+		rest = rest[:at]
+	}
+	if usesParams[scheme] {
+		from := strings.LastIndexByte(rest, '/')
+		if from < 0 {
+			from = 0
+		}
+		if at := strings.IndexByte(rest[from:], ';'); at >= 0 {
+			rest = rest[:from+at]
+		}
+	}
+	return scheme, rest, nil
+}
+
+// dataType is guess_type's answer for a data: URL: the text before the first
+// ';' or ',' of the path, or text/plain when that text has an '=' or no '/';
+// None without a comma. Types that are not printable ASCII are not modelled.
+func dataType(path string) (string, bool, error) {
+	comma := strings.IndexByte(path, ',')
+	if comma < 0 {
+		return "", false, nil
+	}
+	kind := path[:comma]
+	if semi := strings.IndexByte(kind, ';'); semi >= 0 {
+		kind = kind[:semi]
+	}
+	if strings.Contains(kind, "=") || !strings.Contains(kind, "/") {
+		return "text/plain", true, nil
+	}
+	for _, r := range kind {
+		if r < 0x21 || r > 0x7e {
+			return "", false, ErrURLName
+		}
+	}
+	return kind, true, nil
 }
 
 // splitext is posixpath.splitext: leading dots of the last component do not
