@@ -851,6 +851,16 @@
    "id": "b0a5b0a5-eeee-4eee-8eee-eeeeeeeeebbf",
    "payment": "instructor",
    "document": "compensation"
+  },
+  "instructor_more": {
+   "id": "b0a5b0a5-eeee-4eee-8eee-eeeeeeeeebca",
+   "payment": "instructor",
+   "document": "compensation"
+  },
+  "instructor_plain": {
+   "id": "b0a5b0a5-eeee-4eee-8eee-eeeeeeeeebcb",
+   "payment": "instructor_plain",
+   "document": null
   }
  },
  "cases": [
@@ -864,7 +874,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-admin-without-session",
@@ -876,7 +887,8 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-restricted-collaborator",
@@ -888,7 +900,8 @@
    "response": {
     "detail": "Missing permission: bookeeping.payments.read"
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-post",
@@ -900,7 +913,8 @@
    "response": {
     "detail": "Method \"POST\" not allowed."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-delete",
@@ -912,7 +926,8 @@
    "response": {
     "detail": "Method \"DELETE\" not allowed."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-options",
@@ -933,7 +948,8 @@
      "multipart/form-data"
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-owner-without-association",
@@ -943,7 +959,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-format-unknown",
@@ -955,7 +972,8 @@
    "response": {
     "detail": "Not found."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-anonymous",
@@ -967,7 +985,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-admin-without-session",
@@ -979,7 +998,8 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-restricted-collaborator",
@@ -991,7 +1011,8 @@
    "response": {
     "detail": "Missing permission: bookeeping.payments.read"
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-post",
@@ -1003,7 +1024,8 @@
    "response": {
     "detail": "Method \"POST\" not allowed."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-delete",
@@ -1015,7 +1037,8 @@
    "response": {
     "detail": "Method \"DELETE\" not allowed."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-options",
@@ -1036,7 +1059,8 @@
      "multipart/form-data"
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-owner-without-association",
@@ -1046,7 +1070,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-format-unknown",
@@ -1058,7 +1083,8 @@
    "response": {
     "detail": "Not found."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-anonymous",
@@ -1070,7 +1096,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-admin-without-session",
@@ -1082,7 +1109,8 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-restricted-collaborator",
@@ -1094,7 +1122,8 @@
    "response": {
     "detail": "Missing permission: association.members.read"
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-post",
@@ -1106,7 +1135,8 @@
    "response": {
     "detail": "Method \"POST\" not allowed."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-delete",
@@ -1118,7 +1148,8 @@
    "response": {
     "detail": "Method \"DELETE\" not allowed."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-options",
@@ -1139,7 +1170,8 @@
      "multipart/form-data"
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-owner-without-association",
@@ -1149,7 +1181,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-format-unknown",
@@ -1161,7 +1194,8 @@
    "response": {
     "detail": "Not found."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-owner",
@@ -2114,7 +2148,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-full-collaborator",
@@ -3067,7 +3110,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-admin-impersonating-owner",
@@ -4023,7 +4075,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-foreign-owner",
@@ -4081,7 +4142,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-deleted-association-owner",
@@ -4100,17 +4162,19 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-athlete-unknown-course-subscription",
    "actor": "athlete",
    "method": "GET",
-   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeebca",
+   "path": "/payment/list?course_subscription_id=c5c5c5c5-eeee-4eee-8eee-eeeeeeeeebcc",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-athlete-malformed-course-subscription",
@@ -4122,7 +4186,8 @@
    "response": [
     "badly formed hexadecimal UUID string"
    ],
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-malformed-course-subscription",
@@ -4134,7 +4199,8 @@
    "response": [
     "badly formed hexadecimal UUID string"
    ],
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-malformed-course-subscription-before-compressed",
@@ -4146,7 +4212,8 @@
    "response": [
     "badly formed hexadecimal UUID string"
    ],
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-empty-course-subscription-ignored",
@@ -5099,7 +5166,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-course-subscription-ignored-for-owner",
@@ -6052,7 +6128,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-athlete-compressed",
@@ -6062,7 +6147,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-scoped-athlete-compressed",
@@ -6075,7 +6161,8 @@
    },
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed",
@@ -6253,7 +6340,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-ignores-filters",
@@ -6431,7 +6519,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-archived",
@@ -6459,7 +6548,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-archived-one",
@@ -6487,7 +6577,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-archived-false",
@@ -6665,7 +6756,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-archived-lowercase-true",
@@ -6675,7 +6767,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-group",
@@ -6705,7 +6798,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-group-malformed-ignored",
@@ -6885,7 +6979,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-foreign-owner",
@@ -6913,7 +7008,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-deleted-association-owner",
@@ -6925,7 +7021,8 @@
    "response": {
     "data": []
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-compressed-collaborator",
@@ -7103,7 +7200,8 @@
      }
     ]
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-archived-true",
@@ -7252,7 +7350,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-archived-t",
@@ -7401,7 +7500,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-archived-false-text",
@@ -8354,7 +8454,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-archived-zero",
@@ -9307,7 +9416,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-archived-lowercase-true",
@@ -9317,7 +9435,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-archived-empty",
@@ -9327,7 +9446,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-group",
@@ -9478,7 +9598,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-group-foreign",
@@ -9499,7 +9620,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-group-malformed-ignored",
@@ -10454,7 +10576,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-paid-true",
@@ -10974,7 +11105,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-paid-other-is-false",
@@ -11579,7 +11719,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-paid-empty-ignored",
@@ -12532,7 +12673,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-expense-true",
@@ -12775,7 +12925,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-expense-false",
@@ -13657,7 +13816,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-subject-course",
@@ -14071,7 +14231,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-subject-python-int",
@@ -14371,7 +14532,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-subject-zero",
@@ -14766,7 +14928,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-subject-text",
@@ -14776,7 +14947,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-subject-float",
@@ -14786,7 +14958,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-subject-out-of-range",
@@ -14805,7 +14978,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-subject-empty-ignored",
@@ -15758,7 +15932,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-type",
@@ -15965,7 +16148,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-type-unknown",
@@ -15984,7 +16168,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-category",
@@ -16287,13 +16472,14 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-category-list",
    "actor": "owner",
    "method": "GET",
-   "path": "/payment/list?query[payment_categories]=cafecafe-eeee-4eee-8eee-eeeeeeeeeaaa,cafecafe-eeee-4eee-8eee-eeeeeeeeebcb",
+   "path": "/payment/list?query[payment_categories]=cafecafe-eeee-4eee-8eee-eeeeeeeeeaaa,cafecafe-eeee-4eee-8eee-eeeeeeeeebcd",
    "headers": {},
    "status": 200,
    "response": {
@@ -16590,7 +16776,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-category-none",
@@ -17412,7 +17599,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-category-malformed",
@@ -17422,7 +17618,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-category-trailing-comma",
@@ -17432,7 +17629,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-account",
@@ -17639,7 +17837,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-account-none",
@@ -18369,7 +18568,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-account-malformed",
@@ -18379,7 +18587,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-associate",
@@ -19200,7 +19409,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-associate-hyphenless",
@@ -19282,7 +19492,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-associate-malformed",
@@ -19292,7 +19503,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-associate-empty",
@@ -19302,7 +19514,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-filters-combined",
@@ -19454,7 +19667,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-range-ymd",
@@ -19853,7 +20067,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-range-dmy",
@@ -20252,7 +20467,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-range-single-digits",
@@ -20596,7 +20812,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-range-creation-date-for-unpaid",
@@ -20748,7 +20965,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-range-mixed-formats-ignored",
@@ -21701,7 +21919,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-range-without-separator-ignored",
@@ -22654,7 +22881,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-range-three-parts-ignored",
@@ -23607,7 +23843,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-range-fallback-last-year",
@@ -23626,7 +23871,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-range-invalid-day-fallback",
@@ -23645,7 +23891,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-range-empty-ignored",
@@ -24598,7 +24845,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-range-skipped-for-uuid-search",
@@ -24750,7 +25006,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-range-and-filter",
@@ -24993,7 +25250,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-search-last-name",
@@ -25814,7 +26080,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-upper",
@@ -26635,7 +26902,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-tutor-name",
@@ -27456,7 +27724,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-words",
@@ -28277,7 +28546,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-words-in-other-order",
@@ -29098,7 +29368,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-tutor-words-same-row-only",
@@ -29117,7 +29388,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-tutor-words-one-tutor",
@@ -29938,7 +30210,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-supplier",
@@ -30014,7 +30287,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-instructor",
@@ -30165,7 +30439,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-search-description",
@@ -30223,7 +30506,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-notes",
@@ -30305,7 +30589,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-json-meta",
@@ -30387,7 +30672,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-json-course",
@@ -30539,7 +30825,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-boolean-text",
@@ -31125,7 +31412,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-search-type-text",
@@ -31277,7 +31573,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-payment-id",
@@ -31353,7 +31650,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-date-dmy",
@@ -32235,7 +32533,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-date-words",
@@ -33188,7 +33487,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-search-underscore-escaped",
@@ -33270,7 +33578,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-percent-only",
@@ -34223,7 +34532,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-search-blank",
@@ -35176,7 +35494,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-search-accented",
@@ -35252,7 +35579,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-tax-code",
@@ -36134,7 +36462,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-nothing",
@@ -36153,7 +36482,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-amount",
@@ -36325,7 +36655,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-amount-comma",
@@ -36407,7 +36738,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-amount-zero",
@@ -37413,7 +37745,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-search-amount-exponent",
@@ -37562,7 +37903,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-amount-padded",
@@ -37714,7 +38056,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-amount-underscore",
@@ -37866,7 +38209,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-group",
@@ -38017,7 +38361,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-and-filter",
@@ -38320,7 +38665,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-search-paginated",
@@ -38600,7 +38946,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-amount",
@@ -39649,7 +39996,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-amount-desc",
@@ -40625,7 +40981,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-without-direction-is-asc",
@@ -41674,7 +42039,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-other-direction-is-asc",
@@ -42723,7 +43097,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-negated-field",
@@ -43699,7 +44082,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-double-negation",
@@ -43709,7 +44101,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-payment-date-nulls-last",
@@ -44488,7 +44881,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-payment-date-desc-nulls-first",
@@ -44738,7 +45140,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-creation-date",
@@ -45691,7 +46102,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-pk",
@@ -46667,7 +47087,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-payment-id-desc",
@@ -47620,7 +48049,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-random",
@@ -48724,7 +49162,16 @@
      ]
     }
    },
-   "unordered": true
+   "unordered": true,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-random-desc",
@@ -48734,7 +49181,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-unknown",
@@ -48744,7 +49192,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-unknown-before-page",
@@ -48754,7 +49203,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-relevance-unknown",
@@ -48764,7 +49214,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-lazy-path-error",
@@ -48774,7 +49225,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-lazy-path-after-page",
@@ -48786,7 +49238,8 @@
    "response": {
     "detail": "Invalid page."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-user-first-page",
@@ -48958,7 +49411,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-user-desc-all",
@@ -50062,7 +50516,16 @@
      ]
     }
    },
-   "unordered": true
+   "unordered": true,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-sort-user-desc-last-page",
@@ -50234,7 +50697,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-sort-with-search",
@@ -51055,7 +51519,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-page-two",
@@ -51227,7 +51692,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-page-last",
@@ -51661,7 +52127,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-page-python-int",
@@ -51899,7 +52366,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-page-empty-is-first",
@@ -52373,7 +52849,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-page-beyond",
@@ -52385,7 +52862,8 @@
    "response": {
     "detail": "Invalid page."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-page-zero",
@@ -52397,7 +52875,8 @@
    "response": {
     "detail": "Invalid page."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-page-text",
@@ -52409,7 +52888,8 @@
    "response": {
     "detail": "Invalid page."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-list-perpage-zero-default",
@@ -53362,7 +53842,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-perpage-text-default",
@@ -54315,7 +54804,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-perpage-huge",
@@ -55419,7 +55917,16 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": [
+    {
+     "path": "/document/compensation/ba1dface-eeee-4eee-8eee-eeeeeeeeeafe",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
   },
   {
    "name": "payment-reads-list-empty-page-two",
@@ -55431,7 +55938,8 @@
    "response": {
     "detail": "Invalid page."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-owner-this-month",
@@ -55461,7 +55969,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-full-collaborator",
@@ -55491,7 +56000,8 @@
      "net_balance": -179.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-admin-impersonating-owner",
@@ -55524,7 +56034,8 @@
      "net_balance": -179.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-scoped-athlete-not-available",
@@ -55539,7 +56050,8 @@
    "response": {
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-athlete",
@@ -55549,7 +56061,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-deleted-association-owner",
@@ -55559,7 +56072,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-foreign-owner",
@@ -55589,7 +56103,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-year",
@@ -55619,7 +56134,8 @@
      "net_balance": -179.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-year-dmy",
@@ -55649,7 +56165,8 @@
      "net_balance": -179.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-end-is-midnight",
@@ -55679,7 +56196,8 @@
      "net_balance": 105.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-end-day-after",
@@ -55709,7 +56227,8 @@
      "net_balance": -94.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-range-mixed-falls-back",
@@ -55739,7 +56258,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-range-invalid-falls-back",
@@ -55769,7 +56289,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-range-without-separator",
@@ -55779,7 +56300,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-range-empty",
@@ -55789,7 +56311,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-group",
@@ -55821,7 +56344,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-group-malformed-ignored",
@@ -55853,7 +56377,8 @@
      "net_balance": -179.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-ignores-archived-parameter",
@@ -55883,7 +56408,8 @@
      "net_balance": -179.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-paid",
@@ -55913,7 +56439,8 @@
      "net_balance": -179.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-paid-empty-is-false",
@@ -55943,7 +56470,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-expense",
@@ -55973,7 +56501,8 @@
      "net_balance": -285.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-subject",
@@ -56003,7 +56532,8 @@
      "net_balance": 40.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-subject-empty",
@@ -56013,7 +56543,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-subject-out-of-range",
@@ -56043,7 +56574,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-type-empty",
@@ -56073,7 +56605,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-type",
@@ -56103,7 +56636,8 @@
      "net_balance": -10.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-category-none",
@@ -56133,7 +56667,8 @@
      "net_balance": -229.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-category",
@@ -56163,7 +56698,8 @@
      "net_balance": 50.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-category-malformed",
@@ -56173,7 +56709,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-account",
@@ -56203,7 +56740,8 @@
      "net_balance": 25.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-account-none",
@@ -56233,7 +56771,8 @@
      "net_balance": -44.5
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-search-rossi",
@@ -56263,7 +56802,8 @@
      "net_balance": 90.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-search-tutor",
@@ -56293,7 +56833,8 @@
      "net_balance": 90.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-search-supplier",
@@ -56323,7 +56864,8 @@
      "net_balance": -200.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-search-amount",
@@ -56353,7 +56895,8 @@
      "net_balance": 40.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-search-date",
@@ -56383,7 +56926,8 @@
      "net_balance": 40.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-stats-search-none",
@@ -56413,7 +56957,8 @@
      "net_balance": 0.0
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-owner",
@@ -57383,7 +57928,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-full-collaborator",
@@ -58353,7 +58899,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-admin-impersonating-owner",
@@ -59326,7 +59873,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-athlete",
@@ -59337,6 +59885,7 @@
    "status": 401,
    "response": "<empty>",
    "unordered": false,
+   "prints": [],
    "challenge": false
   },
   {
@@ -59352,7 +59901,8 @@
    "response": {
     "detail": "Risorsa non disponibile per questo utente e associazione."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-athlete-malformed",
@@ -59363,6 +59913,7 @@
    "status": 401,
    "response": "<empty>",
    "unordered": false,
+   "prints": [],
    "challenge": false
   },
   {
@@ -59375,17 +59926,19 @@
    "response": [
     "badly formed hexadecimal UUID string"
    ],
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-unknown",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeebcc/payments",
+   "path": "/subscription/5ab5c0de-eeee-4eee-8eee-eeeeeeeeebce/payments",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-foreign",
@@ -59397,7 +59950,8 @@
    "response": {
     "detail": "User not allowed."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-without-associate",
@@ -59407,7 +59961,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-deleted-association-owner",
@@ -59417,7 +59972,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-tax-code-twin",
@@ -60449,7 +61005,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-deleted-subscription",
@@ -60468,7 +61025,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-group-hides-subscription",
@@ -60480,7 +61038,8 @@
    },
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-group-malformed-ignored",
@@ -61452,7 +62011,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-hyphenless-uuid",
@@ -62422,7 +62982,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-paid",
@@ -62861,7 +63422,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-paid-empty-is-false",
@@ -63413,7 +63975,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-expense-false",
@@ -64383,7 +64946,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-subject",
@@ -64814,7 +65378,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-subject-empty",
@@ -64824,7 +65389,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-type",
@@ -64982,7 +65548,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-type-empty",
@@ -65001,7 +65568,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-archived-parameter-ignored",
@@ -65971,7 +66539,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-full-name",
@@ -67078,7 +67647,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-course-title-duplicates",
@@ -67510,7 +68080,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-old-course",
@@ -67668,7 +68239,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-tax-code",
@@ -68775,7 +69347,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-json-meta",
@@ -68794,7 +69367,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-payment-date",
@@ -69089,7 +69663,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-category",
@@ -69399,7 +69974,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-nothing",
@@ -69418,7 +69994,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-not-stripped",
@@ -70525,7 +71102,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-amount",
@@ -70682,7 +71260,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-amount-one",
@@ -70701,7 +71280,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-percent-escaped",
@@ -70720,7 +71300,8 @@
      "rowIds": []
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-sort-creation-asc",
@@ -71690,7 +72271,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-sort-amount-desc",
@@ -72660,7 +73242,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-sort-unknown",
@@ -72670,7 +73253,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-sort-full-name-unknown-without-search",
@@ -72680,7 +73264,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-page-two",
@@ -73127,7 +73712,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-page-beyond",
@@ -73139,7 +73725,8 @@
    "response": {
     "detail": "Invalid page."
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   },
   {
    "name": "payment-reads-subscription-search-duplicates-paginated",
@@ -73297,7 +73884,8 @@
      ]
     }
    },
-   "unordered": false
+   "unordered": false,
+   "prints": []
   }
  ]
 }

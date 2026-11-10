@@ -92,14 +92,21 @@ course subscription by key (`all_objects()`), else the first installment's (`all
 
 - payment/list for athletes outside the compressed mode (their branch, PaymentCompressedSerializer, online-payment flags and
   the synchronous invoice PDF generation), and the compressed mode in an association-scoped athlete session.
-- Instructor payments whose InstructorHours row has no document (Django runs `print_document_compensation`) or that have
-  several rows.
 - payment/stats when Stripe credentials are configured (environment `STRIPE_KEY` and `STRIPE_PUBLIC_KEY`, or instance
   integration settings): the balance transactions and their cache are not ported.
 - Orderings Django resolves only when compiling the rows (relations other than `user`, relation paths and transforms, the
   `full_name` annotation of the subscription search), refused after the count and page checks; random ordering together with
   the payment/list text search (DISTINCT with `RANDOM()` in the select list); reverse relation names are refused as unknown.
 - Infinite float search terms (`inf`) and smart-search terms with characters Python lower-cases differently (personas-reads).
+
+Instructor payments in payment/list: the hours rows of the page's instructor payments are mapped by payment in database
+order (a later row replaces an earlier one); a row with a document sets `instructor_document` and its token; for each
+payment whose row has none, `print_document_compensation.apply(args=[payment_id, Authorization])` runs eagerly (invoice-sync-print's
+runner: `GET CURRENT_HOST/document/compensation/<id>`, errors kept in the eager result), then the hours of those payments
+are read again and each row with a document sets the fields. API v2 gaps: a second hours row of a compensation and one
+without a document (every list page that shows it prints it, checked against a print stub); RED `v2gaps-red-r2` Django
+242/242, Go 500; GREEN `v2gaps-versioned-r2`; mutation (never printing, `v2gaps-mutation-r3`) CAUGHT; payment-writes and
+invoice-sync-print re-run green.
 
 `sort[field]=user` (the list's "Informazioni" column) orders by `user_id`: User has no `Meta.ordering`, so Django orders
 by the foreign key column (NULLs last ascending, first descending). API v2 gaps: 3 cases (242 in all); RED `v2gaps-red-r1`

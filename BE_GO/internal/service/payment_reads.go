@@ -20,6 +20,14 @@ type PaymentReads struct {
 	// stripeEnvironment is STRIPE_KEY and STRIPE_PUBLIC_KEY both set (the
 	// environment branch of stripe_direct_credentials_configured()).
 	stripeEnvironment bool
+	// printer runs print_document_compensation eagerly (payment_list).
+	printer *InvoiceSyncPrint
+}
+
+// WithCompensationPrint sets the eager print runner of payment_list.
+func (s *PaymentReads) WithCompensationPrint(printer *InvoiceSyncPrint) *PaymentReads {
+	s.printer = printer
+	return s
 }
 
 func NewPaymentReads(store domain.PaymentReadsStore, now func() time.Time, stripeEnvironment bool) *PaymentReads {
@@ -31,6 +39,8 @@ type PaymentReadsRequest struct {
 	Identity    domain.ResolvedIdentity
 	Query       domain.RequestObject
 	GroupHeader string
+	// Authorization is the raw Authorization header (nil when absent).
+	Authorization *string
 }
 
 func paymentReadsParam(query domain.RequestObject, name string) (string, bool) {
@@ -440,7 +450,7 @@ func (s *PaymentReads) List(ctx context.Context, request PaymentReadsRequest) (a
 		if err != nil {
 			return nil, err
 		}
-		if err := s.instructorDocuments(ctx, ids, items); err != nil {
+		if err := s.instructorDocuments(ctx, ids, items, request.Authorization); err != nil {
 			return nil, err
 		}
 		return items, nil
@@ -479,10 +489,11 @@ func (s *PaymentReads) page(ctx context.Context, filter domain.PaymentReadsFilte
 }
 
 // instructorDocuments adds the InstructorHours document of instructor
-// payments; one without a document would run print_document_compensation
-// (PDF generation, not ported). A later row of the same payment replaces an
-// earlier one in Django's map: several rows are refused.
-func (s *PaymentReads) instructorDocuments(ctx context.Context, ids []string, items []map[string]any) error {
+// payments: a map by payment over the hours rows in database order (a later
+// row replaces an earlier one). Payments whose hours have no document are
+// printed (print_document_compensation.apply, in page order), then their
+// hours are read again and every row with a document sets it.
+func (s *PaymentReads) instructorDocuments(ctx context.Context, ids []string, items []map[string]any, authorization *string) error {
 	instructed := []string{}
 	for i, item := range items {
 		if item["instructor"] != nil {
@@ -495,25 +506,52 @@ func (s *PaymentReads) instructorDocuments(ctx context.Context, ids []string, it
 	}
 	byPayment := map[string]domain.PaymentReadsHours{}
 	for _, row := range hours {
-		if _, repeated := byPayment[row.PaymentID]; repeated {
-			return domain.ErrPaymentReadsNotPorted
-		}
-		if row.DocumentID == nil {
-			return domain.ErrPaymentReadsNotPorted
-		}
 		byPayment[row.PaymentID] = row
 	}
+	set := func(item map[string]any, row domain.PaymentReadsHours) {
+		item["instructor_document"] = *row.DocumentID
+		var token any
+		if row.DocumentToken != nil {
+			token = *row.DocumentToken
+		}
+		item["instructor_document_token"] = token
+	}
+	needing := []string{}
 	for i, item := range items {
 		if item["instructor"] == nil {
 			continue
 		}
 		if row, ok := byPayment[ids[i]]; ok {
-			item["instructor_document"] = *row.DocumentID
-			var token any
-			if row.DocumentToken != nil {
-				token = *row.DocumentToken
+			if row.DocumentID == nil {
+				needing = append(needing, ids[i])
+			} else {
+				set(item, row)
 			}
-			item["instructor_document_token"] = token
+		}
+	}
+	if len(needing) == 0 {
+		return nil
+	}
+	if s.printer == nil {
+		return domain.ErrPaymentReadsNotPorted
+	}
+	for _, id := range needing {
+		if err := s.printer.Compensation(ctx, id, authorization); err != nil {
+			return err
+		}
+	}
+	updated, err := s.store.Hours(ctx, needing)
+	if err != nil {
+		return err
+	}
+	for _, row := range updated {
+		if row.DocumentID == nil {
+			continue
+		}
+		for i, item := range items {
+			if ids[i] == row.PaymentID {
+				set(item, row)
+			}
 		}
 	}
 	return nil
