@@ -20,11 +20,11 @@ const reviewed = {
   "BE/application/utils/api_utils.py": "5db286fc73e92356b476514f4d6561a3300b36668ee99831ca1b197835a5cabf",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
   "BE/application/impersonation.py": "760fd6e63c6baebee14744cbdfe571ac4aa4e0fb1a5e0ac9b6147dfcf299cced",
-  "BE/application/models/payment_models.py": "9dbcab8698adbde447a9c4f6eb52143409cf197fde3ce90d0aa8da56a1f8ebda",
+  "BE/application/models/payment_models.py": "30d4c9c5bf5b21d78a0fdda78edb45edc9266e9c0fc42e2ff83a3c9e3fcf0a4b",
   "UI/src/routes/accounting/payment/category/Categories.svelte": "e358b8768d55f757cada0af4dabd2443e2168248057f5442f428a6bed58ad768",
   "UI/src/routes/accounting/payment/category/modals/EditModal.svelte": "270b2663c133c813a352959e9b4177ae4f6361ce879537242a7d9af06bed51a8",
   "UI/src/routes/accounting/payment/modals/partials/meta-payment-categories.svelte": "f308dd00d75f43f09aa620da3aea449bfa3a3fc42f60e037c6d72ac670a50602",
-  "BE/application/views/payment_views.py": "cc31d3e1d74244930b6929fd2bf9b2d2e6a90a7b915e0edf73000f468d58573d",
+  "BE/application/views/payment_views.py": "eb2a9bc1bbb5caf2a0fe8261aa898e85e046d96d47417f2c155e7b9c136f277c",
   "BE/application/serializers/payment_serializers.py": "6e6fab314f1e391ada81ed3c983bb146aad5bbc1bc2ec71750078dd10f76f2fa",
   "BE/application/audit_context.py": "8609c865f5b2d5c4f818cd6b4fe6620ec9504fae2d5a2368fccb5745cbce25ff",
   "BE/application/signals.py": "a14dd1d21a83573a8d2da26ca6da76c2c090d6bc419b51d593a7ead1012d2ff1",
@@ -36,7 +36,7 @@ const reviewed = {
   "UI/src/components/invoice/InvoiceForm.svelte": "2038f91a400229decbec387a661cdc95336afea0c2c2c565253826db67955b30",
   "UI/src/routes/accounting/suppliersInvoice/SuppliersInvoiceList.svelte": "d75d7352440b1a92ffe9b392b0cb0757605a96e3f64d638891a9db209872c5d5",
   "UI/src/routes/accounting/suppliersInvoice/modals/EditModal.svelte": "edaee3b087e7bc1d36b324e8328cb337979af4c2ac9ccea2bc4959ba0f86a6f6",
-  "BE/application/views/invoice_views.py": "500cf26719455a1a86aacb63e5c99bc9cbcc470a0bb1d275df926fbb884c8260",
+  "BE/application/views/invoice_views.py": "afddd7239fe7e2a23c6e997d27c0f5ad3b0b3501c7601438d112e318a46d8922",
   "BE/application/serializers/invoice_serializers.py": "3a52147b36fe7977661358f629cfc45101aa59d15aae06f5f7078c1662ff3fb9",
   "BE/application/models/invoices_models.py": "5848c1bcdbafdd6d644f5dd70e82979095d1bdbe85c989075784e54418fc1af6"
 };

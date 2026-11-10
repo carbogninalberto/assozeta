@@ -102,6 +102,17 @@ def run(work, log, tool_env, address, *, go_server_factory=None, redis_fault_fac
                 associate_id=uid(330000 + number), user=users[name],
                 sport_association_id=associations['owner']['id'],
                 first_name='Member', last_name='Fixture', disabled=number == 2)
+    if not User.original_objects.filter(pk=uid(8)).exists():
+        # The packaged run starts from an empty schema: seed the installation's primary association and its
+        # owner exactly as the identity fixture does for the repository run.
+        from instance.models import InstanceConfiguration
+        with disable_auditlog():
+            identity_owner = User.objects.create(user_id=uid(8), username='identity-8', email='identity-8@example.test',
+                                                 role=1, password='!identity-only')
+            primary = SportAssociation.objects.create(sport_association_id=uid(80), user=identity_owner,
+                                                      denomination='Identity owner')
+            InstanceConfiguration.objects.create(domain='identity.example.test', name='Identity fixture',
+                                                 primary_association=primary)
     for name, user in users.items():
         tenant = name if name in associations else {'staff': 'owner', 'foreign-staff': 'foreign'}.get(name)
         descriptions[name] = {'user_id': str(user.pk), 'username': user.username,
