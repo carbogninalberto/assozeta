@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 2 ported below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 2 ported in the first change and 11 in v2-subscriptions, below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -88,6 +88,18 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 | POST subscription/renew | athlete session | `activities/subscription/partials/subscription-element.svelte:231` | `service/subscription_renew.go:53` | medium |
 | POST subscription/renew | member with courses (pre-filled) | `Members/modals/RenewalModal.svelte:58` | `service/subscription_renew.go:96` | medium-expensive |
 | GET subscription card, validate-token-link | unknown token while a Bakney pairing is active | `Tessera.svelte:54`, `SubscribeMultiple.svelte:222` | `service/subscription_card.go:61`, `service/subscription_misc.go:318` | medium |
+
+Why these stay (v2-subscriptions):
+- POST subscription/list export: the PDF is a synchronous render and the Excel a pandas layout; neither was in scope here.
+- info with an invoiced membership payment: needs InvoiceSerializer inside the shared CourseSubscriptionOverviewSerializer port
+  (also refused by course-subscriptions/list); best done with that family's fixture.
+- association-scoped athlete sessions: needs scoped_queryset's family boundary on every related read (subscriptions, course
+  subscriptions, installments, files, registries); impersonation-only.
+- set-certificate-expiration without a certificate: Django draws a PNG with PIL/FreeType; not byte-reproducible, refused before any write.
+- renew by an athlete: runs create_subscription with an athlete requester (subscription-create internals, owned elsewhere).
+- renew with courses: add_course_to_subscription inside the renewal transaction; the course-enrolment port has its own
+  transaction and data handling, so it needs a shared refactor.
+- card / validate-token-link: source_token asks the paired authority (`public-token`); needs a stub authority in both fixtures.
 
 ### course-subscriptions / course-enrolment / course-writes / course-list / course-locations / course-calendar
 | Route | Condition | UI call | Go site | Cost |
