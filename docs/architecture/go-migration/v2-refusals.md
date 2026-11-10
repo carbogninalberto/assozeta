@@ -74,6 +74,14 @@ Receipts are `quality-reports/go-migration/<family>-http-v2sub-*`; each family d
 | subscription-renew | `POST subscription/renew` | payment clean-up meets an unpaid invoiced payment | 55 cases; RED `v2sub-red-r1` Django 55/55, Go 500; GREEN `v2sub-versioned-r1` 4 transports; mutation `v2sub-mutation-r1` (invoiced payments excluded) CAUGHT |
 | subscription-transfer | `POST subscription/<uid>/transfer` (e-mail branch) | tutor/associate names starting with non-ASCII letters; non-ASCII e-mail domain | 31 cases; RED `v2sub-red-r1` Django 31/31, Go 500; GREEN `v2sub-versioned-r1` 4 transports 31/31; mutation `v2sub-mutation-r1` (no NFKC) CAUGHT |
 
+### Ported in the v2-misc change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2misc-*`; each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| profile-misc | `PATCH onboarding/update` | `onboarding_data` carrying the row's own `users_onboarding_id` and `user` (every checklist step) | 101 cases; RED `v2misc-red-r1` Django 101/101, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r2` (ids compared as raw strings) CAUGHT |
+
 ## Remaining A items, per family
 
 UI paths under `UI/src/`, Go under `BE_GO/internal/`. Cost: cheap (hours), medium (a family change with new
@@ -170,7 +178,6 @@ legacy Bakney invoices or tutors that would be reassigned (refused by the valida
 | GET communications/settings/smtp/verify | a real SMTP host | `communication/settings/sections/EmailSMTP.svelte:155` | `service/communications_smtp.go:224` | medium |
 | GET camps-and-retreats/<uid>/subscriptions/list | camp payment with an invoice | `CampsAndRetreatsOverview.svelte:308` | `service/camps_subscriptions.go:143` | medium |
 | PATCH camps-and-retreats/periods/services/<uid>/update | walks a soft-deleted/other-group unpaid payment | `EditServiceModal.svelte:29-35` | `service/camps_periods.go:755` | medium |
-| POST onboarding/update | `onboarding_data` carries `users_onboarding_id`, `user` (always) | `components/onboarding/onboarding-checklist.svelte:95-100` | `service/profile_misc.go:666` | cheap |
 | personas add/update | `picture_path` data URL (photo) | `preview-blocks/image-upload.svelte:35-38` | `service/personas_writes.go:270-288` | medium |
 | modules add-attachment | compressed-suffix filename (`.gz`, `.tgz`, ...) | `routes/forms/PublicModule.svelte:60-73` | `service/modules_responses.go:466` | cheap-medium |
 | oauth2/signup | Google/Apple configured | `routes/login/Login.svelte:425-447` | `service/oauth_accounts.go:448` | medium-expensive |
@@ -673,7 +680,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### profile-misc.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH onboarding/update | `onboarding_data` containing `users_onboarding_id` or `user` | `service/profile_misc.go:666`, check at `dto/profile_misc.go:170` | **A** | `components/onboarding/onboarding-checklist.svelte:95-100` sends `onboarding_data: $userData.onboarding` on every checklist step (`:137-157`). That object is `UsersOnboardingSerializer(fields='__all__')` (`BE/application/serializers/auth_serializers.py:325-328,402-408`), so it always includes `users_onboarding_id` and `user`. Django accepts the same values. Cost: cheap (accept equal values, refuse only real changes). |
+| PATCH onboarding/update | `onboarding_data` with a `users_onboarding_id` or `user` other than the row's own | `dto/profile_misc.go` (`ParseOnboardingFlags`) | B | Ported in v2-misc for the row's own values, which the checklist always sends (`components/onboarding/onboarding-checklist.svelte:95-100`); other values never come from the UI. |
 | PATCH onboarding/update | multipart | `service/profile_misc.go:298` | B | The UI sends JSON. |
 | same | soft-deleted owner association | `service/profile_misc.go:350` | B | legacy: low. |
 | same | season/fiscal not int 0..32767; fee repr with exponent; lead containers/too long | `service/profile_misc.go:521,556,588,592` | B | The UI sends ints from selects and `parseFloat` fees (`routes/onboarding/partials/step1.svelte:59-75`). An exponent needs an extreme fee. Lead values are select strings. |
