@@ -622,6 +622,12 @@ def placeholder_png(text):
     return buffer.getvalue()
 
 
+def zlib_diagnostic():
+    from PIL import features, __version__
+    import platform
+    return f'pillow={__version__} zlib={features.version("zlib")} machine={platform.machine()} env={os.environ.get("PIL_PLACEHOLDER_ZLIB")}'
+
+
 def check_placeholder(effect, before, after, certificates, expect_new, owner, since, until, binding):
     """The placeholder certificate of a typed date: one Document, its stored PNG and one MedicalCertificate; else none."""
     old, current = rows(before, DOCUMENT), rows(after, DOCUMENT)
@@ -649,7 +655,7 @@ def check_placeholder(effect, before, after, certificates, expect_new, owner, si
     contract.require(key in added, 'storage.placeholder-key' + json.dumps(sorted(added)))
     stored = STORAGE['client'].get_object(Bucket=BUCKET, Key=key)
     body = stored['Body'].read()
-    contract.require(body[:8] == b'\x89PNG\r\n\x1a\n' and body == placeholder_png(spec['text']), f'storage.placeholder-bytes:{len(body)}')
+    contract.require(body[:8] == b'\x89PNG\r\n\x1a\n' and body == placeholder_png(spec['text']), f'storage.placeholder-bytes:{len(body)}:{len(placeholder_png(spec["text"]))}:{zlib_diagnostic()}')
     contract.require(stored['ContentType'] == 'image/png' and stored.get('ContentEncoding') is None, 'storage.placeholder-metadata')
     STATE['objects'] = set(STATE['objects']) | {key}
 
