@@ -969,17 +969,17 @@ free_child = person('Lapo', 'Famiglia', 'FMGLPA13A01H501L')
 add('family-wizard-without-fees', 'anonymous', 200, FAMILY_SUCCESS, setup={'association': {'enable_quotes_management': False}},
     body=family_body([family_entry(free_child)], sport_association=OWNER_NAME),
     effect=family_effect('anonymous', [free_child], payment=None))
-# A payment created by the request still holds the plain date assigned to payment_date when PaymentSerializer runs after
-# the commit: the answer is the 500 page, and the Family, both subscriptions, their tasks and notifications stay.
-add('family-wizard', 'anonymous', 500, SERVER, setup={'association': {'enable_quotes_management': True}},
+# The payments created by the request are read again after the commit and serialized as stored (payment_date is the
+# first instant of the day), in entry order, like a reused one.
+add('family-wizard', 'anonymous', 200, FAMILY_SUCCESS, setup={'association': {'enable_quotes_management': True}},
     body=family_body([family_entry(first_child), family_entry(skipped, valid=False), family_entry(second_child)],
                      sport_association=OWNER_NAME, type='family'),
-    effect=family_effect('anonymous', [first_child, second_child], respond=False))
+    effect=family_effect('anonymous', [first_child, second_child]))
 # An association account names its own association; a type that is not a known one is 'family'.
 owner_child = person('Olmo', 'Famiglia', 'FMGLMO11A01H501J')
-add('family-wizard-owner', 'owner', 500, SERVER,
+add('family-wizard-owner', 'owner', 200, FAMILY_SUCCESS,
     body=family_body([family_entry(owner_child)], sport_association=OWNER_NAME, type='altro'),
-    effect=family_effect('owner', [owner_child], through_actor=(OWN, 'actor.sport_association'), respond=False))
+    effect=family_effect('owner', [owner_child], through_actor=(OWN, 'actor.sport_association')))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

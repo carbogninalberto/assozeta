@@ -333,8 +333,6 @@ type subscriptionCreated struct {
 	welcome, athleteMail *celery.Task
 	// notifyUser receives the notification (create_subscription's user); empty: request.user.
 	notifyUser string
-	// paymentCreated marks a payment created by this registration (not a reused one).
-	paymentCreated bool
 }
 
 func (s *SubscriptionCreates) create(ctx context.Context, identity domain.ResolvedIdentity, data domain.RequestObject,
@@ -610,7 +608,6 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	if invalid != nil {
 		return nil, &domain.SubscriptionCreateInvalid{Fields: invalid}
 	}
-	paymentCreated := false
 	if signature.Signed {
 		// Signature.objects.create(signature=signature.data, user=user).
 		if err = tx.InsertSignature(ctx, uuid.NewString(), memberID, *signature.Data, request.Audit,
@@ -752,7 +749,6 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			}
 			paymentID = &id
 			amountJSON = dto.PythonFloatText(fees.amount)
-			paymentCreated = true
 		}
 	}
 	latest, err := tx.LatestNumber(ctx, association)
@@ -957,8 +953,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	name := strings.TrimSpace(subscriptionCreateValue(saved.FirstName) + " " + subscriptionCreateValue(saved.LastName))
 	created := &subscriptionCreated{id: subscriptionID, association: association, associateName: name,
 		result: SubscriptionCreateResult{PaymentID: paymentID, Amount: amountJSON}, first: saved.FirstName, last: saved.LastName,
-		tax: saved.TaxCode, start: dates.Start, end: dates.End, userID: memberID, welcome: welcome, notifyUser: memberID,
-		paymentCreated: paymentCreated}
+		tax: saved.TaxCode, start: dates.Start, end: dates.End, userID: memberID, welcome: welcome, notifyUser: memberID}
 	if member.Role == domain.RoleAthlete {
 		created.athleteMail = s.athleteMail(settings, saved.FirstName, saved.LastName)
 	}

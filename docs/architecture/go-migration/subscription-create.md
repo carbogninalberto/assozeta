@@ -184,12 +184,18 @@ association: another association's username is DRF's 403 `User not allowed.`, be
   that is not an object are the 500 page; an entry's own errors (400 fields, 409 duplicate, 403) are the answer. In every case the
   whole transaction is rolled back, the Family included;
 - the answer is built after the commit: `{"status": "success", "subs": [], "payments": [...]}` with `PaymentSerializer` of each
-  entry's payment in entry order. A payment the registration reuses (an unpaid one of the same day and amount) was loaded from
-  its row and is serialized as stored, and entries without a fee have none. A payment created by the request still holds the
-  plain date assigned to `payment_date`, which the serializer's `DateTimeField` does not render: the answer is then the 500 page
-  while the Family, every subscription, the tasks and the notifications stay. Go answers the same way (`family`,
-  `subscription_create_family.go`), serializing reused payments with the payment-state rendering (`RenderPayment`,
-  `dto.PaymentStateItem`).
+  entry's payment in entry order; entries without a fee have none. Every payment is read again from its row first
+  (`refresh_from_db`), so a payment created by the request and one the registration reuses (an unpaid one of the same day and
+  amount) have the same shape: `payment_date` is the first instant of the day, `amount` the stored decimal. Go does the same
+  (`family`, `subscription_create_family.go`) with the payment-state rendering (`RenderPayment`, `dto.PaymentStateItem`).
+
+Before this change Django answered the 500 page for a request that created a payment, after committing everything: the new
+payment still held the plain date assigned to `payment_date`, which the serializer's `DateTimeField` does not render
+(`BE/application/tests/test_family_wizard_response.py`).
+
+The web wizard (`UI/src/routes/subscribefamily/SubscribeFamily.svelte`) only tests the answer for an error; it reads
+`response.payment_id`, which the family answer never carried, so with online payments it reloads the page instead of opening
+the payment page.
 
 The fixture's family cases list their rows by label (several subscriptions per case) and are checked with the renewal runner's
 row, audit and notification checks; the response's payments are compared with `PaymentSerializer` of the stored rows.
@@ -299,3 +305,11 @@ v2-wizard: the family wizard and the quick mode from a member account (113 cases
   `subscription-create-family-wizard` (CAUGHT).
 - Re-run green: `subscription-renew` 74/74 on four transports (`secsub2-versioned-r1`); `subscription-memberships`,
   `subscription-sign`, `subscription-approve` and `associates-draft` natively (`secsub2-rerun-r1`: 88/88, 47/47, 27/27, 128/128).
+
+The family wizard's answer (113 cases).
+
+- Django first: `application.tests.test_family_wizard_response` (2 tests) failed on the 500 page and passes with the fix.
+- RED (`famwiz-red-r1`, the Go code of the previous commit): Django 113/113; Go 500 on `subscription-create-family-wizard`.
+- GREEN (`famwiz-versioned-r1`): 113/113 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`famwiz-mutation-r1`): the payments listed in reverse entry order fails `subscription-create-family-wizard`
+  (CAUGHT).

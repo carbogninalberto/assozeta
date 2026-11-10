@@ -96,19 +96,12 @@ func (s *SubscriptionCreates) family(ctx context.Context, identity domain.Resolv
 		}
 		created = append(created, subscription)
 	}
-	// PaymentSerializer runs after the commit. A payment created by the request still
-	// holds the plain date assigned to payment_date, which the serializer's DateTimeField
-	// does not render: the answer is then the 500 page, with everything committed.
-	// Reused payments were loaded from their rows and render as stored.
-	rendered := true
+	// The payments are read again after the commit and serialized as stored, in entry
+	// order: a payment created by the request and a reused one have the same shape.
 	payments := []map[string]any{}
 	for _, subscription := range created {
 		if subscription.result.PaymentID == nil {
 			continue
-		}
-		if subscription.paymentCreated {
-			rendered = false
-			break
 		}
 		row, err := tx.RenderPayment(ctx, *subscription.result.PaymentID)
 		if err != nil {
@@ -126,9 +119,6 @@ func (s *SubscriptionCreates) family(ctx context.Context, identity domain.Resolv
 	committed = true
 	for _, subscription := range created {
 		s.afterCommit(ctx, identity, subscription, request)
-	}
-	if !rendered {
-		return nil, server
 	}
 	return &SubscriptionCreateResult{Family: true, Payments: payments}, nil
 }

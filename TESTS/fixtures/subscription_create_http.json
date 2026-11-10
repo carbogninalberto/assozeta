@@ -12399,8 +12399,12 @@
    "method": "POST",
    "path": "/subscription/add",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 200,
+   "response": {
+    "status": "success",
+    "subs": [],
+    "payments": "$payments"
+   },
    "effect": {
     "actor": "anonymous",
     "new": [
@@ -12796,7 +12800,10 @@
       "association": "a1000000-0000-4000-8000-000000701001"
      }
     ],
-    "payments": null
+    "payments": [
+     "$payment_0",
+     "$payment_1"
+    ]
    },
    "body": {
     "new_user_account": {
@@ -12919,8 +12926,12 @@
    "method": "POST",
    "path": "/subscription/add",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 200,
+   "response": {
+    "status": "success",
+    "subs": [],
+    "payments": "$payments"
+   },
    "effect": {
     "actor": "owner",
     "new": [
@@ -13136,7 +13147,9 @@
       "association": "a1000000-0000-4000-8000-000000701001"
      }
     ],
-    "payments": null
+    "payments": [
+     "$payment_0"
+    ]
    },
    "body": {
     "new_user_account": {
