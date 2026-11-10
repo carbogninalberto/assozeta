@@ -16,6 +16,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentobjects"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jmoiron/sqlx"
@@ -27,6 +28,11 @@ import (
 type consumerRestoreObjects struct{ consumerPrintObjects }
 
 func (o consumerRestoreObjects) Missing(err error) bool {
+	// Open turns GetObject's NoSuchKey answer into its own error type.
+	var noKey *documentobjects.NoSuchKeyError
+	if errors.As(err, &noKey) {
+		return true
+	}
 	var response *smithyhttp.ResponseError
 	return errors.As(err, &response) && response.HTTPStatusCode() == 404
 }

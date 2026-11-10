@@ -17,7 +17,6 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
-	"github.com/carbogninalberto/assozeta/BE_GO/pkg/pymime"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentobjects"
 )
@@ -462,17 +461,8 @@ func (s *DataRestore) streamBackup(ctx context.Context, op *domain.DataRestoreRe
 	if err != nil {
 		return nil, err
 	}
-	contentType, _, _, err := pymime.GuessType(filename)
-	if err != nil {
-		_ = object.Body.Close()
-		return nil, err
-	}
-	if contentType == "" {
-		contentType = "application/octet-stream"
-		if object.ContentType != nil && *object.ContentType != "" {
-			contentType = *object.ContentType
-		}
-	}
+	// Stored files are served inline only as PDF or images; the backup name ends in .zip, so it is a download.
+	contentType := "application/octet-stream"
 	disposition, _ := contentDisposition(true, filename)
 	stream := &DataRestoreStream{Object: object, ContentType: contentType, Disposition: *disposition, ContentLength: object.ContentLength}
 	if object.ContentEncoding != nil {

@@ -59,7 +59,7 @@ EXPECTED = {
     'a later run marks nothing',
     'unconfigured credentials return before any request',
     'unsupported version payload and tenant fail before business effects',
-    'a payment outside the ported paid flow refuses the run before any effect',
+    'a membership fee whose rounding is an exact tie matches the one-thread Django task',
     'a payment whose save() raises is rolled back and the run goes on',
 }
 stripe_stub.INTENTS.update({
@@ -130,8 +130,8 @@ class PaidFixture:
             (12, 'pi_ok_5', 1, 22, None, 'default', {'meta_payment_categories': [{'payment_category_id': str(U(13)), 'amount': 5.5}]}),
             (13, None, 0, 21, None, 'default', {}),
         ]
-        if variant == 'unported':
-            # A membership fee (30 - 0.125) whose two-place rounding is an exact tie: not ported.
+        if variant == 'tie':
+            # A membership fee (30 - 0.125) whose two-place rounding is an exact tie.
             rows[0] = (0, 'pi_ok_1', 1, 21, 61, 'default', {'meta_payment_categories': [{'amount': 0.125}]})
         if variant == 'save-raises':
             # An account transfer without a description: Payment.save() (the type save) raises AttributeError
@@ -273,7 +273,7 @@ class PaidRehearsal(Rehearsal):
         notification_utils.REDIS_POOL = redis.ConnectionPool(host='127.0.0.1', port=redis_port, password=REDIS_PASSWORD, username='default',
                                                              socket_connect_timeout=5, socket_timeout=5, decode_responses=False)
         self.fixture = PaidFixture()
-        self.oracles = {variant: self.django(variant) for variant in ('main', 'unconfigured', 'save-raises')}
+        self.oracles = {variant: self.django(variant) for variant in ('main', 'unconfigured', 'tie', 'save-raises')}
 
     def connect(self, name):
         connection = psycopg2.connect(host=str(self.work), user='contracts', dbname=DATABASE, application_name='fixture-paid-' + name)
@@ -491,11 +491,9 @@ class PaidRehearsal(Rehearsal):
             assert self.fixture.snapshot() == before and not self.messages() and not self.stub.take()
         self.case('unsupported version payload and tenant fail before business effects')
 
-        identifier, before = self.seed_job(variant='unported')
-        await_condition(lambda: self.job(identifier)[0] == 'failed', 'unported paid flow refused')
-        assert self.sql('SELECT error_code FROM assozeta_go_jobs WHERE id=%s', (identifier,)) == [('task_failed',)]
-        assert self.fixture.snapshot() == before and not self.messages() and not self.stub.take() and not self.realtime.take()
-        self.case('a payment outside the ported paid flow refuses the run before any effect')
+        identifier, before = self.seed_job(variant='tie')
+        self.go_matches(identifier, before, 'tie')
+        self.case('a membership fee whose rounding is an exact tie matches the one-thread Django task')
 
         identifier, before = self.seed_job(variant='save-raises')
         self.go_matches(identifier, before, 'save-raises')

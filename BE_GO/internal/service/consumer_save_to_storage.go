@@ -13,6 +13,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celeryworker"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/pymime"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentobjects"
 )
 
 // ConsumerSaveToStorageTask is docmanager.tasks.save_to_storage's Celery name.
@@ -182,6 +183,11 @@ var consumerStorageFailure = &celeryworker.Exception{Type: "ClientError", Module
 // operation: <message>". A HEAD response has no body, so botocore's code is
 // the status and its message the reason phrase.
 func ConsumerStorageException(operation string, err error) *celeryworker.Exception {
+	var head *documentobjects.HeadStatusError
+	if operation == "HeadObject" && errors.As(err, &head) {
+		// Exists already turned the client-error answer into botocore's text.
+		return &celeryworker.Exception{Type: "ClientError", Module: "botocore.exceptions", Args: []any{head.Error()}}
+	}
 	var response *smithyhttp.ResponseError
 	if !errors.As(err, &response) {
 		return consumerStorageFailure

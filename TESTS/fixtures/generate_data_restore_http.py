@@ -229,7 +229,7 @@ def task(key):
     return {'task': TASK, 'args': [ops[key]['id']], 'kwargs': [], 'args_list': True, 'id': ops[key]['id'], 'timelimit': [3600, 3300]}
 
 
-def stream(key, content, *, content_type='application/zip'):
+def stream(key, content, *, content_type='application/octet-stream'):
     return {'body_b64': base64.b64encode(content).decode(), 'content_type': content_type, 'length': len(content),
             'disposition': f'attachment; filename="backup-prima-del-ripristino-{ops[key]["id"]}.zip"'}
 
