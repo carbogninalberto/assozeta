@@ -27,6 +27,8 @@ type PaymentStates struct {
 	// paid and notifier run approve's paid flow (invoice, notification); nil refuses it.
 	paid     domain.PaymentPaidFlowStore
 	notifier *SubscriptionNotifier
+	// printer runs delete's eager print_document_invoice; nil refuses deleting an invoiced payment.
+	printer *InvoiceSyncPrint
 }
 
 func NewPaymentStates(store domain.PaymentStateStore, now func() time.Time) *PaymentStates {
@@ -36,6 +38,12 @@ func NewPaymentStates(store domain.PaymentStateStore, now func() time.Time) *Pay
 // WithTasks lets approve dispatch the invoice PDF task through the Celery producer.
 func (s *PaymentStates) WithTasks(tasks celery.Publisher) *PaymentStates {
 	s.tasks = tasks
+	return s
+}
+
+// WithInvoicePrint lets delete print an invoiced payment's invoice synchronously (.apply).
+func (s *PaymentStates) WithInvoicePrint(printer *InvoiceSyncPrint) *PaymentStates {
+	s.printer = printer
 	return s
 }
 
@@ -294,8 +302,10 @@ func (s *PaymentStates) Approve(ctx context.Context, identity domain.ResolvedIde
 }
 
 // Cancel follows payment_cancel (no UUID check: a value the column rejects is
-// a 500): the payment is serialized before an unpaid save. Cancelling a
-// payment with an invoice (PDF task) is refused before any write.
+// a 500): the payment is serialized before an unpaid save. A paid invoiced
+// payment is serialized after the save (its in-memory invoice cancelled, the
+// stored meta unchanged), then its invoice is saved cancelled with the
+// payment_obj meta and print_document_invoice is published (apply_async).
 func (s *PaymentStates) Cancel(ctx context.Context, identity domain.ResolvedIdentity, request PaymentStateRequest) (map[string]any, error) {
 	tx, err := s.store.BeginPaymentState(ctx)
 	if err != nil {
@@ -319,7 +329,7 @@ func (s *PaymentStates) Cancel(ctx context.Context, identity domain.ResolvedIden
 		if !row.Paid {
 			return nil, domain.ErrPaymentStateNotPaid
 		}
-		return nil, domain.ErrPaymentStateNotPorted
+		return s.cancelInvoiced(ctx, tx, identity, request, row, group)
 	}
 	item, err := s.render(ctx, tx, row.ID, group)
 	if err != nil {
@@ -335,8 +345,10 @@ func (s *PaymentStates) Cancel(ctx context.Context, identity domain.ResolvedIden
 }
 
 // Delete follows payment_delete: is_valid_uuid, the association, the payment
-// of request.user.sport_association (none: 404), then payment.delete().
-// Deleting a payment with an invoice (synchronous PDF) is refused before any write.
+// of request.user.sport_association (none: 404), then payment.delete(). An
+// invoiced payment first gets its invoice saved cancelled with the
+// payment_obj meta (committed, as the request is not atomic), then
+// print_document_invoice runs eagerly, then the payment is deleted.
 func (s *PaymentStates) Delete(ctx context.Context, identity domain.ResolvedIdentity, request PaymentStateRequest) (map[string]any, error) {
 	id, err := messageReadsParseUUID(request.ID)
 	if err != nil {
@@ -359,12 +371,27 @@ func (s *PaymentStates) Delete(ctx context.Context, identity domain.ResolvedIden
 	if row == nil {
 		return nil, domain.ErrPaymentStateNotFound
 	}
-	if row.InvoiceID != nil {
-		return nil, domain.ErrPaymentStateNotPorted
-	}
 	actor, err := tx.ActorAssociation(ctx, identity.Actor.ID)
 	if err != nil {
 		return nil, err
+	}
+	if row.InvoiceID != nil {
+		if s.printer == nil {
+			return nil, domain.ErrPaymentStateNotPorted
+		}
+		if err = s.cancelInvoice(ctx, tx, identity, request, row.ID, *row.InvoiceID, group); err != nil {
+			return nil, err
+		}
+		if err = tx.Commit(); err != nil {
+			return nil, err
+		}
+		if err = s.printer.Invoice(ctx, *row.InvoiceID, request.Authorization); err != nil {
+			return nil, err
+		}
+		if tx, err = s.store.BeginPaymentState(ctx); err != nil {
+			return nil, err
+		}
+		defer tx.Rollback()
 	}
 	audit := domain.CourseSubscriptionAudit{Context: paymentCategoryAuditContext(identity, request.Audit), ActorAssociation: actor, At: s.at(),
 		Group: group}
@@ -372,6 +399,57 @@ func (s *PaymentStates) Delete(ctx context.Context, identity domain.ResolvedIden
 		return nil, err
 	}
 	return map[string]any{"data": map[string]any{"msg": "payment deleted."}}, tx.Commit()
+}
+
+// cancelInvoiced is payment_cancel's invoiced branch: payment.save() unpaid,
+// the response serialization, the invoice save, then the task dispatch.
+func (s *PaymentStates) cancelInvoiced(ctx context.Context, tx domain.PaymentStateTransaction, identity domain.ResolvedIdentity,
+	request PaymentStateRequest, row *domain.PaymentStateRow, group *string) (map[string]any, error) {
+	if s.tasks == nil {
+		return nil, domain.ErrPaymentStateNotPorted
+	}
+	if err := s.save(ctx, tx, identity, row, false, row.PaymentDate, request.Audit); err != nil {
+		return nil, err
+	}
+	item, err := s.render(ctx, tx, row.ID, group)
+	if err != nil {
+		return nil, err
+	}
+	invoice, ok := item["invoice"].(map[string]any)
+	if !ok {
+		return nil, domain.ErrPaymentStateServer
+	}
+	invoice["cancelled"] = true
+	if err = s.cancelInvoice(ctx, tx, identity, request, row.ID, *row.InvoiceID, group); err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+	if err = printInvoice(ctx, s.tasks, *row.InvoiceID, authorizationArg(request.Authorization)); err != nil {
+		return nil, err
+	}
+	return map[string]any{"data": map[string]any{"msg": "payment cancelled.", "payment": item}}, nil
+}
+
+// cancelInvoice serializes the payment as stored (PaymentSerializer) into the
+// view's payment_obj and saves the invoice cancelled with it as meta.
+func (s *PaymentStates) cancelInvoice(ctx context.Context, tx domain.PaymentStateTransaction, identity domain.ResolvedIdentity,
+	request PaymentStateRequest, payment, id string, group *string) error {
+	render, err := tx.RenderPayment(ctx, payment, group)
+	if err != nil {
+		return err
+	}
+	invoice, err := tx.PaymentStateInvoice(ctx, id)
+	if err != nil {
+		return err
+	}
+	if invoice == nil {
+		return domain.ErrPaymentStateServer
+	}
+	meta := dto.PaymentStateInvoiceMeta(render.Payment)
+	return tx.CancelPaymentStateInvoice(ctx, *invoice, string(dto.PythonJSONDumps(meta)), string(dto.PythonJSONDumpsSorted(meta)),
+		paymentCategoryAuditContext(identity, request.Audit), s.at())
 }
 
 // Mark follows payment_bulk_archive / payment_bulk_delete: 'payment_ids' must

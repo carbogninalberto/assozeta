@@ -497,10 +497,12 @@ func run() (runErr error) {
 	e.Any("/google/calendar/config", googleCalendarHandler.Config, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/google/calendar/list", googleCalendarHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/google/calendar/:course_id/export", googleCalendarHandler.Export, middleware.DjangoSessionAudit(sessionAuthentication))
-	// The eager print tasks of payment update (print_document_invoice) and payment list
+	// The eager print tasks of payment update and delete (print_document_invoice) and payment list
 	// (print_document_compensation), with invoice-sync-print's CoordinatedTask gate.
 	paymentInvoicePrinter := service.NewInvoiceSyncPrint(service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
 		repository.NewRestoreStates(db), cfg.RestoreLockPath != ""), os.Getenv("CURRENT_HOST"))
+	// payment delete prints an invoiced payment's invoice eagerly.
+	paymentStates.WithInvoicePrint(paymentInvoicePrinter)
 	// payment_stats' Stripe fees: the stripe/* SDK client and Django's cache (DB 1).
 	paymentStatsStripeCache, err := repository.NewPaymentStatsStripeCache(cache)
 	if err != nil {
