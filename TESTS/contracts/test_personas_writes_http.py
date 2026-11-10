@@ -10,8 +10,8 @@ Placeholders in the authored bodies: '$aN' is an associate created by the case
 today's UTC date and {'$minor': ...} that age < 18. The relation and M2M
 managers have no ordering: nested `tutors` lists are compared sorted by the
 tutor's names, `family_members` and pk lists sorted. '$picN' is the URL of a
-picture the case uploads (the fixture's picture_base, AWS_LOCATION,
-associates/<folder>/picture_<timestamp>.jpg); the bound values of the last
+picture the case uploads (the run's storage endpoint, bucket, AWS_LOCATION,
+associates/<associate id>/picture_<timestamp>.jpg); the bound values of the last
 case stay in BOUND for the adapter, which ties them to the stored object.
 """
 from datetime import date, datetime, timezone
@@ -27,7 +27,7 @@ from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, Response
 __all__ = ('require', 'load_source', 'assert_case', 'ResponseFailure')
 
 SOURCE = Path(__file__).resolve().parents[1] / 'fixtures/personas_writes_http.json'
-PICTURE = re.compile(r'https://bakney-object-spaces\.fra1\.cdn\.digitaloceanspaces\.com/[^/]+/associates/[^/]+/picture_\d+\.\d+\.jpg')
+PICTURE = re.compile(r'http://127\.0\.0\.1:\d+/[^/]+/[^/]+/associates/[0-9a-f-]{36}/picture_\d+\.\d+\.jpg')
 BOUND = {}
 
 

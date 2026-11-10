@@ -183,7 +183,7 @@ Receipts are `quality-reports/go-migration/<family>-http-v2misc3-*`; each family
 
 | Family | Route | Was refused | Evidence |
 |---|---|---|---|
-| personas-writes | `POST personas/add`, `PATCH personas/<pk>/update` | `picture_path` data URL (the photo widget): decoded, stored as `associates/<id>/picture_<timestamp>.jpg`, ACL `public-read`, CDN URL saved | 188 cases with a private MinIO; RED `v2misc3-red-r4` Django 188/188, Go 500; GREEN `v2misc3-final-r1` 4 transports; mutation `v2misc3-mutation-r3` (ACL key without the location) CAUGHT; subscription-sign 47/47, router-personas 51/51 and router-persona-subscriptions 73/73 re-run |
+| personas-writes | `POST personas/add`, `PATCH personas/<pk>/update` | `picture_path` data URL (the photo widget): decoded, the other fields validated, then stored as `associates/<persona id>/picture_<timestamp>.jpg`, ACL `public-read` when object ACLs are on, the URL under the storage's public address saved | 194 cases with a private MinIO; RED `secoauth-red-r3` Django 194/194, Go fails on `personas-writes-add-picture`; GREEN `secoauth-versioned-r1` 4 transports; mutation `secoauth-mutation-r1` (the folder read from the body) CAUGHT; router-personas 51/51 and router-persona-subscriptions 73/73 re-run (`secoauth-rerun-r1`) |
 | communications-smtp | `GET communications/settings/smtp/verify` | `SSL` chosen for a port that speaks plain SMTP first (`[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032)`); a host name the resolver does not know (`socket.gaierror` text of the platform) | 88 cases; RED `v2misc3-red-r2` Django 88/88, Go 500; GREEN `v2misc3-final-r1` 4 transports; mutation `v2misc3-mutation-r1` (call site of another CPython release) CAUGHT |
 | misc-routes | `GET subscription/<uid>/card` | unknown token while a Bakney pairing is pending or paired (`source_token` asks the paired server, `public-token`) | 128 cases with a paired-server stub; RED `v2misc3-red-r1` Django 128/128, Go 500; GREEN `v2misc3-final-r1` 4 transports; mutation `v2misc3-mutation-r2` (expiry without an offset accepted) CAUGHT; sso-pairing re-run |
 | subscription-misc | `GET subscription/validate-token-link-and-get-subscriptions` | unknown token while a Bakney pairing is pending or paired | 157 cases; RED `v2misc3-red-r1` Django 157/157, Go 500; GREEN `v2misc3-final-r1` 4 transports; mutation `v2misc3-mutation-r1` (gym name limit 256) CAUGHT |
@@ -267,20 +267,16 @@ legacy Bakney invoices or tutors that would be reassigned (refused by the valida
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | GET communications/settings/smtp/verify | a connect timeout (wrong port behind a firewall), a resolver that cannot be reached, a TLS handshake timeout | `communication/settings/sections/EmailSMTP.svelte:155` | `service/communications_smtp.go` (`Verify`) | not byte-reproducible |
-| oauth2/signup | Google/Apple configured | `routes/login/Login.svelte:425-447` | `service/oauth_accounts.go:448` | medium-expensive |
 
 Why these stay (v2-misc):
 - smtp/verify: the dialogue is ported (v2-misc-2), and so are the texts of `SSL` on a plain-SMTP port and of an unknown host
   (v2-misc-3). What stays: connect timeouts (Python reports the last error of every address in the C library's order), an
   unreachable resolver and handshake timeouts; Go answers the 500 page instead of a `verified: false` body
   (`communications-smtp.md`, "Platform texts").
-- oauth2/signup with providers (not started in v2-misc-3): Google is `google.oauth2.id_token.verify_oauth2_token` (the X.509
-  certificates of `https://www.googleapis.com/oauth2/v1/certs`, RS256, `iat`/`exp` without skew, `aud` equal to the client id, then
-  the issuer), with every `ValueError` falling back to `oauth2.googleapis.com/tokeninfo` and `oauth2/v3/userinfo`; Apple is the JWKS
-  of `appleid.apple.com/auth/keys` and PyJWT (`RS256`, audience, issuer). Both go through `requests` with the process proxy
-  settings, so instance-outbound's HTTPS proxy stub and private certificate authority fit the oauth-accounts adapter. After the
-  verification the view saves `role` on an existing user with that e-mail (`UserSerializer`, audited) or creates the user without a
-  usable password, then issues the tokens and the welcome e-mail as the password path does.
+- oauth2/signup with providers is ported (`oauth2-accounts.md`, "signup (social path)"; `secoauth-versioned-r1`): the Go route
+  verifies Google and Apple tokens with the provider clients of the login route and follows Django's verified e-mail rule,
+  existing-account sign-in and invite handling. What stays refused: an identity or body name that is not a string, and a
+  non-ASCII identity e-mail or username when a new account would be created.
 
 Not HTTP (websocket, Django today): agent exports to XLSX/PDF (`service/business_mcp_query.go:290`).
 
@@ -762,7 +758,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### oauth2-accounts.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST oauth2/signup (social) | Google/Apple client id configured | `service/oauth_accounts.go:448` (`ErrOAuthNotPorted`) | A (conditional on config) | `routes/login/Login.svelte:425-447` sends `{token, backend, ...}`. Google/Apple are configured in the UI (`routes/setup/StepBranding.svelte:254`, `routes/profile/sections/InstanceIntegrations.svelte:9`). Cost: medium–expensive (token verification, outbound calls). |
+| POST oauth2/signup (social) | a name that is not a string; a non-ASCII e-mail or username for a new account | `service/oauth_accounts.go` (`socialSignup`, `ErrOAuthNotPorted`) | B | The token path itself is ported (`secoauth-versioned-r1`): `routes/login/Login.svelte:425-447` sends strings, and its username is derived from the Google name. Cost: cheap–medium. |
 | POST oauth2/signup / reset | non-ASCII e-mail | `service/oauth_accounts.go:404` | B | Rare. The email field accepts it, but it is unusual. Cost: cheap–medium. |
 | POST oauth2/signup | non-ASCII or NUL username | `dto/oauth_signup.go:100` | B | The UI regex blocks non-ASCII (`Login.svelte:327`, ASCII `\w`). |
 | POST oauth2/signup / reset | password with NUL or lone surrogate | `service/oauth_accounts.go:273,518` | B | Exotic. |
@@ -842,7 +838,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### personas-writes.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST personas/add, PATCH personas/<pk>/update | `picture_path` containing `base64` | `service/personas_picture.go` | ported | Ported in v2-misc-3 (`personas-writes.md`, `v2misc3-final-r1`). A body `associate_id` outside `[A-Za-z0-9_-]{1,64}`, a list or object value and storage failures other than a refused ACL stay refused (B). |
+| POST personas/add, PATCH personas/<pk>/update | `picture_path` containing `base64` | `service/personas_picture.go` | ported | Ported in v2-misc-3 and reworked with Django (`personas-writes.md`, `secoauth-versioned-r1`): the object goes under the persona's own id after validation. A list or object value and storage failures other than a refused ACL stay refused (B). |
 | same | tutor `is_primary` not bool, numeric tutor ids, non-ASCII-digit born_date, non-canonical X-Group-Id | `service/personas_writes.go:313-334,445,657,713,751` | B | The UI sends booleans and string ids (`associate-form.svelte:222-230,708-724`). |
 | DELETE personas-subscriptions/<pk>/list | found subscription | `service/personas_writes.go:224-228` | B | Route method not called by the UI (GET list only). |
 

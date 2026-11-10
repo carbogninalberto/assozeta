@@ -21,6 +21,20 @@ class SocialAuthService:
     APPLE_KEYS_URL = 'https://appleid.apple.com/auth/keys'
     APPLE_ISSUER = 'https://appleid.apple.com'
 
+    @staticmethod
+    def has_verified_email(user_info: Optional[Dict[str, Any]]) -> bool:
+        """
+        Whether the provider states that the identity's e-mail address is verified.
+
+        Google sends a boolean; Apple sends either the string "true" or a boolean
+        (private relay addresses are verified addresses like any other).
+        """
+        if not isinstance(user_info, dict):
+            return False
+        email = user_info.get('email')
+        verified = user_info.get('email_verified')
+        return isinstance(email, str) and email != '' and (verified is True or verified == 'true')
+
     @classmethod
     def verify_google_token(cls, token: str) -> Tuple[bool, Optional[Dict[str, Any]]]:
         """

@@ -57,5 +57,6 @@ func (s *SocialProviders) Verify(ctx context.Context, provider string, token any
 	if !valid {
 		return SocialIdentity{}, false, nil
 	}
-	return SocialIdentity{Email: info["email"]}, true, nil
+	return SocialIdentity{Email: info["email"], EmailVerified: info["email_verified"], FirstName: info["first_name"],
+		LastName: info["last_name"]}, true, nil
 }

@@ -1,7 +1,9 @@
 import base64
 import binascii
-import os
+import posixpath
+import uuid
 
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.utils import timezone
@@ -9,7 +11,6 @@ from rest_framework import serializers
 
 from application.models import Subscription
 from application.models.user_models import AssociateTutorRelation, Associate
-from core.settings import STORAGE_DIR, AWS_STORAGE_BUCKET_NAME, AWS_LOCATION
 
 
 class BasicTutorsSerializer(serializers.ModelSerializer):
@@ -59,10 +60,12 @@ class AssociateSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, data):
         """
-        Run our picture validation before the default serializer validation
+        Decode an uploaded picture before the default serializer validation.
+        The picture is stored by create() / update(), once the data is valid.
         """
         # Make a mutable copy of the data
         mutable_data = data.copy()
+        self._picture_upload = None
 
         # Handle picture path validation
         if 'picture_path' in mutable_data and \
@@ -72,10 +75,6 @@ class AssociateSerializer(serializers.ModelSerializer):
             picture_path = mutable_data.get('picture_path')
             if picture_path:
                 try:
-                    associate_id = mutable_data.get('associate_id')
-                    # cache_refresh_token is the current timestamp
-                    cache_refresh_token = timezone.now().timestamp()
-                    storage_path = os.path.join(STORAGE_DIR, f'associates/{associate_id}/picture_{cache_refresh_token}.jpg')
                     # Split base64 metadata from actual content
                     if ',' in mutable_data['picture_path']:
                         header, picture_data = mutable_data['picture_path'].split(',', 1)
@@ -87,33 +86,63 @@ class AssociateSerializer(serializers.ModelSerializer):
                         raise serializers.ValidationError({
                             'picture_path': 'Invalid base64 string'
                         })
-
-                    saved_path = default_storage.save(
-                        storage_path,
-                        ContentFile(decoded_image)
-                    )
-                    # Set ACL after saving
-                    s3_client = default_storage.connection.meta.client
-
-                    s3_client.put_object_acl(
-                        Bucket=AWS_STORAGE_BUCKET_NAME,
-                        Key=f"{AWS_LOCATION}/{saved_path}",
-                        ACL='public-read'
-                    )
-                    # cdn_url
-                    cdn_url = os.path.join('https://bakney-object-spaces.fra1.cdn.digitaloceanspaces.com', AWS_LOCATION, storage_path)
-                    # get the cdn url
-                    mutable_data['picture_path'] = cdn_url
                 except Exception as e:
                     raise serializers.ValidationError({
                         'picture_path': f'Error processing image: {str(e)}'
                     })
+                # The stored value is the URL of the saved picture.
+                mutable_data.pop('picture_path')
+                validated_data = super().to_internal_value(mutable_data)
+                self._picture_upload = decoded_image
+                return validated_data
 
         # Now call the parent's to_internal_value with our modified data
         return super().to_internal_value(mutable_data)
 
+    def _store_picture(self, associate_id, decoded_image):
+        """
+        Save the picture of this associate in the default storage and return its URL.
+        The object lives under the associate's own id.
+        """
+        try:
+            # cache_refresh_token is the current timestamp
+            cache_refresh_token = timezone.now().timestamp()
+            storage_path = f'associates/{associate_id}/picture_{cache_refresh_token}.jpg'
+            saved_path = default_storage.save(storage_path, ContentFile(decoded_image))
+
+            location = (getattr(default_storage, 'location', None) or settings.AWS_LOCATION or '').strip('/')
+            object_key = posixpath.join(location, saved_path.lstrip('/')) if location else saved_path.lstrip('/')
+            bucket_name = getattr(default_storage, 'bucket_name', None) or settings.AWS_STORAGE_BUCKET_NAME
+            if settings.AWS_S3_USE_OBJECT_ACL:
+                # Set ACL after saving
+                s3_client = default_storage.connection.meta.client
+                s3_client.put_object_acl(
+                    Bucket=bucket_name,
+                    Key=object_key,
+                    ACL='public-read'
+                )
+
+            # Public address of the storage: its public base URL, its custom domain or its endpoint.
+            base_url = (getattr(settings, 'AWS_S3_PUBLIC_BASE_URL', '') or '').strip().rstrip('/')
+            custom_domain = getattr(default_storage, 'custom_domain', None)
+            if not base_url and custom_domain:
+                base_url = f"{getattr(default_storage, 'url_protocol', 'https:')}//{custom_domain}"
+            if not base_url:
+                endpoint_url = getattr(default_storage, 'endpoint_url', None) or settings.AWS_S3_ENDPOINT_URL
+                base_url = f"{endpoint_url.rstrip('/')}/{bucket_name}"
+            return f'{base_url}/{object_key}'
+        except Exception as e:
+            raise serializers.ValidationError({
+                'picture_path': f'Error processing image: {str(e)}'
+            })
+
     def create(self, validated_data):
         tutors_data = self.context.get('tutors_data', [])
+        decoded_image = getattr(self, '_picture_upload', None)
+        if decoded_image is not None:
+            self._picture_upload = None
+            validated_data['associate_id'] = uuid.uuid4()
+            validated_data['picture_path'] = self._store_picture(validated_data['associate_id'], decoded_image)
         associate = super().create(validated_data)
         self._handle_tutors(associate, tutors_data)
         return associate
@@ -121,6 +150,10 @@ class AssociateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         # TODO: check if there is the need to sanitize notes
         tutors_data = self.context.get('tutors_data', [])
+        decoded_image = getattr(self, '_picture_upload', None)
+        if decoded_image is not None:
+            self._picture_upload = None
+            validated_data['picture_path'] = self._store_picture(instance.pk, decoded_image)
         instance = super().update(instance, validated_data)
         self._handle_tutors(instance, tutors_data)
         return instance

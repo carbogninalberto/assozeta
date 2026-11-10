@@ -159,7 +159,7 @@ func run() (runErr error) {
 	if err != nil {
 		return err
 	}
-	loginHandler, loginRate, closeProviders, err := composeLogin(cfg, db, cache, tokens, accounts, identities, images)
+	loginHandler, loginRate, socialProviders, closeProviders, err := composeLogin(cfg, db, cache, tokens, accounts, identities, images)
 	if err != nil {
 		return err
 	}
@@ -398,7 +398,7 @@ func run() (runErr error) {
 			service.NewMembershipCardConfigurations(repository.NewMembershipCardConfigurations(db), time.Now), images,
 			domain.RegistrationChoices{Family: cfg.FamilyRegistrationEnabled, Federation: cfg.FederationRegistrationEnabled, Multiple: cfg.MultipleRegistrationEnabled}),
 		service.NewAssociationProfiles(repository.NewAssociationProfiles(db), time.Now),
-		service.NewSocialClientIDs(repository.NewSocialConfiguration(db), cfg.GoogleClientID, cfg.AppleClientID),
+		socialProviders, accounts, service.NewSecondFactor(time.Now),
 		service.OAuthAccountSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName, DefaultFromEmail: cfg.DefaultFromEmail,
 			IsWhitelabel: cfg.IsWhitelabel, Debug: cfg.Debug}, time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
@@ -672,7 +672,9 @@ func run() (runErr error) {
 	e.Any("/personas/:pk/info", personasHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	personasWritesHandler := handler.NewPersonasWritesHandler(personasService,
 		service.NewPersonaWrites(repository.NewPersonaWrites(db), personasService, time.Now, uuid.NewString).
-			WithPictures(composePersonaPictures(cfg), cfg.Storage.FileOverwrite),
+			WithPictures(composePersonaPictures(cfg), service.PersonaPictureSettings{Overwrite: cfg.Storage.FileOverwrite,
+				UseObjectACL: cfg.Storage.UseObjectACL, PublicBaseURL: cfg.Storage.PublicBaseURL, Endpoint: cfg.Storage.Endpoint,
+				Bucket: cfg.Storage.Bucket}),
 		service.NewPersonaSubscriptions(repository.NewPersonaSubscriptions(db), personasService),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	personasHandler.WithWrites(personasWritesHandler)

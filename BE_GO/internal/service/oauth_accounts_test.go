@@ -41,3 +41,27 @@ func TestOAuthSignupValues(t *testing.T) {
 		}
 	}
 }
+
+func TestSocialIdentityVerifiedEmail(t *testing.T) {
+	for _, tc := range []struct {
+		email, verified any
+		want            bool
+	}{
+		{"person@example.test", true, true},
+		{"person@example.test", "true", true}, // Apple sends the claim as text or as a boolean
+		{"person@example.test", false, false},
+		{"person@example.test", "false", false},
+		{"person@example.test", "True", false},
+		{"person@example.test", nil, false},
+		{"person@example.test", json.Number("1"), false},
+		{"person@example.test", float64(1), false},
+		{"", true, false},
+		{nil, true, false},
+		{json.Number("17"), true, false},
+	} {
+		email, got := SocialIdentity{Email: tc.email, EmailVerified: tc.verified}.VerifiedEmail()
+		if got != tc.want || (got && email != tc.email) {
+			t.Errorf("%v / %v: got %v, want %v", tc.email, tc.verified, got, tc.want)
+		}
+	}
+}

@@ -12,12 +12,14 @@ with their index rows.
 
 service_context owns a private MinIO behind subscription-sign's recording
 proxy (it answers the object ACL calls itself: MinIO supports only the private
-canned ACL). The serializer reads the bucket and AWS_LOCATION that core.settings
-took from the environment, so the default storage keeps both and only its
-endpoint and credentials point at the proxy. Every case is checked against the
+canned ACL). The default storage keeps the bucket and AWS_LOCATION of the
+environment and only its endpoint and credentials point at the proxy; object
+ACLs are on (AWS_S3_USE_OBJECT_ACL) and there is no public base URL, so a
+picture's URL is '<endpoint>/<bucket>/<key>'. Every case is checked against the
 recorded storage requests (HeadObject 404, PutObject, PutObjectAcl public-read
-on '<AWS_LOCATION>/associates/<folder>/picture_<repr(timestamp)>.jpg' with the
-timestamp inside the request window), the stored bytes and metadata, and the
+on '<AWS_LOCATION>/associates/<associate id>/picture_<repr(timestamp)>.jpg'
+with the timestamp inside the request window; the folder of a new associate is
+the id of the row the case creates), the stored bytes and metadata, and the
 picture URL of the response and of the saved row; the objects are removed once
 verified. Cases without an upload must send no storage request.
 """
@@ -75,13 +77,22 @@ def service_context(report, log):
         proxy = RecordingProxy(endpoint, source['acl_denied'], bucket)
         storages = {'default': {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'},
                     'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}}
-        STORAGE.update(client=client, proxy=proxy, bucket=bucket, location=location)
+        STORAGE.update(client=client, proxy=proxy, bucket=bucket, location=location,
+                       picture_base=proxy.endpoint.rstrip('/') + '/' + bucket)
+        # The Go server reads the object ACL switch from its environment.
+        saved = os.environ.get('GO_FIXTURE_ENVIRONMENT')
+        os.environ['GO_FIXTURE_ENVIRONMENT'] = json.dumps({**json.loads(saved or '{}'), 'AWS_S3_USE_OBJECT_ACL': 'True'})
         try:
             with override_settings(STORAGES=storages, AWS_ACCESS_KEY_ID=access, AWS_SECRET_ACCESS_KEY=secret,
-                                   AWS_S3_REGION_NAME='us-east-1', AWS_S3_ENDPOINT_URL=proxy.endpoint, AWS_S3_ADDRESSING_STYLE='path'):
+                                   AWS_S3_REGION_NAME='us-east-1', AWS_S3_ENDPOINT_URL=proxy.endpoint, AWS_S3_ADDRESSING_STYLE='path',
+                                   AWS_S3_USE_OBJECT_ACL=True, AWS_S3_PUBLIC_BASE_URL=''):
                 yield
             contract.require(not listing(), 'storage.objects-removed')
         finally:
+            if saved is None:
+                os.environ.pop('GO_FIXTURE_ENVIRONMENT', None)
+            else:
+                os.environ['GO_FIXTURE_ENVIRONMENT'] = saved
             proxy.close()
             STORAGE.clear()
 
@@ -113,14 +124,20 @@ def verify_storage(case, source, since, bindings):
     puts = [item[1] for item in requests if item[0] == 'PUT']
     pictures = case.get('pictures', {})
     contract.require(len(puts) == len(pictures), 'storage.put-count:' + json.dumps(requests))
+    base = STORAGE['picture_base']
     for (ref, spec), key in zip(pictures.items(), puts):
-        match = re.fullmatch(re.escape(f"{STORAGE['location']}/associates/{spec['folder']}/picture_") + r'(\d+\.\d+)\.jpg', key)
+        # A new associate's folder ('$a<n>') is checked against the created row once it is known.
+        created = spec['folder'].startswith('$')
+        folder = '([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})' if created else '(' + re.escape(spec['folder']) + ')'
+        match = re.fullmatch(re.escape(f"{STORAGE['location']}/associates/") + folder + r'/picture_(\d+\.\d+)\.jpg', key)
         contract.require(match is not None, 'storage.key-shape:' + key)
-        stamp = match.group(1)
+        stamp = match.group(2)
         contract.require(repr(float(stamp)) == stamp and since - 1 <= float(stamp) <= until + 1, 'storage.key-timestamp')
-        bindings[ref] = source['picture_base'] + '/' + key
+        bindings[ref] = base + '/' + key
+        if created:
+            bindings.setdefault('$folders', {})[spec['folder']] = match.group(1)
         objects[key] = spec
-    keys = {ref: bindings[ref][len(source['picture_base']) + 1:] for ref in pictures}
+    keys = {ref: bindings[ref][len(base) + 1:] for ref in pictures}
     for item in case.get('storage', []):
         operation, ref, *rest = item.split(' ')
         if operation == 'ACL':
@@ -250,6 +267,7 @@ def assert_effect(case, before, after, source, context):
     bindings = {}
     check_storage(case, source, context['prepared']['$started'], bindings)
     if effect is None:
+        contract.require(not bindings.get('$folders'), 'storage.key-folder')
         contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
         return
     ids = source['ids']
@@ -265,6 +283,8 @@ def assert_effect(case, before, after, source, context):
     for event, entry in zip(entries, effect['audit']):
         if entry['action'] == 0 and entry['ref'].startswith('$'):
             bindings[entry['ref']] = event['object_pk']
+    # A new associate's picture lives under the id of the row the case created.
+    contract.require(all(bindings.get(ref) == folder for ref, folder in bindings.pop('$folders', {}).items()), 'storage.key-folder')
     added = set(new) - set(old)
     created_rows = effect['created']
     contract.require(len(added) == len(created_rows), 'state.associates-created')
@@ -341,4 +361,15 @@ def assert_effect(case, before, after, source, context):
                              and index['resolution_path'] == entry['index'][1], 'index.fields' + where)
 
 
-run_workload = harness.run_workload_for(contract, assert_effect, prepare=captured)
+_run_workload = harness.run_workload_for(contract, assert_effect, prepare=captured)
+
+
+def run_workload(*args, **kwargs):
+    """The family workload; a failed case's objects are removed so the run reports that case."""
+    try:
+        return _run_workload(*args, **kwargs)
+    except BaseException:
+        if STORAGE:
+            for key in listing():
+                STORAGE['client'].delete_object(Bucket=STORAGE['bucket'], Key=key)
+        raise

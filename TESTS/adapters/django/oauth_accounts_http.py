@@ -8,6 +8,14 @@ the fixture's lifetime (all keys the run adds are removed afterwards). Django
 hashes passwords with its default hashers (the contract settings prefer MD5),
 the production PBKDF2-SHA256 hasher.
 
+service_context also owns the social providers for the whole run: the private
+CONNECT/TLS provider stub (login_provider_proxy: Google certificates, token
+info and user info, Apple keys; nothing is forwarded to real hosts), the
+process proxy and CA settings both servers read, and the Google and Apple
+client ids. Provider tokens ('$social') are signed with the stub's key when a
+request is sent, one-time codes ('$totp') come from the seeded secret, and
+every case must make exactly its authored provider requests (case['provider']).
+
 Every case checks the complete model state and Redis DB 2:
 - partial: one new UserPartial (email, creation_date) with its create entry;
 - signup: the deleted UserPartial / CollaborationInvites rows (delete entries,
@@ -16,7 +24,10 @@ Every case checks the complete model state and Redis DB 2:
   password with check_password and the default hasher, its create entry; a
   '$signup' response is verified with SimpleJWT (claims of the stored user)
   and compared with Django's JWTTokenService.build_login_response for the
-  stored user and the view's collaborator override;
+  stored user and the view's collaborator override; a social signup has no
+  usable password and deletes the UserPartial after creating the user;
+- signin (a social signup for an existing account): nothing changes and
+  nothing is sent; the response is verified for the stored account;
 - delete: delete_on of one user becomes the UTC date 30 days after the request
   and an update entry is written when it changed;
 - reset-request: one new DB 2 key per user (32 hex digits, value user_id,
@@ -34,7 +45,8 @@ from TESTS.contracts import test_oauth_accounts_http as contract
 from TESTS.adapters.django import family_harness as harness
 
 SOURCES = ('TESTS/fixtures/oauth_accounts_http.json', 'TESTS/contracts/test_oauth_accounts_http.py',
-           'TESTS/adapters/django/oauth_accounts_http.py', 'BE/application/views/auth_views.py',
+           'TESTS/adapters/django/oauth_accounts_http.py', 'TESTS/adapters/django/login_provider_proxy.py',
+           'BE/application/views/auth_views.py',
            'BE/application/services/jwt_token_service.py', 'BE/application/services/social_auth_service.py',
            'BE/application/serializers/auth_serializers.py', 'BE/application/models/user_models.py',
            'BE/application/models/subscriptions_models.py', 'BE/application/disposable_email.py',
@@ -51,6 +63,10 @@ USER, PARTIAL, INVITES = 'application.User', 'application.UserPartial', 'applica
 MANAGED = (USER, PARTIAL, INVITES, harness.AUDIT, harness.INDEX)
 RESET_DB = 2
 RUNTIME = {}
+CLIENTS = {'google': 'http-google', 'apple': 'http-apple'}
+ISSUERS = {'google': 'accounts.google.com', 'apple': 'https://appleid.apple.com'}
+PROXY_ENVIRONMENT = ('HTTPS_PROXY', 'https_proxy', 'NO_PROXY', 'no_proxy', 'REQUESTS_CA_BUNDLE', 'SSL_CERT_FILE',
+                     'GO_FIXTURE_ENVIRONMENT')
 
 
 def moment(text):
@@ -131,13 +147,65 @@ fixture_context = with_reset_tokens(harness.with_celery_broker(
     harness.fixture_context_for(contract, seed_rows, purge=(created_users, created_partials))))
 
 
+def mint(spec):
+    """A body value for the request about to be sent: a provider token or a current one-time code."""
+    proxy, source = RUNTIME['proxy'], contract.load_source()
+    if '$totp' in spec:
+        import pyotp
+        if 30 - time.time() % 30 < 3:  # not across a period boundary
+            time.sleep(3)
+        return pyotp.TOTP(source['users'][spec['$totp']]['two_fa_secret']).now()
+    import jwt
+    social = spec['$social']
+    provider, now = social['provider'], int(time.time())
+    claims = {'iss': ISSUERS[provider], 'aud': social.get('audience') or CLIENTS[provider], 'iat': now - 60,
+              'exp': now - 30 if social.get('expired') else now + 3600, 'sub': 'fixture-subject', **social['claims']}
+    return jwt.encode(claims, proxy.other_key if social.get('wrong_signature') else proxy.key, algorithm='RS256',
+                      headers={'kid': 'public-fixture'})
+
+
 @contextmanager
 def service_context(report, log):
-    """Django's default password hashers for the served Django (the Go server always writes PBKDF2-SHA256)."""
+    """Django's default password hashers for the served Django (the Go server always writes PBKDF2-SHA256),
+    the provider stub with its proxy and CA settings, and the provider client ids, for both servers."""
+    import json
+    import os
+    import tempfile
+    from pathlib import Path
     from django.conf import global_settings
     from django.test.utils import override_settings
-    with override_settings(PASSWORD_HASHERS=global_settings.PASSWORD_HASHERS):
-        yield
+    from TESTS.adapters.django.login_provider_proxy import ProviderProxy
+    directory = Path(tempfile.mkdtemp(prefix='az-oauth-accounts-'))
+    saved = {name: os.environ.get(name) for name in PROXY_ENVIRONMENT}
+    proxy = ProviderProxy(directory)
+    report['service_cleanup']['provider_stub'] = 'running'
+    try:
+        access = contract.load_source()['access']
+        proxy.access[access['token']] = {'aud': CLIENTS['google'], 'email': access['email']}
+        environment = proxy.environment
+        os.environ.update(environment, https_proxy=environment['HTTPS_PROXY'], no_proxy=environment['NO_PROXY'])
+        # The Go server reads its Apple client id and the requests CA bundle from its environment.
+        os.environ['GO_FIXTURE_ENVIRONMENT'] = json.dumps({
+            **json.loads(saved['GO_FIXTURE_ENVIRONMENT'] or '{}'), 'SOCIAL_AUTH_APPLE_ID_CLIENT': CLIENTS['apple'],
+            'REQUESTS_CA_BUNDLE': environment['REQUESTS_CA_BUNDLE']})
+        RUNTIME['proxy'] = proxy
+        contract.RUNTIME['mint'] = mint
+        with override_settings(PASSWORD_HASHERS=global_settings.PASSWORD_HASHERS, SOCIAL_AUTH_GOOGLE_OAUTH2_KEY=CLIENTS['google'],
+                               SOCIAL_AUTH_APPLE_ID_CLIENT=CLIENTS['apple']):
+            yield
+    finally:
+        RUNTIME.pop('proxy', None)
+        contract.RUNTIME.pop('mint', None)
+        for name, value in saved.items():
+            if value is None:
+                os.environ.pop(name, None)
+            else:
+                os.environ[name] = value
+        proxy.close()
+        for path in directory.iterdir():
+            path.unlink()
+        directory.rmdir()
+        report['service_cleanup']['provider_stub'] = 'stopped'
 
 
 def reset_state():
@@ -147,7 +215,7 @@ def reset_state():
 
 def prepare(source):
     from application.models.user_models import CollaborationInvites, UserPartial
-    return {'started': time.time(), 'reset': reset_state(),
+    return {'started': time.time(), 'reset': reset_state(), 'provider_calls': len(RUNTIME['proxy'].calls),
             'partials': {row.pk: row for row in UserPartial.objects.all()},
             'invites': {row.pk: row for row in CollaborationInvites.objects.all()}}
 
@@ -262,14 +330,17 @@ def check_partial(case, before, after, context, ids, events, indexes):
     contract.require(len(indexes) == (1 if effect['index'] else 0), 'index.count')
 
 
-def removed_rows(case, before, after, context, ids, events, indexes, effect, source):
-    """The partial/invite rows deleted by the case, with their delete entries (in that order) consumed from events."""
+def removed_rows(case, before, after, context, ids, events, indexes, effect, source, only=None):
+    """The partial/invite rows deleted by the case, with their delete entries (in that order) consumed from events;
+    only: one of the two labels."""
     from auditlog.diff import model_instance_diff
     from application.models.user_models import CollaborationInvites, UserPartial
     prepared = context['prepared']
     for label, model, key, rows, seeded, store in (
             (PARTIAL, UserPartial, 'id', 'partials', source['partials'], 'partial'),
             (INVITES, CollaborationInvites, 'collaboration_invite_id', 'invites', source['invites'], 'invite')):
+        if only and label != only:
+            continue
         old, new = stable_rows(before[label], key), stable_rows(after[label], key)
         gone = sorted(set(old) - set(new))
         contract.require(set(new) <= set(old) and all(new[k] == old[k] for k in new), 'state.kept:' + label)
@@ -293,8 +364,13 @@ def check_signup(case, before, after, context, ids, events, indexes, source):
     from auditlog.diff import model_instance_diff
     from application.models import User
     effect = case['effect']
-    removed_rows(case, before, after, context, ids, events, indexes, effect, source)
+    social = effect.get('social', False)
+    # The password path deletes the partial and the invite before the user; the social path the
+    # invite before it and the partial after it.
+    removed_rows(case, before, after, context, ids, events, indexes, effect, source, only=INVITES if social else None)
     if effect['kind'] == 'removed':
+        if social:
+            removed_rows(case, before, after, context, ids, events, indexes, effect, source, only=PARTIAL)
         check_users(before, after)
         return None
     (key,) = check_users(before, after, created=[True])
@@ -311,18 +387,27 @@ def check_signup(case, before, after, context, ids, events, indexes, source):
         if field.attname in {'user_id', 'password', 'date_joined', 'is_active', 'is_staff', 'is_superuser', 'last_login', *expected}:
             continue
         contract.require(getattr(user, field.attname) == field.get_default(), 'signup.default:' + field.attname)
-    algorithm, iterations, salt, digest = user.password.split('$')
-    default = get_hashers()[0]
-    contract.require(default.algorithm == 'pbkdf2_sha256' and identify_hasher(user.password).algorithm == default.algorithm
-                     and iterations == str(default.iterations) == '1000000' and len(salt) >= 22 and salt.isalnum()
-                     and len(digest) == 44, 'signup.password-format')
-    contract.require(check_password(effect['password'], user.password)
-                     and (effect['password'].strip() == effect['password'] or not check_password(effect['password'].strip(), user.password)),
-                     'signup.password')
+    if effect['password'] is None:
+        # set_unusable_password(): '!' and 40 random letters and digits.
+        contract.require(not user.has_usable_password() and re.fullmatch(r'![A-Za-z0-9]{40}', user.password) is not None,
+                         'signup.password-unusable')
+    else:
+        algorithm, iterations, salt, digest = user.password.split('$')
+        default = get_hashers()[0]
+        contract.require(default.algorithm == 'pbkdf2_sha256' and identify_hasher(user.password).algorithm == default.algorithm
+                         and iterations == str(default.iterations) == '1000000' and len(salt) >= 22 and salt.isalnum()
+                         and len(digest) == 44, 'signup.password-format')
+        contract.require(check_password(effect['password'], user.password)
+                         and (effect['password'].strip() == effect['password'] or not check_password(effect['password'].strip(), user.password)),
+                         'signup.password')
     changes = {k: list(v) for k, v in model_instance_diff(None, user).items()}
-    contract.require(len(events) == 1, 'audit.count')
+    contract.require(events, 'audit.count')
     check_event(case, events.pop(0), model=User, instance=user, action=0, changes=changes, actor=case_actor(case),
                 index=effect['index'], indexes=indexes, context=context, ids=ids)
+    if social:
+        removed_rows(case, before, after, context, ids, events, indexes, effect, source, only=PARTIAL)
+    contract.require(not events, 'audit.count')
+    RUNTIME.setdefault('created', {})[case['name']] = str(user.pk)
     if effect['response']:
         check_login_response(user)
     return user
@@ -358,6 +443,16 @@ def check_login_response(user):
         content['user_data']['requires_welcome'] = False
     expected = json.loads(JSONRenderer().render(content))
     contract.require(actual == expected, 'signup.response')
+
+
+def check_signin(case, before, after, events):
+    """A social signup for an existing account: the response of the stored account and no change at all."""
+    from application.models import User
+    contract.require(all(before[label] == after[label] for label in MANAGED) and not events, 'state.no-effect')
+    key = case['effect']['user']
+    if key.startswith('$created:'):
+        key = RUNTIME['created'][key[len('$created:'):]]
+    check_login_response(User._base_manager.get(pk=key))
 
 
 def check_delete(case, before, after, context, ids, events, indexes):
@@ -425,12 +520,18 @@ def assert_effect(case, before, after, source, context):
     kind = effect['kind'] if effect else None
     if kind not in ('reset-request', 'reset'):
         contract.require(reset_state() == context['prepared']['reset'], 'reset.unchanged')
+    proxy = RUNTIME['proxy']
+    with proxy.lock:
+        calls, errors = proxy.calls[context['prepared']['provider_calls']:], list(proxy.errors)
+    contract.require(not errors and calls == case.get('provider', []), 'provider.requests')
     if kind is None:
         contract.require(all(before[label] == after[label] for label in MANAGED), 'state.no-effect')
     elif kind == 'partial':
         check_partial(case, before, after, context, ids, events, indexes)
     elif kind in ('signup', 'removed'):
         check_signup(case, before, after, context, ids, events, indexes, source)
+    elif kind == 'signin':
+        check_signin(case, before, after, events)
     elif kind == 'delete':
         extra = check_delete(case, before, after, context, ids, events, indexes)
     elif kind == 'reset-request':
@@ -441,7 +542,7 @@ def assert_effect(case, before, after, source, context):
         contract.require(all(before[label] == after[label] for label in MANAGED if label != USER), 'state.no-effect')
     else:
         raise AssertionError('effect.kind')
-    if kind in ('partial', 'signup', 'removed', 'delete'):
+    if kind in ('partial', 'signup', 'removed', 'signin', 'delete'):
         contract.require(not events, 'audit.unexpected')
     celery = resolve(effect['celery'], bindings(extra)) if effect and 'celery' in effect else []
     harness.celery_published(contract, fixture, celery, since=since, until=until)

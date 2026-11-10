@@ -63,21 +63,24 @@ the production execution owner.
   with M2M tutors; `tags` as keys). `rowIds` are the subscriptions' associate ids.
 
 - **picture_path upload (add, update):** `to_internal_value` runs before the field validation. A string containing `base64` is
-  decoded with `base64.b64decode` (the text after the first comma, or the whole value) and saved through the default storage as
-  `associates/<body associate_id>/picture_<str(timezone.now().timestamp())>.jpg` (`image/jpeg`, `CacheControl: max-age=86400`;
-  the folder is `None` without an `associate_id` in the body), then `put_object_acl(ACL='public-read')` on
-  `<AWS_LOCATION>/<saved name>` and the field becomes `os.path.join` of the fixed CDN host, `AWS_LOCATION` and the storage path.
-  A `binascii.Error` is a ValidationError the surrounding handler wraps again:
+  decoded with `base64.b64decode` (the text after the first comma, or the whole value) and left out of the validated fields. A
+  `binascii.Error` is a ValidationError the surrounding handler wraps again:
   `400 {'picture_path': "Error processing image: {'picture_path': ErrorDetail(string='Invalid base64 string', code='invalid')}"}`;
-  non-ASCII text and a refused ACL answer `Error processing image: <str(exception)>` the same way. The object is stored before the
-  other fields are validated: a later 400 leaves it in place. A tutor's `picture_path` goes through `BasicAssociateSerializer` and is
-  stored as sent. Go: `service/personas_picture.go` (`dto.PythonB64Decode`, `documentkey.S3Key`, `documentobjects.S3` `Exists`,
-  `Put`, `PutACL`).
+  non-ASCII text answers `Error processing image: <str(exception)>` the same way. Once the other fields are valid, `create()` /
+  `update()` call `_store_picture`: the default storage saves `associates/<associate id>/picture_<str(timezone.now().timestamp())>.jpg`
+  (`image/jpeg`, `CacheControl: max-age=86400`; a new associate gets its id first, `associate_id` in the body is read-only and not
+  used), then `put_object_acl(ACL='public-read')` on `<location>/<saved name>` of the storage's bucket when
+  `AWS_S3_USE_OBJECT_ACL` is on, and `picture_path` becomes `<base>/<location>/<saved name>` with the base
+  `AWS_S3_PUBLIC_BASE_URL`, else the storage's custom domain, else `<endpoint>/<bucket>`. A request whose fields are not valid
+  sends no storage request. A refused ACL answers `Error processing image: <str(exception)>` with nothing saved in the database
+  (the object stays). A tutor's `picture_path` goes through `BasicAssociateSerializer` and is stored as sent. Go:
+  `service/personas_picture.go` (`personaPicturePlan`, `uploadPicture`, `personaPictureURL`; `dto.PythonB64Decode`,
+  `documentkey.S3Key`, `documentobjects.S3` `Exists`, `Put`, `PutACL`; `PersonaPictureSettings` from the storage configuration —
+  a custom domain is a django-storages option the project settings do not define, so Go has none).
 
 ## Not ported (refused with the 500 page before any write)
 
-- `picture_path` uploads with a body `associate_id` outside `[A-Za-z0-9_-]{1,64}` (the storage name normalisation), a
-  `picture_path` list or object that reaches the upload branch, an existing object under the new key, storage failures other than
+- A `picture_path` list or object that reaches the upload branch, an existing object under the new key, storage failures other than
   a 403/404 answer to the ACL request (botocore's and s3transfer's texts), and uploads on the router's stock create.
 - `tutors_data` entries whose `is_primary` is not a boolean (auditlog renders the raw value), tutor ids that are numbers or
   booleans, `born_date` texts with non-ASCII digits, and tutors under an `X-Group-Id` the manager would store raw (not a canonical,
@@ -118,3 +121,21 @@ stored bytes and metadata, and that the response and the saved row carry the URL
   (`storage.requests`, CAUGHT).
 - Re-run: subscription-sign 47/47 (`v2misc3-rerun-r1`, the proxy takes its bucket as a parameter), router-personas 51/51 and
   router-persona-subscriptions 73/73 (`v2misc3-rerun-r2`).
+
+### Picture folder and URL (sec-oauth-signup)
+
+Django and Go changed together: the picture is stored after the field validation, under the associate's own id, and its URL comes
+from the storage settings. The fixture has 194 cases: the uploads expect `associates/<associate id>/` (the id of the row the case
+creates on add, bound from its create entry), a body `associate_id` (another associate's, an unknown id, path-like text, a
+number) that is not used, no storage request when the field validation fails, and the refused ACL on an update of a seeded
+associate. The run turns object ACLs on and has no public base URL, so the URL is `<endpoint>/<bucket>/<key>`; the public base URL
+and custom domain variants are in `application.tests.test_personas_picture` and `service/personas_picture_test.go`. A failed
+case's objects are removed so the run reports that case.
+
+- Django tests first: `application.tests.test_personas_picture` (7 tests; 5 fail on the previous serializer).
+- RED (`secoauth-red-r3`): Django 194/194; Go fails on `personas-writes-add-picture` (`response.picture-url`).
+- GREEN (`secoauth-versioned-r1`, after the base merge; natively `secoauth-native-r1`): 194/194 on native Django, native Go, Caddy
+  `/api/v1` and `/api/v2`.
+- Mutation (`secoauth-mutation-r1`): naming the folder from the body's `associate_id` on update fails Go on
+  `personas-writes-update-picture-full-collaborator` (`response.picture-url`, CAUGHT).
+- Re-run (`secoauth-rerun-r1`): router-personas 51/51 and router-persona-subscriptions 73/73 on native Django and Go.
