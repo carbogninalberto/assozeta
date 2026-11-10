@@ -82,11 +82,14 @@ ASSOCIATES = {
     'formtutor': {'id': uid(54), 'association': 'form', 'first': 'Paola', 'last': 'Tutrice', 'email': 'tutor@example.test', 'user': None,
                   'form': {'phone': '+39 0151234567'}},
     'formbare': {'id': uid(55), 'association': 'form', 'first': 'Zoe', 'last': 'None', 'email': None, 'user': None},
+    # Names with line breaks (pasted or imported data).
+    'newline': {'id': uid(94), 'association': 'own', 'first': 'Lia', 'last': 'Bian\nchi', 'email': None, 'user': None},
+    'separators': {'id': uid(95), 'association': 'own', 'first': 'Ωmega', 'last': 'Ne\r\nri\u2028x', 'email': None, 'user': None},
 }
 # Tutor relations (associate, tutor, primary).
 TUTORS = [{'associate': 'formfull', 'tutor': 'formtutor', 'primary': True}]
 FULL_NAMES = {'formfull': "Maria Chiara D'Angelò", 'formtutor': 'Paola Tutrice', 'formbare': 'Zoe None', 'mario': 'Mario Rossi', 'noemail': 'Anna Verdi', 'greek': 'Δημήτρης Παπαδόπουλος', 'odd': 'None  Neri',
-              'athlete': 'Athlete Fixture'}
+              'athlete': 'Athlete Fixture', 'newline': 'Lia Bian\nchi', 'separators': 'Ωmega Ne\r\nri\u2028x'}
 ASSOCIATE_IDS = {**{k: v['id'] for k, v in ASSOCIATES.items()}, 'athlete': BASE_ATHLETE_ASSOCIATE}
 
 DOCUMENTS = {
@@ -122,6 +125,8 @@ SUBSCRIPTIONS = {
     'formfull': {'id': uid(56), 'association': 'form', 'associate': 'formfull', 'user': 'owner', 'group': None, 'document': None},
     'formbare': {'id': uid(57), 'association': 'form', 'associate': 'formbare', 'user': 'owner', 'group': None, 'document': None},
     'formnone': {'id': uid(58), 'association': 'form', 'associate': None, 'user': 'owner', 'group': None, 'document': None},
+    'newline': {'id': uid(96), 'association': 'own', 'associate': 'newline', 'user': 'owner', 'group': None, 'document': None},
+    'separators': {'id': uid(97), 'association': 'own', 'associate': 'separators', 'user': 'owner', 'group': None, 'document': None},
 }
 # Another member of the association (an athlete account without records).
 EXTRA_USERS = {'member': {'id': uid(27), 'username': 'document-render-member', 'email': 'document-render-member@example.test'},
@@ -187,10 +192,14 @@ PAYMENTS = {
                      'associate': None, 'user': None, 'instructor': 'paolo', 'deleted': False, 'group': None},
     'comp_tokened': {'id': uid(79), 'invoice': None, 'association': 'own', 'amount': '20.00', 'date': '2026-04-10T09:00:00+00:00',
                      'associate': None, 'user': None, 'instructor': 'luca', 'deleted': False, 'group': None},
+    'comp_orphan': {'id': uid(83), 'invoice': None, 'association': 'own', 'amount': '30.00', 'date': '2026-04-11T09:00:00+00:00',
+                    'associate': None, 'user': None, 'instructor': 'nina', 'deleted': False, 'group': None},
 }
 INSTRUCTORS = {
     'luca': {'id': uid(80), 'user': 'owner', 'first': 'Luca', 'last': 'Bianchi', 'account': 'coach'},
     'paolo': {'id': uid(81), 'user': 'foreign_owner', 'first': 'Paolo', 'last': 'Gialli', 'account': None},
+    # An instructor whose owner has no association: the audit index of its hours falls back to the actor's.
+    'nina': {'id': uid(82), 'user': 'owner_without_association', 'first': 'Nina', 'last': 'Blu', 'account': None},
 }
 HOURS = {
     'h1': {'id': uid(85), 'instructor': 'luca', 'payment': 'comp', 'date': '2026-04-01', 'document': None},
@@ -198,6 +207,8 @@ HOURS = {
     'h_other': {'id': uid(87), 'instructor': 'luca', 'payment': None, 'date': '2026-04-03', 'document': None},
     'h_foreign': {'id': uid(88), 'instructor': 'paolo', 'payment': 'comp_foreign', 'date': '2026-04-04', 'document': None},
     'h_tokened': {'id': uid(89), 'instructor': 'luca', 'payment': 'comp_tokened', 'date': '2026-04-05', 'document': 'tok_hours'},
+    'h_orphan1': {'id': uid(98), 'instructor': 'nina', 'payment': 'comp_orphan', 'date': '2026-04-06', 'document': None},
+    'h_orphan2': {'id': uid(99), 'instructor': 'nina', 'payment': 'comp_orphan', 'date': '2026-04-07', 'document': None},
 }
 CUSTOMER_INVOICES = {
     'plain': {'id': uid(90), 'association': 'own', 'prefix': 'FPR', 'number': 7, 'year': 2026, 'document': None},
@@ -708,6 +719,110 @@ add('medical-region-without-form', 'owner', f"/document/medical-appointment/{M('
     exception("[Errno 2] No such file or directory: 'document/medical-appointments/non-agonistica.html'"),
     effect=effect(medical_name('lombardia'), actor='owner', celery=False))
 add('medical-form-athlete-other', 'athlete', f"/document/medical-appointment/{M('biella')}", 403, SCOPED_HIDDEN)
+
+# --- v2-documents-3: answers Go refused ---------------------------------------------------------------
+# A filename with a line break: the Document is created, the view printed and the storage task queued; then Django's
+# response refuses the Content-Disposition header and the view answers 500 {'exception': ...} without linking.
+bad_header = lambda value: exception("Header values can't contain newlines (got " + repr(value) + ')')
+add('subscription-name-with-line-break', 'owner', f"/document/subscription/{S('newline')}", 500,
+    bad_header('inline; filename=' + subscription_name('newline')), renders=[render('subscription', S('newline'))],
+    effect=effect(subscription_name('newline'), actor='owner'))
+add('subscription-name-with-line-break-download', 'owner', f"/document/subscription/{S('newline')}?download=1", 500,
+    bad_header('attachment; filename=' + subscription_name('newline')), method='POST', renders=[render('subscription', S('newline'))],
+    effect=effect(subscription_name('newline'), actor='owner'))
+add('subscription-name-with-separators', 'full_collaborator', f"/document/subscription/{S('separators')}", 500,
+    bad_header('inline; filename=' + subscription_name('separators')), renders=[render('subscription', S('separators'))],
+    effect=effect(subscription_name('separators'), actor='full_collaborator'))
+add('subscription-name-with-line-break-renderer-error', 'owner', f"/document/subscription/{S('newline')}", 500,
+    failure('Renderer returned HTTP 500: down'),
+    renders=[render('subscription', S('newline'), answer=reply(500, 'text/plain', 'down'))],
+    effect=effect(subscription_name('newline'), actor='owner', celery=False))
+
+# Hours of an instructor whose owner has no association: the audit index of each link is the actor's association
+# ('actor.sport_association'), or absent when the actor has none.
+add('compensation-instructor-owner-without-association', 'owner', f"/document/compensation/{C('comp_orphan')}", 200, PDF,
+    renders=[render('compensation', C('comp_orphan'))],
+    effect=effect(compensation_name('comp_orphan'), actor='owner', links=[('instructorhours', 'h_orphan1'), ('instructorhours', 'h_orphan2')]),
+    disposition='inline; filename=' + compensation_name('comp_orphan'))
+add('compensation-instructor-owner-without-association-collaborator', 'full_collaborator',
+    f"/document/compensation/{C('comp_orphan')}?download=1", 200, PDF, renders=[render('compensation', C('comp_orphan'))],
+    effect=effect(compensation_name('comp_orphan'), actor='full_collaborator',
+                  links=[('instructorhours', 'h_orphan1'), ('instructorhours', 'h_orphan2')]),
+    disposition='attachment; filename=' + compensation_name('comp_orphan'))
+
+# document/template reads request.data after the Document exists. Python's `in`, .get and [] on what the parsers
+# return: a dict key, a substring of a str, a member of a list; other types raise. What is raised is the view's
+# 500 {'exception': str(e)}: the Document stays, nothing is printed.
+JSON = 'application/json'
+
+
+def template_body(name, raw, *, content_type=JSON, query='?', error=None, creates=(), actor='owner'):
+    if error is None:
+        add(name, actor, f"/document/template/{T('plain')}", 200, DONE, method='POST', raw_body=raw, content_type=content_type,
+            renders=[render('template', T('plain'), query=query)], effect=effect(TEMPLATE_NAME, actor=actor, creates=creates))
+    else:
+        add(name, actor, f"/document/template/{T('plain')}", 500, exception(error), method='POST', raw_body=raw,
+            content_type=content_type, effect=effect(TEMPLATE_NAME, actor=actor, celery=False))
+
+
+not_iterable = lambda kind: f"argument of type '{kind}' is not iterable"
+no_get = lambda kind: f"'{kind}' object has no attribute 'get'"
+template_body('template-body-list', '[1, "parent", {"additionalData": 1}]')
+template_body('template-body-list-with-key', '["x", "additionalData"]', error=no_get('list'))
+template_body('template-body-text', '"additional data"')
+template_body('template-body-text-with-key', '"the additionalData key"', error=no_get('str'))
+template_body('template-body-null', 'null', error=not_iterable('NoneType'))
+template_body('template-body-integer', '7', error=not_iterable('int'))
+template_body('template-body-float', '1.5', error=not_iterable('float'))
+template_body('template-body-boolean', 'true', error=not_iterable('bool'))
+template_body('template-body-malformed', '{"additionalData": ', error='JSON parse error - Expecting value: line 1 column 20 (char 19)')
+template_body('template-body-plain-text', 'additionalData=1', content_type='text/plain',
+              error='Unsupported media type "text/plain" in request.')
+template_body('template-additional-null', '{"additionalData": null}', error=not_iterable('NoneType'))
+template_body('template-additional-integer', '{"additionalData": 3}', error=not_iterable('int'))
+template_body('template-additional-boolean', '{"additionalData": false}', error=not_iterable('bool'))
+template_body('template-additional-float', '{"additionalData": 2.50}', error=not_iterable('float'))
+template_body('template-additional-text', '{"additionalData": "nothing"}')
+template_body('template-additional-text-with-parent', '{"additionalData": "a parent b"}', error=no_get('str'))
+template_body('template-additional-text-with-subscription', '{"additionalData": "subscriptions"}',
+              error="string indices must be integers, not 'str'")
+template_body('template-additional-list', '{"additionalData": [1, "x", ["parent"]]}')
+template_body('template-additional-list-with-parent', '{"additionalData": ["subscription", "parent"]}', error=no_get('list'))
+template_body('template-additional-list-with-subscription', '{"additionalData": ["subscription"]}',
+              error='list indices must be integers or slices, not str')
+template_body('template-subscription-float', '{"additionalData": {"subscription": 1.50}}', query='?subscription_id=1.5&')
+template_body('template-subscription-exponent', '{"additionalData": {"subscription": 1e3}}', query='?subscription_id=1000.0&')
+template_body('template-subscription-list', '{"additionalData": {"subscription": [1, "a", null, true, 2.0]}}',
+              query="?subscription_id=[1, 'a', None, True, 2.0]&")
+template_body('template-subscription-object', '{"additionalData": {"subscription": {"a": "b c"}}}',
+              query="?subscription_id={'a': 'b c'}&")
+template_body('template-form-additional-text', 'additionalData=nothing&other=1', content_type='application/x-www-form-urlencoded')
+template_body('template-form-additional-with-parent', 'additionalData=parent', content_type='application/x-www-form-urlencoded',
+              error=no_get('str'), actor='full_collaborator')
+BOUNDARY = 'fixture-boundary'
+multipart = lambda *fields: ''.join(f'--{BOUNDARY}\r\nContent-Disposition: form-data; name="{name}"\r\n\r\n{value}\r\n'
+                                    for name, value in fields) + f'--{BOUNDARY}--\r\n'
+MULTIPART = f'multipart/form-data; boundary={BOUNDARY}'
+template_body('template-multipart-without-key', multipart(('other', 'parent')), content_type=MULTIPART)
+template_body('template-multipart-additional-with-subscription', multipart(('additionalData', 'subscription')), content_type=MULTIPART,
+              error="string indices must be integers, not 'str'")
+template_body('template-multipart-without-boundary', multipart(('additionalData', 'x')), content_type='multipart/form-data',
+              error='Multipart form parse error - Invalid boundary in multipart: None')
+
+# document/invoice reads request.POST before its try block when the query flag is falsy: a multipart field counts
+# like a urlencoded one, and what the parsers raise is DRF's own answer.
+invoice_ok('invoice-receipt-email-multipart', 'owner', 'plain', method='POST', raw_body=multipart(('send_receipt_email', 'true')),
+           content_type=MULTIPART, email=True)
+invoice_ok('invoice-receipt-email-multipart-other-field', 'owner', 'plain', method='POST', raw_body=multipart(('other', 'true')),
+           content_type=MULTIPART)
+invoice_ok('invoice-receipt-email-query-with-plain-text', 'owner', 'plain', query='?send_receipt_email=1', method='POST',
+           raw_body='send_receipt_email=1', content_type='text/plain', email=True)
+add('invoice-plain-text-body', 'owner', f"/document/invoice/{I('plain')}", 415,
+    {'detail': 'Unsupported media type "text/plain" in request.'}, method='POST', raw_body='send_receipt_email=1',
+    content_type='text/plain')
+add('invoice-multipart-without-boundary', 'owner', f"/document/invoice/{I('plain')}?send_receipt_email=", 400,
+    {'detail': 'Multipart form parse error - Invalid boundary in multipart: None'}, method='POST',
+    raw_body=multipart(('send_receipt_email', 'true')), content_type='multipart/form-data')
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

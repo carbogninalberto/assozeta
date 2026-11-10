@@ -958,8 +958,14 @@ func mcpResolveModel(value any) (*mcpModel, *mcpWhitelistEntry, error) {
 
 // baseQuery is _base_queryset: the default manager, the tenant filter, the
 // soft-delete filters unless include_archived, distinct().
-func mcpBaseQuery(model *mcpModel, entry *mcpWhitelistEntry, association string, includeArchived bool) (*mcpQuery, error) {
+func mcpBaseQuery(model *mcpModel, entry *mcpWhitelistEntry, association string, group *string, includeArchived bool) (*mcpQuery, error) {
 	q := newMCPQuery(model)
+	// GroupAwareManager.get_queryset: for_group(X-Group-Id) before its other filters.
+	if group != nil && model.GroupManager {
+		if err := q.addQ(mcpQ([]mcpLeaf{{key: "group_id", value: *group}})); err != nil {
+			return nil, err
+		}
+	}
 	if len(model.ManagerFilters) > 0 {
 		var leaves []mcpLeaf
 		for _, column := range model.ManagerFilters {

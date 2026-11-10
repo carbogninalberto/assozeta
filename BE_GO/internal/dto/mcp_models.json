@@ -698,7 +698,8 @@
    ],
    "manager_filters": [
     "deleted"
-   ]
+   ],
+   "group_manager": true
   },
   "application.AssociateImportDraft": {
    "name": "AssociateImportDraft",
@@ -1188,7 +1189,8 @@
      "help_text": ""
     }
    ],
-   "manager_filters": []
+   "manager_filters": [],
+   "group_manager": false
   },
   "application.AttendanceRegistry": {
    "name": "AttendanceRegistry",
@@ -1306,7 +1308,8 @@
      ]
     }
    ],
-   "manager_filters": []
+   "manager_filters": [],
+   "group_manager": false
   },
   "application.AuditLogIndex": {
    "name": "AuditLogIndex",
@@ -1544,7 +1547,8 @@
      "help_text": ""
     }
    ],
-   "manager_filters": []
+   "manager_filters": [],
+   "group_manager": false
   },
   "application.BillingPayment": {
    "name": "BillingPayment",
@@ -2806,7 +2810,8 @@
      "help_text": ""
     }
    ],
-   "manager_filters": []
+   "manager_filters": [],
+   "group_manager": false
   },
   "application.CarnetSubscription": {
    "name": "CarnetSubscription",
@@ -2991,7 +2996,8 @@
      "null": false
     }
    ],
-   "manager_filters": []
+   "manager_filters": [],
+   "group_manager": false
   },
   "application.CollaborationInvites": {
    "name": "CollaborationInvites",
@@ -3659,7 +3665,8 @@
    ],
    "manager_filters": [
     "deleted"
-   ]
+   ],
+   "group_manager": true
   },
   "application.CourseLocation": {
    "name": "CourseLocation",
@@ -4175,7 +4182,8 @@
    ],
    "manager_filters": [
     "deleted"
-   ]
+   ],
+   "group_manager": false
   },
   "application.CourseSubscriptionInstallment": {
    "name": "CourseSubscriptionInstallment",
@@ -4460,7 +4468,8 @@
      "help_text": ""
     }
    ],
-   "manager_filters": []
+   "manager_filters": [],
+   "group_manager": false
   },
   "application.CumulativeSubscriptionGymLinks": {
    "name": "CumulativeSubscriptionGymLinks",
@@ -4764,7 +4773,8 @@
      "help_text": ""
     }
    ],
-   "manager_filters": []
+   "manager_filters": [],
+   "group_manager": false
   },
   "application.CustomAccountsTransfer": {
    "name": "CustomAccountsTransfer",
@@ -6410,7 +6420,8 @@
      "db_constraint": true
     }
    ],
-   "manager_filters": []
+   "manager_filters": [],
+   "group_manager": false
   },
   "application.Instructor": {
    "name": "Instructor",
@@ -6879,7 +6890,8 @@
      "null": false
     }
    ],
-   "manager_filters": []
+   "manager_filters": [],
+   "group_manager": false
   },
   "application.InstructorHours": {
    "name": "InstructorHours",
@@ -7501,7 +7513,8 @@
    ],
    "manager_filters": [
     "deleted"
-   ]
+   ],
+   "group_manager": true
   },
   "application.InvoiceRows": {
    "name": "InvoiceRows",
@@ -7645,7 +7658,8 @@
      "help_text": ""
     }
    ],
-   "manager_filters": []
+   "manager_filters": [],
+   "group_manager": false
   },
   "application.InvoiceSuppliers": {
    "name": "InvoiceSuppliers",
@@ -8262,7 +8276,8 @@
      "help_text": ""
     }
    ],
-   "manager_filters": []
+   "manager_filters": [],
+   "group_manager": false
   },
   "application.Module": {
    "name": "Module",
@@ -8550,7 +8565,8 @@
      "help_text": ""
     }
    ],
-   "manager_filters": []
+   "manager_filters": [],
+   "group_manager": false
   },
   "application.ModuleResponses": {
    "name": "ModuleResponses",
@@ -10023,7 +10039,8 @@
    ],
    "manager_filters": [
     "deleted"
-   ]
+   ],
+   "group_manager": true
   },
   "application.PaymentCategory": {
    "name": "PaymentCategory",
@@ -10264,7 +10281,8 @@
      "help_text": ""
     }
    ],
-   "manager_filters": []
+   "manager_filters": [],
+   "group_manager": false
   },
   "application.PreviewAndCustomFeatures": {
    "name": "PreviewAndCustomFeatures",
@@ -11055,7 +11073,8 @@
      "db_constraint": true
     }
    ],
-   "manager_filters": []
+   "manager_filters": [],
+   "group_manager": false
   },
   "application.SavedReport": {
    "name": "SavedReport",
@@ -12974,7 +12993,8 @@
    ],
    "manager_filters": [
     "deleted"
-   ]
+   ],
+   "group_manager": false
   },
   "application.SportAssociationDocumentsArchive": {
    "name": "SportAssociationDocumentsArchive",
@@ -14314,7 +14334,8 @@
      "null": false
     }
    ],
-   "manager_filters": []
+   "manager_filters": [],
+   "group_manager": true
   },
   "application.SubscriptionFile": {
    "name": "SubscriptionFile",
@@ -15348,7 +15369,8 @@
      "help_text": ""
     }
    ],
-   "manager_filters": []
+   "manager_filters": [],
+   "group_manager": false
   },
   "application.Testimonial": {
    "name": "Testimonial",

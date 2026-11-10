@@ -140,14 +140,11 @@ rows (`AppointmentForm`, `AppointmentFormTutor`), creates the Document, saves th
 - **medical-appointment**, Piemonte Biella, for an associate whose tutor relations have no primary one
   (`get_main_tutor()` would promote the first: a write), and for a filename `default_storage.save` rejects.
 - A storage failure while saving a filled form is the 500 page (Django answers the provider's text); the Document stays.
-- Filenames Django's header code or the ASGI server would reject (CR/LF, other C0 controls, DEL), or ones that would split
-  `email.header` words (`\x85`, ` `, ` `). Django publishes the storage task and then answers 500; the template route
-  is not affected.
-- **template** bodies other than none, a JSON object or a urlencoded form, a malformed JSON body, a non-object
-  `additionalData`, and `subscription` values other than str, int, bool or null. Django reads `request.data` after creating the
-  Document.
-- **invoice** bodies other than none, JSON or urlencoded when the query flag is falsy (multipart, unsupported media types).
-- **compensation** hours whose instructor's owner has no live association (the index falls back to the actor).
+- Filenames with a C0 control other than tab, CR and LF, or DEL (the HTTP server refuses the header, and each server
+  does it its own way), and filenames that would split `email.header` words (`\x85`, `\u2028`, `\u2029`) without a
+  line break. A filename with CR or LF is served (see the evidence); for a filled form it stays refused.
+- **template** and **invoice** bodies the parsers refuse for reasons the port does not model (a multipart body over the
+  upload limit or with the encodings `documents-writes.md` lists).
 - A collaborator account as `request.user` in the template route (identity resolution maps collaborators to the owner).
 - Not byte-identical, and not authored: renderer connection errors and timeouts (requests' text names urllib3 objects by
   address), broker failures (the 500 JSON carries the Go error text) and redirects from the renderer. A non-UTF-8 error body
@@ -266,3 +263,22 @@ after any other case. RED `v2doc2-red-r3`: Django 199/199, Go the 500 page on `m
 `v2doc2-mutation-r1`: without the date rewrite `medical-form-biella` fails `pdf.body`. Re-run green (`v2doc2-rerun-r2`,
 native): docmanager-reads 170/170, documents-writes 141/141, document-views 156/156, payment-reads 276/276. PDF answers now
 carry an explicit `Content-Length` (a filled form is larger than what net/http measures by itself).
+
+Line breaks, body shapes and the index fallback (`v2doc3-*`): 40 more cases (239).
+- A filename with CR or LF (a member name with a pasted line break): the Document is created, the view printed and the
+  storage task queued, then the answer is `500 {"exception": "Header values can't contain newlines (got '<header>')"}`
+  and nothing is linked.
+- **template** reads `request.data` after the Document exists, with Python's `in`, `.get` and `[]`
+  (`planTemplateData`): a list or text body, `null`, numbers and booleans, a malformed JSON body, an unsupported media
+  type, multipart, and an `additionalData` that is text, a list, `null` or a number. What Python raises is the view's
+  `500 {"exception": ...}` with the Document kept and nothing printed. A `subscription` float, list or object is written
+  in the view URL as Python formats it.
+- **invoice** with a falsy query flag reads `request.POST`: a multipart field counts like a urlencoded one; an
+  unsupported media type is DRF's 415 and a multipart body without a boundary its 400.
+- **compensation** hours whose instructor's owner has no association: each link's audit index row is the actor's
+  association (`actor.sport_association`), or absent when the actor has none.
+RED `v2doc3-red-r1`: Django 239/239, Go the 500 page on `subscription-name-with-line-break`. GREEN
+`v2doc3-versioned-r1`: 239/239 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `v2doc3-mutation-r1`
+(the fallback row written with the instructor path) fails `compensation-instructor-owner-without-association`
+(`index.fields:instructorhours`).
+Final run on the merged base (`v2doc3-final-r1`): 239/239 on the four transports.

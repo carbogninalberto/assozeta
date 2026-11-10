@@ -60,6 +60,7 @@ Run with ``python3 -I``.
 """
 import copy
 import json
+from urllib.parse import quote_plus
 from pathlib import Path
 
 OUTPUT = Path(__file__).with_name('payment_misc_http.json')
@@ -101,6 +102,9 @@ PLAN_E = {'id': 'plan-e', 'name': 'Quota E', 'subscription_fee': 7.25, 'auto_ass
 # A member's own account (the athlete) holds the previous plan: the apply e-mails the member.
 PLAN_G = {'id': 'plan-g', 'name': 'Quota G è', 'subscription_fee': '15', 'auto_assign': True, 'advanced_options': True,
           'previous_subscription_fee_plan': 'prev-g', 'from_day': 1, 'from_month': 6, 'to_day': 30, 'to_month': 6}
+# int() reads decimal digits of any script, with surrounding spaces: August 1st to 31st.
+PLAN_H = {'id': 'plan-h', 'name': 'Quota H', 'subscription_fee': '8', 'auto_assign': True, 'advanced_options': True,
+          'previous_subscription_fee_plan': 'prev-h', 'from_day': '\uff11', 'from_month': ' \u0668 ', 'to_day': '\u0663\u0661', 'to_month': 8}
 OWN_PLANS = [
     PLAN_B, PLAN_C,
     {'id': 'plan-off', 'name': 'Fuori data', 'subscription_fee': '1', 'auto_assign': True, 'advanced_options': True,
@@ -111,7 +115,7 @@ OWN_PLANS = [
     {'id': 'plan-first', 'auto_assign': True, 'advanced_options': True, 'from_day': 'x'},
     {'id': 'plan-zero', 'auto_assign': True, 'advanced_options': 0, 'previous_subscription_fee_plan': 'plan-a', 'from_day': 'x'},
     {'id': 'plan-empty', 'auto_assign': 'x', 'advanced_options': [], 'previous_subscription_fee_plan': 'plan-a', 'from_day': 'x'},
-    PLAN_D, PLAN_E, PLAN_G,
+    PLAN_D, PLAN_E, PLAN_G, PLAN_H,
 ]
 PLAN_F = {'id': 'plan-f', 'name': 'Quota F', 'subscription_fee': '9', 'auto_assign': True, 'advanced_options': True,
           'previous_subscription_fee_plan': 'prev-f', 'from_day': 15, 'from_month': 3, 'to_day': 1, 'to_month': 4}
@@ -158,6 +162,7 @@ SUBSCRIPTIONS = {
     's_foreign_plan_a': subscription('hans', 'plan-a', association=FOREIGN, user=IDS['foreign_owner']),
     's_z': subscription(None, 'prev-z', association=PLANS_OWNER['association'], user=PLANS_OWNER['id']),
     's8': subscription('luca', 'prev-g', user=ATHLETE),
+    's9': subscription('paolo', 'prev-h', group='own_group'),
     's_y': subscription('nina', 'prev-y', association=PLANS_OWNER['association'], user=PLANS_MEMBER['id']),
 }
 
@@ -295,6 +300,10 @@ add('simulation-owner-without-association-server-error', 'owner_without_associat
 add('simulation-march', 'owner', SIMULATE + '?date=2026-03-15', 200, MARCH)
 add('simulation-one-digit-month', 'owner', SIMULATE + '?date=2026-3-15', 200, MARCH)
 add('simulation-last-date-value', 'owner', SIMULATE + '?date=bad&date=2026-03-15', 200, MARCH)
+# strptime's \d (the year and the day's second digit) matches decimal digits of any script.
+add('simulation-other-script-digits', 'owner', SIMULATE + '?date=' + quote_plus('\uff12\u0660\uff12\u0666-03-1\u096b'), 200, MARCH)
+add('simulation-other-script-month-empty', 'owner', SIMULATE + '?date=' + quote_plus('2026-0\uff13-15'), 200, EMPTY)
+add('simulation-august-other-script-plan', 'owner', SIMULATE + '?date=2026-08-01', 200, simulation([PLAN_H], [quote('s9', PLAN_H)]))
 add('simulation-other-format-empty', 'owner', SIMULATE + '?date=15/03/2026', 200, EMPTY)
 add('simulation-blank-date-empty', 'owner', SIMULATE + '?date=', 200, EMPTY)
 add('simulation-invalid-day-empty', 'owner', SIMULATE + '?date=2026-02-30', 200, EMPTY)
@@ -374,6 +383,12 @@ add('apply-may-group', 'owner', APPLY + '?date=2026-05-01', 200, APPLIED, header
 # Without the header the group's quote is found and skipped; s7 is created.
 add('apply-may-full-collaborator', 'full_collaborator', APPLY + '?date=2026-05-01', 200, APPLIED,
     effect=created('full_collaborator', quote_row('giulia', PLAN_E, '7.25'), '7.25'))
+# The header in another spelling: the column stores the uuid, the create entry keeps the text as sent.
+UPPER_GROUP = {'X-Group-Id': IDS['own_group'].upper()}
+august = created('owner', quote_row('paolo', PLAN_H, '8.00', group=IDS['own_group']), '8')
+august['audit'][0]['changes']['group'] = ['None', IDS['own_group'].upper()]
+add('apply-august-group-upper-case', 'owner', APPLY + '?date=2026-08-01', 200, APPLIED, headers=UPPER_GROUP, effect=august)
+add('apply-august-again-nothing', 'owner', APPLY + '?date=2026-08-01', 200, APPLIED, headers=UPPER_GROUP, effect=effect())
 add('simulation-may-after-apply', 'owner', SIMULATE + '?date=2026-05-01', 200, simulation([PLAN_E]))
 # The owner's own subscription without associate: created (no e-mail text is rendered for the owner).
 add('apply-missing-associate-created', 'plans_owner', APPLY + '?date=2026-03-15', 200, APPLIED,

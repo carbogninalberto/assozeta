@@ -36,6 +36,11 @@ type ModuleAttachmentSettings struct {
 	FileOverwrite bool
 }
 
+// modulesResponsesAssociations reads the profile of an association by id.
+type modulesResponsesAssociations interface {
+	ReadAssociation(ctx context.Context, association string) (*dto.AssociationProfile, error)
+}
+
 // ModulesResponses follows modules_custom_link_info, modules_response_add,
 // modules_response_approve, modules_response_delete and
 // modules_response_add_attachment (BE/application/views/modules_views.py).
@@ -119,16 +124,13 @@ func (s *ModulesResponses) Info(ctx context.Context, link string, responseID *st
 	module := (&ModulesReads{now: s.now}).moduleFields(*row)
 	module["sport_association"] = nil
 	if row.AssociationID != nil {
-		// The nested SportAssociationSerializer is the shared profile of an
-		// active association; another state is not ported.
-		owner, err := s.reader.AssociationOwner(ctx, *row.AssociationID)
-		if err != nil {
-			return nil, err
-		}
-		profile, err := s.profiles.Read(ctx, owner)
-		if errors.Is(err, domain.ErrAssociationNotFound) || err == nil && profile.ID != *row.AssociationID {
+		// The nested SportAssociationSerializer renders module.sport_association,
+		// the row the related descriptor resolves by id.
+		associations, ok := s.profiles.(modulesResponsesAssociations)
+		if !ok {
 			return nil, domain.ErrModuleResponsesNotPorted
 		}
+		profile, err := associations.ReadAssociation(ctx, *row.AssociationID)
 		if err != nil {
 			return nil, err
 		}

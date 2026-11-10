@@ -64,6 +64,7 @@ HERE = Path(__file__).parent
 OUTPUT = HERE / 'modules_responses_http.json'
 IDS = json.loads((HERE / 'message_mutations.json').read_text())['ids']
 OWN, FOREIGN = IDS['own_association'], IDS['foreign_association']
+DELETED = IDS['deleted_association']
 ids = iter(f'a1000000-0000-4000-8000-{643001 + n:012d}' for n in range(80))
 SERVER = '<stable-server-error-page>'
 UNKNOWN = 'a1000000-0000-4000-8000-000000643999'
@@ -71,6 +72,11 @@ LOCATION = 'modules-responses-fixture'
 READS = json.loads((HERE / 'modules_reads_http.json').read_text())
 PROFILE = next(c for c in READS['cases'] if c['name'] == 'modules-reads-list-owner')['response']['data'][0]['sport_association']
 assert PROFILE['sport_association_id'] == OWN
+# The base seed gives the three associations the same defaults; only the id, the name and the tax code differ.
+PROFILE_FOREIGN = {**PROFILE, 'sport_association_id': FOREIGN, 'denomination': 'Message reads foreign', 'tax_code': '70000000002',
+                   'groups': [{'label': 'Scope foreign group', 'value': IDS['foreign_group']}]}
+PROFILE_DELETED = {**PROFILE, 'sport_association_id': DELETED, 'denomination': 'Message reads deleted', 'tax_code': '70000000003',
+                   'groups': []}
 
 ELEMENTS = [{'type': 'heading', 'props': {'label': 'Titolo'}}, {'type': 'text', 'props': {'label': 'Nome', 'name': 'nome'}}]
 BASE = {'association': OWN, 'link': None, 'created': '2026-09-01T08:00:00Z', 'title': 'Modulo', 'require_approval': False,
@@ -107,6 +113,8 @@ MODULES = {
     'foreign_closed': {**BASE, 'id': next(ids), 'association': FOREIGN, 'link': 'risposte-estero-chiuso', 'always_active': False,
                        'start': '2000-01-01', 'end': '2000-12-31'},
     'orphan': {**BASE, 'id': next(ids), 'association': None, 'link': 'risposte-orfano', 'title': None, 'elements': {}},
+    # A module whose association is marked deleted: the nested profile is the row the foreign key resolves by id.
+    'deleted_association': {**BASE, 'id': next(ids), 'association': DELETED, 'link': 'risposte-eliminata'},
     'nullnum': {**BASE, 'id': next(ids), 'link': 'risposte-nullo'},
     'export': {**EXPORT_BASE, 'id': next(xids), 'link': 'risposte-export', 'title': 'Esporta "risposte" è'},
     'export_empty': {**EXPORT_BASE, 'id': next(xids), 'link': 'risposte-export-vuoto'},
@@ -197,7 +205,7 @@ rid = lambda label: RESPONSES[label]['id'] if label in RESPONSES else label
 def serialized(label, *, enabled=True):
     """ModulesSerializer(module): every field, the nested association (None without one)."""
     row = MODULES[label]
-    profile = {OWN: PROFILE, None: None}[row['association']]
+    profile = {OWN: PROFILE, FOREIGN: PROFILE_FOREIGN, DELETED: PROFILE_DELETED, None: None}[row['association']]
     return {'module_id': row['id'], 'enabled': enabled, 'sport_association': profile, 'custom_link': row['link'],
             'creation_date': row['created'], 'title': row['title'], 'require_approval': row['require_approval'],
             'start_date': row['start'], 'end_date': row['end'], 'always_active': row['always_active'],
@@ -467,6 +475,11 @@ add('info-response-last-value', 'anonymous', 'GET', info('risposte-aperto', '?re
 add('info-dated', 'anonymous', 'GET', info('risposte-approvazione'), 200,
     {'data': serialized('approval'), 'response_data': None})
 add('info-orphan', 'owner', 'GET', info('risposte-orfano'), 200, {'data': serialized('orphan'), 'response_data': None})
+add('info-foreign-association', 'anonymous', 'GET', info('risposte-estero'), 200, {'data': serialized('foreign'), 'response_data': None})
+add('info-inactive-association', 'anonymous', 'GET', info('risposte-eliminata'), 200,
+    {'data': serialized('deleted_association'), 'response_data': None})
+add('info-inactive-association-response', 'owner', 'GET', info('risposte-eliminata', '?response_id=' + rid('open_r1')), 200,
+    {'data': serialized('deleted_association'), 'response_data': response_data('open_r1')})
 
 # ------------------------------------------- modules/<id>/response/add
 respond = lambda label: f'/modules/{mid(label)}/response/add'

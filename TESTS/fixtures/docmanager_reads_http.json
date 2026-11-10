@@ -341,6 +341,111 @@
    "filename": "data:text/css,body.pdf",
    "filepath": null,
    "created": "2026-03-22T10:00:00+00:00"
+  },
+  "webpage": {
+   "id": "a1000000-0000-4000-8000-000000983044",
+   "token": "a1000000-0000-4000-8000-000000983144",
+   "filename": "pagina.html",
+   "filepath": null,
+   "created": "2026-03-23T10:00:00+00:00"
+  },
+  "drawing": {
+   "id": "a1000000-0000-4000-8000-000000983045",
+   "token": "a1000000-0000-4000-8000-000000983145",
+   "filename": "disegno.svg",
+   "filepath": null,
+   "created": "2026-03-24T10:00:00+00:00"
+  },
+  "datapage": {
+   "id": "a1000000-0000-4000-8000-000000983046",
+   "token": "a1000000-0000-4000-8000-000000983146",
+   "filename": "data:text/html,x",
+   "filepath": null,
+   "created": "2026-03-25T10:00:00+00:00"
+  },
+  "datapng": {
+   "id": "a1000000-0000-4000-8000-000000983047",
+   "token": "a1000000-0000-4000-8000-000000983147",
+   "filename": "data:image/png,x",
+   "filepath": null,
+   "created": "2026-03-26T10:00:00+00:00"
+  },
+  "gif": {
+   "id": "a1000000-0000-4000-8000-000000983048",
+   "token": "a1000000-0000-4000-8000-000000983148",
+   "filename": "animazione.GIF",
+   "filepath": null,
+   "created": "2026-03-27T10:00:00+00:00"
+  },
+  "webp": {
+   "id": "a1000000-0000-4000-8000-000000983049",
+   "token": "a1000000-0000-4000-8000-000000983149",
+   "filename": "foto.webp",
+   "filepath": null,
+   "created": "2026-03-28T10:00:00+00:00"
+  },
+  "script": {
+   "id": "a1000000-0000-4000-8000-000000983050",
+   "token": "a1000000-0000-4000-8000-000000983150",
+   "filename": "codice.js",
+   "filepath": null,
+   "created": "2026-03-29T10:00:00+00:00"
+  },
+  "markup": {
+   "id": "a1000000-0000-4000-8000-000000983051",
+   "token": "a1000000-0000-4000-8000-000000983151",
+   "filename": "dati.xml",
+   "filepath": null,
+   "created": "2026-03-30T10:00:00+00:00"
+  },
+  "bitmap": {
+   "id": "a1000000-0000-4000-8000-000000983052",
+   "token": "a1000000-0000-4000-8000-000000983152",
+   "filename": "foto.bmp",
+   "filepath": null,
+   "created": "2026-03-31T10:00:00+00:00"
+  },
+  "newline": {
+   "id": "a1000000-0000-4000-8000-000000983053",
+   "token": "a1000000-0000-4000-8000-000000983153",
+   "filename": "verbale.pdf\n",
+   "filepath": "named/newline",
+   "created": "2026-04-01T10:00:00+00:00"
+  },
+  "newline_accent": {
+   "id": "a1000000-0000-4000-8000-000000983054",
+   "token": "a1000000-0000-4000-8000-000000983154",
+   "filename": "verbalè.pdf\n",
+   "filepath": "named/newline-accent",
+   "created": "2026-04-02T10:00:00+00:00"
+  },
+  "newline_inside": {
+   "id": "a1000000-0000-4000-8000-000000983055",
+   "token": "a1000000-0000-4000-8000-000000983155",
+   "filename": "ver\nbale.pdf",
+   "filepath": "named/newline-inside",
+   "created": "2026-04-03T10:00:00+00:00"
+  },
+  "newline_missing": {
+   "id": "a1000000-0000-4000-8000-000000983056",
+   "token": "a1000000-0000-4000-8000-000000983156",
+   "filename": "assente.pdf\n",
+   "filepath": "named/newline-missing",
+   "created": "2026-04-04T10:00:00+00:00"
+  },
+  "blank": {
+   "id": "a1000000-0000-4000-8000-000000983057",
+   "token": "a1000000-0000-4000-8000-000000983157",
+   "filename": "",
+   "filepath": "named/blank",
+   "created": "2026-04-05T10:00:00+00:00"
+  },
+  "longkey": {
+   "id": "a1000000-0000-4000-8000-000000983058",
+   "token": "a1000000-0000-4000-8000-000000983158",
+   "filename": "lungo.pdf",
+   "filepath": "lungo/èèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèè",
+   "created": "2026-04-06T10:00:00+00:00"
   }
  },
  "objects": {
@@ -540,6 +645,84 @@
    "key": "docs-fixture/1774173600.0/a1000000-0000-4000-8000-000000983043/data:text/css,body.pdf",
    "body_b64": "Ym9keSB7fQ==",
    "content_type": "application/x-fixture-data",
+   "encoding": null
+  },
+  "webpage": {
+   "key": "docs-fixture/1774260000.0/a1000000-0000-4000-8000-000000983044/pagina.html",
+   "body_b64": "PHA+cGFnaW5hPC9wPg==",
+   "content_type": "text/html",
+   "encoding": null
+  },
+  "drawing": {
+   "key": "docs-fixture/1774346400.0/a1000000-0000-4000-8000-000000983045/disegno.svg",
+   "body_b64": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciLz4=",
+   "content_type": "image/svg+xml",
+   "encoding": null
+  },
+  "datapage": {
+   "key": "docs-fixture/1774432800.0/a1000000-0000-4000-8000-000000983046/data:text/html,x",
+   "body_b64": "PHA+eDwvcD4=",
+   "content_type": "text/html",
+   "encoding": null
+  },
+  "datapng": {
+   "key": "docs-fixture/1774519200.0/a1000000-0000-4000-8000-000000983047/data:image/png,x",
+   "body_b64": "UE5HLWRhdGEgbmFtZQ==",
+   "content_type": "text/html",
+   "encoding": null
+  },
+  "gif": {
+   "key": "docs-fixture/1774605600.0/a1000000-0000-4000-8000-000000983048/animazione.GIF",
+   "body_b64": "R0lGODlhLWZpeHR1cmU=",
+   "content_type": "image/gif",
+   "encoding": null
+  },
+  "webp": {
+   "key": "docs-fixture/1774692000.0/a1000000-0000-4000-8000-000000983049/foto.webp",
+   "body_b64": "UklGRi1maXh0dXJl",
+   "content_type": "image/webp",
+   "encoding": null
+  },
+  "script": {
+   "key": "docs-fixture/1774778400.0/a1000000-0000-4000-8000-000000983050/codice.js",
+   "body_b64": "dm9pZCAw",
+   "content_type": "text/javascript",
+   "encoding": null
+  },
+  "markup": {
+   "key": "docs-fixture/1774864800.0/a1000000-0000-4000-8000-000000983051/dati.xml",
+   "body_b64": "PGEvPg==",
+   "content_type": "application/xml",
+   "encoding": null
+  },
+  "bitmap": {
+   "key": "docs-fixture/1774951200.0/a1000000-0000-4000-8000-000000983052/foto.bmp",
+   "body_b64": "Qk0tZml4dHVyZQ==",
+   "content_type": "image/bmp",
+   "encoding": null
+  },
+  "newline": {
+   "key": "docs-fixture/named/newline",
+   "body_b64": "JVBERi1uZXdsaW5l",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "newline_accent": {
+   "key": "docs-fixture/named/newline-accent",
+   "body_b64": "JVBERi1uZXdsaW5lIGFjY2VudA==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "newline_inside": {
+   "key": "docs-fixture/named/newline-inside",
+   "body_b64": "JVBERi1uZXdsaW5lIGluc2lkZQ==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "blank": {
+   "key": "docs-fixture/named/blank",
+   "body_b64": "YmxhbmsgbmFtZQ==",
+   "content_type": "application/pdf",
    "encoding": null
   }
  },
@@ -1746,9 +1929,9 @@
    "effect": null,
    "stream": {
     "object": "export",
-    "content_type": "application/zip",
+    "content_type": "application/octet-stream",
     "encoding": null,
-    "disposition": "inline; filename=\"export_own.zip\""
+    "disposition": "attachment; filename=\"export_own.zip\""
    }
   },
   {
@@ -1809,9 +1992,9 @@
    "effect": null,
    "stream": {
     "object": "export",
-    "content_type": "application/zip",
+    "content_type": "application/octet-stream",
     "encoding": null,
-    "disposition": "inline; filename=\"export_own.zip\""
+    "disposition": "attachment; filename=\"export_own.zip\""
    }
   },
   {
@@ -1827,9 +2010,9 @@
    "effect": null,
    "stream": {
     "object": "export",
-    "content_type": "application/zip",
+    "content_type": "application/octet-stream",
     "encoding": null,
-    "disposition": "inline; filename=\"export_own.zip\""
+    "disposition": "attachment; filename=\"export_own.zip\""
    }
   },
   {
@@ -1859,9 +2042,9 @@
    "effect": null,
    "stream": {
     "object": "orphan_export",
-    "content_type": "application/zip",
+    "content_type": "application/octet-stream",
     "encoding": null,
-    "disposition": "inline; filename=\"export_orphan.zip\""
+    "disposition": "attachment; filename=\"export_orphan.zip\""
    }
   },
   {
@@ -1891,9 +2074,9 @@
    "effect": null,
    "stream": {
     "object": "export",
-    "content_type": "application/zip",
+    "content_type": "application/octet-stream",
     "encoding": null,
-    "disposition": "inline; filename=\"export_own.zip\""
+    "disposition": "attachment; filename=\"export_own.zip\""
    }
   },
   {
@@ -1909,7 +2092,7 @@
    "effect": null,
    "stream": {
     "object": "export",
-    "content_type": "application/zip",
+    "content_type": "application/octet-stream",
     "encoding": null,
     "disposition": "attachment; filename=\"export_own.zip\""
    }
@@ -1927,9 +2110,9 @@
    "effect": null,
    "stream": {
     "object": "export",
-    "content_type": "application/zip",
+    "content_type": "application/octet-stream",
     "encoding": null,
-    "disposition": "inline; filename=\"export_own.zip\""
+    "disposition": "attachment; filename=\"export_own.zip\""
    }
   },
   {
@@ -1945,9 +2128,9 @@
    "effect": null,
    "stream": {
     "object": "export",
-    "content_type": "application/zip",
+    "content_type": "application/octet-stream",
     "encoding": null,
-    "disposition": "inline; filename=\"export_own.zip\""
+    "disposition": "attachment; filename=\"export_own.zip\""
    }
   },
   {
@@ -2181,9 +2364,9 @@
    "effect": null,
    "stream": {
     "object": "export",
-    "content_type": "application/zip",
+    "content_type": "application/octet-stream",
     "encoding": null,
-    "disposition": "inline; filename=\"export_own.zip\""
+    "disposition": "attachment; filename=\"export_own.zip\""
    }
   },
   {
@@ -3046,9 +3229,9 @@
    "effect": null,
    "stream": {
     "object": "comma",
-    "content_type": "text/plain",
+    "content_type": "application/octet-stream",
     "encoding": null,
-    "disposition": "inline; filename=\"notes  final.txt\""
+    "disposition": "attachment; filename=\"notes  final.txt\""
    }
   },
   {
@@ -3064,9 +3247,9 @@
    "effect": null,
    "stream": {
     "object": "comma",
-    "content_type": "text/plain",
+    "content_type": "application/octet-stream",
     "encoding": null,
-    "disposition": null
+    "disposition": "attachment; filename=\"notes, final.txt\""
    }
   },
   {
@@ -3118,9 +3301,9 @@
    "effect": null,
    "stream": {
     "object": "noext",
-    "content_type": "application/x-fixture-readme",
+    "content_type": "application/octet-stream",
     "encoding": null,
-    "disposition": "inline; filename=\"README\""
+    "disposition": "attachment; filename=\"README\""
    }
   },
   {
@@ -3136,9 +3319,9 @@
    "effect": null,
    "stream": {
     "object": "unknown",
-    "content_type": "application/x-fixture-unknown",
+    "content_type": "application/octet-stream",
     "encoding": null,
-    "disposition": "inline; filename=\"data.zzq\""
+    "disposition": "attachment; filename=\"data.zzq\""
    }
   },
   {
@@ -3154,9 +3337,9 @@
    "effect": null,
    "stream": {
     "object": "gzip",
-    "content_type": "text/csv",
+    "content_type": "application/octet-stream",
     "encoding": "gzip",
-    "disposition": "inline; filename=\"table.csv.gz\""
+    "disposition": "attachment; filename=\"table.csv.gz\""
    }
   },
   {
@@ -3190,9 +3373,9 @@
    "effect": null,
    "stream": {
     "object": "tarball",
-    "content_type": "application/x-tar",
+    "content_type": "application/octet-stream",
     "encoding": null,
-    "disposition": "inline; filename=\"backup.tgz\""
+    "disposition": "attachment; filename=\"backup.tgz\""
    }
   },
   {
@@ -3208,9 +3391,9 @@
    "effect": null,
    "stream": {
     "object": "hidden",
-    "content_type": "application/x-fixture-hidden",
+    "content_type": "application/octet-stream",
     "encoding": null,
-    "disposition": "inline; filename=\".hidden\""
+    "disposition": "attachment; filename=\".hidden\""
    }
   },
   {
@@ -3808,7 +3991,7 @@
    "effect": null,
    "stream": {
     "object": "urlparts",
-    "content_type": "text/plain",
+    "content_type": "application/octet-stream",
     "encoding": null,
     "disposition": "attachment; filename=\"ab:c.pdf;v.txt?x#y.png\""
    }
@@ -3826,9 +4009,9 @@
    "effect": null,
    "stream": {
     "object": "dataname",
-    "content_type": "text/css",
+    "content_type": "application/octet-stream",
     "encoding": null,
-    "disposition": null
+    "disposition": "attachment; filename=\"data:text/css,body.pdf\""
    }
   },
   {
@@ -3844,10 +4027,454 @@
    "effect": null,
    "stream": {
     "object": "dataname",
-    "content_type": "application/x-fixture-data",
+    "content_type": "application/octet-stream",
     "encoding": null,
-    "disposition": "inline; filename=\"data:text/css body.pdf\""
+    "disposition": "attachment; filename=\"data:text/css body.pdf\""
    }
+  },
+  {
+   "name": "docmanager-reads-retrieve-html-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983044?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "webpage",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"pagina.html\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-html-download-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983044?download=",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "webpage",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"pagina.html\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-html-download",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983044?download=true",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "webpage",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"pagina.html\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-html-document-token-view",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983044?download=false&token=a1000000-0000-4000-8000-000000983144",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "webpage",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"pagina.html\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-svg-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983045?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "drawing",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"disegno.svg\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-svg-default",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983045",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "drawing",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"disegno.svg\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-data-html-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983046?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "datapage",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"data:text/html,x\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-data-png-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983047?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "datapng",
+    "content_type": "image/png",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-script-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983050?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "script",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"codice.js\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-xml-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983051?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "markup",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"dati.xml\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-bmp-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983052?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "bitmap",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"foto.bmp\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-gif-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983048?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "gif",
+    "content_type": "image/gif",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-webp-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983049?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "webp",
+    "content_type": "image/webp",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-webp-default",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983049",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "webp",
+    "content_type": "image/webp",
+    "encoding": null,
+    "disposition": "inline; filename=\"foto.webp\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983053?download=false",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Header values can't contain newlines (got 'attachment; filename=\"verbale.pdf\\n\"')"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-name-default",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983053",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Header values can't contain newlines (got 'attachment; filename=\"verbale.pdf\\n\"')"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-name-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983053?download=1&token=a1000000-0000-4000-8000-000000983153",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Header values can't contain newlines (got 'attachment; filename=\"verbale.pdf\\n\"')"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-accent-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983054?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "newline_accent",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename*=utf-8''verbal%C3%A8.pdf%0A"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-accent-name-default",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983054",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "newline_accent",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename*=utf-8''verbal%C3%A8.pdf%0A"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-inside-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983055?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "newline_inside",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-inside-name-download",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983055?download=1",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "newline_inside",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "attachment; filename*=utf-8''ver%0Abale.pdf"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-name-missing-object",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983056",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "File not found"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-blank-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983057?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "blank",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-blank-name-default",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983057",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "blank",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-storage-head-refused-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983058?download=false",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (400) when calling the HeadObject operation: Bad Request"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-storage-head-refused-download",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983058?download=1",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (400) when calling the HeadObject operation: Bad Request"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
   }
  ]
 }

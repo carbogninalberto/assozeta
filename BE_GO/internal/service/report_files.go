@@ -152,14 +152,32 @@ func mcpExportXLSXValue(value any) (xlsxexport.Value, error) {
 
 // reportSheet is one DataFrame of XLSXExporter: the formatted values by column.
 func mcpReportSheet(title string, data []any, labels domain.RequestObject) (xlsxexport.ReportSheet, error) {
-	columns, headers, err := mcpExportColumns(data, labels)
-	if err != nil {
-		return xlsxexport.ReportSheet{}, err
+	columns, _, _ := mcpExportColumns(data, nil)
+	sheet := xlsxexport.ReportSheet{Title: title, Data: make([][]xlsxexport.Value, len(columns))}
+	// df.rename(columns=...): a label that is not a str names the column as
+	// it is; a list or dict raises.
+	for _, column := range columns {
+		label := xlsxexport.StrValue(column)
+		if value, present := labels.Lookup(column); present {
+			switch typed := value.(type) {
+			case string:
+				label = xlsxexport.StrValue(typed)
+			case nil:
+				label = xlsxexport.NoneValue()
+			case bool:
+				label = xlsxexport.BoolValue(typed)
+			case json.Number:
+				var err error
+				if label, err = mcpExportXLSXValue(typed); err != nil {
+					return xlsxexport.ReportSheet{}, err
+				}
+			default:
+				return xlsxexport.ReportSheet{}, xlsxexport.ErrDjango
+			}
+		}
+		sheet.Labels = append(sheet.Labels, label)
 	}
-	if len(columns) == 0 {
-		return xlsxexport.ReportSheet{}, ErrBusinessMCPNotPorted // a sheet without columns
-	}
-	sheet := xlsxexport.ReportSheet{Title: title, Columns: headers, Data: make([][]xlsxexport.Value, len(columns))}
+	sheet.Columns = xlsxexport.LabelTexts(sheet.Labels)
 	for _, item := range data {
 		row := item.(domain.RequestObject)
 		for i, column := range columns {
@@ -190,27 +208,48 @@ func mcpBuiltFile(ctx context.Context, file []byte, err error) ([]byte, error) {
 func (t *BusinessMCPTools) exportXLSX(ctx context.Context, data []any, labels domain.RequestObject, title string) ([]byte, error) {
 	sheet, err := mcpReportSheet(title, data, labels)
 	if err != nil {
-		return nil, err
+		return mcpBuiltFile(ctx, nil, err)
 	}
 	file, err := xlsxexport.ReportWorkbook(sheet, t.now())
 	return mcpBuiltFile(ctx, file, err)
 }
 
 // mcpOptionalText is a str argument with a ” default: falsy values count as
-// ”; other values that are not a str are not ported.
-func mcpOptionalText(arguments domain.RequestObject, name string) (string, error) {
+// ”; ok is false for other values that are not a str.
+func mcpOptionalText(arguments domain.RequestObject, name string) (string, bool) {
 	value, _ := arguments.Lookup(name)
 	if !mcpTruthy(value) {
-		return "", nil
+		return "", true
 	}
 	text, ok := value.(string)
-	if !ok {
-		return "", ErrBusinessMCPNotPorted
-	}
-	return text, nil
+	return text, ok
 }
 
 func (t *BusinessMCPTools) exportPDF(ctx context.Context, data []any, labels domain.RequestObject, title string, arguments domain.RequestObject) ([]byte, error) {
+	raised := func() ([]byte, error) {
+		markMCPRaised(ctx)
+		return nil, nil
+	}
+	// PDFExporter raises on: a label that is not a str (Paragraph), a table
+	// without columns, a header or body text that is not a str (stringWidth,
+	// Paragraph). The footer is written with '%s'.
+	columns, _, _ := mcpExportColumns(data, nil)
+	if len(columns) == 0 {
+		return raised()
+	}
+	for _, column := range columns {
+		if label, present := labels.Lookup(column); present {
+			if _, ok := label.(string); !ok {
+				return raised()
+			}
+		}
+	}
+	header, headerOK := mcpOptionalText(arguments, "header_text")
+	before, beforeOK := mcpOptionalText(arguments, "text_before")
+	after, afterOK := mcpOptionalText(arguments, "text_after")
+	if !headerOK || !beforeOK || !afterOK {
+		return raised()
+	}
 	columns, headers, err := mcpExportColumns(data, labels)
 	if err != nil {
 		return nil, err
@@ -229,22 +268,13 @@ func (t *BusinessMCPTools) exportPDF(ctx context.Context, data []any, labels dom
 		}
 		table.Rows = append(table.Rows, line)
 	}
-	header, err := mcpOptionalText(arguments, "header_text")
-	if err != nil {
-		return nil, err
-	}
 	if header != "" {
 		table.Title = header
 	}
-	if table.Footer, err = mcpOptionalText(arguments, "footer_text"); err != nil {
-		return nil, err
+	if footer, _ := arguments.Lookup("footer_text"); mcpTruthy(footer) {
+		table.Footer = dto.PythonStr(footer)
 	}
-	if table.TextBefore, err = mcpOptionalText(arguments, "text_before"); err != nil {
-		return nil, err
-	}
-	if table.TextAfter, err = mcpOptionalText(arguments, "text_after"); err != nil {
-		return nil, err
-	}
+	table.TextBefore, table.TextAfter = before, after
 	file, err := table.Build(t.now())
 	return mcpBuiltFile(ctx, file, err)
 }
@@ -299,6 +329,9 @@ func (t *BusinessMCPTools) exportSheets(ctx context.Context, prepared []reportSh
 			labels = dto.PythonDict(object)
 		}
 		sheet, err := mcpReportSheet(text, item.data, labels)
+		if errors.Is(err, xlsxexport.ErrDjango) {
+			return raise()
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -317,29 +350,39 @@ func (t *BusinessMCPTools) attendanceFile(ctx context.Context, matrices []*atten
 	if !t.files {
 		return nil, ErrBusinessMCPNotPorted // the files are built for a saved-report run only
 	}
-	name := "Presenze - tutti i corsi"
-	if !multi {
-		if matrices[0].course == nil {
-			return nil, ErrBusinessMCPNotPorted // a course without a title
-		}
-		name = "Presenze - " + *matrices[0].course
+	raised := func() (any, error) {
+		markMCPRaised(ctx)
+		return mcpErrorResult(""), nil
 	}
 	pdf := false
 	if format, ok := mcpLookupOr(arguments, "format", "xlsx").(string); ok && format == "pdf" {
 		pdf = true
 	}
+	name := "Presenze - tutti i corsi"
+	if !multi {
+		// f'Presenze - {course}': a course without a title is written None.
+		name = "Presenze - " + dto.PythonStr(mcpOptional(matrices[0].course))
+		if matrices[0].course == nil && !pdf {
+			return raised() // the sheet name is a slice of the title
+		}
+	}
 	var document pdfexport.Attendance
 	var courses []xlsxexport.AttendanceCourse
 	for _, matrix := range matrices {
-		if matrix.course == nil {
-			return nil, ErrBusinessMCPNotPorted
+		title := ""
+		if matrix.course != nil {
+			title = *matrix.course
+		} else if pdf && len(matrices) > 1 {
+			return raised() // Paragraph(None) above the course's table
 		}
 		dates := make([]string, len(matrix.dates))
 		for i, date := range matrix.dates {
 			dates[i] = date.(string)
 		}
-		page := pdfexport.AttendanceCourse{Course: *matrix.course, Dates: dates}
-		sheet := xlsxexport.AttendanceCourse{Course: *matrix.course, Dates: dates}
+		// Without a title: no heading on a one-course document, the sheet
+		// named Foglio, an empty Corso cell.
+		page := pdfexport.AttendanceCourse{Course: title, Dates: dates}
+		sheet := xlsxexport.AttendanceCourse{Course: title, Untitled: matrix.course == nil, Dates: dates}
 		for _, row := range matrix.rows {
 			page.Rows = append(page.Rows, pdfexport.AttendanceRow{Name: row.name, Attendance: row.marks, Present: row.present})
 			sheet.Rows = append(sheet.Rows, xlsxexport.AttendanceRow{Name: row.name, Attendance: row.marks, Present: int64(row.present)})

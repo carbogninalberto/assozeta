@@ -4,7 +4,7 @@ Run with the production interpreter: python -I TESTS/fixtures/generate_mcp_serve
 It writes BE_GO/internal/handler/businessmcp/tools.json (TOOL_DEFINITIONS as the
 MCP SDK lists them) and BE_GO/internal/dto/mcp_models.json from Django's model _meta for the
 models MODEL_WHITELIST reaches through relations, the default managers' base
-filters of the whitelisted models and the Italian validation message templates
+filters of the whitelisted models (and whether they follow X-Group-Id) and the Italian validation message templates
 the tool functions can raise. The business MCP adapter regenerates it and
 requires the committed file to be identical.
 """
@@ -119,6 +119,23 @@ def manager_filters(model):
     return columns
 
 
+def group_manager(model):
+    """Whether the default manager filters by the request's X-Group-Id (as its first conjunct)."""
+    from application import mixin
+    group = '11111111-1111-4111-8111-111111111111'
+    setattr(mixin._local, 'group_id', group)
+    try:
+        sql = str(model.objects.all().query)
+    finally:
+        delattr(mixin._local, 'group_id')
+    condition = f'"{model._meta.db_table}"."group_id" = {group}'
+    if condition not in sql:
+        return False
+    where = sql.split(' WHERE ', 1)[1].lstrip('(')
+    assert where.startswith(condition), f'unsupported group filter on {model.__name__}: {where}'
+    return True
+
+
 def build():
     from django.apps import apps
     from django.db import models
@@ -142,6 +159,7 @@ def build():
                  'fields': [describe_field(field) for field in meta.get_fields()]}
         if model in whitelisted:
             entry['manager_filters'] = manager_filters(model)
+            entry['group_manager'] = group_manager(model)
         result['models'][label_of(model)] = entry
     for field_class in (models.UUIDField, models.DateField, models.DateTimeField, models.BooleanField,
                         models.DecimalField, models.TimeField):

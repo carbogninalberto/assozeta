@@ -57,8 +57,11 @@ The rendering routes of `BE/docmanager/urls.py` are not part of this family (see
     `DocmanagerReadsStore.RenderSource` returns the view, `DocumentRender.PrintAndStore` renders and publishes, and
     `documentobjects.NoSuchKeyError` carries the provider text. The names Go refuses (below) are refused before printing.
   - `Content-Type` is `mimetypes.guess_type(name)[0]` (`pkg/pymime`: Python 3.13's built-in table plus every existing
-    `mimetypes.knownfiles` file, read once per process, with suffix and encoding maps). Failing that, the object's type
-    is used, and then `application/octet-stream`.
+    `mimetypes.knownfiles` file, read once per process, with suffix and encoding maps) when it is one of the inline
+    types: `application/pdf`, `image/png`, `image/jpeg`, `image/gif`, `image/webp` (`INLINE_DOCUMENT_TYPES` in
+    `BE/application/utils/printing.py`, `docmanagerInlineTypes` in Go). Every other file is `application/octet-stream`
+    with an `attachment` `Content-Disposition`, on the view path too. The object's own type is not used.
+  - `X-Content-Type-Options: nosniff` is always sent.
   - `Content-Length` and `Content-Encoding` come from the object. Bytes are streamed unchanged, and there is no gzip.
 
 ## Delete behaviour (pre-checks)
@@ -71,15 +74,14 @@ active `SportAssociation`, gets `404 {"error": "Document not found."}`. The owne
 
 ## Not ported (refused with the 500 page before any write)
 
-- **Retrieve** provider errors: a HEAD failing with a status other than 404, or a `GetObject` failure other than a
-  missing key. Django answers `500 {"exception": "<botocore text>"}`.
-- **Retrieve** names outside the modelled grammar:
-  - filenames `urllib.parse` reads as a URL whose network location has brackets or non-ASCII text, and `data:` names
-    whose type is not printable ASCII (the other URL-like names are served, see the evidence);
-  - a quotable filename ending in a newline (Django's header check raises);
-  - an inline download of an empty filename (Django sets the header to `None`);
-  - invalid UTF-8 or NUL in names;
-  - creation dates outside Python's range or below microsecond precision.
+- **Retrieve** provider errors other than a client-error HEAD answer: a HEAD failing with 429 or a 5xx status or without
+  an answer, and a `GetObject` failure other than a missing key. Django answers `500 {"exception": "<botocore text>"}`;
+  the text carries botocore's retry count or the storage endpoint.
+- **Retrieve** names outside the modelled grammar: filenames `urllib.parse` reads as a URL whose network location has
+  brackets or non-ASCII text, and `data:` names whose type is not printable ASCII (the other URL-like names are served,
+  see the evidence).
+- Rows Django cannot read either (both sides answer the 500 page): creation dates outside Python's range. Invalid UTF-8
+  and NUL cannot be stored in the database.
 - **Retrieve** download-token payloads using JSON that Go's decoder rejects but Python accepts, such as `NaN` or
   `Infinity`. Only a holder of `SECRET_KEY` can produce them.
 - `SECRET_KEY_FALLBACKS` are not consulted (they are not configured).
@@ -163,3 +165,23 @@ holds 37 answers of CPython 3.13. Still refused: a network location with bracket
 outside printable ASCII. RED `v2doc2-red-r2`: Django 175/175, Go the 500 page on `retrieve-url-name`. GREEN
 `v2doc2-versioned-r2`: 175/175 on the four transports. Mutation `v2doc2-mutation-r2` (the query left in the path) fails
 `retrieve-url-name-parts`. documents-writes re-run green (`v2doc2-rerun-r3`).
+
+Inline types (`v2doc3-*`): documents are served with a fixed set of inline types. Django changed first
+(`application.tests.test_printing_service`, 5 new tests red, then green), then Go. 14 more cases (189) over nine
+documents (`.html`, `.svg`, `.js`, `.xml`, `.bmp`, `.GIF`, `.webp` and two `data:` names); the contract also checks
+`X-Content-Type-Options`. The UI opens documents as links and in the PDF preview frames
+(`DocumentPreviewModal.svelte`, `InvoicePreviewModal.svelte`): PDFs and images keep their inline answer. RED
+`v2doc3-red-r1`: Django 189/189, Go fails `retrieve-export-owner` (`stream.content-type`). GREEN `v2doc3-versioned-r1`:
+189/189 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `v2doc3-mutation-r1` (the type list not
+consulted) fails `retrieve-export-owner`.
+
+Header and storage answers (`v2doc3-*`): 12 more cases (201) over six documents. A quotable name ending in a newline
+answers `500 {"exception": "Header values can't contain newlines (got '<header>')"}` once the object is open (a missing
+object answers first); other line breaks and non-ASCII names use the percent-encoded header; an empty name is an
+`attachment` without a filename. A HEAD answered with a client error other than 404 (400, 401, 403, 405, 409-412; the
+fixture uses a key longer than the storage accepts) answers botocore's text, `An error occurred (400) when calling the
+HeadObject operation: Bad Request` (`documentobjects.HeadStatusError`). RED `v2doc3-red-r2`: Django 201/201, Go the 500
+page on `retrieve-newline-name-view`. GREEN `v2doc3-versioned-r2`: 201/201 on the four transports. Mutation
+`v2doc3-mutation-r2` (the header check ignoring `\n`) fails `retrieve-newline-name-view`.
+Final run on the merged base (`v2doc3-final-r1`): 201/201 on the four transports; documents-writes re-run green natively
+(`v2doc3-rerun-r1`, 141/141).

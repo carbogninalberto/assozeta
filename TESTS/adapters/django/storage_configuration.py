@@ -32,7 +32,10 @@ def main():
     def assigns(node,name):return isinstance(node,ast.Assign) and any(isinstance(t,ast.Name) and t.id==name for t in node.targets)
     start=next(i for i,node in enumerate(source.body) if assigns(node,'STORE_ON_DISK'))
     end=next(i for i,node in enumerate(source.body) if assigns(node,'STORAGES'))
-    nodes=source.body[start:end+1];assert len(nodes)==18,'storage declaration coverage changed'
+    # Upload limits declared between the storage assignments are not storage configuration.
+    upload_limits=('SUBSCRIPTION_IMPORT_','MEDICAL_CERTIFICATE_')
+    def upload_limit(node):return isinstance(node,ast.Assign) and any(isinstance(t,ast.Name) and t.id.startswith(upload_limits) for t in node.targets)
+    nodes=[node for node in source.body[start:end+1] if not upload_limit(node)];assert len(nodes)==18,'storage declaration coverage changed'
     code=compile(ast.Module(body=nodes,type_ignores=[]),'core.settings storage assignments','exec')
     base={'SECRET_KEY':'fixture-session','DEBUG':'False','DBTYPE':'POSTGRES','DBNAME':'fixture','DBUSER':'fixture','DBHOST':'localhost',
         'SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'','SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'','JWT_SECRET_KEY':'fixture-private','JWT_PUBLIC_KEY':'fixture-public',

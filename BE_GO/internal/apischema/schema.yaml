@@ -2320,8 +2320,6 @@ paths:
       operationId: document_subscription_preview_retrieve
       tags:
       - document
-      security:
-      - {}
       responses:
         '200':
           description: No response body

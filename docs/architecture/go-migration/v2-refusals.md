@@ -17,7 +17,7 @@ below describe what Go itself does not serve; with the handoff on, an A or B ite
 - **C**: impossible with production data or configuration.
 
 Counts (table rows, appendix): **A 69** (about 63 distinct after duplicates; 2 ported in v2subs3 (the placeholder certificate image, in `subscription/add` and in set-certificate-expiration); 1 ported and 1 narrowed (the Biella form, to associations with a stored signature) in v2-documents-rest; 5 ported in v2-pdf (the reportlab documents); 2 ported in v2-deletes; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard, 3 in v2-misc-3 (which also narrows the smtp/verify row to connect timeouts) and 1 in the famwiz change (the preregistration that renews a subscription; also the excel half of the course-subscriptions export row), below), **B 218** (54 with
-`legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
+`legacy: yes`; 3 ported and 3 narrowed in v2-documents-3, below), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
 - The UI never sends `X-Group-Id` (nothing writes `localStorage.selectedGroup`): every group-header refusal is B.
@@ -114,6 +114,18 @@ xlsx-exports.md have the details.
 | Family | Route | Was refused | Evidence |
 |---|---|---|---|
 | templates-reports | `POST saved-reports/<pk>/run` | tools `export_data` (CSV, XLSX, PDF), `export_multi_sheet` and `get_attendance_matrix` (preview, XLSX, PDF) | 125 cases; RED `v2rep-red-r1` Django 124/124, Go 500, and `v2rep-red-r2` Django 125/125, Go 500 (texts longer than a page); GREEN `v2rep-versioned-r2` 4 transports; mutations `v2rep-mutation-r1` (one sheet per course swapped with the single sheet) and `v2rep-mutation-r2` (a cut paragraph keeps one line too many) CAUGHT |
+
+### Ported in the v2-reports-2 change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2rep2-*`; templates-reports.md ("Group and unusual arguments").
+
+| Family | Route | Was refused or different | Evidence |
+|---|---|---|---|
+| templates-reports | `POST saved-reports/<pk>/run` | Go divergence: the query tools (and the queries of `export_data` and `export_multi_sheet`) did not follow `X-Group-Id` on the group-aware models | 174 cases; RED `v2rep2-red-r1` Django 174/174, Go the rows of every group; GREEN `v2rep2-versioned-r2` 4 transports; mutation `v2rep2-mutation-r2` (group filter dropped) CAUGHT on `run-query-courses-group-header` |
+| templates-reports | same | file tools (B): a `format`, title, label or text argument that is not a string; a list or dict cell in the CSV; ISO date-time text in another spelling; a sheet without columns; a generated sheet name equal to an earlier one; a course without a title; `sheets` or a sheet of another type | same receipts (RED: these documented refusals); `go test ./internal/service -run FormatValueGolden` (2037 texts from CPython), 14 more golden workbooks |
+
+Still refused in the file tools: workbook labels that are equal numbers or beyond 64 bits, and the XLSX and PDF results on
+the MCP server and the assistant (mcp-server harness `mcp-server-tools-v2rep2-r2`: 135/135, 3 refused).
 
 ### Ported in the v2-pdf change
 
@@ -298,6 +310,45 @@ documented refusal itself (the rows of this page).
 Still refused after this change: the placeholder in renewals and draft approvals (`subscriptionCreateRefuse`), the
 placeholder's unusual names (see subscription-create.md and subscription-medical.md), years before 1000 in dateutil dates, and
 the other B rows of the appendix tables of subscription-*, course-* and associates-draft.
+
+### Ported in the v2-documents-3 change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2doc3-*`; each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| docmanager-reads | `GET document/retrieve/<uid>` | not a refusal: documents are served with a fixed set of inline types (PDF, PNG, JPEG, GIF, WebP); every other file is `application/octet-stream` and an attachment, with `X-Content-Type-Options: nosniff`, in Django and Go | Django tests first; 189 cases; RED `v2doc3-red-r1` Django 189/189, Go fails `stream.content-type`; GREEN `v2doc3-versioned-r1` 4 transports; mutation `v2doc3-mutation-r1` (type list not consulted) CAUGHT |
+| docmanager-reads | `GET document/retrieve/<uid>` | a quotable name ending in a newline, an empty name, and a storage HEAD answered with a client error other than 404 (B) | 201 cases; RED `v2doc3-red-r2` Django 201/201, Go 500 page; GREEN `v2doc3-versioned-r2` and `v2doc3-final-r1` 4 transports; mutation `v2doc3-mutation-r2` (header check ignoring a newline) CAUGHT; documents-writes re-run (`v2doc3-rerun-r1`) |
+| document-render | `document/*` | a filename with CR or LF (B, legacy: yes): Django's header check text after the storage task | 239 cases; RED `v2doc3-red-r1` Django 239/239, Go 500 page; GREEN `v2doc3-versioned-r1` and `v2doc3-final-r1` 4 transports; mutation `v2doc3-mutation-r1` (fallback row with the instructor path) CAUGHT |
+| document-render | `POST document/template/<uid>` | body shapes (B): lists, text, `null`, numbers, malformed JSON, other media types, multipart, a non-object `additionalData`, any `subscription` value | same receipts |
+| document-render | `GET/POST document/invoice/<uid>` | a multipart or unsupported body with a falsy query flag (B) | same receipts |
+| document-render | `GET document/compensation/<uid>` | hours whose instructor's owner has no association (B): the audit index uses the actor's | same receipts |
+
+Still refused in these families, with the reason:
+- `document/medical-appointment/<uid>`, Biella with a stored president signature: PyMuPDF draws the image byte for byte; the hand-off covers it.
+- document-render: filenames with other control characters (each HTTP server refuses the header its own way) or `email.header` separators without a line break.
+- docmanager-reads: storage answers with a retry count or the endpoint address in botocore's text (429, 5xx, no answer); URL-like names with a bracketed or non-ASCII network location. Invalid UTF-8, NUL and creation dates outside Python's range cannot be read by Django either (class C).
+- Not started in this change: the document-views rows, the documents-writes rows, `medical-appointments/list` with a doc-less appointment, Biella without a primary tutor relation, and every invoice and instructor B row.
+
+### Ported in the v2-rest-a change
+
+Rare inputs and old data (class B rows). Receipts are `quality-reports/go-migration/<family>-http-v2resta-*`; each
+family doc has the details. Eleven appendix conditions over five families, three of them `legacy: yes` rows (the module
+of an association in another state, the paid flow's old `meta` names on approve and on Stripe).
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| modules-responses | `GET modules/<link>/info` (B, legacy: yes) | module whose association is not an owner's active one (the nested profile is the row the foreign key resolves by id) | 148 cases; RED `v2resta-red-r2` Django 148/148, Go 500; GREEN `v2resta-green-r4` 4 transports; mutation `v2resta-mutation-r2` (the by-id reader given the owner reader's row condition) CAUGHT; modules-reads 81/81 re-run |
+| payment-state | `POST payment/<id>/approve` paid flow (B, legacy: yes) | `X-Group-Id` in another spelling; float fees on an exact two-place tie; `meta.subscription_data.name` that is a float, list or dict | 158 cases; RED `v2resta-red-r3` Django 158/158, Go 500; GREEN `v2resta-green-r3` 4 transports; mutation `v2resta-mutation-r2` (re-save compared with the half-even value) CAUGHT; invoice-generate 50/50 re-run |
+| payment-state | `POST payment/<id>/approve` (B) | `payment_date` with decimal digits of other scripts | 160 cases; GREEN `v2resta-green-r4` 4 transports; mutation `v2resta-mutation-r3` (year limited to ASCII digits) CAUGHT |
+| payment-writes | `POST payment/add`, bulk-add (B) | dates with decimal digits of other scripts | 156 cases; GREEN `v2resta-green-r3` 4 transports; mutation `v2resta-mutation-r2` (year limited to ASCII digits) CAUGHT |
+| stripe-routes | `stripe/webhook`, `stripe/pay`, `stripe/multiple-pay` paid flow (B, legacy: yes) | the same three conversions in `mark_payment_as_paid` | 105 cases; RED `v2resta-red-r2` Django 105/105, Go fails (no invoice); GREEN `v2resta-green-r1` 4 transports; mutation `v2resta-mutation-r1` (create entry with the stored uuid) CAUGHT |
+| payment-writes | `POST payment/add` (B) | `X-Group-Id` in another spelling (also on the auto-paid invoice); auto-paid fees on an exact half cent | 155 cases; RED `v2resta-red-r1` Django 155/155, Go 500; GREEN `v2resta-green-r1` 4 transports; mutation `v2resta-mutation-r1` (second invoice save compared with the half-even value) CAUGHT; payment-misc re-run |
+| payment-misc | `GET payment/simulation/partial-quotes`, `partial-quotes-apply` (B) | plan days/months and `date` written with decimal digits of other scripts; `X-Group-Id` in another spelling on apply | 101 cases; RED `v2resta-red-r1` Django 101/101, Go 500; GREEN `v2resta-green-r1` 4 transports; mutation `v2resta-mutation-r1` (day's second digit limited to ASCII) CAUGHT; payment-state and payment-writes re-run |
+
+Left refused in these families, with the reason: payment-misc plan fees and plan ids of other JSON types (each type has
+its own lookup and insert failure in Django; the plan editor writes strings and numbers); `send_receipt_email` of other types; modules-responses attachment names and form
+bodies; the Stripe request-shape rows (non-string ids, unencodable `stripe_available_methods`).
 
 ## Remaining A items, per family
 
@@ -569,10 +620,10 @@ Coordination/status doc; no refusals. Nothing to classify.
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
 | GET document/medical-appointment/<uid> | region `agonistica-piemonte-biella` with a stored president signature (PyMuPDF draws it on the form); the form without a signature and the regions without a form are ported (v2-documents-rest) | service/document_render.go, `medicalJob` (`ErrDocumentRenderNotPorted`) | A | The add-appointment form offers `agonistica-piemonte-biella` (`association/Members/detail/sections/modals/AddMedicalAppointment.svelte:30`, select :160-167). The route is requested by the printing call to `CURRENT_HOST` (`application/printing_tasks.py:47`), not by the browser, so it hits Go only when `CURRENT_HOST` points at the Go API. |
-| document/* | filename with CR/LF/C0/DEL or `email.header` splitting chars | service/document_render.go:230 | B (legacy: yes) | Filenames derive from member/association names; control characters need pasted or imported data. Cost: cheap-medium. |
-| POST document/template/<uid> | body not none/JSON object/urlencoded, malformed JSON, non-object `additionalData`, `subscription` not str/int/bool/null | handler/document_render.go:124; service/document_render.go:553,562,567,584 | B | UI sends `{template, additionalData: <object>}` as JSON (`association/archive/modals/GenerateFromTemplateModal.svelte:31-36`). Cost: cheap. |
-| GET document/invoice/<uid> | multipart/other body with falsy query flag | handler/document_render.go:124 | B | Called by the printing task with GET and no body (`application/printing_tasks.py:12`). |
-| GET document/compensation/<uid> | hours whose instructor's owner has no live association | service/document_render.go:481 | B | Needs a soft-deleted owner association. legacy: no. Cost: medium. |
+| document/* | filename with C0/DEL or `email.header` splitting chars and no line break (CR/LF ported in v2-documents-3) | service/document_render.go, `Render` | B (legacy: yes) | Filenames derive from member/association names; control characters need pasted or imported data. Cost: cheap-medium. |
+| POST document/template/<uid> | body not none/JSON object/urlencoded, malformed JSON, non-object `additionalData`, `subscription` not str/int/bool/null | `planTemplateData` | ported (v2-documents-3) | UI sends `{template, additionalData: <object>}` as JSON (`association/archive/modals/GenerateFromTemplateModal.svelte:31-36`). Cost: cheap. |
+| GET document/invoice/<uid> | multipart/other body with falsy query flag | `documentRenderBody` | ported (v2-documents-3) | Called by the printing task with GET and no body (`application/printing_tasks.py:12`). |
+| GET document/compensation/<uid> | hours whose instructor's owner has no live association | service/document_render.go, `print` | ported (v2-documents-3) | Needs a soft-deleted owner association. legacy: no. Cost: medium. |
 | POST document/template/<uid> | collaborator as `request.user` | service/document_render.go:495 | C | Identity resolution maps collaborators to the owner before the view. |
 
 ### course-subscriptions.md
@@ -636,8 +687,8 @@ Coordination/status doc; no refusals. Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | GET document/retrieve/<uid> | object absent and referenced by a subscription or invoice (re-render) | `service/docmanager_reads.go:241-246` | **A** (ported in v2-documents-rest) | Links everywhere (`accounting/receipts/ReceiptList.svelte:68`, `Members/MembersList.svelte:527`). Produced by a restore with "allow missing media" (`profile/sections/DataImport.svelte:188-189`) or a failed/pending `save_to_storage`. Medium confidence on frequency. |
-| GET document/retrieve | provider errors (HEAD ≠404, GetObject failure other than a missing key) | `service/docmanager_reads.go:237,266` | B | Infrastructure. cheap. |
-| GET document/retrieve | URL-like names with a bracketed or non-ASCII network location (the other URL-like names are ported in v2-documents-rest), trailing newline, inline empty name, invalid UTF-8/NUL, odd creation dates | `service/docmanager_reads.go:225,233,256,262`; `BE_GO/pkg/pymime/pymime.go:146-163` | B | Generated names start with `[`; an uploaded name like `Nota:spese.pdf` (Linux/Android) would hit it. legacy: yes; cheap. |
+| GET document/retrieve | provider errors: HEAD answered 429/5xx or not at all, GetObject failure other than a missing key (a client-error HEAD answer is ported in v2-documents-3) | `service/docmanager_reads.go`, `stream` | B | Infrastructure. cheap. |
+| GET document/retrieve | URL-like names with a bracketed or non-ASCII network location (the other URL-like names are ported in v2-documents-rest; trailing newline and empty name ported in v2-documents-3; invalid UTF-8/NUL and odd creation dates cannot be read by Django either) | `service/docmanager_reads.go:225,233,256,262`; `BE_GO/pkg/pymime/pymime.go:146-163` | B | Generated names start with `[`; an uploaded name like `Nota:spese.pdf` (Linux/Android) would hit it. legacy: yes; cheap. |
 | GET document/retrieve | download token JSON with NaN/Infinity | token decode | C | Needs `SECRET_KEY`. |
 | — | `SECRET_KEY_FALLBACKS` | — | C | Not configured. |
 
@@ -824,7 +875,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | POST add-attachment / response/add | form or multipart body | `service/modules_responses.go:213,370` | B | The UI sends JSON (`PublicModule.svelte:47-50,67-73`). |
 | POST add-attachment | non-string `filename`/`base64` | `service/modules_responses.go:466` | B | The UI sends strings. |
 | DELETE add-attachment | non-string `document_id`; document referenced elsewhere | `service/modules_responses.go:392,416` | B | The UI sends the string id (`PublicModule.svelte:84-92`). Attachment documents are created per response, so another reference would be legacy or imported data. legacy: low. Cost: medium (collector). |
-| GET modules/<link>/info | module whose association is not active | `service/modules_responses.go:130` | B | Deleted or disabled associations only. legacy: yes. Cost: cheap. |
+| GET modules/<link>/info | module whose association is not active | `service/modules_responses.go` (`ReadAssociation`) | ported (v2-rest-a) | Deleted or disabled associations only. legacy: yes. Cost: cheap. |
 | GET modules/<id>/export | list/dict labels, ints beyond int64, xlsxwriter-refused text, non-dict `props` | `service/modules_export.go:94,114,150,162,176,260,266,272` | B | `routes/association/Members/overview/ModuleOverview.svelte:37`. The form builder writes string labels. Free-text answers starting with `=` or holding URLs with `#` would hit the xlsxwriter path. legacy: yes. Cost: medium. |
 
 ### modules-writes.md
@@ -838,7 +889,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | GET payment/simulation/partial-quotes-apply | a member's own account to e-mail while the association has a `CommunicationConfiguration` | `service/payment_misc.go` (`Apply`, `ErrPaymentMiscNotPorted`) | A (ported in v2-payments-3) | Same UI call (`SubscriptionFeesPlanModal.svelte:46`). Without an SMTP configuration the e-mail is ported (published `send_mail_async`); with one Django sends on a `Timer` thread after a random delay. |
-| partial-quotes(-apply) | non-ASCII-digit dates, odd fee/plan types, non-canonical X-Group-Id | `service/payment_misc.go:103,115,250-284,345,489`; `service/quote_assign.go:301-309` | B | The UI sends `?date=YYYY-MM-DD`. Plans come from template data. legacy: yes (old plan JSON). Cost: cheap. |
+| partial-quotes(-apply) | non-ASCII-digit dates and plan days/months, non-canonical X-Group-Id | `service/payment_misc.go` | ported (v2-rest-a) | See `payment-misc.md`. |
+| partial-quotes(-apply) | odd fee/plan types (fees that are not a number or decimal string, plan ids that are not strings or numbers, ints beyond int64) | `service/payment_misc.go` (`paymentMiscAmount`, `paymentMiscPattern`); `service/quote_assign.go` | B | The UI sends `?date=YYYY-MM-DD`. Plans come from template data. legacy: yes (old plan JSON). Cost: cheap. |
 | POST payment/<id>/approve (via payment-state) | `send_receipt_email` not None/bool/str/int64 | payment-state | B | Exotic. |
 
 ### oauth2-accounts.md
@@ -893,7 +945,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | POST payment/add | owner has `auto_paid_payment` | `service/payment_writes.go:570` | **A** (ported in v2-payments-3) | The toggle is in `routes/profile/sections/Settings.svelte:1013`. Django: `payment_views.py:78-79`. Cost: medium–expensive (invoice numbering + `print_document_invoice`). |
 | PATCH payment/<id>/update | payment has an invoice | `service/payment_writes.go:766` | **A** | Any edit of an invoiced (receipted) payment from `AddEditModal.svelte:142`. Cost: medium (invoice re-print dispatch). |
 | add/update | form/multipart bodies | `service/payment_writes.go:722` | B | The UI sends JSON. |
-| add | non-canonical X-Group-Id; non-ASCII-digit dates | `service/payment_writes.go:534,59` | B | See the X-Group-ID note. The UI sends `DD/MM/YYYY` ASCII. |
+| add | non-canonical X-Group-Id; auto-paid fees on an exact half cent | `service/payment_writes.go` (`createGroupSent`) | ported (v2-rest-a) | See `payment-writes.md`. |
+| add, update | non-ASCII-digit dates | `service/payment_writes.go` (`paymentWritesStrptime`) | ported (v2-rest-a) | See `payment-writes.md`. |
 
 ### personas-reads.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -906,8 +959,9 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 |---|---|---|---|---|
 | POST payment/<id>/cancel | paid payment with an invoice | `service/payment_state.go:322` | **A** (ported in v2-payments-3) | `routes/accounting/payment/PaymentList.svelte:575`, `partials/payment-overview.svelte:187`. Receipted payments are normal. Cost: medium (invoice cancellation + PDF task). |
 | DELETE payment/<id>/delete | payment with an invoice | `service/payment_state.go:363` | **A** (ported in v2-payments-3) | `PaymentList.svelte:689`. Cost: medium–expensive (synchronous PDF). |
-| approve paid flow | non-canonical X-Group-Id; float fee tie; odd `meta.subscription_data.name`; user without association id | `service/payment_state.go:52-60` and paid flow | B | Exotic or legacy data. Fee ties are rare. legacy: yes (old meta). Cost: cheap. |
-| approve/date | non-ASCII-digit `payment_date` | `service/payment_state.go:133` | B | |
+| approve paid flow | non-canonical X-Group-Id; float fee tie; odd `meta.subscription_data.name` | `service/payment_paid_flow.go` | ported (v2-rest-a) | See `payment-state.md` ("Paid flow rare inputs"). |
+| approve paid flow | user without association id | `service/payment_paid_flow.go` | B | Exotic or legacy data. Fee ties are rare. legacy: yes (old meta). Cost: cheap. |
+| approve/date | non-ASCII-digit `payment_date` | `service/payment_state.go` (`paymentStateDateAny`) | ported (v2-rest-a) | See `payment-state.md`. |
 | approve | task dispatcher missing / tx type | `service/payment_state.go:227,254` | C | Wiring only. |
 
 ### printing-generate.md
@@ -1007,7 +1061,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### stripe-routes.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| stripe/pay, multiple-pay, webhook | paid-flow conversions (X-Group-Id, fee ties, odd meta name) | `service/stripe_routes.go:233,284,321,391,655` (`ErrStripeNotPorted`) | B | See payment-state. legacy: yes (meta). |
+| stripe/pay, multiple-pay, webhook | paid-flow conversions (X-Group-Id, fee ties, odd meta name) | `service/payment_paid_flow.go` | ported (v2-rest-a) | See `stripe-routes.md` ("Paid flow rare inputs"). |
 | same | `stripe_available_methods` floats/nested lists, mixed `payments` lists, non-string ids, odd `payment_intent`, intent without id, amounts beyond int64 | same | B | The UI sends string lists and ids. Webhook input comes from Stripe. |
 | webhook | body over `DATA_UPLOAD_MAX_MEMORY_SIZE` | | B | Stripe client only. |
 

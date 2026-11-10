@@ -141,3 +141,8 @@ tool adapter of ledger-structural (25/25) and the manual MCP Go transport.
 
 `get_attendance_matrix` lists an enrolment without a subscription under its own id, as Django's outer join does (found by
 the saved-report run cases, templates-reports.md); the XLSX and PDF results stay refused here.
+
+v2-reports-2 (`mcp-server-tools-v2rep2-r2`, 135/135 with 3 refused, 4/4 sessions): the shared tool code now answers a
+`format` that is not a string (`Unsupported format: <str(value)>`, or `unhashable type` for a list or dict) and writes CSV
+labels and cells of other types with `str()`. Exceptions whose text is not reproduced (a title or `sheets` of another type)
+and the XLSX and PDF results stay refused here. The server has no request, so no group filter applies.

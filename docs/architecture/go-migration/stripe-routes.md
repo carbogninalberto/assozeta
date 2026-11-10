@@ -109,9 +109,8 @@ Stripe settings are `effective_integration('stripe')`: the self-hosted instance 
 
 ## Not ported (refused before any write, 500)
 
-- Paid flow inputs outside the ported conversions (a non-canonical `X-Group-Id` spelling, float fee ties, unusual
-  `meta.subscription_data.name` values; see payment-state.md). These are found inside the mark's transaction, which rolls
-  back, so a request that marks several payments keeps the marks committed before it.
+- (Ported in v2-rest-a, see the end of this page: `X-Group-Id` in another spelling, float fee ties and
+  `meta.subscription_data.name` values of any JSON type.)
 - `stripe_available_methods` values the client does not encode (floats, nested lists), `payments` lists mixing ids with
   non-strings, objects whose `sport_association`/`payment_id` are not strings or null, a webhook `payment_intent` that is
   not a string, integer, bool or null, a created intent without a string `id`, and amounts outside int64 cents.
@@ -171,3 +170,15 @@ publication made before it is caught when the read lands before the commit (the 
   `stripe-routes-pay-succeeded-marks-supplier-invoice` (CAUGHT, `...-stripe-routes-mutation`); publishing the print task
   inside the transaction (manual two-edit mutation, restored by hash) fails Go on
   `stripe-routes-webhook-charge-subscription-without-categories` with `celery.committed` (`...-mutation-precommit`).
+
+## Paid flow rare inputs (v2-rest-a)
+
+Four more webhook cases (105 in all), the Stripe side of payment-state's "Paid flow rare inputs": an upper-case
+`X-Group-Id` (the invoice column stores the uuid, the create entry keeps the text as sent; `mark_payment_as_paid` does
+not save the invoice again), fees on an exact two-place tie (`0.125` of `10.00`: stored `0.13` and `9.88`), and
+`meta.subscription_data.name` as a float or a list (`str()`, escaped).
+
+RED `v2resta-red-r2`: Django 105/105, Go fails `stripe-routes-webhook-charge-group-upper-case` (no invoice). GREEN
+`v2resta-green-r1` (after merging `codex/go-backend-parity` `b64953a5`): 105/105 on native Django, native Go, Caddy
+`/api/v1` and `/api/v2`. Mutation `v2resta-mutation-r1` (the create entry recording the stored uuid instead of the sent
+text) fails `stripe-routes-webhook-charge-group-upper-case` (CAUGHT).
