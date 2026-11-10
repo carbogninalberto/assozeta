@@ -403,7 +403,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		// str() of numbers and containers through dateutil is not ported.
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
-	born, result := dto.DateutilDate(bornValue)
+	born, result := dto.PersonDate(bornValue)
 	if result == dto.DateutilUnsupported {
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}

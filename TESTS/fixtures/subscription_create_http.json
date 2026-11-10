@@ -16060,6 +16060,255 @@
     "sport_association": "a1000000-0000-4000-8000-000000701001"
    },
    "setup": null
+  },
+  {
+   "name": "subscription-create-minor-day-first-birth-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Dina",
+      "last_name": "Giovane",
+      "tax_code": "GVNDNI08T45H501K",
+      "born_date": "$day_first_minor_iso",
+      "sex": "F",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "is_minor": true,
+      "address_city": "Asti"
+     }
+    },
+    "tutor": {
+     "match": "new",
+     "columns": {
+      "first_name": "Pino",
+      "last_name": "Giovane",
+      "tax_code": "GVNPNI80A01H501M",
+      "born_date": "1980-01-01",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "address_city": "Asti"
+     }
+    },
+    "relation": true,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "549"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "549"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "tutor",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "tutor",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associatetutorrelation",
+      "action": 0,
+      "ref": "relation",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "associate.sport_association"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Dina Giovane.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Dina",
+     "last_name": "Giovane",
+     "tax_code": "GVNDNI08T45H501K",
+     "born_date": "$day_first_minor",
+     "sex": "F",
+     "is_minor": true,
+     "address_city": "Asti"
+    },
+    "associate_tutor_data": {
+     "first_name": "Pino",
+     "last_name": "Giovane",
+     "tax_code": "GVNPNI80A01H501M",
+     "born_date": "01/01/1980",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
   }
  ]
 }

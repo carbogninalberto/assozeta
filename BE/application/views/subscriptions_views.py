@@ -1,4 +1,5 @@
 from application.impersonation_scope import scoped_queryset, isolate_medical_certificate
+from application.utils.person_dates import person_date
 """
 @ copyright: Bakney SRL
 """
@@ -1357,12 +1358,12 @@ def subscription_associates_draft_edit(request, uid):
             # this check means that al fields are valid
             else:
                 now = date.today()
-                born_date = dateutil.parser.parse(data['edit_data']['associate']['born_date'])
+                born_date = person_date(data['edit_data']['associate']['born_date'])
                 born_date = born_date.strftime('%d/%m/%Y')
                 age = relativedelta(now, datetime.strptime(born_date, '%d/%m/%Y')).years
                 if age < 18:
                     try:
-                        born_date_tutor = dateutil.parser.parse(data['edit_data']['associate_tutor']['born_date'])
+                        born_date_tutor = person_date(data['edit_data']['associate_tutor']['born_date'])
                         born_date_tutor = born_date_tutor.strftime('%d/%m/%Y')
                         tutor_age = relativedelta(now, datetime.strptime(born_date_tutor, '%d/%m/%Y')).years
                         if tutor_age < 18:

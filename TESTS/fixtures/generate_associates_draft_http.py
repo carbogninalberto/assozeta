@@ -236,6 +236,19 @@ for label, tutor in (('blank', {'born_date': ''}), ('missing', {}), ('number', {
     edited(f'edit-minor-tutor-{label}-ignored', 'owner', 'partial', {'edit_data': edit_data},
            {'data': {'edit_data': {**edit_data, 'medical_certificate': {'medical_id': '$new'}}}}, valid=True,
            saves=[{**edit_data, 'medical_certificate': {'medical_id': '$mc'}}], certificate={'label': None, 'expiration': None, 'updated': False})
+# Day/month/year text with both numbers at most 12 is read with the day first. '$day_first_minor' is under 18 today and
+# would be 18 read month first; '$day_first_adult' is the reverse (http_family.day_first_dates). A minor's tutor under 18
+# makes the draft invalid; an adult's tutor is not looked at.
+MINOR_TUTOR = {'born_date': '13/03/2012'}
+for label, associate_born, tutor, valid in (
+        ('day-first-minor-minor-tutor-invalid', '$day_first_minor', MINOR_TUTOR, False),
+        ('day-first-adult-tutor-not-read', '$day_first_adult', MINOR_TUTOR, True),
+        ('minor-day-first-minor-tutor-invalid', '2015-06-01', {'born_date': '$day_first_minor'}, False),
+        ('minor-day-first-adult-tutor', '2015-06-01', {'born_date': '$day_first_adult'}, True)):
+    edit_data = {'associate': {**ADULT, 'born_date': associate_born}, 'associate_tutor': tutor, 'medical_certificate': {'medical_id': None}}
+    edited(f'edit-{label}', 'owner', 'partial', {'edit_data': edit_data},
+           {'data': {'edit_data': {**edit_data, 'medical_certificate': {'medical_id': '$new'}}}}, valid=valid,
+           saves=[{**edit_data, 'medical_certificate': {'medical_id': '$mc'}}], certificate={'label': None, 'expiration': None, 'updated': False})
 edit_data = {'associate': {k: v for k, v in ADULT.items() if k != 'sex'}, 'medical_certificate': {}}
 edited('edit-missing-mandatory-new-certificate-expiring', 'owner', 'partial', {'edit_data': edit_data, 'certificate_expiring_date': '1/2/2028'},
        {'data': {'edit_data': {**edit_data, 'medical_certificate': {'medical_id': '$new', 'certificate_expring_date': '1/2/2028'}},

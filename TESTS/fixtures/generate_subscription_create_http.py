@@ -1173,6 +1173,20 @@ add('quick-scoped-session-athlete-not-allowed', 'owner', 403, {'detail': 'User n
 quick('owner', 'quick_session', 'Quirino Sessione', headers=SCOPED_FULL, payment={'amount': '25.00', '$audit': '25.00'}, subscription={})
 cases[-1]['body']['sport_association'] = OWN
 
+# --- A birth date with both numbers at most 12 -------------------------------------------------------------------
+# The age reads the day first: '$day_first_minor' (http_family.day_first_dates) is under 18 today and would be 18 read
+# month first. A minor's tutor without a city takes the minor's.
+young = person('Dina', 'Giovane', 'GVNDNI08T45H501K', born='$day_first_minor', is_minor=True, sex='F', address_city='Asti')
+young_tutor = person('Pino', 'Giovane', 'GVNPNI80A01H501M', born='01/01/1980')
+effect = success('owner', 'Dina Giovane', associate=created_associate(young, is_minor=True, address_city='Asti'),
+                 tutor=created_associate(young_tutor, address_city='Asti'), relation=True,
+                 payment=new_payment('25.00', audit_amount='25.0'),
+                 subscription={'type': 2, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', **SEASON},
+                 membership={'membership_type': '$default_membership_type', 'start_date': '$season_start', 'end_date': '$season_end',
+                             'price': None})
+effect['associate']['columns']['born_date'] = '$day_first_minor_iso'
+add('minor-day-first-birth-date', 'owner', 200, SUCCESS(25.0), body=request(young, tutor=young_tutor), effect=effect)
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/add authored sequence with row, audit, Celery and notification effects',
